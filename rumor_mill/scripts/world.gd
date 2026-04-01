@@ -40,10 +40,18 @@ var social_graph:  SocialGraph     = null
 var _pathfinder:   AstarPathfinder = null
 
 # Building entry-point cells derived from grid data (populated in _load_grid).
-# Keys: "manor", "tavern", "chapel", "market", "well"
+# Keys: "manor", "tavern", "chapel", "market", "well", etc.
 var _building_entries: Dictionary = {}
 
-# Faction schedule templates (building name lists).
+# Gathering points for all NPC schedule location codes.
+# Populated in _build_gathering_points() after _extract_building_entries().
+# Keys match NpcSchedule location code strings.
+var _gathering_points: Dictionary = {}
+
+# Number of schedule slots per game day (matches NpcSchedule.SLOTS_PER_DAY).
+const SCHEDULE_SLOTS := 6
+
+# Faction schedule templates (building name lists) — kept for legacy reference.
 const FACTION_SCHEDULES := {
 	"merchant": ["tavern", "market", "market", "tavern"],
 	"noble":    ["manor",  "manor",  "market", "chapel"],
@@ -57,6 +65,7 @@ func _ready() -> void:
 	_place_buildings()
 	_collect_walkable_cells()
 	_extract_building_entries()
+	_build_gathering_points()
 	_init_pathfinder()
 	_spawn_npcs()
 	_init_social_graph()
@@ -172,6 +181,35 @@ func _extract_building_entries() -> void:
 	if not _building_entries.has("graveyard"):
 		_building_entries["graveyard"] = Vector2i(38, 38) if Vector2i(38, 38) in walkable_cells \
 			else AstarPathfinder.nearest_walkable(Vector2i(38, 38), walkable_cells)
+
+
+# ── Gathering points (NPC schedule targets) ──────────────────────────────────
+
+func _build_gathering_points() -> void:
+	# Seed with the building entries extracted from the grid.
+	for key in _building_entries:
+		_gathering_points[key] = _building_entries[key]
+
+	# Placeholder positions for buildings not yet placed in the grid.
+	# Each is the desired grid cell; we resolve to the nearest walkable cell.
+	var placeholders := {
+		"town_hall":       Vector2i(21, 10),
+		"alderman_house":  Vector2i(10, 15),
+		"courthouse":      Vector2i(24, 15),
+		"guardhouse":      Vector2i(22, 22),
+		"blacksmith":      Vector2i(15, 30),
+		"tanner":          Vector2i(20, 35),
+		"trader_stall":    Vector2i(8,  30),
+		"mill":            Vector2i(35, 20),
+		"storage":         Vector2i(35, 30),
+		"patrol":          Vector2i(24, 24),
+	}
+	for loc in placeholders:
+		if not _gathering_points.has(loc):
+			var desired: Vector2i = placeholders[loc]
+			_gathering_points[loc] = AstarPathfinder.nearest_walkable(desired, walkable_cells)
+
+	print("World: gathering points registered: %s" % str(_gathering_points.keys()))
 
 
 # ── A* pathfinder ────────────────────────────────────────────────────────────
@@ -296,7 +334,14 @@ func _recursive_find(node: Node, class_tag: String) -> Node:
 # ── Tick ─────────────────────────────────────────────────────────────────────
 
 func on_game_tick(tick: int) -> void:
+	# Map continuous tick to a 0–5 schedule slot.
+	var tpd: int = day_night.ticks_per_day if day_night != null else 24
+	var hour_of_day: int = tick % tpd
+	var schedule_slot: int = (hour_of_day * SCHEDULE_SLOTS) / tpd
+	var current_day: int   = day_night.current_day if day_night != null else (tick / tpd + 1)
+
 	for npc in npcs:
+		npc.update_tick_schedule(schedule_slot, current_day, _gathering_points)
 		npc.on_tick(tick)
 
 

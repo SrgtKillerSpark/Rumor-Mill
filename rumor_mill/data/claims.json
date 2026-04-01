@@ -1,0 +1,137 @@
+[
+  {
+    "id": "ACC-01",
+    "type": "accusation",
+    "templateText": "[subject] was seen taking [faction_item] from [location]",
+    "intensity": 3,
+    "mutability": 3,
+    "targetFactions": ["merchant", "noble"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "ACC-02",
+    "type": "accusation",
+    "templateText": "[subject] was overheard giving [faction] secrets to their enemies",
+    "intensity": 4,
+    "mutability": 2,
+    "targetFactions": ["noble", "merchant"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "ACC-03",
+    "type": "accusation",
+    "templateText": "[subject] has been skimming from [civic_resource]",
+    "intensity": 3,
+    "mutability": 3,
+    "targetFactions": ["merchant", "noble", "clergy"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "SCA-01",
+    "type": "scandal",
+    "templateText": "[subject] was seen leaving [private_location] at an unusual hour",
+    "intensity": 2,
+    "mutability": 4,
+    "targetFactions": ["noble"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "SCA-02",
+    "type": "scandal",
+    "templateText": "[subject] has been seen meeting privately with [other_npc]",
+    "intensity": 2,
+    "mutability": 5,
+    "targetFactions": ["clergy", "noble"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "SCA-03",
+    "type": "scandal",
+    "templateText": "[subject] owes a great sum and cannot pay",
+    "intensity": 2,
+    "mutability": 2,
+    "targetFactions": ["merchant"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "ILL-01",
+    "type": "illness",
+    "templateText": "[subject] has been showing signs of the plague",
+    "intensity": 5,
+    "mutability": 1,
+    "targetFactions": ["merchant", "noble", "clergy"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "ILL-02",
+    "type": "illness",
+    "templateText": "[subject] has been behaving strangely — speaking to no one, laughing at nothing",
+    "intensity": 3,
+    "mutability": 2,
+    "targetFactions": ["clergy", "noble"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "PRO-01",
+    "type": "prophecy",
+    "templateText": "[subject] was named in a dream as a harbinger of misfortune",
+    "intensity": 2,
+    "mutability": 5,
+    "targetFactions": ["clergy"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "PRO-02",
+    "type": "prophecy",
+    "templateText": "[subject] has been touched by divine favor — their deeds will prosper",
+    "intensity": 2,
+    "mutability": 3,
+    "targetFactions": ["clergy", "noble"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "PRA-01",
+    "type": "praise",
+    "templateText": "[subject] rescued [person_or_thing] from [danger] — a true hero of the town",
+    "intensity": 2,
+    "mutability": 2,
+    "targetFactions": ["merchant", "noble", "clergy"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "PRA-02",
+    "type": "praise",
+    "templateText": "[subject] gave generously to [recipient] without any expectation of return",
+    "intensity": 1,
+    "mutability": 2,
+    "targetFactions": ["clergy", "merchant"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "DEA-01",
+    "type": "death",
+    "templateText": "[subject] has been found dead",
+    "intensity": 5,
+    "mutability": 1,
+    "targetFactions": ["merchant", "noble", "clergy"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "HER-01",
+    "type": "heresy",
+    "templateText": "[subject] was heard mocking the Chapel and its priests",
+    "intensity": 3,
+    "mutability": 3,
+    "targetFactions": ["clergy"],
+    "unlockedByDefault": true
+  },
+  {
+    "id": "HER-02",
+    "type": "heresy",
+    "templateText": "[subject] has been seen performing rites that are not of the Chapel",
+    "intensity": 4,
+    "mutability": 2,
+    "targetFactions": ["clergy", "merchant"],
+    "unlockedByDefault": true
+  }
+]

@@ -14,6 +14,14 @@ var schedule_waypoints: Array[Vector2i] = []
 var all_npcs_ref: Array = []        # reference to world's npc list (set by World)
 var social_graph_ref: SocialGraph = null
 
+# ── Schedule archetype (populated in init_from_data) ─────────────────────────
+var archetype: NpcSchedule.ScheduleArchetype = NpcSchedule.ScheduleArchetype.INDEPENDENT
+var work_location: String = ""
+var tick_overrides: Dictionary = {}
+var day_pattern_overrides: Array = []
+var _home_cell: Vector2i = Vector2i.ZERO
+var _last_schedule_slot: int = -1  # avoids re-pathing on every tick within the same slot
+
 # Personality shorthands (populated in init_from_data)
 var _credulity:   float = 0.5
 var _sociability: float = 0.5
@@ -62,11 +70,17 @@ func init_from_data(
 	_pathfinder  = pathfinder
 	_walkable    = walkable
 	current_cell = start_cell
+	_home_cell   = start_cell
 
 	_credulity   = float(data.get("credulity",   0.5))
 	_sociability = float(data.get("sociability",  0.5))
 	_loyalty     = float(data.get("loyalty",      0.5))
 	_temperament = float(data.get("temperament",  0.5))
+
+	archetype            = NpcSchedule.archetype_from_string(data.get("archetype", "independent"))
+	work_location        = str(data.get("work_location", ""))
+	tick_overrides       = data.get("tick_overrides", {})
+	day_pattern_overrides = data.get("day_pattern_overrides", [])
 
 	var faction: String = data.get("faction", "merchant")
 	sprite.color = FACTION_COLORS.get(faction, Color.WHITE)
@@ -82,6 +96,44 @@ func on_tick(tick: int) -> void:
 	_step_movement()
 	_process_rumor_slots(tick)
 	_update_label()
+
+
+# ── Archetype schedule ───────────────────────────────────────────────────────
+
+## Called by World before on_tick each game tick.
+## gathering_points maps location code → Vector2i grid cell.
+func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> void:
+	if _is_schedule_overridden():
+		return
+	if slot == _last_schedule_slot:
+		return  # Same slot — no re-path needed.
+	_last_schedule_slot = slot
+
+	var location_code: String = NpcSchedule.get_location(
+		archetype, slot, work_location, tick_overrides, day_pattern_overrides, day
+	)
+
+	var target: Vector2i
+	if location_code == "home":
+		target = _home_cell
+	elif gathering_points.has(location_code):
+		target = gathering_points[location_code]
+	else:
+		return  # Unknown location code — keep current movement.
+
+	# Update movement path toward the new tick target.
+	schedule_waypoints = [target]
+	_waypoint_index    = 0
+	_path = _pathfinder.get_path(current_cell, target)
+	if _path.size() > 0 and _path[0] == current_cell:
+		_path.remove_at(0)
+
+
+func _is_schedule_overridden() -> bool:
+	for slot in rumor_slots.values():
+		if slot.state in [Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+			return true
+	return false
 
 
 # ── Movement ─────────────────────────────────────────────────────────────────
