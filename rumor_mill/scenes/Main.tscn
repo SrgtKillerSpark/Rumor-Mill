@@ -1,8 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://cn3p2rq4l7mn5"]
+[gd_scene load_steps=6 format=3 uid="uid://cn3p2rq4l7mn5"]
 
 [ext_resource type="Script" path="res://scripts/camera.gd" uid="uid://lg72wp63jbwu" id="1_cam"]
 [ext_resource type="PackedScene" path="res://scenes/World.tscn" uid="uid://dr4v8tp7nhq2p" id="2_world"]
 [ext_resource type="Script" path="res://scripts/main.gd" uid="uid://dx1i8r8pvp4r1" id="3_main"]
+[ext_resource type="PackedScene" path="res://scenes/DebugOverlay.tscn" uid="uid://debug_overlay_sprint2" id="4_overlay"]
+[ext_resource type="PackedScene" path="res://scenes/DebugConsole.tscn" uid="uid://debug_console_sprint2" id="5_console"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("3_main")
@@ -28,6 +30,10 @@ anchor_bottom = 1.0
 offset_top = -24.0
 offset_right = 500.0
 offset_bottom = 0.0
-text = "WASD/Arrows: pan  |  Mouse wheel / +/-: zoom  |  MMB drag: pan"
+text = "WASD/Arrows: pan  |  Scroll: zoom  |  F1: console  |  F2: states  |  F3: social"
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 0.8)
+
+[node name="DebugOverlay" parent="." instance=ExtResource("4_overlay")]
+
+[node name="DebugConsole" parent="." instance=ExtResource("5_console")]

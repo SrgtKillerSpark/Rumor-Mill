@@ -1,0 +1,101 @@
+## rumor.gd — Rumor data class and NpcRumorSlot state container.
+## No Node inheritance; used as plain data objects.
+
+class_name Rumor
+
+enum ClaimType {
+	ACCUSATION,
+	SCANDAL,
+	ILLNESS,
+	PROPHECY,
+	PRAISE,
+	DEATH,
+	HERESY
+}
+
+enum RumorState {
+	UNAWARE,
+	EVALUATING,
+	BELIEVE,
+	REJECT,
+	SPREAD,
+	ACT
+}
+
+var id: String
+var subject_npc_id: String
+var claim_type: ClaimType
+var intensity: int          # 1–5
+var mutability: float       # 0.0–1.0
+var created_tick: int
+var shelf_life_ticks: int
+var current_believability: float
+var lineage_parent_id: String  # "" = original
+
+
+static func create(
+		rumor_id: String,
+		subject_id: String,
+		c_type: ClaimType,
+		inten: int,
+		mut: float,
+		tick: int,
+		shelf: int = 240,
+		parent_id: String = ""
+) -> Rumor:
+	var r := Rumor.new()
+	r.id = rumor_id
+	r.subject_npc_id = subject_id
+	r.claim_type = c_type
+	r.intensity = clamp(inten, 1, 5)
+	r.mutability = clamp(mut, 0.0, 1.0)
+	r.created_tick = tick
+	r.shelf_life_ticks = shelf
+	r.current_believability = r.base_believability()
+	r.lineage_parent_id = parent_id
+	return r
+
+
+func base_believability() -> float:
+	return float(intensity) / 5.0
+
+
+static func claim_type_from_string(s: String) -> ClaimType:
+	match s.to_lower():
+		"accusation": return ClaimType.ACCUSATION
+		"scandal":    return ClaimType.SCANDAL
+		"illness":    return ClaimType.ILLNESS
+		"prophecy":   return ClaimType.PROPHECY
+		"praise":     return ClaimType.PRAISE
+		"death":      return ClaimType.DEATH
+		"heresy":     return ClaimType.HERESY
+		_:            return ClaimType.ACCUSATION
+
+
+static func state_name(state: RumorState) -> String:
+	match state:
+		RumorState.UNAWARE:    return "UNAWARE"
+		RumorState.EVALUATING: return "EVALUATING"
+		RumorState.BELIEVE:    return "BELIEVE"
+		RumorState.REJECT:     return "REJECT"
+		RumorState.SPREAD:     return "SPREAD"
+		RumorState.ACT:        return "ACT"
+		_:                     return "UNKNOWN"
+
+
+# ---------------------------------------------------------------------------
+# NpcRumorSlot — tracks one NPC's state for a single rumor.
+# ---------------------------------------------------------------------------
+class NpcRumorSlot:
+	var state: Rumor.RumorState = Rumor.RumorState.UNAWARE
+	var rumor: Rumor = null
+	var ticks_in_state: int = 0
+	var heard_from_count: int = 0
+	var source_faction: String = ""
+
+	func _init(r: Rumor, src_faction: String) -> void:
+		rumor = r
+		source_faction = src_faction
+		state = Rumor.RumorState.EVALUATING
+		ticks_in_state = 0
+		heard_from_count = 1
