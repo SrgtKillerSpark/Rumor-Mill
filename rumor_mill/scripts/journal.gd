@@ -53,9 +53,15 @@ var _notification_pending: bool   = false
 ## Per-rumor expand state: rumor_id → bool.
 var _expanded_rumors: Dictionary = {}
 
+## Hard cap on timeline log entries; oldest entries are trimmed when exceeded.
+const MAX_TIMELINE_ENTRIES := 200
+
 ## Timeline event log: Array of {tick: int, message: String}.
-## External systems can push via push_timeline_event().
+## External systems can push via push_timeline_event(); entries are flushed at tick-end.
 var _timeline_log: Array = []
+
+## Events buffered during the current tick, flushed into _timeline_log at tick-end.
+var _pending_events: Array = []
 
 # ── Node refs ─────────────────────────────────────────────────────────────────
 
@@ -760,6 +766,13 @@ func _build_objectives_section() -> void:
 # ── Notification dot ──────────────────────────────────────────────────────────
 
 func _on_game_tick(_tick: int) -> void:
+	# Tick-end flush: move buffered events into the log, then trim to cap.
+	if not _pending_events.is_empty():
+		_timeline_log.append_array(_pending_events)
+		_pending_events.clear()
+		if _timeline_log.size() > MAX_TIMELINE_ENTRIES:
+			_timeline_log = _timeline_log.slice(_timeline_log.size() - MAX_TIMELINE_ENTRIES)
+
 	if _is_open or _notification_pending:
 		return
 	if _has_new_entries_since(_last_opened_tick):
@@ -792,8 +805,9 @@ func _has_new_entries_since(since_tick: int) -> bool:
 # ── Public API ────────────────────────────────────────────────────────────────
 
 ## Called by scenario or world systems to record a named timeline event.
+## Events are buffered in _pending_events and flushed to _timeline_log at tick-end.
 func push_timeline_event(tick: int, message: String) -> void:
-	_timeline_log.append({"tick": tick, "message": message})
+	_pending_events.append({"tick": tick, "message": message})
 	if not _is_open and tick > _last_opened_tick:
 		_notification_pending = true
 		if _notif_dot != null:
