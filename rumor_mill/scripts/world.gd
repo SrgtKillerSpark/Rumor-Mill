@@ -46,6 +46,9 @@ var intel_store: PlayerIntelStore = null
 var reputation_system: ReputationSystem = null
 var scenario_manager:  ScenarioManager  = null
 
+## Sprint 4: SIR propagation engine (β/γ formulas, mutations, lineage registry).
+var propagation_engine: PropagationEngine = null
+
 ## Active scenario id — change before _ready() to load a different scenario.
 ## Valid values: "scenario_1", "scenario_2", "scenario_3"
 var active_scenario_id: String = "scenario_1"
@@ -80,6 +83,7 @@ func _ready() -> void:
 	_init_pathfinder()
 	_spawn_npcs()
 	_init_social_graph()
+	_init_propagation_engine()
 	_init_intel_store()
 	_init_reputation_system()
 	_apply_active_scenario()
@@ -271,6 +275,15 @@ func _spawn_npcs() -> void:
 	print("World: spawned %d NPCs" % npcs.size())
 
 
+# ── Propagation engine ────────────────────────────────────────────────────────
+
+func _init_propagation_engine() -> void:
+	propagation_engine = PropagationEngine.new()
+	for npc in npcs:
+		npc.propagation_engine_ref = propagation_engine
+	print("World: PropagationEngine initialised and wired to %d NPCs" % npcs.size())
+
+
 func _build_schedule(faction: String, start_cell: Vector2i) -> Array[Vector2i]:
 	var template: Array = FACTION_SCHEDULES.get(faction, FACTION_SCHEDULES["merchant"])
 	var waypoints: Array[Vector2i] = []
@@ -452,6 +465,10 @@ func on_game_tick(tick: int) -> void:
 	if scenario_manager != null and reputation_system != null:
 		scenario_manager.evaluate(reputation_system, tick)
 
+	# ── Shelf-life decay: run before NPC state transitions so EXPIRED is visible. ──
+	if propagation_engine != null:
+		propagation_engine.tick_decay()
+
 	# Map continuous tick to a 0–5 schedule slot.
 	var tpd: int = day_night.ticks_per_day if day_night != null else 24
 	var hour_of_day: int = tick % tpd
@@ -543,6 +560,11 @@ func seed_rumor_from_player(
 	var rumor    := Rumor.create(rumor_id, subject_npc_id, claim_type, intensity, mutability, tick)
 
 	var source_faction: String = seed_target_npc.npc_data.get("faction", "")
+
+	# Register in the propagation engine before seeding so shelf-life decay starts.
+	if propagation_engine != null:
+		propagation_engine.register_rumor(rumor)
+
 	seed_target_npc.hear_rumor(rumor, source_faction)
 
 	print("[World] seed_rumor_from_player '%s' claim=%s intensity=%d → %s about %s" % [
@@ -592,6 +614,11 @@ func inject_rumor(target_npc_id: String, claim_type_str: String, intensity: int)
 	)
 
 	var source_faction: String = target_npc.npc_data.get("faction", "")
+
+	# Register in the propagation engine before injecting.
+	if propagation_engine != null:
+		propagation_engine.register_rumor(rumor)
+
 	target_npc.hear_rumor(rumor, source_faction)
 
 	print("[World] inject_rumor '%s' (type=%s, intensity=%d) → %s about %s" % [

@@ -22,7 +22,7 @@ func _ready() -> void:
 	panel.visible = false
 	input_box.text_submitted.connect(_on_command_submitted)
 	_log("[color=cyan]Rumor Mill Debug Console — F1 to toggle[/color]")
-	_log("[color=yellow]Commands: inject_rumor, show_states, show_social, list_npcs[/color]")
+	_log("[color=yellow]Commands: inject_rumor, show_states, show_social, list_npcs, lineage_tree[/color]")
 
 
 func set_world(world: Node2D) -> void:
@@ -60,9 +60,11 @@ func _on_command_submitted(text: String) -> void:
 			_cmd_show_social()
 		"list_npcs":
 			_cmd_list_npcs()
+		"lineage_tree":
+			_cmd_lineage_tree()
 		"help":
 			_log("[color=yellow]inject_rumor <npc_id> <claim_type> <intensity 1-5>[/color]")
-			_log("[color=yellow]show_states | show_social | list_npcs[/color]")
+			_log("[color=yellow]show_states | show_social | list_npcs | lineage_tree[/color]")
 		_:
 			_log("[color=red]Unknown command: %s[/color]" % cmd)
 
@@ -119,6 +121,22 @@ func _cmd_list_npcs() -> void:
 		var faction: String = npc.npc_data.get("faction", "?")
 		var state := Rumor.state_name(npc.get_worst_rumor_state())
 		_log("  %s (%s) [%s] — %s" % [name_s, id, faction, state])
+
+
+func _cmd_lineage_tree() -> void:
+	if _world_ref == null:
+		_log("[color=red]World not connected[/color]")
+		return
+	var engine: PropagationEngine = _world_ref.propagation_engine
+	if engine == null:
+		_log("[color=red]PropagationEngine not initialised[/color]")
+		return
+	_log("[color=cyan]── Rumor Lineage Tree ──[/color]")
+	_log("[color=yellow]Live: %d  |  Total tracked: %d[/color]" % [
+		engine.live_rumors.size(), engine.lineage.size()])
+	var summary := engine.get_lineage_summary()
+	for line in summary.split("\n"):
+		_log(line)
 
 
 # ── Internal ─────────────────────────────────────────────────────────────────

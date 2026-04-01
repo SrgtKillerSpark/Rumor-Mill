@@ -19,7 +19,8 @@ enum RumorState {
 	BELIEVE,
 	REJECT,
 	SPREAD,
-	ACT
+	ACT,
+	EXPIRED   # believability decayed to zero; stops propagating
 }
 
 var id: String
@@ -72,6 +73,17 @@ static func claim_type_from_string(s: String) -> ClaimType:
 		_:            return ClaimType.ACCUSATION
 
 
+## Returns true when shelf life has fully decayed.
+func is_expired() -> bool:
+	return current_believability <= 0.0
+
+
+## Reduce believability by one tick's worth of decay.
+## Called once per game tick by PropagationEngine.tick_decay().
+func decay_one_tick() -> void:
+	current_believability = maxf(current_believability - (1.0 / float(shelf_life_ticks)), 0.0)
+
+
 static func state_name(state: RumorState) -> String:
 	match state:
 		RumorState.UNAWARE:    return "UNAWARE"
@@ -80,6 +92,7 @@ static func state_name(state: RumorState) -> String:
 		RumorState.REJECT:     return "REJECT"
 		RumorState.SPREAD:     return "SPREAD"
 		RumorState.ACT:        return "ACT"
+		RumorState.EXPIRED:    return "EXPIRED"
 		_:                     return "UNKNOWN"
 
 

@@ -1,28 +1,35 @@
 extends Node2D
 
-## npc.gd — Sprint 2 rewrite.
-## Each NPC holds personality data, a rumor-slot state machine, a schedule of
-## waypoints, and uses A* pathfinding to move between them each game tick.
+## npc.gd — Sprint 4 rewrite: full SIR diffusion model.
+##
+## Spread uses the β formula via PropagationEngine:
+##   β = sociability_spreader × credulity_target × edge_weight × faction_mod × 2.5
+## Recovery from BELIEVE uses the γ formula:
+##   γ = loyalty × (1 − temperament) × 0.35
+## Mutations use PropagationEngine.try_mutate() (4 independent types).
+## Shelf-life expiry is detected via Rumor.is_expired() after PropagationEngine.tick_decay().
 
 const TILE_W := 64
 const TILE_H := 32
 const MOVE_SPEED := 180.0  # pixels/second
+const SPREAD_RADIUS := 8   # tiles (manhattan distance)
 
 # ── Data set by World ────────────────────────────────────────────────────────
-var npc_data: Dictionary = {}       # full row from npcs.json
+var npc_data: Dictionary = {}
 var schedule_waypoints: Array[Vector2i] = []
-var all_npcs_ref: Array = []        # reference to world's npc list (set by World)
+var all_npcs_ref: Array = []
 var social_graph_ref: SocialGraph = null
+var propagation_engine_ref: PropagationEngine = null
 
-# ── Schedule archetype (populated in init_from_data) ─────────────────────────
+# ── Schedule archetype ───────────────────────────────────────────────────────
 var archetype: NpcSchedule.ScheduleArchetype = NpcSchedule.ScheduleArchetype.INDEPENDENT
 var work_location: String = ""
 var tick_overrides: Dictionary = {}
 var day_pattern_overrides: Array = []
 var _home_cell: Vector2i = Vector2i.ZERO
-var _last_schedule_slot: int = -1  # avoids re-pathing on every tick within the same slot
+var _last_schedule_slot: int = -1
 
-# Personality shorthands (populated in init_from_data)
+# Personality shorthands
 var _credulity:   float = 0.5
 var _sociability: float = 0.5
 var _loyalty:     float = 0.5
@@ -30,7 +37,7 @@ var _temperament: float = 0.5
 
 # ── State ────────────────────────────────────────────────────────────────────
 var current_cell: Vector2i = Vector2i.ZERO
-var _path: Array[Vector2i] = []          # remaining steps to next waypoint
+var _path: Array[Vector2i] = []
 var _waypoint_index: int = 0
 var _is_moving: bool = false
 var _tween: Tween = null
@@ -77,9 +84,9 @@ func init_from_data(
 	_loyalty     = float(data.get("loyalty",      0.5))
 	_temperament = float(data.get("temperament",  0.5))
 
-	archetype            = NpcSchedule.archetype_from_string(data.get("archetype", "independent"))
-	work_location        = str(data.get("work_location", ""))
-	tick_overrides       = data.get("tick_overrides", {})
+	archetype             = NpcSchedule.archetype_from_string(data.get("archetype", "independent"))
+	work_location         = str(data.get("work_location", ""))
+	tick_overrides        = data.get("tick_overrides", {})
 	day_pattern_overrides = data.get("day_pattern_overrides", [])
 
 	var faction: String = data.get("faction", "merchant")
@@ -100,13 +107,11 @@ func on_tick(tick: int) -> void:
 
 # ── Archetype schedule ───────────────────────────────────────────────────────
 
-## Called by World before on_tick each game tick.
-## gathering_points maps location code → Vector2i grid cell.
 func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> void:
 	if _is_schedule_overridden():
 		return
 	if slot == _last_schedule_slot:
-		return  # Same slot — no re-path needed.
+		return
 	_last_schedule_slot = slot
 
 	var location_code: String = NpcSchedule.get_location(
@@ -119,9 +124,8 @@ func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> 
 	elif gathering_points.has(location_code):
 		target = gathering_points[location_code]
 	else:
-		return  # Unknown location code — keep current movement.
+		return
 
-	# Update movement path toward the new tick target.
 	schedule_waypoints = [target]
 	_waypoint_index    = 0
 	_path = _pathfinder.get_path(current_cell, target)
@@ -140,14 +144,13 @@ func _is_schedule_overridden() -> bool:
 
 func _step_movement() -> void:
 	if _is_moving:
-		return  # tween still running
+		return
 
 	if _path.is_empty():
-		# Reached current waypoint; pick the next one.
 		_advance_waypoint()
 
 	if _path.is_empty():
-		return  # no path available
+		return
 
 	var next_cell: Vector2i = _path[0]
 	_path.remove_at(0)
@@ -160,7 +163,6 @@ func _advance_waypoint() -> void:
 	_waypoint_index = (_waypoint_index + 1) % schedule_waypoints.size()
 	var target: Vector2i = schedule_waypoints[_waypoint_index]
 	_path = _pathfinder.get_path(current_cell, target)
-	# Drop the first element — it's always current_cell.
 	if _path.size() > 0 and _path[0] == current_cell:
 		_path.remove_at(0)
 
@@ -187,13 +189,18 @@ func _on_move_finished(arrived_cell: Vector2i) -> void:
 
 func hear_rumor(rumor: Rumor, source_faction: String) -> void:
 	var rid := rumor.id
+
+	# Register with the engine so it decays and appears in the lineage tree.
+	if propagation_engine_ref != null:
+		propagation_engine_ref.register_rumor(rumor)
+
 	if rumor_slots.has(rid):
 		var slot: Rumor.NpcRumorSlot = rumor_slots[rid]
-		# Already in a terminal state — ignore.
 		if slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.REJECT,
-						   Rumor.RumorState.SPREAD,  Rumor.RumorState.ACT]:
+						   Rumor.RumorState.SPREAD,  Rumor.RumorState.ACT,
+						   Rumor.RumorState.EXPIRED]:
 			return
-		# Reinforcement: heard from another source.
+		# Reinforcement from another source.
 		slot.heard_from_count += 1
 		return
 
@@ -213,6 +220,15 @@ func _process_rumor_slots(tick: int) -> void:
 		var slot: Rumor.NpcRumorSlot = rumor_slots[rid]
 		slot.ticks_in_state += 1
 
+		# ── Shelf-life expiry check ──────────────────────────────────────────
+		# PropagationEngine.tick_decay() is called before on_tick(); check result here.
+		if slot.rumor.is_expired() and slot.state not in [
+				Rumor.RumorState.REJECT, Rumor.RumorState.ACT, Rumor.RumorState.EXPIRED]:
+			slot.state = Rumor.RumorState.EXPIRED
+			slot.ticks_in_state = 0
+			print("[Rumor] %s EXPIRED '%s' (believability decayed to 0)" % [npc_name, rid])
+			continue
+
 		match slot.state:
 			Rumor.RumorState.EVALUATING:
 				_tick_evaluating(slot, npc_name, faction, rid)
@@ -223,8 +239,8 @@ func _process_rumor_slots(tick: int) -> void:
 			Rumor.RumorState.SPREAD:
 				_tick_spread(slot, npc_name, faction, rid, tick)
 
-			Rumor.RumorState.REJECT, Rumor.RumorState.ACT:
-				pass  # terminal — absorbed
+			Rumor.RumorState.REJECT, Rumor.RumorState.ACT, Rumor.RumorState.EXPIRED:
+				pass  # terminal states
 
 
 func _tick_evaluating(
@@ -239,12 +255,6 @@ func _tick_evaluating(
 	# Same-faction source bonus.
 	if slot.source_faction == faction:
 		believe_chance += 0.15
-
-	# Subject is same faction as hearer — penalty.
-	# (subject_npc_id is the id string; compare faction via world lookup if needed;
-	#  for Sprint 2 we just apply a heuristic based on the id prefix convention.)
-	# We'll skip the lookup and just apply the rule when we can derive it.
-	# This is intentionally kept simple — see Sprint 3 for richer subject lookup.
 
 	# Corroboration bonus (max +0.30 for 3+ extra sources).
 	var extra := min(slot.heard_from_count - 1, 3)
@@ -267,9 +277,18 @@ func _tick_believe(
 		npc_name: String,
 		faction: String,
 		rid: String,
-		_tick: int
+		tick: int
 ) -> void:
-	# Check ACT threshold first.
+	# ── γ: recovery check — NPC may forget/reject the rumor ──────────────────
+	if propagation_engine_ref != null:
+		var gamma := propagation_engine_ref.calc_gamma(_loyalty, _temperament)
+		if randf() < gamma:
+			slot.state = Rumor.RumorState.REJECT
+			slot.ticks_in_state = 0
+			print("[Rumor] %s RECOVERED (REJECT) '%s' (γ=%.2f)" % [npc_name, rid, gamma])
+			return
+
+	# ── ACT threshold ────────────────────────────────────────────────────────
 	var act_threshold: int = roundi(8.0 * (1.0 - _temperament))
 	if slot.ticks_in_state >= act_threshold:
 		slot.state = Rumor.RumorState.ACT
@@ -277,80 +296,85 @@ func _tick_believe(
 		print("[Rumor] %s ACT on '%s' after %d ticks" % [npc_name, rid, act_threshold])
 		return
 
-	# Try to spread.
-	var spread_chance := _sociability * 0.4
-	if randf() < spread_chance:
-		var target_npc := _find_spread_target(slot.rumor)
-		if target_npc != null:
-			target_npc.hear_rumor(slot.rumor, faction)
-			slot.state = Rumor.RumorState.SPREAD
-			slot.ticks_in_state = 0
-			print("[Rumor] %s SPREAD '%s' → %s" % [
-				npc_name, rid, target_npc.npc_data.get("name", "?")])
+	# ── β: spread attempt to each nearby neighbour ───────────────────────────
+	if _spread_to_neighbours(slot, faction, tick):
+		slot.state = Rumor.RumorState.SPREAD
+		slot.ticks_in_state = 0
 
 
 func _tick_spread(
 		slot: Rumor.NpcRumorSlot,
 		npc_name: String,
 		faction: String,
-		rid: String,
-		_tick: int
+		_rid: String,
+		tick: int
 ) -> void:
-	# Continue spreading each tick; check for twist.
-	var spread_chance := _sociability * 0.4
-	if randf() < spread_chance:
-		var target_npc := _find_spread_target(slot.rumor)
-		if target_npc != null:
-			# Possible twist.
-			var spread_rumor := slot.rumor
-			if randf() < slot.rumor.mutability * 0.2:
-				spread_rumor = _twist_rumor(slot.rumor, _tick)
-				print("[Rumor] %s TWIST '%s' → '%s'" % [npc_name, rid, spread_rumor.id])
-			target_npc.hear_rumor(spread_rumor, faction)
+	# Continue spreading each tick.
+	_spread_to_neighbours(slot, faction, tick)
 
 
-func _find_spread_target(rumor: Rumor) -> Node2D:
+# ── β spread helper ───────────────────────────────────────────────────────────
+
+## Attempt to spread slot.rumor to each nearby NPC using the β formula.
+## Returns true if at least one NPC received the rumor this tick.
+func _spread_to_neighbours(
+		slot: Rumor.NpcRumorSlot,
+		spreader_faction: String,
+		tick: int
+) -> bool:
 	if all_npcs_ref.is_empty():
-		return null
+		return false
 
-	const SPREAD_RADIUS := 8  # tiles
+	var npc_id: String = npc_data.get("id", "")
+	var neighbours: Dictionary = {}
+	if social_graph_ref != null:
+		neighbours = social_graph_ref.get_neighbours(npc_id)
 
-	var candidates: Array = []
+	var spread_happened := false
+
 	for other in all_npcs_ref:
 		if other == self:
 			continue
-		# Must be in 8-tile manhattan radius.
+
+		# Proximity gate (manhattan tiles).
 		var dist := (current_cell - other.current_cell).length()
 		if dist > SPREAD_RADIUS:
 			continue
-		# Skip if already believes or spreads.
-		var other_state := other.get_state_for_rumor(rumor.id)
-		if other_state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+
+		# Skip if already in a non-receptive state.
+		var other_state := other.get_state_for_rumor(slot.rumor.id)
+		if other_state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD,
+						   Rumor.RumorState.ACT,    Rumor.RumorState.EXPIRED]:
 			continue
-		candidates.append(other)
 
-	if candidates.is_empty():
-		return null
-	return candidates[randi() % candidates.size()]
+		# Determine edge weight (0 fallback = no direct social connection).
+		var tid: String = other.npc_data.get("id", "")
+		var edge_w: float = neighbours.get(tid, 0.2)  # 0.2 floor for proximity-only contacts
 
+		var t_credulity: float = float(other.npc_data.get("credulity", 0.5))
+		var t_faction:   String = other.npc_data.get("faction", "")
 
-func _twist_rumor(original: Rumor, tick: int) -> Rumor:
-	# Sprint 2 twist: swap subject to a random NPC id.
-	if all_npcs_ref.is_empty():
-		return original
-	var random_npc: Node2D = all_npcs_ref[randi() % all_npcs_ref.size()]
-	var new_subject: String = random_npc.npc_data.get("id", original.subject_npc_id)
-	var twisted := Rumor.create(
-		original.id + "_t",
-		new_subject,
-		original.claim_type,
-		original.intensity,
-		original.mutability,
-		tick,
-		original.shelf_life_ticks,
-		original.id
-	)
-	return twisted
+		# β formula.
+		var beta: float
+		if propagation_engine_ref != null:
+			beta = propagation_engine_ref.calc_beta(
+				_sociability, t_credulity, edge_w, spreader_faction, t_faction
+			)
+		else:
+			beta = _sociability * t_credulity * edge_w * 2.5
+
+		if randf() >= beta:
+			continue
+
+		# Roll mutations before passing the rumor on.
+		var spread_rumor := slot.rumor
+		if propagation_engine_ref != null:
+			spread_rumor = propagation_engine_ref.try_mutate(slot.rumor, tick, all_npcs_ref)
+
+		other.hear_rumor(spread_rumor, spreader_faction)
+		spread_happened = true
+
+	return spread_happened
 
 
 # ── Query helpers ────────────────────────────────────────────────────────────
@@ -362,13 +386,14 @@ func get_state_for_rumor(rumor_id: String) -> Rumor.RumorState:
 
 
 func get_worst_rumor_state() -> Rumor.RumorState:
-	# Priority order for display: ACT > SPREAD > BELIEVE > EVALUATING > REJECT > UNAWARE
+	# Priority order for display: ACT > SPREAD > BELIEVE > EVALUATING > REJECT > EXPIRED > UNAWARE
 	var priority := [
 		Rumor.RumorState.ACT,
 		Rumor.RumorState.SPREAD,
 		Rumor.RumorState.BELIEVE,
 		Rumor.RumorState.EVALUATING,
 		Rumor.RumorState.REJECT,
+		Rumor.RumorState.EXPIRED,
 		Rumor.RumorState.UNAWARE,
 	]
 	for p in priority:
