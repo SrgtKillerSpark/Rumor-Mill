@@ -46,6 +46,10 @@ var intel_store: PlayerIntelStore = null
 var reputation_system: ReputationSystem = null
 var scenario_manager:  ScenarioManager  = null
 
+## Active scenario id — change before _ready() to load a different scenario.
+## Valid values: "scenario_1", "scenario_2", "scenario_3"
+var active_scenario_id: String = "scenario_1"
+
 # Building entry-point cells derived from grid data (populated in _load_grid).
 # Keys: "manor", "tavern", "chapel", "market", "well", etc.
 var _building_entries: Dictionary = {}
@@ -78,6 +82,7 @@ func _ready() -> void:
 	_init_social_graph()
 	_init_intel_store()
 	_init_reputation_system()
+	_apply_active_scenario()
 	_wire_debug_nodes()
 
 
@@ -317,8 +322,8 @@ func _init_intel_store() -> void:
 func _init_reputation_system() -> void:
 	reputation_system = ReputationSystem.new()
 	scenario_manager  = ScenarioManager.new()
-	# Seed the cache before the first tick so UI can read it immediately.
-	reputation_system.recalculate_all(npcs, 0)
+	# recalculate_all is called by _apply_active_scenario() after loading
+	# starting reputation overrides so that the initial cache reflects them.
 	print("World: ReputationSystem and ScenarioManager initialised")
 
 
@@ -326,6 +331,78 @@ func _on_day_changed(_day: int) -> void:
 	if intel_store != null:
 		intel_store.replenish()
 		print("World: Recon actions replenished at dawn (day %d)" % _day)
+
+
+# ── Scenario data loader ─────────────────────────────────────────────────────
+
+## Loads scenarios.json, finds the entry matching active_scenario_id, and applies:
+##   1. Edge weight overrides to the social graph.
+##   2. Personality overrides to individual NPC data dictionaries.
+##   3. Starting reputation overrides to the reputation system.
+##   4. Narrative text to the scenario manager.
+## Then seeds the reputation cache so the UI has correct values at frame 0.
+func _apply_active_scenario() -> void:
+	var file := FileAccess.open("res://data/scenarios.json", FileAccess.READ)
+	if file == null:
+		push_warning("World: scenarios.json not found — using default graph weights")
+		reputation_system.recalculate_all(npcs, 0)
+		return
+
+	var parsed = JSON.parse_string(file.get_as_text())
+	file.close()
+	if not (parsed is Array):
+		push_error("World: failed to parse scenarios.json")
+		reputation_system.recalculate_all(npcs, 0)
+		return
+
+	var scenario_data: Dictionary = {}
+	for entry in parsed:
+		if entry.get("scenarioId", "") == active_scenario_id:
+			scenario_data = entry
+			break
+
+	if scenario_data.is_empty():
+		push_warning("World: scenario '%s' not found in scenarios.json" % active_scenario_id)
+		reputation_system.recalculate_all(npcs, 0)
+		return
+
+	# 1. Social graph edge overrides.
+	var edge_overrides: Array = scenario_data.get("edgeOverrides", [])
+	if social_graph != null and not edge_overrides.is_empty():
+		social_graph.apply_overrides(edge_overrides)
+		print("World: applied %d edge overrides for '%s'" % [edge_overrides.size(), active_scenario_id])
+
+	# 2. Personality overrides (patch individual NPC data dicts).
+	var personality_overrides: Array = scenario_data.get("personalityOverrides", [])
+	for po in personality_overrides:
+		var npc_id: String = po.get("npcId", "")
+		for npc in npcs:
+			if npc.npc_data.get("id", "") == npc_id:
+				for key in po:
+					if key == "npcId":
+						continue
+					npc.npc_data[key] = po[key]
+				break
+	if not personality_overrides.is_empty():
+		print("World: applied %d personality overrides for '%s'" % [personality_overrides.size(), active_scenario_id])
+
+	# 3. Starting reputations (override base_score per NPC in reputation system).
+	var starting_reps: Dictionary = scenario_data.get("startingReputations", {})
+	if reputation_system != null:
+		reputation_system.clear_base_overrides()
+		for npc_id in starting_reps:
+			reputation_system.set_base_override(npc_id, int(starting_reps[npc_id]))
+		if not starting_reps.is_empty():
+			print("World: applied %d starting reputation overrides for '%s'" % [starting_reps.size(), active_scenario_id])
+
+	# 4. Narrative text into scenario manager.
+	if scenario_manager != null:
+		scenario_manager.load_scenario_data(scenario_data)
+		print("World: loaded narrative text for '%s' — %s" % [active_scenario_id, scenario_manager.get_title()])
+
+	# Seed the reputation cache now that all overrides are in place.
+	reputation_system.recalculate_all(npcs, 0)
+	print("World: reputation cache seeded for '%s'" % active_scenario_id)
 
 
 # ── Debug node wiring ────────────────────────────────────────────────────────

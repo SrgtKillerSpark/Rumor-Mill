@@ -42,6 +42,22 @@ class ReputationSnapshot:
 
 
 # ---------------------------------------------------------------------------
+# Starting reputation overrides: npc_id → base_score (set by scenario loader).
+# ---------------------------------------------------------------------------
+var _base_overrides: Dictionary = {}
+
+
+## Override the base score for a specific NPC (used by scenario starting states).
+func set_base_override(npc_id: String, base_score: int) -> void:
+	_base_overrides[npc_id] = clampi(base_score, 0, 100)
+
+
+## Remove all base score overrides (e.g. when loading a new scenario).
+func clear_base_overrides() -> void:
+	_base_overrides.clear()
+
+
+# ---------------------------------------------------------------------------
 # Cache: npc_id → ReputationSnapshot (refreshed once per tick).
 # ---------------------------------------------------------------------------
 var _cache: Dictionary = {}
@@ -75,7 +91,7 @@ func get_all_snapshots() -> Dictionary:
 func _compute_snapshot(npc_id: String, all_npcs: Array, current_tick: int) -> ReputationSnapshot:
 	var snap := ReputationSnapshot.new()
 	snap.npc_id             = npc_id
-	snap.base_score         = 50
+	snap.base_score         = _base_overrides.get(npc_id, 50)
 	snap.last_calculated_tick = current_tick
 	snap.is_socially_dead   = false
 

@@ -74,3 +74,20 @@ func get_top_neighbours(npc_id: String, n: int = 5) -> Array:
 		pairs.append([id, neighbours[id]])
 	pairs.sort_custom(func(a, b): return a[1] > b[1])
 	return pairs.slice(0, min(n, pairs.size()))
+
+
+## Applies scenario-specific edge weight overrides after build().
+## Each entry in overrides must be a Dictionary with keys:
+##   npcA, npcB, weightAtoB, weightBtoA
+func apply_overrides(overrides: Array) -> void:
+	for ov in overrides:
+		var a: String = ov.get("npcA", "")
+		var b: String = ov.get("npcB", "")
+		if a.is_empty() or b.is_empty():
+			continue
+		var a_to_b: float = float(ov.get("weightAtoB", 0.0))
+		var b_to_a: float = float(ov.get("weightBtoA", 0.0))
+		if edges.has(a) and edges[a].has(b):
+			edges[a][b] = a_to_b
+		if edges.has(b) and edges[b].has(a):
+			edges[b][a] = b_to_a

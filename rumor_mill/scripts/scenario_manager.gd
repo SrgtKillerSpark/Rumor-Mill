@@ -13,6 +13,52 @@
 
 class_name ScenarioManager
 
+# ---------------------------------------------------------------------------
+# Narrative text (loaded from scenarios.json via load_scenario_data).
+# ---------------------------------------------------------------------------
+
+var _scenario_title:   String = ""
+var _starting_text:    String = ""
+var _victory_text:     String = ""
+var _fail_texts:       Dictionary = {}
+var _days_allowed:     int = 30
+
+
+## Load narrative fields from a scenario data dictionary (one entry from scenarios.json).
+func load_scenario_data(data: Dictionary) -> void:
+	_scenario_title = data.get("title", "")
+	_starting_text  = data.get("startingText", "")
+	_victory_text   = data.get("victoryText", "")
+	_fail_texts     = data.get("failTexts", {})
+	_days_allowed   = int(data.get("daysAllowed", 30))
+
+
+## Returns the scenario title string.
+func get_title() -> String:
+	return _scenario_title
+
+
+## Returns the premise / starting text shown at scenario start.
+func get_starting_text() -> String:
+	return _starting_text
+
+
+## Returns the victory text shown when the player wins.
+func get_victory_text() -> String:
+	return _victory_text
+
+
+## Returns a fail text by reason key (e.g. "exposed", "timeout", "calder_implicated").
+## Returns an empty string if the key is not found.
+func get_fail_text(reason: String) -> String:
+	return _fail_texts.get(reason, "")
+
+
+## Returns the number of days the player has to complete this scenario.
+func get_days_allowed() -> int:
+	return _days_allowed
+
+
 # NPC IDs used for win/fail checks.
 const EDRIC_FENN_ID  := "edric_fenn"
 const CALDER_FENN_ID := "calder_fenn"
