@@ -1,0 +1,114 @@
+[gd_scene load_steps=2 format=3 uid="uid://journal_sprint6"]
+
+[ext_resource type="Script" path="res://scripts/journal.gd" uid="uid://journal_script_sprint6" id="1_journal"]
+
+[node name="Journal" type="CanvasLayer"]
+layer = 12
+script = ExtResource("1_journal")
+
+[node name="OverlayBG" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+color = Color(0.08, 0.05, 0.03, 0.88)
+visible = false
+
+[node name="ParchmentPanel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 40.0
+offset_right = -40.0
+offset_bottom = -40.0
+visible = false
+
+[node name="ParchmentLayout" type="VBoxContainer" parent="ParchmentPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+
+[node name="TitleBar" type="HBoxContainer" parent="ParchmentPanel/ParchmentLayout"]
+custom_minimum_size = Vector2(0, 36)
+
+[node name="TitleLabel" type="Label" parent="ParchmentPanel/ParchmentLayout/TitleBar"]
+size_flags_horizontal = 3
+text = "Player Journal"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.5, 0.08, 0.08, 1.0)
+
+[node name="HintLabel" type="Label" parent="ParchmentPanel/ParchmentLayout/TitleBar"]
+size_flags_horizontal = 0
+text = "J to close"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.42, 0.34, 0.22, 1.0)
+
+[node name="CloseButton" type="Button" parent="ParchmentPanel/ParchmentLayout/TitleBar"]
+text = "×"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.5, 0.08, 0.08, 1.0)
+
+[node name="TitleSep" type="HSeparator" parent="ParchmentPanel/ParchmentLayout"]
+
+[node name="MainLayout" type="HBoxContainer" parent="ParchmentPanel/ParchmentLayout"]
+size_flags_vertical = 3
+
+[node name="Sidebar" type="VBoxContainer" parent="ParchmentPanel/ParchmentLayout/MainLayout"]
+custom_minimum_size = Vector2(155, 0)
+size_flags_vertical = 3
+
+[node name="SidebarSep" type="VSeparator" parent="ParchmentPanel/ParchmentLayout/MainLayout"]
+
+[node name="ContentScroll" type="ScrollContainer" parent="ParchmentPanel/ParchmentLayout/MainLayout"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ContentVBox" type="VBoxContainer" parent="ParchmentPanel/ParchmentLayout/MainLayout/ContentScroll"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="JournalHUDButton" type="Panel" parent="."]
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -200.0
+offset_top = 72.0
+offset_right = 0.0
+offset_bottom = 98.0
+
+[node name="HUDLabel" type="Label" parent="JournalHUDButton"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 0.0
+offset_right = -20.0
+offset_bottom = 0.0
+text = "J: Journal"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.82, 0.74, 0.58, 1.0)
+
+[node name="NotificationDot" type="ColorRect" parent="JournalHUDButton"]
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -14.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = 14.0
+color = Color(0.9, 0.15, 0.15, 1.0)
+visible = false

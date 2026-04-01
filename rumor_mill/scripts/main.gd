@@ -1,7 +1,7 @@
 extends Node2D
 
-## main.gd — Sprint 3 entry point.
-## Wires DayNightCycle tick → World, debug tools, and the Sprint 3 recon system.
+## main.gd — Sprint 6 entry point.
+## Wires DayNightCycle tick → World, debug tools, recon system, and Player Journal.
 
 @onready var world:         Node2D      = $World
 @onready var day_night:     Node        = $World/DayNightCycle
@@ -9,6 +9,7 @@ extends Node2D
 @onready var debug_console: CanvasLayer = $DebugConsole
 @onready var recon_hud:     CanvasLayer = $ReconHUD
 @onready var rumor_panel:   CanvasLayer = $RumorPanel
+@onready var journal:       CanvasLayer = $Journal
 
 
 func _ready() -> void:
@@ -28,9 +29,12 @@ func _ready() -> void:
 	# ── Sprint 3: wire reconnaissance system ──────────────────────────────
 	_init_recon_system()
 
-	print("Rumor Mill — Sprint 3 loaded.")
+	# ── Sprint 6: wire Player Journal ─────────────────────────────────────
+	_init_journal()
+
+	print("Rumor Mill — Sprint 6 loaded.")
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph")
-	print("  R: open/close Rumor Crafting Panel 1 (Subject Selection)")
+	print("  R: Rumor Crafting Panel  |  J: Player Journal")
 	print("  Right-click building: Observe  |  Right-click NPC: Eavesdrop")
 
 
@@ -60,3 +64,15 @@ func _init_recon_system() -> void:
 		recon_ctrl.action_performed.connect(recon_hud.show_toast)
 
 	print("Main: recon system wired (intel_store + controller + HUD + panel)")
+
+
+func _init_journal() -> void:
+	if journal == null:
+		push_error("Main: $Journal node not found — journal not wired")
+		return
+
+	var intel_store: PlayerIntelStore = world.intel_store
+	if journal.has_method("setup"):
+		journal.setup(world, intel_store, day_night)
+
+	print("Main: Player Journal wired (J to open)")
