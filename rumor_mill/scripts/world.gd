@@ -597,7 +597,7 @@ func inject_rumor(target_npc_id: String, claim_type_str: String, intensity: int)
 	if not candidates.is_empty():
 		subject_npc = candidates[randi() % candidates.size()]
 
-	var subject_id := subject_npc.npc_data.get("id", "unknown") if subject_npc != null else "unknown"
+	var subject_id: String = subject_npc.npc_data.get("id", "unknown") if subject_npc != null else "unknown"
 	var rumor_id   := "r_%s_%d" % [claim_type_str.to_lower(), Time.get_ticks_msec()]
 
 	var tick := 0

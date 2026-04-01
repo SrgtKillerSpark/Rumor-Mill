@@ -88,7 +88,7 @@ func _cmd_inject_rumor(parts: Array) -> void:
 		_log("[color=red]World not connected[/color]")
 		return
 
-	var result := _world_ref.inject_rumor(npc_id, claim_str, intensity)
+	var result: String = _world_ref.inject_rumor(npc_id, claim_str, intensity)
 	if result.is_empty():
 		_log("[color=red]inject_rumor failed — check npc_id and claim_type[/color]")
 	else:

@@ -113,7 +113,7 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 
 		for tid in neighbours:
 			# Draw each pair only once.
-			var key: String := nid + "|" + tid if nid < tid else tid + "|" + nid
+			var key: String = nid + "|" + tid if nid < tid else tid + "|" + nid
 			if drawn.has(key):
 				continue
 			drawn[key] = true
@@ -137,9 +137,9 @@ func _draw_nodes(npcs: Array) -> void:
 	for npc in npcs:
 		var screen_pos := _world_to_screen(npc.global_position)
 		var faction: String = npc.npc_data.get("faction", "merchant")
-		var fill: Color := FACTION_FILL.get(faction, Color.GRAY)
-		var state: int := npc.get_worst_rumor_state()
-		var ring: Color := STATE_RING_COLOR.get(state, Color.TRANSPARENT)
+		var fill: Color = FACTION_FILL.get(faction, Color.GRAY)
+		var state: int = npc.get_worst_rumor_state()
+		var ring: Color = STATE_RING_COLOR.get(state, Color.TRANSPARENT)
 
 		# Filled node.
 		_draw_node.draw_circle(screen_pos, NODE_RADIUS, fill)

@@ -550,7 +550,7 @@ func _estimate_spread(seed_npc: Node2D) -> float:
 	for npc in _world_ref.npcs:
 		if npc == seed_npc:
 			continue
-		var dist := abs(npc.current_cell.x - seed_npc.current_cell.x) \
+		var dist: int = abs(npc.current_cell.x - seed_npc.current_cell.x) \
 		          + abs(npc.current_cell.y - seed_npc.current_cell.y)
 		if dist <= SPREAD_RADIUS:
 			var soc: float = float(npc.npc_data.get("sociability", 0.5))

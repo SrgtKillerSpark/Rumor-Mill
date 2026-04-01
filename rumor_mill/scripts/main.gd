@@ -87,7 +87,7 @@ func _init_recon_system() -> void:
 
 	# ReconController: input handler — created programmatically so it sits in
 	# the scene tree and receives _unhandled_input events.
-	var recon_ctrl := preload("res://scripts/recon_controller.gd").new()
+	var recon_ctrl: Node = preload("res://scripts/recon_controller.gd").new()
 	recon_ctrl.name = "ReconController"
 	add_child(recon_ctrl)
 	recon_ctrl.setup(world, intel_store)

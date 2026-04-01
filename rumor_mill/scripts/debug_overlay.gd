@@ -84,8 +84,8 @@ func _on_draw() -> void:
 
 func _draw_state_badges(npcs: Array) -> void:
 	for npc in npcs:
-		var state: int := npc.get_worst_rumor_state()
-		var color: Color := STATE_COLORS.get(state, Color.GRAY)
+		var state: int = npc.get_worst_rumor_state()
+		var color: Color = STATE_COLORS.get(state, Color.GRAY)
 		var world_pos: Vector2 = npc.global_position + Vector2(0, -22)
 		var vp_pos: Vector2 = _world_to_screen(world_pos)
 		_draw_node.draw_rect(Rect2(vp_pos - Vector2(5, 5), Vector2(10, 10)), color)
