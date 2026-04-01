@@ -63,6 +63,10 @@ zoom_out={
 ]
 }
 
+[autoload]
+
+AudioManager="*res://scripts/audio_manager.gd"
+
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0

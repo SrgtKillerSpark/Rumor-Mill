@@ -3,7 +3,7 @@ extends Node2D
 ## main.gd — Sprint 6/7 entry point.
 ## Wires DayNightCycle tick → World, debug tools, recon system, Player Journal,
 ## Social Graph Overlay, Scenario 3 HUD, Sprint 7 Tutorial Tooltip system,
-## and Sprint 6 End Screen overlay.
+## Sprint 6 End Screen overlay, and Sprint 7 AudioManager.
 
 @onready var world:                Node2D      = $World
 @onready var day_night:            Node        = $World/DayNightCycle
@@ -59,6 +59,9 @@ func _ready() -> void:
 	# ── Sprint 6: wire End Screen ─────────────────────────────────────────
 	_init_end_screen()
 
+	# ── Sprint 7: wire AudioManager ───────────────────────────────────────
+	_init_audio()
+
 	print("Rumor Mill — Sprint 6/7 loaded.")
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph (debug)  |  F4: lineage tree")
 	print("  G: Social Graph Overlay  |  R: Rumor Crafting Panel  |  J: Player Journal")
@@ -96,6 +99,9 @@ func _init_recon_system() -> void:
 	# Pipe action results to the tutorial system (observe / eavesdrop tooltips).
 	recon_ctrl.action_performed.connect(_on_recon_action_for_tutorial)
 
+	# Pipe action results to AudioManager (recon SFX).
+	recon_ctrl.action_performed.connect(AudioManager.on_recon_action)
+
 	print("Main: recon system wired (intel_store + controller + HUD + 3-panel rumor modal)")
 
 
@@ -120,6 +126,7 @@ func _on_rumor_seeded(
 ) -> void:
 	print("Main: rumor seeded — id=%s claim=%s about=%s via=%s" % [
 		rumor_id, claim_id, subject_name, seed_target_name])
+	AudioManager.on_rumor_seeded(rumor_id, subject_name, claim_id, seed_target_name)
 	if journal != null and journal.has_method("push_timeline_event"):
 		journal.push_timeline_event(
 			"Seeded rumor [%s] about %s — whispered to %s" % [
@@ -204,3 +211,25 @@ func _init_end_screen() -> void:
 	add_child(_end_screen)
 	_end_screen.setup(world, day_night)
 	print("Main: End Screen wired")
+
+
+# ── Sprint 7: Audio ────────────────────────────────────────────────────────────
+
+func _init_audio() -> void:
+	# Connect ambient crossfade + new_day SFX to the day/night clock.
+	AudioManager.connect_to_day_night(day_night)
+
+	# Connect scenario win/fail events so AudioManager can play stings.
+	var sm: ScenarioManager = world.scenario_manager
+	if sm != null:
+		sm.scenario_resolved.connect(_on_scenario_resolved_audio)
+
+	print("AudioManager: wired into main scene")
+
+
+## Relay scenario_resolved to AudioManager win/fail stings.
+func _on_scenario_resolved_audio(scenario_id: int, state: ScenarioManager.ScenarioState) -> void:
+	if state == ScenarioManager.ScenarioState.WON:
+		AudioManager.on_win()
+	elif state == ScenarioManager.ScenarioState.FAILED:
+		AudioManager.on_fail()
