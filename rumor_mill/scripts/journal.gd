@@ -439,9 +439,16 @@ func _build_intel_section() -> void:
 						_tick_to_day_str(obs_entry["tick"])
 					])
 
-		# Locked fields.
+		# Locked fields + live reputation (debug-visible per design doc Sprint 3 note).
 		var locked := Label.new()
-		locked.text = "  Personality: [locked until Bribe action]\n  Reputation: [locked until Bribe action]"
+		var rep_text := "  Reputation: [locked until Bribe action]"
+		if _world_ref != null and "reputation_system" in _world_ref and _world_ref.reputation_system != null:
+			var snap: ReputationSystem.ReputationSnapshot = _world_ref.reputation_system.get_snapshot(npc_id)
+			if snap != null:
+				var band := ReputationSystem.score_label(snap.score)
+				var dead_tag := " [SOCIALLY DEAD]" if snap.is_socially_dead else ""
+				rep_text = "  Reputation: %d / 100  — %s%s" % [snap.score, band, dead_tag]
+		locked.text = "  Personality: [locked until Bribe action]\n" + rep_text
 		locked.add_theme_font_size_override("font_size", 10)
 		locked.add_theme_color_override("font_color", C_LOCKED)
 		_content_vbox.add_child(locked)
@@ -606,18 +613,34 @@ func _build_timeline_section() -> void:
 func _build_objectives_section() -> void:
 	_add_section_header("Objectives")
 
-	# Scenario header.
-	var scenario_lbl := Label.new()
-	scenario_lbl.text = "Scenario 1: The Alderman's Ruin"
-	scenario_lbl.add_theme_font_size_override("font_size", 14)
-	scenario_lbl.add_theme_color_override("font_color", C_HEADING)
-	_content_vbox.add_child(scenario_lbl)
+	var days_elapsed:   int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
+	var days_remaining: int = max(0, 30 - days_elapsed)
 
-	var days_elapsed:    int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
-	var days_remaining:  int = max(0, 30 - days_elapsed)
+	# Pull reputation snapshots (may be null early in game).
+	var rep: ReputationSystem = null
+	var sm:  ScenarioManager  = null
+	if _world_ref != null and "reputation_system" in _world_ref:
+		rep = _world_ref.reputation_system
+	if _world_ref != null and "scenario_manager" in _world_ref:
+		sm = _world_ref.scenario_manager
+
+	var edric_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("edric_fenn")  if rep != null else null
+	var calder_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("calder_fenn") if rep != null else null
+	var tomas_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("tomas_reeve") if rep != null else null
+
+	var s1_state := ScenarioManager.ScenarioState.ACTIVE
+	if sm != null:
+		s1_state = sm.scenario_1_state
+
+	# ── Scenario 1 ────────────────────────────────────────────────────────
+	var s1_lbl := Label.new()
+	s1_lbl.text = "Scenario 1: The Alderman's Ruin"
+	s1_lbl.add_theme_font_size_override("font_size", 14)
+	s1_lbl.add_theme_color_override("font_color", C_HEADING)
+	_content_vbox.add_child(s1_lbl)
 
 	var days_lbl := Label.new()
-	days_lbl.text = "Days remaining: %d" % days_remaining
+	days_lbl.text = "Days remaining: %d / 30" % days_remaining
 	days_lbl.add_theme_font_size_override("font_size", 11)
 	days_lbl.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(days_lbl)
@@ -631,14 +654,31 @@ func _build_objectives_section() -> void:
 	win_hdr.add_theme_color_override("font_color", C_SPREADING)
 	_content_vbox.add_child(win_hdr)
 
+	var edric_score_str := "50"
+	var edric_band_str  := "Respected"
+	if edric_snap != null:
+		edric_score_str = str(edric_snap.score)
+		edric_band_str  = ReputationSystem.score_label(edric_snap.score)
+
+	var s1_win_status := "[ACTIVE]"
+	var s1_win_color  := C_BODY
+	match s1_state:
+		ScenarioManager.ScenarioState.WON:
+			s1_win_status = "[WON]"
+			s1_win_color  = C_SPREADING
+		ScenarioManager.ScenarioState.FAILED:
+			s1_win_status = "[FAILED]"
+			s1_win_color  = C_CONTRADICTED
+
 	var win_body := Label.new()
 	win_body.text = (
-		"  Lord Edric Fenn resigns, is removed, or loses faction confidence.\n"
-		+ "  (Scenario win/fail tracking pending Sprint 6 scenario layer.)"
-	)
+		"  Lord Edric Fenn reputation drops below 25.\n"
+		+ "  Current:  %s / 100  — %s  %s\n"
+		+ "  Target:   < 25 (Disgraced — faction loyalty collapses)"
+	) % [edric_score_str, edric_band_str, s1_win_status]
 	win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	win_body.add_theme_font_size_override("font_size", 11)
-	win_body.add_theme_color_override("font_color", C_BODY)
+	win_body.add_theme_color_override("font_color", s1_win_color)
 	_content_vbox.add_child(win_body)
 
 	_content_vbox.add_child(HSeparator.new())
@@ -653,12 +693,45 @@ func _build_objectives_section() -> void:
 	var fail_body := Label.new()
 	fail_body.text = (
 		"  [ ] Identified as rumor source by Sergeant Bram — suspicion: LOW\n"
-		+ "  [ ] %d days elapsed without win condition  (days remaining: %d)" % [30, days_remaining]
-	)
+		+ "  [ ] %d days elapsed without win condition  (days remaining: %d)"
+	) % [30, days_remaining]
 	fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	fail_body.add_theme_font_size_override("font_size", 11)
 	fail_body.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(fail_body)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	# ── Scenario 3 preview ────────────────────────────────────────────────
+	var s3_lbl := Label.new()
+	s3_lbl.text = "Scenario 3: The Succession  (upcoming)"
+	s3_lbl.add_theme_font_size_override("font_size", 14)
+	s3_lbl.add_theme_color_override("font_color", C_HEADING)
+	_content_vbox.add_child(s3_lbl)
+
+	var calder_score_str := "50"
+	var calder_band_str  := "Respected"
+	if calder_snap != null:
+		calder_score_str = str(calder_snap.score)
+		calder_band_str  = ReputationSystem.score_label(calder_snap.score)
+
+	var tomas_score_str := "50"
+	var tomas_band_str  := "Respected"
+	if tomas_snap != null:
+		tomas_score_str = str(tomas_snap.score)
+		tomas_band_str  = ReputationSystem.score_label(tomas_snap.score)
+
+	var s3_body := Label.new()
+	s3_body.text = (
+		"  WIN:  Calder Fenn \u2265 80  AND  Tomas Reeve \u2264 30\n"
+		+ "  FAIL: Calder Fenn < 40\n\n"
+		+ "  Calder Fenn:   %s / 100  — %s  (target: \u226580)\n"
+		+ "  Tomas Reeve:   %s / 100  — %s  (target: \u226430)"
+	) % [calder_score_str, calder_band_str, tomas_score_str, tomas_band_str]
+	s3_body.autowrap_mode = TextServer.AUTOWRAP_WORD
+	s3_body.add_theme_font_size_override("font_size", 11)
+	s3_body.add_theme_color_override("font_color", C_BODY)
+	_content_vbox.add_child(s3_body)
 
 
 # ── Notification dot ──────────────────────────────────────────────────────────

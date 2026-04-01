@@ -42,6 +42,10 @@ var _pathfinder:   AstarPathfinder = null
 ## Sprint 3: player intelligence store (shared with ReconController + UI).
 var intel_store: PlayerIntelStore = null
 
+## Sprint 6: reputation system and scenario evaluator.
+var reputation_system: ReputationSystem = null
+var scenario_manager:  ScenarioManager  = null
+
 # Building entry-point cells derived from grid data (populated in _load_grid).
 # Keys: "manor", "tavern", "chapel", "market", "well", etc.
 var _building_entries: Dictionary = {}
@@ -73,6 +77,7 @@ func _ready() -> void:
 	_spawn_npcs()
 	_init_social_graph()
 	_init_intel_store()
+	_init_reputation_system()
 	_wire_debug_nodes()
 
 
@@ -307,6 +312,16 @@ func _init_intel_store() -> void:
 	print("World: PlayerIntelStore initialised (%d daily actions)" % PlayerIntelStore.MAX_DAILY_ACTIONS)
 
 
+# ── Reputation system ────────────────────────────────────────────────────────
+
+func _init_reputation_system() -> void:
+	reputation_system = ReputationSystem.new()
+	scenario_manager  = ScenarioManager.new()
+	# Seed the cache before the first tick so UI can read it immediately.
+	reputation_system.recalculate_all(npcs, 0)
+	print("World: ReputationSystem and ScenarioManager initialised")
+
+
 func _on_day_changed(_day: int) -> void:
 	if intel_store != null:
 		intel_store.replenish()
@@ -354,6 +369,12 @@ func _recursive_find(node: Node, class_tag: String) -> Node:
 # ── Tick ─────────────────────────────────────────────────────────────────────
 
 func on_game_tick(tick: int) -> void:
+	# ── Reputation: recalculate all snapshots BEFORE state transitions fire. ──
+	if reputation_system != null:
+		reputation_system.recalculate_all(npcs, tick)
+	if scenario_manager != null and reputation_system != null:
+		scenario_manager.evaluate(reputation_system, tick)
+
 	# Map continuous tick to a 0–5 schedule slot.
 	var tpd: int = day_night.ticks_per_day if day_night != null else 24
 	var hour_of_day: int = tick % tpd

@@ -1,7 +1,8 @@
 extends Node2D
 
 ## main.gd — Sprint 6 entry point.
-## Wires DayNightCycle tick → World, debug tools, recon system, and Player Journal.
+## Wires DayNightCycle tick → World, debug tools, recon system, Player Journal,
+## and the Sprint 6 Scenario 3 HUD.
 
 @onready var world:         Node2D      = $World
 @onready var day_night:     Node        = $World/DayNightCycle
@@ -31,6 +32,9 @@ func _ready() -> void:
 
 	# ── Sprint 6: wire Player Journal ─────────────────────────────────────
 	_init_journal()
+
+	# ── Sprint 6: wire Scenario 3 HUD ─────────────────────────────────────
+	_init_scenario3_hud()
 
 	print("Rumor Mill — Sprint 6 loaded.")
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph")
@@ -76,3 +80,13 @@ func _init_journal() -> void:
 		journal.setup(world, intel_store, day_night)
 
 	print("Main: Player Journal wired (J to open)")
+
+
+func _init_scenario3_hud() -> void:
+	# Build the Scenario 3 dual-track HUD programmatically (no .tscn required).
+	var hud := preload("res://scripts/scenario3_hud.gd").new()
+	hud.name = "Scenario3HUD"
+	add_child(hud)
+	if hud.has_method("setup"):
+		hud.setup(world, day_night)
+	print("Main: Scenario 3 HUD wired")
