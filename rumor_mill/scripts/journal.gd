@@ -258,7 +258,8 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 				Rumor.RumorState.EVALUATING:
 					prop_path.append(nname + " [eval]")
 
-	var journal_status: String = _rumor_journal_status(rumor, spreaders, believers)
+	var is_contradicted: bool  = _is_contradicted(rumor, spreaders)
+	var journal_status: String = _rumor_journal_status(rumor, spreaders, believers, is_contradicted)
 	var status_color:   Color  = _rumor_status_color(journal_status)
 	var subject_name:   String = npc_names.get(rumor.subject_npc_id, rumor.subject_npc_id)
 	var claim_str:      String = Rumor.ClaimType.keys()[rumor.claim_type].capitalize()
@@ -326,9 +327,31 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 	_content_vbox.add_child(HSeparator.new())
 
 
-func _rumor_journal_status(rumor: Rumor, spreaders: int, believers: int) -> String:
+func _is_contradicted(rumor: Rumor, spreaders: int) -> bool:
+	## A rumor is CONTRADICTED when it is itself actively spreading AND another
+	## rumor about the same subject NPC with opposite sentiment is also spreading.
+	if spreaders == 0 or _world_ref == null:
+		return false
+	var this_positive: bool = Rumor.is_positive_claim(rumor.claim_type)
+	for npc in _world_ref.npcs:
+		for rid in npc.rumor_slots:
+			if rid == rumor.id:
+				continue
+			var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+			if slot.state != Rumor.RumorState.SPREAD:
+				continue
+			if slot.rumor.subject_npc_id != rumor.subject_npc_id:
+				continue
+			if Rumor.is_positive_claim(slot.rumor.claim_type) != this_positive:
+				return true
+	return false
+
+
+func _rumor_journal_status(rumor: Rumor, spreaders: int, believers: int, is_contradicted: bool = false) -> String:
 	if rumor.current_believability < 0.05:
 		return "EXPIRED"
+	if is_contradicted:
+		return "CONTRADICTED"
 	if spreaders > 0:
 		return "SPREADING"
 	if believers > 0:

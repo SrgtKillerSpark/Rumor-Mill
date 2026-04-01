@@ -441,10 +441,11 @@ func get_state_for_rumor(rumor_id: String) -> Rumor.RumorState:
 
 
 func get_worst_rumor_state() -> Rumor.RumorState:
-	# Priority order for display: ACT > SPREAD > BELIEVE > EVALUATING > REJECT > EXPIRED > UNAWARE
+	# Priority order for display: ACT > SPREAD > CONTRADICTED > BELIEVE > EVALUATING > REJECT > EXPIRED > UNAWARE
 	var priority := [
 		Rumor.RumorState.ACT,
 		Rumor.RumorState.SPREAD,
+		Rumor.RumorState.CONTRADICTED,
 		Rumor.RumorState.BELIEVE,
 		Rumor.RumorState.EVALUATING,
 		Rumor.RumorState.REJECT,

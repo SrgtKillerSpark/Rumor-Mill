@@ -20,6 +20,7 @@ enum RumorState {
 	REJECT,
 	SPREAD,
 	ACT,
+	CONTRADICTED, # subject has conflicting opposite-sentiment rumors both actively spreading
 	EXPIRED   # believability decayed to zero; stops propagating
 }
 
@@ -86,14 +87,21 @@ func decay_one_tick() -> void:
 
 static func state_name(state: RumorState) -> String:
 	match state:
-		RumorState.UNAWARE:    return "UNAWARE"
-		RumorState.EVALUATING: return "EVALUATING"
-		RumorState.BELIEVE:    return "BELIEVE"
-		RumorState.REJECT:     return "REJECT"
-		RumorState.SPREAD:     return "SPREAD"
-		RumorState.ACT:        return "ACT"
-		RumorState.EXPIRED:    return "EXPIRED"
-		_:                     return "UNKNOWN"
+		RumorState.UNAWARE:      return "UNAWARE"
+		RumorState.EVALUATING:   return "EVALUATING"
+		RumorState.BELIEVE:      return "BELIEVE"
+		RumorState.REJECT:       return "REJECT"
+		RumorState.SPREAD:       return "SPREAD"
+		RumorState.ACT:          return "ACT"
+		RumorState.CONTRADICTED: return "CONTRADICTED"
+		RumorState.EXPIRED:      return "EXPIRED"
+		_:                       return "UNKNOWN"
+
+
+## Returns true for claim types with positive sentiment (PRAISE).
+## All other claim types are treated as negative sentiment.
+static func is_positive_claim(ct: ClaimType) -> bool:
+	return ct == ClaimType.PRAISE
 
 
 # ---------------------------------------------------------------------------
