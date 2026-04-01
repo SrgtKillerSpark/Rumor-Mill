@@ -1,6 +1,6 @@
 extends Node2D
 
-## main.gd — Sprint 6 entry point.
+## main.gd — Sprint 6 entry point (Sprint 3 Rumor Crafting UI added).
 ## Wires DayNightCycle tick → World, debug tools, recon system, Player Journal,
 ## and the Sprint 6 Scenario 3 HUD.
 
@@ -52,9 +52,12 @@ func _init_recon_system() -> void:
 	if recon_hud != null and recon_hud.has_method("setup"):
 		recon_hud.setup(intel_store, rumor_panel)
 
-	# RumorPanel (Panel 1): subject selection with relationship intel.
+	# RumorPanel: 3-panel crafting modal (Subject → Claim → Seed Target).
 	if rumor_panel != null and rumor_panel.has_method("setup"):
 		rumor_panel.setup(world, intel_store)
+	# Log each successfully seeded rumor to the journal timeline.
+	if rumor_panel != null and journal != null:
+		rumor_panel.rumor_seeded.connect(_on_rumor_seeded)
 
 	# ReconController: input handler — created programmatically so it sits in
 	# the scene tree and receives _unhandled_input events.
@@ -67,7 +70,7 @@ func _init_recon_system() -> void:
 	if recon_hud != null and recon_hud.has_method("show_toast"):
 		recon_ctrl.action_performed.connect(recon_hud.show_toast)
 
-	print("Main: recon system wired (intel_store + controller + HUD + panel)")
+	print("Main: recon system wired (intel_store + controller + HUD + 3-panel rumor modal)")
 
 
 func _init_journal() -> void:
@@ -80,6 +83,23 @@ func _init_journal() -> void:
 		journal.setup(world, intel_store, day_night)
 
 	print("Main: Player Journal wired (J to open)")
+
+
+## Called when the player successfully seeds a rumor via the crafting panel.
+func _on_rumor_seeded(
+		rumor_id: String,
+		subject_name: String,
+		claim_id: String,
+		seed_target_name: String
+) -> void:
+	print("Main: rumor seeded — id=%s claim=%s about=%s via=%s" % [
+		rumor_id, claim_id, subject_name, seed_target_name])
+	if journal != null and journal.has_method("push_timeline_event"):
+		journal.push_timeline_event(
+			"Seeded rumor [%s] about %s — whispered to %s" % [
+				claim_id, subject_name, seed_target_name
+			]
+		)
 
 
 func _init_scenario3_hud() -> void:

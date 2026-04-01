@@ -386,6 +386,95 @@ func on_game_tick(tick: int) -> void:
 		npc.on_tick(tick)
 
 
+# ── Claims data ─────────────────────────────────────────────────────────────
+
+## Cached claims list loaded once from data/claims.json.
+var _claims_data: Array = []
+
+## Returns the full claims array, loading it on first call.
+func get_claims() -> Array:
+	if _claims_data.is_empty():
+		var file := FileAccess.open("res://data/claims.json", FileAccess.READ)
+		if file == null:
+			push_error("World: cannot open claims.json")
+			return []
+		var parsed = JSON.parse_string(file.get_as_text())
+		file.close()
+		if parsed is Array:
+			_claims_data = parsed
+	return _claims_data
+
+
+# ── Public API: seed_rumor_from_player ───────────────────────────────────────
+
+## Called by the Rumor Crafting UI. Consumes one Whisper Token.
+## subject_npc_id:    the NPC the rumor is about.
+## claim_id:          claims.json id string (e.g. "ACC-01").
+## seed_target_npc_id: the NPC the player whispers the rumor to.
+## Returns the new rumor id on success, "" on failure.
+func seed_rumor_from_player(
+		subject_npc_id:    String,
+		claim_id:          String,
+		seed_target_npc_id: String
+) -> String:
+	if intel_store == null or not intel_store.try_spend_whisper():
+		push_warning("World.seed_rumor_from_player: no Whisper Tokens remaining")
+		return ""
+
+	# Resolve NPCs.
+	var subject_npc:     Node2D = null
+	var seed_target_npc: Node2D = null
+	for npc in npcs:
+		var nid: String = npc.npc_data.get("id", "")
+		if nid == subject_npc_id:
+			subject_npc = npc
+		if nid == seed_target_npc_id:
+			seed_target_npc = npc
+
+	if subject_npc == null or seed_target_npc == null:
+		push_warning("World.seed_rumor_from_player: NPC not found (subject=%s seed=%s)" % [
+			subject_npc_id, seed_target_npc_id])
+		# Refund token if we can't proceed.
+		intel_store.whisper_tokens_remaining = mini(
+			intel_store.whisper_tokens_remaining + 1,
+			PlayerIntelStore.MAX_DAILY_WHISPERS)
+		return ""
+
+	# Find the claim template.
+	var claim_template: Dictionary = {}
+	for c in get_claims():
+		if c.get("id", "") == claim_id:
+			claim_template = c
+			break
+
+	if claim_template.is_empty():
+		push_warning("World.seed_rumor_from_player: claim '%s' not found" % claim_id)
+		intel_store.whisper_tokens_remaining = mini(
+			intel_store.whisper_tokens_remaining + 1,
+			PlayerIntelStore.MAX_DAILY_WHISPERS)
+		return ""
+
+	var claim_type := Rumor.claim_type_from_string(claim_template.get("type", "accusation"))
+	var intensity:   int   = int(claim_template.get("intensity",  3))
+	var mutability:  float = float(claim_template.get("mutability", 3)) / 5.0
+
+	var tick: int = 0
+	if day_night != null:
+		tick = day_night.current_tick
+
+	var rumor_id := "rp_%s_%d" % [claim_id.to_lower(), Time.get_ticks_msec()]
+	var rumor    := Rumor.create(rumor_id, subject_npc_id, claim_type, intensity, mutability, tick)
+
+	var source_faction: String = seed_target_npc.npc_data.get("faction", "")
+	seed_target_npc.hear_rumor(rumor, source_faction)
+
+	print("[World] seed_rumor_from_player '%s' claim=%s intensity=%d → %s about %s" % [
+		rumor_id, claim_id, intensity,
+		seed_target_npc.npc_data.get("name", "?"),
+		subject_npc.npc_data.get("name", "?")])
+	return rumor_id
+
+
 # ── Public API: inject_rumor ─────────────────────────────────────────────────
 
 ## Called by DebugConsole. Returns the rumor id string on success, "" on failure.

@@ -4,9 +4,11 @@
 
 class_name PlayerIntelStore
 
-const MAX_DAILY_ACTIONS := 3
+const MAX_DAILY_ACTIONS  := 3
+const MAX_DAILY_WHISPERS := 1
 
-var recon_actions_remaining: int = MAX_DAILY_ACTIONS
+var recon_actions_remaining:   int = MAX_DAILY_ACTIONS
+var whisper_tokens_remaining:  int = MAX_DAILY_WHISPERS
 
 ## location_id (building name string) → Array[LocationIntel]
 var location_intel: Dictionary = {}
@@ -90,9 +92,18 @@ func try_spend_action() -> bool:
 	return true
 
 
+## Attempt to spend one whisper token. Returns false if none remain.
+func try_spend_whisper() -> bool:
+	if whisper_tokens_remaining <= 0:
+		return false
+	whisper_tokens_remaining -= 1
+	return true
+
+
 ## Called at dawn (day_changed signal) to restore the daily budget.
 func replenish() -> void:
-	recon_actions_remaining = MAX_DAILY_ACTIONS
+	recon_actions_remaining  = MAX_DAILY_ACTIONS
+	whisper_tokens_remaining = MAX_DAILY_WHISPERS
 
 
 # ---------------------------------------------------------------------------

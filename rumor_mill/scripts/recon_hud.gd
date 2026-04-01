@@ -75,4 +75,13 @@ func _refresh_counter() -> void:
 	var max_val:   int  = PlayerIntelStore.MAX_DAILY_ACTIONS
 	var filled := "*".repeat(remaining)
 	var empty  := "-".repeat(max_val - remaining)
-	counter_label.text = "Recon [%s%s]  %d/%d" % [filled, empty, remaining, max_val]
+
+	var whispers: int     = _intel_store_ref.whisper_tokens_remaining
+	var max_w:    int     = PlayerIntelStore.MAX_DAILY_WHISPERS
+	var w_filled := "W".repeat(whispers)
+	var w_empty  := "_".repeat(max_w - whispers)
+
+	counter_label.text = "Recon [%s%s]  %d/%d   Whisper [%s%s]  %d/%d" % [
+		filled, empty, remaining, max_val,
+		w_filled, w_empty, whispers, max_w
+	]
