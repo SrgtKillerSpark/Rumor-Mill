@@ -1,16 +1,17 @@
 extends Node2D
 
-## main.gd — Sprint 7 entry point.
+## main.gd — Sprint 6/7 entry point.
 ## Wires DayNightCycle tick → World, debug tools, recon system, Player Journal,
-## Scenario 3 HUD, and the Sprint 7 Tutorial Tooltip system.
+## Social Graph Overlay, Scenario 3 HUD, and the Sprint 7 Tutorial Tooltip system.
 
-@onready var world:         Node2D      = $World
-@onready var day_night:     Node        = $World/DayNightCycle
-@onready var debug_overlay: CanvasLayer = $DebugOverlay
-@onready var debug_console: CanvasLayer = $DebugConsole
-@onready var recon_hud:     CanvasLayer = $ReconHUD
-@onready var rumor_panel:   CanvasLayer = $RumorPanel
-@onready var journal:       CanvasLayer = $Journal
+@onready var world:                Node2D      = $World
+@onready var day_night:            Node        = $World/DayNightCycle
+@onready var debug_overlay:        CanvasLayer = $DebugOverlay
+@onready var debug_console:        CanvasLayer = $DebugConsole
+@onready var recon_hud:            CanvasLayer = $ReconHUD
+@onready var rumor_panel:          CanvasLayer = $RumorPanel
+@onready var journal:              CanvasLayer = $Journal
+@onready var social_graph_overlay: CanvasLayer = $SocialGraphOverlay
 
 # ── Sprint 7: tutorial system (created programmatically) ──────────────────────
 var _tutorial_sys: TutorialSystem = null
@@ -28,6 +29,10 @@ func _ready() -> void:
 	# Wire debug tools (World also self-wires, but doing it here is more robust).
 	if debug_overlay != null and debug_overlay.has_method("set_world"):
 		debug_overlay.set_world(world)
+
+	# ── Sprint 6: Social Graph Overlay ────────────────────────────────────
+	if social_graph_overlay != null and social_graph_overlay.has_method("set_world"):
+		social_graph_overlay.set_world(world)
 
 	if debug_console != null:
 		if debug_console.has_method("set_world"):
@@ -47,9 +52,9 @@ func _ready() -> void:
 	# ── Sprint 7: wire Tutorial Tooltip system ────────────────────────────
 	_init_tutorial_system()
 
-	print("Rumor Mill — Sprint 7 loaded.")
-	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph")
-	print("  R: Rumor Crafting Panel  |  J: Player Journal")
+	print("Rumor Mill — Sprint 6/7 loaded.")
+	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph (debug)  |  F4: lineage tree")
+	print("  G: Social Graph Overlay  |  R: Rumor Crafting Panel  |  J: Player Journal")
 	print("  Right-click building: Observe  |  Right-click NPC: Eavesdrop")
 
 
