@@ -19,6 +19,11 @@ func _ready() -> void:
 	# Start camera centered over the town (approx middle of 48x48 isometric grid).
 	# Isometric 48x48 at 64x32 tile size: centre ≈ (48*32, 48*16) = (1536, 768)
 	position = Vector2(1536, 768)
+	# Clamp camera to town extents so the player cannot pan into the void.
+	limit_left   = 0
+	limit_top    = 0
+	limit_right  = 3072   # 48 * 64 px (tile width)
+	limit_bottom = 1536   # 48 * 32 px (tile height)
 
 
 func _process(delta: float) -> void:
