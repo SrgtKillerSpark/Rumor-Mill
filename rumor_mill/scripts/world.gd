@@ -1,6 +1,6 @@
 extends Node2D
 
-## world.gd — Sprint 2 rewrite.
+## world.gd — Sprint 3 update (recon system added).
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -39,6 +39,9 @@ var walkable_cells: Array[Vector2i] = []
 var social_graph:  SocialGraph     = null
 var _pathfinder:   AstarPathfinder = null
 
+## Sprint 3: player intelligence store (shared with ReconController + UI).
+var intel_store: PlayerIntelStore = null
+
 # Building entry-point cells derived from grid data (populated in _load_grid).
 # Keys: "manor", "tavern", "chapel", "market", "well", etc.
 var _building_entries: Dictionary = {}
@@ -69,6 +72,7 @@ func _ready() -> void:
 	_init_pathfinder()
 	_spawn_npcs()
 	_init_social_graph()
+	_init_intel_store()
 	_wire_debug_nodes()
 
 
@@ -291,6 +295,22 @@ func _init_social_graph() -> void:
 		npc.social_graph_ref = social_graph
 
 	print("World: SocialGraph built for %d NPCs" % npcs.size())
+
+
+# ── Recon intel store ────────────────────────────────────────────────────────
+
+func _init_intel_store() -> void:
+	intel_store = PlayerIntelStore.new()
+	# Replenish the daily recon budget at dawn (when the day counter increments).
+	if day_night != null:
+		day_night.day_changed.connect(_on_day_changed)
+	print("World: PlayerIntelStore initialised (%d daily actions)" % PlayerIntelStore.MAX_DAILY_ACTIONS)
+
+
+func _on_day_changed(_day: int) -> void:
+	if intel_store != null:
+		intel_store.replenish()
+		print("World: Recon actions replenished at dawn (day %d)" % _day)
 
 
 # ── Debug node wiring ────────────────────────────────────────────────────────

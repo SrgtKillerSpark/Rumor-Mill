@@ -1,0 +1,139 @@
+## intel_store.gd — Player intelligence data store.
+## Holds LocationIntel and RelationshipIntel records collected via recon actions.
+## Plain-data class (no Node inheritance) owned by World.
+
+class_name PlayerIntelStore
+
+const MAX_DAILY_ACTIONS := 3
+
+var recon_actions_remaining: int = MAX_DAILY_ACTIONS
+
+## location_id (building name string) → Array[LocationIntel]
+var location_intel: Dictionary = {}
+
+## canonical pair key "idA:idB" (sorted) → RelationshipIntel
+var relationship_intel: Dictionary = {}
+
+
+# ---------------------------------------------------------------------------
+# LocationIntel — snapshot of which NPCs were at a location during one tick.
+# ---------------------------------------------------------------------------
+class LocationIntel:
+	var location_id: String
+	var observed_at: int          # game tick when the observation was made
+	## Array of Dicts: {npc_id, npc_name, faction, arrival_tick, departure_tick}
+	var npcs_seen: Array = []
+
+	func _init(loc_id: String, tick: int) -> void:
+		location_id = loc_id
+		observed_at = tick
+		npcs_seen   = []
+
+
+# ---------------------------------------------------------------------------
+# RelationshipIntel — eavesdropped relationship between two NPCs.
+# ---------------------------------------------------------------------------
+class RelationshipIntel:
+	var npc_a_id:   String
+	var npc_b_id:   String
+	var npc_a_name: String
+	var npc_b_name: String
+	var edge_weight: float   ## Raw social graph weight 0.0–1.0 (hidden from player UI)
+	var affinity_label: String  ## "allied" | "neutral" | "suspicious"
+	var observed_at: int
+
+	func _init(
+			a_id: String, b_id: String,
+			a_name: String, b_name: String,
+			weight: float, tick: int
+	) -> void:
+		npc_a_id    = a_id
+		npc_b_id    = b_id
+		npc_a_name  = a_name
+		npc_b_name  = b_name
+		edge_weight = weight
+		observed_at = tick
+		affinity_label = _label_from_weight(weight)
+
+	## Returns 1, 2, or 3 — the relationship bar count shown in UI.
+	func bars() -> int:
+		if edge_weight > 0.60:
+			return 3
+		elif edge_weight > 0.33:
+			return 2
+		return 1
+
+	## Human-readable strength label.
+	func strength_label() -> String:
+		match bars():
+			3: return "strong"
+			2: return "moderate"
+			_: return "weak"
+
+	static func _label_from_weight(w: float) -> String:
+		if w > 0.60:
+			return "allied"
+		elif w > 0.33:
+			return "neutral"
+		return "suspicious"
+
+
+# ---------------------------------------------------------------------------
+# Action budget
+# ---------------------------------------------------------------------------
+
+## Attempt to spend one action. Returns false if budget is exhausted.
+func try_spend_action() -> bool:
+	if recon_actions_remaining <= 0:
+		return false
+	recon_actions_remaining -= 1
+	return true
+
+
+## Called at dawn (day_changed signal) to restore the daily budget.
+func replenish() -> void:
+	recon_actions_remaining = MAX_DAILY_ACTIONS
+
+
+# ---------------------------------------------------------------------------
+# Location intel
+# ---------------------------------------------------------------------------
+
+func add_location_intel(intel: LocationIntel) -> void:
+	if not location_intel.has(intel.location_id):
+		location_intel[intel.location_id] = []
+	location_intel[intel.location_id].append(intel)
+
+
+func get_location_intel(location_id: String) -> Array:
+	return location_intel.get(location_id, [])
+
+
+# ---------------------------------------------------------------------------
+# Relationship intel
+# ---------------------------------------------------------------------------
+
+## Add or overwrite relationship intel (newest observation wins).
+func add_relationship_intel(intel: RelationshipIntel) -> void:
+	var key := _pair_key(intel.npc_a_id, intel.npc_b_id)
+	relationship_intel[key] = intel
+
+
+func get_relationship_intel(npc_a_id: String, npc_b_id: String) -> RelationshipIntel:
+	var key := _pair_key(npc_a_id, npc_b_id)
+	return relationship_intel.get(key, null)
+
+
+## Returns all RelationshipIntel entries involving the given NPC id.
+func get_relationships_for_npc(npc_id: String) -> Array:
+	var results: Array = []
+	for key in relationship_intel:
+		var intel: RelationshipIntel = relationship_intel[key]
+		if intel.npc_a_id == npc_id or intel.npc_b_id == npc_id:
+			results.append(intel)
+	return results
+
+
+## Canonical sort so (A,B) and (B,A) share the same key.
+static func _pair_key(a: String, b: String) -> String:
+	return (a + ":" + b) if a < b else (b + ":" + a)
