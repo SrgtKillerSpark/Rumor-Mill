@@ -1,0 +1,45 @@
+[gd_resource type="TileSet" load_steps=6 format=3 uid="uid://cp2r5q3l8mn4x"]
+
+[ext_resource type="Texture2D" path="res://assets/textures/tiles_ground.png" id="1_ground"]
+[ext_resource type="Texture2D" path="res://assets/textures/tiles_road_dirt.png" id="2_road_dirt"]
+[ext_resource type="Texture2D" path="res://assets/textures/tiles_road_stone.png" id="3_road_stone"]
+[ext_resource type="Texture2D" path="res://assets/textures/tiles_buildings.png" id="4_buildings"]
+
+[resource]
+tile_shape = 1
+tile_layout = 1
+tile_offset_axis = 0
+tile_size = Vector2i(64, 32)
+
+sources/0 = SubResource("TileSetAtlasSource_ground")
+sources/1 = SubResource("TileSetAtlasSource_road_dirt")
+sources/2 = SubResource("TileSetAtlasSource_road_stone")
+sources/3 = SubResource("TileSetAtlasSource_buildings")
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ground"]
+resource_name = "ground"
+texture = ExtResource("1_ground")
+texture_region_size = Vector2i(64, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_road_dirt"]
+resource_name = "road_dirt"
+texture = ExtResource("2_road_dirt")
+texture_region_size = Vector2i(64, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_road_stone"]
+resource_name = "road_stone"
+texture = ExtResource("3_road_stone")
+texture_region_size = Vector2i(64, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_buildings"]
+resource_name = "buildings"
+texture = ExtResource("4_buildings")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0

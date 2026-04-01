@@ -1,0 +1,10 @@
+# Godot editor cache (auto-generated, do not commit)
+.godot/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Builds
+export/
+builds/

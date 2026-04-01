@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#2a1f3d"/>
+  <!-- Isometric diamond representing a tile -->
+  <polygon points="64,20 108,44 64,68 20,44" fill="#8b6914" stroke="#c9a227" stroke-width="2"/>
+  <!-- Simple tower/manor silhouette -->
+  <rect x="48" y="50" width="32" height="40" fill="#5a3e1b" stroke="#c9a227" stroke-width="1.5"/>
+  <rect x="54" y="38" width="20" height="16" fill="#7a5428" stroke="#c9a227" stroke-width="1.5"/>
+  <rect x="60" y="60" width="8" height="14" fill="#2a1f3d"/>
+  <!-- Moon/stars for rumor/night theme -->
+  <circle cx="100" cy="24" r="8" fill="#c9a227" opacity="0.9"/>
+  <circle cx="105" cy="22" r="5" fill="#2a1f3d"/>
+  <text x="64" y="110" font-family="serif" font-size="11" fill="#c9a227" text-anchor="middle">RUMOR MILL</text>
+</svg>
