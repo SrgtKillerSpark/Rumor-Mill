@@ -104,9 +104,9 @@ func _draw_social_edges(npcs: Array) -> void:
 			var target_npc := _find_npc_by_id(npcs, target_id)
 			if target_npc == null:
 				continue
-			var from_pos := _world_to_screen(npc.global_position)
-			var to_pos   := _world_to_screen(target_npc.global_position)
-			var alpha    := clamp(weight, 0.1, 1.0)
+			var from_pos: Vector2 = _world_to_screen(npc.global_position)
+			var to_pos: Vector2   = _world_to_screen(target_npc.global_position)
+			var alpha: float    = clamp(weight, 0.1, 1.0)
 			_draw_node.draw_line(from_pos, to_pos, Color(0.2, 0.8, 1.0, alpha * 0.6), 1.0)
 
 

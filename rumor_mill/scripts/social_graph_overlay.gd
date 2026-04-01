@@ -127,9 +127,9 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				continue
 
 			var to_screen := _world_to_screen(target_npc.global_position)
-			var alpha  := clamp((weight - EDGE_THRESHOLD) / (1.0 - EDGE_THRESHOLD), 0.05, 0.55)
-			var width  := lerpf(0.5, 2.5, weight)
-			var color  := Color(EDGE_BASE_COLOR.r, EDGE_BASE_COLOR.g, EDGE_BASE_COLOR.b, alpha)
+			var alpha: float  = clamp((weight - EDGE_THRESHOLD) / (1.0 - EDGE_THRESHOLD), 0.05, 0.55)
+			var width: float  = lerpf(0.5, 2.5, weight)
+			var color: Color  = Color(EDGE_BASE_COLOR.r, EDGE_BASE_COLOR.g, EDGE_BASE_COLOR.b, alpha)
 			_draw_node.draw_line(from_screen, to_screen, color, width)
 
 

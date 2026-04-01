@@ -257,7 +257,7 @@ func _tick_evaluating(
 		believe_chance += 0.15
 
 	# Corroboration bonus (max +0.30 for 3+ extra sources).
-	var extra := min(slot.heard_from_count - 1, 3)
+	var extra: int = min(slot.heard_from_count - 1, 3)
 	believe_chance += extra * 0.10
 
 	believe_chance = clamp(believe_chance, 0.0, 1.0)
