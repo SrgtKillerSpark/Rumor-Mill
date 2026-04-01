@@ -1,8 +1,8 @@
 extends Node2D
 
-## main.gd — Sprint 6 entry point (Sprint 3 Rumor Crafting UI added).
+## main.gd — Sprint 7 entry point.
 ## Wires DayNightCycle tick → World, debug tools, recon system, Player Journal,
-## and the Sprint 6 Scenario 3 HUD.
+## Scenario 3 HUD, and the Sprint 7 Tutorial Tooltip system.
 
 @onready var world:         Node2D      = $World
 @onready var day_night:     Node        = $World/DayNightCycle
@@ -11,6 +11,14 @@ extends Node2D
 @onready var recon_hud:     CanvasLayer = $ReconHUD
 @onready var rumor_panel:   CanvasLayer = $RumorPanel
 @onready var journal:       CanvasLayer = $Journal
+
+# ── Sprint 7: tutorial system (created programmatically) ──────────────────────
+var _tutorial_sys: TutorialSystem = null
+var _tutorial_hud: CanvasLayer    = null
+
+# Prevent duplicate tooltip triggers for observe / eavesdrop.
+var _observe_tooltip_fired:    bool = false
+var _eavesdrop_tooltip_fired:  bool = false
 
 
 func _ready() -> void:
@@ -36,7 +44,10 @@ func _ready() -> void:
 	# ── Sprint 6: wire Scenario 3 HUD ─────────────────────────────────────
 	_init_scenario3_hud()
 
-	print("Rumor Mill — Sprint 6 loaded.")
+	# ── Sprint 7: wire Tutorial Tooltip system ────────────────────────────
+	_init_tutorial_system()
+
+	print("Rumor Mill — Sprint 7 loaded.")
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph")
 	print("  R: Rumor Crafting Panel  |  J: Player Journal")
 	print("  Right-click building: Observe  |  Right-click NPC: Eavesdrop")
@@ -69,6 +80,9 @@ func _init_recon_system() -> void:
 	# Pipe action results to the HUD toast.
 	if recon_hud != null and recon_hud.has_method("show_toast"):
 		recon_ctrl.action_performed.connect(recon_hud.show_toast)
+
+	# Pipe action results to the tutorial system (observe / eavesdrop tooltips).
+	recon_ctrl.action_performed.connect(_on_recon_action_for_tutorial)
 
 	print("Main: recon system wired (intel_store + controller + HUD + 3-panel rumor modal)")
 
@@ -110,3 +124,61 @@ func _init_scenario3_hud() -> void:
 	if hud.has_method("setup"):
 		hud.setup(world, day_night)
 	print("Main: Scenario 3 HUD wired")
+
+
+# ── Sprint 7: Tutorial Tooltip system ─────────────────────────────────────────
+
+func _init_tutorial_system() -> void:
+	_tutorial_sys = TutorialSystem.new()
+
+	_tutorial_hud = preload("res://scripts/tutorial_hud.gd").new()
+	_tutorial_hud.name = "TutorialHUD"
+	add_child(_tutorial_hud)
+	_tutorial_hud.setup(_tutorial_sys)
+
+	# Tooltip 1: explain recon actions on first game load.
+	_tutorial_hud.queue_tooltip("recon_actions")
+
+	# Tooltip 4: rumour crafting — first time the Rumor Panel becomes visible.
+	if rumor_panel != null:
+		rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed)
+
+	# Tooltip 5: reputation — first time the Journal becomes visible.
+	if journal != null:
+		journal.visibility_changed.connect(_on_journal_visibility_changed)
+
+	print("Main: Tutorial system wired (5 first-encounter tooltips)")
+
+
+## Connected to recon_ctrl.action_performed — fires observe / eavesdrop tooltips.
+func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
+	if not success or _tutorial_hud == null:
+		return
+	# Tooltip 2: first successful Observe.
+	if not _observe_tooltip_fired and message.begins_with("Observed"):
+		_observe_tooltip_fired = true
+		_tutorial_hud.queue_tooltip("observe")
+	# Tooltip 3: first successful Eavesdrop.
+	elif not _eavesdrop_tooltip_fired and message.begins_with("Eavesdropped"):
+		_eavesdrop_tooltip_fired = true
+		_tutorial_hud.queue_tooltip("eavesdrop")
+
+
+## Tooltip 4 trigger — fires once when the Rumor Panel first opens.
+func _on_rumor_panel_visibility_changed() -> void:
+	if rumor_panel == null or not rumor_panel.visible:
+		return
+	if _tutorial_hud != null:
+		_tutorial_hud.queue_tooltip("rumor_crafting")
+	# Disconnect so this only triggers once.
+	rumor_panel.visibility_changed.disconnect(_on_rumor_panel_visibility_changed)
+
+
+## Tooltip 5 trigger — fires once when the Journal first opens.
+func _on_journal_visibility_changed() -> void:
+	if journal == null or not journal.visible:
+		return
+	if _tutorial_hud != null:
+		_tutorial_hud.queue_tooltip("reputation")
+	# Disconnect so this only triggers once.
+	journal.visibility_changed.disconnect(_on_journal_visibility_changed)
