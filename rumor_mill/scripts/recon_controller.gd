@@ -64,7 +64,7 @@ func _hit_test_npc(world_pos: Vector2) -> Node2D:
 	var best:      Node2D = null
 	var best_dist: float  = NPC_HIT_RADIUS_PX
 	for npc in _world_ref.npcs:
-		var dist := npc.global_position.distance_to(world_pos)
+		var dist: float := npc.global_position.distance_to(world_pos)
 		if dist < best_dist:
 			best_dist = dist
 			best      = npc

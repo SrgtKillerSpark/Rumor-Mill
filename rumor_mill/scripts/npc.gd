@@ -337,12 +337,12 @@ func _spread_to_neighbours(
 			continue
 
 		# Proximity gate (manhattan tiles).
-		var dist := (current_cell - other.current_cell).length()
+		var dist: float := (current_cell - other.current_cell).length()
 		if dist > SPREAD_RADIUS:
 			continue
 
 		# Skip if already in a non-receptive state.
-		var other_state := other.get_state_for_rumor(slot.rumor.id)
+		var other_state: int := other.get_state_for_rumor(slot.rumor.id)
 		if other_state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD,
 						   Rumor.RumorState.ACT,    Rumor.RumorState.EXPIRED]:
 			continue
