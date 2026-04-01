@@ -2,7 +2,8 @@ extends Node2D
 
 ## main.gd — Sprint 6/7 entry point.
 ## Wires DayNightCycle tick → World, debug tools, recon system, Player Journal,
-## Social Graph Overlay, Scenario 3 HUD, and the Sprint 7 Tutorial Tooltip system.
+## Social Graph Overlay, Scenario 3 HUD, Sprint 7 Tutorial Tooltip system,
+## and Sprint 6 End Screen overlay.
 
 @onready var world:                Node2D      = $World
 @onready var day_night:            Node        = $World/DayNightCycle
@@ -16,6 +17,9 @@ extends Node2D
 # ── Sprint 7: tutorial system (created programmatically) ──────────────────────
 var _tutorial_sys: TutorialSystem = null
 var _tutorial_hud: CanvasLayer    = null
+
+# ── Sprint 6: end screen (created programmatically) ───────────────────────────
+var _end_screen: CanvasLayer = null
 
 # Prevent duplicate tooltip triggers for observe / eavesdrop.
 var _observe_tooltip_fired:    bool = false
@@ -51,6 +55,9 @@ func _ready() -> void:
 
 	# ── Sprint 7: wire Tutorial Tooltip system ────────────────────────────
 	_init_tutorial_system()
+
+	# ── Sprint 6: wire End Screen ─────────────────────────────────────────
+	_init_end_screen()
 
 	print("Rumor Mill — Sprint 6/7 loaded.")
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph (debug)  |  F4: lineage tree")
@@ -187,3 +194,13 @@ func _on_journal_visibility_changed() -> void:
 		_tutorial_hud.queue_tooltip("reputation")
 	# Disconnect so this only triggers once.
 	journal.visibility_changed.disconnect(_on_journal_visibility_changed)
+
+
+# ── Sprint 6: End Screen ───────────────────────────────────────────────────────
+
+func _init_end_screen() -> void:
+	_end_screen = preload("res://scripts/end_screen.gd").new()
+	_end_screen.name = "EndScreen"
+	add_child(_end_screen)
+	_end_screen.setup(world, day_night)
+	print("Main: End Screen wired")

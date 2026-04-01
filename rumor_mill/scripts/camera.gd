@@ -71,5 +71,5 @@ func _handle_keyboard_pan(delta: float) -> void:
 
 func _smooth_zoom(delta: float) -> void:
 	var current := zoom.x
-	var next := lerp(current, _target_zoom, zoom_lerp_speed * delta)
+	var next: float = lerp(current, _target_zoom, zoom_lerp_speed * delta)
 	zoom = Vector2(next, next)
