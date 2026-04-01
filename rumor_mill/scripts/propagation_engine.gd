@@ -162,8 +162,9 @@ func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
 		"tick":          tick,
 	}
 
-	print("[PropagationEngine] Mutation '%s' ← '%s' [%s] tick=%d" % [
-		new_id, source.id, ",".join(mut_tags), tick])
+	if OS.is_debug_build():
+		print("[PropagationEngine] Mutation '%s' ← '%s' [%s] tick=%d" % [
+			new_id, source.id, ",".join(mut_tags), tick])
 	return mutated
 
 

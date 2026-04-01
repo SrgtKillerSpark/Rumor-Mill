@@ -1,0 +1,91 @@
+[gd_scene load_steps=2 format=3 uid="uid://manor_interior_spa41"]
+
+[ext_resource type="Script" path="res://scripts/building_interior.gd" uid="uid://building_interior_script" id="1_interior"]
+
+[node name="ManorInterior" type="CanvasLayer"]
+layer = 14
+script = ExtResource("1_interior")
+
+[node name="Overlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.04, 0.03, 0.06, 0.85)
+visible = false
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_left = 0.15
+anchor_top = 0.1
+anchor_right = 0.85
+anchor_bottom = 0.9
+visible = false
+
+[node name="ParchmentBG" type="ColorRect" parent="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.87, 0.80, 0.62, 1.0)
+
+[node name="InkBorder" type="Panel" parent="Panel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = -6.0
+
+[node name="Layout" type="VBoxContainer" parent="Panel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = -18.0
+offset_bottom = -18.0
+theme_override_constants/separation = 8
+
+[node name="TitleRow" type="HBoxContainer" parent="Panel/Layout"]
+
+[node name="BadgeRect" type="ColorRect" parent="Panel/Layout/TitleRow"]
+custom_minimum_size = Vector2(20, 20)
+color = Color(0.43, 0.09, 0.16, 1.0)
+
+[node name="TitleLabel" type="Label" parent="Panel/Layout/TitleRow"]
+size_flags_horizontal = 3
+text = "Alderman's Manor"
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.28, 0.14, 0.08, 1.0)
+
+[node name="CloseBtn" type="Button" parent="Panel/Layout/TitleRow"]
+text = "×"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.42, 0.14, 0.10, 1.0)
+
+[node name="Separator" type="HSeparator" parent="Panel/Layout"]
+theme_override_colors/separator_color = Color(0.52, 0.38, 0.18, 1.0)
+
+[node name="Description" type="RichTextLabel" parent="Panel/Layout"]
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[color=#3c2208]The entrance hall is dressed in cool limestone and hung with tapestries depicting the Alderman's lineage. Candelabra cast long shadows across polished flagstone. A carved oak staircase ascends to the private chambers.
+
+[i]Faction notes:[/i] This is [b]Noble faction territory[/b]. Visitors are watched. The Alderman's family holds considerable sway over civic law; accusations levelled here carry legal weight — but [b]slander within earshot of the guard costs dearly[/b].
+
+[b]Notable locations:[/b]
+• [color=#6a1a2a]Council chamber (upper floor)[/color] — closed sessions, Alderman present
+• [color=#6a1a2a]Anteroom[/color] — petitioners and servants gather
+• [color=#aaaaaa]Silver cabinet[/color] — reportedly locked with the town seal[/color]"
+theme_override_colors/default_color = Color(0.28, 0.14, 0.08, 1.0)
+theme_override_font_sizes/normal_font_size = 12
+
+[node name="HintLabel" type="Label" parent="Panel/Layout"]
+text = "Press E or click × to close"
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(0.52, 0.38, 0.18, 1.0)
+horizontal_alignment = 2

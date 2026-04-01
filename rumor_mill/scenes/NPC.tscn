@@ -5,14 +5,13 @@
 [node name="NPC" type="Node2D"]
 script = ExtResource("1_npc")
 
-[node name="Sprite" type="ColorRect" parent="."]
-size = Vector2(16, 16)
-position = Vector2(-8, -16)
-color = Color(1, 0, 0, 1)
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -30)
+scale = Vector2(1, 1)
 
 [node name="NameLabel" type="Label" parent="."]
-position = Vector2(-16, -28)
-size = Vector2(48, 12)
+position = Vector2(-20, -50)
+size = Vector2(52, 12)
 text = "NPC"
 label_settings = null
 theme_override_font_sizes/font_size = 8

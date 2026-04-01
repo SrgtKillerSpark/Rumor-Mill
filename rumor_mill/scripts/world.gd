@@ -1,6 +1,6 @@
 extends Node2D
 
-## world.gd — Sprint 3 update (recon system added).
+## world.gd — Sprint 5 update (Art Pass 1: 10 building types, animated NPCs).
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -9,20 +9,27 @@ const GRID_W    := 48
 const GRID_H    := 48
 
 # Source IDs in the TileSet (one atlas per tile category)
-const SRC_GROUND    := 0
-const SRC_ROAD_DIRT := 1
+const SRC_GROUND     := 0
+const SRC_ROAD_DIRT  := 1
 const SRC_ROAD_STONE := 2
-const SRC_BUILDING  := 3
+const SRC_BUILDING   := 3
 
-const ATLAS_VOID       := Vector2i(0, 0)
-const ATLAS_GRASS      := Vector2i(1, 0)
-const ATLAS_ROAD_DIRT  := Vector2i(0, 0)
-const ATLAS_ROAD_STONE := Vector2i(1, 0)
-const ATLAS_MANOR      := Vector2i(0, 0)
-const ATLAS_TAVERN     := Vector2i(1, 0)
-const ATLAS_CHAPEL     := Vector2i(2, 0)
-const ATLAS_MARKET     := Vector2i(3, 0)
-const ATLAS_WELL       := Vector2i(4, 0)
+const ATLAS_VOID        := Vector2i(0, 0)
+const ATLAS_GRASS       := Vector2i(1, 0)
+const ATLAS_GRASS_DARK  := Vector2i(2, 0)  # shadow / building footprint variant
+const ATLAS_ROAD_DIRT   := Vector2i(0, 0)
+const ATLAS_ROAD_STONE  := Vector2i(0, 0)  # fixed: road_stone source uses (0,0)
+# Building atlas columns — matches tiles_buildings.png tile order (SPA-41)
+const ATLAS_MANOR       := Vector2i(0, 0)
+const ATLAS_TAVERN      := Vector2i(1, 0)
+const ATLAS_CHAPEL      := Vector2i(2, 0)
+const ATLAS_MARKET      := Vector2i(3, 0)
+const ATLAS_WELL        := Vector2i(4, 0)
+const ATLAS_BLACKSMITH  := Vector2i(5, 0)
+const ATLAS_MILL        := Vector2i(6, 0)
+const ATLAS_STORAGE     := Vector2i(7, 0)
+const ATLAS_GUARDPOST   := Vector2i(8, 0)
+const ATLAS_TOWN_HALL   := Vector2i(9, 0)
 
 @export var npc_scene: PackedScene
 
@@ -138,11 +145,16 @@ func _place_buildings() -> void:
 	for b in buildings:
 		var atlas_coord: Vector2i
 		match b["name"]:
-			"manor":   atlas_coord = ATLAS_MANOR
-			"tavern":  atlas_coord = ATLAS_TAVERN
-			"chapel":  atlas_coord = ATLAS_CHAPEL
-			"market":  atlas_coord = ATLAS_MARKET
-			_:         continue
+			"manor":       atlas_coord = ATLAS_MANOR
+			"tavern":      atlas_coord = ATLAS_TAVERN
+			"chapel":      atlas_coord = ATLAS_CHAPEL
+			"market":      atlas_coord = ATLAS_MARKET
+			"blacksmith":  atlas_coord = ATLAS_BLACKSMITH
+			"mill":        atlas_coord = ATLAS_MILL
+			"storage":     atlas_coord = ATLAS_STORAGE
+			"guardpost":   atlas_coord = ATLAS_GUARDPOST
+			"town_hall":   atlas_coord = ATLAS_TOWN_HALL
+			_:             continue
 		var anchor := Vector2i(b["x"], b["y"])
 		building_layer.set_cell(anchor, SRC_BUILDING, atlas_coord)
 

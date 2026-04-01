@@ -45,10 +45,12 @@ const SFX_POOL_SIZE := 8
 # ── Audio file map ─────────────────────────────────────────────────────────────
 ## Maps logical name → relative path under AUDIO_BASE.
 ## Artists/designers place .ogg or .wav files at these paths.
+## Sprint 7: using .wav placeholders so audio works without a production encoder.
+## Swap to .ogg when final royalty-free tracks are ready (replace files + update here).
 const MUSIC_FILES: Dictionary = {
-	"main_theme":    "music/main_theme.ogg",
-	"ambient_day":   "music/ambient_day.ogg",
-	"ambient_night": "music/ambient_night.ogg",
+	"main_theme":    "music/main_theme.wav",
+	"ambient_day":   "music/ambient_day.wav",
+	"ambient_night": "music/ambient_night.wav",
 }
 
 const SFX_FILES: Dictionary = {

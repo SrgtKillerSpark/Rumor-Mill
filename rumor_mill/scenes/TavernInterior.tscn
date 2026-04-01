@@ -1,0 +1,91 @@
+[gd_scene load_steps=2 format=3 uid="uid://tavern_interior_spa41"]
+
+[ext_resource type="Script" path="res://scripts/building_interior.gd" uid="uid://building_interior_script" id="1_interior"]
+
+[node name="TavernInterior" type="CanvasLayer"]
+layer = 14
+script = ExtResource("1_interior")
+
+[node name="Overlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.06, 0.04, 0.02, 0.82)
+visible = false
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_left = 0.15
+anchor_top = 0.1
+anchor_right = 0.85
+anchor_bottom = 0.9
+visible = false
+
+[node name="ParchmentBG" type="ColorRect" parent="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.89, 0.82, 0.66, 1.0)
+
+[node name="InkBorder" type="Panel" parent="Panel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = -6.0
+
+[node name="Layout" type="VBoxContainer" parent="Panel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = -18.0
+offset_bottom = -18.0
+theme_override_constants/separation = 8
+
+[node name="TitleRow" type="HBoxContainer" parent="Panel/Layout"]
+
+[node name="BadgeRect" type="ColorRect" parent="Panel/Layout/TitleRow"]
+custom_minimum_size = Vector2(20, 20)
+color = Color(0.11, 0.25, 0.47, 1.0)
+
+[node name="TitleLabel" type="Label" parent="Panel/Layout/TitleRow"]
+size_flags_horizontal = 3
+text = "The Rusty Flagon"
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.32, 0.18, 0.06, 1.0)
+
+[node name="CloseBtn" type="Button" parent="Panel/Layout/TitleRow"]
+text = "×"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.42, 0.14, 0.10, 1.0)
+
+[node name="Separator" type="HSeparator" parent="Panel/Layout"]
+theme_override_colors/separator_color = Color(0.52, 0.38, 0.18, 1.0)
+
+[node name="Description" type="RichTextLabel" parent="Panel/Layout"]
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[color=#5a3210]The low-beamed common room smells of tallow candles and spilled ale. A [b]fire[/b] crackles in the hearth at the far end, casting amber shadows across rough-hewn tables. Merchants huddle over cups of mulled wine; a minstrel plucks a lute in the corner.
+
+[i]Faction notes:[/i] The Tavern serves as neutral ground — all three factions are known to gather here after dusk. Barmaids circulate constantly; [b]overheard conversations spread quickly[/b] among patrons.
+
+[b]Notable locations:[/b]
+• [color=#7a2222]Fireside alcove[/color] — nobles' preferred seats
+• [color=#1a3a6a]Long bench near the door[/color] — merchants' territory
+• [color=#2a2a1a]Corner table by the stairs[/color] — clergy discretely sup here[/color]"
+theme_override_colors/default_color = Color(0.32, 0.18, 0.06, 1.0)
+theme_override_font_sizes/normal_font_size = 12
+
+[node name="HintLabel" type="Label" parent="Panel/Layout"]
+text = "Press E or click × to close"
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(0.52, 0.38, 0.18, 1.0)
+horizontal_alignment = 2
