@@ -86,9 +86,10 @@ const STATE_TINT := {
 	Rumor.RumorState.EVALUATING: Color(1.00, 1.00, 0.70, 1.0),  # warm yellow
 	Rumor.RumorState.BELIEVE:    Color(0.70, 1.00, 0.72, 1.0),  # soft green
 	Rumor.RumorState.SPREAD:     Color(1.00, 0.75, 0.45, 1.0),  # orange
-	Rumor.RumorState.ACT:        Color(1.00, 0.55, 0.90, 1.0),  # magenta-pink
-	Rumor.RumorState.REJECT:     Color(0.80, 0.80, 0.85, 1.0),  # cool grey-blue
-	Rumor.RumorState.EXPIRED:    Color(0.65, 0.65, 0.65, 1.0),  # grey
+	Rumor.RumorState.ACT:          Color(1.00, 0.55, 0.90, 1.0),  # magenta-pink
+	Rumor.RumorState.REJECT:       Color(0.80, 0.80, 0.85, 1.0),  # cool grey-blue
+	Rumor.RumorState.CONTRADICTED: Color(0.75, 0.55, 1.00, 1.0),  # muted purple
+	Rumor.RumorState.EXPIRED:      Color(0.65, 0.65, 0.65, 1.0),  # grey
 }
 
 # Tracks last worst state so we only emit rumor_state_changed on actual changes.
@@ -315,8 +316,40 @@ func _process_rumor_slots(tick: int) -> void:
 			Rumor.RumorState.SPREAD:
 				_tick_spread(slot, npc_name, faction, rid, tick)
 
-			Rumor.RumorState.REJECT, Rumor.RumorState.ACT, Rumor.RumorState.EXPIRED:
+			Rumor.RumorState.REJECT, Rumor.RumorState.ACT, \
+			Rumor.RumorState.CONTRADICTED, Rumor.RumorState.EXPIRED:
 				pass  # terminal states
+
+	# ── Post-pass: detect CONTRADICTED (conflicting sentiments for same subject) ──
+	var active_by_subject: Dictionary = {}  # subject_npc_id -> Array[NpcRumorSlot]
+	for rid in rumor_slots.keys():
+		var slot: Rumor.NpcRumorSlot = rumor_slots[rid]
+		if slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD]:
+			var sid: String = slot.rumor.subject_npc_id
+			if not active_by_subject.has(sid):
+				active_by_subject[sid] = []
+			active_by_subject[sid].append(slot)
+
+	for sid in active_by_subject:
+		var slots_for_subject: Array = active_by_subject[sid]
+		var has_positive := false
+		var has_negative := false
+		for sl in slots_for_subject:
+			if Rumor.is_positive_claim(sl.rumor.claim_type):
+				has_positive = true
+			else:
+				has_negative = true
+		if has_positive and has_negative:
+			# Transition the newest slot to CONTRADICTED.
+			var newest: Rumor.NpcRumorSlot = slots_for_subject[0]
+			for sl in slots_for_subject:
+				if sl.rumor.created_tick > newest.rumor.created_tick:
+					newest = sl
+			if newest.state != Rumor.RumorState.CONTRADICTED:
+				newest.state = Rumor.RumorState.CONTRADICTED
+				newest.ticks_in_state = 0
+				if OS.is_debug_build():
+					print("[Rumor] %s CONTRADICTED for subject '%s'" % [npc_name, sid])
 
 
 func _tick_evaluating(

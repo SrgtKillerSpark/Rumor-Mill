@@ -22,6 +22,7 @@ var _starting_text:    String = ""
 var _victory_text:     String = ""
 var _fail_texts:       Dictionary = {}
 var _days_allowed:     int = 30
+var _active_scenario:  int = 0  # 1, 2, or 3 — set by load_scenario_data
 
 
 ## Load narrative fields from a scenario data dictionary (one entry from scenarios.json).
@@ -31,6 +32,8 @@ func load_scenario_data(data: Dictionary) -> void:
 	_victory_text   = data.get("victoryText", "")
 	_fail_texts     = data.get("failTexts", {})
 	_days_allowed   = int(data.get("daysAllowed", 30))
+	var parts := data.get("scenarioId", "").split("_")
+	_active_scenario = int(parts[-1]) if parts.size() >= 2 else 0
 
 
 ## Returns the scenario title string.
@@ -91,12 +94,13 @@ var scenario_2_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_3_state: ScenarioState = ScenarioState.ACTIVE
 
 
-## Evaluate all win/fail conditions from the current reputation cache.
+## Evaluate win/fail conditions for the active scenario only.
 ## Call once per tick, after reputation_system.recalculate_all().
 func evaluate(rep: ReputationSystem, current_tick: int) -> void:
-	_check_scenario_1(rep, current_tick)
-	_check_scenario_2(rep, current_tick)
-	_check_scenario_3(rep, current_tick)
+	match _active_scenario:
+		1: _check_scenario_1(rep, current_tick)
+		2: _check_scenario_2(rep, current_tick)
+		3: _check_scenario_3(rep, current_tick)
 
 
 ## Called when the player is caught eavesdropping. Fails Scenario 1 if still active.

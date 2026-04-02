@@ -663,7 +663,7 @@ func inject_rumor(target_npc_id: String, claim_type_str: String, intensity: int)
 	var rumor_id   := "r_%s_%d" % [claim_type_str.to_lower(), Time.get_ticks_msec()]
 
 	var tick := 0
-	if day_night != null and day_night.has_method("_on_tick_timer_timeout"):
+	if day_night != null and "current_tick" in day_night:
 		tick = day_night.current_tick
 
 	var rumor := Rumor.create(
