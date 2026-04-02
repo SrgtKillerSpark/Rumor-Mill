@@ -19,7 +19,8 @@ extends Node2D
 @onready var objective_hud:        CanvasLayer = $ObjectiveHUD
 
 # ── Sprint 8: main menu ───────────────────────────────────────────────────────
-var _main_menu: CanvasLayer = null
+var _main_menu:   CanvasLayer = null
+var _pause_menu:  CanvasLayer = null
 
 # ── Sprint 7: tutorial system (created programmatically) ──────────────────────
 var _tutorial_sys: TutorialSystem = null
@@ -112,11 +113,13 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_tutorial_system()
 	_init_end_screen()
 	_init_audio()
+	_init_pause_menu()
 
 	print("Rumor Mill — Sprint 8 loaded. Scenario: %s" % scenario_id)
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph (debug)  |  F4: lineage tree")
 	print("  G: Social Graph Overlay  |  R: Rumor Crafting Panel  |  J: Player Journal")
 	print("  Right-click building: Observe  |  Right-click NPC: Eavesdrop")
+	print("  Esc: Pause / return to menu")
 
 
 func _init_recon_system() -> void:
@@ -330,6 +333,15 @@ func _init_audio() -> void:
 		sm.scenario_resolved.connect(_on_scenario_resolved_audio)
 
 	print("AudioManager: wired into main scene")
+
+
+# ── Pause Menu ────────────────────────────────────────────────────────────────
+
+func _init_pause_menu() -> void:
+	_pause_menu = preload("res://scripts/pause_menu.gd").new()
+	_pause_menu.name = "PauseMenu"
+	add_child(_pause_menu)
+	print("Main: Pause menu wired (Escape to open)")
 
 
 ## Relay scenario_resolved to AudioManager win/fail stings.

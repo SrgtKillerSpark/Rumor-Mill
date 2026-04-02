@@ -53,6 +53,9 @@ var _notification_pending: bool   = false
 ## Per-rumor expand state: rumor_id → bool.
 var _expanded_rumors: Dictionary = {}
 
+## Rumors-tab filter text (persists across tab switches).
+var _rumor_filter_text: String = ""
+
 ## Hard cap on timeline log entries; oldest entries are trimmed when exceeded.
 const MAX_TIMELINE_ENTRIES := 200
 
@@ -219,6 +222,41 @@ func _build_rumors_section() -> void:
 			if not all_rumors.has(rid):
 				all_rumors[rid] = (npc.rumor_slots[rid] as Rumor.NpcRumorSlot).rumor
 
+	# ── Filter bar ────────────────────────────────────────────────────────────
+	var filter_row := HBoxContainer.new()
+	filter_row.add_theme_constant_override("separation", 4)
+	_content_vbox.add_child(filter_row)
+
+	var filter_lbl := Label.new()
+	filter_lbl.text = "Filter:"
+	filter_lbl.add_theme_font_size_override("font_size", 11)
+	filter_lbl.add_theme_color_override("font_color", C_SUBKEY)
+	filter_row.add_child(filter_lbl)
+
+	var filter_edit := LineEdit.new()
+	filter_edit.placeholder_text       = "subject or claim type…"
+	filter_edit.text                   = _rumor_filter_text
+	filter_edit.size_flags_horizontal  = Control.SIZE_EXPAND_FILL
+	filter_edit.add_theme_font_size_override("font_size", 11)
+	filter_row.add_child(filter_edit)
+
+	var clear_btn := Button.new()
+	clear_btn.text    = "×"
+	clear_btn.visible = not _rumor_filter_text.is_empty()
+	clear_btn.add_theme_font_size_override("font_size", 11)
+	filter_row.add_child(clear_btn)
+
+	filter_edit.text_changed.connect(func(txt: String) -> void:
+		_rumor_filter_text = txt
+		clear_btn.visible  = not txt.is_empty()
+		call_deferred("_rebuild_section", Section.RUMORS)
+	)
+	clear_btn.pressed.connect(func() -> void:
+		_rumor_filter_text = ""
+		call_deferred("_rebuild_section", Section.RUMORS)
+	)
+	# ─────────────────────────────────────────────────────────────────────────
+
 	if all_rumors.is_empty():
 		_add_body_label("No rumors recorded yet.\nUse the debug console to inject a rumor, or seed one via the Rumor Crafting panel.")
 		return
@@ -228,6 +266,19 @@ func _build_rumors_section() -> void:
 	# Sort newest first.
 	var sorted_rumors: Array = all_rumors.values()
 	sorted_rumors.sort_custom(func(a, b): return a.created_tick > b.created_tick)
+
+	# Apply text filter (subject name or claim type).
+	var filter_lower := _rumor_filter_text.to_lower().strip_edges()
+	if not filter_lower.is_empty():
+		sorted_rumors = sorted_rumors.filter(func(r: Rumor) -> bool:
+			var subj_name: String = npc_names.get(r.subject_npc_id, r.subject_npc_id).to_lower()
+			var claim_str: String = Rumor.ClaimType.keys()[r.claim_type].to_lower()
+			return subj_name.contains(filter_lower) or claim_str.contains(filter_lower)
+		)
+
+	if sorted_rumors.is_empty():
+		_add_body_label("No rumors match \"%s\"." % _rumor_filter_text)
+		return
 
 	for rumor in sorted_rumors:
 		_add_rumor_card(rumor, npc_names)

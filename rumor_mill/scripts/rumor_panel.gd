@@ -53,6 +53,7 @@ var _current_panel:     int    = PANEL_SUBJECT
 var _selected_subject:  String = ""  # npc_id
 var _selected_claim_id: String = ""  # claims.json id
 var _selected_seed_npc: String = ""  # npc_id
+var _confirm_pending:   bool   = false  # true after first "Confirm & Seed" press
 
 # Panel titles / hints.
 const TITLES := [
@@ -163,7 +164,8 @@ func _open_panel(idx: int) -> void:
 	# Back button: hidden on panel 1.
 	_btn_back.visible = (idx != PANEL_SUBJECT)
 
-	# Next/Confirm button.
+	# Next/Confirm button.  Reset confirmation state on any panel change.
+	_confirm_pending  = false
 	_btn_next.visible = true
 	if idx == PANEL_SEED:
 		_btn_next.text = "Confirm & Seed"
@@ -202,7 +204,23 @@ func _on_next_pressed() -> void:
 				return
 			_open_panel(PANEL_SEED)
 		PANEL_SEED:
-			_try_confirm_seed()
+			if not _confirm_pending:
+				# First press — validate selection and show a summary for review.
+				if _selected_seed_npc.is_empty():
+					_flash_status("Select a seed target first.")
+					return
+				var tokens: int = _intel_store_ref.whisper_tokens_remaining if _intel_store_ref != null else 0
+				var subj_name := _get_npc_name(_selected_subject)
+				var seed_name := _get_npc_name(_selected_seed_npc)
+				_flash_status(
+					"Seed [%s] about %s → whisper to %s?\nWhisper tokens remaining: %d.\nClick 'Confirm & Seed' once more to proceed." % [
+						_selected_claim_id, subj_name, seed_name, tokens
+					]
+				)
+				_confirm_pending  = true
+				_btn_next.text    = "Confirm & Seed ✓"
+			else:
+				_try_confirm_seed()
 
 
 func _flash_status(msg: String) -> void:
@@ -492,6 +510,8 @@ func _build_seed_entry(
 	var captured_id := npc_id
 	btn.pressed.connect(func():
 		_selected_seed_npc = captured_id
+		_confirm_pending   = false
+		_btn_next.text     = "Confirm & Seed"
 		_rebuild_seed_list()
 	)
 	vbox.add_child(btn)
@@ -533,6 +553,7 @@ func _try_confirm_seed() -> void:
 	_selected_subject  = ""
 	_selected_claim_id = ""
 	_selected_seed_npc = ""
+	_confirm_pending   = false
 	panel.visible = false
 
 	print("[RumorPanel] Seeded rumor '%s' via %s" % [rumor_id, seed_name])
