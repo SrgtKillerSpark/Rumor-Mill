@@ -85,6 +85,18 @@ func decay_one_tick() -> void:
 	current_believability = maxf(current_believability - (1.0 / float(shelf_life_ticks)), 0.0)
 
 
+static func claim_type_name(ct: ClaimType) -> String:
+	match ct:
+		ClaimType.ACCUSATION: return "accusation"
+		ClaimType.SCANDAL:    return "scandal"
+		ClaimType.ILLNESS:    return "illness"
+		ClaimType.PROPHECY:   return "prophecy"
+		ClaimType.PRAISE:     return "praise"
+		ClaimType.DEATH:      return "death"
+		ClaimType.HERESY:     return "heresy"
+		_:                    return "rumor"
+
+
 static func state_name(state: RumorState) -> String:
 	match state:
 		RumorState.UNAWARE:      return "UNAWARE"

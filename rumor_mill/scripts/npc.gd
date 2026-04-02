@@ -374,12 +374,14 @@ func _tick_believe(
 		slot.ticks_in_state = 0
 		if OS.is_debug_build():
 			print("[Rumor] %s ACT on '%s' after %d ticks" % [npc_name, rid, act_threshold])
+		_start_act_behavior(slot.rumor)
 		return
 
 	# ── β: spread attempt to each nearby neighbour ───────────────────────────
 	if _spread_to_neighbours(slot, faction, tick):
 		slot.state = Rumor.RumorState.SPREAD
 		slot.ticks_in_state = 0
+		_start_spread_clustering(slot.rumor)
 
 
 func _tick_spread(
@@ -481,6 +483,84 @@ func _show_spread_bubble(_target_npc: Node2D) -> void:
 	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -24.0), 1.5)
 	tw.tween_property(lbl, "modulate:a", 0.0, 1.5)
 	tw.chain().tween_callback(lbl.queue_free)
+
+
+# ── ACT / SPREAD behavior ─────────────────────────────────────────────────────
+
+## Called when this NPC enters ACT state.  Shows a pulsing ⚡ icon and navigates
+## relative to the rumor's subject: flee if negative claim, seek if positive.
+func _start_act_behavior(rumor: Rumor) -> void:
+	_show_act_icon()
+	var positive := Rumor.is_positive_claim(rumor.claim_type)
+	_navigate_relative_to_subject(rumor.subject_npc_id, positive)
+
+
+## Pulsing ⚡ label above the NPC for ~2 seconds — signals ACT state onset.
+func _show_act_icon() -> void:
+	var lbl := Label.new()
+	lbl.text = "⚡"
+	lbl.add_theme_font_size_override("font_size", 18)
+	lbl.position = Vector2(-8.0, -76.0)
+	lbl.modulate = Color(1.0, 0.85, 0.1, 1.0)
+	add_child(lbl)
+	var tw := create_tween()
+	tw.set_loops(3)
+	tw.tween_property(lbl, "modulate:a", 0.2, 0.35)
+	tw.tween_property(lbl, "modulate:a", 1.0, 0.35)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
+## Move toward or away from subject_id depending on sentiment.
+## toward=true → seek (praise); toward=false → flee (accusation / scandal etc.)
+func _navigate_relative_to_subject(subject_id: String, toward: bool) -> void:
+	if _pathfinder == null or _walkable.is_empty():
+		return
+	var subject_cell := Vector2i(-1, -1)
+	for npc in all_npcs_ref:
+		if npc.npc_data.get("id", "") == subject_id:
+			subject_cell = npc.current_cell
+			break
+	if subject_cell == Vector2i(-1, -1):
+		return
+	var target_cell: Vector2i = subject_cell if toward else _cell_furthest_from(subject_cell)
+	_path = _pathfinder.get_path(current_cell, target_cell)
+	if _path.size() > 0 and _path[0] == current_cell:
+		_path.remove_at(0)
+
+
+## Return the walkable cell that maximises squared distance from from_cell.
+func _cell_furthest_from(from_cell: Vector2i) -> Vector2i:
+	var best_cell := current_cell
+	var best_dist := 0
+	for cell in _walkable:
+		var d := (cell - from_cell).length_squared()
+		if d > best_dist:
+			best_dist = d
+			best_cell = cell
+	return best_cell
+
+
+## Called when entering SPREAD state.  Move toward the nearest other NPC who is
+## also BELIEVE or SPREAD for the same rumor — visible social clustering.
+func _start_spread_clustering(rumor: Rumor) -> void:
+	if _pathfinder == null:
+		return
+	var best: Node2D = null
+	var best_dist := INF
+	for other in all_npcs_ref:
+		if other == self:
+			continue
+		var s := other.get_state_for_rumor(rumor.id)
+		if s in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD]:
+			var d := float((other.current_cell - current_cell).length_squared())
+			if d < best_dist:
+				best_dist = d
+				best = other
+	if best == null:
+		return
+	_path = _pathfinder.get_path(current_cell, best.current_cell)
+	if _path.size() > 0 and _path[0] == current_cell:
+		_path.remove_at(0)
 
 
 # ── Query helpers ────────────────────────────────────────────────────────────

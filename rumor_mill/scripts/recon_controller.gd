@@ -355,14 +355,49 @@ func _try_eavesdrop(target: Node2D) -> void:
 	_intel_store.add_relationship_intel(intel)
 
 	var bar_str := "[" + "*".repeat(intel.bars()) + " ".repeat(3 - intel.bars()) + "]"
-	var msg := "Eavesdropped: %s <-> %s  %s %s (%s)  (%d Recon left)" % [
+	var belief_ctx := _belief_context(target, partner)
+	var belief_line := ("\n" + belief_ctx) if not belief_ctx.is_empty() else ""
+	var msg := "Eavesdropped: %s <-> %s  %s %s (%s)%s  (%d Recon left)" % [
 		name_a, name_b,
 		bar_str, intel.affinity_label.capitalize(), intel.strength_label(),
+		belief_line,
 		_intel_store.recon_actions_remaining
 	]
 	emit_signal("action_performed", msg, true)
 	print("[Recon] Eavesdrop %s <-> %s  weight=%.2f  label=%s" % [
 		name_a, name_b, weight, intel.affinity_label])
+
+
+## Returns a short string describing what beliefs either NPC currently holds
+## (BELIEVE / SPREAD / ACT states only).  Empty string if neither believes anything.
+func _belief_context(npc_a: Node2D, npc_b: Node2D) -> String:
+	var snippets: Array[String] = []
+	var active_states := [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]
+	for npc in [npc_a, npc_b]:
+		var npc_name: String = npc.npc_data.get("name", "?")
+		for rid in npc.rumor_slots:
+			var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+			if slot.state in active_states:
+				var claim_label := Rumor.claim_type_name(slot.rumor.claim_type)
+				var subject_name := _resolve_npc_name(slot.rumor.subject_npc_id)
+				snippets.append("%s [%s: %s about %s]" % [
+					npc_name,
+					Rumor.state_name(slot.state),
+					claim_label,
+					subject_name
+				])
+				break  # one snippet per NPC is enough
+	return "\n".join(snippets)
+
+
+## Resolve a NPC id to a display name using the world NPC list.
+func _resolve_npc_name(npc_id: String) -> String:
+	if _world_ref == null:
+		return npc_id
+	for npc in _world_ref.npcs:
+		if npc.npc_data.get("id", "") == npc_id:
+			return npc.npc_data.get("name", npc_id)
+	return npc_id
 
 
 func _find_conversation_partner(target: Node2D) -> Node2D:
