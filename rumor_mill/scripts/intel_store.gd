@@ -5,7 +5,7 @@
 class_name PlayerIntelStore
 
 const MAX_DAILY_ACTIONS  := 3
-const MAX_DAILY_WHISPERS := 1
+const MAX_DAILY_WHISPERS := 2
 
 var recon_actions_remaining:   int = MAX_DAILY_ACTIONS
 var whisper_tokens_remaining:  int = MAX_DAILY_WHISPERS

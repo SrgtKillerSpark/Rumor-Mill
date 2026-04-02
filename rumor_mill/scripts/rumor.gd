@@ -42,7 +42,7 @@ static func create(
 		inten: int,
 		mut: float,
 		tick: int,
-		shelf: int = 240,
+		shelf: int = 330,
 		parent_id: String = ""
 ) -> Rumor:
 	var r := Rumor.new()

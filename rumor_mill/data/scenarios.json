@@ -44,7 +44,9 @@
       { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
       { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.40, "weightBtoA": 0.35 }
     ],
-    "personalityOverrides": [],
+    "personalityOverrides": [
+      { "npcId": "edric_fenn", "loyalty": 0.80 }
+    ],
     "startingReputations": {}
   },
   {
