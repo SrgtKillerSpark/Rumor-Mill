@@ -15,6 +15,9 @@ extends Node2D
 ##   Row 2 = clergy (cream/black)
 ##   Cols 0-2 = idle frames (32×48 each); Cols 3-6 = walk frames
 
+## Emitted once when this NPC first receives a rumor (UNAWARE → EVALUATING).
+signal first_npc_became_evaluating
+
 const TILE_W := 64
 const TILE_H := 32
 const MOVE_SPEED := 180.0  # pixels/second
@@ -256,6 +259,7 @@ func hear_rumor(rumor: Rumor, source_faction: String) -> void:
 
 	var slot := Rumor.NpcRumorSlot.new(rumor, source_faction)
 	rumor_slots[rid] = slot
+	emit_signal("first_npc_became_evaluating")
 	if OS.is_debug_build():
 		print("[Rumor] %s → EVALUATING '%s'" % [npc_data.get("name", "?"), rid])
 

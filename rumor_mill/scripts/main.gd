@@ -21,9 +21,10 @@ var _tutorial_hud: CanvasLayer    = null
 # ── Sprint 6: end screen (created programmatically) ───────────────────────────
 var _end_screen: CanvasLayer = null
 
-# Prevent duplicate tooltip triggers for observe / eavesdrop.
-var _observe_tooltip_fired:    bool = false
-var _eavesdrop_tooltip_fired:  bool = false
+# Prevent duplicate tooltip triggers for observe / eavesdrop / npc_state_change.
+var _observe_tooltip_fired:        bool = false
+var _eavesdrop_tooltip_fired:      bool = false
+var _npc_state_change_tooltip_fired: bool = false
 
 
 func _ready() -> void:
@@ -166,6 +167,10 @@ func _init_tutorial_system() -> void:
 	if journal != null:
 		journal.visibility_changed.connect(_on_journal_visibility_changed)
 
+	# Tooltip (npc_state_change): first time any NPC transitions to EVALUATING.
+	for npc in world.npcs:
+		npc.first_npc_became_evaluating.connect(_on_first_npc_state_change)
+
 	print("Main: Tutorial system wired (5 first-encounter tooltips)")
 
 
@@ -181,6 +186,14 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 	elif not _eavesdrop_tooltip_fired and message.begins_with("Eavesdropped"):
 		_eavesdrop_tooltip_fired = true
 		_tutorial_hud.queue_tooltip("eavesdrop")
+
+
+## Tooltip (npc_state_change) trigger — fires once when any NPC first enters EVALUATING.
+func _on_first_npc_state_change() -> void:
+	if _npc_state_change_tooltip_fired or _tutorial_hud == null:
+		return
+	_npc_state_change_tooltip_fired = true
+	_tutorial_hud.queue_tooltip("npc_state_change")
 
 
 ## Tooltip 4 trigger — fires once when the Rumor Panel first opens.

@@ -17,6 +17,7 @@ const TOOLTIP_ORDER: Array = [
 	"recon_actions",
 	"observe",
 	"eavesdrop",
+	"npc_state_change",
 	"rumor_crafting",
 	"reputation",
 ]
@@ -52,6 +53,18 @@ const TOOLTIP_DATA: Dictionary = {
 			+ "• [b]Suspicious[/b] pairs may block or distort what they hear.\n"
 			+ "Beware — NPCs with a high temperament may notice you listening!\n"
 			+ "Review all relationships under [b]J → Intelligence[/b]."
+		),
+	},
+	"npc_state_change": {
+		"title": "NPC State Machine",
+		"body":  (
+			"NPCs process every rumour through a state machine:\n"
+			+ "• [b]Evaluating[/b] — weighing up whether to believe it.\n"
+			+ "• [b]Believe[/b] — accepted; mood and actions may shift.\n"
+			+ "• [b]Spread[/b] — actively telling others.\n"
+			+ "• [b]Act[/b] — behaviour changed (avoidance, confrontation).\n"
+			+ "• [b]Reject[/b] — dismissed; harder to convince again.\n"
+			+ "Watch the label above each NPC to track their current state."
 		),
 	},
 	"rumor_crafting": {
