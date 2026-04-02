@@ -15,6 +15,7 @@ class_name TutorialSystem
 ## Ordered list used to control queue priority when multiple tooltips fire at once.
 const TOOLTIP_ORDER: Array = [
 	"recon_actions",
+	"navigation_controls",
 	"observe",
 	"eavesdrop",
 	"npc_state_change",
@@ -32,6 +33,18 @@ const TOOLTIP_DATA: Dictionary = {
 			+ "• [b]Right-click an NPC[/b] in conversation to [b]Eavesdrop[/b] — learn relationships.\n"
 			+ "• [b]Press R[/b] to craft and seed a rumour (costs one Whisper Token).\n"
 			+ "Actions refresh at dawn each new day."
+		),
+	},
+	"navigation_controls": {
+		"title": "Navigation",
+		"body":  (
+			"Moving around the map:\n"
+			+ "• [b]WASD[/b] or [b]Arrow Keys[/b] — pan the camera\n"
+			+ "• [b]Scroll Wheel[/b] — zoom in / out\n"
+			+ "• [b]Middle Mouse Drag[/b] — free pan\n\n"
+			+ "[b]Hotkeys:[/b]\n"
+			+ "  [b]R[/b] = Rumour Panel   [b]J[/b] = Journal\n"
+			+ "  [b]G[/b] = Social Graph   [b]Esc[/b] = Pause"
 		),
 	},
 	"observe": {

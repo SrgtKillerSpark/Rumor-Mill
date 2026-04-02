@@ -32,6 +32,10 @@ const STATE_RING_COLOR := {
 
 const EDGE_BASE_COLOR := Color(0.50, 0.80, 1.00, 1.0)
 
+# Persistent teal glow on edges where either endpoint is actively SPREADING.
+const LIVE_SPREAD_EDGE_COLOR := Color(0.10, 0.85, 0.55, 0.65)
+const LIVE_SPREAD_EDGE_WIDTH := 2.5
+
 # Only draw edges above this weight threshold to reduce visual noise.
 const EDGE_THRESHOLD := 0.30
 
@@ -155,6 +159,15 @@ func _on_draw() -> void:
 
 
 func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
+	# Precompute which NPC ids are actively spreading any rumor right now.
+	var spreading_ids: Dictionary = {}   # npc_id → true
+	for npc in npcs:
+		for rid in npc.rumor_slots:
+			var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+			if slot.state == Rumor.RumorState.SPREAD:
+				spreading_ids[npc.npc_data.get("id", "")] = true
+				break
+
 	# Draw each directed edge once (from_id < to_id lexicographic to avoid doubles).
 	var drawn: Dictionary = {}
 
@@ -180,7 +193,7 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 
 			var to_screen := _world_to_screen(target_npc.global_position)
 
-			# Check if this edge had a recent spread transmission.
+			# Check if this edge had a recent spread transmission (event pulse).
 			if _active_spread_edges.has(key):
 				# Highlight: bright orange, thickness scaled by time remaining.
 				var t := _active_spread_edges[key] / SPREAD_HIGHLIGHT_DURATION
@@ -189,6 +202,10 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				var h_color := Color(SPREAD_HIGHLIGHT_COLOR.r, SPREAD_HIGHLIGHT_COLOR.g,
 									 SPREAD_HIGHLIGHT_COLOR.b, h_alpha)
 				_draw_node.draw_line(from_screen, to_screen, h_color, h_width)
+			elif spreading_ids.has(nid) or spreading_ids.has(tid):
+				# Persistent teal glow: either endpoint is actively spreading a rumor.
+				_draw_node.draw_line(from_screen, to_screen,
+									 LIVE_SPREAD_EDGE_COLOR, LIVE_SPREAD_EDGE_WIDTH)
 			else:
 				var alpha  := clamp((weight - EDGE_THRESHOLD) / (1.0 - EDGE_THRESHOLD), 0.05, 0.55)
 				var width  := lerpf(0.5, 2.5, weight)
@@ -259,7 +276,10 @@ func _build_legend() -> void:
 	_legend_label.append_text("[color=#e62626]■[/color] Reject\n")
 	_legend_label.append_text("[color=#ff8000]■[/color] Spread\n")
 	_legend_label.append_text("[color=#bf0dff]■[/color] Act\n")
-	_legend_label.append_text("[color=#404040]■[/color] Expired\n")
+	_legend_label.append_text("[color=#404040]■[/color] Expired\n\n")
+	_legend_label.append_text("[b]Edges[/b]\n")
+	_legend_label.append_text("[color=#1ad98c]—[/color] Active spread path\n")
+	_legend_label.append_text("[color=#ff8000]—[/color] Recent transmission\n")
 
 	_legend_panel.add_child(_legend_label)
 	add_child(_legend_panel)

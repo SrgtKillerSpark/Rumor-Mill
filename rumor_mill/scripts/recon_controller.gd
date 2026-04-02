@@ -174,8 +174,21 @@ func _show_tooltip(screen_pos: Vector2, text: String) -> void:
 	var min_sz: Vector2 = _tooltip_label.get_minimum_size()
 	var panel_w: float  = min_sz.x + 12.0
 	var panel_h: float  = max(min_sz.y + 6.0, 22.0)
-	_tooltip_panel.size     = Vector2(panel_w, panel_h)
-	_tooltip_panel.position = screen_pos + TOOLTIP_OFFSET
+	_tooltip_panel.size = Vector2(panel_w, panel_h)
+
+	# Default offset: upper-right of cursor.
+	var pos := screen_pos + TOOLTIP_OFFSET
+
+	# Clamp to viewport so the tooltip never clips off screen edges.
+	var vp_size := get_viewport().get_visible_rect().size
+	if pos.x + panel_w > vp_size.x:
+		pos.x = screen_pos.x - panel_w - 6.0   # flip left of cursor
+	if pos.y < 0.0:
+		pos.y = screen_pos.y + 8.0              # flip below cursor
+	pos.x = maxf(pos.x, 2.0)
+	pos.y = minf(pos.y, vp_size.y - panel_h - 2.0)
+
+	_tooltip_panel.position = pos
 	_tooltip_panel.visible  = true
 
 

@@ -247,6 +247,8 @@ func _init_tutorial_system() -> void:
 
 	# Tooltip 1: explain recon actions on first game load.
 	_tutorial_hud.queue_tooltip("recon_actions")
+	# Tooltip 2: navigation controls (panning, zoom, hotkeys).
+	_tutorial_hud.queue_tooltip("navigation_controls")
 
 	# Tooltip 4: rumour crafting — first time the Rumor Panel becomes visible.
 	if rumor_panel != null:
