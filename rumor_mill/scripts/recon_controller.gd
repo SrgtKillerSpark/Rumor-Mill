@@ -117,7 +117,7 @@ func _process(_delta: float) -> void:
 	if new_npc != null:
 		_set_hovered_npc(new_npc)
 		_set_hovered_location("")
-		_show_tooltip(screen_pos, "Right-click to Eavesdrop")
+		_show_tooltip(screen_pos, _npc_tooltip_text(new_npc))
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
 		return
 
@@ -182,6 +182,45 @@ func _show_tooltip(screen_pos: Vector2, text: String) -> void:
 func _hide_tooltip() -> void:
 	if _tooltip_panel != null:
 		_tooltip_panel.visible = false
+
+
+## Build the hover tooltip text for an NPC, including their current reputation.
+func _npc_tooltip_text(npc: Node2D) -> String:
+	var base := "Right-click to Eavesdrop"
+	if _world_ref == null or not ("reputation_system" in _world_ref):
+		return base
+	var rep_sys = _world_ref.reputation_system
+	if rep_sys == null:
+		return base
+	var npc_id: String = npc.npc_data.get("id", "")
+	if npc_id.is_empty():
+		return base
+	var snap = rep_sys.get_snapshot(npc_id)
+	if snap == null:
+		return base
+	return "%s\nRep: %d — %s" % [base, snap.score, _rep_tier_label(snap.score)]
+
+
+## Flash the NPC sprite red briefly to signal they noticed the player.
+## Tweens modulate red → normal over ~0.8 s with two pulses for urgency.
+func _flash_npc_detected(npc: Node2D) -> void:
+	if npc == null or not is_instance_valid(npc):
+		return
+	var tween := npc.create_tween()
+	tween.tween_property(npc, "modulate", Color(2.0, 0.2, 0.2, 1.0), 0.08)
+	tween.tween_property(npc, "modulate", NPC_NORMAL_MODULATE, 0.20)
+	tween.tween_property(npc, "modulate", Color(2.0, 0.2, 0.2, 1.0), 0.08)
+	tween.tween_property(npc, "modulate", NPC_NORMAL_MODULATE, 0.35)
+
+
+## Map a 0-100 reputation score to a human-readable tier label.
+func _rep_tier_label(score: int) -> String:
+	if score >= 85: return "Revered"
+	elif score >= 70: return "Distinguished"
+	elif score >= 50: return "Respected"
+	elif score >= 35: return "Suspicious"
+	elif score >= 20: return "Disgraced"
+	else: return "Despised"
 
 
 # ── Input ─────────────────────────────────────────────────────────────────────
@@ -296,6 +335,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 				name_a, _intel_store.recon_actions_remaining],
 			false)
 		print("[Recon] Eavesdrop NOTICED by %s (temperament=%.2f)" % [name_a, temperament])
+		_flash_npc_detected(target)
 		player_exposed.emit()
 		return
 

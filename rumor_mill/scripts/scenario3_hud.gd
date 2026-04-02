@@ -156,6 +156,13 @@ func _build_ui() -> void:
 	_result_lbl.text = ""
 	right_vbox.add_child(_result_lbl)
 
+	# ── Bar color legend ──────────────────────────────────────────────────
+	var legend_lbl := Label.new()
+	legend_lbl.add_theme_font_size_override("font_size", 9)
+	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
+	legend_lbl.text = "[green] on track  [orange] at risk  [red] failing"
+	right_vbox.add_child(legend_lbl)
+
 
 # ── Refresh ───────────────────────────────────────────────────────────────────
 
