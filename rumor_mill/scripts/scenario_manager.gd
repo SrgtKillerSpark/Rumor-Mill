@@ -60,32 +60,41 @@ func get_days_allowed() -> int:
 
 
 # NPC IDs used for win/fail checks.
-const EDRIC_FENN_ID  := "edric_fenn"
-const CALDER_FENN_ID := "calder_fenn"
-const TOMAS_REEVE_ID := "tomas_reeve"
+const EDRIC_FENN_ID    := "edric_fenn"
+const ALYS_HERBWIFE_ID := "alys_herbwife"
+const CALDER_FENN_ID   := "calder_fenn"
+const TOMAS_REEVE_ID   := "tomas_reeve"
 
 # Scenario 1 threshold.
-const S1_WIN_EDRIC_BELOW  := 25
+const S1_WIN_EDRIC_BELOW   := 25
+
+# Scenario 2 thresholds.
+# Win when 5+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
+const S2_WIN_ILLNESS_MIN   := 5
+# Ticks per in-game day (matches DayNightCycle default).
+const TICKS_PER_DAY        := 24
 
 # Scenario 3 thresholds.
-const S3_WIN_CALDER_MIN   := 80
-const S3_WIN_TOMAS_MAX    := 30
+const S3_WIN_CALDER_MIN    := 80
+const S3_WIN_TOMAS_MAX     := 30
 const S3_FAIL_CALDER_BELOW := 40
 
 enum ScenarioState { ACTIVE, WON, FAILED }
 
 ## Emitted the first time a scenario resolves.
-## scenario_id: 1 or 3.  state: WON or FAILED.
+## scenario_id: 1, 2, or 3.  state: WON or FAILED.
 signal scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioState)
 
 var scenario_1_state: ScenarioState = ScenarioState.ACTIVE
+var scenario_2_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_3_state: ScenarioState = ScenarioState.ACTIVE
 
 
 ## Evaluate all win/fail conditions from the current reputation cache.
 ## Call once per tick, after reputation_system.recalculate_all().
-func evaluate(rep: ReputationSystem, _current_tick: int) -> void:
+func evaluate(rep: ReputationSystem, current_tick: int) -> void:
 	_check_scenario_1(rep)
+	_check_scenario_2(rep, current_tick)
 	_check_scenario_3(rep)
 
 
@@ -100,6 +109,25 @@ func _check_scenario_1(rep: ReputationSystem) -> void:
 		scenario_resolved.emit(1, ScenarioState.WON)
 		print("[ScenarioManager] Scenario 1 WIN — Edric Fenn reputation %d < %d" % [
 			snap.score, S1_WIN_EDRIC_BELOW])
+
+
+func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
+	if scenario_2_state != ScenarioState.ACTIVE:
+		return
+	var illness_count: int = rep.get_illness_believer_count(ALYS_HERBWIFE_ID)
+	if illness_count >= S2_WIN_ILLNESS_MIN:
+		scenario_2_state = ScenarioState.WON
+		scenario_resolved.emit(2, ScenarioState.WON)
+		print("[ScenarioManager] Scenario 2 WIN — %d NPCs believe illness about Alys Herbwife (>= %d)" % [
+			illness_count, S2_WIN_ILLNESS_MIN])
+		return
+	# Timeout fail: days elapsed exceeds the scenario timer.
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	if current_day > _days_allowed:
+		scenario_2_state = ScenarioState.FAILED
+		scenario_resolved.emit(2, ScenarioState.FAILED)
+		print("[ScenarioManager] Scenario 2 FAIL — timeout, day %d > allowed %d" % [
+			current_day, _days_allowed])
 
 
 func _check_scenario_3(rep: ReputationSystem) -> void:
@@ -127,6 +155,15 @@ func _check_scenario_3(rep: ReputationSystem) -> void:
 # ---------------------------------------------------------------------------
 # Progress queries (for HUD / Journal)
 # ---------------------------------------------------------------------------
+
+## Returns the current Scenario 2 progress dict.
+func get_scenario_2_progress(rep: ReputationSystem) -> Dictionary:
+	return {
+		"illness_believer_count": rep.get_illness_believer_count(ALYS_HERBWIFE_ID),
+		"win_threshold":          S2_WIN_ILLNESS_MIN,
+		"state":                  scenario_2_state,
+	}
+
 
 ## Returns the current Scenario 1 progress dict.
 func get_scenario_1_progress(rep: ReputationSystem) -> Dictionary:

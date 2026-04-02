@@ -194,7 +194,8 @@ func _refresh() -> void:
 
 	# Days remaining.
 	var days_elapsed: int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
-	_days_lbl.text = "Days remaining: %d" % max(0, 30 - days_elapsed)
+	var days_allowed: int = sm.get_days_allowed() if sm != null else 30
+	_days_lbl.text = "Days remaining: %d" % max(0, days_allowed - days_elapsed)
 
 	# Result label.
 	match state:

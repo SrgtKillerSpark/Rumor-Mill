@@ -72,6 +72,10 @@ func clear_base_overrides() -> void:
 # ---------------------------------------------------------------------------
 var _cache: Dictionary = {}
 
+## Per-tick cache: npc_id → count of NPCs in BELIEVE/SPREAD/ACT state for
+## illness-type rumors targeting that NPC.  Used by Scenario 2 evaluator.
+var _illness_believer_counts: Dictionary = {}
+
 
 ## Recalculate snapshots for every NPC in all_npcs.
 ## Call at the START of each tick, before state transitions fire.
@@ -147,6 +151,17 @@ func recalculate_all(all_npcs: Array, current_tick: int) -> void:
 				fbis[npc_faction]["ct_counts"][ct] = \
 					fbis[npc_faction]["ct_counts"].get(ct, 0) + 1
 
+	# ── Build illness-believer lookup (used by Scenario 2 evaluator) ─────────
+	_illness_believer_counts.clear()
+	for npc_id in rids_by_subject:
+		var ill_count := 0
+		for rid in rids_by_subject[npc_id]:
+			var slot: Rumor.NpcRumorSlot = rumor_first_slot.get(rid, null)
+			if slot != null and slot.rumor.claim_type == Rumor.ClaimType.ILLNESS:
+				ill_count += believer_counts.get(rid, 0)
+		if ill_count > 0:
+			_illness_believer_counts[npc_id] = ill_count
+
 	# ── Compute each NPC's snapshot using pre-built tables (O(unique_rids)) ─
 	_cache.clear()
 	for npc in all_npcs:
@@ -169,6 +184,12 @@ func get_snapshot(npc_id: String) -> ReputationSnapshot:
 ## Return a shallow copy of the full cache (for HUD / debug iteration).
 func get_all_snapshots() -> Dictionary:
 	return _cache.duplicate()
+
+
+## Returns the number of NPCs currently in BELIEVE/SPREAD/ACT state for
+## illness-type rumors about the given NPC.  Used by the Scenario 2 evaluator.
+func get_illness_believer_count(npc_id: String) -> int:
+	return _illness_believer_counts.get(npc_id, 0)
 
 
 # ---------------------------------------------------------------------------

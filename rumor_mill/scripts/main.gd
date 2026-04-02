@@ -182,6 +182,8 @@ func _on_rumor_seeded(
 
 
 func _init_scenario3_hud() -> void:
+	if world.active_scenario_id != "scenario_3":
+		return
 	# Build the Scenario 3 dual-track HUD programmatically (no .tscn required).
 	var hud := preload("res://scripts/scenario3_hud.gd").new()
 	hud.name = "Scenario3HUD"
