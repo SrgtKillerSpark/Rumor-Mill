@@ -191,13 +191,13 @@ func _refresh() -> void:
 	# Calder bar — grows toward target (80).
 	var calder_ratio: float = clamp(float(calder_score) / 100.0, 0.0, 1.0)
 	_calder_bar.custom_minimum_size.x = BAR_WIDTH * calder_ratio
-	_calder_bar.color = _bar_color_for_score(calder_score, true)
+	_calder_bar.color = _bar_color_for_score(calder_score, true, calder_target)
 
 	# Tomas bar — represents how far above 30 he still is (we want it to decay).
 	# Bar fills from left; reaching target means bar is nearly empty.
 	var tomas_ratio: float = clamp(float(tomas_score) / 100.0, 0.0, 1.0)
 	_tomas_bar.custom_minimum_size.x = BAR_WIDTH * tomas_ratio
-	_tomas_bar.color = _bar_color_for_score(tomas_score, false)
+	_tomas_bar.color = _bar_color_for_score(tomas_score, false, tomas_target)
 
 	# Days remaining.
 	var days_elapsed: int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
@@ -216,13 +216,14 @@ func _refresh() -> void:
 			_result_lbl.text = ""
 
 
-func _bar_color_for_score(score: int, higher_is_better: bool) -> Color:
-	# Calder: higher is better (target 80+).
-	# Tomas:  lower is better (target ≤30) — flip the reading.
-	var effective := score if higher_is_better else (100 - score)
-	if effective >= 70: return C_WIN
-	elif effective >= 40: return C_NEUTRAL
-	else:                 return C_FAIL
+func _bar_color_for_score(score: int, higher_is_better: bool, win_target: int) -> Color:
+	# Calder: higher is better — effective == score, green at win_target (80).
+	# Tomas:  lower is better — flip so effective == 100-score, green at 100-win_target (70).
+	var effective     := score if higher_is_better else (100 - score)
+	var win_effective := win_target if higher_is_better else (100 - win_target)
+	if effective >= win_effective: return C_WIN
+	elif effective >= 40:          return C_NEUTRAL
+	else:                          return C_FAIL
 
 
 # ── Signals ───────────────────────────────────────────────────────────────────
