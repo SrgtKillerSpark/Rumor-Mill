@@ -1,9 +1,12 @@
 extends Node2D
 
-## main.gd — Sprint 6/7 entry point.
+## main.gd — Sprint 8 entry point.
 ## Wires DayNightCycle tick → World, debug tools, recon system, Player Journal,
 ## Social Graph Overlay, Scenario 3 HUD, Sprint 7 Tutorial Tooltip system,
-## Sprint 6 End Screen overlay, and Sprint 7 AudioManager.
+## Sprint 6 End Screen overlay, Sprint 7 AudioManager, and Sprint 8 Main Menu.
+##
+## Flow: MainMenu overlay shown first → player selects scenario → Begin →
+##       world unpaused, active scenario applied, all systems initialised.
 
 @onready var world:                Node2D      = $World
 @onready var day_night:            Node        = $World/DayNightCycle
@@ -14,6 +17,9 @@ extends Node2D
 @onready var journal:              CanvasLayer = $Journal
 @onready var social_graph_overlay: CanvasLayer = $SocialGraphOverlay
 
+# ── Sprint 8: main menu ───────────────────────────────────────────────────────
+var _main_menu: CanvasLayer = null
+
 # ── Sprint 7: tutorial system (created programmatically) ──────────────────────
 var _tutorial_sys: TutorialSystem = null
 var _tutorial_hud: CanvasLayer    = null
@@ -22,20 +28,70 @@ var _tutorial_hud: CanvasLayer    = null
 var _end_screen: CanvasLayer = null
 
 # Prevent duplicate tooltip triggers for observe / eavesdrop / npc_state_change.
-var _observe_tooltip_fired:        bool = false
-var _eavesdrop_tooltip_fired:      bool = false
+var _observe_tooltip_fired:          bool = false
+var _eavesdrop_tooltip_fired:        bool = false
 var _npc_state_change_tooltip_fired: bool = false
+
+# Guards against double-initialisation if begin_game fires more than once.
+var _game_started: bool = false
 
 
 func _ready() -> void:
+	# ── Pause world until the player has chosen a scenario ────────────────────
+	world.set_process(false)
+	world.set_physics_process(false)
+	world.set_process_input(false)
+	world.visible = false
+
+	# Keep HUD layers hidden until game starts.
+	recon_hud.visible            = false
+	rumor_panel.visible          = false
+	journal.visible              = false
+	social_graph_overlay.visible = false
+
+	# ── Sprint 8: show main menu ───────────────────────────────────────────────
+	_main_menu = preload("res://scripts/main_menu.gd").new()
+	_main_menu.name = "MainMenu"
+	add_child(_main_menu)
+	_main_menu.begin_game.connect(_on_begin_game)
+
+	print("Rumor Mill — showing main menu (Sprint 8).")
+
+
+## Called when the player clicks Begin on the briefing screen.
+func _on_begin_game(scenario_id: String) -> void:
+	if _game_started:
+		return
+	_game_started = true
+
+	# Hide / free the menu overlay.
+	if _main_menu != null:
+		_main_menu.queue_free()
+		_main_menu = null
+
+	# Apply the chosen scenario's edge/personality/reputation overrides.
+	world.active_scenario_id = scenario_id
+	world._apply_active_scenario()
+
+	# Re-enable world processing and make it visible.
+	world.set_process(true)
+	world.set_physics_process(true)
+	world.set_process_input(true)
+	world.visible = true
+
+	# Restore HUD visibility.
+	recon_hud.visible            = true
+	rumor_panel.visible          = false  # closed by default; opened via R key
+	journal.visible              = false  # closed by default; opened via J key
+	social_graph_overlay.visible = false  # closed by default; opened via G key
+
+	# ── Wire game systems ─────────────────────────────────────────────────────
 	# Drive NPC ticks from the day/night cycle.
 	day_night.game_tick.connect(world.on_game_tick)
 
-	# Wire debug tools (World also self-wires, but doing it here is more robust).
 	if debug_overlay != null and debug_overlay.has_method("set_world"):
 		debug_overlay.set_world(world)
 
-	# ── Sprint 6: Social Graph Overlay ────────────────────────────────────
 	if social_graph_overlay != null and social_graph_overlay.has_method("set_world"):
 		social_graph_overlay.set_world(world)
 
@@ -45,25 +101,14 @@ func _ready() -> void:
 		if debug_console.has_method("set_overlay"):
 			debug_console.set_overlay(debug_overlay)
 
-	# ── Sprint 3: wire reconnaissance system ──────────────────────────────
 	_init_recon_system()
-
-	# ── Sprint 6: wire Player Journal ─────────────────────────────────────
 	_init_journal()
-
-	# ── Sprint 6: wire Scenario 3 HUD ─────────────────────────────────────
 	_init_scenario3_hud()
-
-	# ── Sprint 7: wire Tutorial Tooltip system ────────────────────────────
 	_init_tutorial_system()
-
-	# ── Sprint 6: wire End Screen ─────────────────────────────────────────
 	_init_end_screen()
-
-	# ── Sprint 7: wire AudioManager ───────────────────────────────────────
 	_init_audio()
 
-	print("Rumor Mill — Sprint 6/7 loaded.")
+	print("Rumor Mill — Sprint 8 loaded. Scenario: %s" % scenario_id)
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph (debug)  |  F4: lineage tree")
 	print("  G: Social Graph Overlay  |  R: Rumor Crafting Panel  |  J: Player Journal")
 	print("  Right-click building: Observe  |  Right-click NPC: Eavesdrop")
