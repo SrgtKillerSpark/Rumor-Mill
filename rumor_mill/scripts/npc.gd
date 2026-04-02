@@ -18,6 +18,12 @@ extends Node2D
 ## Emitted once when this NPC first receives a rumor (UNAWARE → EVALUATING).
 signal first_npc_became_evaluating
 
+## Emitted whenever this NPC's worst rumor state changes (for journal + overlay).
+signal rumor_state_changed(npc_name: String, new_state_name: String, rumor_id: String)
+
+## Emitted when this NPC successfully transmits a rumor to another NPC.
+signal rumor_transmitted(from_name: String, to_name: String, rumor_id: String)
+
 const TILE_W := 64
 const TILE_H := 32
 const MOVE_SPEED := 180.0  # pixels/second
@@ -72,6 +78,21 @@ const SPRITE_H := 48
 @onready var name_label: Label            = $NameLabel
 
 var _faction: String = "merchant"
+
+# Sprite modulate tints per worst rumor state — subtle colour shifts so the
+# player can read NPC state at a glance without squinting at the state badge.
+const STATE_TINT := {
+	Rumor.RumorState.UNAWARE:    Color(1.00, 1.00, 1.00, 1.0),  # normal
+	Rumor.RumorState.EVALUATING: Color(1.00, 1.00, 0.70, 1.0),  # warm yellow
+	Rumor.RumorState.BELIEVE:    Color(0.70, 1.00, 0.72, 1.0),  # soft green
+	Rumor.RumorState.SPREAD:     Color(1.00, 0.75, 0.45, 1.0),  # orange
+	Rumor.RumorState.ACT:        Color(1.00, 0.55, 0.90, 1.0),  # magenta-pink
+	Rumor.RumorState.REJECT:     Color(0.80, 0.80, 0.85, 1.0),  # cool grey-blue
+	Rumor.RumorState.EXPIRED:    Color(0.65, 0.65, 0.65, 1.0),  # grey
+}
+
+# Tracks last worst state so we only emit rumor_state_changed on actual changes.
+var _last_worst_state: Rumor.RumorState = Rumor.RumorState.UNAWARE
 
 
 func _ready() -> void:
@@ -433,7 +454,33 @@ func _spread_to_neighbours(
 		other.hear_rumor(spread_rumor, spreader_faction)
 		spread_happened = true
 
+		# Visual: show a floating speech bubble from this NPC toward the target.
+		_show_spread_bubble(other)
+		emit_signal("rumor_transmitted",
+			npc_data.get("name", "?"),
+			other.npc_data.get("name", "?"),
+			spread_rumor.id)
+
 	return spread_happened
+
+
+# ── Spread bubble ────────────────────────────────────────────────────────────
+
+## Spawns a small floating speech-bubble Label above this NPC that drifts up
+## and fades out over ~1.5 seconds, indicating rumor transmission.
+func _show_spread_bubble(_target_npc: Node2D) -> void:
+	var lbl := Label.new()
+	lbl.text = "💬"
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.position = Vector2(-8.0, -60.0)  # start just above the NPC sprite
+	lbl.modulate = Color(1.0, 0.85, 0.3, 1.0)
+	add_child(lbl)
+
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -24.0), 1.5)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.5)
+	tw.chain().tween_callback(lbl.queue_free)
 
 
 # ── Query helpers ────────────────────────────────────────────────────────────
@@ -466,12 +513,29 @@ func get_worst_rumor_state() -> Rumor.RumorState:
 # ── Label update ─────────────────────────────────────────────────────────────
 
 func _update_label() -> void:
-	var state_str := Rumor.state_name(get_worst_rumor_state())
+	var worst := get_worst_rumor_state()
+	var state_str := Rumor.state_name(worst)
 	var short_name: String = npc_data.get("name", "NPC")
 	if rumor_slots.is_empty():
 		name_label.text = short_name
 	else:
 		name_label.text = "%s\n[%s]" % [short_name, state_str]
+
+	# Apply sprite tint based on worst rumor state.
+	if sprite != null and sprite.sprite_frames != null:
+		var tint: Color = STATE_TINT.get(worst, Color.WHITE)
+		sprite.modulate = tint
+
+	# Emit state-change signal so the journal + overlay can react.
+	if worst != _last_worst_state:
+		_last_worst_state = worst
+		# Find the rumor_id that corresponds to the worst state.
+		var wrid := ""
+		for rid in rumor_slots:
+			if rumor_slots[rid].state == worst:
+				wrid = rid
+				break
+		emit_signal("rumor_state_changed", short_name, state_str, wrid)
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────

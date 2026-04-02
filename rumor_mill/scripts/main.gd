@@ -106,6 +106,7 @@ func _on_begin_game(scenario_id: String) -> void:
 
 	_init_recon_system()
 	_init_journal()
+	_wire_rumor_events()
 	_init_objective_hud()
 	_init_scenario3_hud()
 	_init_tutorial_system()
@@ -186,6 +187,22 @@ func _on_rumor_seeded(
 				claim_id, subject_name, seed_target_name
 			]
 		)
+
+
+## Connect world.rumor_event → journal timeline and social graph overlay.
+func _wire_rumor_events() -> void:
+	if world == null:
+		return
+	world.rumor_event.connect(_on_rumor_event)
+	print("Main: rumor_event wired to journal timeline")
+
+
+## Relay world rumor events into the Journal timeline and overlay.
+func _on_rumor_event(message: String, _tick: int) -> void:
+	if journal != null and journal.has_method("push_timeline_event"):
+		journal.push_timeline_event(message)
+	if social_graph_overlay != null and social_graph_overlay.has_method("on_rumor_event"):
+		social_graph_overlay.on_rumor_event(message)
 
 
 func _init_objective_hud() -> void:

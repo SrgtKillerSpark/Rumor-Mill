@@ -49,6 +49,12 @@ var _draw_node: Node2D = null
 var _legend_panel:  PanelContainer = null
 var _legend_label:  RichTextLabel  = null
 
+# Recent rumor transmissions: "from_id|to_id" → time_remaining (seconds).
+# Populated by on_rumor_event(); edges glow while time_remaining > 0.
+const SPREAD_HIGHLIGHT_DURATION := 3.0
+const SPREAD_HIGHLIGHT_COLOR    := Color(1.0, 0.6, 0.0, 0.9)  # vivid orange
+var _active_spread_edges: Dictionary = {}   # key → float (seconds remaining)
+
 
 func _ready() -> void:
 	layer = 8
@@ -79,9 +85,55 @@ func _input(event: InputEvent) -> void:
 
 # ── Draw loop ──────────────────────────────────────────────────────────────────
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if visible_overlay:
 		_draw_node.queue_redraw()
+
+	# Decay active spread edge highlight timers regardless of overlay visibility
+	# so they're ready when the overlay opens.
+	if not _active_spread_edges.is_empty():
+		var expired: Array = []
+		for key in _active_spread_edges:
+			_active_spread_edges[key] -= delta
+			if _active_spread_edges[key] <= 0.0:
+				expired.append(key)
+		for key in expired:
+			_active_spread_edges.erase(key)
+
+
+## Called by main.gd _on_rumor_event.  Parses transmission messages of the form
+## "Alice whispered to Bob [rumor_id]" and highlights the social-graph edge.
+func on_rumor_event(message: String) -> void:
+	# We only care about transmission events ("X whispered to Y").
+	if not message.contains(" whispered to "):
+		return
+	if _world_ref == null:
+		return
+
+	# Parse names — format: "FromName whispered to ToName [id]"
+	var parts := message.split(" whispered to ", false)
+	if parts.size() < 2:
+		return
+	var from_name := parts[0].strip_edges()
+	var to_part   := parts[1].split(" [", false)
+	var to_name   := to_part[0].strip_edges()
+
+	# Resolve NPC ids from names.
+	var from_id := ""
+	var to_id   := ""
+	for npc in _world_ref.npcs:
+		var n: String = npc.npc_data.get("name", "")
+		if n == from_name:
+			from_id = npc.npc_data.get("id", "")
+		if n == to_name:
+			to_id = npc.npc_data.get("id", "")
+
+	if from_id.is_empty() or to_id.is_empty():
+		return
+
+	# Store the edge key in canonical order (smaller id first).
+	var key := from_id + "|" + to_id if from_id < to_id else to_id + "|" + from_id
+	_active_spread_edges[key] = SPREAD_HIGHLIGHT_DURATION
 
 
 func _on_draw() -> void:
@@ -127,10 +179,21 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				continue
 
 			var to_screen := _world_to_screen(target_npc.global_position)
-			var alpha  := clamp((weight - EDGE_THRESHOLD) / (1.0 - EDGE_THRESHOLD), 0.05, 0.55)
-			var width  := lerpf(0.5, 2.5, weight)
-			var color  := Color(EDGE_BASE_COLOR.r, EDGE_BASE_COLOR.g, EDGE_BASE_COLOR.b, alpha)
-			_draw_node.draw_line(from_screen, to_screen, color, width)
+
+			# Check if this edge had a recent spread transmission.
+			if _active_spread_edges.has(key):
+				# Highlight: bright orange, thickness scaled by time remaining.
+				var t := _active_spread_edges[key] / SPREAD_HIGHLIGHT_DURATION
+				var h_alpha := lerpf(0.2, 0.9, t)
+				var h_width := lerpf(1.5, 4.0, t)
+				var h_color := Color(SPREAD_HIGHLIGHT_COLOR.r, SPREAD_HIGHLIGHT_COLOR.g,
+									 SPREAD_HIGHLIGHT_COLOR.b, h_alpha)
+				_draw_node.draw_line(from_screen, to_screen, h_color, h_width)
+			else:
+				var alpha  := clamp((weight - EDGE_THRESHOLD) / (1.0 - EDGE_THRESHOLD), 0.05, 0.55)
+				var width  := lerpf(0.5, 2.5, weight)
+				var color  := Color(EDGE_BASE_COLOR.r, EDGE_BASE_COLOR.g, EDGE_BASE_COLOR.b, alpha)
+				_draw_node.draw_line(from_screen, to_screen, color, width)
 
 
 func _draw_nodes(npcs: Array) -> void:

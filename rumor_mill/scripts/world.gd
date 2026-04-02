@@ -1,6 +1,12 @@
 extends Node2D
 
 ## world.gd — Sprint 5 update (Art Pass 1: 10 building types, animated NPCs).
+## Sprint 9: rumor_event signal aggregates NPC state-change and transmission
+## events so the Journal and Social Graph Overlay can react in real-time.
+
+## Emitted whenever a noteworthy rumor event occurs (spread, state change).
+## message: human-readable log string.  tick: current game tick.
+signal rumor_event(message: String, tick: int)
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -297,6 +303,11 @@ func _spawn_npcs() -> void:
 	# Give every NPC a reference to the full NPC list (for spread targeting).
 	for npc in npcs:
 		npc.all_npcs_ref = npcs
+
+	# Wire NPC events → world rumor_event signal so UI layers can subscribe.
+	for npc in npcs:
+		npc.rumor_state_changed.connect(_on_npc_rumor_state_changed)
+		npc.rumor_transmitted.connect(_on_npc_rumor_transmitted)
 
 	print("World: spawned %d NPCs" % npcs.size())
 
@@ -605,6 +616,24 @@ func seed_rumor_from_player(
 		seed_target_npc.npc_data.get("name", "?"),
 		subject_npc.npc_data.get("name", "?")])
 	return rumor_id
+
+
+# ── NPC event → rumor_event aggregation ─────────────────────────────────────
+
+func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id: String) -> void:
+	var tick: int = day_night.current_tick if day_night != null else 0
+	var msg := "%s → %s" % [npc_name, state_name]
+	if not rumor_id.is_empty():
+		msg += " (%s)" % rumor_id
+	emit_signal("rumor_event", msg, tick)
+
+
+func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: String) -> void:
+	var tick: int = day_night.current_tick if day_night != null else 0
+	var msg := "%s whispered to %s" % [from_name, to_name]
+	if not rumor_id.is_empty():
+		msg += " [%s]" % rumor_id
+	emit_signal("rumor_event", msg, tick)
 
 
 # ── Public API: inject_rumor ─────────────────────────────────────────────────
