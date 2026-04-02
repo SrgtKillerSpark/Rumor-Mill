@@ -93,12 +93,12 @@ var scenario_3_state: ScenarioState = ScenarioState.ACTIVE
 ## Evaluate all win/fail conditions from the current reputation cache.
 ## Call once per tick, after reputation_system.recalculate_all().
 func evaluate(rep: ReputationSystem, current_tick: int) -> void:
-	_check_scenario_1(rep)
+	_check_scenario_1(rep, current_tick)
 	_check_scenario_2(rep, current_tick)
-	_check_scenario_3(rep)
+	_check_scenario_3(rep, current_tick)
 
 
-func _check_scenario_1(rep: ReputationSystem) -> void:
+func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_1_state != ScenarioState.ACTIVE:
 		return
 	var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
@@ -109,6 +109,14 @@ func _check_scenario_1(rep: ReputationSystem) -> void:
 		scenario_resolved.emit(1, ScenarioState.WON)
 		print("[ScenarioManager] Scenario 1 WIN — Edric Fenn reputation %d < %d" % [
 			snap.score, S1_WIN_EDRIC_BELOW])
+		return
+	# Timeout fail: days elapsed exceeds the scenario timer.
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	if current_day > _days_allowed:
+		scenario_1_state = ScenarioState.FAILED
+		scenario_resolved.emit(1, ScenarioState.FAILED)
+		print("[ScenarioManager] Scenario 1 FAIL — timeout, day %d > allowed %d" % [
+			current_day, _days_allowed])
 
 
 func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
@@ -130,7 +138,7 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 			current_day, _days_allowed])
 
 
-func _check_scenario_3(rep: ReputationSystem) -> void:
+func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_3_state != ScenarioState.ACTIVE:
 		return
 	var calder: ReputationSystem.ReputationSnapshot = rep.get_snapshot(CALDER_FENN_ID)
@@ -150,6 +158,15 @@ func _check_scenario_3(rep: ReputationSystem) -> void:
 		scenario_resolved.emit(3, ScenarioState.FAILED)
 		print("[ScenarioManager] Scenario 3 FAIL — Calder %d < %d" % [
 			calder.score, S3_FAIL_CALDER_BELOW])
+		return
+
+	# Timeout fail: days elapsed exceeds the scenario timer.
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	if current_day > _days_allowed:
+		scenario_3_state = ScenarioState.FAILED
+		scenario_resolved.emit(3, ScenarioState.FAILED)
+		print("[ScenarioManager] Scenario 3 FAIL — timeout, day %d > allowed %d" % [
+			current_day, _days_allowed])
 
 
 # ---------------------------------------------------------------------------
