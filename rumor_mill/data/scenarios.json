@@ -152,6 +152,7 @@
     "startingReputations": {
       "calder_fenn": 58,
       "tomas_reeve": 52
-    }
+    },
+    "targetShiftExcluded": ["calder_fenn"]
   }
 ]

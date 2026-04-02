@@ -35,6 +35,11 @@ const OPPOSING_PAIRS: Array = [
 # rumor_id → Rumor  (all active, non-expired rumors)
 var live_rumors: Dictionary = {}
 
+# ── Scenario-specific mutation filters ───────────────────────────────────────
+# NPC ids that must never be picked as a target_shift destination.
+# Set by the scenario loader (e.g. world._apply_active_scenario) before play.
+var target_shift_excluded_ids: Array[String] = []
+
 # ── Lineage registry ─────────────────────────────────────────────────────────
 # rumor_id → { "parent_id": String, "mutation_type": String, "tick": int }
 var lineage: Dictionary = {}
@@ -133,9 +138,16 @@ func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
 		mut_tags.append("soften")
 
 	if do_target_shift and not all_npcs.is_empty():
-		var target_npc: Node2D = all_npcs[randi() % all_npcs.size()]
-		new_subject = target_npc.npc_data.get("id", source.subject_npc_id)
-		mut_tags.append("target_shift")
+		var shift_candidates: Array = all_npcs
+		if not target_shift_excluded_ids.is_empty():
+			shift_candidates = all_npcs.filter(
+				func(n: Node2D) -> bool:
+					return not target_shift_excluded_ids.has(n.npc_data.get("id", ""))
+			)
+		if not shift_candidates.is_empty():
+			var target_npc: Node2D = shift_candidates[randi() % shift_candidates.size()]
+			new_subject = target_npc.npc_data.get("id", source.subject_npc_id)
+			mut_tags.append("target_shift")
 
 	if do_detail_add:
 		mut_tags.append("detail_add")

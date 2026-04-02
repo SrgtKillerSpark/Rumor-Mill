@@ -425,6 +425,13 @@ func _apply_active_scenario() -> void:
 		scenario_manager.load_scenario_data(scenario_data)
 		print("World: loaded narrative text for '%s' — %s" % [active_scenario_id, scenario_manager.get_title()])
 
+	# 5. Propagation engine mutation filters.
+	if propagation_engine != null:
+		var excluded: Array = scenario_data.get("targetShiftExcluded", [])
+		propagation_engine.target_shift_excluded_ids.assign(excluded)
+		if not excluded.is_empty():
+			print("World: target_shift excluded ids for '%s': %s" % [active_scenario_id, excluded])
+
 	# Seed the reputation cache now that all overrides are in place.
 	reputation_system.recalculate_all(npcs, 0)
 	print("World: reputation cache seeded for '%s'" % active_scenario_id)
