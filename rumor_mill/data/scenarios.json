@@ -56,7 +56,8 @@
     "startingText": "The Herb-Wife arrived with the autumn rains. She set up her stall near the Chapel — too near, some said, to the Midwife's usual customers.\n\nYou were here first. And illness rumors, in this town, spread fast.\n\nYou have twenty days before the market turns.",
     "victoryText": "Alys the Herb-Wife packed her cart before dawn. She didn't say why.\n\nThree days later, Sister Maren declared publicly that the illness talk had been unfounded. But by then, the Herb-Wife was gone, and the Midwife's customers had come back.",
     "failTexts": {
-      "contradicted": "Sister Maren stood in the Market Square and named every NPC who had spread the rumor. She did not name you.\n\nShe didn't need to."
+      "contradicted": "Sister Maren stood in the Market Square and named every NPC who had spread the rumor. She did not name you.\n\nShe didn't need to.",
+      "timeout": "The autumn market closed without incident. Alys the Herb-Wife was still there on the last day, packing her unsold stock slowly, in no hurry at all.\n\nThe Midwife's customers had not come back. The twenty days were gone."
     },
     "edgeOverrides": [
       { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
