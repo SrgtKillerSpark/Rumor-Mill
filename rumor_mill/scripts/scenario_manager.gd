@@ -62,6 +62,7 @@ func get_days_allowed() -> int:
 # NPC IDs used for win/fail checks.
 const EDRIC_FENN_ID    := "edric_fenn"
 const ALYS_HERBWIFE_ID := "alys_herbwife"
+const MAREN_NUN_ID     := "maren_nun"
 const CALDER_FENN_ID   := "calder_fenn"
 const TOMAS_REEVE_ID   := "tomas_reeve"
 
@@ -137,6 +138,12 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 		scenario_resolved.emit(2, ScenarioState.WON)
 		print("[ScenarioManager] Scenario 2 WIN — %d NPCs believe illness about Alys Herbwife (>= %d)" % [
 			illness_count, S2_WIN_ILLNESS_MIN])
+		return
+	# Contradicted fail: Sister Maren rejects illness rumors about Alys Herbwife.
+	if rep.has_illness_rejecter(ALYS_HERBWIFE_ID, MAREN_NUN_ID):
+		scenario_2_state = ScenarioState.FAILED
+		scenario_resolved.emit(2, ScenarioState.FAILED)
+		print("[ScenarioManager] Scenario 2 FAIL — Sister Maren rejected illness rumors about Alys Herbwife")
 		return
 	# Timeout fail: days elapsed exceeds the scenario timer.
 	var current_day: int = current_tick / TICKS_PER_DAY + 1

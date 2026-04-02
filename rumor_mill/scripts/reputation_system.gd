@@ -76,6 +76,10 @@ var _cache: Dictionary = {}
 ## illness-type rumors targeting that NPC.  Used by Scenario 2 evaluator.
 var _illness_believer_counts: Dictionary = {}
 
+## Per-tick cache: subject_npc_id → { observer_npc_id: true } for NPCs in
+## REJECT state for illness-type rumors.  Used by Scenario 2 contradicted-fail.
+var _illness_rejecter_ids: Dictionary = {}
+
 
 ## Recalculate snapshots for every NPC in all_npcs.
 ## Call at the START of each tick, before state transitions fire.
@@ -111,12 +115,22 @@ func recalculate_all(all_npcs: Array, current_tick: int) -> void:
 	var death_info:        Dictionary = {}
 	var faction_bel_info:  Dictionary = {}
 
+	_illness_rejecter_ids.clear()
 	for npc in all_npcs:
 		var npc_faction: String = npc.npc_data.get("faction", "")
 		for rid in npc.rumor_slots:
 			var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
 			var subject: String = slot.rumor.subject_npc_id
 			var is_believer: bool = slot.state in _BELIEVER_STATES
+
+			# Track illness rejectors (used by Scenario 2 contradicted-fail evaluator).
+			if slot.state == Rumor.RumorState.REJECT \
+					and slot.rumor.claim_type == Rumor.ClaimType.ILLNESS:
+				var observer_id: String = npc.npc_data.get("id", "")
+				if not observer_id.is_empty():
+					if not _illness_rejecter_ids.has(subject):
+						_illness_rejecter_ids[subject] = {}
+					_illness_rejecter_ids[subject][observer_id] = true
 
 			# First-encounter slot stores rumor properties for delta computation.
 			if not rumor_first_slot.has(rid):
@@ -151,7 +165,7 @@ func recalculate_all(all_npcs: Array, current_tick: int) -> void:
 				fbis[npc_faction]["ct_counts"][ct] = \
 					fbis[npc_faction]["ct_counts"].get(ct, 0) + 1
 
-	# ── Build illness-believer lookup (used by Scenario 2 evaluator) ─────────
+	# ── Build illness-believer lookup (Scenario 2) ────────────────────────────
 	_illness_believer_counts.clear()
 	for npc_id in rids_by_subject:
 		var ill_count := 0
@@ -190,6 +204,14 @@ func get_all_snapshots() -> Dictionary:
 ## illness-type rumors about the given NPC.  Used by the Scenario 2 evaluator.
 func get_illness_believer_count(npc_id: String) -> int:
 	return _illness_believer_counts.get(npc_id, 0)
+
+
+## Returns true if observer_npc_id is in REJECT state for any illness-type
+## rumor about subject_npc_id.  Used by the Scenario 2 contradicted-fail check.
+func has_illness_rejecter(subject_npc_id: String, observer_npc_id: String) -> bool:
+	if not _illness_rejecter_ids.has(subject_npc_id):
+		return false
+	return _illness_rejecter_ids[subject_npc_id].has(observer_npc_id)
 
 
 # ---------------------------------------------------------------------------
