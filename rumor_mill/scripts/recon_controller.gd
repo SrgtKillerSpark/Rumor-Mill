@@ -18,6 +18,9 @@ const BUILDING_HIT_TILES     := 2     ## Grid-cell radius for location hit-test
 ## success: true = action succeeded, false = failed / no actions left
 signal action_performed(message: String, success: bool)
 
+## Emitted when a high-temperament NPC detects the player eavesdropping.
+signal player_exposed
+
 var _world_ref:       Node2D           = null
 var _intel_store:     PlayerIntelStore = null
 
@@ -139,6 +142,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 				name_a, _intel_store.recon_actions_remaining],
 			false)
 		print("[Recon] Eavesdrop NOTICED by %s (temperament=%.2f)" % [name_a, temperament])
+		player_exposed.emit()
 		return
 
 	# Record relationship intel.

@@ -148,6 +148,9 @@ func _init_recon_system() -> void:
 	# Pipe action results to AudioManager (recon SFX).
 	recon_ctrl.action_performed.connect(AudioManager.on_recon_action)
 
+	# Wire eavesdrop exposure → ScenarioManager fail trigger (Scenario 1).
+	recon_ctrl.player_exposed.connect(_on_player_exposed)
+
 	print("Main: recon system wired (intel_store + controller + HUD + 3-panel rumor modal)")
 
 
@@ -219,6 +222,12 @@ func _init_tutorial_system() -> void:
 		npc.first_npc_became_evaluating.connect(_on_first_npc_state_change)
 
 	print("Main: Tutorial system wired (5 first-encounter tooltips)")
+
+
+## Connected to recon_ctrl.player_exposed — triggers Scenario 1 exposure fail.
+func _on_player_exposed() -> void:
+	if world != null and world.scenario_manager != null:
+		world.scenario_manager.on_player_exposed()
 
 
 ## Connected to recon_ctrl.action_performed — fires observe / eavesdrop tooltips.

@@ -98,6 +98,15 @@ func evaluate(rep: ReputationSystem, current_tick: int) -> void:
 	_check_scenario_3(rep, current_tick)
 
 
+## Called when the player is caught eavesdropping. Fails Scenario 1 if still active.
+func on_player_exposed() -> void:
+	if scenario_1_state != ScenarioState.ACTIVE:
+		return
+	scenario_1_state = ScenarioState.FAILED
+	scenario_resolved.emit(1, ScenarioState.FAILED)
+	print("[ScenarioManager] Scenario 1 FAIL — player exposed during eavesdrop")
+
+
 func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_1_state != ScenarioState.ACTIVE:
 		return
