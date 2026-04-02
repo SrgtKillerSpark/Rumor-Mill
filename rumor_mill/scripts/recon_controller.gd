@@ -1,9 +1,16 @@
 extends Node
 
 ## recon_controller.gd — Sprint 3 Reconnaissance input handler.
+## Sprint 9: hover highlights, cursor feedback, and interaction tooltips.
 ##
 ## Processes right-click events to trigger Observe (on buildings) and
 ## Eavesdrop (on NPCs in conversation) actions.
+##
+## Also runs _process() hover detection each frame to:
+##   • Highlight the hovered NPC sprite (golden modulate).
+##   • Show a floating "Right-click to…" tooltip near the cursor.
+##   • Highlight the hovered building with a world-space diamond overlay.
+##   • Change cursor to CURSOR_POINTING_HAND over interactable elements.
 ##
 ## Wired by main.gd after the scene tree is ready.
 ## setup(world, intel_store) must be called before input events arrive.
@@ -13,9 +20,18 @@ const EAVESDROP_FAIL_CHANCE  := 0.20  ## Probability of detection when temperame
 const NPC_HIT_RADIUS_PX      := 28.0  ## World-space hit radius around NPC centre
 const BUILDING_HIT_TILES     := 2     ## Grid-cell radius for location hit-test
 
+## Highlight colour applied to a hovered NPC's modulate.
+const NPC_HOVER_MODULATE  := Color(1.5, 1.3, 0.5, 1.0)
+const NPC_NORMAL_MODULATE := Color(1.0, 1.0, 1.0, 1.0)
+
+## Building highlight diamond half-extents (isometric tile = 64×32 px).
+const BLDG_HALF_W := 36.0
+const BLDG_HALF_H := 20.0
+
+## Tooltip offset from the mouse cursor (screen-space pixels).
+const TOOLTIP_OFFSET := Vector2(14.0, -32.0)
+
 ## Emitted after every action attempt (success or failure).
-## message: human-readable result string
-## success: true = action succeeded, false = failed / no actions left
 signal action_performed(message: String, success: bool)
 
 ## Emitted when a high-temperament NPC detects the player eavesdropping.
@@ -24,10 +40,148 @@ signal player_exposed
 var _world_ref:       Node2D           = null
 var _intel_store:     PlayerIntelStore = null
 
+# ── Hover state ───────────────────────────────────────────────────────────────
+var _hovered_npc:      Node2D = null
+var _hovered_location: String = ""
+
+# ── Hover visual nodes (created in setup) ────────────────────────────────────
+var _tooltip_canvas: CanvasLayer = null
+var _tooltip_panel:  Panel       = null
+var _tooltip_label:  Label       = null
+var _bldg_highlight: Polygon2D   = null
+
 
 func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
 	_world_ref   = world
 	_intel_store = intel_store
+	_create_hover_visuals()
+
+
+# ── Hover visual setup ────────────────────────────────────────────────────────
+
+func _create_hover_visuals() -> void:
+	# Floating tooltip — rendered on a CanvasLayer so it always draws on top.
+	_tooltip_canvas       = CanvasLayer.new()
+	_tooltip_canvas.layer = 10
+	_tooltip_canvas.name  = "HoverTooltipCanvas"
+	add_child(_tooltip_canvas)
+
+	_tooltip_panel         = Panel.new()
+	_tooltip_panel.visible = false
+	_tooltip_canvas.add_child(_tooltip_panel)
+
+	var bg       := ColorRect.new()
+	bg.color      = Color(0.87, 0.80, 0.62, 0.92)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_tooltip_panel.add_child(bg)
+
+	_tooltip_label = Label.new()
+	_tooltip_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_tooltip_label.offset_left   = 6.0
+	_tooltip_label.offset_top    = 3.0
+	_tooltip_label.offset_right  = -6.0
+	_tooltip_label.offset_bottom = -3.0
+	_tooltip_label.add_theme_font_size_override("font_size", 11)
+	_tooltip_label.add_theme_color_override("font_color", Color(0.28, 0.16, 0.06, 1.0))
+	_tooltip_panel.add_child(_tooltip_label)
+
+	# Building highlight — isometric diamond drawn in world space.
+	_bldg_highlight         = Polygon2D.new()
+	_bldg_highlight.polygon = PackedVector2Array([
+		Vector2(0.0,          -BLDG_HALF_H),
+		Vector2(BLDG_HALF_W,  0.0),
+		Vector2(0.0,           BLDG_HALF_H),
+		Vector2(-BLDG_HALF_W, 0.0),
+	])
+	_bldg_highlight.color   = Color(1.0, 0.9, 0.3, 0.30)
+	_bldg_highlight.visible = false
+	_bldg_highlight.name    = "BuildingHighlight"
+	_world_ref.add_child(_bldg_highlight)
+
+
+# ── Per-frame hover detection ─────────────────────────────────────────────────
+
+func _process(_delta: float) -> void:
+	if _world_ref == null or _intel_store == null:
+		return
+
+	var viewport := get_viewport()
+	if viewport == null:
+		return
+
+	var screen_pos: Vector2 = viewport.get_mouse_position()
+	var world_pos:  Vector2 = viewport.get_canvas_transform().affine_inverse() * screen_pos
+
+	# NPC takes priority.
+	var new_npc := _hit_test_npc(world_pos)
+	if new_npc != null:
+		_set_hovered_npc(new_npc)
+		_set_hovered_location("")
+		_show_tooltip(screen_pos, "Right-click to Eavesdrop")
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
+		return
+
+	var new_loc := _hit_test_location(world_pos)
+	if new_loc != "":
+		_set_hovered_npc(null)
+		_set_hovered_location(new_loc)
+		var display := new_loc.replace("_", " ").capitalize()
+		_show_tooltip(screen_pos, "Right-click to Observe — %s" % display)
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
+		return
+
+	# Nothing hovered.
+	_set_hovered_npc(null)
+	_set_hovered_location("")
+	_hide_tooltip()
+	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
+
+
+# ── Hover visual helpers ──────────────────────────────────────────────────────
+
+func _set_hovered_npc(npc: Node2D) -> void:
+	if _hovered_npc == npc:
+		return
+	if _hovered_npc != null and is_instance_valid(_hovered_npc):
+		_hovered_npc.modulate = NPC_NORMAL_MODULATE
+	_hovered_npc = npc
+	if _hovered_npc != null:
+		_hovered_npc.modulate = NPC_HOVER_MODULATE
+
+
+func _set_hovered_location(loc: String) -> void:
+	if _hovered_location == loc:
+		return
+	_hovered_location = loc
+	if _bldg_highlight == null:
+		return
+	if loc == "":
+		_bldg_highlight.visible = false
+	else:
+		var entry: Vector2i = _world_ref._building_entries.get(loc, Vector2i(-1, -1))
+		if entry == Vector2i(-1, -1):
+			_bldg_highlight.visible = false
+		else:
+			_bldg_highlight.position = _cell_to_world(entry)
+			_bldg_highlight.visible  = true
+
+
+func _show_tooltip(screen_pos: Vector2, text: String) -> void:
+	if _tooltip_panel == null:
+		return
+	_tooltip_label.text = text
+	# Force label to recalculate its minimum size so we can size the panel.
+	var min_sz: Vector2 = _tooltip_label.get_minimum_size()
+	var panel_w: float  = min_sz.x + 12.0
+	var panel_h: float  = max(min_sz.y + 6.0, 22.0)
+	_tooltip_panel.size     = Vector2(panel_w, panel_h)
+	_tooltip_panel.position = screen_pos + TOOLTIP_OFFSET
+	_tooltip_panel.visible  = true
+
+
+func _hide_tooltip() -> void:
+	if _tooltip_panel != null:
+		_tooltip_panel.visible = false
 
 
 # ── Input ─────────────────────────────────────────────────────────────────────
@@ -193,6 +347,14 @@ func _world_to_cell(world_pos: Vector2) -> Vector2i:
 	var cx := world_pos.x / 64.0 + world_pos.y / 32.0
 	var cy := world_pos.y / 32.0 - world_pos.x / 64.0
 	return Vector2i(int(round(cx)), int(round(cy)))
+
+
+## Forward of _world_to_cell() — matches npc.gd's _cell_to_world().
+func _cell_to_world(cell: Vector2i) -> Vector2:
+	return Vector2(
+		float(cell.x - cell.y) * 32.0,
+		float(cell.x + cell.y) * 16.0
+	)
 
 
 func _current_tick() -> int:
