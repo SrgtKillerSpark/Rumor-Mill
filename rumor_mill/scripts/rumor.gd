@@ -110,10 +110,10 @@ static func state_name(state: RumorState) -> String:
 		_:                       return "UNKNOWN"
 
 
-## Returns true for claim types with positive sentiment (PRAISE).
+## Returns true for claim types with positive sentiment (PRAISE, PROPHECY).
 ## All other claim types are treated as negative sentiment.
 static func is_positive_claim(ct: ClaimType) -> bool:
-	return ct == ClaimType.PRAISE
+	return ct == ClaimType.PRAISE or ct == ClaimType.PROPHECY
 
 
 # ---------------------------------------------------------------------------
