@@ -158,6 +158,20 @@ func _place_buildings() -> void:
 		var anchor := Vector2i(b["x"], b["y"])
 		building_layer.set_cell(anchor, SRC_BUILDING, atlas_coord)
 
+		# Floating building name label above the tile.
+		var label := Label.new()
+		label.text = b["name"].replace("_", " ").capitalize()
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.add_theme_font_size_override("font_size", 11)
+		label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+		label.add_theme_constant_override("outline_size", 2)
+		label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+		label.size = Vector2(80, 16)
+		var wx: float = (anchor.x - anchor.y) * (TILE_SIZE.x / 2.0)
+		var wy: float = (anchor.x + anchor.y) * (TILE_SIZE.y / 2.0)
+		label.position = Vector2(wx - 40.0, wy - 72.0)
+		add_child(label)
+
 
 func _collect_walkable_cells() -> void:
 	if grid_data.is_empty():

@@ -9,7 +9,7 @@ extends Camera2D
 @export var zoom_max: float = 2.0
 @export var zoom_lerp_speed: float = 8.0      # smoothing factor
 
-var _target_zoom: float = 1.0
+var _target_zoom: float = 1.5
 var _drag_origin: Vector2 = Vector2.ZERO
 var _is_dragging: bool = false
 
