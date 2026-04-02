@@ -182,7 +182,9 @@ func _on_rumor_seeded(
 		rumor_id, claim_id, subject_name, seed_target_name])
 	AudioManager.on_rumor_seeded(rumor_id, subject_name, claim_id, seed_target_name)
 	if journal != null and journal.has_method("push_timeline_event"):
+		var _seed_tick: int = day_night.current_tick if day_night != null else 0
 		journal.push_timeline_event(
+			_seed_tick,
 			"Seeded rumor [%s] about %s — whispered to %s" % [
 				claim_id, subject_name, seed_target_name
 			]
@@ -198,9 +200,9 @@ func _wire_rumor_events() -> void:
 
 
 ## Relay world rumor events into the Journal timeline and overlay.
-func _on_rumor_event(message: String, _tick: int) -> void:
+func _on_rumor_event(message: String, tick: int) -> void:
 	if journal != null and journal.has_method("push_timeline_event"):
-		journal.push_timeline_event(message)
+		journal.push_timeline_event(tick, message)
 	if social_graph_overlay != null and social_graph_overlay.has_method("on_rumor_event"):
 		social_graph_overlay.on_rumor_event(message)
 
