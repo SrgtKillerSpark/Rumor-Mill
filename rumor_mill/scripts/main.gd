@@ -16,6 +16,7 @@ extends Node2D
 @onready var rumor_panel:          CanvasLayer = $RumorPanel
 @onready var journal:              CanvasLayer = $Journal
 @onready var social_graph_overlay: CanvasLayer = $SocialGraphOverlay
+@onready var objective_hud:        CanvasLayer = $ObjectiveHUD
 
 # ── Sprint 8: main menu ───────────────────────────────────────────────────────
 var _main_menu: CanvasLayer = null
@@ -48,6 +49,7 @@ func _ready() -> void:
 	rumor_panel.visible          = false
 	journal.visible              = false
 	social_graph_overlay.visible = false
+	objective_hud.visible        = false
 
 	# ── Sprint 8: show main menu ───────────────────────────────────────────────
 	_main_menu = preload("res://scripts/main_menu.gd").new()
@@ -81,6 +83,7 @@ func _on_begin_game(scenario_id: String) -> void:
 
 	# Restore HUD visibility.
 	recon_hud.visible            = true
+	objective_hud.visible        = true
 	rumor_panel.visible          = false  # closed by default; opened via R key
 	journal.visible              = false  # closed by default; opened via J key
 	social_graph_overlay.visible = false  # closed by default; opened via G key
@@ -103,6 +106,7 @@ func _on_begin_game(scenario_id: String) -> void:
 
 	_init_recon_system()
 	_init_journal()
+	_init_objective_hud()
 	_init_scenario3_hud()
 	_init_tutorial_system()
 	_init_end_screen()
@@ -182,6 +186,19 @@ func _on_rumor_seeded(
 				claim_id, subject_name, seed_target_name
 			]
 		)
+
+
+func _init_objective_hud() -> void:
+	if objective_hud == null:
+		push_error("Main: $ObjectiveHUD node not found — objective HUD not wired")
+		return
+	var sm: ScenarioManager = world.scenario_manager
+	if sm == null:
+		push_error("Main: world.scenario_manager is null — objective HUD not wired")
+		return
+	if objective_hud.has_method("setup"):
+		objective_hud.setup(sm, day_night)
+	print("Main: Objective HUD wired")
 
 
 func _init_scenario3_hud() -> void:

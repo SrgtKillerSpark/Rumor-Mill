@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3 uid="uid://objective_hud_sprint9"]
+
+[ext_resource type="Script" path="res://scripts/objective_hud.gd" uid="uid://objective_hud_script" id="1_objhud"]
+
+[node name="ObjectiveHUD" type="CanvasLayer"]
+script = ExtResource("1_objhud")
+layer = 4
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 320.0
+offset_bottom = 70.0
+
+[node name="ParchBG" type="ColorRect" parent="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.87, 0.80, 0.62, 0.92)
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 4.0
+offset_right = -6.0
+offset_bottom = -4.0
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="Panel/VBox"]
+text = "Scenario"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.28, 0.16, 0.06, 1.0)
+
+[node name="ObjectiveLabel" type="Label" parent="Panel/VBox"]
+text = "Objective."
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.35, 0.22, 0.08, 1.0)
+
+[node name="DayLabel" type="Label" parent="Panel/VBox"]
+text = "Day 1 / 30"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.55, 0.20, 0.08, 1.0)

@@ -69,19 +69,12 @@ func show_toast(message: String, success: bool) -> void:
 
 func _refresh_counter() -> void:
 	if _intel_store_ref == null:
-		counter_label.text = "Recon: ---"
+		counter_label.text = "Actions: ---  |  Whispers: ---"
 		return
-	var remaining: int  = _intel_store_ref.recon_actions_remaining
-	var max_val:   int  = PlayerIntelStore.MAX_DAILY_ACTIONS
-	var filled := "*".repeat(remaining)
-	var empty  := "-".repeat(max_val - remaining)
-
-	var whispers: int     = _intel_store_ref.whisper_tokens_remaining
-	var max_w:    int     = PlayerIntelStore.MAX_DAILY_WHISPERS
-	var w_filled := "W".repeat(whispers)
-	var w_empty  := "_".repeat(max_w - whispers)
-
-	counter_label.text = "Recon [%s%s]  %d/%d   Whisper [%s%s]  %d/%d" % [
-		filled, empty, remaining, max_val,
-		w_filled, w_empty, whispers, max_w
+	var remaining: int = _intel_store_ref.recon_actions_remaining
+	var max_val:   int = PlayerIntelStore.MAX_DAILY_ACTIONS
+	var whispers:  int = _intel_store_ref.whisper_tokens_remaining
+	var max_w:     int = PlayerIntelStore.MAX_DAILY_WHISPERS
+	counter_label.text = "Actions: %d/%d  |  Whispers: %d/%d" % [
+		remaining, max_val, whispers, max_w
 	]

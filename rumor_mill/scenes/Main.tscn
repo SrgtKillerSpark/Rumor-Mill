@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://cn3p2rq4l7mn5"]
+[gd_scene load_steps=11 format=3 uid="uid://cn3p2rq4l7mn5"]
 
 [ext_resource type="Script" path="res://scripts/camera.gd" uid="uid://lg72wp63jbwu" id="1_cam"]
 [ext_resource type="PackedScene" path="res://scenes/World.tscn" uid="uid://dr4v8tp7nhq2p" id="2_world"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/RumorPanel.tscn" uid="uid://rumor_panel_sprint3" id="7_rumorpanel"]
 [ext_resource type="PackedScene" path="res://scenes/Journal.tscn" uid="uid://journal_sprint6" id="8_journal"]
 [ext_resource type="PackedScene" path="res://scenes/SocialGraphOverlay.tscn" uid="uid://social_graph_overlay_sprint6" id="9_sgo"]
+[ext_resource type="PackedScene" path="res://scenes/ObjectiveHUD.tscn" uid="uid://objective_hud_sprint9" id="10_objhud"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("3_main")
@@ -32,7 +33,7 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_top = -24.0
-offset_right = 500.0
+offset_right = 1100.0
 offset_bottom = 0.0
 text = "WASD/Arrows: pan  |  Scroll: zoom  |  F1: console  |  F2: states  |  F3: social  |  G: Social Graph  |  R: Rumor Panel  |  J: Journal  |  Right-click: Observe/Eavesdrop"
 theme_override_font_sizes/font_size = 11
@@ -49,3 +50,5 @@ theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 0.8)
 [node name="Journal" parent="." instance=ExtResource("8_journal")]
 
 [node name="SocialGraphOverlay" parent="." instance=ExtResource("9_sgo")]
+
+[node name="ObjectiveHUD" parent="." instance=ExtResource("10_objhud")]
