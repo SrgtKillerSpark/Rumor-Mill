@@ -10,9 +10,11 @@ extends Node2D
 ## Mutations use PropagationEngine.try_mutate() (4 independent types).
 ## Shelf-life expiry is detected via Rumor.is_expired() after PropagationEngine.tick_decay().
 ##
-## Sprite sheet layout (assets/textures/npc_sprites.png, 224×144):
+## Sprite sheet layout (assets/textures/npc_sprites.png, 224×240):
 ##   Row 0 = merchant (deep blue/gold)   Row 1 = noble (burgundy/silver)
 ##   Row 2 = clergy (cream/black)
+##   Row 3 = guard   (stone tabard/helmet — archetype "guard_civic")
+##   Row 4 = commoner (drab linen — craftsmen, laborers, etc.)
 ##   Cols 0-2 = idle frames (32×48 each); Cols 3-6 = walk frames
 
 ## Emitted once when this NPC first receives a rumor (UNAWARE → EVALUATING).
@@ -64,12 +66,21 @@ var _pathfinder: AstarPathfinder = null
 var _walkable: Array[Vector2i] = []
 
 # ── Visuals ──────────────────────────────────────────────────────────────────
-# Faction row index in npc_sprites.png
+# Faction row index in npc_sprites.png (rows 0-2)
 const FACTION_ROW := {
 	"merchant": 0,
 	"noble":    1,
 	"clergy":   2,
 }
+# Archetype overrides — these rows take priority over faction (rows 3-4)
+const ARCHETYPE_ROW := {
+	"guard_civic": 3,
+}
+# Roles that map to the commoner archetype row (row 4)
+const COMMONER_ROLES := [
+	"Craftsman", "Mill Operator", "Storage Keeper", "Transport Worker",
+	"Merchant's Wife", "Traveling Merchant",
+]
 # Sprite frame dimensions
 const SPRITE_W := 32
 const SPRITE_H := 48
@@ -108,7 +119,16 @@ func _setup_sprite(faction: String) -> void:
 		push_warning("NPC: npc_sprites.png not found; falling back to placeholder")
 		return
 
-	var row: int = FACTION_ROW.get(faction, 0)
+	# Archetype overrides faction: guards use row 3, commoners row 4.
+	var npc_archetype: String = npc_data.get("archetype", "")
+	var npc_role: String = npc_data.get("role", "")
+	var row: int
+	if ARCHETYPE_ROW.has(npc_archetype):
+		row = ARCHETYPE_ROW[npc_archetype]
+	elif npc_role in COMMONER_ROLES:
+		row = 4
+	else:
+		row = FACTION_ROW.get(faction, 0)
 	var frames := SpriteFrames.new()
 
 	# ── idle animation (3 frames at 4 fps) ───────────────────────────────────

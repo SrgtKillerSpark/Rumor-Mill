@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 /**
- * generate_assets.js — Art Pass 1 pixel-art generator for Rumor Mill
+ * generate_assets.js — Art Pass 2 pixel-art generator for Rumor Mill (SPA-79)
  *
- * Produces all textures needed for SPA-41:
+ * Produces all textures needed:
  *   assets/textures/tiles_ground.png      (192×32 — 3 ground variants)
  *   assets/textures/tiles_road_dirt.png   (64×32)
  *   assets/textures/tiles_road_stone.png  (64×32)
  *   assets/textures/tiles_buildings.png   (640×64 — 10 building types)
- *   assets/textures/npc_sprites.png       (224×144 — 7 frames × 3 factions)
+ *   assets/textures/npc_sprites.png       (224×240 — 7 frames × 5 archetypes)
+ *                                           row 0 = merchant, 1 = noble, 2 = clergy
+ *                                           row 3 = guard,    4 = commoner
  *   assets/textures/ui_parchment.png      (48×48 — 9-slice parchment border tile)
  *   assets/textures/ui_faction_badges.png (72×24 — 3 × 24px faction badges)
  *   assets/textures/ui_claim_icons.png    (80×16 — 5 × 16px claim-type icons)
@@ -572,7 +574,9 @@ function makeBuildingTiles() {
 // Columns: 0-2 idle frames, 3-6 walk frames
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeNPCSprites() {
-  const cv = createCanvas(224, 144);
+  // 5 archetype rows × 48px = 240px height
+  // row 0=merchant, 1=noble, 2=clergy, 3=guard, 4=commoner
+  const cv = createCanvas(224, 240);
 
   const FACTIONS = [
     { body: c.MERCH_B,  trim: c.MERCH_T,  hat: c.MERCH_B,  hatrim: c.MERCH_T  },
@@ -664,6 +668,136 @@ function makeNPCSprites() {
     drawNPC(5*32, oy, fac, 0, 2, -2);
     // walk frame 3 — mid-step (bob up, other phase)
     drawNPC(6*32, oy, fac, -1, 0, 0);
+  }
+
+  // ── Row 3: GUARD archetype ─────────────────────────────────────────────────
+  // Stone tabard, round nasal helmet, armored arms — clearly military silhouette.
+  const drawGuard = (ox, oy, dy=0, lx=0, rx=0) => {
+    // head
+    const hx = ox+12, hy = oy+2+dy;
+    cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    cv.sp(hx+2, hy+3, ...c.HAIR);
+    cv.sp(hx+5, hy+3, ...c.HAIR);
+    cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
+    cv.line(hx,   hy,   hx,   hy+7, ...c.OUTLINE);
+    cv.line(hx+7, hy,   hx+7, hy+7, ...c.OUTLINE);
+    cv.line(hx,   hy+7, hx+7, hy+7, ...c.OUTLINE);
+
+    // nasal helmet: crown + brim + nose-guard stripe
+    cv.fillRect(hx-1, hy-3, 10, 5, ...c.STONE_M);  // helm crown
+    cv.fillRect(hx-2, hy,   12, 2, ...c.STONE_D);  // helm brim
+    cv.line(hx+4, hy-3, hx+4, hy+5, ...c.STONE_D); // nasal guard
+    cv.line(hx-2, hy,   hx+9, hy,   ...c.OUTLINE);
+    cv.line(hx-1, hy-3, hx+8, hy-3, ...c.OUTLINE);
+    cv.line(hx-1, hy-3, hx-2, hy,   ...c.OUTLINE);
+    cv.line(hx+8, hy-3, hx+9, hy,   ...c.OUTLINE);
+
+    // stone tabard body (wider silhouette than civilian, 12px)
+    const bx = ox+10, by = oy+10+dy;
+    cv.fillRect(bx,   by,    12, 14, ...c.STONE_M);
+    // shadow on right half
+    cv.fillRect(bx+7, by+1,   4, 12, ...c.STONE_D);
+    // tabard cross emblem
+    cv.fillRect(bx+4, by+2,   3,  9, ...c.STONE_L);
+    cv.fillRect(bx+2, by+5,   7,  3, ...c.STONE_L);
+    // belt line
+    cv.line(bx, by+9, bx+11, by+9, ...c.STONE_D);
+    cv.line(bx,    by,    bx+11, by,    ...c.OUTLINE);
+    cv.line(bx,    by,    bx,    by+13, ...c.OUTLINE);
+    cv.line(bx+11, by,    bx+11, by+13, ...c.OUTLINE);
+    cv.line(bx,    by+13, bx+11, by+13, ...c.OUTLINE);
+
+    // armored pauldrons (slightly wider than faction arms)
+    cv.fillRect(bx-2, by,    3, 11, ...c.STONE_M);
+    cv.fillRect(bx+11,by,    3, 11, ...c.STONE_M);
+    // gauntlets
+    cv.fillRect(bx-2, by+8,  3,  4, ...c.STONE_D);
+    cv.fillRect(bx+11,by+8,  3,  4, ...c.STONE_D);
+
+    // legs in dark hose + heavier boots
+    const ly = by+13;
+    cv.fillRect(bx+1+lx, ly, 4, 10, ...c.STONE_D);
+    cv.fillRect(bx+6+rx, ly, 4, 10, ...c.STONE_D);
+    cv.fillRect(bx+0+lx, ly+8, 5, 3, ...c.HAIR);
+    cv.fillRect(bx+5+rx, ly+8, 5, 3, ...c.HAIR);
+    cv.line(bx+1+lx, ly, bx+1+lx, ly+9, ...c.OUTLINE);
+    cv.line(bx+4+lx, ly, bx+4+lx, ly+9, ...c.OUTLINE);
+    cv.line(bx+6+rx, ly, bx+6+rx, ly+9, ...c.OUTLINE);
+    cv.line(bx+9+rx, ly, bx+9+rx, ly+9, ...c.OUTLINE);
+  };
+
+  {
+    const oy3 = 3*48;
+    drawGuard(0*32, oy3, 0,  0,  0);
+    drawGuard(1*32, oy3, -1, 0,  0);
+    drawGuard(2*32, oy3, 0,  0,  0);
+    drawGuard(3*32, oy3, 0,  -2, 2);
+    drawGuard(4*32, oy3, -1, 0,  0);
+    drawGuard(5*32, oy3, 0,  2,  -2);
+    drawGuard(6*32, oy3, -1, 0,  0);
+  }
+
+  // ── Row 4: COMMONER archetype ──────────────────────────────────────────────
+  // Drab linen tunic, simple cloth cap, worn boots — recognisably working-class.
+  const drawCommoner = (ox, oy, dy=0, lx=0, rx=0) => {
+    // head
+    const hx = ox+12, hy = oy+2+dy;
+    cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    cv.sp(hx+2, hy+3, ...c.HAIR);
+    cv.sp(hx+5, hy+3, ...c.HAIR);
+    cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
+    cv.line(hx,   hy,   hx,   hy+7, ...c.OUTLINE);
+    cv.line(hx+7, hy,   hx+7, hy+7, ...c.OUTLINE);
+    cv.line(hx,   hy+7, hx+7, hy+7, ...c.OUTLINE);
+
+    // soft cloth cap — flatter and plainer than faction hat
+    cv.fillRect(hx,   hy-1,  8,  3, ...c.THATCH_D);  // brim (no overhang)
+    cv.fillRect(hx+1, hy-4,  6,  4, ...c.THATCH_D);  // crown
+    cv.fillRect(hx+2, hy-5,  4,  2, ...c.DIRT_D);    // darker cap top
+    cv.line(hx,   hy-1, hx+7, hy-1, ...c.OUTLINE);
+    cv.line(hx+1, hy-4, hx+6, hy-4, ...c.OUTLINE);
+
+    // plain linen tunic (slightly narrower, no trim badge)
+    const bx = ox+11, by = oy+10+dy;
+    cv.fillRect(bx, by, 10, 14, ...c.DIRT_M);
+    // subtle pleat/seam lines
+    cv.line(bx+3, by+1, bx+3, by+12, ...c.DIRT_D, 70);
+    cv.line(bx+7, by+1, bx+7, by+12, ...c.DIRT_D, 70);
+    // simple cloth belt (no gem badge)
+    cv.fillRect(bx, by+7, 10, 2, ...c.DIRT_D);
+    cv.line(bx,    by,    bx+9,  by,    ...c.OUTLINE);
+    cv.line(bx,    by,    bx,    by+13, ...c.OUTLINE);
+    cv.line(bx+9,  by,    bx+9,  by+13, ...c.OUTLINE);
+    cv.line(bx,    by+13, bx+9,  by+13, ...c.OUTLINE);
+
+    // arms in matching tunic cloth
+    cv.fillRect(bx-2, by+1, 3, 10, ...c.DIRT_M);
+    cv.fillRect(bx+9, by+1, 3, 10, ...c.DIRT_M);
+    // bare hands
+    cv.fillRect(bx-2, by+9, 3, 3, ...c.SKIN);
+    cv.fillRect(bx+9, by+9, 3, 3, ...c.SKIN);
+
+    // legs in darker homespun + worn boots
+    const ly = by+13;
+    cv.fillRect(bx+1+lx, ly, 4, 10, ...c.DIRT_D);
+    cv.fillRect(bx+5+rx, ly, 4, 10, ...c.DIRT_D);
+    cv.fillRect(bx+0+lx, ly+8, 5, 3, ...c.WOOD_D);
+    cv.fillRect(bx+4+rx, ly+8, 5, 3, ...c.WOOD_D);
+    cv.line(bx+1+lx, ly, bx+1+lx, ly+9, ...c.OUTLINE);
+    cv.line(bx+4+lx, ly, bx+4+lx, ly+9, ...c.OUTLINE);
+    cv.line(bx+5+rx, ly, bx+5+rx, ly+9, ...c.OUTLINE);
+    cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
+  };
+
+  {
+    const oy4 = 4*48;
+    drawCommoner(0*32, oy4, 0,  0,  0);
+    drawCommoner(1*32, oy4, -1, 0,  0);
+    drawCommoner(2*32, oy4, 0,  0,  0);
+    drawCommoner(3*32, oy4, 0,  -2, 2);
+    drawCommoner(4*32, oy4, -1, 0,  0);
+    drawCommoner(5*32, oy4, 0,  2,  -2);
+    drawCommoner(6*32, oy4, -1, 0,  0);
   }
 
   return cv.toPNG();
@@ -831,7 +965,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 1 asset generation\n');
+console.log('\nRumor Mill — Art Pass 2 asset generation (SPA-79)\n');
 
 write('assets/textures/tiles_ground.png',       makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',    makeRoadDirt());
