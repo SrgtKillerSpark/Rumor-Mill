@@ -10,11 +10,7 @@ script = ExtResource("1_journal")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-color = Color(0.08, 0.05, 0.03, 0.88)
+color = Color(0.04, 0.02, 0.01, 0.88)
 visible = false
 
 [node name="ParchmentPanel" type="Panel" parent="."]
@@ -23,51 +19,84 @@ anchor_left = 0.0
 anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 40.0
-offset_right = -40.0
-offset_bottom = -40.0
+offset_left = 32.0
+offset_top = 32.0
+offset_right = -32.0
+offset_bottom = -32.0
 visible = false
+
+[node name="PanelBG" type="ColorRect" parent="ParchmentPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.09, 0.06, 0.04, 1.0)
+
+[node name="TopAccent" type="ColorRect" parent="ParchmentPanel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_top = 0.0
+offset_bottom = 3.0
+color = Color(0.55, 0.38, 0.18, 1.0)
+
+[node name="LeftAccent" type="ColorRect" parent="ParchmentPanel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_right = 3.0
+color = Color(0.55, 0.38, 0.18, 1.0)
 
 [node name="ParchmentLayout" type="VBoxContainer" parent="ParchmentPanel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 8.0
+offset_left = 10.0
 offset_top = 8.0
-offset_right = -8.0
+offset_right = -10.0
 offset_bottom = -8.0
+theme_override_constants/separation = 4
 
 [node name="TitleBar" type="HBoxContainer" parent="ParchmentPanel/ParchmentLayout"]
 custom_minimum_size = Vector2(0, 36)
+theme_override_constants/separation = 8
 
 [node name="TitleLabel" type="Label" parent="ParchmentPanel/ParchmentLayout/TitleBar"]
 size_flags_horizontal = 3
 text = "Player Journal"
-theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.5, 0.08, 0.08, 1.0)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.92, 0.78, 0.12, 1.0)
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
 
 [node name="HintLabel" type="Label" parent="ParchmentPanel/ParchmentLayout/TitleBar"]
 size_flags_horizontal = 0
 text = "J to close"
 theme_override_font_sizes/font_size = 10
-theme_override_colors/font_color = Color(0.42, 0.34, 0.22, 1.0)
+theme_override_colors/font_color = Color(0.50, 0.44, 0.32, 1.0)
 
 [node name="CloseButton" type="Button" parent="ParchmentPanel/ParchmentLayout/TitleBar"]
-text = "×"
-theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.5, 0.08, 0.08, 1.0)
+text = "✕"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.35, 0.20, 1.0)
 
 [node name="TitleSep" type="HSeparator" parent="ParchmentPanel/ParchmentLayout"]
+theme_override_colors/separator_color = Color(0.55, 0.38, 0.18, 0.7)
 
 [node name="MainLayout" type="HBoxContainer" parent="ParchmentPanel/ParchmentLayout"]
 size_flags_vertical = 3
+theme_override_constants/separation = 0
 
 [node name="Sidebar" type="VBoxContainer" parent="ParchmentPanel/ParchmentLayout/MainLayout"]
 custom_minimum_size = Vector2(155, 0)
 size_flags_vertical = 3
+theme_override_constants/separation = 2
 
 [node name="SidebarSep" type="VSeparator" parent="ParchmentPanel/ParchmentLayout/MainLayout"]
+theme_override_colors/separator_color = Color(0.55, 0.38, 0.18, 0.5)
 
 [node name="ContentScroll" type="ScrollContainer" parent="ParchmentPanel/ParchmentLayout/MainLayout"]
 size_flags_horizontal = 3
@@ -83,28 +112,37 @@ anchor_left = 1.0
 anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 0.0
-offset_left = -200.0
+offset_left = -190.0
 offset_top = 72.0
-offset_right = 0.0
+offset_right = -6.0
 offset_bottom = 98.0
 
 [node name="ParchBG" type="ColorRect" parent="JournalHUDButton"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.87, 0.80, 0.62, 0.92)
+color = Color(0.10, 0.07, 0.05, 0.90)
+
+[node name="LeftBar" type="ColorRect" parent="JournalHUDButton"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_right = 3.0
+color = Color(0.55, 0.38, 0.18, 1.0)
 
 [node name="HUDLabel" type="Label" parent="JournalHUDButton"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 6.0
+offset_left = 10.0
 offset_top = 0.0
 offset_right = -20.0
 offset_bottom = 0.0
 text = "J: Journal"
 theme_override_font_sizes/font_size = 11
-theme_override_colors/font_color = Color(0.32, 0.16, 0.06, 1.0)
+theme_override_colors/font_color = Color(0.75, 0.68, 0.52, 1.0)
 
 [node name="NotificationDot" type="ColorRect" parent="JournalHUDButton"]
 anchors_preset = -1
@@ -113,8 +151,8 @@ anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 0.0
 offset_left = -14.0
-offset_top = 4.0
-offset_right = -4.0
+offset_top = 5.0
+offset_right = -5.0
 offset_bottom = 14.0
-color = Color(0.9, 0.15, 0.15, 1.0)
+color = Color(0.95, 0.25, 0.15, 1.0)
 visible = false

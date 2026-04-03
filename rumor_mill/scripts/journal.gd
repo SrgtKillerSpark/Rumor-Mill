@@ -14,15 +14,15 @@ extends CanvasLayer
 
 # ── Palette ───────────────────────────────────────────────────────────────────
 
-const C_PARCHMENT     := Color(0.91, 0.85, 0.70, 1.0)
-const C_PANEL_BG      := Color(0.82, 0.74, 0.58, 1.0)
-const C_HEADING       := Color(0.50, 0.08, 0.08, 1.0)   # iron-oxide red
-const C_BODY          := Color(0.22, 0.15, 0.10, 1.0)   # warm sepia
-const C_KEY           := Color(0.06, 0.04, 0.02, 1.0)   # ink black
-const C_SUBKEY        := Color(0.35, 0.25, 0.15, 1.0)   # mid sepia
-const C_LOCKED        := Color(0.55, 0.48, 0.38, 1.0)   # greyed parchment
-const C_TAB_ACTIVE    := Color(0.65, 0.12, 0.12, 1.0)
-const C_TAB_INACTIVE  := Color(0.42, 0.34, 0.22, 1.0)
+const C_PARCHMENT     := Color(0.82, 0.74, 0.58, 1.0)
+const C_PANEL_BG      := Color(0.12, 0.08, 0.05, 1.0)   # dark background
+const C_HEADING       := Color(0.92, 0.78, 0.12, 1.0)   # gold
+const C_BODY          := Color(0.80, 0.72, 0.56, 1.0)   # warm parchment text
+const C_KEY           := Color(0.90, 0.84, 0.68, 1.0)   # bright parchment
+const C_SUBKEY        := Color(0.65, 0.58, 0.45, 1.0)   # mid parchment
+const C_LOCKED        := Color(0.40, 0.35, 0.28, 1.0)   # muted
+const C_TAB_ACTIVE    := Color(0.55, 0.38, 0.18, 1.0)   # amber-brown
+const C_TAB_INACTIVE  := Color(0.20, 0.14, 0.09, 1.0)   # very dark
 
 # Badge colours
 const C_EVALUATING    := Color(0.25, 0.45, 0.90, 1.0)   # blue

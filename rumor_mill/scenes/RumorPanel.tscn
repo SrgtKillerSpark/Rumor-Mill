@@ -10,8 +10,8 @@ layer = 15
 anchors_preset = -1
 anchor_left = 0.0
 anchor_top = 0.0
-anchor_right = 0.38
-anchor_bottom = 0.85
+anchor_right = 0.40
+anchor_bottom = 1.0
 offset_left = 0.0
 offset_top = 0.0
 offset_right = 0.0
@@ -22,30 +22,62 @@ visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.87, 0.80, 0.62, 0.96)
+color = Color(0.09, 0.06, 0.04, 0.97)
+
+[node name="RightAccent" type="ColorRect" parent="Panel"]
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_right = 0.0
+color = Color(0.55, 0.38, 0.18, 1.0)
+
+[node name="HeaderBG" type="ColorRect" parent="Panel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_top = 0.0
+offset_bottom = 52.0
+color = Color(0.14, 0.09, 0.06, 1.0)
+
+[node name="HeaderAccent" type="ColorRect" parent="Panel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_top = 0.0
+offset_bottom = 3.0
+color = Color(0.92, 0.78, 0.12, 1.0)
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = 8.0
-offset_right = -8.0
+offset_left = 10.0
+offset_top = 6.0
+offset_right = -10.0
 offset_bottom = -8.0
 theme_override_constants/separation = 4
 
 [node name="TitleLabel" type="Label" parent="Panel/VBox"]
 text = "Rumor Crafting — Subject Selection"
 theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.32, 0.16, 0.06, 1.0)
+theme_override_colors/font_color = Color(0.92, 0.78, 0.12, 1.0)
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
 
 [node name="TitleSep" type="HSeparator" parent="Panel/VBox"]
-theme_override_colors/separator_color = Color(0.52, 0.38, 0.18, 0.8)
+theme_override_colors/separator_color = Color(0.55, 0.38, 0.18, 0.7)
 
 [node name="HintLabel" type="Label" parent="Panel/VBox"]
 text = "Right-click a building to Observe  |  Right-click an NPC to Eavesdrop  |  R to close"
 theme_override_font_sizes/font_size = 9
-theme_override_colors/font_color = Color(0.46, 0.32, 0.16, 1.0)
+theme_override_colors/font_color = Color(0.52, 0.46, 0.35, 1.0)
 autowrap_mode = 3
 
 [node name="Scroll" type="ScrollContainer" parent="Panel/VBox"]

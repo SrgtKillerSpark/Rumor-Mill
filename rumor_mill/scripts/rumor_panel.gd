@@ -130,8 +130,7 @@ func _build_dynamic_panels() -> void:
 
 	# ── Navigation row ───────────────────────────────────────────────────────
 	_nav_row = HBoxContainer.new()
-	_btn_back = Button.new()
-	_btn_back.text = "← Back"
+	_btn_back = _make_nav_button("← Back")
 	_btn_back.visible = false
 	_btn_back.pressed.connect(_on_back_pressed)
 	_nav_row.add_child(_btn_back)
@@ -140,8 +139,7 @@ func _build_dynamic_panels() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_nav_row.add_child(spacer)
 
-	_btn_next = Button.new()
-	_btn_next.text = "Next →"
+	_btn_next = _make_nav_button("Next →")
 	_btn_next.visible = false
 	_btn_next.pressed.connect(_on_next_pressed)
 	_nav_row.add_child(_btn_next)
@@ -280,20 +278,21 @@ func _build_subject_entry(
 	var name_lbl := Label.new()
 	name_lbl.text = "  " + npc_name
 	name_lbl.add_theme_font_size_override("font_size", 11)
+	name_lbl.add_theme_color_override("font_color", Color(0.88, 0.80, 0.60, 1.0))
 	header.add_child(name_lbl)
 
 	var faction_lbl := Label.new()
 	faction_lbl.text = "  [" + faction.capitalize() + "]"
 	faction_lbl.add_theme_font_size_override("font_size", 10)
-	faction_lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65, 1.0))
+	faction_lbl.add_theme_color_override("font_color", _faction_color(faction))
 	header.add_child(faction_lbl)
 
 	# Relationship rows.
 	if rels.is_empty():
 		var lock_lbl := Label.new()
-		lock_lbl.text = "    [Lock] Relationship: Unknown"
+		lock_lbl.text = "    🔒 Relationship: Unknown"
 		lock_lbl.add_theme_font_size_override("font_size", 10)
-		lock_lbl.add_theme_color_override("font_color", Color(0.45, 0.45, 0.45, 1.0))
+		lock_lbl.add_theme_color_override("font_color", Color(0.42, 0.38, 0.30, 1.0))
 		vbox.add_child(lock_lbl)
 	else:
 		for intel in rels:
@@ -734,6 +733,27 @@ func _build_evidence_entry(item) -> Control:
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
+func _make_nav_button(label_text: String) -> Button:
+	var btn := Button.new()
+	btn.text = label_text
+	btn.custom_minimum_size = Vector2(100, 32)
+	var normal := StyleBoxFlat.new()
+	normal.bg_color     = Color(0.35, 0.22, 0.08, 1.0)
+	normal.border_color = Color(0.55, 0.38, 0.18, 1.0)
+	normal.set_border_width_all(1)
+	normal.set_content_margin_all(6)
+	var hover := StyleBoxFlat.new()
+	hover.bg_color     = Color(0.55, 0.35, 0.12, 1.0)
+	hover.border_color = Color(0.92, 0.78, 0.12, 1.0)
+	hover.set_border_width_all(1)
+	hover.set_content_margin_all(6)
+	btn.add_theme_stylebox_override("normal", normal)
+	btn.add_theme_stylebox_override("hover",  hover)
+	btn.add_theme_color_override("font_color", Color(0.92, 0.82, 0.60, 1.0))
+	btn.add_theme_font_size_override("font_size", 11)
+	return btn
+
 
 func _get_npc_faction(npc_id: String) -> String:
 	if _world_ref == null:
