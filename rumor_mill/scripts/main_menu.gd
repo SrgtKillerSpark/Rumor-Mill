@@ -30,7 +30,7 @@ const C_CARD_HOVER   := Color(0.18, 0.13, 0.09, 1.0)
 const C_CARD_BORDER  := Color(0.45, 0.30, 0.12, 1.0)
 const C_CARD_SEL     := Color(0.70, 0.50, 0.15, 1.0)
 
-enum Phase { MAIN, SELECT, BRIEFING, INTRO }
+enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS }
 
 # ── State ─────────────────────────────────────────────────────────────────────
 var _phase:              Phase     = Phase.MAIN
@@ -49,6 +49,13 @@ var _selected_card_idx:  int        = -1
 
 # HowToPlay overlay ref
 var _how_to_play:        CanvasLayer = null
+
+# Settings-phase refs
+var _panel_settings:     Control    = null
+var _lbl_music_val:      Label      = null
+var _lbl_ambient_val:    Label      = null
+var _lbl_sfx_val:        Label      = null
+var _lbl_speed_val:      Label      = null
 
 # Briefing-phase refs
 var _briefing_title:     Label      = null
@@ -70,6 +77,7 @@ func _ready() -> void:
 	_build_select_panel()
 	_build_briefing_panel()
 	_build_intro_panel()
+	_build_settings_panel()
 	_how_to_play = preload("res://scripts/how_to_play.gd").new()
 	_how_to_play.name = "HowToPlay"
 	add_child(_how_to_play)
@@ -116,6 +124,7 @@ func _show_phase(p: Phase) -> void:
 	_panel_select.visible   = (p == Phase.SELECT)
 	_panel_briefing.visible = (p == Phase.BRIEFING)
 	_panel_intro.visible    = (p == Phase.INTRO)
+	_panel_settings.visible = (p == Phase.SETTINGS)
 
 
 # ── Backdrop ──────────────────────────────────────────────────────────────────
@@ -174,6 +183,10 @@ func _build_main_panel() -> void:
 	var btn_howto := _make_button("How to Play", 200)
 	btn_howto.pressed.connect(_on_how_to_play_pressed)
 	btn_row.add_child(btn_howto)
+
+	var btn_settings := _make_button("Settings", 200)
+	btn_settings.pressed.connect(_on_settings_pressed)
+	btn_row.add_child(btn_settings)
 
 	var btn_quit := _make_button("Quit", 200)
 	btn_quit.pressed.connect(get_tree().quit)
@@ -536,6 +549,157 @@ func _on_intro_back() -> void:
 func _on_intro_begin_pressed() -> void:
 	var scenario_id: String = _selected_scenario.get("scenarioId", "scenario_1")
 	begin_game.emit(scenario_id)
+
+
+# ── Phase 5: Settings panel ───────────────────────────────────────────────────
+
+func _build_settings_panel() -> void:
+	_panel_settings = _make_panel(480, 420)
+	add_child(_panel_settings)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_panel_settings.add_child(vbox)
+
+	var heading := Label.new()
+	heading.text = "Settings"
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_theme_font_size_override("font_size", 22)
+	heading.add_theme_color_override("font_color", C_HEADING)
+	vbox.add_child(heading)
+
+	vbox.add_child(_separator())
+
+	# Audio section
+	var audio_lbl := Label.new()
+	audio_lbl.text = "Audio"
+	audio_lbl.add_theme_font_size_override("font_size", 14)
+	audio_lbl.add_theme_color_override("font_color", C_SUBHEADING)
+	vbox.add_child(audio_lbl)
+
+	_lbl_music_val = _add_slider_row(vbox, "Music",
+		SettingsManager.music_volume, 0.0, 100.0, 1.0,
+		_on_music_volume_changed)
+
+	_lbl_ambient_val = _add_slider_row(vbox, "Ambient",
+		SettingsManager.ambient_volume, 0.0, 100.0, 1.0,
+		_on_ambient_volume_changed)
+
+	_lbl_sfx_val = _add_slider_row(vbox, "SFX",
+		SettingsManager.sfx_volume, 0.0, 100.0, 1.0,
+		_on_sfx_volume_changed)
+
+	vbox.add_child(_separator())
+
+	# Gameplay section
+	var gameplay_lbl := Label.new()
+	gameplay_lbl.text = "Gameplay"
+	gameplay_lbl.add_theme_font_size_override("font_size", 14)
+	gameplay_lbl.add_theme_color_override("font_color", C_SUBHEADING)
+	vbox.add_child(gameplay_lbl)
+
+	_lbl_speed_val = _add_slider_row(vbox, "Game Speed",
+		SettingsManager.game_speed, 0.25, 4.0, 0.25,
+		_on_game_speed_changed,
+		"(lower = faster)")
+
+	vbox.add_child(_separator())
+
+	var btn_back := _make_button("Back", 160)
+	btn_back.pressed.connect(_on_settings_back)
+	var btn_row := HBoxContainer.new()
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_child(btn_back)
+	vbox.add_child(btn_row)
+
+
+## Builds a labelled HSlider row. Returns the value Label for live updates.
+func _add_slider_row(
+		parent: VBoxContainer,
+		label_text: String,
+		initial_value: float,
+		min_val: float, max_val: float, step: float,
+		change_callback: Callable,
+		hint: String = "") -> Label:
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	parent.add_child(row)
+
+	var name_lbl := Label.new()
+	name_lbl.text = label_text + ":"
+	name_lbl.custom_minimum_size = Vector2(80, 0)
+	name_lbl.add_theme_font_size_override("font_size", 13)
+	name_lbl.add_theme_color_override("font_color", C_BODY)
+	row.add_child(name_lbl)
+
+	var slider := HSlider.new()
+	slider.min_value = min_val
+	slider.max_value = max_val
+	slider.step      = step
+	slider.value     = initial_value
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(change_callback)
+	row.add_child(slider)
+
+	var val_lbl := Label.new()
+	val_lbl.custom_minimum_size = Vector2(52, 0)
+	val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	val_lbl.add_theme_font_size_override("font_size", 13)
+	val_lbl.add_theme_color_override("font_color", C_MUTED)
+	val_lbl.text = _format_slider_val(label_text, initial_value)
+	row.add_child(val_lbl)
+
+	if hint != "":
+		var hint_lbl := Label.new()
+		hint_lbl.text = hint
+		hint_lbl.add_theme_font_size_override("font_size", 11)
+		hint_lbl.add_theme_color_override("font_color", C_MUTED)
+		parent.add_child(hint_lbl)
+
+	return val_lbl
+
+
+func _format_slider_val(label_text: String, value: float) -> String:
+	if label_text == "Game Speed":
+		return "%.2fs" % value
+	return "%d%%" % int(value)
+
+
+func _on_settings_pressed() -> void:
+	_show_phase(Phase.SETTINGS)
+
+
+func _on_settings_back() -> void:
+	_show_phase(Phase.MAIN)
+
+
+func _on_music_volume_changed(value: float) -> void:
+	SettingsManager.music_volume = value
+	SettingsManager.apply_to_audio_manager()
+	SettingsManager.save_settings()
+	_lbl_music_val.text = _format_slider_val("Music", value)
+
+
+func _on_ambient_volume_changed(value: float) -> void:
+	SettingsManager.ambient_volume = value
+	SettingsManager.apply_to_audio_manager()
+	SettingsManager.save_settings()
+	_lbl_ambient_val.text = _format_slider_val("Ambient", value)
+
+
+func _on_sfx_volume_changed(value: float) -> void:
+	SettingsManager.sfx_volume = value
+	SettingsManager.apply_to_audio_manager()
+	SettingsManager.save_settings()
+	_lbl_sfx_val.text = _format_slider_val("SFX", value)
+
+
+func _on_game_speed_changed(value: float) -> void:
+	SettingsManager.game_speed = value
+	SettingsManager.save_settings()
+	_lbl_speed_val.text = _format_slider_val("Game Speed", value)
 
 
 # ── UI helpers ────────────────────────────────────────────────────────────────

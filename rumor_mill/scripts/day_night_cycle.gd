@@ -41,6 +41,7 @@ var time_label: Label = null
 
 
 func _ready() -> void:
+	tick_duration_seconds = SettingsManager.game_speed
 	tick_timer.wait_time = tick_duration_seconds
 	tick_timer.timeout.connect(_on_tick_timer_timeout)
 	tick_timer.start()
