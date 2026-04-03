@@ -12,12 +12,16 @@ static var _pending_restart_id: String = ""
 
 var _is_open: bool = false
 var _scenario_id: String = ""
+var _how_to_play: CanvasLayer = null
 
 
 func _ready() -> void:
 	layer        = 20
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui()
+	_how_to_play = preload("res://scripts/how_to_play.gd").new()
+	_how_to_play.name = "HowToPlay"
+	add_child(_how_to_play)
 	visible = false
 
 
@@ -60,9 +64,9 @@ func _build_ui() -> void:
 	bg.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(bg)
 
-	# Centred panel — tall enough for three buttons.
+	# Centred panel — tall enough for four buttons.
 	var panel := Panel.new()
-	panel.custom_minimum_size = Vector2(300, 230)
+	panel.custom_minimum_size = Vector2(300, 268)
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	var style := StyleBoxFlat.new()
@@ -106,6 +110,14 @@ func _build_ui() -> void:
 	btn_resume.pressed.connect(_close)
 	vbox.add_child(btn_resume)
 
+	# How to Play button.
+	var btn_howto := Button.new()
+	btn_howto.text = "How to Play"
+	btn_howto.add_theme_font_size_override("font_size", 14)
+	btn_howto.process_mode = Node.PROCESS_MODE_ALWAYS
+	btn_howto.pressed.connect(_on_how_to_play)
+	vbox.add_child(btn_howto)
+
 	# Restart Scenario button.
 	var btn_restart := Button.new()
 	btn_restart.text = "Restart Scenario"
@@ -123,6 +135,10 @@ func _build_ui() -> void:
 	btn_quit.process_mode = Node.PROCESS_MODE_ALWAYS
 	btn_quit.pressed.connect(_on_quit_to_menu)
 	vbox.add_child(btn_quit)
+
+
+func _on_how_to_play() -> void:
+	_how_to_play.open()
 
 
 func _on_restart_scenario() -> void:

@@ -47,6 +47,9 @@ var _panel_briefing:     Control    = null
 var _scenario_cards:     Array      = []  # Array[PanelContainer]
 var _selected_card_idx:  int        = -1
 
+# HowToPlay overlay ref
+var _how_to_play:        CanvasLayer = null
+
 # Briefing-phase refs
 var _briefing_title:     Label      = null
 var _briefing_days:      Label      = null
@@ -67,6 +70,9 @@ func _ready() -> void:
 	_build_select_panel()
 	_build_briefing_panel()
 	_build_intro_panel()
+	_how_to_play = preload("res://scripts/how_to_play.gd").new()
+	_how_to_play.name = "HowToPlay"
+	add_child(_how_to_play)
 	_show_phase(Phase.MAIN)
 
 
@@ -164,6 +170,10 @@ func _build_main_panel() -> void:
 	var btn_play := _make_button("Play", 200)
 	btn_play.pressed.connect(_on_play_pressed)
 	btn_row.add_child(btn_play)
+
+	var btn_howto := _make_button("How to Play", 200)
+	btn_howto.pressed.connect(_on_how_to_play_pressed)
+	btn_row.add_child(btn_howto)
 
 	var btn_quit := _make_button("Quit", 200)
 	btn_quit.pressed.connect(get_tree().quit)
@@ -428,6 +438,10 @@ func _on_play_pressed() -> void:
 	_selected_card_idx = -1
 	_selected_scenario = {}
 	_show_phase(Phase.SELECT)
+
+
+func _on_how_to_play_pressed() -> void:
+	_how_to_play.open()
 
 
 func _on_select_back() -> void:
