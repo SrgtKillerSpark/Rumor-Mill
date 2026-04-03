@@ -30,7 +30,7 @@ const C_CARD_HOVER   := Color(0.18, 0.13, 0.09, 1.0)
 const C_CARD_BORDER  := Color(0.45, 0.30, 0.12, 1.0)
 const C_CARD_SEL     := Color(0.70, 0.50, 0.15, 1.0)
 
-enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS }
+enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS }
 
 # ── State ─────────────────────────────────────────────────────────────────────
 var _phase:              Phase     = Phase.MAIN
@@ -52,6 +52,9 @@ var _how_to_play:        CanvasLayer = null
 
 # Settings-phase refs
 var _panel_settings:     Control    = null
+
+# Credits-phase refs
+var _panel_credits:      Control    = null
 var _lbl_music_val:      Label      = null
 var _lbl_ambient_val:    Label      = null
 var _lbl_sfx_val:        Label      = null
@@ -78,6 +81,7 @@ func _ready() -> void:
 	_build_briefing_panel()
 	_build_intro_panel()
 	_build_settings_panel()
+	_build_credits_panel()
 	_how_to_play = preload("res://scripts/how_to_play.gd").new()
 	_how_to_play.name = "HowToPlay"
 	add_child(_how_to_play)
@@ -125,6 +129,7 @@ func _show_phase(p: Phase) -> void:
 	_panel_briefing.visible = (p == Phase.BRIEFING)
 	_panel_intro.visible    = (p == Phase.INTRO)
 	_panel_settings.visible = (p == Phase.SETTINGS)
+	_panel_credits.visible  = (p == Phase.CREDITS)
 
 
 # ── Backdrop ──────────────────────────────────────────────────────────────────
@@ -187,6 +192,10 @@ func _build_main_panel() -> void:
 	var btn_settings := _make_button("Settings", 200)
 	btn_settings.pressed.connect(_on_settings_pressed)
 	btn_row.add_child(btn_settings)
+
+	var btn_credits := _make_button("Credits", 200)
+	btn_credits.pressed.connect(_on_credits_pressed)
+	btn_row.add_child(btn_credits)
 
 	var btn_quit := _make_button("Quit", 200)
 	btn_quit.pressed.connect(get_tree().quit)
@@ -675,6 +684,14 @@ func _on_settings_back() -> void:
 	_show_phase(Phase.MAIN)
 
 
+func _on_credits_pressed() -> void:
+	_show_phase(Phase.CREDITS)
+
+
+func _on_credits_back() -> void:
+	_show_phase(Phase.MAIN)
+
+
 func _on_music_volume_changed(value: float) -> void:
 	SettingsManager.music_volume = value
 	SettingsManager.apply_to_audio_manager()
@@ -700,6 +717,64 @@ func _on_game_speed_changed(value: float) -> void:
 	SettingsManager.game_speed = value
 	SettingsManager.save_settings()
 	_lbl_speed_val.text = _format_slider_val("Game Speed", value)
+
+
+# ── Phase 6: Credits panel ────────────────────────────────────────────────────
+
+func _build_credits_panel() -> void:
+	_panel_credits = _make_panel(480, 400)
+	add_child(_panel_credits)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 14)
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_panel_credits.add_child(vbox)
+
+	var heading := Label.new()
+	heading.text = "Credits"
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_theme_font_size_override("font_size", 28)
+	heading.add_theme_color_override("font_color", C_TITLE)
+	vbox.add_child(heading)
+
+	vbox.add_child(_separator())
+
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(spacer)
+
+	var credits_body := RichTextLabel.new()
+	credits_body.fit_content = true
+	credits_body.scroll_active = false
+	credits_body.bbcode_enabled = true
+	credits_body.add_theme_font_size_override("normal_font_size", 14)
+	credits_body.add_theme_color_override("default_color", C_BODY)
+	var t := "[center]"
+	t += "[color=#ebe8b2][b]Design, Writing & Programming[/b][/color]\n"
+	t += "The Rumor Mill Team\n\n"
+	t += "[color=#ebe8b2][b]Engine[/b][/color]\n"
+	t += "Godot Engine 4  —  godotengine.org\n\n"
+	t += "[color=#ebe8b2][b]Music & Sound[/b][/color]\n"
+	t += "Original Compositions\n\n"
+	t += "[color=#ebe8b2][b]Playtesting[/b][/color]\n"
+	t += "Early Access Community\n\n"
+	t += "[color=#8c7a5a]Version 0.1  —  All rights reserved.[/color]"
+	t += "[/center]"
+	credits_body.text = t
+	vbox.add_child(credits_body)
+
+	var spacer2 := Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(spacer2)
+
+	vbox.add_child(_separator())
+
+	var btn_back := _make_button("Back", 160)
+	btn_back.pressed.connect(_on_credits_back)
+	var btn_row := HBoxContainer.new()
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_child(btn_back)
+	vbox.add_child(btn_row)
 
 
 # ── UI helpers ────────────────────────────────────────────────────────────────
@@ -749,9 +824,16 @@ func _make_button(label_text: String, w: int) -> Button:
 	pressed_style.border_color = C_PANEL_BORDER
 	pressed_style.set_content_margin_all(8)
 
+	var focus_style := StyleBoxFlat.new()
+	focus_style.bg_color = C_BTN_HOVER
+	focus_style.set_border_width_all(2)
+	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold — matches SPA-169 focus ring
+	focus_style.set_content_margin_all(8)
+
 	btn.add_theme_stylebox_override("normal",  normal)
 	btn.add_theme_stylebox_override("hover",   hover)
 	btn.add_theme_stylebox_override("pressed", pressed_style)
+	btn.add_theme_stylebox_override("focus",   focus_style)
 	btn.add_theme_color_override("font_color", C_BTN_TEXT)
 	return btn
 

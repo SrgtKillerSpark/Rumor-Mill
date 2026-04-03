@@ -32,6 +32,7 @@ var _tip_label:     RichTextLabel = null
 var _loading_label: Label         = null
 var _start_time:    float         = 0.0
 var _active:        bool          = false
+var _fade_tween:    Tween         = null
 
 
 func _ready() -> void:
@@ -72,12 +73,17 @@ func _build_ui() -> void:
 	vbox.add_child(_tip_label)
 
 
-## Call when a scene transition begins. Shows a random tip immediately.
+## Call when a scene transition begins. Fades in a random tip.
 func start_transition() -> void:
 	_start_time = Time.get_ticks_msec() / 1000.0
 	_active = true
 	_tip_label.text = "[center]" + TIPS[randi() % TIPS.size()] + "[/center]"
+	modulate = Color(1.0, 1.0, 1.0, 0.0)
 	visible = true
+	if _fade_tween:
+		_fade_tween.kill()
+	_fade_tween = create_tween()
+	_fade_tween.tween_property(self, "modulate:a", 1.0, 0.25)
 
 
 ## Call when the transition finishes. Hides immediately if it was faster than
@@ -94,4 +100,8 @@ func end_transition() -> void:
 ## Always hide, regardless of elapsed time.
 func force_hide() -> void:
 	_active = false
+	if _fade_tween:
+		_fade_tween.kill()
+		_fade_tween = null
+	modulate = Color(1.0, 1.0, 1.0, 1.0)
 	visible = false

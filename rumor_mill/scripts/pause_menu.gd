@@ -175,7 +175,15 @@ func _make_pause_btn(label_text: String, font_color: Color) -> Button:
 	pressed.set_content_margin_all(8)
 	pressed.set_corner_radius_all(3)
 
+	var focus := StyleBoxFlat.new()
+	focus.bg_color = C_BTN_HOVER
+	focus.set_border_width_all(2)
+	focus.border_color = Color(1.00, 0.90, 0.40, 1.0)  # bright gold — clearly visible focus ring
+	focus.set_content_margin_all(8)
+	focus.set_corner_radius_all(3)
+
 	btn.add_theme_stylebox_override("normal",  normal)
 	btn.add_theme_stylebox_override("hover",   hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_stylebox_override("focus",   focus)
 	return btn
