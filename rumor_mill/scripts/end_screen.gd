@@ -38,6 +38,15 @@ const PANEL_H := 640
 
 # ── Key NPC outcomes per scenario ─────────────────────────────────────────────
 # id must match the NPC id string used in reputation_system.
+
+# The primary target NPC whose belief score is shown in the "Peak Belief" stat.
+# Keyed by integer scenario_id (matches _populate_stats / _build_bonus_stat).
+const PEAK_BELIEF_TARGET: Dictionary = {
+	1: { "id": "edric_fenn",    "name": "Edric Fenn" },
+	2: { "id": "alys_herbwife", "name": "Alys Herbwife" },
+	3: { "id": "calder_fenn",   "name": "Calder Fenn" },
+}
+
 const NPC_OUTCOMES: Dictionary = {
 	"scenario_1": [
 		{ "id": "edric_fenn",   "name": "Edric Fenn" },
@@ -315,13 +324,21 @@ func _populate_stats(scenario_id: int, won: bool) -> void:
 	})
 
 	# ── Peak Belief ───────────────────────────────────────────────────────────
+	# Scoped to the scenario primary target NPC so the stat is contextually
+	# meaningful.  Falls back to the population maximum for unknown scenarios.
 	var peak_belief := 0
 	if _world_ref != null and _world_ref.reputation_system != null:
-		var all_snaps: Dictionary = _world_ref.reputation_system.get_all_snapshots()
-		for npc_id in all_snaps:
-			var snap: ReputationSystem.ReputationSnapshot = all_snaps[npc_id]
-			if snap.score > peak_belief:
+		var target: Dictionary = PEAK_BELIEF_TARGET.get(scenario_id, {})
+		if not target.is_empty():
+			var snap: Variant = _world_ref.reputation_system.get_snapshot(str(target["id"]))
+			if snap != null:
 				peak_belief = snap.score
+		else:
+			var all_snaps: Dictionary = _world_ref.reputation_system.get_all_snapshots()
+			for npc_id in all_snaps:
+				var snap: ReputationSystem.ReputationSnapshot = all_snaps[npc_id]
+				if snap.score > peak_belief:
+					peak_belief = snap.score
 
 	var peak_val_lbl := _add_stat_row("Peak Belief", "0% peak belief")
 	_tween_targets.append({
