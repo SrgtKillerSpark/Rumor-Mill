@@ -101,7 +101,7 @@ func _build_dynamic_panels() -> void:
 
 	# Whisper Token bar (shown only on panel 3, hidden otherwise).
 	_whisper_bar = Label.new()
-	_whisper_bar.add_theme_font_size_override("font_size", 11)
+	_whisper_bar.add_theme_font_size_override("font_size", 12)
 	_whisper_bar.add_theme_color_override("font_color", Color(0.90, 0.75, 0.20, 1.0))
 	_whisper_bar.visible = false
 	vbox.add_child(_whisper_bar)
@@ -126,7 +126,7 @@ func _build_dynamic_panels() -> void:
 
 	# ── Status label (feedback on panel 3) ──────────────────────────────────
 	_status_label = Label.new()
-	_status_label.add_theme_font_size_override("font_size", 10)
+	_status_label.add_theme_font_size_override("font_size", 12)
 	_status_label.add_theme_color_override("font_color", Color(1.0, 0.65, 0.2, 1.0))
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_label.visible = false
@@ -284,13 +284,13 @@ func _build_subject_entry(
 
 	var name_lbl := Label.new()
 	name_lbl.text = "  " + npc_name
-	name_lbl.add_theme_font_size_override("font_size", 11)
+	name_lbl.add_theme_font_size_override("font_size", 12)
 	name_lbl.add_theme_color_override("font_color", Color(0.88, 0.80, 0.60, 1.0))
 	header.add_child(name_lbl)
 
 	var faction_lbl := Label.new()
 	faction_lbl.text = "  [" + faction.capitalize() + "]"
-	faction_lbl.add_theme_font_size_override("font_size", 10)
+	faction_lbl.add_theme_font_size_override("font_size", 12)
 	faction_lbl.add_theme_color_override("font_color", _faction_color(faction))
 	header.add_child(faction_lbl)
 
@@ -298,7 +298,7 @@ func _build_subject_entry(
 	if rels.is_empty():
 		var lock_lbl := Label.new()
 		lock_lbl.text = "    🔒 Relationship: Unknown"
-		lock_lbl.add_theme_font_size_override("font_size", 10)
+		lock_lbl.add_theme_font_size_override("font_size", 12)
 		lock_lbl.add_theme_color_override("font_color", Color(0.42, 0.38, 0.30, 1.0))
 		vbox.add_child(lock_lbl)
 	else:
@@ -326,7 +326,7 @@ func _build_subject_entry(
 			rel_lbl.text = "%s%s  %s (%s)" % [
 				prefix, other_name, bar_str, intel.strength_label()
 			]
-			rel_lbl.add_theme_font_size_override("font_size", 10)
+			rel_lbl.add_theme_font_size_override("font_size", 12)
 			rel_lbl.add_theme_color_override("font_color", color)
 			vbox.add_child(rel_lbl)
 
@@ -335,7 +335,7 @@ func _build_subject_entry(
 	# Select on click.
 	var btn := Button.new()
 	btn.text = "Select as Subject"
-	btn.add_theme_font_size_override("font_size", 10)
+	btn.add_theme_font_size_override("font_size", 12)
 	var captured_id := npc_id
 	btn.pressed.connect(func():
 		_selected_subject = captured_id
@@ -395,14 +395,14 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 
 	var type_lbl := Label.new()
 	type_lbl.text = "[%s]  %s" % [type_str.to_upper(), claim_id]
-	type_lbl.add_theme_font_size_override("font_size", 11)
+	type_lbl.add_theme_font_size_override("font_size", 12)
 	type_lbl.add_theme_color_override("font_color", _claim_type_color(type_str))
 	header.add_child(type_lbl)
 
 	# Template text (the actual rumor wording).
 	var tmpl_lbl := Label.new()
 	tmpl_lbl.text = '  "' + tmpl_text + '"'
-	tmpl_lbl.add_theme_font_size_override("font_size", 10)
+	tmpl_lbl.add_theme_font_size_override("font_size", 12)
 	tmpl_lbl.add_theme_color_override("font_color", Color(0.88, 0.88, 0.80, 1.0))
 	tmpl_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(tmpl_lbl)
@@ -413,14 +413,14 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 
 	var inten_lbl := Label.new()
 	inten_lbl.text = "  Intensity: " + "█".repeat(intensity) + "░".repeat(5 - intensity)
-	inten_lbl.add_theme_font_size_override("font_size", 10)
+	inten_lbl.add_theme_font_size_override("font_size", 12)
 	inten_lbl.add_theme_color_override("font_color", _intensity_color(intensity))
 	stats_row.add_child(inten_lbl)
 
 	var mut_bars: int = roundi(mutability * 5.0)
 	var mut_lbl  := Label.new()
 	mut_lbl.text = "   Mutability: " + "█".repeat(mut_bars) + "░".repeat(5 - mut_bars)
-	mut_lbl.add_theme_font_size_override("font_size", 10)
+	mut_lbl.add_theme_font_size_override("font_size", 12)
 	mut_lbl.add_theme_color_override("font_color", Color(0.60, 0.75, 1.0, 1.0))
 	stats_row.add_child(mut_lbl)
 
@@ -428,7 +428,7 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 
 	var btn := Button.new()
 	btn.text = "Select Claim"
-	btn.add_theme_font_size_override("font_size", 10)
+	btn.add_theme_font_size_override("font_size", 12)
 	var captured_id := claim_id
 	btn.pressed.connect(func():
 		_selected_claim_id = captured_id
@@ -503,7 +503,7 @@ func _build_seed_entry(
 
 	var name_lbl := Label.new()
 	name_lbl.text = "  " + npc_name + "  [" + faction.capitalize() + "]"
-	name_lbl.add_theme_font_size_override("font_size", 11)
+	name_lbl.add_theme_font_size_override("font_size", 12)
 	header.add_child(name_lbl)
 
 	# Estimates.
@@ -514,7 +514,7 @@ func _build_seed_entry(
 	est_lbl.text = "    Spread est: ~%d NPCs   Believability: %d%%" % [
 		roundi(spread_est), roundi(belief_est * 100.0)
 	]
-	est_lbl.add_theme_font_size_override("font_size", 10)
+	est_lbl.add_theme_font_size_override("font_size", 12)
 	est_lbl.add_theme_color_override("font_color", Color(0.75, 0.85, 0.65, 1.0))
 	vbox.add_child(est_lbl)
 
@@ -522,7 +522,7 @@ func _build_seed_entry(
 
 	var btn := Button.new()
 	btn.text = "Whisper to " + npc_name
-	btn.add_theme_font_size_override("font_size", 10)
+	btn.add_theme_font_size_override("font_size", 12)
 	var captured_id := npc_id
 	btn.pressed.connect(func():
 		_selected_seed_npc = captured_id
@@ -636,7 +636,7 @@ func _get_claim_type_upper(claim_id: String) -> String:
 ## Builds and inserts the evidence attachment sub-section at the top of _seed_list.
 func _add_evidence_section(compatible: Array) -> void:
 	var hdr := Label.new()
-	hdr.add_theme_font_size_override("font_size", 11)
+	hdr.add_theme_font_size_override("font_size", 12)
 	hdr.add_theme_color_override("font_color", Color(0.90, 0.75, 0.20, 1.0))
 	if compatible.is_empty():
 		hdr.text = "  [Evidence] No compatible evidence for this claim type."
@@ -655,7 +655,7 @@ func _add_evidence_section(compatible: Array) -> void:
 	# When evidence is already attached, show a compact summary under the header.
 	if _selected_evidence_item != null:
 		var attached_lbl := Label.new()
-		attached_lbl.add_theme_font_size_override("font_size", 10)
+		attached_lbl.add_theme_font_size_override("font_size", 12)
 		attached_lbl.add_theme_color_override("font_color", Color(0.35, 0.90, 0.50, 1.0))
 		var bonus_str := ""
 		if _selected_evidence_item.believability_bonus != 0.0:
@@ -669,7 +669,7 @@ func _add_evidence_section(compatible: Array) -> void:
 	if _selected_evidence_item != null:
 		var clear_btn := Button.new()
 		clear_btn.text = "Remove Evidence"
-		clear_btn.add_theme_font_size_override("font_size", 10)
+		clear_btn.add_theme_font_size_override("font_size", 12)
 		clear_btn.pressed.connect(func() -> void:
 			_selected_evidence_item = null
 			_confirm_pending = false
@@ -700,7 +700,7 @@ func _build_evidence_entry(item) -> Control:
 		bonus_parts.append("Mutability %s%.2f" % [sign_str, item.mutability_modifier])
 	var type_lbl := Label.new()
 	type_lbl.text = "  %s — %s" % [item.type, "  |  ".join(bonus_parts)]
-	type_lbl.add_theme_font_size_override("font_size", 10)
+	type_lbl.add_theme_font_size_override("font_size", 12)
 	type_lbl.add_theme_color_override("font_color", Color(0.95, 0.85, 0.50, 1.0))
 	vbox.add_child(type_lbl)
 
@@ -709,7 +709,7 @@ func _build_evidence_entry(item) -> Control:
 		var boost_bars: int = clampi(roundi(item.believability_bonus * 20.0), 1, 5)
 		var bar_lbl := Label.new()
 		bar_lbl.text = "    Boost: " + "▇".repeat(boost_bars) + "░".repeat(5 - boost_bars)
-		bar_lbl.add_theme_font_size_override("font_size", 10)
+		bar_lbl.add_theme_font_size_override("font_size", 12)
 		bar_lbl.add_theme_color_override("font_color", Color(0.35, 0.88, 0.52, 1.0))
 		vbox.add_child(bar_lbl)
 
@@ -717,12 +717,12 @@ func _build_evidence_entry(item) -> Control:
 	if not item.compatible_claims.is_empty():
 		var compat_lbl := Label.new()
 		compat_lbl.text = "    Works with: " + ", ".join(item.compatible_claims)
-		compat_lbl.add_theme_font_size_override("font_size", 9)
+		compat_lbl.add_theme_font_size_override("font_size", 12)
 		compat_lbl.add_theme_color_override("font_color", Color(0.60, 0.60, 0.58, 0.90))
 		vbox.add_child(compat_lbl)
 
 	var btn := Button.new()
-	btn.add_theme_font_size_override("font_size", 10)
+	btn.add_theme_font_size_override("font_size", 12)
 	if item == _selected_evidence_item:
 		btn.text = "✓ Attached"
 	else:
@@ -755,10 +755,16 @@ func _make_nav_button(label_text: String) -> Button:
 	hover.border_color = Color(0.92, 0.78, 0.12, 1.0)
 	hover.set_border_width_all(1)
 	hover.set_content_margin_all(6)
+	var focus := StyleBoxFlat.new()
+	focus.bg_color     = Color(0.55, 0.35, 0.12, 1.0)
+	focus.border_color = Color(1.00, 0.90, 0.40, 1.0)  # bright gold focus ring
+	focus.set_border_width_all(2)
+	focus.set_content_margin_all(6)
 	btn.add_theme_stylebox_override("normal", normal)
 	btn.add_theme_stylebox_override("hover",  hover)
+	btn.add_theme_stylebox_override("focus",  focus)
 	btn.add_theme_color_override("font_color", Color(0.92, 0.82, 0.60, 1.0))
-	btn.add_theme_font_size_override("font_size", 11)
+	btn.add_theme_font_size_override("font_size", 12)
 	return btn
 
 

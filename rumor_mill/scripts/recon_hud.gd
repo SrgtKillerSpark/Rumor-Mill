@@ -80,7 +80,8 @@ func _process(_delta: float) -> void:
 # ── Public API ────────────────────────────────────────────────────────────────
 
 func show_toast(message: String, success: bool) -> void:
-	toast_label.text = message
+	var icon := "✓ " if success else "✗ "
+	toast_label.text = icon + message
 	var color := Color(0.45, 1.00, 0.55, 1.0) if success else Color(1.00, 0.60, 0.20, 1.0)
 	toast_label.add_theme_color_override("font_color", color)
 

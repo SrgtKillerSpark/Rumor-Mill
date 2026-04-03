@@ -55,6 +55,18 @@ const STATE_COLOR := {
 	7: Color(0.55, 0.55, 0.55, 1.0),
 	8: Color(0.45, 0.80, 1.00, 1.0),
 }
+# Colorblind-safe shape icons for each rumor state (supplement colour coding).
+const STATE_ICON := {
+	0: "○",   # Unaware       — empty circle
+	1: "◇",   # Evaluating    — diamond
+	2: "✓",   # Believes      — check
+	3: "▶",   # Spreading     — arrow/play
+	4: "★",   # Acting        — star
+	5: "✕",   # Rejecting     — cross
+	6: "⚡",  # Contradicted  — bolt
+	7: "—",   # Expired       — dash
+	8: "◆",   # Defending     — filled diamond
+}
 
 const OFFSET := Vector2(18, -140)  # screen offset from cursor
 const PANEL_W := 240
@@ -157,7 +169,7 @@ func _build_panel() -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = C_BG
 	style.border_color = C_BORDER
-	style.set_border_width_all(1)
+	style.set_border_width_all(2)
 	style.set_content_margin_all(10)
 	style.corner_radius_top_left     = 3
 	style.corner_radius_top_right    = 3
@@ -178,13 +190,13 @@ func _build_panel() -> void:
 	sep.add_theme_stylebox_override("separator", sep_style)
 	vbox.add_child(sep)
 
-	_faction_lbl = _make_label("", 11, C_LABEL)
+	_faction_lbl = _make_label("", 12, C_LABEL)
 	vbox.add_child(_faction_lbl)
 
-	_role_lbl = _make_label("", 10, C_MUTED)
+	_role_lbl = _make_label("", 12, C_MUTED)
 	vbox.add_child(_role_lbl)
 
-	_bio_lbl = _make_label("", 10, C_MUTED)
+	_bio_lbl = _make_label("", 12, C_MUTED)
 	_bio_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_bio_lbl.custom_minimum_size = Vector2(PANEL_W - 20, 0)
 	vbox.add_child(_bio_lbl)
@@ -195,13 +207,13 @@ func _build_panel() -> void:
 	sep2.add_theme_stylebox_override("separator", sep2_style)
 	vbox.add_child(sep2)
 
-	_state_lbl = _make_label("", 11, C_LABEL)
+	_state_lbl = _make_label("", 12, C_LABEL)
 	vbox.add_child(_state_lbl)
 
-	_rumor_lbl = _make_label("", 10, C_MUTED)
+	_rumor_lbl = _make_label("", 12, C_MUTED)
 	vbox.add_child(_rumor_lbl)
 
-	_dead_lbl = _make_label("☠ SOCIALLY DEAD — reputation frozen", 11, Color(0.85, 0.15, 0.15, 1.0))
+	_dead_lbl = _make_label("☠ SOCIALLY DEAD — reputation frozen", 12, Color(0.85, 0.15, 0.15, 1.0))
 	_dead_lbl.visible = false
 	vbox.add_child(_dead_lbl)
 
@@ -256,7 +268,8 @@ func _populate(npc: Node2D) -> void:
 
 	var state_name:  String = STATE_LABEL.get(worst_state_int, "Unknown")
 	var state_color: Color  = STATE_COLOR.get(worst_state_int, C_LABEL)
-	_state_lbl.text = "State: " + state_name
+	var state_icon:  String = STATE_ICON.get(worst_state_int, "·")
+	_state_lbl.text = "State: " + state_icon + " " + state_name
 	_state_lbl.add_theme_color_override("font_color", state_color)
 
 	var rumor_count: int = npc.rumor_slots.size() if "rumor_slots" in npc else 0

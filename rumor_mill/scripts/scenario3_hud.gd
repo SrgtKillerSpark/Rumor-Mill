@@ -92,7 +92,7 @@ func _build_ui() -> void:
 	# ── Scenario label ────────────────────────────────────────────────────
 	var title_lbl := Label.new()
 	title_lbl.text = "Scenario 3:"
-	title_lbl.add_theme_font_size_override("font_size", 11)
+	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	hbox.add_child(title_lbl)
 
@@ -102,7 +102,7 @@ func _build_ui() -> void:
 	hbox.add_child(calder_vbox)
 
 	_calder_score_lbl = Label.new()
-	_calder_score_lbl.add_theme_font_size_override("font_size", 11)
+	_calder_score_lbl.add_theme_font_size_override("font_size", 12)
 	_calder_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_calder_score_lbl.text = "Calder Fenn  Rep: 50 / 100  Target: 80+"
 	calder_vbox.add_child(_calder_score_lbl)
@@ -126,7 +126,7 @@ func _build_ui() -> void:
 	hbox.add_child(tomas_vbox)
 
 	_tomas_score_lbl = Label.new()
-	_tomas_score_lbl.add_theme_font_size_override("font_size", 11)
+	_tomas_score_lbl.add_theme_font_size_override("font_size", 12)
 	_tomas_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_tomas_score_lbl.text = "Tomas Reeve  Rep: 50 / 100  Target: ≤30"
 	tomas_vbox.add_child(_tomas_score_lbl)
@@ -150,27 +150,27 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 11)
+	_days_lbl.add_theme_font_size_override("font_size", 12)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 30"
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
-	_result_lbl.add_theme_font_size_override("font_size", 12)
+	_result_lbl.add_theme_font_size_override("font_size", 14)
 	_result_lbl.add_theme_color_override("font_color", C_WIN)
 	_result_lbl.text = ""
 	right_vbox.add_child(_result_lbl)
 
-	# ── Bar color legend ──────────────────────────────────────────────────
+	# ── Bar status legend — icons instead of colour names for colorblind safety ──
 	var legend_lbl := Label.new()
-	legend_lbl.add_theme_font_size_override("font_size", 9)
+	legend_lbl.add_theme_font_size_override("font_size", 12)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "[green] on track  [orange] at risk  [red] failing"
+	legend_lbl.text = "[✓] on track  [~] at risk  [✗] failing"
 	right_vbox.add_child(legend_lbl)
 
 	# ── Rival activity indicator ──────────────────────────────────────────
 	_rival_lbl = Label.new()
-	_rival_lbl.add_theme_font_size_override("font_size", 9)
+	_rival_lbl.add_theme_font_size_override("font_size", 12)
 	_rival_lbl.add_theme_color_override("font_color", Color(0.65, 0.55, 0.45, 0.80))
 	_rival_lbl.text = "Rival: no activity yet"
 	right_vbox.add_child(_rival_lbl)
@@ -219,10 +219,10 @@ func _refresh() -> void:
 	# Result label.
 	match state:
 		ScenarioManager.ScenarioState.WON:
-			_result_lbl.text = "VICTORY"
+			_result_lbl.text = "✓ VICTORY"
 			_result_lbl.add_theme_color_override("font_color", C_WIN)
 		ScenarioManager.ScenarioState.FAILED:
-			_result_lbl.text = "FAILED"
+			_result_lbl.text = "✗ FAILED"
 			_result_lbl.add_theme_color_override("font_color", C_FAIL)
 		_:
 			_result_lbl.text = ""

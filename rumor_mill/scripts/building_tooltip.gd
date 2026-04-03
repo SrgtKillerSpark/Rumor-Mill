@@ -136,7 +136,7 @@ func _build_panel() -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = C_BG
 	style.border_color = C_BORDER
-	style.set_border_width_all(1)
+	style.set_border_width_all(2)
 	style.set_content_margin_all(10)
 	style.corner_radius_top_left     = 3
 	style.corner_radius_top_right    = 3
@@ -149,7 +149,7 @@ func _build_panel() -> void:
 	_panel.add_child(vbox)
 
 	_name_lbl = Label.new()
-	_name_lbl.add_theme_font_size_override("font_size", 13)
+	_name_lbl.add_theme_font_size_override("font_size", 14)
 	_name_lbl.add_theme_color_override("font_color", C_TITLE)
 	vbox.add_child(_name_lbl)
 
@@ -160,7 +160,7 @@ func _build_panel() -> void:
 	vbox.add_child(sep)
 
 	_desc_lbl = Label.new()
-	_desc_lbl.add_theme_font_size_override("font_size", 10)
+	_desc_lbl.add_theme_font_size_override("font_size", 12)
 	_desc_lbl.add_theme_color_override("font_color", C_LABEL)
 	_desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_desc_lbl.custom_minimum_size = Vector2(PANEL_W - 20, 0)
