@@ -44,6 +44,46 @@
       "y": 28,
       "width": 8,
       "height": 6
+    },
+    {
+      "name": "town_hall",
+      "type": 9,
+      "x": 19,
+      "y": 8,
+      "width": 4,
+      "height": 3
+    },
+    {
+      "name": "guardpost",
+      "type": 8,
+      "x": 20,
+      "y": 19,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "name": "blacksmith",
+      "type": 5,
+      "x": 13,
+      "y": 27,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "name": "mill",
+      "type": 6,
+      "x": 33,
+      "y": 17,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "name": "storage",
+      "type": 7,
+      "x": 33,
+      "y": 27,
+      "width": 3,
+      "height": 3
     }
   ],
   "walkable_types": [

@@ -305,6 +305,42 @@ func _flash_npc_detected(npc: Node2D) -> void:
 	tween.tween_property(npc, "modulate", NPC_NORMAL_MODULATE, 0.35)
 
 
+## Spawn a sparkle icon floating above the building highlight when Observe succeeds.
+func _show_observe_sparkle() -> void:
+	if _bldg_highlight == null or not _bldg_highlight.visible:
+		return
+	var lbl := Label.new()
+	lbl.text = "✨"
+	lbl.add_theme_font_size_override("font_size", 18)
+	var start_pos := _bldg_highlight.position + Vector2(-8.0, -52.0)
+	lbl.position = start_pos
+	lbl.z_index = 5
+	_world_ref.add_child(lbl)
+	var tw := lbl.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", start_pos + Vector2(0.0, -28.0), 1.4)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.4).set_delay(0.5)
+	tw.finished.connect(lbl.queue_free)
+
+
+## Spawn an ear icon floating above the target NPC when Eavesdrop succeeds.
+func _show_eavesdrop_success(npc: Node2D) -> void:
+	if npc == null or not is_instance_valid(npc):
+		return
+	var lbl := Label.new()
+	lbl.text = "👂"
+	lbl.add_theme_font_size_override("font_size", 18)
+	var start_pos := npc.position + Vector2(-8.0, -68.0)
+	lbl.position = start_pos
+	lbl.z_index = 5
+	_world_ref.add_child(lbl)
+	var tw := lbl.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", start_pos + Vector2(0.0, -24.0), 1.3)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.3).set_delay(0.4)
+	tw.finished.connect(lbl.queue_free)
+
+
 ## Map a 0-100 reputation score to a human-readable tier label.
 func _rep_tier_label(score: int) -> String:
 	if score >= 85: return "Revered"
@@ -444,6 +480,7 @@ func _try_observe(location_id: String) -> void:
 		print("[Recon] Evidence: Incriminating Artifact acquired at '%s' tick=%d" % [location_id, tick])
 
 	emit_signal("action_performed", msg, true)
+	_show_observe_sparkle()
 	print("[Recon] Observe '%s' tick=%d — %d NPC(s) recorded" % [location_id, tick, n])
 
 
@@ -520,6 +557,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 		print("[Recon] Evidence: Witness Account acquired (%s <-> %s)" % [name_a, name_b])
 
 	emit_signal("action_performed", msg, true)
+	_show_eavesdrop_success(target)
 	print("[Recon] Eavesdrop %s <-> %s  weight=%.2f  label=%s" % [
 		name_a, name_b, weight, intel.affinity_label])
 

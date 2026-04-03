@@ -361,6 +361,10 @@ func _walk_to(cell: Vector2i) -> void:
 	if sprite.sprite_frames != null:
 		sprite.play("walk")
 	var world_pos := _cell_to_world(cell)
+	# Flip sprite to face direction of travel.
+	var dx := world_pos.x - position.x
+	if abs(dx) > 1.0 and sprite.sprite_frames != null:
+		sprite.flip_h = dx < 0
 	var duration  := maxf(position.distance_to(world_pos) / MOVE_SPEED, 0.05)
 	if _tween:
 		_tween.kill()
