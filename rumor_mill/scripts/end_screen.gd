@@ -111,6 +111,10 @@ func _infer_fail_reason(scenario_id: int) -> String:
 			var calder := rep.get_snapshot(ScenarioManager.CALDER_FENN_ID)
 			if calder != null and calder.score < ScenarioManager.S3_FAIL_CALDER_BELOW:
 				return "calder_implicated"
+	if scenario_id == 2:
+		var rep: ReputationSystem = _world_ref.reputation_system
+		if rep != null and rep.has_illness_rejecter(ScenarioManager.ALYS_HERBWIFE_ID, ScenarioManager.MAREN_NUN_ID):
+			return "contradicted"
 	# Check days elapsed vs allowed.
 	if _day_night_ref != null and sm.get_days_allowed() > 0:
 		var days_elapsed: int = _day_night_ref.current_day if "current_day" in _day_night_ref else 0
