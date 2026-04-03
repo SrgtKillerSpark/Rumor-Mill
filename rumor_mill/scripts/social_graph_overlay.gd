@@ -183,17 +183,15 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				continue
 			drawn[key] = true
 
-			var weight: float = neighbours[tid]
-			if weight < EDGE_THRESHOLD:
-				continue
-
 			var target_npc := _find_npc_by_id(npcs, tid)
 			if target_npc == null:
 				continue
 
-			var to_screen := _world_to_screen(target_npc.global_position)
+			var to_screen  := _world_to_screen(target_npc.global_position)
+			var weight: float = neighbours[tid]
 
-			# Check if this edge had a recent spread transmission (event pulse).
+			# Check active spread BEFORE the weight threshold so sub-threshold
+			# social-graph edges still show the event pulse.
 			if _active_spread_edges.has(key):
 				# Highlight: bright orange, thickness scaled by time remaining.
 				var t := _active_spread_edges[key] / SPREAD_HIGHLIGHT_DURATION
@@ -202,6 +200,8 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				var h_color := Color(SPREAD_HIGHLIGHT_COLOR.r, SPREAD_HIGHLIGHT_COLOR.g,
 									 SPREAD_HIGHLIGHT_COLOR.b, h_alpha)
 				_draw_node.draw_line(from_screen, to_screen, h_color, h_width)
+			elif weight < EDGE_THRESHOLD:
+				continue
 			elif spreading_ids.has(nid) or spreading_ids.has(tid):
 				# Persistent teal glow: either endpoint is actively spreading a rumor.
 				_draw_node.draw_line(from_screen, to_screen,
@@ -211,6 +211,27 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				var width  := lerpf(0.5, 2.5, weight)
 				var color  := Color(EDGE_BASE_COLOR.r, EDGE_BASE_COLOR.g, EDGE_BASE_COLOR.b, alpha)
 				_draw_node.draw_line(from_screen, to_screen, color, width)
+
+	# Second pass: draw active spread edges for proximity-only pairs that have
+	# no social graph entry at all (main loop only iterates sg.get_neighbours).
+	for key in _active_spread_edges:
+		if drawn.has(key):
+			continue  # already handled in main loop
+		var parts := key.split("|")
+		if parts.size() != 2:
+			continue
+		var npc_a := _find_npc_by_id(npcs, parts[0])
+		var npc_b := _find_npc_by_id(npcs, parts[1])
+		if npc_a == null or npc_b == null:
+			continue
+		var from_screen := _world_to_screen(npc_a.global_position)
+		var to_screen   := _world_to_screen(npc_b.global_position)
+		var t := _active_spread_edges[key] / SPREAD_HIGHLIGHT_DURATION
+		var h_alpha := lerpf(0.2, 0.9, t)
+		var h_width := lerpf(1.5, 4.0, t)
+		var h_color := Color(SPREAD_HIGHLIGHT_COLOR.r, SPREAD_HIGHLIGHT_COLOR.g,
+							 SPREAD_HIGHLIGHT_COLOR.b, h_alpha)
+		_draw_node.draw_line(from_screen, to_screen, h_color, h_width)
 
 
 func _draw_nodes(npcs: Array) -> void:
