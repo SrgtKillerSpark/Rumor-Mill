@@ -48,7 +48,7 @@ custom_minimum_size = Vector2(0, 2)
 [node name="ObjectiveLabel" type="Label" parent="Panel/VBox"]
 text = "Objective."
 autowrap_mode = 2
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.78, 0.70, 0.55, 1.0)
 
 [node name="DayRow" type="HBoxContainer" parent="Panel/VBox"]
@@ -66,7 +66,7 @@ size_flags_horizontal = 3
 
 [node name="TimeOfDayLabel" type="Label" parent="Panel/VBox/DayRow"]
 text = "12:00"
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.65, 0.60, 0.50, 1.0)
 
 [node name="DayProgressBG" type="ColorRect" parent="Panel/VBox"]

@@ -579,8 +579,15 @@ func _make_button(label_text: String, w: int) -> Button:
 	hover.border_color = C_PANEL_BORDER
 	hover.set_content_margin_all(8)
 
-	btn.add_theme_stylebox_override("normal", normal)
-	btn.add_theme_stylebox_override("hover",  hover)
+	var pressed_style := StyleBoxFlat.new()
+	pressed_style.bg_color = Color(0.28, 0.14, 0.04, 1.0)
+	pressed_style.set_border_width_all(1)
+	pressed_style.border_color = C_PANEL_BORDER
+	pressed_style.set_content_margin_all(8)
+
+	btn.add_theme_stylebox_override("normal",  normal)
+	btn.add_theme_stylebox_override("hover",   hover)
+	btn.add_theme_stylebox_override("pressed", pressed_style)
 	btn.add_theme_color_override("font_color", C_BTN_TEXT)
 	return btn
 

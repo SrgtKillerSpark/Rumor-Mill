@@ -10,6 +10,13 @@ extends CanvasLayer
 ## Persists across scene reloads so main.gd can skip the menu on restart.
 static var _pending_restart_id: String = ""
 
+# ── Palette (matches main_menu.gd) ───────────────────────────────────────────
+const C_BTN_NORMAL   := Color(0.30, 0.18, 0.07, 1.0)
+const C_BTN_HOVER    := Color(0.50, 0.30, 0.10, 1.0)
+const C_BTN_PRESSED  := Color(0.22, 0.13, 0.05, 1.0)
+const C_BTN_BORDER   := Color(0.55, 0.38, 0.18, 1.0)
+const C_BTN_TEXT     := Color(0.95, 0.91, 0.80, 1.0)
+
 var _is_open: bool = false
 var _scenario_id: String = ""
 var _how_to_play: CanvasLayer = null
@@ -103,36 +110,22 @@ func _build_ui() -> void:
 	vbox.add_child(spacer)
 
 	# Resume button.
-	var btn_resume := Button.new()
-	btn_resume.text = "Resume  (Esc)"
-	btn_resume.add_theme_font_size_override("font_size", 14)
-	btn_resume.process_mode = Node.PROCESS_MODE_ALWAYS
+	var btn_resume := _make_pause_btn("Resume  (Esc)", C_BTN_TEXT)
 	btn_resume.pressed.connect(_close)
 	vbox.add_child(btn_resume)
 
 	# How to Play button.
-	var btn_howto := Button.new()
-	btn_howto.text = "How to Play"
-	btn_howto.add_theme_font_size_override("font_size", 14)
-	btn_howto.process_mode = Node.PROCESS_MODE_ALWAYS
+	var btn_howto := _make_pause_btn("How to Play", C_BTN_TEXT)
 	btn_howto.pressed.connect(_on_how_to_play)
 	vbox.add_child(btn_howto)
 
 	# Restart Scenario button.
-	var btn_restart := Button.new()
-	btn_restart.text = "Restart Scenario"
-	btn_restart.add_theme_font_size_override("font_size", 14)
-	btn_restart.add_theme_color_override("font_color", Color(0.95, 0.80, 0.40, 1.0))
-	btn_restart.process_mode = Node.PROCESS_MODE_ALWAYS
+	var btn_restart := _make_pause_btn("Restart Scenario", Color(0.95, 0.80, 0.40, 1.0))
 	btn_restart.pressed.connect(_on_restart_scenario)
 	vbox.add_child(btn_restart)
 
 	# Quit to menu button.
-	var btn_quit := Button.new()
-	btn_quit.text = "Quit to Menu"
-	btn_quit.add_theme_font_size_override("font_size", 14)
-	btn_quit.add_theme_color_override("font_color", Color(1.0, 0.55, 0.45, 1.0))
-	btn_quit.process_mode = Node.PROCESS_MODE_ALWAYS
+	var btn_quit := _make_pause_btn("Quit to Menu", Color(1.0, 0.65, 0.55, 1.0))
 	btn_quit.pressed.connect(_on_quit_to_menu)
 	vbox.add_child(btn_quit)
 
@@ -151,3 +144,38 @@ func _on_quit_to_menu() -> void:
 	_pending_restart_id = ""
 	get_tree().paused = false
 	get_tree().reload_current_scene()
+
+
+func _make_pause_btn(label_text: String, font_color: Color) -> Button:
+	var btn := Button.new()
+	btn.text = label_text
+	btn.custom_minimum_size = Vector2(240, 40)
+	btn.process_mode = Node.PROCESS_MODE_ALWAYS
+	btn.add_theme_font_size_override("font_size", 14)
+	btn.add_theme_color_override("font_color", font_color)
+
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = C_BTN_NORMAL
+	normal.set_border_width_all(1)
+	normal.border_color = C_BTN_BORDER
+	normal.set_content_margin_all(8)
+	normal.set_corner_radius_all(3)
+
+	var hover := StyleBoxFlat.new()
+	hover.bg_color = C_BTN_HOVER
+	hover.set_border_width_all(1)
+	hover.border_color = C_BTN_BORDER
+	hover.set_content_margin_all(8)
+	hover.set_corner_radius_all(3)
+
+	var pressed := StyleBoxFlat.new()
+	pressed.bg_color = C_BTN_PRESSED
+	pressed.set_border_width_all(1)
+	pressed.border_color = C_BTN_BORDER
+	pressed.set_content_margin_all(8)
+	pressed.set_corner_radius_all(3)
+
+	btn.add_theme_stylebox_override("normal",  normal)
+	btn.add_theme_stylebox_override("hover",   hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	return btn

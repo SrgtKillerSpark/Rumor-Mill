@@ -150,10 +150,12 @@ func _build_pips(
 	for child in container.get_children():
 		child.queue_free()
 	for i in total:
-		var pip := ColorRect.new()
+		var pip := Panel.new()
 		pip.custom_minimum_size = PIP_SIZE
-		pip.color = full_color if i < remaining else empty_color
-		_round_pip(pip)
+		var style := StyleBoxFlat.new()
+		style.bg_color = full_color if i < remaining else empty_color
+		style.set_corner_radius_all(7)
+		pip.add_theme_stylebox_override("panel", style)
 		container.add_child(pip)
 
 
@@ -164,11 +166,6 @@ func _update_pips(
 ) -> void:
 	var pips := container.get_children()
 	for i in pips.size():
-		(pips[i] as ColorRect).color = full_color if i < remaining else empty_color
-
-
-func _round_pip(pip: ColorRect) -> void:
-	# Godot 4: ColorRect doesn't have native corner radius, but we can set a
-	# StyleBoxFlat on a sub-Panel instead. For simplicity keep as square pips;
-	# they still look clean at 14×14. A future pass can switch to Panel pips.
-	pass
+		var style := (pips[i] as Panel).get_theme_stylebox("panel") as StyleBoxFlat
+		if style != null:
+			style.bg_color = full_color if i < remaining else empty_color
