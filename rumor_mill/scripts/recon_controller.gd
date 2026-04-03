@@ -7,7 +7,7 @@ extends Node
 ## Eavesdrop (on NPCs in conversation) actions.
 ##
 ## Also runs _process() hover detection each frame to:
-##   • Highlight the hovered NPC sprite (golden modulate).
+##   • Highlight the hovered NPC sprite (golden tint via NPC.set_hover).
 ##   • Show a floating "Right-click to…" tooltip near the cursor.
 ##   • Highlight the hovered building with a world-space diamond overlay.
 ##   • Change cursor to CURSOR_POINTING_HAND over interactable elements.
@@ -143,10 +143,10 @@ func _set_hovered_npc(npc: Node2D) -> void:
 	if _hovered_npc == npc:
 		return
 	if _hovered_npc != null and is_instance_valid(_hovered_npc):
-		_hovered_npc.modulate = NPC_NORMAL_MODULATE
+		_hovered_npc.call("set_hover", false)
 	_hovered_npc = npc
 	if _hovered_npc != null:
-		_hovered_npc.modulate = NPC_HOVER_MODULATE
+		_hovered_npc.call("set_hover", true)
 
 
 func _set_hovered_location(loc: String) -> void:

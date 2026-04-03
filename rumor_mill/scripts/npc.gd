@@ -528,11 +528,21 @@ func _spread_to_neighbours(
 		var t_credulity: float = float(other.npc_data.get("credulity", 0.5))
 		var t_faction:   String = other.npc_data.get("faction", "")
 
+		# Heat modifier: wary/suspicious targets are harder to convince.
+		var heat_mod := 0.0
+		if propagation_engine_ref != null and propagation_engine_ref.intel_store_ref != null \
+				and propagation_engine_ref.intel_store_ref.heat_enabled:
+			var h := propagation_engine_ref.intel_store_ref.get_heat(tid)
+			if h >= 75.0:
+				heat_mod = 0.30
+			elif h >= 50.0:
+				heat_mod = 0.15
+
 		# β formula.
 		var beta: float
 		if propagation_engine_ref != null:
 			beta = propagation_engine_ref.calc_beta(
-				_sociability, t_credulity, edge_w, spreader_faction, t_faction
+				_sociability, t_credulity, edge_w, spreader_faction, t_faction, heat_mod
 			)
 		else:
 			beta = _sociability * t_credulity * edge_w * 2.5
@@ -547,6 +557,10 @@ func _spread_to_neighbours(
 
 		other.hear_rumor(spread_rumor, spreader_faction)
 		spread_happened = true
+
+		# Relay heat: +2 to this NPC (spreader) if rumor traces to a player seed.
+		if propagation_engine_ref != null:
+			propagation_engine_ref.apply_relay_heat(npc_id, spread_rumor.id)
 
 		# Visual: show a floating speech bubble from this NPC toward the target.
 		_show_spread_bubble(other)
