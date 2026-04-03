@@ -369,7 +369,7 @@ func _hit_test_npc(world_pos: Vector2) -> Node2D:
 	var best:      Node2D = null
 	var best_dist: float  = NPC_HIT_RADIUS_PX
 	for npc in _world_ref.npcs:
-		var dist := npc.global_position.distance_to(world_pos)
+		var dist: float = npc.global_position.distance_to(world_pos)
 		if dist < best_dist:
 			best_dist = dist
 			best      = npc
@@ -380,7 +380,7 @@ func _hit_test_location(world_pos: Vector2) -> String:
 	var clicked_cell := _world_to_cell(world_pos)
 	for loc_name in _world_ref._building_entries:
 		var entry: Vector2i = _world_ref._building_entries[loc_name]
-		var dist := (clicked_cell - entry).length()
+		var dist: float = (clicked_cell - entry).length()
 		if dist <= BUILDING_HIT_TILES:
 			return loc_name
 	return ""
