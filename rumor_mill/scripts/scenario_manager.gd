@@ -32,7 +32,8 @@ func load_scenario_data(data: Dictionary) -> void:
 	_victory_text   = data.get("victoryText", "")
 	_fail_texts     = data.get("failTexts", {})
 	_days_allowed   = int(data.get("daysAllowed", 30))
-	var parts := data.get("scenarioId", "").split("_")
+	var sid: String = data.get("scenarioId", "")
+	var parts := sid.split("_")
 	_active_scenario = int(parts[-1]) if parts.size() >= 2 else 0
 
 
