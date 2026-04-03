@@ -159,10 +159,23 @@ func _build_sidebar() -> void:
 
 
 func _apply_tab_style(btn: Button, active: bool) -> void:
-	var c := C_TAB_ACTIVE if active else C_TAB_INACTIVE
-	btn.add_theme_color_override("font_color",         c)
-	btn.add_theme_color_override("font_pressed_color", C_TAB_ACTIVE)
+	var font_color := C_HEADING if active else Color(0.68, 0.60, 0.46, 1.0)
+	btn.add_theme_color_override("font_color",         font_color)
+	btn.add_theme_color_override("font_pressed_color", C_HEADING)
 	btn.add_theme_color_override("font_hover_color",   C_HEADING)
+
+	var bg_color := C_TAB_ACTIVE if active else C_TAB_INACTIVE
+	var style_normal := StyleBoxFlat.new()
+	style_normal.bg_color = bg_color
+	style_normal.set_border_width_all(0)
+	style_normal.set_content_margin_all(6)
+	var style_hover := StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.40, 0.28, 0.12, 1.0)
+	style_hover.set_border_width_all(0)
+	style_hover.set_content_margin_all(6)
+	btn.add_theme_stylebox_override("normal",  style_normal)
+	btn.add_theme_stylebox_override("hover",   style_hover)
+	btn.add_theme_stylebox_override("pressed", style_normal)
 
 
 func _on_tab_pressed(sec: Section) -> void:

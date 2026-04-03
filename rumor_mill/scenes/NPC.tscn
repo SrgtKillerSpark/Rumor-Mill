@@ -3,27 +3,28 @@
 [ext_resource type="Script" path="res://scripts/npc.gd" uid="uid://gf8db5vv2ahe" id="1_npc"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hover"]
-size = Vector2(28, 44)
+size = Vector2(56, 88)
 
 [node name="NPC" type="Node2D"]
 script = ExtResource("1_npc")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
-position = Vector2(0, -30)
-scale = Vector2(1, 1)
+position = Vector2(0, -48)
+scale = Vector2(2, 2)
 
 [node name="NameLabel" type="Label" parent="."]
-position = Vector2(-36, -54)
-size = Vector2(72, 30)
+position = Vector2(-44, -100)
+size = Vector2(88, 20)
 text = "NPC"
 label_settings = null
-theme_override_font_sizes/font_size = 12
-theme_override_constants/outline_size = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_font_sizes/font_size = 10
+theme_override_constants/outline_size = 3
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1.0)
+theme_override_colors/font_color = Color(1.0, 0.95, 0.80, 1.0)
 horizontal_alignment = 1
 
 [node name="HoverArea" type="Area2D" parent="."]
-position = Vector2(0, -24)
+position = Vector2(0, -48)
 input_pickable = true
 monitoring = false
 monitorable = false
