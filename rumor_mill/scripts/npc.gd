@@ -48,6 +48,9 @@ var tick_overrides: Dictionary = {}
 var day_pattern_overrides: Array = []
 var _home_cell: Vector2i = Vector2i.ZERO
 var _last_schedule_slot: int = -1
+## Current schedule location code (e.g. "market", "tavern", "home").
+## Updated each time the NPC's schedule slot changes. Used by RivalAgent.
+var current_location_code: String = ""
 
 # Personality shorthands
 var _credulity:   float = 0.5
@@ -234,6 +237,7 @@ func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> 
 	var location_code: String = NpcSchedule.get_location(
 		archetype, slot, work_location, tick_overrides, day_pattern_overrides, day
 	)
+	current_location_code = location_code
 
 	var target: Vector2i
 	if location_code == "home":

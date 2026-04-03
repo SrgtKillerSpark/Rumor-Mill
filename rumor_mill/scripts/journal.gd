@@ -349,6 +349,16 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 	badge_label.add_theme_color_override("font_color", status_color)
 	_content_vbox.add_child(badge_label)
 
+	# "Suspect source" label — shown when this rumor was seeded by the rival agent.
+	if _world_ref != null and _world_ref.propagation_engine != null:
+		var lineage_entry: Dictionary = _world_ref.propagation_engine.lineage.get(rid, {})
+		if lineage_entry.get("parent_id", "") == "rival":
+			var suspect_lbl := Label.new()
+			suspect_lbl.text = "  ⚠ Suspect source — This rumor appears to have an unknown instigator."
+			suspect_lbl.add_theme_font_size_override("font_size", 10)
+			suspect_lbl.add_theme_color_override("font_color", C_CONTRADICTED)
+			_content_vbox.add_child(suspect_lbl)
+
 	# Detail container — toggled by header button.
 	var detail := VBoxContainer.new()
 	detail.visible = expanded

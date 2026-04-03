@@ -62,6 +62,9 @@ var scenario_manager:  ScenarioManager  = null
 ## Sprint 4: SIR propagation engine (β/γ formulas, mutations, lineage registry).
 var propagation_engine: PropagationEngine = null
 
+## Rival agent — only active in Scenario 3.
+var rival_agent: RivalAgent = null
+
 ## Active scenario id — change before _ready() to load a different scenario.
 ## Valid values: "scenario_1", "scenario_2", "scenario_3"
 var active_scenario_id: String = "scenario_1"
@@ -386,6 +389,8 @@ func _on_day_changed(_day: int) -> void:
 	if intel_store != null:
 		intel_store.replenish()
 		print("World: Recon actions replenished at dawn (day %d)" % _day)
+	if rival_agent != null and scenario_manager != null:
+		rival_agent.tick(_day, self, scenario_manager)
 
 
 # ── Scenario data loader ─────────────────────────────────────────────────────
@@ -469,6 +474,14 @@ func _apply_active_scenario() -> void:
 		intel_store.bribe_charges  = 2 if non_tutorial else 0
 		print("World: heat/bribe %s for '%s'" % [
 			"enabled (2 favors)" if non_tutorial else "disabled", active_scenario_id])
+
+	# 7. Rival agent — only active in Scenario 3.
+	rival_agent = RivalAgent.new()
+	if active_scenario_id == "scenario_3":
+		rival_agent.activate()
+		print("World: RivalAgent activated for 'scenario_3'")
+	else:
+		print("World: RivalAgent inactive for '%s'" % active_scenario_id)
 
 	# Seed the reputation cache now that all overrides are in place.
 	reputation_system.recalculate_all(npcs, 0)
@@ -562,11 +575,13 @@ func get_claims() -> Array:
 ## subject_npc_id:    the NPC the rumor is about.
 ## claim_id:          claims.json id string (e.g. "ACC-01").
 ## seed_target_npc_id: the NPC the player whispers the rumor to.
+## evidence_item:     optional PlayerIntelStore.EvidenceItem to boost the rumor at creation.
 ## Returns the new rumor id on success, "" on failure.
 func seed_rumor_from_player(
-		subject_npc_id:    String,
-		claim_id:          String,
-		seed_target_npc_id: String
+		subject_npc_id:     String,
+		claim_id:           String,
+		seed_target_npc_id: String,
+		evidence_item                = null
 ) -> String:
 	if intel_store == null or not intel_store.try_spend_whisper():
 		push_warning("World.seed_rumor_from_player: no Whisper Tokens remaining")
@@ -615,6 +630,14 @@ func seed_rumor_from_player(
 
 	var rumor_id := "rp_%s_%d" % [claim_id.to_lower(), Time.get_ticks_msec()]
 	var rumor    := Rumor.create(rumor_id, subject_npc_id, claim_type, intensity, mutability, tick)
+
+	# Apply evidence bonuses at creation time (not recalculated on subsequent ticks).
+	if evidence_item != null:
+		rumor.current_believability = minf(1.0, rumor.current_believability + evidence_item.believability_bonus)
+		rumor.mutability = maxf(0.0, rumor.mutability + evidence_item.mutability_modifier)
+		rumor.bolstered_by_evidence = true
+		print("[World] Evidence '%s' applied to '%s' — believability=%.2f mutability=%.2f" % [
+			evidence_item.type, rumor_id, rumor.current_believability, rumor.mutability])
 
 	var source_faction: String = seed_target_npc.npc_data.get("faction", "")
 
@@ -665,8 +688,16 @@ func _on_npc_graph_edge_mutated(actor_name: String, subject_name: String, delta:
 
 # ── Public API: inject_rumor ─────────────────────────────────────────────────
 
-## Called by DebugConsole. Returns the rumor id string on success, "" on failure.
-func inject_rumor(target_npc_id: String, claim_type_str: String, intensity: int) -> String:
+## Called by DebugConsole and RivalAgent. Returns the rumor id string on success, "" on failure.
+## subject_npc_id: if provided, use this NPC as the subject; otherwise picks a random NPC.
+## lineage_parent_id: passed through to Rumor.create() — use "rival" sentinel for rival rumors.
+func inject_rumor(
+		target_npc_id: String,
+		claim_type_str: String,
+		intensity: int,
+		subject_npc_id: String = "",
+		lineage_parent_id: String = ""
+) -> String:
 	# Find target NPC.
 	var target_npc: Node2D = null
 	for npc in npcs:
@@ -680,14 +711,16 @@ func inject_rumor(target_npc_id: String, claim_type_str: String, intensity: int)
 
 	var claim_type := Rumor.claim_type_from_string(claim_type_str)
 
-	# Pick a random subject (not the target).
-	var subject_npc: Node2D = null
-	var candidates := npcs.filter(func(n): return n != target_npc)
-	if not candidates.is_empty():
-		subject_npc = candidates[randi() % candidates.size()]
+	# Resolve subject: use provided id if given, else pick a random NPC (not the target).
+	var subject_id: String
+	if not subject_npc_id.is_empty():
+		subject_id = subject_npc_id
+	else:
+		var candidates := npcs.filter(func(n): return n != target_npc)
+		var subject_npc: Node2D = candidates[randi() % candidates.size()] if not candidates.is_empty() else null
+		subject_id = subject_npc.npc_data.get("id", "unknown") if subject_npc != null else "unknown"
 
-	var subject_id := subject_npc.npc_data.get("id", "unknown") if subject_npc != null else "unknown"
-	var rumor_id   := "r_%s_%d" % [claim_type_str.to_lower(), Time.get_ticks_msec()]
+	var rumor_id := "r_%s_%d" % [claim_type_str.to_lower(), Time.get_ticks_msec()]
 
 	var tick := 0
 	if day_night != null and "current_tick" in day_night:
@@ -699,7 +732,9 @@ func inject_rumor(target_npc_id: String, claim_type_str: String, intensity: int)
 		claim_type,
 		clamp(intensity, 1, 5),
 		0.4,   # default mutability
-		tick
+		tick,
+		330,   # default shelf life
+		lineage_parent_id
 	)
 
 	var source_faction: String = target_npc.npc_data.get("faction", "")
@@ -710,8 +745,8 @@ func inject_rumor(target_npc_id: String, claim_type_str: String, intensity: int)
 
 	target_npc.hear_rumor(rumor, source_faction)
 
-	print("[World] inject_rumor '%s' (type=%s, intensity=%d) → %s about %s" % [
-		rumor_id, claim_type_str, intensity,
+	print("[World] inject_rumor '%s' (type=%s, intensity=%d, parent='%s') → %s about %s" % [
+		rumor_id, claim_type_str, intensity, lineage_parent_id,
 		target_npc.npc_data.get("name", "?"),
 		subject_id
 	])
