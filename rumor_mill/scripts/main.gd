@@ -259,6 +259,7 @@ func _wire_rumor_events() -> void:
 	if world == null:
 		return
 	world.rumor_event.connect(_on_rumor_event)
+	world.socially_dead_triggered.connect(_on_socially_dead_triggered)
 	print("Main: rumor_event wired to journal timeline")
 
 
@@ -268,6 +269,12 @@ func _on_rumor_event(message: String, tick: int) -> void:
 		journal.push_timeline_event(tick, message)
 	if social_graph_overlay != null and social_graph_overlay.has_method("on_rumor_event"):
 		social_graph_overlay.on_rumor_event(message)
+
+
+## Show a HUD toast when an NPC first becomes SOCIALLY_DEAD.
+func _on_socially_dead_triggered(_npc_id: String, npc_name: String, _tick: int) -> void:
+	if recon_hud != null and recon_hud.has_method("show_toast"):
+		recon_hud.show_toast("%s is SOCIALLY DEAD — reputation permanently frozen" % npc_name, false)
 
 
 func _init_objective_hud() -> void:

@@ -71,6 +71,8 @@ var _rumor_lbl:    Label          = null
 var _visible_flag: bool = false
 var _fade_tween:   Tween = null
 var _flavor_text:  Dictionary = {}
+var _world_ref:    Node2D = null
+var _dead_lbl:     Label = null
 
 
 func _ready() -> void:
@@ -91,6 +93,7 @@ func _load_flavor_text() -> void:
 
 
 func setup(world: Node2D) -> void:
+	_world_ref = world
 	# Connect hover signals from every NPC in the world.
 	var container: Node2D = world.get_node_or_null("NPCContainer")
 	if container == null:
@@ -198,6 +201,10 @@ func _build_panel() -> void:
 	_rumor_lbl = _make_label("", 10, C_MUTED)
 	vbox.add_child(_rumor_lbl)
 
+	_dead_lbl = _make_label("☠ SOCIALLY DEAD — reputation frozen", 11, Color(0.85, 0.15, 0.15, 1.0))
+	_dead_lbl.visible = false
+	vbox.add_child(_dead_lbl)
+
 	_panel.modulate.a = 0.0
 	_panel.visible = false
 	add_child(_panel)
@@ -254,3 +261,14 @@ func _populate(npc: Node2D) -> void:
 
 	var rumor_count: int = npc.rumor_slots.size() if "rumor_slots" in npc else 0
 	_rumor_lbl.text = "%d active rumor%s" % [rumor_count, "s" if rumor_count != 1 else ""]
+
+	# SOCIALLY_DEAD badge — visible only when the reputation snapshot flags it.
+	var is_dead := false
+	if _world_ref != null and "reputation_system" in _world_ref \
+			and _world_ref.reputation_system != null and not npc_id.is_empty():
+		var snap: ReputationSystem.ReputationSnapshot = \
+			_world_ref.reputation_system.get_snapshot(npc_id)
+		if snap != null:
+			is_dead = snap.is_socially_dead
+	if _dead_lbl != null:
+		_dead_lbl.visible = is_dead

@@ -7,6 +7,8 @@ extends Node2D
 ## Emitted whenever a noteworthy rumor event occurs (spread, state change).
 ## message: human-readable log string.  tick: current game tick.
 signal rumor_event(message: String, tick: int)
+## Emitted once per NPC the first tick their SOCIALLY_DEAD flag becomes true.
+signal socially_dead_triggered(npc_id: String, npc_name: String, tick: int)
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -58,6 +60,9 @@ var intel_store: PlayerIntelStore = null
 ## Sprint 6: reputation system and scenario evaluator.
 var reputation_system: ReputationSystem = null
 var scenario_manager:  ScenarioManager  = null
+
+## NPC ids for which socially_dead_triggered has already been emitted this session.
+var _socially_dead_ids: Dictionary = {}
 
 ## Sprint 4: SIR propagation engine (β/γ formulas, mutations, lineage registry).
 var propagation_engine: PropagationEngine = null
@@ -531,6 +536,19 @@ func on_game_tick(tick: int) -> void:
 	# ── Reputation: recalculate all snapshots BEFORE state transitions fire. ──
 	if reputation_system != null:
 		reputation_system.recalculate_all(npcs, tick)
+		# ── SOCIALLY_DEAD edge detection — emit once per NPC on first trigger. ──
+		for npc in npcs:
+			var npc_id: String = npc.npc_data.get("id", "")
+			if npc_id.is_empty() or _socially_dead_ids.has(npc_id):
+				continue
+			var snap: ReputationSystem.ReputationSnapshot = reputation_system.get_snapshot(npc_id)
+			if snap != null and snap.is_socially_dead:
+				_socially_dead_ids[npc_id] = true
+				var npc_name: String = npc.npc_data.get("name", npc_id)
+				emit_signal("socially_dead_triggered", npc_id, npc_name, tick)
+				emit_signal("rumor_event",
+					"[SOCIALLY DEAD] %s — death rumor believed by 5+ townspeople. Reputation permanently frozen." % npc_name,
+					tick)
 	if scenario_manager != null and reputation_system != null:
 		scenario_manager.evaluate(reputation_system, tick)
 
