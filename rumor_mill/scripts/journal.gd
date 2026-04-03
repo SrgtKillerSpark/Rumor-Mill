@@ -56,6 +56,12 @@ var _expanded_rumors: Dictionary = {}
 ## Rumors-tab filter text (persists across tab switches).
 var _rumor_filter_text: String = ""
 
+## Intelligence-tab filter text (NPC name search).
+var _intel_filter_text: String = ""
+
+## Timeline-tab filter text (keyword search).
+var _timeline_filter_text: String = ""
+
 ## Hard cap on timeline log entries; oldest entries are trimmed when exceeded.
 const MAX_TIMELINE_ENTRIES := 200
 
@@ -85,6 +91,7 @@ func _ready() -> void:
 	_overlay_bg.visible = false
 	_parchment.visible  = false
 	_notif_dot.visible  = false
+	_content_vbox.add_theme_constant_override("separation", 4)
 	_build_sidebar()
 	_close_btn.pressed.connect(toggle)
 
@@ -116,6 +123,7 @@ func toggle() -> void:
 
 
 func _open() -> void:
+	AudioManager.play_sfx("journal_open")
 	_is_open            = true
 	_overlay_bg.visible = true
 	_parchment.visible  = true
@@ -128,6 +136,7 @@ func _open() -> void:
 
 
 func _close() -> void:
+	AudioManager.play_sfx("journal_close")
 	_save_scroll()
 	_is_open            = false
 	_overlay_bg.visible = false
@@ -242,7 +251,7 @@ func _build_rumors_section() -> void:
 
 	var filter_lbl := Label.new()
 	filter_lbl.text = "Filter:"
-	filter_lbl.add_theme_font_size_override("font_size", 11)
+	filter_lbl.add_theme_font_size_override("font_size", 12)
 	filter_lbl.add_theme_color_override("font_color", C_SUBKEY)
 	filter_row.add_child(filter_lbl)
 
@@ -250,13 +259,13 @@ func _build_rumors_section() -> void:
 	filter_edit.placeholder_text       = "subject or claim type…"
 	filter_edit.text                   = _rumor_filter_text
 	filter_edit.size_flags_horizontal  = Control.SIZE_EXPAND_FILL
-	filter_edit.add_theme_font_size_override("font_size", 11)
+	filter_edit.add_theme_font_size_override("font_size", 12)
 	filter_row.add_child(filter_edit)
 
 	var clear_btn := Button.new()
 	clear_btn.text    = "×"
 	clear_btn.visible = not _rumor_filter_text.is_empty()
-	clear_btn.add_theme_font_size_override("font_size", 11)
+	clear_btn.add_theme_font_size_override("font_size", 12)
 	filter_row.add_child(clear_btn)
 
 	filter_edit.text_changed.connect(func(txt: String) -> void:
@@ -360,14 +369,14 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 		rumor.shelf_life_ticks,
 		bolstered_tag
 	]
-	badge_label.add_theme_font_size_override("font_size", 10)
+	badge_label.add_theme_font_size_override("font_size", 12)
 	badge_label.add_theme_color_override("font_color", status_color)
 	_content_vbox.add_child(badge_label)
 
 	if rumor.bolstered_by_evidence:
 		var bolster_lbl := Label.new()
 		bolster_lbl.text = "  [*] Bolstered by evidence."
-		bolster_lbl.add_theme_font_size_override("font_size", 10)
+		bolster_lbl.add_theme_font_size_override("font_size", 12)
 		bolster_lbl.add_theme_color_override("font_color", Color(0.95, 0.85, 0.35, 1.0))
 		bolster_lbl.tooltip_text = "Bolstered by evidence."
 		_content_vbox.add_child(bolster_lbl)
@@ -378,7 +387,7 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 		if lineage_entry.get("parent_id", "") == "rival":
 			var suspect_lbl := Label.new()
 			suspect_lbl.text = "  ⚠ Suspect source — This rumor appears to have an unknown instigator."
-			suspect_lbl.add_theme_font_size_override("font_size", 10)
+			suspect_lbl.add_theme_font_size_override("font_size", 12)
 			suspect_lbl.add_theme_color_override("font_color", C_CONTRADICTED)
 			_content_vbox.add_child(suspect_lbl)
 
@@ -514,11 +523,58 @@ func _build_intel_section() -> void:
 	for nid in locs_by_npc:
 		known[nid] = true
 
+	# ── Filter bar ────────────────────────────────────────────────────────────
+	var intel_filter_row := HBoxContainer.new()
+	intel_filter_row.add_theme_constant_override("separation", 4)
+	_content_vbox.add_child(intel_filter_row)
+
+	var intel_filter_lbl := Label.new()
+	intel_filter_lbl.text = "Filter:"
+	intel_filter_lbl.add_theme_font_size_override("font_size", 12)
+	intel_filter_lbl.add_theme_color_override("font_color", C_SUBKEY)
+	intel_filter_row.add_child(intel_filter_lbl)
+
+	var intel_filter_edit := LineEdit.new()
+	intel_filter_edit.placeholder_text      = "NPC name…"
+	intel_filter_edit.text                  = _intel_filter_text
+	intel_filter_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	intel_filter_edit.add_theme_font_size_override("font_size", 12)
+	intel_filter_row.add_child(intel_filter_edit)
+
+	var intel_clear_btn := Button.new()
+	intel_clear_btn.text    = "×"
+	intel_clear_btn.visible = not _intel_filter_text.is_empty()
+	intel_clear_btn.add_theme_font_size_override("font_size", 12)
+	intel_filter_row.add_child(intel_clear_btn)
+
+	intel_filter_edit.text_changed.connect(func(txt: String) -> void:
+		_intel_filter_text = txt
+		intel_clear_btn.visible = not txt.is_empty()
+		call_deferred("_rebuild_section", Section.INTELLIGENCE)
+	)
+	intel_clear_btn.pressed.connect(func() -> void:
+		_intel_filter_text = ""
+		call_deferred("_rebuild_section", Section.INTELLIGENCE)
+	)
+	# ─────────────────────────────────────────────────────────────────────────
+
 	if known.is_empty():
 		_add_body_label("No intelligence gathered yet.\nRight-click an NPC to Eavesdrop, or right-click a building to Observe.")
 		return
 
-	for npc_id in known:
+	# Apply name filter.
+	var filter_lower := _intel_filter_text.to_lower().strip_edges()
+	var filtered_npc_ids: Array = known.keys()
+	if not filter_lower.is_empty():
+		filtered_npc_ids = filtered_npc_ids.filter(func(nid: String) -> bool:
+			return npc_names.get(nid, nid).to_lower().contains(filter_lower)
+		)
+
+	if filtered_npc_ids.is_empty():
+		_add_body_label("No NPCs match \"%s\"." % _intel_filter_text)
+		return
+
+	for npc_id in filtered_npc_ids:
 		var npc_name:    String = npc_names.get(npc_id, npc_id)
 		var npc_faction: String = npc_factions.get(npc_id, "unknown").capitalize()
 
@@ -562,7 +618,7 @@ func _build_intel_section() -> void:
 				var dead_tag := " [SOCIALLY DEAD]" if snap.is_socially_dead else ""
 				rep_text = "  Reputation: %d / 100  — %s%s" % [snap.score, band, dead_tag]
 		locked.text = "  Personality: [locked until Bribe action]\n" + rep_text
-		locked.add_theme_font_size_override("font_size", 10)
+		locked.add_theme_font_size_override("font_size", 12)
 		locked.add_theme_color_override("font_color", C_LOCKED)
 		_content_vbox.add_child(locked)
 
@@ -626,7 +682,7 @@ func _build_factions_section() -> void:
 
 		var mood_lbl := Label.new()
 		mood_lbl.text = "  Faction mood: %s" % mood
-		mood_lbl.add_theme_font_size_override("font_size", 11)
+		mood_lbl.add_theme_font_size_override("font_size", 12)
 		mood_lbl.add_theme_color_override("font_color", mood_color)
 		_content_vbox.add_child(mood_lbl)
 
@@ -708,15 +764,75 @@ func _build_timeline_section() -> void:
 	# Sort ascending.
 	events.sort_custom(func(a, b) -> bool: return a["tick"] < b["tick"])
 
+	# ── Timeline filter bar ───────────────────────────────────────────────────
+	var tl_filter_row := HBoxContainer.new()
+	tl_filter_row.add_theme_constant_override("separation", 4)
+	_content_vbox.add_child(tl_filter_row)
+
+	var tl_filter_lbl := Label.new()
+	tl_filter_lbl.text = "Filter:"
+	tl_filter_lbl.add_theme_font_size_override("font_size", 12)
+	tl_filter_lbl.add_theme_color_override("font_color", C_SUBKEY)
+	tl_filter_row.add_child(tl_filter_lbl)
+
+	var tl_filter_edit := LineEdit.new()
+	tl_filter_edit.placeholder_text      = "keyword…"
+	tl_filter_edit.text                  = _timeline_filter_text
+	tl_filter_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tl_filter_edit.add_theme_font_size_override("font_size", 12)
+	tl_filter_row.add_child(tl_filter_edit)
+
+	var tl_clear_btn := Button.new()
+	tl_clear_btn.text    = "×"
+	tl_clear_btn.visible = not _timeline_filter_text.is_empty()
+	tl_clear_btn.add_theme_font_size_override("font_size", 12)
+	tl_filter_row.add_child(tl_clear_btn)
+
+	tl_filter_edit.text_changed.connect(func(txt: String) -> void:
+		_timeline_filter_text = txt
+		tl_clear_btn.visible = not txt.is_empty()
+		call_deferred("_rebuild_section", Section.TIMELINE)
+	)
+	tl_clear_btn.pressed.connect(func() -> void:
+		_timeline_filter_text = ""
+		call_deferred("_rebuild_section", Section.TIMELINE)
+	)
+	# ─────────────────────────────────────────────────────────────────────────
+
 	if events.size() <= 1:
 		_add_body_label("No events recorded yet.")
 		return
 
-	for ev in events:
+	# Apply keyword filter.
+	var tl_filter_lower := _timeline_filter_text.to_lower().strip_edges()
+	var filtered_events: Array = events
+	if not tl_filter_lower.is_empty():
+		filtered_events = events.filter(func(ev: Dictionary) -> bool:
+			return ev["message"].to_lower().contains(tl_filter_lower)
+		)
+
+	if filtered_events.is_empty():
+		_add_body_label("No events match \"%s\"." % _timeline_filter_text)
+		return
+
+	# Render events with day-break sub-headers.
+	var tpd: int = 24
+	if _day_night_ref != null and "ticks_per_day" in _day_night_ref:
+		tpd = _day_night_ref.ticks_per_day
+	var current_day := -1
+	for ev in filtered_events:
+		var event_day: int = ev["tick"] / tpd + 1
+		if event_day != current_day:
+			current_day = event_day
+			var day_hdr := Label.new()
+			day_hdr.text = "── Day %d ──" % event_day
+			day_hdr.add_theme_font_size_override("font_size", 12)
+			day_hdr.add_theme_color_override("font_color", C_SUBKEY)
+			_content_vbox.add_child(day_hdr)
 		var lbl := Label.new()
-		lbl.text          = "%-22s  %s" % [_tick_to_day_str(ev["tick"]), ev["message"]]
+		lbl.text          = "  %s  %s" % [_tick_to_day_str(ev["tick"]), ev["message"]]
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", C_BODY)
 		_content_vbox.add_child(lbl)
 
@@ -754,7 +870,7 @@ func _build_objectives_section() -> void:
 
 	var days_lbl := Label.new()
 	days_lbl.text = "Days remaining: %d / 30" % days_remaining
-	days_lbl.add_theme_font_size_override("font_size", 11)
+	days_lbl.add_theme_font_size_override("font_size", 12)
 	days_lbl.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(days_lbl)
 
@@ -790,7 +906,7 @@ func _build_objectives_section() -> void:
 		+ "  Target:   < 25 (Disgraced — faction loyalty collapses)"
 	) % [edric_score_str, edric_band_str, s1_win_status]
 	win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
-	win_body.add_theme_font_size_override("font_size", 11)
+	win_body.add_theme_font_size_override("font_size", 12)
 	win_body.add_theme_color_override("font_color", s1_win_color)
 	_content_vbox.add_child(win_body)
 
@@ -809,7 +925,7 @@ func _build_objectives_section() -> void:
 		+ "  [ ] %d days elapsed without win condition  (days remaining: %d)"
 	) % [30, days_remaining]
 	fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
-	fail_body.add_theme_font_size_override("font_size", 11)
+	fail_body.add_theme_font_size_override("font_size", 12)
 	fail_body.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(fail_body)
 
@@ -842,7 +958,7 @@ func _build_objectives_section() -> void:
 		+ "  Tomas Reeve:   %s / 100  — %s  (target: \u226430)"
 	) % [calder_score_str, calder_band_str, tomas_score_str, tomas_band_str]
 	s3_body.autowrap_mode = TextServer.AUTOWRAP_WORD
-	s3_body.add_theme_font_size_override("font_size", 11)
+	s3_body.add_theme_font_size_override("font_size", 12)
 	s3_body.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(s3_body)
 
@@ -908,6 +1024,9 @@ func restore_timeline(entries: Array) -> void:
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 func _add_section_header(title: String) -> void:
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(0, 6)
+	_content_vbox.add_child(spacer)
 	var lbl := Label.new()
 	lbl.text = title
 	lbl.add_theme_font_size_override("font_size", 18)
@@ -920,7 +1039,7 @@ func _add_body_label(text: String) -> void:
 	var lbl := Label.new()
 	lbl.text          = text
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.add_theme_font_size_override("font_size", 12)
 	lbl.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(lbl)
 
@@ -928,7 +1047,7 @@ func _add_body_label(text: String) -> void:
 func _add_key_label(text: String) -> void:
 	var lbl := Label.new()
 	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 10)
+	lbl.add_theme_font_size_override("font_size", 12)
 	lbl.add_theme_color_override("font_color", C_SUBKEY)
 	_content_vbox.add_child(lbl)
 
@@ -937,7 +1056,7 @@ func _add_detail_label(parent: Control, text: String, color: Color) -> void:
 	var lbl := Label.new()
 	lbl.text          = text
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	lbl.add_theme_font_size_override("font_size", 10)
+	lbl.add_theme_font_size_override("font_size", 12)
 	lbl.add_theme_color_override("font_color", color)
 	parent.add_child(lbl)
 

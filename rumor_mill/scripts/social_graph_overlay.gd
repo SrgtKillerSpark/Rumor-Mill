@@ -269,17 +269,28 @@ func _draw_nodes(npcs: Array) -> void:
 				0.0, TAU, 24, ring, RING_THICKNESS
 			)
 
-		# Name label (small, rendered as a draw_string call).
+		# Name label — drawn with a shadow pass for legibility over any background.
 		var npc_name: String = npc.npc_data.get("name", "?").split(" ")[0]  # first name only
-		var label_pos := screen_pos + Vector2(-NODE_RADIUS * 1.2, NODE_RADIUS + 8.0)
+		var label_pos := screen_pos + Vector2(-NODE_RADIUS * 1.2, NODE_RADIUS + 10.0)
+		# Shadow pass (offset 1 px down-right, dark semi-transparent).
+		_draw_node.draw_string(
+			ThemeDB.fallback_font,
+			label_pos + Vector2(1, 1),
+			npc_name,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			12,
+			Color(0.0, 0.0, 0.0, 0.75)
+		)
+		# Main label.
 		_draw_node.draw_string(
 			ThemeDB.fallback_font,
 			label_pos,
 			npc_name,
 			HORIZONTAL_ALIGNMENT_LEFT,
 			-1,
-			9,
-			Color(0.95, 0.95, 0.85, 0.9)
+			12,
+			Color(0.95, 0.95, 0.85, 0.95)
 		)
 
 
