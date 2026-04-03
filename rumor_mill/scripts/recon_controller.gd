@@ -587,9 +587,16 @@ func _show_action_popup(npc: Node2D, screen_pos: Vector2) -> void:
 	_tooltip_canvas.add_child(_popup_panel)
 
 	var bg := ColorRect.new()
-	bg.color = Color(0.87, 0.80, 0.62, 0.95)
+	bg.color = Color(0.10, 0.07, 0.04, 0.96)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_popup_panel.add_child(bg)
+
+	var border_top := ColorRect.new()
+	border_top.color = Color(0.55, 0.38, 0.18, 1.0)
+	border_top.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	border_top.anchor_bottom = 0.0
+	border_top.offset_bottom = 2.0
+	_popup_panel.add_child(border_top)
 
 	var vbox := VBoxContainer.new()
 	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -603,6 +610,7 @@ func _show_action_popup(npc: Node2D, screen_pos: Vector2) -> void:
 	var btn_eavesdrop := Button.new()
 	btn_eavesdrop.text = "Eavesdrop"
 	btn_eavesdrop.add_theme_font_size_override("font_size", 11)
+	btn_eavesdrop.add_theme_color_override("font_color", Color(0.90, 0.80, 0.55, 1.0))
 	btn_eavesdrop.pressed.connect(_on_popup_eavesdrop)
 	vbox.add_child(btn_eavesdrop)
 
