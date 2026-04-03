@@ -21,13 +21,14 @@ const FACTION_FILL := {
 }
 
 const STATE_RING_COLOR := {
-	Rumor.RumorState.UNAWARE:    Color(0.25, 0.25, 0.25, 0.0),   # invisible ring
-	Rumor.RumorState.EVALUATING: Color(1.00, 1.00, 0.00, 1.0),
-	Rumor.RumorState.BELIEVE:    Color(0.10, 0.90, 0.20, 1.0),
-	Rumor.RumorState.REJECT:     Color(0.90, 0.15, 0.15, 1.0),
-	Rumor.RumorState.SPREAD:     Color(1.00, 0.50, 0.00, 1.0),
-	Rumor.RumorState.ACT:        Color(0.75, 0.05, 1.00, 1.0),
-	Rumor.RumorState.EXPIRED:    Color(0.25, 0.25, 0.25, 0.6),
+	Rumor.RumorState.UNAWARE:       Color(0.25, 0.25, 0.25, 0.0),   # invisible ring
+	Rumor.RumorState.EVALUATING:    Color(1.00, 1.00, 0.00, 1.0),
+	Rumor.RumorState.BELIEVE:       Color(0.10, 0.90, 0.20, 1.0),
+	Rumor.RumorState.REJECT:        Color(0.90, 0.15, 0.15, 1.0),
+	Rumor.RumorState.SPREAD:        Color(1.00, 0.50, 0.00, 1.0),
+	Rumor.RumorState.ACT:           Color(0.75, 0.05, 1.00, 1.0),
+	Rumor.RumorState.CONTRADICTED:  Color(0.75, 0.55, 1.00, 1.0),   # muted purple — matches npc.gd STATE_TINT
+	Rumor.RumorState.EXPIRED:       Color(0.25, 0.25, 0.25, 0.6),
 }
 
 const EDGE_BASE_COLOR := Color(0.50, 0.80, 1.00, 1.0)
@@ -297,6 +298,7 @@ func _build_legend() -> void:
 	_legend_label.append_text("[color=#e62626]■[/color] Reject\n")
 	_legend_label.append_text("[color=#ff8000]■[/color] Spread\n")
 	_legend_label.append_text("[color=#bf0dff]■[/color] Act\n")
+	_legend_label.append_text("[color=#bf8cff]■[/color] Contradicted\n")
 	_legend_label.append_text("[color=#404040]■[/color] Expired\n\n")
 	_legend_label.append_text("[b]Edges[/b]\n")
 	_legend_label.append_text("[color=#1ad98c]—[/color] Active spread path\n")
