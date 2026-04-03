@@ -305,32 +305,43 @@ func _flash_npc_detected(npc: Node2D) -> void:
 	tween.tween_property(npc, "modulate", NPC_NORMAL_MODULATE, 0.35)
 
 
-## Spawn a sparkle icon floating above the building highlight when Observe succeeds.
+## Spawn a palette-appropriate starburst above the building highlight when Observe succeeds.
+## Five "*" glyphs in PARCH_L (#E4D2A8) radiate outward from the building centre —
+## consistent with the ink-line pixel aesthetic; avoids OS emoji rendering.
 func _show_observe_sparkle() -> void:
 	if _bldg_highlight == null or not _bldg_highlight.visible:
 		return
-	var lbl := Label.new()
-	lbl.text = "✨"
-	lbl.add_theme_font_size_override("font_size", 18)
-	var start_pos := _bldg_highlight.position + Vector2(-8.0, -52.0)
-	lbl.position = start_pos
-	lbl.z_index = 5
-	_world_ref.add_child(lbl)
-	var tw := lbl.create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(lbl, "position", start_pos + Vector2(0.0, -28.0), 1.4)
-	tw.tween_property(lbl, "modulate:a", 0.0, 1.4).set_delay(0.5)
-	tw.finished.connect(lbl.queue_free)
+	var base_pos := _bldg_highlight.position + Vector2(0.0, -52.0)
+	var burst_dirs: Array[Vector2] = [
+		Vector2(-1.0, -1.0), Vector2(1.0, -1.0), Vector2(0.0, -1.4),
+		Vector2(-1.2,  0.3), Vector2(1.2,  0.3),
+	]
+	for dir: Vector2 in burst_dirs:
+		var lbl := Label.new()
+		lbl.text = "*"
+		lbl.add_theme_font_size_override("font_size", 12)
+		lbl.add_theme_color_override("font_color", Color(0.894, 0.820, 0.659))  # PARCH_L
+		lbl.position = base_pos
+		lbl.z_index = 5
+		_world_ref.add_child(lbl)
+		var tw := lbl.create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(lbl, "position", base_pos + dir * 18.0, 1.2)
+		tw.tween_property(lbl, "modulate:a", 0.0, 1.2).set_delay(0.3)
+		tw.finished.connect(lbl.queue_free)
 
 
-## Spawn an ear icon floating above the target NPC when Eavesdrop succeeds.
+## Spawn a palette-appropriate exclamation above the target NPC when Eavesdrop succeeds.
+## "!" in FLAG_R (#B22626) rising above the NPC signals intel gathered and ties visually
+## to the heat/danger colour vocabulary; avoids OS emoji rendering.
 func _show_eavesdrop_success(npc: Node2D) -> void:
 	if npc == null or not is_instance_valid(npc):
 		return
 	var lbl := Label.new()
-	lbl.text = "👂"
-	lbl.add_theme_font_size_override("font_size", 18)
-	var start_pos := npc.position + Vector2(-8.0, -68.0)
+	lbl.text = "!"
+	lbl.add_theme_font_size_override("font_size", 20)
+	lbl.add_theme_color_override("font_color", Color(0.698, 0.149, 0.149))  # FLAG_R
+	var start_pos := npc.position + Vector2(-4.0, -68.0)
 	lbl.position = start_pos
 	lbl.z_index = 5
 	_world_ref.add_child(lbl)

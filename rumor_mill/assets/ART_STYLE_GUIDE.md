@@ -124,6 +124,19 @@ Defined in `npc.gd` lines 885–887.
 
 ---
 
+## Recon Action VFX
+
+Defined in `scripts/recon_controller.gd`.
+
+**Do not use Unicode emoji for VFX.** OS emoji rendering is full-color and incompatible with the ink-line pixel aesthetic.
+
+| Action      | Glyph | Color token  | Godot `Color`              | Behavior                                              |
+|-------------|-------|--------------|----------------------------|-------------------------------------------------------|
+| Observe     | `*`   | `PARCH_L`    | `Color(0.894, 0.820, 0.659)` | 5-glyph starburst radiating outward, fade 1.2 s     |
+| Eavesdrop   | `!`   | `FLAG_R`     | `Color(0.698, 0.149, 0.149)` | Single exclamation rising above NPC, fade 1.3 s     |
+
+---
+
 ## UI Chrome
 
 All modal panels and HUD elements use the **parchment palette**:
