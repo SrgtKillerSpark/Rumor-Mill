@@ -621,6 +621,12 @@ func _init_npc_tooltip() -> void:
 	tooltip.setup(world)
 	print("Main: NPC hover tooltip wired")
 
+	var bldg_tooltip := preload("res://scripts/building_tooltip.gd").new()
+	bldg_tooltip.name = "BuildingTooltip"
+	add_child(bldg_tooltip)
+	bldg_tooltip.setup(world)
+	print("Main: Building hover tooltip wired")
+
 
 ## Relay scenario_resolved to AudioManager win/fail stings.
 ## Also persists scenario completion via ProgressData (SPA-137).
