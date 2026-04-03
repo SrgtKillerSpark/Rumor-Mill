@@ -85,7 +85,7 @@ func _on_draw() -> void:
 
 
 func _draw_state_badges(npcs: Array) -> void:
-	var intel: PlayerIntelStore = _world_ref.get("intel_store")
+	var intel: PlayerIntelStore = _world_ref.get("intel_store") as PlayerIntelStore
 	var heat_font: Font = ThemeDB.fallback_font
 	for npc in npcs:
 		var state: Rumor.RumorState = npc.get_worst_rumor_state()

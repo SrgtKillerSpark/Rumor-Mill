@@ -145,7 +145,7 @@ var _scenario_title:   Label          = null
 var _narrative_lbl:    RichTextLabel  = null
 var _stats_container:  VBoxContainer  = null
 var _npc_container:    VBoxContainer  = null
-var _bonus_lbl:        Label          = null   # non-numeric bonus stat label
+var _bonus_lbl:        Control        = null   # bonus stat label or row to reveal
 var _btn_again:        Button         = null
 var _btn_next:         Button         = null
 var _btn_main_menu:    Button         = null
@@ -409,7 +409,7 @@ func _build_bonus_stat(scenario_id: int) -> void:
 	# Hide numeric bonus (scenario 2) until tween completes; non-numeric shows immediately.
 	if scenario_id == 2:
 		row.modulate = Color(1.0, 1.0, 1.0, 0.0)
-		_bonus_lbl = row   # repurpose _bonus_lbl as the row to reveal
+		_bonus_lbl = row as Control   # repurpose _bonus_lbl as the row to reveal
 	else:
 		_bonus_lbl = null   # no delayed reveal needed
 
@@ -426,8 +426,8 @@ func _populate_npc_outcomes() -> void:
 	var npcs_to_show: Array = NPC_OUTCOMES.get(_current_scenario_id, [])
 
 	for entry in npcs_to_show:
-		var npc_id: String   = entry["id"]
-		var npc_name: String = entry["name"]
+		var npc_id: String   = str(entry["id"])
+		var npc_name: String = str(entry["name"])
 		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 		if snap == null:
 			# NPC not present in this scenario — skip silently.
@@ -478,9 +478,9 @@ func _start_count_up_tween() -> void:
 	tw.set_parallel(true)
 
 	for entry in _tween_targets:
-		var val_lbl: Label   = entry["label"]
-		var target: int      = entry["target"]
-		var suffix: String   = entry["suffix"]
+		var val_lbl: Label   = entry["label"] as Label
+		var target: int      = int(entry["target"])
+		var suffix: String   = str(entry["suffix"])
 		tw.tween_method(
 			func(v: float) -> void:
 				if is_instance_valid(val_lbl):

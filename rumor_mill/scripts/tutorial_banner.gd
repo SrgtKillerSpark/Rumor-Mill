@@ -133,7 +133,7 @@ func _show_next() -> void:
 		return
 
 	var entry: Dictionary = _queue.pop_front()
-	var hint_id: String   = entry["id"]
+	var hint_id: String   = str(entry["id"])
 
 	if _tutorial_sys.has_seen(hint_id):
 		_show_next()
@@ -148,8 +148,9 @@ func _show_next() -> void:
 	_auto_secs  = float(data.get("auto_dismiss_secs", 7))
 	_timer      = _auto_secs
 
-	var body: String = entry["body_override"] if entry["body_override"] != "" \
-		else data.get("body", "")
+	var body_override: String = str(entry["body_override"])
+	var body: String = body_override if body_override != "" \
+		else str(data.get("body", ""))
 	_title_label.text = data.get("title", "")
 	_body_label.text  = body
 
