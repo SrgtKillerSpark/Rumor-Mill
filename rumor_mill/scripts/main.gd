@@ -241,16 +241,15 @@ func _on_scenario_resolved_audio(scenario_id: int, state: ScenarioManager.Scenar
 		_camera_shake(15.0, 0.6)
 
 
-# ── Sprint 8: Game-feel polish ─────────────────────────────────────────────────
+# ── Game-feel polish ──────────────────────────────────────────────────────────
 
 ## Trigger a camera shake if the Camera2D node is available.
 func _camera_shake(intensity: float, duration: float) -> void:
-	if camera != null and camera.has_method("shake"):
-		camera.shake(intensity, duration)
+	if camera != null and camera.has_method("shake_screen"):
+		camera.shake_screen(intensity, duration)
 
 
-## Called from ReconController (piped in _init_recon_system) for detection shakes.
+## Called from ReconController — detection event triggers a medium shake.
 func _on_recon_action_shake(message: String, success: bool) -> void:
-	# "seemed to glance your way" = detection event → medium shake
 	if not success and "glance" in message:
 		_camera_shake(8.0, 0.35)

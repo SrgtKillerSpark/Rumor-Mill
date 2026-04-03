@@ -30,13 +30,13 @@ const TIME_COLORS: Dictionary = {
 var current_tick: int = 0
 var current_day: int = 1
 
-@onready var tick_timer:      Timer          = $TickTimer
-@onready var canvas_modulate: CanvasModulate = $CanvasModulate
-@onready var time_label:      Label          = $TimeLabel
-
 # ── Day transition flash overlay ──────────────────────────────────────────────
 var _day_flash_rect:  ColorRect = null
 var _day_flash_tween: Tween     = null
+
+@onready var tick_timer:      Timer          = $TickTimer
+@onready var canvas_modulate: CanvasModulate = $CanvasModulate
+@onready var time_label:      Label          = $TimeLabel
 
 
 func _ready() -> void:

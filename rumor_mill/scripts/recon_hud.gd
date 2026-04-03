@@ -72,8 +72,7 @@ func show_toast(message: String, success: bool) -> void:
 func _slide_in_toast() -> void:
 	if _toast_tween != null and _toast_tween.is_valid():
 		_toast_tween.kill()
-	toast_panel.visible = true
-	# Start below the resting position and tween up.
+	toast_panel.visible       = true
 	toast_panel.offset_top    = 10.0
 	toast_panel.offset_bottom = TOAST_OFFSET_TOP + 10.0 + 52.0  # maintain panel height
 	_toast_tween = create_tween()
@@ -89,9 +88,10 @@ func _slide_out_toast() -> void:
 	_toast_tween = create_tween()
 	_toast_tween.set_ease(Tween.EASE_IN)
 	_toast_tween.set_trans(Tween.TRANS_CUBIC)
-	_toast_tween.tween_property(toast_panel, "offset_top",    10.0,  TOAST_SLIDE_OUT)
-	_toast_tween.parallel().tween_property(toast_panel, "offset_bottom", TOAST_OFFSET_TOP + 10.0 + 52.0, TOAST_SLIDE_OUT)
-	_toast_tween.tween_callback(func(): toast_panel.visible = false)
+	_toast_tween.tween_property(toast_panel, "offset_top",    10.0, TOAST_SLIDE_OUT)
+	_toast_tween.parallel().tween_property(toast_panel, "offset_bottom",
+		TOAST_OFFSET_TOP + 10.0 + 52.0, TOAST_SLIDE_OUT)
+	_toast_tween.tween_callback(func() -> void: toast_panel.visible = false)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

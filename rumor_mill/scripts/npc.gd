@@ -47,6 +47,7 @@ var rumor_slots: Dictionary = {}
 
 var _pathfinder: AstarPathfinder = null
 var _walkable: Array[Vector2i] = []
+var _flash_tween: Tween = null
 
 # ── Visuals ──────────────────────────────────────────────────────────────────
 var _base_color: Color = Color.WHITE
@@ -420,9 +421,11 @@ func _update_label() -> void:
 
 ## Brief highlight flash when the player clicks to observe/eavesdrop this NPC.
 func flash_click() -> void:
-	var tween := create_tween()
-	tween.tween_property(sprite, "color", Color.WHITE, 0.08)
-	tween.tween_property(sprite, "color", _base_color,  0.20)
+	if _flash_tween:
+		_flash_tween.kill()
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(sprite, "color", Color.WHITE, 0.08)
+	_flash_tween.tween_property(sprite, "color", _base_color,  0.20)
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────
