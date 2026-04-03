@@ -175,12 +175,15 @@ func _populate_propagation_summary() -> void:
 	var total_rumors: int    = lineage.size()
 	var mutations: int       = 0
 	var max_depth: int       = 0
+	var mutation_counts: Dictionary = {}   # mutation_type → int
 
-	# Walk lineage to count mutations and find tree depth.
+	# Walk lineage to count mutations, types, and find tree depth.
 	for rid in lineage:
 		var entry: Dictionary = lineage[rid]
-		if entry.get("mutation_type", "original") != "original":
+		var mtype: String = entry.get("mutation_type", "original")
+		if mtype != "original":
 			mutations += 1
+			mutation_counts[mtype] = mutation_counts.get(mtype, 0) + 1
 		# Trace ancestors to find depth.
 		var depth := 0
 		var cur_id: String = rid
@@ -200,12 +203,25 @@ func _populate_propagation_summary() -> void:
 	var original_rumors: int = total_rumors - mutations
 	var live_count: int      = engine.live_rumors.size()
 
-	_prop_lbl.text = (
+	var text := (
 		"Rumors seeded by player:  %d\n"
 		+ "Mutations generated:       %d\n"
-		+ "Max lineage depth:         %d\n"
+	) % [original_rumors, mutations]
+
+	# Mutation type breakdown.
+	if not mutation_counts.is_empty():
+		var sorted_types: Array = mutation_counts.keys()
+		sorted_types.sort()
+		for mtype in sorted_types:
+			var label_str: String = mtype.replace("_", " ").capitalize()
+			text += "    • %s: %d\n" % [label_str, mutation_counts[mtype]]
+
+	text += (
+		"Max lineage depth:         %d\n"
 		+ "Still spreading at end:    %d"
-	) % [original_rumors, mutations, max_depth, live_count]
+	) % [max_depth, live_count]
+
+	_prop_lbl.text = text
 
 
 ## Convert snake_case NPC id to a presentable name.

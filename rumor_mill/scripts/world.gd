@@ -176,6 +176,7 @@ func _place_buildings() -> void:
 		var wx: float = (anchor.x - anchor.y) * (TILE_SIZE.x / 2.0)
 		var wy: float = (anchor.x + anchor.y) * (TILE_SIZE.y / 2.0)
 		label.position = Vector2(wx - 40.0, wy - 72.0)
+		label.z_index = -1   # render behind NPC sprites to prevent label overlap
 		add_child(label)
 
 
