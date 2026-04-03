@@ -32,7 +32,8 @@ var current_day: int = 1
 
 @onready var tick_timer: Timer = $TickTimer
 @onready var canvas_modulate: CanvasModulate = $CanvasModulate
-@onready var time_label: Label = $TimeLabel
+# time_label removed — time is displayed via ObjectiveHUD
+var time_label: Label = null
 
 
 func _ready() -> void:
@@ -78,6 +79,8 @@ func _apply_time_of_day(hour: int) -> void:
 
 
 func _update_time_label() -> void:
+	if time_label == null:
+		return
 	var hour_of_day: int = current_tick % ticks_per_day
 	var period := "AM" if hour_of_day < 12 else "PM"
 	var display_hour: int = hour_of_day % 12

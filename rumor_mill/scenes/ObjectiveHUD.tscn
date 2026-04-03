@@ -8,39 +8,74 @@ layer = 4
 
 [node name="Panel" type="Panel" parent="."]
 anchors_preset = 0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 320.0
-offset_bottom = 70.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 340.0
+offset_bottom = 104.0
 
 [node name="ParchBG" type="ColorRect" parent="Panel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.87, 0.80, 0.62, 0.92)
+color = Color(0.10, 0.07, 0.05, 0.90)
+
+[node name="BorderAccent" type="ColorRect" parent="Panel"]
+anchors_preset = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 4.0
+offset_bottom = 98.0
+color = Color(0.55, 0.38, 0.18, 1.0)
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 6.0
-offset_top = 4.0
-offset_right = -6.0
-offset_bottom = -4.0
-theme_override_constants/separation = 2
+anchors_preset = 0
+offset_left = 12.0
+offset_top = 6.0
+offset_right = 334.0
+offset_bottom = 98.0
+theme_override_constants/separation = 3
 
 [node name="TitleLabel" type="Label" parent="Panel/VBox"]
 text = "Scenario"
 theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.28, 0.16, 0.06, 1.0)
+theme_override_colors/font_color = Color(0.92, 0.78, 0.12, 1.0)
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
+
+[node name="Separator" type="HSeparator" parent="Panel/VBox"]
+custom_minimum_size = Vector2(0, 2)
 
 [node name="ObjectiveLabel" type="Label" parent="Panel/VBox"]
 text = "Objective."
 autowrap_mode = 2
 theme_override_font_sizes/font_size = 10
-theme_override_colors/font_color = Color(0.35, 0.22, 0.08, 1.0)
+theme_override_colors/font_color = Color(0.78, 0.70, 0.55, 1.0)
 
-[node name="DayLabel" type="Label" parent="Panel/VBox"]
+[node name="DayRow" type="HBoxContainer" parent="Panel/VBox"]
+custom_minimum_size = Vector2(0, 18)
+theme_override_constants/separation = 6
+
+[node name="DayLabel" type="Label" parent="Panel/VBox/DayRow"]
 text = "Day 1 / 30"
-theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.55, 0.20, 0.08, 1.0)
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.92, 0.65, 0.20, 1.0)
+
+[node name="Spacer" type="Control" parent="Panel/VBox/DayRow"]
+layout_mode = 3
+size_flags_horizontal = 3
+
+[node name="TimeOfDayLabel" type="Label" parent="Panel/VBox/DayRow"]
+text = "12:00"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.60, 0.50, 1.0)
+
+[node name="DayProgressBG" type="ColorRect" parent="Panel/VBox"]
+custom_minimum_size = Vector2(0, 6)
+anchors_preset = 0
+color = Color(0.25, 0.18, 0.10, 1.0)
+
+[node name="DayProgressBar" type="ColorRect" parent="Panel/VBox/DayProgressBG"]
+anchors_preset = 0
+anchor_right = 0.033
+anchor_bottom = 1.0
+color = Color(0.85, 0.55, 0.10, 1.0)

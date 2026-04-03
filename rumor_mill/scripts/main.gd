@@ -115,6 +115,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_end_screen()
 	_init_audio()
 	_init_pause_menu()
+	_init_npc_tooltip()
 
 	print("Rumor Mill — Sprint 8 loaded. Scenario: %s" % scenario_id)
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph (debug)  |  F4: lineage tree")
@@ -368,6 +369,16 @@ func _init_pause_menu() -> void:
 	_pause_menu.name = "PauseMenu"
 	add_child(_pause_menu)
 	print("Main: Pause menu wired (Escape to open)")
+
+
+# ── NPC Tooltip ───────────────────────────────────────────────────────────────
+
+func _init_npc_tooltip() -> void:
+	var tooltip := preload("res://scripts/npc_tooltip.gd").new()
+	tooltip.name = "NpcTooltip"
+	add_child(tooltip)
+	tooltip.setup(world)
+	print("Main: NPC hover tooltip wired")
 
 
 ## Relay scenario_resolved to AudioManager win/fail stings.

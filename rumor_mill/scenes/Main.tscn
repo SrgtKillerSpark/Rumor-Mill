@@ -28,16 +28,32 @@ zoom = Vector2(1.5, 1.5)
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
-[node name="DebugLabel" type="Label" parent="HUD"]
+[node name="ControlsPanel" type="Panel" parent="HUD"]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_top = -24.0
-offset_right = 1100.0
-offset_bottom = 0.0
-text = "WASD/Arrows: pan  |  Scroll: zoom  |  F1: console  |  F2: states  |  F3: social  |  G: Social Graph  |  R: Rumor Panel  |  J: Journal  |  Right-click: Observe/Eavesdrop"
+offset_left = 6.0
+offset_top = -34.0
+offset_right = 760.0
+offset_bottom = -6.0
+
+[node name="ControlsBG" type="ColorRect" parent="HUD/ControlsPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.08, 0.05, 0.03, 0.82)
+
+[node name="ControlsLabel" type="Label" parent="HUD/ControlsPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 2.0
+offset_right = -8.0
+offset_bottom = -2.0
+text = "WASD: pan  |  Scroll: zoom  |  R: rumor  |  J: journal  |  G: social  |  Esc: pause  |  Right-click NPC/building: recon  |  F1: console  |  F2: badges"
 theme_override_font_sizes/font_size = 11
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 0.8)
+theme_override_colors/font_color = Color(0.65, 0.58, 0.45, 0.90)
 
 [node name="DebugOverlay" parent="." instance=ExtResource("4_overlay")]
 

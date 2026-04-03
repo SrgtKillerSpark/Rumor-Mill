@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://b6kf4q7e9rpns"]
+[gd_scene load_steps=3 format=3 uid="uid://b6kf4q7e9rpns"]
 
 [ext_resource type="Script" path="res://scripts/npc.gd" uid="uid://gf8db5vv2ahe" id="1_npc"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hover"]
+size = Vector2(28, 44)
 
 [node name="NPC" type="Node2D"]
 script = ExtResource("1_npc")
@@ -18,3 +21,12 @@ theme_override_font_sizes/font_size = 12
 theme_override_constants/outline_size = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
 horizontal_alignment = 1
+
+[node name="HoverArea" type="Area2D" parent="."]
+position = Vector2(0, -24)
+input_pickable = true
+monitoring = false
+monitorable = false
+
+[node name="HoverShape" type="CollisionShape2D" parent="HoverArea"]
+shape = SubResource("RectangleShape2D_hover")

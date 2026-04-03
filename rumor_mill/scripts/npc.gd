@@ -31,6 +31,10 @@ signal rumor_transmitted(from_name: String, to_name: String, rumor_id: String)
 ## Emitted when this NPC enters ACT state and mutates a social graph edge.
 signal graph_edge_mutated(actor_name: String, subject_name: String, delta: float)
 
+## Emitted when the player's mouse enters/exits this NPC's hover area.
+signal npc_hovered(npc: Node2D)
+signal npc_unhovered()
+
 const TILE_W := 64
 const TILE_H := 32
 const MOVE_SPEED := 180.0  # pixels/second
@@ -94,8 +98,9 @@ const COMMONER_ROLES := [
 const SPRITE_W := 32
 const SPRITE_H := 48
 
-@onready var sprite:     AnimatedSprite2D = $Sprite
-@onready var name_label: Label            = $NameLabel
+@onready var sprite:      AnimatedSprite2D = $Sprite
+@onready var name_label:  Label            = $NameLabel
+@onready var hover_area:  Area2D           = $HoverArea
 
 var _faction: String = "merchant"
 
@@ -145,7 +150,18 @@ var _heat_pulse_phase:  float = 0.0
 
 
 func _ready() -> void:
-	pass  # sprite setup deferred to init_from_data after faction is known
+	# sprite setup deferred to init_from_data after faction is known
+	if hover_area != null:
+		hover_area.mouse_entered.connect(_on_hover_enter)
+		hover_area.mouse_exited.connect(_on_hover_exit)
+
+
+func _on_hover_enter() -> void:
+	npc_hovered.emit(self)
+
+
+func _on_hover_exit() -> void:
+	npc_unhovered.emit()
 
 
 # ── Sprite setup ─────────────────────────────────────────────────────────────

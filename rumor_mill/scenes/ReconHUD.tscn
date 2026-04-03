@@ -10,29 +10,91 @@ layer = 5
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -240.0
-offset_top = 4.0
-offset_right = -4.0
-offset_bottom = 28.0
+offset_left = -268.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = 72.0
 
 [node name="ParchBG" type="ColorRect" parent="CounterPanel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.87, 0.80, 0.62, 0.92)
+color = Color(0.10, 0.07, 0.05, 0.90)
 
-[node name="CounterLabel" type="Label" parent="CounterPanel"]
-anchors_preset = 15
+[node name="BorderAccent" type="ColorRect" parent="CounterPanel"]
+anchors_preset = 1
+anchor_left = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 6.0
-offset_top = 2.0
-offset_right = -6.0
-offset_bottom = -2.0
-text = "Actions: 3/3  |  Whispers: 1/1"
-horizontal_alignment = 1
+offset_left = -4.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 66.0
+color = Color(0.55, 0.38, 0.18, 1.0)
+
+[node name="VBox" type="VBoxContainer" parent="CounterPanel"]
+anchors_preset = 0
+offset_left = 10.0
+offset_top = 6.0
+offset_right = 256.0
+offset_bottom = 66.0
+theme_override_constants/separation = 4
+
+[node name="ActionsRow" type="HBoxContainer" parent="CounterPanel/VBox"]
+theme_override_constants/separation = 4
+
+[node name="ActionsIcon" type="Label" parent="CounterPanel/VBox/ActionsRow"]
+text = "👁"
 theme_override_font_sizes/font_size = 11
-theme_override_colors/font_color = Color(0.28, 0.16, 0.06, 1.0)
+theme_override_colors/font_color = Color(0.65, 0.55, 0.35, 1.0)
+
+[node name="ActionsTitle" type="Label" parent="CounterPanel/VBox/ActionsRow"]
+text = "Actions"
+custom_minimum_size = Vector2(54, 0)
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.75, 0.68, 0.52, 1.0)
+
+[node name="ActionPips" type="HBoxContainer" parent="CounterPanel/VBox/ActionsRow"]
+name = "ActionPips"
+theme_override_constants/separation = 3
+
+[node name="WhispersRow" type="HBoxContainer" parent="CounterPanel/VBox"]
+theme_override_constants/separation = 4
+
+[node name="WhispersIcon" type="Label" parent="CounterPanel/VBox/WhispersRow"]
+text = "💬"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.65, 0.55, 0.35, 1.0)
+
+[node name="WhispersTitle" type="Label" parent="CounterPanel/VBox/WhispersRow"]
+text = "Whispers"
+custom_minimum_size = Vector2(54, 0)
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.75, 0.68, 0.52, 1.0)
+
+[node name="WhisperPips" type="HBoxContainer" parent="CounterPanel/VBox/WhispersRow"]
+name = "WhisperPips"
+theme_override_constants/separation = 3
+
+[node name="FavorsRow" type="HBoxContainer" parent="CounterPanel/VBox"]
+visible = false
+theme_override_constants/separation = 4
+
+[node name="FavorsIcon" type="Label" parent="CounterPanel/VBox/FavorsRow"]
+text = "★"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.92, 0.78, 0.12, 1.0)
+
+[node name="FavorsTitle" type="Label" parent="CounterPanel/VBox/FavorsRow"]
+text = "Favors"
+custom_minimum_size = Vector2(54, 0)
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.75, 0.68, 0.52, 1.0)
+
+[node name="FavorsLabel" type="Label" parent="CounterPanel/VBox/FavorsRow"]
+name = "FavorsLabel"
+text = "0"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.92, 0.78, 0.12, 1.0)
 
 [node name="ToastPanel" type="Panel" parent="."]
 anchors_preset = 7
@@ -40,29 +102,38 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -280.0
-offset_top = -56.0
-offset_right = 280.0
-offset_bottom = -4.0
+offset_left = -300.0
+offset_top = -58.0
+offset_right = 300.0
+offset_bottom = -6.0
 visible = false
 
 [node name="ToastBG" type="ColorRect" parent="ToastPanel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.87, 0.80, 0.62, 0.94)
+color = Color(0.08, 0.05, 0.03, 0.94)
+
+[node name="ToastBorder" type="ColorRect" parent="ToastPanel"]
+anchors_preset = 10
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_top = 0.0
+offset_right = 600.0
+offset_bottom = 2.0
+color = Color(0.55, 0.38, 0.18, 1.0)
 
 [node name="ToastLabel" type="Label" parent="ToastPanel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 8.0
+offset_left = 10.0
 offset_top = 4.0
-offset_right = -8.0
+offset_right = -10.0
 offset_bottom = -4.0
 text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.28, 0.16, 0.06, 1.0)
