@@ -623,8 +623,12 @@ func _init_npc_tooltip() -> void:
 
 
 ## Relay scenario_resolved to AudioManager win/fail stings.
+## Also persists scenario completion via ProgressData (SPA-137).
 func _on_scenario_resolved_audio(scenario_id: int, state: ScenarioManager.ScenarioState) -> void:
 	if state == ScenarioManager.ScenarioState.WON:
 		AudioManager.on_win()
+		# Persist the win so the main menu can unlock subsequent scenarios.
+		var active_id: String = world.active_scenario_id if "active_scenario_id" in world else ("scenario_%d" % scenario_id)
+		ProgressData.mark_completed(active_id)
 	elif state == ScenarioManager.ScenarioState.FAILED:
 		AudioManager.on_fail()

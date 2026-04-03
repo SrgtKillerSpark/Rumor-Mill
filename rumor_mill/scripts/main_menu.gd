@@ -84,6 +84,24 @@ func _load_scenarios() -> void:
 		push_error("MainMenu: failed to parse scenarios.json")
 
 
+## Returns true if the scenario at index idx is locked.
+## Lock rule: each scenario requires the previous one to be completed.
+## scenario_1 (idx 0) is always unlocked.
+func _is_scenario_locked(idx: int) -> bool:
+	if idx <= 0:
+		return false
+	var prev_sc: Dictionary = _scenarios[idx - 1]
+	var prev_id: String = prev_sc.get("scenarioId", "")
+	return not ProgressData.is_completed(prev_id)
+
+
+## Returns the title of the scenario that must be completed to unlock idx.
+func _unlock_requires_title(idx: int) -> String:
+	if idx <= 0:
+		return ""
+	return _scenarios[idx - 1].get("title", "the previous scenario")
+
+
 # ── Phase switching ───────────────────────────────────────────────────────────
 
 func _show_phase(p: Phase) -> void:
@@ -199,6 +217,8 @@ func _build_select_panel() -> void:
 
 
 func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
+	var locked: bool = _is_scenario_locked(idx)
+
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 80)
 
@@ -208,6 +228,7 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	card.set_meta("style_normal", style_normal)
 	card.set_meta("style_hover",  style_hover)
 	card.set_meta("scenario_idx", idx)
+	card.set_meta("locked", locked)
 
 	# Make it mouse-interactive via a Button overlay
 	var btn := Button.new()
@@ -234,11 +255,15 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	var title_lbl := Label.new()
 	title_lbl.text = sc.get("title", "Unknown Scenario")
 	title_lbl.add_theme_font_size_override("font_size", 16)
-	title_lbl.add_theme_color_override("font_color", C_HEADING)
+	title_lbl.add_theme_color_override("font_color", C_MUTED if locked else C_HEADING)
 	title_row.add_child(title_lbl)
 
+	# Days label — replaced with lock message when locked.
 	var days_lbl := Label.new()
-	days_lbl.text = "  (%d days)" % int(sc.get("daysAllowed", 30))
+	if locked:
+		days_lbl.text = "  \U0001F512 Complete \"%s\" to unlock" % _unlock_requires_title(idx)
+	else:
+		days_lbl.text = "  (%d days)" % int(sc.get("daysAllowed", 30))
 	days_lbl.add_theme_font_size_override("font_size", 12)
 	days_lbl.add_theme_color_override("font_color", C_MUTED)
 	title_row.add_child(days_lbl)
@@ -255,8 +280,34 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	desc_lbl.text = teaser
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_lbl.add_theme_font_size_override("font_size", 12)
-	desc_lbl.add_theme_color_override("font_color", C_BODY)
+	desc_lbl.add_theme_color_override("font_color", C_MUTED if locked else C_BODY)
 	inner.add_child(desc_lbl)
+
+	# Locked message row — hidden until the card is pressed while locked.
+	if locked:
+		var lock_row := HBoxContainer.new()
+		lock_row.visible = false
+		lock_row.name = "LockMessageRow"
+		lock_row.add_theme_constant_override("separation", 8)
+
+		var lock_msg := Label.new()
+		lock_msg.text = "Finish \"%s\" first." % _unlock_requires_title(idx)
+		lock_msg.add_theme_font_size_override("font_size", 11)
+		lock_msg.add_theme_color_override("font_color", C_MUTED)
+		lock_row.add_child(lock_msg)
+
+		var play_anyway := Button.new()
+		play_anyway.text = "Play anyway \u2192"
+		play_anyway.flat = true
+		play_anyway.add_theme_font_size_override("font_size", 11)
+		play_anyway.add_theme_color_override("font_color", C_MUTED)
+		play_anyway.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+		play_anyway.add_theme_stylebox_override("hover",  StyleBoxEmpty.new())
+		play_anyway.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
+		play_anyway.pressed.connect(_on_play_anyway_pressed.bind(idx))
+		lock_row.add_child(play_anyway)
+
+		inner.add_child(lock_row)
 
 	card.add_child(inner)
 	card.add_child(btn)  # overlay last so it captures mouse events
@@ -272,7 +323,31 @@ func _on_card_hover(card: PanelContainer, entering: bool) -> void:
 
 
 func _on_card_pressed(idx: int) -> void:
+	var card: PanelContainer = _scenario_cards[idx]
+	var locked: bool = card.get_meta("locked", false)
+
+	if locked:
+		# Show the lock message row; hide others.
+		for i in _scenario_cards.size():
+			var c: PanelContainer = _scenario_cards[i]
+			var row = c.find_child("LockMessageRow", true, false)
+			if row != null:
+				row.visible = (i == idx)
+		return
+
 	# Deselect previous
+	if _selected_card_idx >= 0 and _selected_card_idx < _scenario_cards.size():
+		var prev: PanelContainer = _scenario_cards[_selected_card_idx]
+		prev.add_theme_stylebox_override("panel", prev.get_meta("style_normal"))
+
+	_selected_card_idx = idx
+	card.add_theme_stylebox_override("panel", _card_style(C_CARD_HOVER, C_CARD_SEL))
+	_selected_scenario = _scenarios[idx]
+
+
+## Called when the player clicks "Play anyway →" on a locked scenario card.
+func _on_play_anyway_pressed(idx: int) -> void:
+	# Bypass the lock and treat the card as selected.
 	if _selected_card_idx >= 0 and _selected_card_idx < _scenario_cards.size():
 		var prev: PanelContainer = _scenario_cards[_selected_card_idx]
 		prev.add_theme_stylebox_override("panel", prev.get_meta("style_normal"))
@@ -281,6 +356,8 @@ func _on_card_pressed(idx: int) -> void:
 	var card: PanelContainer = _scenario_cards[idx]
 	card.add_theme_stylebox_override("panel", _card_style(C_CARD_HOVER, C_CARD_SEL))
 	_selected_scenario = _scenarios[idx]
+	_populate_briefing()
+	_show_phase(Phase.BRIEFING)
 
 
 # ── Phase 3: Briefing panel ───────────────────────────────────────────────────
