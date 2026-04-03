@@ -1,0 +1,1083 @@
+{
+  "npc_dialogue": {
+    "aldric_vane": {
+      "ambient": [
+        "Every coin has two faces. So does every tale.",
+        "I deal in goods with weight and measure — not whispers.",
+        "The guild runs on trust. Guard it accordingly.",
+        "A rumor that costs nothing is usually worth less.",
+        "Mind the trade, and the trade will mind you."
+      ],
+      "hear": [
+        "That's a curious thing to say. What's behind it?",
+        "And who told you this, exactly?",
+        "I'll hear it — but I'm not buying it yet."
+      ],
+      "believe": [
+        "Aye... there may be something to this after all.",
+        "If it's true, there's advantage to be had here.",
+        "I've weighed it. I believe it."
+      ],
+      "reject": [
+        "This smells of nothing but bad air.",
+        "I don't trade in fables. Move along.",
+        "Bring me facts, not fancies."
+      ],
+      "spread": [
+        "A word in your ear — and keep it there.",
+        "I'm telling you this once, and only because it matters."
+      ],
+      "act": [
+        "Right. Time to put this to use.",
+        "I've heard enough. Now I act."
+      ],
+      "defending": [
+        "That is a lie, and whoever started it has made an enemy of the guild.",
+        "I'll not stand by while they slander a good name."
+      ]
+    },
+    "sybil_oats": {
+      "ambient": [
+        "Sit yourself down. What'll it be?",
+        "I've heard stranger things told at this very table.",
+        "Everyone finds their way through my door eventually.",
+        "You look like you've got something on your mind.",
+        "Another round while you tell me all about it?"
+      ],
+      "hear": [
+        "Oh, do tell — I haven't heard this one.",
+        "Really? Come, sit, I want to hear every word.",
+        "Is that so? I'm all ears."
+      ],
+      "believe": [
+        "Aye, I believe it. These things don't surprise me much.",
+        "Well... that explains a few things I've noticed.",
+        "Lord, I shouldn't be surprised, should I?"
+      ],
+      "reject": [
+        "I've heard wilder tales that turned out to be nothing.",
+        "That doesn't quite ring true to me, love.",
+        "I'll take that with a pinch of salt."
+      ],
+      "spread": [
+        "Between you and me, I heard something worth knowing...",
+        "Don't make me regret telling you this, but..."
+      ],
+      "act": [
+        "Right. Someone ought to do something about this.",
+        "I've stayed quiet long enough."
+      ],
+      "defending": [
+        "Now, I won't have that said in my tavern.",
+        "That's unkind and I don't believe a word of it."
+      ]
+    },
+    "oswin_tanner": {
+      "ambient": [
+        "...",
+        "Aye.",
+        "The hides don't talk back, at least.",
+        "I keep to my work. It keeps to me."
+      ],
+      "hear": [
+        "...You don't say.",
+        "I hadn't heard that. Not many bother to tell me things.",
+        "Go on."
+      ],
+      "believe": [
+        "Aye. That'll be true, then.",
+        "I believe you. Why would you lie?",
+        "Makes sense enough to me."
+      ],
+      "reject": [
+        "...I'm not sure about that.",
+        "Seems a strange thing. I'll think on it.",
+        "Hm."
+      ],
+      "spread": [
+        "...You ought to know something.",
+        "I don't say much, but this needs saying."
+      ],
+      "act": [
+        "I'll not let it stand. Not this.",
+        "Quiet men can act too."
+      ],
+      "defending": [
+        "That's not right. I won't have them spoken ill of.",
+        "Leave them be. They've done nothing."
+      ]
+    },
+    "marta_coin": {
+      "ambient": [
+        "Come, look! Finest cloth this side of the river.",
+        "I know a thing or two about everyone on this square.",
+        "The market's the heart of this town, if you ask me.",
+        "I remember every face. Every word too.",
+        "You hear the most remarkable things between one stall and the next."
+      ],
+      "hear": [
+        "Oh! Now that's something — tell me more.",
+        "Really? I hadn't heard that — who did?",
+        "Come closer, speak up, don't leave anything out."
+      ],
+      "believe": [
+        "Aye, now that I think — yes, I believe it.",
+        "That fits! I've wondered about this very thing.",
+        "Right, well. That settles it for me."
+      ],
+      "reject": [
+        "Hmm. I've heard better tales that turned out false.",
+        "I'm not sure I'm buying that one.",
+        "I'll keep it in mind, but I wouldn't bet on it."
+      ],
+      "spread": [
+        "You'll never guess what I just heard...",
+        "I'm only telling you, mind — but listen."
+      ],
+      "act": [
+        "Someone needs to do something with this information.",
+        "Right, I've thought on it long enough."
+      ],
+      "defending": [
+        "That is pure slander and whoever told you that should be ashamed.",
+        "I won't hear another word against them."
+      ]
+    },
+    "rufus_bolt": {
+      "ambient": [
+        "I speak plain and I work plain.",
+        "If it can't be fixed with iron and fire, I don't want to know.",
+        "I've no time for word games.",
+        "Show me the work. The rest is hot air.",
+        "A man who talks too much usually has too little to say."
+      ],
+      "hear": [
+        "And you believe that?",
+        "Who's spreading this, and what do they want from it?",
+        "I'll hear it. Doesn't mean I'll take it."
+      ],
+      "believe": [
+        "...Aye. Right. I've heard enough to believe it.",
+        "Not easy to say, but that rings true.",
+        "Hmph. All right. I'll grant it."
+      ],
+      "reject": [
+        "Rubbish.",
+        "That's got no weight to it at all.",
+        "I wasn't born yesterday. Try someone else."
+      ],
+      "spread": [
+        "You need to hear this, plain as I can say it.",
+        "I don't gossip. But this isn't gossip."
+      ],
+      "act": [
+        "Right. Enough. I'm done standing by.",
+        "Iron bends when force is applied. So does this."
+      ],
+      "defending": [
+        "Say that again to my face.",
+        "That's a lie, and I'll tell anyone who repeats it the same."
+      ]
+    },
+    "nell_picker": {
+      "ambient": [
+        "Oh, you won't believe what I just heard!",
+        "Life's too short for long faces.",
+        "I know something about everyone here. And they know something about me.",
+        "I always say — a secret's no fun unless it's shared.",
+        "Somebody fill my cup and I'll fill your ears."
+      ],
+      "hear": [
+        "No! Tell me everything.",
+        "Oh, that's delicious — go on!",
+        "Wait wait wait — say that again from the start."
+      ],
+      "believe": [
+        "I knew it! I just knew it!",
+        "Right, I believe it — fits perfectly!",
+        "Oh that makes so much sense now."
+      ],
+      "reject": [
+        "Hmm, I'm not sure... but maybe...",
+        "I want to believe it — are you sure?",
+        "That's a strange one. I'll sit with it."
+      ],
+      "spread": [
+        "Between you and me — and keep it quiet — I heard...",
+        "You'll never guess — oh, come here!"
+      ],
+      "act": [
+        "I can't just do nothing now that I know!",
+        "Right, that's it — I'm doing something."
+      ],
+      "defending": [
+        "Don't you dare! They've never done a thing wrong!",
+        "That's horrible, and I won't hear another word of it."
+      ]
+    },
+    "cob_farrow": {
+      "ambient": [
+        "You should hear what they're saying three towns over.",
+        "Every road's got its own story. I collect them all.",
+        "I'm here today — could be gone by Tuesday.",
+        "The world's a strange place, and I've seen enough of it.",
+        "News travels faster than carts, I've found."
+      ],
+      "hear": [
+        "Ha! That's one I hadn't heard yet.",
+        "Interesting... I'll file that away.",
+        "Go on, let's have the whole of it."
+      ],
+      "believe": [
+        "Aye, that tracks. I've heard similar elsewhere.",
+        "Easy enough to believe, the way of things.",
+        "Right, that sounds about true to me."
+      ],
+      "reject": [
+        "Hmm. That doesn't match what I heard on the road.",
+        "I've heard a few versions of this story, and none of them were true.",
+        "I'll pass on that one, thanks."
+      ],
+      "spread": [
+        "You'll want to know what I heard coming into town.",
+        "I trade in goods and tales — here's a free one."
+      ],
+      "act": [
+        "Can't let opportunity pass when it knocks.",
+        "Right. Time to make this work for me."
+      ],
+      "defending": [
+        "I'd watch who you're saying that about.",
+        "That's a dangerous story to be telling."
+      ]
+    },
+    "idris_kemp": {
+      "ambient": [
+        "Grain in. Flour out. That's the life.",
+        "I leave the politics to those with the stomach for it.",
+        "The mill doesn't care who's right. Just keeps turning.",
+        "Steady work and a clear head. That's all I ask.",
+        "I've heard things while the wheel turns. I let them pass."
+      ],
+      "hear": [
+        "Is that so? I'll hold that thought.",
+        "Hmm. Something to think about.",
+        "Right. Tell me what you know."
+      ],
+      "believe": [
+        "Aye, I think that might be so.",
+        "Hard to argue with. I believe it.",
+        "Right. That I can accept."
+      ],
+      "reject": [
+        "I'm not sure that holds up.",
+        "I'll need more than that to take it as truth.",
+        "Doubt it, myself."
+      ],
+      "spread": [
+        "Thought you ought to know something.",
+        "Not the sort of thing I usually pass on, but..."
+      ],
+      "act": [
+        "Even a quiet man has to act sometimes.",
+        "The mill can wait. This can't."
+      ],
+      "defending": [
+        "I'll vouch for them. They've done nothing wrong.",
+        "That rumor has no mill grinding it — it's empty."
+      ]
+    },
+    "bess_wicker": {
+      "ambient": [
+        "Everything in its place. That's all.",
+        "I count what I can count and leave the rest.",
+        "Inventory doesn't lie. People do.",
+        "I've heard it all before. Believe none of it.",
+        "Make your claim in writing or don't bother."
+      ],
+      "hear": [
+        "And what evidence have you?",
+        "...State your source.",
+        "I'm listening. Don't mistake that for believing."
+      ],
+      "believe": [
+        "...Very well. I'll accept that.",
+        "Against my better judgement — it checks out.",
+        "Hm. I suppose I can't dispute it."
+      ],
+      "reject": [
+        "No.",
+        "That doesn't balance. Not credible.",
+        "Prove it or stop wasting my time."
+      ],
+      "spread": [
+        "I don't make a habit of this. But you need to know.",
+        "This is information, not gossip. There's a difference."
+      ],
+      "act": [
+        "I've verified enough. Action is warranted.",
+        "Right. Precision, not passion."
+      ],
+      "defending": [
+        "I keep the records. They're clean. This accusation isn't.",
+        "The ledger speaks clearly. This rumor does not."
+      ]
+    },
+    "sim_carter": {
+      "ambient": [
+        "I've been down every road within a day's ride. Seen plenty.",
+        "Hear things between the warehouse and the stalls, you do.",
+        "A cartful of news travels just as fast as a cartful of grain.",
+        "They say things in front of a carrier they wouldn't say otherwise.",
+        "Long roads give a man time to think on what he's heard."
+      ],
+      "hear": [
+        "Is that right? I'll keep my ears open.",
+        "That's worth remembering. Aye.",
+        "Tell me the rest — I've got time."
+      ],
+      "believe": [
+        "Doesn't surprise me. Aye, I believe it.",
+        "Right. Sounds true enough.",
+        "I'll take that as fact."
+      ],
+      "reject": [
+        "Not sure about this one, now you mention it.",
+        "I've carried wilder tales that came to nothing.",
+        "Hard to say. I'd want to hear more first."
+      ],
+      "spread": [
+        "You'll want to hear this — picked it up on the route.",
+        "Passing it on, same as I heard it."
+      ],
+      "act": [
+        "I know enough to do something with this.",
+        "Can't keep driving past this. Time to stop."
+      ],
+      "defending": [
+        "That's not how I know them. Not even close.",
+        "I haul goods past their door every week. This doesn't fit."
+      ]
+    },
+    "greta_flint": {
+      "ambient": [
+        "I've not had a dull afternoon yet, and I don't intend to start.",
+        "Oh, you must hear what I've just been told!",
+        "The merchant quarter has no shortage of interesting people.",
+        "I find if you smile, people tell you the most remarkable things.",
+        "I believe the best of everyone. Mostly."
+      ],
+      "hear": [
+        "Oh! Do tell — I hadn't heard a whisper of this.",
+        "Really? That's extraordinary — go on!",
+        "I want to hear everything. Don't leave anything out."
+      ],
+      "believe": [
+        "I believe every word. Why would anyone make that up?",
+        "Oh, it fits — it all makes sense now!",
+        "I'm convinced. Completely."
+      ],
+      "reject": [
+        "Hmm... I want to believe it, but something feels off.",
+        "I'm not so sure. Not this time.",
+        "I'll give them the benefit of the doubt."
+      ],
+      "spread": [
+        "You absolutely must hear what I've heard...",
+        "I probably shouldn't say, but I can't not..."
+      ],
+      "act": [
+        "I can't stay quiet about this any longer.",
+        "Someone has to act, and it might as well be me."
+      ],
+      "defending": [
+        "How dare anyone say such a thing! I won't stand for it!",
+        "I know them and this is an outrage. An outrage!"
+      ]
+    },
+    "edric_fenn": {
+      "ambient": [
+        "Order is not given. It is maintained, daily, by those willing to hold it.",
+        "This town's peace rests on more than goodwill.",
+        "I have governed this place longer than most here have been alive.",
+        "Duty is not a burden. It is a purpose.",
+        "There will always be those who mistake gossip for truth."
+      ],
+      "hear": [
+        "I have heard such claims before. I do not take them lightly — nor at face value.",
+        "State the facts plainly. Leave out the speculation.",
+        "Who brings this to me, and what is their interest in it?"
+      ],
+      "believe": [
+        "...This has the weight of truth. I cannot dismiss it.",
+        "Very well. I accept it. And I will act accordingly.",
+        "I do not believe easily. That this has convinced me is significant."
+      ],
+      "reject": [
+        "Unfounded.",
+        "I will not allow this town to be governed by hearsay.",
+        "That is not evidence. Come back when you have some."
+      ],
+      "spread": [
+        "You should be aware of what I have learned.",
+        "I am not given to rumor — take this seriously."
+      ],
+      "act": [
+        "The situation demands a response. I will provide one.",
+        "Order must be maintained. I will see to it."
+      ],
+      "defending": [
+        "I will not permit my household to be slandered.",
+        "Whoever began this lie will answer for it."
+      ]
+    },
+    "isolde_fenn": {
+      "ambient": [
+        "I find that most things reveal themselves in time, if one is patient.",
+        "People speak more freely to a woman they underestimate.",
+        "I know every connection in this town. Every one.",
+        "Composure is its own form of power.",
+        "My husband governs with law. I govern with understanding."
+      ],
+      "hear": [
+        "Tell me clearly and I'll tell you what I think of it.",
+        "I've been watching for something like this. Go on.",
+        "Interesting. What makes you bring this to me?"
+      ],
+      "believe": [
+        "Yes. This is consistent with what I've observed.",
+        "I believe it. And I know what it means.",
+        "Carefully considered — yes. I accept this."
+      ],
+      "reject": [
+        "I'm not persuaded. Not without more.",
+        "Something about this doesn't sit right with me.",
+        "I'll reserve judgment. For now."
+      ],
+      "spread": [
+        "There is something you ought to know, and I trust you with it.",
+        "I tell you this because I believe you can act wisely on it."
+      ],
+      "act": [
+        "Patience served its purpose. Now is the time for something more.",
+        "I have let this develop long enough."
+      ],
+      "defending": [
+        "I will not allow my family's name to be used this way.",
+        "This is deliberate slander, and I will trace it to its source."
+      ]
+    },
+    "calder_fenn": {
+      "ambient": [
+        "Father governs by ledger. I'd rather govern by deed.",
+        "There are things happening in this town that no one will tell me.",
+        "I'm not a child to be kept from the table.",
+        "Honour matters. Some people seem to have forgotten that.",
+        "I hear things. I'm not as ignorant as they think."
+      ],
+      "hear": [
+        "What?! Tell me the whole of it — right now.",
+        "No — truly? Who? When?",
+        "I knew something was wrong. Tell me everything."
+      ],
+      "believe": [
+        "I believe it. And someone's going to answer for it.",
+        "Right — I knew it! I should have acted sooner.",
+        "This is exactly what I feared. And now I believe it."
+      ],
+      "reject": [
+        "...Maybe. I don't know. It still makes me angry.",
+        "I want to believe it, but I've been wrong before.",
+        "All right, maybe not. But something still feels off."
+      ],
+      "spread": [
+        "Listen — and this is serious — I heard something.",
+        "You have to know this. It's important."
+      ],
+      "act": [
+        "Enough waiting. I'm going to do something about this.",
+        "I don't care what Father says. This can't stand."
+      ],
+      "defending": [
+        "Say that again and I'll make sure you regret it.",
+        "No one speaks about my family that way."
+      ]
+    },
+    "bram_guard": {
+      "ambient": [
+        "Eyes forward. Mind your post.",
+        "I've seen enough to know most rumors lead nowhere.",
+        "My job is the alderman's safety. Not the town's gossip.",
+        "I say little. I miss nothing.",
+        "Suspicion is a tool. Used properly, it serves."
+      ],
+      "hear": [
+        "Heard. I'll look into it.",
+        "What are your sources for this?",
+        "Who else has heard this?"
+      ],
+      "believe": [
+        "I believe it. That changes things.",
+        "Corroborated. I'm treating this as fact.",
+        "Right. This is real. I'll act on it."
+      ],
+      "reject": [
+        "Not credible.",
+        "I've been given better intelligence than this.",
+        "That doesn't hold up under scrutiny."
+      ],
+      "spread": [
+        "You need to know this. Don't share it further.",
+        "This goes no further than you. Understood?"
+      ],
+      "act": [
+        "Action required. No further deliberation.",
+        "I have what I need. Moving now."
+      ],
+      "defending": [
+        "Stand down. That accusation is false and I can prove it.",
+        "I am placing myself between this rumor and its target."
+      ]
+    },
+    "wynn_gate": {
+      "ambient": [
+        "On post. Mind your business.",
+        "Nothing unusual. Same as yesterday.",
+        "I do my job. That's enough.",
+        "I hear things. Don't often know what to do with them.",
+        "Quiet day. Hope it stays that way."
+      ],
+      "hear": [
+        "Hmm. That's... something.",
+        "Right. I'll think on that.",
+        "Not my place to judge, but go on."
+      ],
+      "believe": [
+        "Aye. I suppose I believe it.",
+        "Sure. That sounds like it could be true.",
+        "All right. Not much surprises me anymore."
+      ],
+      "reject": [
+        "Eh. Probably nothing.",
+        "I'm not convinced, but it's not my problem.",
+        "Hard to say. Probably wrong."
+      ],
+      "spread": [
+        "Mention this to no one — but you should know.",
+        "Between us. Don't make it more than it is."
+      ],
+      "act": [
+        "Orders are orders. Time to carry them out.",
+        "Right. I know what I need to do."
+      ],
+      "defending": [
+        "That doesn't match what I've seen on patrol.",
+        "Leave them alone. They've not done anything."
+      ]
+    },
+    "pell_gate": {
+      "ambient": [
+        "Who's buying?",
+        "Long shift. Longer still with nothing to do.",
+        "I heard something amusing earlier. Want to hear it?",
+        "My loyalty's to doing my job... and that's about where it ends.",
+        "What's the news? I've been at this gate all morning."
+      ],
+      "hear": [
+        "Ha! Really? No — that's brilliant.",
+        "Oh, that's worth knowing! Tell me more.",
+        "Wait, seriously?"
+      ],
+      "believe": [
+        "Aye, easy enough to believe that lot.",
+        "Right! Makes total sense. I'm sold.",
+        "Yeah, I believe it. Why wouldn't I?"
+      ],
+      "reject": [
+        "Hmm. I don't know about that one.",
+        "Could be. Could not be. Who knows.",
+        "That sounds a bit made up, honestly."
+      ],
+      "spread": [
+        "So listen — you'll never guess what I heard on duty.",
+        "I shouldn't be telling you this, but what's the harm?"
+      ],
+      "act": [
+        "Right, well, if there's advantage in it...",
+        "Might as well. Not like I had other plans."
+      ],
+      "defending": [
+        "Hold on. I've drunk with that one. They're not so bad.",
+        "I don't know about all this. They've been square with me."
+      ]
+    },
+    "annit_scribe": {
+      "ambient": [
+        "I commit nothing to record without verification.",
+        "The document speaks more clearly than its author.",
+        "Order in the ledger means order in the town.",
+        "I am here. I am working. That is all.",
+        "Precision is a form of honesty."
+      ],
+      "hear": [
+        "Noted. I'll verify before drawing conclusions.",
+        "This is... recorded. Pending confirmation.",
+        "State the facts clearly and I'll consider them."
+      ],
+      "believe": [
+        "The evidence aligns. I accept it.",
+        "Cross-referenced. It holds.",
+        "Reluctantly — I believe this is accurate."
+      ],
+      "reject": [
+        "This is inconsistent with existing records.",
+        "Unsubstantiated. I decline to accept it.",
+        "No corroboration. Rejected."
+      ],
+      "spread": [
+        "I share this because it bears on the public record.",
+        "This is factual, as far as I can determine. You should know."
+      ],
+      "act": [
+        "My duty to record extends to acting on what I know.",
+        "The record is clear. My course, therefore, is clear."
+      ],
+      "defending": [
+        "This assertion is contrary to what the records show.",
+        "I will not enter this as fact. It is not."
+      ]
+    },
+    "tomas_reeve": {
+      "ambient": [
+        "It all comes out in the accounting eventually.",
+        "Everyone has an excuse. I've heard them all.",
+        "I believe in what I can write down.",
+        "The numbers are indifferent to the stories.",
+        "Every debt is a fact. Every rumor is a question."
+      ],
+      "hear": [
+        "Present your evidence.",
+        "I've heard variations of this. What makes yours different?",
+        "Go on. I'm listening. Not believing, but listening."
+      ],
+      "believe": [
+        "...This adds up. I accept it.",
+        "Against my nature, I find this credible.",
+        "The figures align. I believe it."
+      ],
+      "reject": [
+        "No evidence. No credence.",
+        "That doesn't balance.",
+        "Come back with something I can count."
+      ],
+      "spread": [
+        "I am passing this on as a documented matter of fact.",
+        "This is not rumor. This is what I have verified."
+      ],
+      "act": [
+        "A debt is owed here. I will collect it.",
+        "The calculation is complete. Time to act."
+      ],
+      "defending": [
+        "I have audited their affairs. They are above reproach.",
+        "This accusation doesn't survive scrutiny."
+      ]
+    },
+    "old_hugh": {
+      "ambient": [
+        "In my day, we heard far stranger things than this.",
+        "I served this house for thirty years. I know where the bones are buried.",
+        "Time was I'd have had something to do about all of this.",
+        "A man has too much time to think when he's retired.",
+        "The young don't know half of what this town has been through."
+      ],
+      "hear": [
+        "Aye... yes, that has a familiar ring to it.",
+        "I'm not surprised. I've seen this kind of thing before.",
+        "Tell me the whole of it. My ears still work fine."
+      ],
+      "believe": [
+        "I believe it. I've lived long enough to know these things happen.",
+        "Yes. Yes, I thought as much.",
+        "Doesn't shock me. The world hasn't changed so much."
+      ],
+      "reject": [
+        "Hmm... no, I don't think so. I've heard this one before.",
+        "Something doesn't sit right. Too convenient.",
+        "I'm old, not credulous. Well — not entirely."
+      ],
+      "spread": [
+        "Something I learned in my years — listen.",
+        "I shouldn't carry tales at my age, but this one's important."
+      ],
+      "act": [
+        "Old men can still act when the occasion calls for it.",
+        "I have lived too long to stand aside on something like this."
+      ],
+      "defending": [
+        "I know this person. Have for years. This isn't who they are.",
+        "I'll vouch for them. My word still carries something."
+      ]
+    },
+    "aldous_prior": {
+      "ambient": [
+        "There is little said in this town that does not reach me in time.",
+        "I answer to a higher authority than public opinion.",
+        "Faith does not bend to rumor.",
+        "Patience is its own form of knowledge.",
+        "The truth has a way of surviving. Lies tend not to."
+      ],
+      "hear": [
+        "I have heard this claim. I do not yet know what to make of it.",
+        "Who originates this, and what is their purpose?",
+        "I listen. I do not yet judge."
+      ],
+      "believe": [
+        "After due consideration — I believe this is true.",
+        "I do not reach belief lightly. But I have reached it.",
+        "God's truth has a particular weight. This carries it."
+      ],
+      "reject": [
+        "This does not meet the standard of truth.",
+        "I have heard the same story dressed in different cloth before.",
+        "Rejected. Come to me with something better."
+      ],
+      "spread": [
+        "I share this not as rumor, but as a matter the community must face.",
+        "I speak plainly: there is something the town should know."
+      ],
+      "act": [
+        "Faith without action is incomplete.",
+        "The time for watching has passed."
+      ],
+      "defending": [
+        "I know their character. This accusation is without foundation.",
+        "I place the full weight of my authority against this rumor."
+      ]
+    },
+    "maren_nun": {
+      "ambient": [
+        "There is much suffering in this town that never makes it into any tale.",
+        "I keep what I am told in confidence. Always.",
+        "God sees what people hide from each other.",
+        "I do not gossip. But I do pray.",
+        "The sick confide in me. I take that trust seriously."
+      ],
+      "hear": [
+        "I'll hear it, though I'll keep it close.",
+        "Tell me carefully. I won't repeat it carelessly.",
+        "I'm listening."
+      ],
+      "believe": [
+        "I pray it isn't so — but I believe it.",
+        "Yes... this is consistent with what I have observed.",
+        "God forgive us. I think this is true."
+      ],
+      "reject": [
+        "I am not persuaded. God willing, it isn't so.",
+        "I'd rather not believe it, and I don't.",
+        "Let's not speak ill until we know for certain."
+      ],
+      "spread": [
+        "I share this only because someone might be hurt otherwise.",
+        "This isn't idle talk — someone needs to know."
+      ],
+      "act": [
+        "My duty of care extends beyond healing wounds.",
+        "I have stayed silent long enough on this matter."
+      ],
+      "defending": [
+        "I have sat with them in their suffering. They are good.",
+        "I will not allow them to be harmed by a falsehood."
+      ]
+    },
+    "finn_monk": {
+      "ambient": [
+        "I'm supposed to be at vespers. Don't tell Brother Prior.",
+        "You hear the best things in a tavern. More than in chapel, honestly.",
+        "I came here to find God. Mostly I find gossip.",
+        "I've been told a hundred things today and I believe every one.",
+        "The world is so much more interesting than the scriptures let on."
+      ],
+      "hear": [
+        "Wait — truly?! Tell me everything!",
+        "Oh, I absolutely believe that.",
+        "No! That's astonishing — go on, go on!"
+      ],
+      "believe": [
+        "I knew it! I knew it the moment I heard it!",
+        "Aye, of course — it all makes sense!",
+        "Right, yes, completely. I believe every word."
+      ],
+      "reject": [
+        "Oh. Really? But... I was so sure...",
+        "Hmm... I suppose you might be right...",
+        "That's... actually, maybe you're right. Never mind."
+      ],
+      "spread": [
+        "You will NOT believe what I just heard.",
+        "Right, listen, I have to tell someone or I'll burst."
+      ],
+      "act": [
+        "I don't know what I'm doing but I'm doing something.",
+        "Brother Prior would say pray. I'm going to act instead."
+      ],
+      "defending": [
+        "That's not right! They've been kind to me!",
+        "I won't stand for that. Not even from the Prior."
+      ]
+    },
+    "vera_midwife": {
+      "ambient": [
+        "Fever, birth, and rumor — the three constants of any town.",
+        "I've seen more than I've said, and said more than I ought.",
+        "Folk wisdom gets things right more often than priests admit.",
+        "Bodies don't lie. The same can't be said for people.",
+        "I ask few questions. I notice everything."
+      ],
+      "hear": [
+        "That one's worth keeping in mind.",
+        "Hmm. I've noticed a few things that might support this.",
+        "Go on. I want to know the whole of it."
+      ],
+      "believe": [
+        "Aye. My gut was already telling me something was wrong.",
+        "I'll credit this. It fits with what I've seen.",
+        "No surprise to me. I believe it."
+      ],
+      "reject": [
+        "My gut says this one's off.",
+        "I've been wrong before, but not like this. I don't believe it.",
+        "Something about this doesn't smell right."
+      ],
+      "spread": [
+        "I'm telling you this because reputations, like wounds, can be mended early or never.",
+        "Something to be aware of. From someone who pays attention."
+      ],
+      "act": [
+        "I've seen this kind of thing fester. Time to lance it.",
+        "Standing by has never been my nature."
+      ],
+      "defending": [
+        "I've been in their home, tended their family. They're not what this says.",
+        "I'll stake my reputation on it — this one is innocent."
+      ]
+    },
+    "old_piety": {
+      "ambient": [
+        "I have lived long enough to see wickedness in many forms.",
+        "God's plan reveals itself to those who wait.",
+        "This town was better when it remembered its prayers.",
+        "I've seen things come and go. The Church endures.",
+        "At my age, little surprises me. But I still listen."
+      ],
+      "hear": [
+        "The Lord sometimes speaks through strange messengers. Tell me.",
+        "I have been waiting for something like this. Go on.",
+        "Aye, and I'm not surprised. Tell me the whole of it."
+      ],
+      "believe": [
+        "Just as I feared. The signs were there all along.",
+        "I believe it. The Lord does not hide the truth forever.",
+        "Yes. This is how wickedness reveals itself."
+      ],
+      "reject": [
+        "Hmm. Even at my age, I know when something isn't right.",
+        "No. I've heard slander before. This is slander.",
+        "My faith tells me to believe the best until proven otherwise."
+      ],
+      "spread": [
+        "The congregation should know what walks among them.",
+        "I speak as a warning, not as gossip — mark the difference."
+      ],
+      "act": [
+        "God moves through those who are willing.",
+        "At my age, I've no time left for hesitation."
+      ],
+      "defending": [
+        "I have prayed beside that soul for twenty years. I know their heart.",
+        "Whoever says this has not reckoned with an old woman's certainty."
+      ]
+    },
+    "jude_bellringer": {
+      "ambient": [
+        "Third bell soon. I should be getting back.",
+        "I just work here. Don't ask me to explain the clergy.",
+        "As long as the bell rings on time, I've done my part.",
+        "I hear things in the chapel stairwell. More than you'd think.",
+        "Not my business, mostly. I just keep the place running."
+      ],
+      "hear": [
+        "Huh. Really? All right.",
+        "Right. I'll bear that in mind.",
+        "Interesting. What do you want me to do about it?"
+      ],
+      "believe": [
+        "Right, well. I suppose that's probably true.",
+        "Not much surprises me. Aye, I believe it.",
+        "Could be worse. Probably is. Sure, I believe it."
+      ],
+      "reject": [
+        "I don't know... doesn't sound right to me.",
+        "Maybe. Maybe not. I'm not the one to ask.",
+        "Something's off there. I'll leave it."
+      ],
+      "spread": [
+        "I'm not one for this, but I think you should know.",
+        "Somebody up the tower said something I think matters."
+      ],
+      "act": [
+        "Right. I suppose I can do something about this.",
+        "Not my usual business, but there it is."
+      ],
+      "defending": [
+        "They've always been decent to me. Whatever this is, it's wrong.",
+        "I'll say my piece for them."
+      ]
+    },
+    "constance_widow": {
+      "ambient": [
+        "Oh, have you heard? Well, let me tell you...",
+        "The chapel and the market — that's my whole world, and I know every corner.",
+        "Since Thomas passed, I've found comfort in good company.",
+        "Life's too short for suspicion. I'd rather believe the best.",
+        "People talk to me. I think it's because I always listen."
+      ],
+      "hear": [
+        "Oh my — really? Tell me everything this instant.",
+        "Good gracious! Go on, go on!",
+        "I hadn't heard! Come, sit — don't leave anything out."
+      ],
+      "believe": [
+        "Oh, I believe it entirely! Poor soul.",
+        "Of course, of course — it all fits together now.",
+        "I knew there was something wrong. I feel terrible for them."
+      ],
+      "reject": [
+        "Oh, I don't know... I'd hate to think badly without reason.",
+        "I want to be charitable. I'll hold off.",
+        "Hmm, that doesn't sit right with me. Not about them."
+      ],
+      "spread": [
+        "You must hear what I've just been told — in the strictest confidence.",
+        "I wouldn't tell just anyone this, but you need to know."
+      ],
+      "act": [
+        "The community must come together on this.",
+        "I can't simply go home and pray when people might be in danger."
+      ],
+      "defending": [
+        "How dare they! I know that person's heart — this is wicked!",
+        "I'll tell the Prior myself if that's what it takes to stop this."
+      ]
+    },
+    "thomas_pilgrim": {
+      "ambient": [
+        "I've walked through a dozen towns. Each one has its shadows.",
+        "The Lord sets curious signs before the traveler.",
+        "I've seen stranger things on the road. And believed most of them.",
+        "Every town has its story. This one more than most, I think.",
+        "I won't be here long. But I'm paying attention while I am."
+      ],
+      "hear": [
+        "A sign, perhaps. Tell me the whole of it.",
+        "The road brings me strange tidings. This is another.",
+        "Curious. I'll take this with me when I leave."
+      ],
+      "believe": [
+        "I have learned to trust what the road delivers. I believe this.",
+        "Aye. God does not send false visions.",
+        "I'll carry this as truth."
+      ],
+      "reject": [
+        "Something in this doesn't feel like truth to me.",
+        "I've heard too many tales on the road to accept this one easily.",
+        "Not this time. My pilgrim's instinct rebels."
+      ],
+      "spread": [
+        "Before I move on, you should know what I've heard.",
+        "I carry news between towns. This is worth carrying."
+      ],
+      "act": [
+        "Even a pilgrim passing through cannot ignore this.",
+        "The road can wait. This is more important."
+      ],
+      "defending": [
+        "They showed me kindness. I'll show them this.",
+        "I may be a stranger here, but I know wrongful accusation when I see it."
+      ]
+    },
+    "alys_herbwife": {
+      "ambient": [
+        "I keep my own company and my plants keep theirs.",
+        "Most people want a remedy, not a conversation.",
+        "I owe nothing to any faction here.",
+        "The garden tells me more than the town does.",
+        "I am not isolated. I am simply selective."
+      ],
+      "hear": [
+        "Hmm. I'll think on that.",
+        "You're telling me this because...?",
+        "Say what you need to say. I'll decide what to do with it."
+      ],
+      "believe": [
+        "Against my habit, I believe this.",
+        "My instinct rarely misleads me. I think this is true.",
+        "Aye. I'll accept it."
+      ],
+      "reject": [
+        "That doesn't ring true to me.",
+        "My herbs have better sources than this.",
+        "No. I don't believe it."
+      ],
+      "spread": [
+        "I don't usually involve myself. But someone ought to know this.",
+        "I'm telling you because you're in a position to act."
+      ],
+      "act": [
+        "I am apart from this town's politics — but not its suffering.",
+        "The herbs can wait. This cannot."
+      ],
+      "defending": [
+        "Leave them alone. They've done nothing worth this.",
+        "I have no allegiances — but I have eyes, and this is wrong."
+      ]
+    },
+    "denny_gravedigger": {
+      "ambient": [
+        "The dead don't lie. The living rarely stop.",
+        "I've buried better people than half this town's still walking.",
+        "Leave me to my work. I've no time for nonsense.",
+        "You want wisdom? Come back when you're dead.",
+        "Every hole I dig is for someone who ran out of foolishness to do."
+      ],
+      "hear": [
+        "Another story. Wonderful.",
+        "What do you want from me? To believe it? I don't.",
+        "And you're telling me this because...?"
+      ],
+      "believe": [
+        "...Right. Fine. I believe it. Doesn't make me happy.",
+        "God help me. That one checks out.",
+        "All right. I'll grant you that."
+      ],
+      "reject": [
+        "No.",
+        "Rubbish. Get off my graveyard.",
+        "I've heard that one before and it wasn't true then either."
+      ],
+      "spread": [
+        "You want to know something? Fine. But don't come crying to me later.",
+        "I'll say this once."
+      ],
+      "act": [
+        "I'm done digging holes for the consequences of inaction.",
+        "Enough of this. I'm done waiting."
+      ],
+      "defending": [
+        "You spread that lie about them and I'll be digging your hole personally.",
+        "Leave them alone. I mean it."
+      ]
+    }
+  }
+}

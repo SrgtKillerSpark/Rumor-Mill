@@ -148,6 +148,36 @@ var _hovered: bool = false
 var _cached_state_tint: Color = Color.WHITE
 var _heat_pulse_phase:  float = 0.0
 
+# ── Speech bubble system ──────────────────────────────────────────────────────
+## Dialogue lines loaded once from data/npc_dialogue.json (shared across all NPCs).
+static var _dialogue_data:   Dictionary = {}
+static var _dialogue_loaded: bool       = false
+## Global count of bubbles currently visible; capped at _MAX_BUBBLES.
+static var _active_bubbles:  int        = 0
+const  _MAX_BUBBLES:         int        = 2
+
+## Key into _dialogue_data for this NPC (matches npc_data["id"]).
+var _npc_dialogue_key:     String = ""
+## Ticks until this NPC next shows an idle ambient line.
+var _idle_bubble_cooldown: int    = 0
+## True while this NPC owns a visible bubble (prevents double-show).
+var _has_bubble:           bool   = false
+
+
+## Load npc_dialogue.json once; subsequent calls are no-ops.
+static func _load_dialogue_db() -> void:
+	if _dialogue_loaded:
+		return
+	var f := FileAccess.open("res://data/npc_dialogue.json", FileAccess.READ)
+	if f == null:
+		_dialogue_loaded = true
+		return
+	var parsed = JSON.parse_string(f.get_as_text())
+	f.close()
+	if parsed is Dictionary and parsed.has("npc_dialogue"):
+		_dialogue_data = parsed["npc_dialogue"]
+	_dialogue_loaded = true
+
 
 func _ready() -> void:
 	# sprite setup deferred to init_from_data after faction is known
@@ -240,6 +270,11 @@ func init_from_data(
 	position = _cell_to_world(start_cell)
 	_advance_waypoint()
 
+	# Speech bubble setup — stagger initial cooldown so NPCs don't all talk at once.
+	_npc_dialogue_key     = data.get("id", "")
+	_load_dialogue_db()
+	_idle_bubble_cooldown = randi_range(0, 50)
+
 
 # ── Per-tick entry point ─────────────────────────────────────────────────────
 
@@ -247,6 +282,11 @@ func on_tick(tick: int) -> void:
 	_step_movement()
 	_process_rumor_slots(tick)
 	_tick_defender(tick)
+	# Idle ambient bubble — fires every 30-60 ticks, staggered per NPC.
+	_idle_bubble_cooldown -= 1
+	if _idle_bubble_cooldown <= 0:
+		_idle_bubble_cooldown = randi_range(30, 60)
+		_show_dialogue_bubble("ambient")
 	_tick_defense_modifiers()
 	_update_label()
 
@@ -851,6 +891,10 @@ func _update_label() -> void:
 				wrid = rid
 				break
 		emit_signal("rumor_state_changed", short_name, state_str, wrid)
+		# Show a reaction speech bubble matching the new state.
+		var cat := _state_to_dialogue_category(worst)
+		if cat != "":
+			_show_dialogue_bubble(cat)
 
 
 # ── Hover highlight ──────────────────────────────────────────────────────────
@@ -920,6 +964,90 @@ func show_bribed_effect() -> void:
 	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -20.0), 1.2)
 	tw.tween_property(lbl, "modulate:a", 0.0, 1.2).set_delay(0.3)
 	tw.chain().tween_callback(lbl.queue_free)
+
+
+# ── Ambient / reaction speech bubbles ────────────────────────────────────────
+
+## Maps a rumor state to the matching dialogue category key, or "" for states
+## that have no dedicated dialogue (UNAWARE, EXPIRED, CONTRADICTED).
+func _state_to_dialogue_category(state: Rumor.RumorState) -> String:
+	match state:
+		Rumor.RumorState.EVALUATING: return "hear"
+		Rumor.RumorState.BELIEVE:    return "believe"
+		Rumor.RumorState.REJECT:     return "reject"
+		Rumor.RumorState.SPREAD:     return "spread"
+		Rumor.RumorState.ACT:        return "act"
+		Rumor.RumorState.DEFENDING:  return "defending"
+	return ""
+
+
+## Spawns a parchment-style speech bubble above this NPC with a random line
+## from the given dialogue category.  Respects the global 2-bubble cap and
+## skips if this NPC already owns a visible bubble.
+func _show_dialogue_bubble(category: String) -> void:
+	if _has_bubble:
+		return
+	if _active_bubbles >= _MAX_BUBBLES:
+		return
+	if _npc_dialogue_key == "":
+		return
+
+	var npc_lines: Dictionary = _dialogue_data.get(_npc_dialogue_key, {})
+	var lines: Array          = npc_lines.get(category, [])
+	if lines.is_empty():
+		return
+
+	var text: String = lines[randi() % lines.size()]
+
+	# ── Build parchment panel ─────────────────────────────────────────────────
+	var panel := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color                   = Color(0.88, 0.78, 0.58, 0.93)
+	style.corner_radius_top_left     = 6
+	style.corner_radius_top_right    = 6
+	style.corner_radius_bottom_left  = 6
+	style.corner_radius_bottom_right = 6
+	style.border_width_left          = 1
+	style.border_width_right         = 1
+	style.border_width_top           = 1
+	style.border_width_bottom        = 1
+	style.border_color               = Color(0.55, 0.42, 0.25, 0.85)
+	style.content_margin_left        = 6.0
+	style.content_margin_right       = 6.0
+	style.content_margin_top         = 4.0
+	style.content_margin_bottom      = 4.0
+	panel.add_theme_stylebox_override("panel", style)
+
+	var lbl := Label.new()
+	lbl.text                    = text
+	lbl.autowrap_mode           = TextServer.AUTOWRAP_WORD_SMART
+	lbl.custom_minimum_size     = Vector2(80.0, 0.0)
+	lbl.add_theme_font_size_override("font_size", 9)
+	lbl.add_theme_color_override("font_color", Color(0.25, 0.18, 0.08, 1.0))
+	panel.add_child(lbl)
+
+	# Position above the NameLabel (which sits at Y = -100).
+	panel.modulate.a = 0.0
+	panel.position   = Vector2(-44.0, -152.0)
+	add_child(panel)
+
+	_active_bubbles += 1
+	_has_bubble      = true
+
+	# Fade in → hold → fade out.
+	var hold_time := randf_range(3.0, 4.0)
+	var tw        := create_tween()
+	tw.tween_property(panel, "modulate:a", 1.0, 0.3)
+	tw.tween_interval(hold_time)
+	tw.tween_property(panel, "modulate:a", 0.0, 0.5)
+	tw.tween_callback(_on_bubble_finished.bind(panel))
+
+
+func _on_bubble_finished(panel: PanelContainer) -> void:
+	_active_bubbles = maxi(_active_bubbles - 1, 0)
+	_has_bubble     = false
+	if is_instance_valid(panel):
+		panel.queue_free()
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────
