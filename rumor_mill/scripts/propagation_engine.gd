@@ -44,6 +44,9 @@ var target_shift_excluded_ids: Array[String] = []
 # rumor_id → { "parent_id": String, "mutation_type": String, "tick": int }
 var lineage: Dictionary = {}
 
+## Reference to the player intel store for heat tracking. Set by World.
+var intel_store_ref: PlayerIntelStore = null
+
 
 # ── Registration ─────────────────────────────────────────────────────────────
 
@@ -80,17 +83,20 @@ func tick_decay() -> void:
 
 ## β = sociability_spreader × credulity_target × edge_weight × faction_modifier × scale
 ##
+## heat_modifier reduces effective credulity: 0.15 at heat ≥ 50, 0.30 at heat ≥ 75.
 ## Returns a clamped [0.0, 1.0] probability for one transmission attempt.
 func calc_beta(
 		sociability:    float,
 		credulity:      float,
 		edge_weight:    float,
 		from_faction:   String,
-		to_faction:     String
+		to_faction:     String,
+		heat_modifier:  float = 0.0
 ) -> float:
 	var faction_mod := _faction_modifier(from_faction, to_faction)
+	var effective_credulity := clamp(credulity - heat_modifier, 0.0, 1.0)
 	# Scale factor 2.5 keeps probabilities in a useful range given all inputs ∈ [0,1].
-	return clamp(sociability * credulity * edge_weight * faction_mod * 2.5, 0.0, 1.0)
+	return clamp(sociability * effective_credulity * edge_weight * faction_mod * 2.5, 0.0, 1.0)
 
 
 # ── γ — recovery probability ──────────────────────────────────────────────────
@@ -237,6 +243,20 @@ func _append_children(parent_id: String, children: Dictionary, lines: Array, dep
 		var indent := "  ".repeat(depth)
 		lines.append("%s└─ %s [%s] (tick %d)" % [indent, child_id, mut, tick])
 		_append_children(child_id, children, lines, depth + 1)
+
+
+# ── Heat relay tracking ───────────────────────────────────────────────────────
+
+## Add +2 heat to npc_id if rumor_id traces back to a player-seeded origin (rp_ prefix).
+## Called by npc._spread_to_neighbours() after each successful transmission.
+func apply_relay_heat(npc_id: String, rumor_id: String) -> void:
+	if intel_store_ref == null or not intel_store_ref.heat_enabled:
+		return
+	var chain := get_lineage_chain(rumor_id)
+	for rid in chain:
+		if rid.begins_with("rp_"):
+			intel_store_ref.add_heat(npc_id, 2.0)
+			return
 
 
 # ── Internal helpers ─────────────────────────────────────────────────────────

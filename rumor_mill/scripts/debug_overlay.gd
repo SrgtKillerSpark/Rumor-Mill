@@ -84,12 +84,22 @@ func _on_draw() -> void:
 
 
 func _draw_state_badges(npcs: Array) -> void:
+	var intel: PlayerIntelStore = _world_ref.get("intel_store")
+	var heat_font: Font = ThemeDB.fallback_font
 	for npc in npcs:
 		var state := npc.get_worst_rumor_state()
 		var color := STATE_COLORS.get(state, Color.GRAY)
 		var world_pos: Vector2 = npc.global_position + Vector2(0, -22)
 		var vp_pos: Vector2 = _world_to_screen(world_pos)
 		_draw_node.draw_rect(Rect2(vp_pos - Vector2(5, 5), Vector2(10, 10)), color)
+		# Heat badge: numeric value to the right of the state badge when heat is active.
+		if intel != null and intel.heat_enabled and heat_font != null:
+			var npc_id: String = npc.npc_data.get("id", "")
+			var h := intel.get_heat(npc_id)
+			if h > 0.0:
+				var heat_color := Color(1.0, 0.45, 0.1, 1.0) if h >= 75.0 else Color(1.0, 0.85, 0.2, 1.0)
+				_draw_node.draw_string(heat_font, vp_pos + Vector2(8.0, 4.0),
+					"%d" % int(h), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, heat_color)
 
 
 func _draw_social_edges(npcs: Array) -> void:

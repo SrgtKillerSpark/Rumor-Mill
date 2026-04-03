@@ -16,6 +16,11 @@ var location_intel: Dictionary = {}
 ## canonical pair key "idA:idB" (sorted) → RelationshipIntel
 var relationship_intel: Dictionary = {}
 
+## Per-NPC heat values (0–100). Tracks how suspicious NPCs are of the player
+## as a rumor source. Only active from Scenario 2 onward.
+var heat: Dictionary = {}
+var heat_enabled: bool = false
+
 
 # ---------------------------------------------------------------------------
 # LocationIntel — snapshot of which NPCs were at a location during one tick.
@@ -104,6 +109,28 @@ func try_spend_whisper() -> bool:
 func replenish() -> void:
 	recon_actions_remaining  = MAX_DAILY_ACTIONS
 	whisper_tokens_remaining = MAX_DAILY_WHISPERS
+	decay_heat()
+
+
+# ---------------------------------------------------------------------------
+# Heat system (active from Scenario 2+)
+# ---------------------------------------------------------------------------
+
+func get_heat(npc_id: String) -> float:
+	return heat.get(npc_id, 0.0)
+
+
+func add_heat(npc_id: String, amount: float) -> void:
+	if not heat_enabled:
+		return
+	heat[npc_id] = clamp(heat.get(npc_id, 0.0) + amount, 0.0, 100.0)
+
+
+func decay_heat() -> void:
+	if not heat_enabled:
+		return
+	for npc_id in heat.keys():
+		heat[npc_id] = maxf(0.0, heat[npc_id] - 8.0)
 
 
 # ---------------------------------------------------------------------------

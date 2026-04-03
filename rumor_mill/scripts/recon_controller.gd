@@ -211,7 +211,15 @@ func _npc_tooltip_text(npc: Node2D) -> String:
 	var snap = rep_sys.get_snapshot(npc_id)
 	if snap == null:
 		return base
-	return "%s\nRep: %d — %s" % [base, snap.score, _rep_tier_label(snap.score)]
+	var result := "%s\nRep: %d — %s" % [base, snap.score, _rep_tier_label(snap.score)]
+	# Heat tier label (diegetic — no numeric value shown to player).
+	if _intel_store != null and _intel_store.heat_enabled:
+		var h := _intel_store.get_heat(npc_id)
+		if h >= 75.0:
+			result += "\nSuspicious"
+		elif h >= 50.0:
+			result += "\nWary"
+	return result
 
 
 ## Flash the NPC sprite red briefly to signal they noticed the player.
@@ -349,6 +357,9 @@ func _try_eavesdrop(target: Node2D) -> void:
 			false)
 		print("[Recon] Eavesdrop NOTICED by %s (temperament=%.2f)" % [name_a, temperament])
 		_flash_npc_detected(target)
+		# Heat: +4 on detection failure to both NPCs involved.
+		_intel_store.add_heat(target.npc_data.get("id", ""), 4.0)
+		_intel_store.add_heat(partner.npc_data.get("id", ""), 4.0)
 		player_exposed.emit()
 		return
 
@@ -366,6 +377,10 @@ func _try_eavesdrop(target: Node2D) -> void:
 		id_a, id_b, name_a, name_b, weight, tick
 	)
 	_intel_store.add_relationship_intel(intel)
+
+	# Heat: +8 on successful eavesdrop to both NPCs.
+	_intel_store.add_heat(id_a, 8.0)
+	_intel_store.add_heat(id_b, 8.0)
 
 	var bar_str := "[" + "*".repeat(intel.bars()) + " ".repeat(3 - intel.bars()) + "]"
 	var belief_ctx := _belief_context(target, partner)

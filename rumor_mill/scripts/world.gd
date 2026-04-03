@@ -362,6 +362,9 @@ func _init_social_graph() -> void:
 
 func _init_intel_store() -> void:
 	intel_store = PlayerIntelStore.new()
+	# Wire intel store to propagation engine for heat tracking.
+	if propagation_engine != null:
+		propagation_engine.intel_store_ref = intel_store
 	# Replenish the daily recon budget at dawn (when the day counter increments).
 	if day_night != null:
 		day_night.day_changed.connect(_on_day_changed)
@@ -457,6 +460,12 @@ func _apply_active_scenario() -> void:
 		propagation_engine.target_shift_excluded_ids.assign(excluded)
 		if not excluded.is_empty():
 			print("World: target_shift excluded ids for '%s': %s" % [active_scenario_id, excluded])
+
+	# 6. Heat system: disabled in Scenario 1 (tutorial), active from Scenario 2 onward.
+	if intel_store != null:
+		intel_store.heat_enabled = (active_scenario_id != "scenario_1")
+		print("World: heat system %s for '%s'" % [
+			"enabled" if intel_store.heat_enabled else "disabled", active_scenario_id])
 
 	# Seed the reputation cache now that all overrides are in place.
 	reputation_system.recalculate_all(npcs, 0)
@@ -611,6 +620,10 @@ func seed_rumor_from_player(
 		propagation_engine.register_rumor(rumor)
 
 	seed_target_npc.hear_rumor(rumor, source_faction)
+
+	# Heat: +12 to the seed NPC (player has used them as a known relay).
+	if intel_store != null:
+		intel_store.add_heat(seed_target_npc_id, 12.0)
 
 	print("[World] seed_rumor_from_player '%s' claim=%s intensity=%d → %s about %s" % [
 		rumor_id, claim_id, intensity,
