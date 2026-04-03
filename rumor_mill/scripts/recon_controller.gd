@@ -37,6 +37,9 @@ signal action_performed(message: String, success: bool)
 ## Emitted when a high-temperament NPC detects the player eavesdropping.
 signal player_exposed
 
+## Emitted when the player successfully bribes an NPC (for journal logging).
+signal bribe_executed(npc_name: String, tick: int)
+
 var _world_ref:       Node2D           = null
 var _intel_store:     PlayerIntelStore = null
 
@@ -49,6 +52,10 @@ var _tooltip_canvas: CanvasLayer = null
 var _tooltip_panel:  Panel       = null
 var _tooltip_label:  Label       = null
 var _bldg_highlight: Polygon2D   = null
+
+# ── Bribe action popup ────────────────────────────────────────────────────────
+var _popup_panel: Panel  = null
+var _popup_npc:   Node2D = null
 
 
 func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
@@ -251,21 +258,38 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if not (event is InputEventMouseButton):
 		return
-	if event.button_index != MOUSE_BUTTON_RIGHT or not event.pressed:
-		return
 
 	var viewport := get_viewport()
 	if viewport == null:
 		return
 
-	# Convert screen position → world position via the canvas (camera) transform.
 	var screen_pos: Vector2  = viewport.get_mouse_position()
-	var world_pos:  Vector2  = viewport.get_canvas_transform().affine_inverse() * screen_pos
+
+	# Left-click outside an open action popup dismisses it.
+	if event.button_index == MOUSE_BUTTON_LEFT and event.pressed and _popup_panel != null:
+		_dismiss_action_popup()
+		get_viewport().set_input_as_handled()
+		return
+
+	if event.button_index != MOUSE_BUTTON_RIGHT or not event.pressed:
+		return
+
+	# Right-click always dismisses any open popup first.
+	if _popup_panel != null:
+		_dismiss_action_popup()
+
+	# Convert screen position → world position via the canvas (camera) transform.
+	var world_pos: Vector2 = viewport.get_canvas_transform().affine_inverse() * screen_pos
 
 	# NPC hit-test takes priority over location hit-test.
 	var clicked_npc := _hit_test_npc(world_pos)
 	if clicked_npc != null:
-		_try_eavesdrop(clicked_npc)
+		# Show bribe popup when NPC is EVALUATING and bribe charges are available.
+		if _intel_store.bribe_charges > 0 \
+				and clicked_npc.get_worst_rumor_state() == Rumor.RumorState.EVALUATING:
+			_show_action_popup(clicked_npc, screen_pos)
+		else:
+			_try_eavesdrop(clicked_npc)
 		get_viewport().set_input_as_handled()
 		return
 
@@ -465,3 +489,135 @@ func _current_tick() -> int:
 	if dn != null and "current_tick" in dn:
 		return int(dn.current_tick)
 	return 0
+
+
+# ── Bribe action popup ────────────────────────────────────────────────────────
+
+## Show a two-button popup (Eavesdrop / Bribe) near the cursor for an EVALUATING NPC.
+func _show_action_popup(npc: Node2D, screen_pos: Vector2) -> void:
+	_dismiss_action_popup()
+	_popup_npc = npc
+
+	_popup_panel = Panel.new()
+	_popup_panel.name = "ActionPopup"
+	_tooltip_canvas.add_child(_popup_panel)
+
+	var bg := ColorRect.new()
+	bg.color = Color(0.87, 0.80, 0.62, 0.95)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_popup_panel.add_child(bg)
+
+	var vbox := VBoxContainer.new()
+	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left   = 4.0
+	vbox.offset_top    = 4.0
+	vbox.offset_right  = -4.0
+	vbox.offset_bottom = -4.0
+	vbox.add_theme_constant_override("separation", 3)
+	_popup_panel.add_child(vbox)
+
+	var btn_eavesdrop := Button.new()
+	btn_eavesdrop.text = "Eavesdrop"
+	btn_eavesdrop.add_theme_font_size_override("font_size", 11)
+	btn_eavesdrop.pressed.connect(_on_popup_eavesdrop)
+	vbox.add_child(btn_eavesdrop)
+
+	var can_bribe: bool = _intel_store.recon_actions_remaining > 0 \
+		and _intel_store.whisper_tokens_remaining > 0
+	var btn_bribe := Button.new()
+	btn_bribe.add_theme_font_size_override("font_size", 11)
+	if can_bribe:
+		btn_bribe.text = "Bribe  (1 Recon + 1 Token)"
+		btn_bribe.pressed.connect(_on_popup_bribe)
+	else:
+		btn_bribe.text = "Bribe  — Insufficient resources"
+		btn_bribe.disabled = true
+	vbox.add_child(btn_bribe)
+
+	# Size and position near cursor.
+	_popup_panel.size = Vector2(196, 56)
+	var pos := screen_pos + Vector2(4.0, 4.0)
+	var vp_size := get_viewport().get_visible_rect().size
+	if pos.x + 196.0 > vp_size.x:
+		pos.x = screen_pos.x - 196.0 - 4.0
+	if pos.y + 56.0 > vp_size.y:
+		pos.y = screen_pos.y - 56.0 - 4.0
+	_popup_panel.position = pos
+
+
+func _dismiss_action_popup() -> void:
+	if _popup_panel != null:
+		_popup_panel.queue_free()
+		_popup_panel = null
+	_popup_npc = null
+
+
+func _on_popup_eavesdrop() -> void:
+	var npc := _popup_npc
+	_dismiss_action_popup()
+	if npc != null and is_instance_valid(npc):
+		_try_eavesdrop(npc)
+
+
+func _on_popup_bribe() -> void:
+	var npc := _popup_npc
+	_dismiss_action_popup()
+	if npc != null and is_instance_valid(npc):
+		_try_bribe(npc)
+
+
+# ── Bribe action ──────────────────────────────────────────────────────────────
+
+func _try_bribe(target: Node2D) -> void:
+	var npc_name: String = target.npc_data.get("name", "?")
+
+	# Scenario 3: block bribe on Calder-faction NPCs.
+	if _world_ref != null and _world_ref.active_scenario_id == "scenario_3":
+		var npc_faction: String = target.npc_data.get("faction", "")
+		var calder_faction := _get_calder_faction()
+		if not calder_faction.is_empty() and npc_faction == calder_faction:
+			emit_signal("action_performed",
+				"This NPC is too close to Calder — they would report the approach.", false)
+			return
+
+	# Cost: 1 Recon Action + 1 Whisper Token.
+	if not _intel_store.try_spend_action():
+		emit_signal("action_performed", "No Recon Actions remaining for bribe.", false)
+		return
+	if not _intel_store.try_spend_whisper():
+		# Refund recon action.
+		_intel_store.recon_actions_remaining = mini(
+			_intel_store.recon_actions_remaining + 1, PlayerIntelStore.MAX_DAILY_ACTIONS)
+		emit_signal("action_performed", "No Whisper Tokens remaining for bribe.", false)
+		return
+
+	# Execute: force EVALUATING → BELIEVE.
+	var forced_id: String = target.force_believe()
+	if forced_id.is_empty():
+		# NPC is no longer EVALUATING — refund and abort.
+		_intel_store.recon_actions_remaining = mini(
+			_intel_store.recon_actions_remaining + 1, PlayerIntelStore.MAX_DAILY_ACTIONS)
+		_intel_store.whisper_tokens_remaining = mini(
+			_intel_store.whisper_tokens_remaining + 1, PlayerIntelStore.MAX_DAILY_WHISPERS)
+		emit_signal("action_performed", "Bribe failed — %s is no longer evaluating." % npc_name, false)
+		return
+
+	# Consume bribe charge.
+	_intel_store.try_spend_bribe()
+
+	var tick := _current_tick()
+	emit_signal("action_performed",
+		"Bribed %s — they now believe the rumor.  (%d Favors left)" % [
+			npc_name, _intel_store.bribe_charges], true)
+	emit_signal("bribe_executed", npc_name, tick)
+	print("[Recon] Bribe: %s forced BELIEVE '%s'" % [npc_name, forced_id])
+
+
+## Return Calder Fenn's faction string, or "" if not found.
+func _get_calder_faction() -> String:
+	if _world_ref == null:
+		return ""
+	for npc in _world_ref.npcs:
+		if npc.npc_data.get("id", "") == "calder_fenn":
+			return npc.npc_data.get("faction", "")
+	return ""

@@ -159,6 +159,9 @@ func _init_recon_system() -> void:
 	# Wire eavesdrop exposure → ScenarioManager fail trigger (Scenario 1).
 	recon_ctrl.player_exposed.connect(_on_player_exposed)
 
+	# Wire bribe_executed → journal timeline entry.
+	recon_ctrl.bribe_executed.connect(_on_bribe_executed)
+
 	print("Main: recon system wired (intel_store + controller + HUD + 3-panel rumor modal)")
 
 
@@ -192,6 +195,12 @@ func _on_rumor_seeded(
 				claim_id, subject_name, seed_target_name
 			]
 		)
+
+
+## Called when the player bribes an NPC; logs the event to the journal timeline.
+func _on_bribe_executed(npc_name: String, tick: int) -> void:
+	if journal != null and journal.has_method("push_timeline_event"):
+		journal.push_timeline_event(tick, "Bribed %s — forced to believe a rumor" % npc_name)
 
 
 ## Connect world.rumor_event → journal timeline and social graph overlay.

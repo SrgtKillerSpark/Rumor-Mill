@@ -21,6 +21,10 @@ var relationship_intel: Dictionary = {}
 var heat: Dictionary = {}
 var heat_enabled: bool = false
 
+## Bribe charges (2 per scenario, not dawn-refreshed). Active from Scenario 2+.
+## 0 means bribery is disabled (Scenario 1 / tutorial).
+var bribe_charges: int = 0
+
 
 # ---------------------------------------------------------------------------
 # LocationIntel — snapshot of which NPCs were at a location during one tick.
@@ -131,6 +135,18 @@ func decay_heat() -> void:
 		return
 	for npc_id in heat.keys():
 		heat[npc_id] = maxf(0.0, heat[npc_id] - 8.0)
+
+
+# ---------------------------------------------------------------------------
+# Bribe charges
+# ---------------------------------------------------------------------------
+
+## Consume one bribe charge. Returns false if none remain.
+func try_spend_bribe() -> bool:
+	if bribe_charges <= 0:
+		return false
+	bribe_charges -= 1
+	return true
 
 
 # ---------------------------------------------------------------------------
