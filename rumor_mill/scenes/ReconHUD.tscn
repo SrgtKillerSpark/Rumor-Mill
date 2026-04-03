@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://recon_hud_sprint3"]
+[gd_scene load_steps=2 format=3 uid="uid://0dgyple4zm0dv"]
 
-[ext_resource type="Script" path="res://scripts/recon_hud.gd" uid="uid://recon_hud_script" id="1_reconhud"]
+[ext_resource type="Script" path="res://scripts/recon_hud.gd" uid="uid://frq3l0qrdoq4" id="1_reconhud"]
 
 [node name="ReconHUD" type="CanvasLayer"]
 script = ExtResource("1_reconhud")

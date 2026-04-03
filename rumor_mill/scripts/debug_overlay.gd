@@ -87,8 +87,8 @@ func _draw_state_badges(npcs: Array) -> void:
 	var intel: PlayerIntelStore = _world_ref.get("intel_store")
 	var heat_font: Font = ThemeDB.fallback_font
 	for npc in npcs:
-		var state := npc.get_worst_rumor_state()
-		var color := STATE_COLORS.get(state, Color.GRAY)
+		var state: Rumor.RumorState = npc.get_worst_rumor_state()
+		var color: Color = STATE_COLORS.get(state, Color.GRAY)
 		var world_pos: Vector2 = npc.global_position + Vector2(0, -22)
 		var vp_pos: Vector2 = _world_to_screen(world_pos)
 		_draw_node.draw_rect(Rect2(vp_pos - Vector2(5, 5), Vector2(10, 10)), color)

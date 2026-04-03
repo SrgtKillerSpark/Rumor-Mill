@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://social_graph_overlay_sprint6"]
+[gd_scene load_steps=2 format=3 uid="uid://kww5hp7tc2w5k"]
 
-[ext_resource type="Script" path="res://scripts/social_graph_overlay.gd" uid="uid://social_graph_overlay_script" id="1_sgo"]
+[ext_resource type="Script" path="res://scripts/social_graph_overlay.gd" uid="uid://f5mp8lmqnrck" id="1_sgo"]
 
 [node name="SocialGraphOverlay" type="CanvasLayer"]
 script = ExtResource("1_sgo")

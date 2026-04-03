@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://a5clmicn8s000"
-path="res://.godot/imported/ui_claim_icons.png-a5clmicn8s000.ctex"
+uid="uid://5clmicn8s000"
+path="res://.godot/imported/ui_claim_icons.png-cd6f7c0700f5110d07ce459674821083.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/ui_claim_icons.png"
-dest_files=["res://.godot/imported/ui_claim_icons.png-a5clmicn8s000.ctex"]
+dest_files=["res://.godot/imported/ui_claim_icons.png-cd6f7c0700f5110d07ce459674821083.ctex"]
 
 [params]
 

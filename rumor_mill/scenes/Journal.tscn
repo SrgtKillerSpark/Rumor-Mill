@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://journal_sprint6"]
+[gd_scene load_steps=2 format=3 uid="uid://rh64bgjsf51z2"]
 
-[ext_resource type="Script" path="res://scripts/journal.gd" uid="uid://journal_script_sprint6" id="1_journal"]
+[ext_resource type="Script" path="res://scripts/journal.gd" uid="uid://c7p2xp36kmy0d" id="1_journal"]
 
 [node name="Journal" type="CanvasLayer"]
 layer = 12

@@ -586,8 +586,8 @@ func _estimate_spread(seed_npc: Node2D) -> float:
 	for npc in _world_ref.npcs:
 		if npc == seed_npc:
 			continue
-		var dist := abs(npc.current_cell.x - seed_npc.current_cell.x) \
-		          + abs(npc.current_cell.y - seed_npc.current_cell.y)
+		var dist: int = abs((npc.current_cell as Vector2i).x - (seed_npc.current_cell as Vector2i).x) \
+		              + abs((npc.current_cell as Vector2i).y - (seed_npc.current_cell as Vector2i).y)
 		if dist <= SPREAD_RADIUS:
 			var soc: float = float(npc.npc_data.get("sociability", 0.5))
 			count += soc
@@ -720,7 +720,7 @@ func _build_evidence_entry(item) -> Control:
 		btn.text = "✓ Attached"
 	else:
 		btn.text = "Attach"
-	var captured_item := item
+	var captured_item = item
 	btn.pressed.connect(func() -> void:
 		_selected_evidence_item = captured_item
 		_confirm_pending = false

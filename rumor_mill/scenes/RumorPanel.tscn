@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://rumor_panel_sprint3"]
+[gd_scene load_steps=2 format=3 uid="uid://6wp6e5nio7utn"]
 
-[ext_resource type="Script" path="res://scripts/rumor_panel.gd" uid="uid://rumor_panel_script" id="1_rumorpanel"]
+[ext_resource type="Script" path="res://scripts/rumor_panel.gd" uid="uid://cai46nhjc0pie" id="1_rumorpanel"]
 
 [node name="RumorPanel" type="CanvasLayer"]
 script = ExtResource("1_rumorpanel")

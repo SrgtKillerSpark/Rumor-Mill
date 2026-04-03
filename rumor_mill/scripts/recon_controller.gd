@@ -228,7 +228,7 @@ func _npc_tooltip_text(npc: Node2D) -> String:
 	var snap = rep_sys.get_snapshot(npc_id)
 	if snap == null:
 		return base
-	var result := "%s\nRep: %d — %s" % [base, snap.score, _rep_tier_label(snap.score)]
+	var result: String = "%s\nRep: %d — %s" % [base, snap.score, _rep_tier_label(snap.score)]
 	# Heat tier label (diegetic — no numeric value shown to player).
 	if _intel_store != null and _intel_store.heat_enabled:
 		var h := _intel_store.get_heat(npc_id)

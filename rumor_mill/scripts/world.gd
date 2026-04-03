@@ -620,7 +620,7 @@ func seed_rumor_from_player(
 			PlayerIntelStore.MAX_DAILY_WHISPERS)
 		return ""
 
-	var claim_type := Rumor.claim_type_from_string(claim_template.get("type", "accusation"))
+	var claim_type: Rumor.ClaimType = Rumor.claim_type_from_string(claim_template.get("type", "accusation"))
 	var intensity:   int   = int(claim_template.get("intensity",  3))
 	var mutability:  float = float(claim_template.get("mutability", 3)) / 5.0
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d4uiprchm3nt0"
-path="res://.godot/imported/ui_parchment.png-d4uiprchm3nt0.ctex"
+uid="uid://gm4pe72vr28"
+path="res://.godot/imported/ui_parchment.png-42a745146c1d92786068c086599b15e8.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/ui_parchment.png"
-dest_files=["res://.godot/imported/ui_parchment.png-d4uiprchm3nt0.ctex"]
+dest_files=["res://.godot/imported/ui_parchment.png-42a745146c1d92786068c086599b15e8.ctex"]
 
 [params]
 

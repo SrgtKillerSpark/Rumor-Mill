@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://debug_overlay_sprint2"]
+[gd_scene load_steps=2 format=3 uid="uid://r311csnk41cay"]
 
-[ext_resource type="Script" path="res://scripts/debug_overlay.gd" uid="uid://debug_overlay_script" id="1_overlay"]
+[ext_resource type="Script" path="res://scripts/debug_overlay.gd" uid="uid://c6pvxvtinxwka" id="1_overlay"]
 
 [node name="DebugOverlay" type="CanvasLayer"]
 script = ExtResource("1_overlay")

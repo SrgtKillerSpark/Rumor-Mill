@@ -21,6 +21,10 @@ run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+AudioManager="*res://scripts/audio_manager.gd"
+
 [display]
 
 window/size/viewport_width=1280
@@ -63,9 +67,10 @@ zoom_out={
 ]
 }
 
-[autoload]
+[debug]
 
-AudioManager="*res://scripts/audio_manager.gd"
+gdscript/warnings/treat_warnings_as_errors=false
+gdscript/warnings/inference_on_variant=0
 
 [rendering]
 

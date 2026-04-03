@@ -183,7 +183,7 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 
 		for tid in neighbours:
 			# Draw each pair only once.
-			var key := nid + "|" + tid if nid < tid else tid + "|" + nid
+			var key: String = nid + "|" + (tid as String) if nid < (tid as String) else (tid as String) + "|" + nid
 			if drawn.has(key):
 				continue
 			drawn[key] = true
@@ -199,7 +199,7 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 			# social-graph edges still show the event pulse.
 			if _active_spread_edges.has(key):
 				# Highlight: bright orange, thickness scaled by time remaining.
-				var t := _active_spread_edges[key] / SPREAD_HIGHLIGHT_DURATION
+				var t: float = float(_active_spread_edges[key]) / SPREAD_HIGHLIGHT_DURATION
 				var h_alpha := lerpf(0.2, 0.9, t)
 				var h_width := lerpf(1.5, 4.0, t)
 				var h_color := Color(SPREAD_HIGHLIGHT_COLOR.r, SPREAD_HIGHLIGHT_COLOR.g,
@@ -232,7 +232,7 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 	for key in _active_spread_edges:
 		if drawn.has(key):
 			continue  # already handled in main loop
-		var parts := key.split("|")
+		var parts: PackedStringArray = (key as String).split("|")
 		if parts.size() != 2:
 			continue
 		var npc_a := _find_npc_by_id(npcs, parts[0])
@@ -241,7 +241,7 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 			continue
 		var from_screen := _world_to_screen(npc_a.global_position)
 		var to_screen   := _world_to_screen(npc_b.global_position)
-		var t := _active_spread_edges[key] / SPREAD_HIGHLIGHT_DURATION
+		var t: float = float(_active_spread_edges[key]) / SPREAD_HIGHLIGHT_DURATION
 		var h_alpha := lerpf(0.2, 0.9, t)
 		var h_width := lerpf(1.5, 4.0, t)
 		var h_color := Color(SPREAD_HIGHLIGHT_COLOR.r, SPREAD_HIGHLIGHT_COLOR.g,
@@ -253,9 +253,9 @@ func _draw_nodes(npcs: Array) -> void:
 	for npc in npcs:
 		var screen_pos := _world_to_screen(npc.global_position)
 		var faction: String = npc.npc_data.get("faction", "merchant")
-		var fill   := FACTION_FILL.get(faction, Color.GRAY)
-		var state  := npc.get_worst_rumor_state()
-		var ring   := STATE_RING_COLOR.get(state, Color.TRANSPARENT)
+		var fill: Color = FACTION_FILL.get(faction, Color.GRAY)
+		var state: Rumor.RumorState = npc.get_worst_rumor_state()
+		var ring: Color = STATE_RING_COLOR.get(state, Color.TRANSPARENT)
 
 		# Filled node.
 		_draw_node.draw_circle(screen_pos, NODE_RADIUS, fill)

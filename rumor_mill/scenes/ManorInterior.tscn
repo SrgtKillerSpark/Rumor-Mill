@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://manor_interior_spa41"]
+[gd_scene load_steps=2 format=3 uid="uid://7gy01h3o54hbo"]
 
-[ext_resource type="Script" path="res://scripts/building_interior.gd" uid="uid://building_interior_script" id="1_interior"]
+[ext_resource type="Script" path="res://scripts/building_interior.gd" uid="uid://bg7d415ltcjy1" id="1_interior"]
 
 [node name="ManorInterior" type="CanvasLayer"]
 layer = 14

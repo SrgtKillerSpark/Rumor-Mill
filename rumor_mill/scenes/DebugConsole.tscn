@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://debug_console_sprint2"]
+[gd_scene load_steps=2 format=3 uid="uid://vf07w1u1z4aka"]
 
-[ext_resource type="Script" path="res://scripts/debug_console.gd" uid="uid://debug_console_script" id="1_console"]
+[ext_resource type="Script" path="res://scripts/debug_console.gd" uid="uid://bt2pb1yx8gu27" id="1_console"]
 
 [node name="DebugConsole" type="CanvasLayer"]
 script = ExtResource("1_console")

@@ -88,7 +88,7 @@ func _cmd_inject_rumor(parts: Array) -> void:
 		_log("[color=red]World not connected[/color]")
 		return
 
-	var result := _world_ref.inject_rumor(npc_id, claim_str, intensity)
+	var result: String = _world_ref.inject_rumor(npc_id, claim_str, intensity)
 	if result.is_empty():
 		_log("[color=red]inject_rumor failed — check npc_id and claim_type[/color]")
 	else:
@@ -119,7 +119,7 @@ func _cmd_list_npcs() -> void:
 		var id:      String = npc.npc_data.get("id", "?")
 		var name_s:  String = npc.npc_data.get("name", "?")
 		var faction: String = npc.npc_data.get("faction", "?")
-		var state := Rumor.state_name(npc.get_worst_rumor_state())
+		var state: String = Rumor.state_name(npc.get_worst_rumor_state())
 		_log("  %s (%s) [%s] — %s" % [name_s, id, faction, state])
 
 
