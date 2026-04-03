@@ -47,6 +47,11 @@ var lineage: Dictionary = {}
 ## Reference to the player intel store for heat tracking. Set by World.
 var intel_store_ref: PlayerIntelStore = null
 
+## Incremented each time an NPC transitions to CONTRADICTED/REJECT due to a
+## credible public rebuttal (wired from NPC.gd where that state fires).
+## Used by the Scenario 2 end-screen bonus stat.
+var contradiction_count: int = 0
+
 
 # ── Registration ─────────────────────────────────────────────────────────────
 

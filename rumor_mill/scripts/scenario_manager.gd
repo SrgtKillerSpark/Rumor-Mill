@@ -101,6 +101,12 @@ var scenario_1_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_2_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_3_state: ScenarioState = ScenarioState.ACTIVE
 
+## Scenario 3 only: Calder's reputation score at the first evaluate() call.
+## -1 means not yet recorded. Used by end_screen for the Calder Rep Delta stat.
+var calder_score_start: int = -1
+## Calder's score at the moment the scenario resolved (set in _check_scenario_3).
+var calder_score_final: int = -1
+
 
 ## Evaluate win/fail conditions for the active scenario only.
 ## Call once per tick, after reputation_system.recalculate_all().
@@ -175,6 +181,13 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 	var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
 	if calder == null or tomas == null:
 		return
+
+	# Record Calder's starting score on the first evaluate() call.
+	if calder_score_start == -1:
+		calder_score_start = calder.score
+
+	# Track Calder's latest score for end-screen delta display.
+	calder_score_final = calder.score
 
 	if calder.score >= S3_WIN_CALDER_MIN and tomas.score <= S3_WIN_TOMAS_MAX:
 		scenario_3_state = ScenarioState.WON
