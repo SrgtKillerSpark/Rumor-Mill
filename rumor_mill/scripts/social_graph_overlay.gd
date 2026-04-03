@@ -33,6 +33,10 @@ const STATE_RING_COLOR := {
 
 const EDGE_BASE_COLOR := Color(0.50, 0.80, 1.00, 1.0)
 
+# Mutated edge tints: orange = trust decreased, blue = trust increased.
+const EDGE_MUTATED_NEG_COLOR := Color(0.90, 0.55, 0.10, 1.0)
+const EDGE_MUTATED_POS_COLOR := Color(0.30, 0.55, 0.90, 1.0)
+
 # Persistent teal glow on edges where either endpoint is actively SPREADING.
 const LIVE_SPREAD_EDGE_COLOR := Color(0.10, 0.85, 0.55, 0.65)
 const LIVE_SPREAD_EDGE_WIDTH := 2.5
@@ -208,10 +212,20 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				_draw_node.draw_line(from_screen, to_screen,
 									 LIVE_SPREAD_EDGE_COLOR, LIVE_SPREAD_EDGE_WIDTH)
 			else:
-				var alpha  := clamp((weight - EDGE_THRESHOLD) / (1.0 - EDGE_THRESHOLD), 0.05, 0.55)
-				var width  := lerpf(0.5, 2.5, weight)
-				var color  := Color(EDGE_BASE_COLOR.r, EDGE_BASE_COLOR.g, EDGE_BASE_COLOR.b, alpha)
-				_draw_node.draw_line(from_screen, to_screen, color, width)
+				var alpha := clamp((weight - EDGE_THRESHOLD) / (1.0 - EDGE_THRESHOLD), 0.05, 0.55)
+				var width := lerpf(0.5, 2.5, weight)
+				# Check for social graph mutations in either direction.
+				var mut_fwd: float = sg.get_net_mutation(nid, tid)
+				var mut_rev: float = sg.get_net_mutation(tid, nid)
+				var base_color: Color
+				if mut_fwd < -0.001 or mut_rev < -0.001:
+					base_color = EDGE_MUTATED_NEG_COLOR
+				elif mut_fwd > 0.001 or mut_rev > 0.001:
+					base_color = EDGE_MUTATED_POS_COLOR
+				else:
+					base_color = EDGE_BASE_COLOR
+				_draw_node.draw_line(from_screen, to_screen,
+									 Color(base_color.r, base_color.g, base_color.b, alpha), width)
 
 	# Second pass: draw active spread edges for proximity-only pairs that have
 	# no social graph entry at all (main loop only iterates sg.get_neighbours).
@@ -279,13 +293,13 @@ func _build_legend() -> void:
 	_legend_panel.set_anchor_and_offset(SIDE_RIGHT,  1.0, -210.0)
 	_legend_panel.set_anchor_and_offset(SIDE_LEFT,   1.0, -210.0)
 	_legend_panel.set_anchor_and_offset(SIDE_TOP,    0.0,   10.0)
-	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  230.0)
-	_legend_panel.custom_minimum_size = Vector2(195, 215)
+	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  265.0)
+	_legend_panel.custom_minimum_size = Vector2(195, 250)
 
 	_legend_label = RichTextLabel.new()
 	_legend_label.bbcode_enabled = true
 	_legend_label.fit_content    = true
-	_legend_label.custom_minimum_size = Vector2(180, 200)
+	_legend_label.custom_minimum_size = Vector2(180, 235)
 
 	_legend_label.append_text("[b][color=white]Social Graph View[/color][/b]  [color=gray][G to hide][/color]\n\n")
 	_legend_label.append_text("[b]Factions[/b]\n")
@@ -303,6 +317,8 @@ func _build_legend() -> void:
 	_legend_label.append_text("[b]Edges[/b]\n")
 	_legend_label.append_text("[color=#1ad98c]—[/color] Active spread path\n")
 	_legend_label.append_text("[color=#ff8000]—[/color] Recent transmission\n")
+	_legend_label.append_text("[color=#e68c1a]—[/color] Trust decreased (ACT)\n")
+	_legend_label.append_text("[color=#4d8ce6]—[/color] Trust increased (ACT)\n")
 
 	_legend_panel.add_child(_legend_label)
 	add_child(_legend_panel)

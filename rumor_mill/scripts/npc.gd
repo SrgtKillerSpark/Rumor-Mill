@@ -26,6 +26,9 @@ signal rumor_state_changed(npc_name: String, new_state_name: String, rumor_id: S
 ## Emitted when this NPC successfully transmits a rumor to another NPC.
 signal rumor_transmitted(from_name: String, to_name: String, rumor_id: String)
 
+## Emitted when this NPC enters ACT state and mutates a social graph edge.
+signal graph_edge_mutated(actor_name: String, subject_name: String, delta: float)
+
 const TILE_W := 64
 const TILE_H := 32
 const MOVE_SPEED := 180.0  # pixels/second
@@ -466,7 +469,7 @@ func _tick_believe(
 		slot.ticks_in_state = 0
 		if OS.is_debug_build():
 			print("[Rumor] %s ACT on '%s' after %d ticks" % [npc_name, rid, act_threshold])
-		_start_act_behavior(slot.rumor)
+		_start_act_behavior(slot.rumor, tick)
 		return
 
 	# ── β: spread attempt to each nearby neighbour ───────────────────────────
@@ -595,10 +598,33 @@ func _show_spread_bubble(_target_npc: Node2D) -> void:
 
 ## Called when this NPC enters ACT state.  Shows a pulsing ⚡ icon and navigates
 ## relative to the rumor's subject: flee if negative claim, seek if positive.
-func _start_act_behavior(rumor: Rumor) -> void:
+## Also mutates the social graph edge between actor and subject.
+func _start_act_behavior(rumor: Rumor, tick: int) -> void:
 	_show_act_icon()
 	var positive := Rumor.is_positive_claim(rumor.claim_type)
 	_navigate_relative_to_subject(rumor.subject_npc_id, positive)
+
+	# Determine edge delta from claim type.
+	var delta: float = 0.0
+	match rumor.claim_type:
+		Rumor.ClaimType.ACCUSATION, Rumor.ClaimType.SCANDAL, \
+		Rumor.ClaimType.HERESY, Rumor.ClaimType.ILLNESS:
+			delta = -0.15
+		Rumor.ClaimType.PRAISE:
+			delta = 0.10
+		# PROPHECY, DEATH: no graph mutation.
+
+	if delta != 0.0 and social_graph_ref != null:
+		var actor_id: String = npc_data.get("id", "")
+		social_graph_ref.mutate_edge(actor_id, rumor.subject_npc_id, delta, tick)
+		social_graph_ref.mutate_edge(rumor.subject_npc_id, actor_id, delta * 0.5, tick)
+
+		var subject_name := rumor.subject_npc_id
+		for other in all_npcs_ref:
+			if other.npc_data.get("id", "") == rumor.subject_npc_id:
+				subject_name = other.npc_data.get("name", rumor.subject_npc_id)
+				break
+		emit_signal("graph_edge_mutated", npc_data.get("name", ""), subject_name, delta)
 
 
 ## Pulsing ⚡ label above the NPC for ~2 seconds — signals ACT state onset.
@@ -722,6 +748,20 @@ func _tick_defense_modifiers() -> void:
 
 
 # ── Query helpers ────────────────────────────────────────────────────────────
+
+## Force the highest-priority EVALUATING slot to BELIEVE (bribe effect).
+## Returns the forced rumor_id, or "" if no EVALUATING slot exists.
+func force_believe() -> String:
+	for rid in rumor_slots.keys():
+		var slot: Rumor.NpcRumorSlot = rumor_slots[rid]
+		if slot.state == Rumor.RumorState.EVALUATING:
+			slot.state = Rumor.RumorState.BELIEVE
+			slot.ticks_in_state = 0
+			if OS.is_debug_build():
+				print("[Bribe] %s forced to BELIEVE '%s'" % [npc_data.get("name", "?"), rid])
+			return rid
+	return ""
+
 
 func get_state_for_rumor(rumor_id: String) -> Rumor.RumorState:
 	if rumor_slots.has(rumor_id):

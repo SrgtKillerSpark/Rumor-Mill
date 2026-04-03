@@ -11,6 +11,17 @@ class_name SocialGraph
 # edges[from_id][to_id] = float weight
 var edges: Dictionary = {}
 
+## Each entry: {from: String, to: String, delta: float, tick: int}
+var _mutation_log: Array = []
+
+## "from_id|to_id" → int mutation count. Capped at MUTATION_CAP per pair.
+var _mutation_count: Dictionary = {}
+
+## "from_id|to_id" → float net delta. Used by overlay for visual tint.
+var _net_mutations: Dictionary = {}
+
+const MUTATION_CAP := 3
+
 # Faction opposition pairs (bidirectional)
 const OPPOSING_PAIRS: Array = [
 	["merchant", "noble"],
@@ -20,6 +31,9 @@ const OPPOSING_PAIRS: Array = [
 
 func build(npcs_data: Array) -> void:
 	edges.clear()
+	_mutation_log.clear()
+	_mutation_count.clear()
+	_net_mutations.clear()
 	for npc in npcs_data:
 		edges[npc["id"]] = {}
 
@@ -74,6 +88,28 @@ func get_top_neighbours(npc_id: String, n: int = 5) -> Array:
 		pairs.append([id, neighbours[id]])
 	pairs.sort_custom(func(a, b): return a[1] > b[1])
 	return pairs.slice(0, min(n, pairs.size()))
+
+
+## Mutates a directed edge by delta, clamped to [0.0, 1.0].
+## No-op if the edge does not exist or the mutation cap has been reached.
+## tick is recorded in the mutation log.
+func mutate_edge(from_id: String, to_id: String, delta: float, tick: int) -> void:
+	if not edges.has(from_id) or not edges[from_id].has(to_id):
+		return
+	var count_key := from_id + "|" + to_id
+	var count: int = _mutation_count.get(count_key, 0)
+	if count >= MUTATION_CAP:
+		return
+	edges[from_id][to_id] = clamp(edges[from_id][to_id] + delta, 0.0, 1.0)
+	_mutation_count[count_key] = count + 1
+	_mutation_log.append({"from": from_id, "to": to_id, "delta": delta, "tick": tick})
+	_net_mutations[count_key] = _net_mutations.get(count_key, 0.0) + delta
+
+
+## Returns the net mutation delta accumulated on a directed edge.
+## Returns 0.0 if the edge has never been mutated.
+func get_net_mutation(from_id: String, to_id: String) -> float:
+	return _net_mutations.get(from_id + "|" + to_id, 0.0)
 
 
 ## Applies scenario-specific edge weight overrides after build().

@@ -309,6 +309,7 @@ func _spawn_npcs() -> void:
 	for npc in npcs:
 		npc.rumor_state_changed.connect(_on_npc_rumor_state_changed)
 		npc.rumor_transmitted.connect(_on_npc_rumor_transmitted)
+		npc.graph_edge_mutated.connect(_on_npc_graph_edge_mutated)
 
 	print("World: spawned %d NPCs" % npcs.size())
 
@@ -461,11 +462,13 @@ func _apply_active_scenario() -> void:
 		if not excluded.is_empty():
 			print("World: target_shift excluded ids for '%s': %s" % [active_scenario_id, excluded])
 
-	# 6. Heat system: disabled in Scenario 1 (tutorial), active from Scenario 2 onward.
+	# 6. Heat + Bribery: disabled in Scenario 1 (tutorial), active from Scenario 2 onward.
 	if intel_store != null:
-		intel_store.heat_enabled = (active_scenario_id != "scenario_1")
-		print("World: heat system %s for '%s'" % [
-			"enabled" if intel_store.heat_enabled else "disabled", active_scenario_id])
+		var non_tutorial := (active_scenario_id != "scenario_1")
+		intel_store.heat_enabled   = non_tutorial
+		intel_store.bribe_charges  = 2 if non_tutorial else 0
+		print("World: heat/bribe %s for '%s'" % [
+			"enabled (2 favors)" if non_tutorial else "disabled", active_scenario_id])
 
 	# Seed the reputation cache now that all overrides are in place.
 	reputation_system.recalculate_all(npcs, 0)
@@ -647,6 +650,16 @@ func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: Str
 	var msg := "%s whispered to %s" % [from_name, to_name]
 	if not rumor_id.is_empty():
 		msg += " [%s]" % rumor_id
+	emit_signal("rumor_event", msg, tick)
+
+
+func _on_npc_graph_edge_mutated(actor_name: String, subject_name: String, delta: float) -> void:
+	var tick: int = day_night.current_tick if day_night != null else 0
+	var msg: String
+	if delta < 0.0:
+		msg = "%s now distrusts %s" % [actor_name, subject_name]
+	else:
+		msg = "%s holds %s in higher regard" % [actor_name, subject_name]
 	emit_signal("rumor_event", msg, tick)
 
 
