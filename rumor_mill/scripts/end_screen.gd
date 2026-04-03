@@ -110,6 +110,12 @@ const SUMMARY_TEXT := {
 			+ " beneficiary, and Lady Isolde recognised your fingerprints long before she said so."
 			+ " Tomas Reeve, watching from the sidelines, appeared to find the situation quietly satisfying."
 		),
+		"timeout": (
+			"The winter festival came and the nominations were read to a crowd that had settled on no opinion."
+			+ " Calder Fenn's name earned the same polite acknowledgement as Tomas Reeve's — neither elevated,"
+			+ " neither ruined, neither story quite landing. Lady Isolde paid what was agreed and said nothing"
+			+ " beyond that. The ledger, at least, was square."
+		),
 	},
 }
 
@@ -239,7 +245,10 @@ func _infer_fail_reason(scenario_id: int) -> String:
 		var days_elapsed: int = _day_night_ref.current_day if "current_day" in _day_night_ref else 0
 		if days_elapsed >= sm.get_days_allowed():
 			return "timeout"
-	return "exposed"
+	# Scenario-appropriate fallback (avoid S1-specific "exposed" text for S2/S3).
+	if scenario_id == 1:
+		return "exposed"
+	return "timeout"
 
 
 ## Look up summary text from the SPA-128 table.

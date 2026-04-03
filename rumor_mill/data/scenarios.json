@@ -114,7 +114,8 @@
     "startingText": "Lady Isolde Fenn has a problem: her son Calder is brilliant, charming, and twenty-two years old. Her husband is not ready to step aside.\n\nShe hired you to solve the first half. The second half solves itself, if Tomas Reeve falls far enough before the winter festival.\n\nTwenty-five days. Two reputations to manage. One wrong twist and Calder himself becomes the story.",
     "victoryText": "The winter festival nominations were read aloud in the Town Square.\n\nCalder Fenn's name drew a real cheer — not a polite one. Tomas Reeve's name drew silence.\n\nLady Isolde watched from her window. She did not smile. But she did exhale.",
     "failTexts": {
-      "calder_implicated": "The rumor had started as praise. You knew that.\n\nSomewhere between the Tavern and the Chapel steps, it had changed.\n\nCalder Fenn was now the subject of a story that no one believed was an accident. Including Lady Isolde."
+      "calder_implicated": "The rumor had started as praise. You knew that.\n\nSomewhere between the Tavern and the Chapel steps, it had changed.\n\nCalder Fenn was now the subject of a story that no one believed was an accident. Including Lady Isolde.",
+      "timeout": "The winter festival nominations were read at dawn.\n\nCalder Fenn's name drew polite applause. Tomas Reeve's drew the same.\n\nLady Isolde's face, when you passed her in the corridor, told you everything about whether there would be further work."
     },
     "edgeOverrides": [
       { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
