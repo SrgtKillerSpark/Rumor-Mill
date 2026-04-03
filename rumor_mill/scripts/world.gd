@@ -95,6 +95,8 @@ const FACTION_SCHEDULES := {
 
 
 func _ready() -> void:
+	# Read scenario selected in the main menu (falls back to "scenario_1").
+	active_scenario_id = GameState.selected_scenario_id
 	_load_grid()
 	_paint_terrain()
 	_place_buildings()

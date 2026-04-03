@@ -76,6 +76,7 @@ var rumor_slots: Dictionary = {}
 
 var _pathfinder: AstarPathfinder = null
 var _walkable: Array[Vector2i] = []
+var _flash_tween: Tween = null
 
 # ── Visuals ──────────────────────────────────────────────────────────────────
 # Faction row index in npc_sprites.png (rows 0-2)
@@ -493,7 +494,7 @@ func _tick_evaluating(
 		believe_chance += 0.15
 
 	# Corroboration bonus (max +0.30 for 3+ extra sources).
-	var extra := min(slot.heard_from_count - 1, 3)
+	var extra: int = min(slot.heard_from_count - 1, 3)
 	believe_chance += extra * 0.10
 
 	believe_chance = clamp(believe_chance, 0.0, 1.0)
@@ -1052,6 +1053,17 @@ func _on_bubble_finished(panel: PanelContainer) -> void:
 	_has_bubble     = false
 	if is_instance_valid(panel):
 		panel.queue_free()
+
+
+# ── Click feedback ───────────────────────────────────────────────────────────
+
+## Brief highlight flash when the player clicks to observe/eavesdrop this NPC.
+func flash_click() -> void:
+	if _flash_tween:
+		_flash_tween.kill()
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(sprite, "color", Color.WHITE, 0.08)
+	_flash_tween.tween_property(sprite, "color", _base_color,  0.20)
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────

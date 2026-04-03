@@ -12,6 +12,7 @@ extends Node2D
 
 @onready var world:                Node2D      = $World
 @onready var day_night:            Node        = $World/DayNightCycle
+@onready var camera:               Camera2D    = $Camera2D
 @onready var debug_overlay:        CanvasLayer = $DebugOverlay
 @onready var debug_console:        CanvasLayer = $DebugConsole
 @onready var recon_hud:            CanvasLayer = $ReconHUD
@@ -189,7 +190,7 @@ func _init_recon_system() -> void:
 
 	# ReconController: input handler — created programmatically so it sits in
 	# the scene tree and receives _unhandled_input events.
-	var recon_ctrl := preload("res://scripts/recon_controller.gd").new()
+	var recon_ctrl: Node = preload("res://scripts/recon_controller.gd").new()
 	recon_ctrl.name = "ReconController"
 	add_child(recon_ctrl)
 	recon_ctrl.setup(world, intel_store)
@@ -645,3 +646,18 @@ func _on_scenario_resolved_audio(scenario_id: int, state: ScenarioManager.Scenar
 		ProgressData.mark_completed(active_id)
 	elif state == ScenarioManager.ScenarioState.FAILED:
 		AudioManager.on_fail()
+		_camera_shake(15.0, 0.6)
+
+
+# ── Game-feel polish ──────────────────────────────────────────────────────────
+
+## Trigger a camera shake if the Camera2D node is available.
+func _camera_shake(intensity: float, duration: float) -> void:
+	if camera != null and camera.has_method("shake_screen"):
+		camera.shake_screen(intensity, duration)
+
+
+## Called from ReconController — detection event triggers a medium shake.
+func _on_recon_action_shake(message: String, success: bool) -> void:
+	if not success and "glance" in message:
+		_camera_shake(8.0, 0.35)
