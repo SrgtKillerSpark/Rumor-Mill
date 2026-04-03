@@ -13,16 +13,16 @@ extends CanvasLayer
 ##   tutorial_hud.setup(tutorial_system_instance)
 ##   tutorial_hud.queue_tooltip("recon_actions")
 
-# ── Palette (matches journal parchment theme) ─────────────────────────────────
+# ── Palette (matches dark HUD theme) ─────────────────────────────────────────
 
-const C_BACKDROP      := Color(0.05, 0.03, 0.02, 0.72)
-const C_PANEL_BG      := Color(0.91, 0.85, 0.70, 1.0)
-const C_PANEL_BORDER  := Color(0.50, 0.35, 0.18, 1.0)
-const C_HEADING       := Color(0.50, 0.08, 0.08, 1.0)   # iron-oxide red
-const C_BODY          := Color(0.22, 0.15, 0.10, 1.0)   # warm sepia
-const C_BTN_NORMAL    := Color(0.42, 0.22, 0.08, 1.0)
-const C_BTN_HOVER     := Color(0.62, 0.34, 0.12, 1.0)
-const C_BTN_TEXT      := Color(0.96, 0.92, 0.82, 1.0)
+const C_BACKDROP      := Color(0.04, 0.02, 0.01, 0.78)
+const C_PANEL_BG      := Color(0.10, 0.07, 0.04, 1.0)
+const C_PANEL_BORDER  := Color(0.55, 0.38, 0.18, 1.0)
+const C_HEADING       := Color(0.92, 0.78, 0.12, 1.0)   # gold
+const C_BODY          := Color(0.80, 0.72, 0.55, 1.0)   # warm parchment
+const C_BTN_NORMAL    := Color(0.35, 0.22, 0.08, 1.0)
+const C_BTN_HOVER     := Color(0.55, 0.35, 0.12, 1.0)
+const C_BTN_TEXT      := Color(0.92, 0.82, 0.60, 1.0)
 
 const PANEL_WIDTH  := 600
 const PANEL_HEIGHT := 300
