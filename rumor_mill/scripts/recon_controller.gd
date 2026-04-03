@@ -657,6 +657,7 @@ func _try_bribe(target: Node2D) -> void:
 	_intel_store.try_spend_bribe()
 
 	_flash_npc_bribed(target)
+	target.show_bribed_effect()
 
 	var tick := _current_tick()
 	emit_signal("action_performed",

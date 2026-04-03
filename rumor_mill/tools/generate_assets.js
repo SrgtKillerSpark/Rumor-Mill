@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 /**
- * generate_assets.js — Art Pass 2 pixel-art generator for Rumor Mill (SPA-79/90)
+ * generate_assets.js — Art Pass 3 pixel-art generator for Rumor Mill (SPA-99)
  *
  * Produces all textures needed:
  *   assets/textures/tiles_ground.png      (192×32 — 3 ground variants)
  *   assets/textures/tiles_road_dirt.png   (64×32)
  *   assets/textures/tiles_road_stone.png  (64×32)
  *   assets/textures/tiles_buildings.png   (640×64 — 10 building types)
- *   assets/textures/npc_sprites.png       (224×240 — 7 frames × 5 archetypes)
+ *   assets/textures/npc_sprites.png       (224×288 — 7 frames × 6 archetypes)
  *                                           row 0 = merchant, 1 = noble, 2 = clergy
  *                                           row 3 = guard,    4 = commoner
+ *                                           row 5 = tavern_staff (apron/kerchief)
  *   assets/textures/ui_parchment.png      (48×48 — 9-slice parchment border tile)
  *   assets/textures/ui_faction_badges.png (72×24 — 3 × 24px faction badges)
  *   assets/textures/ui_claim_icons.png    (80×16 — 5 × 16px claim-type icons)
@@ -572,17 +573,20 @@ function makeBuildingTiles() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// NPC SPRITES (npc_sprites.png — 224×144)
-// Layout: 7 frames wide (32px each) × 3 faction rows (48px each)
-//   row 0 = merchant (deep blue/gold)
-//   row 1 = noble    (burgundy/silver)
-//   row 2 = clergy   (cream/black)
+// NPC SPRITES (npc_sprites.png — 224×288)
+// Layout: 7 frames wide (32px each) × 6 archetype rows (48px each)
+//   row 0 = merchant    (deep blue/gold)
+//   row 1 = noble       (burgundy/silver)
+//   row 2 = clergy      (cream/black)
+//   row 3 = guard       (stone tabard/helmet)
+//   row 4 = commoner    (drab linen)
+//   row 5 = tavern_staff (apron/kerchief, warm amber)
 // Columns: 0-2 idle frames, 3-6 walk frames
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeNPCSprites() {
-  // 5 archetype rows × 48px = 240px height
-  // row 0=merchant, 1=noble, 2=clergy, 3=guard, 4=commoner
-  const cv = createCanvas(224, 240);
+  // 6 archetype rows × 48px = 288px height
+  // row 0=merchant, 1=noble, 2=clergy, 3=guard, 4=commoner, 5=tavern_staff
+  const cv = createCanvas(224, 288);
 
   const FACTIONS = [
     { body: c.MERCH_B,  trim: c.MERCH_T,  hat: c.MERCH_B,  hatrim: c.MERCH_T  },
@@ -804,6 +808,81 @@ function makeNPCSprites() {
     drawCommoner(4*32, oy4, -1, 0,  0);
     drawCommoner(5*32, oy4, 0,  2,  -2);
     drawCommoner(6*32, oy4, -1, 0,  0);
+  }
+
+  // ── Row 5: TAVERN STAFF archetype ─────────────────────────────────────────
+  // Cream apron over rustic brown tunic, parchment head-kerchief, sleeves
+  // rolled up — clearly working hospitality, distinct from commoner/merchant.
+  const drawTavernStaff = (ox, oy, dy=0, lx=0, rx=0) => {
+    // head
+    const hx = ox+12, hy = oy+2+dy;
+    cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    cv.sp(hx+2, hy+3, ...c.HAIR);
+    cv.sp(hx+5, hy+3, ...c.HAIR);
+    cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
+    cv.line(hx,   hy,   hx,   hy+7, ...c.OUTLINE);
+    cv.line(hx+7, hy,   hx+7, hy+7, ...c.OUTLINE);
+    cv.line(hx,   hy+7, hx+7, hy+7, ...c.OUTLINE);
+
+    // head kerchief (wrapped cloth, wider than commoner cap, knotted right side)
+    cv.fillRect(hx-1, hy-2, 10, 3, ...c.PARCH_L);  // main kerchief band
+    cv.fillRect(hx,   hy-4, 8,  3, ...c.PARCH_M);  // crown of kerchief
+    cv.line(hx-1, hy-2, hx+8, hy-2, ...c.OUTLINE);
+    cv.line(hx,   hy-4, hx+7, hy-4, ...c.OUTLINE);
+    // knot at right side
+    cv.fillRect(hx+7, hy-2, 3, 3, ...c.PARCH_D);
+    cv.line(hx+7, hy-2, hx+9, hy-2, ...c.OUTLINE);
+
+    // body: rustic brown tunic
+    const bx = ox+11, by = oy+10+dy;
+    cv.fillRect(bx, by, 10, 14, ...c.WOOD_L);
+    // apron bib (upper front of apron)
+    cv.fillRect(bx+2, by, 6, 4, ...c.PARCH_L);
+    // apron body (covers front of torso + below belt)
+    cv.fillRect(bx+1, by+3, 8, 11, ...c.PARCH_L);
+    // apron tie strings at waist
+    cv.line(bx+1, by+4, bx-1, by+3, ...c.PARCH_D);
+    cv.line(bx+8, by+4, bx+10, by+3, ...c.PARCH_D);
+    // belt (dark, cinching the apron)
+    cv.fillRect(bx+1, by+7, 8, 2, ...c.DIRT_D);
+    // subtle crease lines on apron
+    cv.line(bx+4, by+3, bx+4, by+13, ...c.PARCH_M, 80);
+    // body outline
+    cv.line(bx,    by,    bx+9,  by,    ...c.OUTLINE);
+    cv.line(bx,    by,    bx,    by+13, ...c.OUTLINE);
+    cv.line(bx+9,  by,    bx+9,  by+13, ...c.OUTLINE);
+    cv.line(bx,    by+13, bx+9,  by+13, ...c.OUTLINE);
+
+    // arms: rolled-up sleeves (brown upper, bare skin forearm)
+    cv.fillRect(bx-2, by+1, 3, 7, ...c.WOOD_L);
+    cv.fillRect(bx+9, by+1, 3, 7, ...c.WOOD_L);
+    cv.fillRect(bx-2, by+8, 3, 4, ...c.SKIN);   // bare forearm L
+    cv.fillRect(bx+9, by+8, 3, 4, ...c.SKIN);   // bare forearm R
+    // rolled cuff marks
+    cv.line(bx-2, by+8, bx, by+8, ...c.WOOD_M);
+    cv.line(bx+9, by+8, bx+11, by+8, ...c.WOOD_M);
+
+    // legs: dark hose + sturdy boots
+    const ly = by+13;
+    cv.fillRect(bx+1+lx, ly, 4, 10, ...c.DIRT_D);
+    cv.fillRect(bx+5+rx, ly, 4, 10, ...c.DIRT_D);
+    cv.fillRect(bx+0+lx, ly+8, 5, 3, ...c.WOOD_D);
+    cv.fillRect(bx+4+rx, ly+8, 5, 3, ...c.WOOD_D);
+    cv.line(bx+1+lx, ly, bx+1+lx, ly+9, ...c.OUTLINE);
+    cv.line(bx+4+lx, ly, bx+4+lx, ly+9, ...c.OUTLINE);
+    cv.line(bx+5+rx, ly, bx+5+rx, ly+9, ...c.OUTLINE);
+    cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
+  };
+
+  {
+    const oy5 = 5*48;
+    drawTavernStaff(0*32, oy5, 0,  0,  0);
+    drawTavernStaff(1*32, oy5, -1, 0,  0);
+    drawTavernStaff(2*32, oy5, 0,  0,  0);
+    drawTavernStaff(3*32, oy5, 0,  -2, 2);
+    drawTavernStaff(4*32, oy5, -1, 0,  0);
+    drawTavernStaff(5*32, oy5, 0,  2,  -2);
+    drawTavernStaff(6*32, oy5, -1, 0,  0);
   }
 
   return cv.toPNG();
@@ -1260,7 +1339,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 2 asset generation (SPA-79/90)\n');
+console.log('\nRumor Mill — Art Pass 3 asset generation (SPA-99)\n');
 
 write('assets/textures/tiles_ground.png',       makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',    makeRoadDirt());

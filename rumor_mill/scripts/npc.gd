@@ -1,6 +1,7 @@
 extends Node2D
 
-## npc.gd — Sprint 5 update (Art Pass 1): AnimatedSprite2D, faction sprites.
+## npc.gd — Sprint 5 update (Art Pass 2 / SPA-99): heat shimmer VFX, coin bribe flash.
+## Sprint 5: AnimatedSprite2D, faction sprites, heat/bribery visual polish.
 ## Sprint 4: full SIR diffusion model.
 ##
 ## Spread uses the β formula via PropagationEngine:
@@ -10,11 +11,12 @@ extends Node2D
 ## Mutations use PropagationEngine.try_mutate() (4 independent types).
 ## Shelf-life expiry is detected via Rumor.is_expired() after PropagationEngine.tick_decay().
 ##
-## Sprite sheet layout (assets/textures/npc_sprites.png, 224×240):
+## Sprite sheet layout (assets/textures/npc_sprites.png, 224×288):
 ##   Row 0 = merchant (deep blue/gold)   Row 1 = noble (burgundy/silver)
 ##   Row 2 = clergy (cream/black)
 ##   Row 3 = guard   (stone tabard/helmet — archetype "guard_civic")
 ##   Row 4 = commoner (drab linen — craftsmen, laborers, etc.)
+##   Row 5 = tavern_staff (apron, warm amber — archetype "tavern_staff")
 ##   Cols 0-2 = idle frames (32×48 each); Cols 3-6 = walk frames
 
 ## Emitted once when this NPC first receives a rumor (UNAWARE → EVALUATING).
@@ -78,9 +80,10 @@ const FACTION_ROW := {
 	"noble":    1,
 	"clergy":   2,
 }
-# Archetype overrides — these rows take priority over faction (rows 3-4)
+# Archetype overrides — these rows take priority over faction (rows 3-5)
 const ARCHETYPE_ROW := {
-	"guard_civic": 3,
+	"guard_civic":  3,
+	"tavern_staff": 5,
 }
 # Roles that map to the commoner archetype row (row 4)
 const COMMONER_ROLES := [
@@ -132,6 +135,13 @@ var _last_worst_state: Rumor.RumorState = Rumor.RumorState.UNAWARE
 # the parent node's modulate, which would muddy state colours.
 const NPC_HOVER_TINT := Color(1.5, 1.3, 0.5, 1.0)
 var _hovered: bool = false
+
+# ── Heat shimmer state ───────────────────────────────────────────────────────
+# The heat shimmer oscillates sprite.modulate in _process() between the state
+# tint and a warm red/orange glow, signalling that this NPC is suspicious/wary.
+# _cached_state_tint is refreshed each game tick by _update_label().
+var _cached_state_tint: Color = Color.WHITE
+var _heat_pulse_phase:  float = 0.0
 
 
 func _ready() -> void:
@@ -805,12 +815,15 @@ func _update_label() -> void:
 	else:
 		name_label.text = "%s\n[%s]" % [short_name, state_str]
 
-	# Apply sprite tint based on worst rumor state (skipped while hovered so the
-	# hover tint set by set_hover() isn't overwritten mid-frame).
+	# Cache state tint so _process() can blend heat shimmer against it.
+	_cached_state_tint = STATE_TINT.get(worst, Color.WHITE)
+
+	# Apply sprite tint when not hovered and heat shimmer is not active.
+	# When heat >= 50 and heat_enabled, _process() drives modulate every frame.
 	if not _hovered:
 		if sprite != null and sprite.sprite_frames != null:
-			var tint: Color = STATE_TINT.get(worst, Color.WHITE)
-			sprite.modulate = tint
+			if _get_heat() < 50.0:
+				sprite.modulate = _cached_state_tint
 
 	# Emit state-change signal so the journal + overlay can react.
 	if worst != _last_worst_state:
@@ -836,8 +849,61 @@ func set_hover(hovered: bool) -> void:
 	if _hovered:
 		sprite.modulate = NPC_HOVER_TINT
 	else:
-		var worst := get_worst_rumor_state()
-		sprite.modulate = STATE_TINT.get(worst, Color.WHITE)
+		# If heat shimmer is active _process() will take over next frame.
+		# Otherwise restore the state tint immediately.
+		if _get_heat() < 50.0:
+			var worst := get_worst_rumor_state()
+			sprite.modulate = STATE_TINT.get(worst, Color.WHITE)
+
+
+# ── Heat shimmer (per-frame) ─────────────────────────────────────────────────
+
+## Returns the raw heat value for this NPC (0.0 if heat is disabled).
+func _get_heat() -> float:
+	if propagation_engine_ref == null:
+		return 0.0
+	if propagation_engine_ref.intel_store_ref == null:
+		return 0.0
+	if not propagation_engine_ref.intel_store_ref.heat_enabled:
+		return 0.0
+	return propagation_engine_ref.intel_store_ref.get_heat(npc_data.get("id", ""))
+
+
+## Drives the heat shimmer animation every frame.
+## When heat >= 50 this overrides sprite.modulate with a pulsing warm glow
+## that blends between the current state colour and a red/orange alert.
+func _process(delta: float) -> void:
+	if _hovered or sprite == null or sprite.sprite_frames == null:
+		return
+	var h := _get_heat()
+	if h < 50.0:
+		return  # _update_label() sets sprite.modulate directly when heat is low
+	_heat_pulse_phase += delta * (3.0 if h >= 75.0 else 2.0)
+	var pulse := sin(_heat_pulse_phase) * 0.5 + 0.5  # 0.0 → 1.0
+	var heat_color: Color
+	if h >= 75.0:
+		heat_color = Color(1.45, 0.40, 0.25, 1.0)  # red-orange alarm
+	else:
+		heat_color = Color(1.30, 0.65, 0.35, 1.0)  # amber warning
+	sprite.modulate = _cached_state_tint.lerp(heat_color, pulse * 0.45)
+
+
+# ── Bribery feedback ─────────────────────────────────────────────────────────
+
+## Spawns a floating coin-burst label above this NPC confirming a successful
+## bribe.  Called by recon_controller immediately after force_believe().
+func show_bribed_effect() -> void:
+	var lbl := Label.new()
+	lbl.text = "🪙"
+	lbl.add_theme_font_size_override("font_size", 16)
+	lbl.position = Vector2(-8.0, -72.0)
+	lbl.modulate = Color(1.0, 0.90, 0.2, 1.0)
+	add_child(lbl)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -20.0), 1.2)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.2).set_delay(0.3)
+	tw.chain().tween_callback(lbl.queue_free)
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────
