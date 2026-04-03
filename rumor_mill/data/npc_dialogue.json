@@ -34,6 +34,16 @@
       "defending": [
         "That is a lie, and whoever started it has made an enemy of the guild.",
         "I'll not stand by while they slander a good name."
+      ],
+      "observe": [
+        "Someone's watching the stall. Not subtle about it either.",
+        "I know when I'm being sized up. I don't appreciate it.",
+        "Eyes on us. Keep your business close."
+      ],
+      "eavesdrop": [
+        "The guild rate won't move before month's end — I've seen the figures.",
+        "If you breathe a word of this agreement to the Fenns, the whole deal collapses.",
+        "He's looking to sell, but quietly. Don't let it get back to him you know."
       ]
     },
     "sybil_oats": {
@@ -70,6 +80,16 @@
       "defending": [
         "Now, I won't have that said in my tavern.",
         "That's unkind and I don't believe a word of it."
+      ],
+      "observe": [
+        "You looking for something, or just looking?",
+        "I notice everything that happens near my door. Everything.",
+        "Go on then. I've nothing to hide."
+      ],
+      "eavesdrop": [
+        "She came in three nights running and never once looked at the door. That's a woman with nowhere to go.",
+        "Don't tell me they're running a tab at the Merchants' Hall too — the nerve.",
+        "I saw them leave together. Thought nothing of it then. Think plenty of it now."
       ]
     },
     "oswin_tanner": {
@@ -105,6 +125,16 @@
       "defending": [
         "That's not right. I won't have them spoken ill of.",
         "Leave them be. They've done nothing."
+      ],
+      "observe": [
+        "...",
+        "You want something?",
+        "Aye. I see you."
+      ],
+      "eavesdrop": [
+        "Leather's up. Everything's up.",
+        "Said it once. Won't say it again.",
+        "Not my business, that. But there it is."
       ]
     },
     "marta_coin": {
@@ -141,6 +171,16 @@
       "defending": [
         "That is pure slander and whoever told you that should be ashamed.",
         "I won't hear another word against them."
+      ],
+      "observe": [
+        "Oh! Were you watching me? How funny!",
+        "I catch everyone looking eventually. That's the market for you.",
+        "I don't mind being seen — I've nothing to hide. Unlike some."
+      ],
+      "eavesdrop": [
+        "Heard the tanner's got himself a debt he can't clear. Big one.",
+        "Two of the alderman's people were arguing at the gate this morning — voices carried all the way here.",
+        "She left that meeting in a hurry. Never saw her run before."
       ]
     },
     "rufus_bolt": {
@@ -177,6 +217,16 @@
       "defending": [
         "Say that again to my face.",
         "That's a lie, and I'll tell anyone who repeats it the same."
+      ],
+      "observe": [
+        "I can see you, you know.",
+        "Looking costs nothing. Lurking costs more.",
+        "Get on with it."
+      ],
+      "eavesdrop": [
+        "The bolt on the east gate's been wrong for two months. Not my fault no one's told the alderman.",
+        "Someone's skimming the civic store. Not the first time.",
+        "I don't repeat things. But this can't go unheard."
       ]
     },
     "nell_picker": {
@@ -213,6 +263,16 @@
       "defending": [
         "Don't you dare! They've never done a thing wrong!",
         "That's horrible, and I won't hear another word of it."
+      ],
+      "observe": [
+        "Oh! Were you listening? I might have said anything!",
+        "I don't care — spy all you like, I have no secrets!",
+        "Ha! You picked a good moment — I was just telling the best story."
+      ],
+      "eavesdrop": [
+        "No, but you have to hear what she told me — I nearly fell over.",
+        "He said he'd never set foot there again. Never! And there he was.",
+        "It wasn't what was said — it was how they looked at each other after."
       ]
     },
     "cob_farrow": {
@@ -249,6 +309,16 @@
       "defending": [
         "I'd watch who you're saying that about.",
         "That's a dangerous story to be telling."
+      ],
+      "observe": [
+        "Don't think I haven't noticed you. The roads teach you that much.",
+        "Information is currency. Just so you know.",
+        "Watching me won't tell you much. I'm harder to read than I look."
+      ],
+      "eavesdrop": [
+        "The rate east of the river is half what they charge here. Someone's making a fortune.",
+        "I've seen that cargo pass through three towns and it always disappears before the ledger's settled.",
+        "Careful who you trust with a route like that. Very careful."
       ]
     },
     "idris_kemp": {
@@ -285,6 +355,16 @@
       "defending": [
         "I'll vouch for them. They've done nothing wrong.",
         "That rumor has no mill grinding it — it's empty."
+      ],
+      "observe": [
+        "The wheel turns and so does curiosity. No harm in it.",
+        "Aye, I see you there.",
+        "Watch all you like. I've only got the one thing to do here."
+      ],
+      "eavesdrop": [
+        "The harvest wasn't bad — but the record shows it was. Someone changed the figures.",
+        "Grain comes in light, leaves heavy. I know which end that benefits.",
+        "I keep my head down. Doesn't mean I don't notice."
       ]
     },
     "bess_wicker": {
@@ -321,6 +401,16 @@
       "defending": [
         "I keep the records. They're clean. This accusation isn't.",
         "The ledger speaks clearly. This rumor does not."
+      ],
+      "observe": [
+        "Document your purpose or stand clear of my workspace.",
+        "I note your presence. I will remember it.",
+        "State your business."
+      ],
+      "eavesdrop": [
+        "The discrepancy is on line forty-two of the guild ledger. I've flagged it twice.",
+        "Someone authorised a withdrawal that doesn't appear on any request form.",
+        "I track every item. So I know what's missing."
       ]
     },
     "sim_carter": {
@@ -357,6 +447,16 @@
       "defending": [
         "That's not how I know them. Not even close.",
         "I haul goods past their door every week. This doesn't fit."
+      ],
+      "observe": [
+        "You've been keeping an eye on things. Smart.",
+        "I've got nothing interesting in the cart, if that's what you're wondering.",
+        "Fair enough. I'd do the same."
+      ],
+      "eavesdrop": [
+        "Heard it on the Alderman's Gate road — they're moving something after dark.",
+        "Two of the clergy asked me to keep quiet about a delivery. Paid well for it.",
+        "The route's been changed twice this week. Someone doesn't want a pattern."
       ]
     },
     "greta_flint": {
@@ -393,6 +493,16 @@
       "defending": [
         "How dare anyone say such a thing! I won't stand for it!",
         "I know them and this is an outrage. An outrage!"
+      ],
+      "observe": [
+        "Oh, hello! Were you watching? How perfectly exciting!",
+        "I don't mind at all. I like being noticed.",
+        "Come closer — I feel I should know you if you're watching this carefully!"
+      ],
+      "eavesdrop": [
+        "She told me in complete confidence — so of course I'm only telling you.",
+        "They were seen at the manor twice this week. I don't read into these things, but...",
+        "The Prior and the alderman had words. Nobody's supposed to know, but here we are."
       ]
     },
     "edric_fenn": {
@@ -429,6 +539,16 @@
       "defending": [
         "I will not permit my household to be slandered.",
         "Whoever began this lie will answer for it."
+      ],
+      "observe": [
+        "My movements are a matter of public record. Observe all you like.",
+        "Scrutiny is the cost of governance. I accept it.",
+        "If you have a grievance, present it formally."
+      ],
+      "eavesdrop": [
+        "This arrangement is between us. It does not leave this room.",
+        "The petition will be denied. I've already made my decision.",
+        "There are facts about this matter which must remain outside the public record."
       ]
     },
     "isolde_fenn": {
@@ -465,6 +585,16 @@
       "defending": [
         "I will not allow my family's name to be used this way.",
         "This is deliberate slander, and I will trace it to its source."
+      ],
+      "observe": [
+        "Yes. I noticed. I always notice.",
+        "You are welcome to watch. I rarely do anything of interest in plain sight.",
+        "Composure is harder to read than transparency. Bear that in mind."
+      ],
+      "eavesdrop": [
+        "He doesn't know I'm aware of it. Let's ensure it stays that way.",
+        "The alliance is more fragile than it appears. One word could end it.",
+        "I've already spoken to the Prior. It's handled. No one else needs to know."
       ]
     },
     "calder_fenn": {
@@ -501,6 +631,16 @@
       "defending": [
         "Say that again and I'll make sure you regret it.",
         "No one speaks about my family that way."
+      ],
+      "observe": [
+        "Yeah, I see you watching. What's it to you?",
+        "Fine. Look. Everyone looks.",
+        "You want to know something? Just ask me. I'll probably tell you."
+      ],
+      "eavesdrop": [
+        "I'm not letting him decide this for me. Not this time.",
+        "She said she'd meet me here and she hasn't come. Something's wrong.",
+        "If Father knew half of what I know, he'd — actually, maybe he does know. That's worse."
       ]
     },
     "bram_guard": {
@@ -537,6 +677,16 @@
       "defending": [
         "Stand down. That accusation is false and I can prove it.",
         "I am placing myself between this rumor and its target."
+      ],
+      "observe": [
+        "I see you. Move along.",
+        "This area is under watch. Yours included.",
+        "Don't make me tell you twice."
+      ],
+      "eavesdrop": [
+        "The patrol at the east gate is down two men and the alderman hasn't been told.",
+        "Someone opened the side door at the chapel last night. I have a name.",
+        "Keep this between us. If it gets out, it compromises the whole post."
       ]
     },
     "wynn_gate": {
@@ -573,6 +723,16 @@
       "defending": [
         "That doesn't match what I've seen on patrol.",
         "Leave them alone. They've not done anything."
+      ],
+      "observe": [
+        "I'm on post. Not much to see.",
+        "Right, fine. I've been looked at before.",
+        "You're not the first one watching. Probably not the last."
+      ],
+      "eavesdrop": [
+        "Bram said not to write it in the log. So I didn't. But I remember.",
+        "Saw them at the gate before first bell. Told no one.",
+        "Something came in last night on a cart. Wasn't on any list I saw."
       ]
     },
     "pell_gate": {
@@ -609,6 +769,16 @@
       "defending": [
         "Hold on. I've drunk with that one. They're not so bad.",
         "I don't know about all this. They've been square with me."
+      ],
+      "observe": [
+        "Aye, I noticed you watching. Not much else to do at this gate.",
+        "Don't worry about it — I wasn't doing anything interesting anyway.",
+        "You look like you've got something going. I respect that."
+      ],
+      "eavesdrop": [
+        "Wynn caught something on the midnight patrol. Won't say what. That means it's good.",
+        "The merchant that came in this morning? Definitely not here on trading business.",
+        "Don't tell Bram I told you this, but — oh, you'll want to know."
       ]
     },
     "annit_scribe": {
@@ -645,6 +815,16 @@
       "defending": [
         "This assertion is contrary to what the records show.",
         "I will not enter this as fact. It is not."
+      ],
+      "observe": [
+        "I am working. I suggest you do the same.",
+        "Your presence is noted.",
+        "If you require my attention, request it in the proper manner."
+      ],
+      "eavesdrop": [
+        "That document was submitted with two signatures. The second is a forgery.",
+        "The record does not reflect what actually occurred. I know which records and who changed them.",
+        "What was said in that meeting is not what appears in the minutes. I wrote both."
       ]
     },
     "tomas_reeve": {
@@ -681,6 +861,16 @@
       "defending": [
         "I have audited their affairs. They are above reproach.",
         "This accusation doesn't survive scrutiny."
+      ],
+      "observe": [
+        "Everything in this square is observed, including me.",
+        "I take note of those who take note of me.",
+        "The figures don't lie. People do."
+      ],
+      "eavesdrop": [
+        "Three separate accounts. Same goods. Three times the deduction. I've confirmed it.",
+        "The debt isn't public yet but it will be. I've given adequate notice.",
+        "Someone in that office has been adjusting entries retroactively. I can prove it."
       ]
     },
     "old_hugh": {
@@ -717,6 +907,16 @@
       "defending": [
         "I know this person. Have for years. This isn't who they are.",
         "I'll vouch for them. My word still carries something."
+      ],
+      "observe": [
+        "I've been looked at by worse than you, son.",
+        "Aye. I know you're there. My eyes still work.",
+        "You remind me of a man I knew years ago. Also too curious for his own good."
+      ],
+      "eavesdrop": [
+        "I served this house thirty years. Some of what I know never made it into any record.",
+        "The old arrangements — before the current alderman — were rather different. Not better. Different.",
+        "I shouldn't still know this. But I do."
       ]
     },
     "aldous_prior": {
@@ -753,6 +953,16 @@
       "defending": [
         "I know their character. This accusation is without foundation.",
         "I place the full weight of my authority against this rumor."
+      ],
+      "observe": [
+        "God sees all things. I see somewhat fewer.",
+        "I am aware of your interest. I suggest prayer for its resolution.",
+        "Observation is not understanding. The two are rarely the same."
+      ],
+      "eavesdrop": [
+        "This penitence is between the sinner and God. And, currently, between us.",
+        "The gift was not declared to the chapel's formal account. The Prior's account, however — yes.",
+        "He asked me to keep what he said in confidence. I had no reason not to. Until now."
       ]
     },
     "maren_nun": {
@@ -789,6 +999,16 @@
       "defending": [
         "I have sat with them in their suffering. They are good.",
         "I will not allow them to be harmed by a falsehood."
+      ],
+      "observe": [
+        "I hope I have done nothing to concern you.",
+        "I am here if you need help. If not, I'll carry on.",
+        "You look unwell. Have you been sleeping?"
+      ],
+      "eavesdrop": [
+        "The patient told me things I am not supposed to repeat. But that was before I understood what they meant.",
+        "I've seen that mark before. It is not from illness.",
+        "She came to me three nights running and would not say what troubled her. The fourth night she didn't come at all."
       ]
     },
     "finn_monk": {
@@ -825,6 +1045,16 @@
       "defending": [
         "That's not right! They've been kind to me!",
         "I won't stand for that. Not even from the Prior."
+      ],
+      "observe": [
+        "Were you watching me? That's brilliant! I never know what I look like from outside!",
+        "Oh! Am I being observed? Should I be doing something more monkish?",
+        "I was just talking! I wasn't saying anything important! Well — I was, but still!"
+      ],
+      "eavesdrop": [
+        "Brother Prior doesn't know about the wine cellar and I am NEVER going to be the one to tell him.",
+        "I heard him praying for something very specific. Very specific. I'm not going to say what.",
+        "One of the novices is keeping a correspondence that is absolutely not about scripture."
       ]
     },
     "vera_midwife": {
@@ -861,6 +1091,16 @@
       "defending": [
         "I've been in their home, tended their family. They're not what this says.",
         "I'll stake my reputation on it — this one is innocent."
+      ],
+      "observe": [
+        "Something on your mind? You've been circling.",
+        "I've attended births in the dark. I notice everything.",
+        "You want to know something. Ask it plain."
+      ],
+      "eavesdrop": [
+        "I've been in half the houses in this town before daybreak. You'd be surprised what you see.",
+        "She asked me to come quietly and not to mention I'd been there at all.",
+        "The man is not as ill as they're telling people. I've seen him walking."
       ]
     },
     "old_piety": {
@@ -897,6 +1137,16 @@
       "defending": [
         "I have prayed beside that soul for twenty years. I know their heart.",
         "Whoever says this has not reckoned with an old woman's certainty."
+      ],
+      "observe": [
+        "Yes. I see you there. The Lord sees you too.",
+        "I have lived long enough to know when something is happening.",
+        "Watching is the first step to knowing. Ask me what I know."
+      ],
+      "eavesdrop": [
+        "She confessed things I have no business knowing. He told no one. But walls are thin.",
+        "I have prayed on it for three days. That man is not what he presents himself to be.",
+        "I heard what was said at the chapel door when they thought the pews were empty. They were not."
       ]
     },
     "jude_bellringer": {
@@ -933,6 +1183,16 @@
       "defending": [
         "They've always been decent to me. Whatever this is, it's wrong.",
         "I'll say my piece for them."
+      ],
+      "observe": [
+        "Not much to see up here unless you like bells.",
+        "I'm ringing the third bell at noon. Feel free to watch.",
+        "Right. There you are then."
+      ],
+      "eavesdrop": [
+        "Someone was in the vestry after dark. I didn't see who. I'm choosing not to see who.",
+        "Prior Aldous had a visitor at the second bell who wasn't on any schedule I was shown.",
+        "I hear things in the bell tower. Voices carry up there. People forget."
       ]
     },
     "constance_widow": {
@@ -969,6 +1229,16 @@
       "defending": [
         "How dare they! I know that person's heart — this is wicked!",
         "I'll tell the Prior myself if that's what it takes to stop this."
+      ],
+      "observe": [
+        "Oh! You startled me! Were you standing there long?",
+        "I don't mind being watched — but do come and say hello, it's much more polite.",
+        "Is everything all right? You look like you're looking for something."
+      ],
+      "eavesdrop": [
+        "She told me in the strictest confidence, and I have told absolutely no one — except you, and this doesn't count.",
+        "I saw them at the chapel together and they were most certainly not there for vespers.",
+        "He came to call while the alderman was away. Stayed two hours. Left when the horse was heard."
       ]
     },
     "thomas_pilgrim": {
@@ -1005,6 +1275,16 @@
       "defending": [
         "They showed me kindness. I'll show them this.",
         "I may be a stranger here, but I know wrongful accusation when I see it."
+      ],
+      "observe": [
+        "On a long road, you learn to notice who notices you.",
+        "You're watching me. I've been watched by stranger eyes than yours.",
+        "In pilgrimage, all paths are observed. You get used to it."
+      ],
+      "eavesdrop": [
+        "I passed through a town three weeks ago. Same names. Same trouble. Different town.",
+        "The man who gave me lodging last night said something that relates to what's happening here.",
+        "Travelers are told things. People think we'll carry secrets away with us."
       ]
     },
     "alys_herbwife": {
@@ -1041,6 +1321,16 @@
       "defending": [
         "Leave them alone. They've done nothing worth this.",
         "I have no allegiances — but I have eyes, and this is wrong."
+      ],
+      "observe": [
+        "I know when someone's been watching the garden.",
+        "You came close enough to be heard. I heard.",
+        "Something you want? You don't have to lurk."
+      ],
+      "eavesdrop": [
+        "They came for the herb and wouldn't say what it was for. Some herbs only have one use.",
+        "I grow things that help people sleep. And things that don't. People know to come to me for both.",
+        "She asked me three times in a fortnight. Same thing. Something's happening there."
       ]
     },
     "denny_gravedigger": {
@@ -1077,6 +1367,16 @@
       "defending": [
         "You spread that lie about them and I'll be digging your hole personally.",
         "Leave them alone. I mean it."
+      ],
+      "observe": [
+        "You want to watch a man dig? Fine. Nothing to do with me.",
+        "I know you're there.",
+        "The dead don't bother me. The living hanging around, that's another thing."
+      ],
+      "eavesdrop": [
+        "I know who's supposed to be in which grave. I know when something doesn't match.",
+        "Someone was in this yard after dark. Left tracks.",
+        "They said it was a natural death. I've dug for natural deaths. That wasn't one."
       ]
     }
   }

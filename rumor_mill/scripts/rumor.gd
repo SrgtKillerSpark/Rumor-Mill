@@ -10,7 +10,10 @@ enum ClaimType {
 	PROPHECY,
 	PRAISE,
 	DEATH,
-	HERESY
+	HERESY,
+	BLACKMAIL,
+	SECRET_ALLIANCE,
+	FORBIDDEN_ROMANCE
 }
 
 enum RumorState {
@@ -66,14 +69,17 @@ func base_believability() -> float:
 
 static func claim_type_from_string(s: String) -> ClaimType:
 	match s.to_lower():
-		"accusation": return ClaimType.ACCUSATION
-		"scandal":    return ClaimType.SCANDAL
-		"illness":    return ClaimType.ILLNESS
-		"prophecy":   return ClaimType.PROPHECY
-		"praise":     return ClaimType.PRAISE
-		"death":      return ClaimType.DEATH
-		"heresy":     return ClaimType.HERESY
-		_:            return ClaimType.ACCUSATION
+		"accusation":        return ClaimType.ACCUSATION
+		"scandal":           return ClaimType.SCANDAL
+		"illness":           return ClaimType.ILLNESS
+		"prophecy":          return ClaimType.PROPHECY
+		"praise":            return ClaimType.PRAISE
+		"death":             return ClaimType.DEATH
+		"heresy":            return ClaimType.HERESY
+		"blackmail":         return ClaimType.BLACKMAIL
+		"secret_alliance":   return ClaimType.SECRET_ALLIANCE
+		"forbidden_romance": return ClaimType.FORBIDDEN_ROMANCE
+		_:                   return ClaimType.ACCUSATION
 
 
 ## Returns true when shelf life has fully decayed.
@@ -89,14 +95,17 @@ func decay_one_tick() -> void:
 
 static func claim_type_name(ct: ClaimType) -> String:
 	match ct:
-		ClaimType.ACCUSATION: return "accusation"
-		ClaimType.SCANDAL:    return "scandal"
-		ClaimType.ILLNESS:    return "illness"
-		ClaimType.PROPHECY:   return "prophecy"
-		ClaimType.PRAISE:     return "praise"
-		ClaimType.DEATH:      return "death"
-		ClaimType.HERESY:     return "heresy"
-		_:                    return "rumor"
+		ClaimType.ACCUSATION:        return "accusation"
+		ClaimType.SCANDAL:           return "scandal"
+		ClaimType.ILLNESS:           return "illness"
+		ClaimType.PROPHECY:          return "prophecy"
+		ClaimType.PRAISE:            return "praise"
+		ClaimType.DEATH:             return "death"
+		ClaimType.HERESY:            return "heresy"
+		ClaimType.BLACKMAIL:         return "blackmail"
+		ClaimType.SECRET_ALLIANCE:   return "secret_alliance"
+		ClaimType.FORBIDDEN_ROMANCE: return "forbidden_romance"
+		_:                           return "rumor"
 
 
 static func state_name(state: RumorState) -> String:

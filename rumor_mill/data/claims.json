@@ -133,5 +133,59 @@
     "mutability": 2,
     "targetFactions": ["clergy", "merchant"],
     "unlockedByDefault": true
+  },
+  {
+    "id": "BLA-01",
+    "type": "blackmail",
+    "templateText": "[subject] is being paid to keep silent about what they know of [other_npc]",
+    "intensity": 4,
+    "mutability": 2,
+    "targetFactions": ["merchant", "noble", "clergy"],
+    "unlockedByDefault": false
+  },
+  {
+    "id": "BLA-02",
+    "type": "blackmail",
+    "templateText": "[subject] holds a dangerous secret over [other_npc] that could ruin them entirely",
+    "intensity": 5,
+    "mutability": 1,
+    "targetFactions": ["merchant", "noble", "clergy"],
+    "unlockedByDefault": false
+  },
+  {
+    "id": "ALL-01",
+    "type": "secret_alliance",
+    "templateText": "[subject] has made a private arrangement with [faction] that none are supposed to know",
+    "intensity": 3,
+    "mutability": 3,
+    "targetFactions": ["merchant", "noble", "clergy"],
+    "unlockedByDefault": false
+  },
+  {
+    "id": "ALL-02",
+    "type": "secret_alliance",
+    "templateText": "[subject] and [other_npc] have been meeting in private — and not for innocent reasons",
+    "intensity": 3,
+    "mutability": 3,
+    "targetFactions": ["noble", "merchant"],
+    "unlockedByDefault": false
+  },
+  {
+    "id": "ROM-01",
+    "type": "forbidden_romance",
+    "templateText": "[subject] has been seen in private company with someone they should not be meeting",
+    "intensity": 2,
+    "mutability": 4,
+    "targetFactions": ["noble", "clergy"],
+    "unlockedByDefault": false
+  },
+  {
+    "id": "ROM-02",
+    "type": "forbidden_romance",
+    "templateText": "[subject] and [other_npc] share more than friendship — and both are hiding it",
+    "intensity": 2,
+    "mutability": 4,
+    "targetFactions": ["noble", "clergy", "merchant"],
+    "unlockedByDefault": false
   }
 ]

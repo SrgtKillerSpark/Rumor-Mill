@@ -955,6 +955,20 @@ func _process(delta: float) -> void:
 
 # ── Bribery feedback ─────────────────────────────────────────────────────────
 
+## Show a dialogue bubble from the "observe" category when the player
+## successfully observes the location this NPC is currently at.
+## Called by recon_controller after a successful Observe action.
+func show_observed() -> void:
+	_show_dialogue_bubble("observe")
+
+
+## Show a dialogue bubble from the "eavesdrop" category when the player
+## successfully eavesdrops on this NPC.
+## Called by recon_controller after a successful Eavesdrop action.
+func show_eavesdropped() -> void:
+	_show_dialogue_bubble("eavesdrop")
+
+
 ## Spawns a floating coin-burst label above this NPC confirming a successful
 ## bribe.  Called by recon_controller immediately after force_believe().
 func show_bribed_effect() -> void:

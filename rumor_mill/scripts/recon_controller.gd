@@ -492,6 +492,10 @@ func _try_observe(location_id: String) -> void:
 
 	emit_signal("action_performed", msg, true)
 	_show_observe_sparkle()
+	# Trigger an "observe" dialogue bubble on each NPC present at the location.
+	for npc in _world_ref.npcs:
+		if (npc.current_cell - entry_cell).length() <= 4:
+			npc.show_observed()
 	print("[Recon] Observe '%s' tick=%d — %d NPC(s) recorded" % [location_id, tick, n])
 
 
@@ -569,6 +573,8 @@ func _try_eavesdrop(target: Node2D) -> void:
 
 	emit_signal("action_performed", msg, true)
 	_show_eavesdrop_success(target)
+	# Trigger an "eavesdrop" dialogue bubble on the target NPC.
+	target.show_eavesdropped()
 	print("[Recon] Eavesdrop %s <-> %s  weight=%.2f  label=%s" % [
 		name_a, name_b, weight, intel.affinity_label])
 
