@@ -296,6 +296,13 @@ func _build_legend() -> void:
 	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  265.0)
 	_legend_panel.custom_minimum_size = Vector2(195, 250)
 
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.05, 0.03, 0.92)
+	style.border_color = Color(0.55, 0.38, 0.18, 1.0)
+	style.set_border_width_all(1)
+	style.set_content_margin_all(8)
+	_legend_panel.add_theme_stylebox_override("panel", style)
+
 	_legend_label = RichTextLabel.new()
 	_legend_label.bbcode_enabled = true
 	_legend_label.fit_content    = true

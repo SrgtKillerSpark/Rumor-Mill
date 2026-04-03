@@ -17,7 +17,7 @@ extends Node
 
 const EAVESDROP_RANGE_TILES := 3      ## Max tile distance for "in conversation"
 const EAVESDROP_FAIL_CHANCE  := 0.20  ## Probability of detection when temperament > 0.7
-const NPC_HIT_RADIUS_PX      := 28.0  ## World-space hit radius around NPC centre
+const NPC_HIT_RADIUS_PX      := 40.0  ## World-space hit radius around NPC centre (scaled for 2x sprites)
 const BUILDING_HIT_TILES     := 2     ## Grid-cell radius for location hit-test
 
 ## Highlight colour applied to a hovered NPC's modulate.
@@ -78,9 +78,19 @@ func _create_hover_visuals() -> void:
 	_tooltip_canvas.add_child(_tooltip_panel)
 
 	var bg       := ColorRect.new()
-	bg.color      = Color(0.87, 0.80, 0.62, 0.92)
+	bg.color      = Color(0.10, 0.07, 0.05, 0.92)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_tooltip_panel.add_child(bg)
+
+	var border := ColorRect.new()
+	border.color = Color(0.55, 0.38, 0.18, 1.0)
+	border.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	border.offset_left   = 0.0
+	border.offset_top    = 0.0
+	border.offset_right  = 0.0
+	border.offset_bottom = 2.0
+	border.anchor_bottom = 0.0
+	_tooltip_panel.add_child(border)
 
 	_tooltip_label = Label.new()
 	_tooltip_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -89,7 +99,7 @@ func _create_hover_visuals() -> void:
 	_tooltip_label.offset_right  = -6.0
 	_tooltip_label.offset_bottom = -3.0
 	_tooltip_label.add_theme_font_size_override("font_size", 11)
-	_tooltip_label.add_theme_color_override("font_color", Color(0.28, 0.16, 0.06, 1.0))
+	_tooltip_label.add_theme_color_override("font_color", Color(0.82, 0.74, 0.55, 1.0))
 	_tooltip_panel.add_child(_tooltip_label)
 
 	# Building highlight — isometric diamond drawn in world space.
