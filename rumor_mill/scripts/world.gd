@@ -49,7 +49,7 @@ var scenario_manager:  ScenarioManager  = null
 ## Sprint 4: SIR propagation engine (β/γ formulas, mutations, lineage registry).
 var propagation_engine: PropagationEngine = null
 
-## Active scenario id — change before _ready() to load a different scenario.
+## Active scenario id — set by GameState singleton from the main menu selection.
 ## Valid values: "scenario_1", "scenario_2", "scenario_3"
 var active_scenario_id: String = "scenario_1"
 
@@ -74,6 +74,8 @@ const FACTION_SCHEDULES := {
 
 
 func _ready() -> void:
+	# Read scenario selected in the main menu (falls back to "scenario_1").
+	active_scenario_id = GameState.selected_scenario_id
 	_load_grid()
 	_paint_terrain()
 	_place_buildings()

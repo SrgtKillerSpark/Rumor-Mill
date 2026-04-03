@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://main_menu_sprint8"]
+
+[ext_resource type="Script" path="res://scripts/main_menu.gd" uid="uid://main_menu_script_sprint8" id="1_menu"]
+
+[node name="MainMenu" type="CanvasLayer"]
+script = ExtResource("1_menu")
