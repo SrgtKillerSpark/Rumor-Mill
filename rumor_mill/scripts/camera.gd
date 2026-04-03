@@ -13,6 +13,11 @@ var _target_zoom: float = 1.0
 var _drag_origin: Vector2 = Vector2.ZERO
 var _is_dragging: bool = false
 
+# ── Screen Shake ──────────────────────────────────────────────────────────────
+var _shake_intensity: float = 0.0
+var _shake_duration:  float = 0.0
+var _shake_timer:     float = 0.0
+
 
 func _ready() -> void:
 	_target_zoom = zoom.x
@@ -24,6 +29,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_handle_keyboard_pan(delta)
 	_smooth_zoom(delta)
+	_update_shake(delta)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -73,3 +79,23 @@ func _smooth_zoom(delta: float) -> void:
 	var current := zoom.x
 	var next: float = lerp(current, _target_zoom, zoom_lerp_speed * delta)
 	zoom = Vector2(next, next)
+
+
+## Trigger a screen shake. intensity is displacement in pixels; duration in seconds.
+func shake(intensity: float, duration: float) -> void:
+	_shake_intensity = intensity
+	_shake_duration  = max(duration, 0.001)
+	_shake_timer     = duration
+
+
+func _update_shake(delta: float) -> void:
+	if _shake_timer <= 0.0:
+		if offset != Vector2.ZERO:
+			offset = Vector2.ZERO
+		return
+	_shake_timer -= delta
+	var t := clamp(_shake_timer / _shake_duration, 0.0, 1.0)
+	var mag := _shake_intensity * t
+	offset = Vector2(randf_range(-mag, mag), randf_range(-mag, mag))
+	if _shake_timer <= 0.0:
+		offset = Vector2.ZERO

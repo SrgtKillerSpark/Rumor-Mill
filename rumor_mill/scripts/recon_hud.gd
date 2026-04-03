@@ -13,11 +13,15 @@ extends CanvasLayer
 @onready var toast_panel:   Panel = $ToastPanel
 @onready var toast_label:   Label = $ToastPanel/ToastLabel
 
-const TOAST_DURATION := 3.5  ## seconds the toast is shown
+const TOAST_DURATION   := 3.5   ## seconds the toast is shown
+const TOAST_SLIDE_IN   := 0.22  ## seconds for the slide-in tween
+const TOAST_SLIDE_OUT  := 0.18  ## seconds for the slide-out tween
+const TOAST_OFFSET_TOP := -56.0 ## resting offset_top (from .tscn)
 
 var _intel_store_ref:  PlayerIntelStore = null
 var _rumor_panel_ref:  CanvasLayer      = null
 var _toast_timer:      float            = 0.0
+var _toast_tween:      Tween            = null
 
 
 func _ready() -> void:
@@ -51,7 +55,7 @@ func _process(delta: float) -> void:
 	if _toast_timer > 0.0:
 		_toast_timer -= delta
 		if _toast_timer <= 0.0:
-			toast_panel.visible = false
+			_slide_out_toast()
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -61,8 +65,33 @@ func show_toast(message: String, success: bool) -> void:
 	toast_label.text = message
 	var color := Color(0.3, 1.0, 0.4, 1.0) if success else Color(1.0, 0.65, 0.2, 1.0)
 	toast_label.add_theme_color_override("font_color", color)
-	toast_panel.visible = true
 	_toast_timer = TOAST_DURATION
+	_slide_in_toast()
+
+
+func _slide_in_toast() -> void:
+	if _toast_tween != null and _toast_tween.is_valid():
+		_toast_tween.kill()
+	toast_panel.visible = true
+	# Start below the resting position and tween up.
+	toast_panel.offset_top    = 10.0
+	toast_panel.offset_bottom = TOAST_OFFSET_TOP + 10.0 + 52.0  # maintain panel height
+	_toast_tween = create_tween()
+	_toast_tween.set_ease(Tween.EASE_OUT)
+	_toast_tween.set_trans(Tween.TRANS_CUBIC)
+	_toast_tween.tween_property(toast_panel, "offset_top",    TOAST_OFFSET_TOP, TOAST_SLIDE_IN)
+	_toast_tween.parallel().tween_property(toast_panel, "offset_bottom", -4.0, TOAST_SLIDE_IN)
+
+
+func _slide_out_toast() -> void:
+	if _toast_tween != null and _toast_tween.is_valid():
+		_toast_tween.kill()
+	_toast_tween = create_tween()
+	_toast_tween.set_ease(Tween.EASE_IN)
+	_toast_tween.set_trans(Tween.TRANS_CUBIC)
+	_toast_tween.tween_property(toast_panel, "offset_top",    10.0,  TOAST_SLIDE_OUT)
+	_toast_tween.parallel().tween_property(toast_panel, "offset_bottom", TOAST_OFFSET_TOP + 10.0 + 52.0, TOAST_SLIDE_OUT)
+	_toast_tween.tween_callback(func(): toast_panel.visible = false)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

@@ -7,6 +7,7 @@ extends Node2D
 
 @onready var world:                Node2D      = $World
 @onready var day_night:            Node        = $World/DayNightCycle
+@onready var camera:               Camera2D    = $Camera2D
 @onready var debug_overlay:        CanvasLayer = $DebugOverlay
 @onready var debug_console:        CanvasLayer = $DebugConsole
 @onready var recon_hud:            CanvasLayer = $ReconHUD
@@ -98,6 +99,9 @@ func _init_recon_system() -> void:
 
 	# Pipe action results to the tutorial system (observe / eavesdrop tooltips).
 	recon_ctrl.action_performed.connect(_on_recon_action_for_tutorial)
+
+	# Pipe detection events to camera shake.
+	recon_ctrl.action_performed.connect(_on_recon_action_shake)
 
 	# Pipe action results to AudioManager (recon SFX).
 	recon_ctrl.action_performed.connect(AudioManager.on_recon_action)
@@ -231,5 +235,22 @@ func _init_audio() -> void:
 func _on_scenario_resolved_audio(scenario_id: int, state: ScenarioManager.ScenarioState) -> void:
 	if state == ScenarioManager.ScenarioState.WON:
 		AudioManager.on_win()
+		_camera_shake(5.0, 0.3)
 	elif state == ScenarioManager.ScenarioState.FAILED:
 		AudioManager.on_fail()
+		_camera_shake(15.0, 0.6)
+
+
+# ── Sprint 8: Game-feel polish ─────────────────────────────────────────────────
+
+## Trigger a camera shake if the Camera2D node is available.
+func _camera_shake(intensity: float, duration: float) -> void:
+	if camera != null and camera.has_method("shake"):
+		camera.shake(intensity, duration)
+
+
+## Called from ReconController (piped in _init_recon_system) for detection shakes.
+func _on_recon_action_shake(message: String, success: bool) -> void:
+	# "seemed to glance your way" = detection event → medium shake
+	if not success and "glance" in message:
+		_camera_shake(8.0, 0.35)

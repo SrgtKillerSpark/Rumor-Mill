@@ -48,6 +48,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	# NPC hit-test takes priority over location hit-test.
 	var clicked_npc := _hit_test_npc(world_pos)
 	if clicked_npc != null:
+		if clicked_npc.has_method("flash_click"):
+			clicked_npc.flash_click()
 		_try_eavesdrop(clicked_npc)
 		get_viewport().set_input_as_handled()
 		return

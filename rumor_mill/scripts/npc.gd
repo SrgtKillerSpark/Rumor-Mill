@@ -49,6 +49,7 @@ var _pathfinder: AstarPathfinder = null
 var _walkable: Array[Vector2i] = []
 
 # ── Visuals ──────────────────────────────────────────────────────────────────
+var _base_color: Color = Color.WHITE
 const FACTION_COLORS := {
 	"merchant": Color(1.0, 0.8, 0.2),
 	"noble":    Color(0.4, 0.6, 1.0),
@@ -90,7 +91,8 @@ func init_from_data(
 	day_pattern_overrides = data.get("day_pattern_overrides", [])
 
 	var faction: String = data.get("faction", "merchant")
-	sprite.color = FACTION_COLORS.get(faction, Color.WHITE)
+	_base_color  = FACTION_COLORS.get(faction, Color.WHITE)
+	sprite.color = _base_color
 	name_label.text = data.get("name", "NPC")
 
 	position = _cell_to_world(start_cell)
@@ -412,6 +414,15 @@ func _update_label() -> void:
 		name_label.text = short_name
 	else:
 		name_label.text = "%s\n[%s]" % [short_name, state_str]
+
+
+# ── Click feedback ───────────────────────────────────────────────────────────
+
+## Brief highlight flash when the player clicks to observe/eavesdrop this NPC.
+func flash_click() -> void:
+	var tween := create_tween()
+	tween.tween_property(sprite, "color", Color.WHITE, 0.08)
+	tween.tween_property(sprite, "color", _base_color,  0.20)
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────
