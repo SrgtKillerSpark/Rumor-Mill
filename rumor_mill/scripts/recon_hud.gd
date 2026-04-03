@@ -77,7 +77,7 @@ func _refresh_counter() -> void:
 	var max_w:     int = PlayerIntelStore.MAX_DAILY_WHISPERS
 	var favors:    int = _intel_store_ref.bribe_charges
 	var base := "Actions: %d/%d  |  Whispers: %d/%d" % [remaining, max_val, whispers, max_w]
-	if _intel_store_ref.heat_enabled:
+	if _intel_store_ref.heat_enabled or favors > 0:
 		counter_label.text = base + "  |  Favors: %d" % favors
 	else:
 		counter_label.text = base

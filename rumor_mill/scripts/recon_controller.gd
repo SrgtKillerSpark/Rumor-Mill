@@ -223,10 +223,24 @@ func _npc_tooltip_text(npc: Node2D) -> String:
 	if _intel_store != null and _intel_store.heat_enabled:
 		var h := _intel_store.get_heat(npc_id)
 		if h >= 75.0:
-			result += "\nSuspicious"
+			result += "\nSuspicious — hard to convince (−30%)"
 		elif h >= 50.0:
-			result += "\nWary"
+			result += "\nWary — harder to convince (−15%)"
+	# DEFENDING state: explain who this NPC is shielding.
+	if npc._is_defending:
+		var def_name := _resolve_npc_name(npc._defender_target_npc_id)
+		result += "\nDEFENDING %s — spreading doubt about rumors near them" % def_name
 	return result
+
+
+## Flash the NPC sprite gold briefly to confirm a successful bribe.
+## Single slow pulse: gold → normal over ~0.7 s.
+func _flash_npc_bribed(npc: Node2D) -> void:
+	if npc == null or not is_instance_valid(npc):
+		return
+	var tween := npc.create_tween()
+	tween.tween_property(npc, "modulate", Color(2.0, 1.8, 0.2, 1.0), 0.12)
+	tween.tween_property(npc, "modulate", NPC_NORMAL_MODULATE, 0.55)
 
 
 ## Flash the NPC sprite red briefly to signal they noticed the player.
@@ -325,9 +339,16 @@ func _hit_test_location(world_pos: Vector2) -> String:
 # ── Observe action ────────────────────────────────────────────────────────────
 
 func _try_observe(location_id: String) -> void:
+	# Forged Document: double-spend at market/guild when ≥2 actions remain.
+	var forged_doc := _intel_store.recon_actions_remaining >= 2 \
+		and (location_id == "market" or location_id == "guild")
+
 	if not _intel_store.try_spend_action():
 		emit_signal("action_performed", "No Recon Actions remaining today.", false)
 		return
+
+	if forged_doc:
+		_intel_store.try_spend_action()  # consume the second action
 
 	var tick  := _current_tick()
 	var intel := PlayerIntelStore.LocationIntel.new(location_id, tick)
@@ -352,6 +373,24 @@ func _try_observe(location_id: String) -> void:
 		loc_display, n, "s" if n != 1 else "",
 		_intel_store.recon_actions_remaining
 	]
+
+	# Evidence acquisition.
+	if forged_doc:
+		var ev := PlayerIntelStore.EvidenceItem.new(
+			"Forged Document", 0.20, 0.0,
+			["ACCUSATION", "SCANDAL", "HERESY"], tick)
+		_intel_store.add_evidence(ev)
+		msg += "\n[+] Forged Document acquired."
+		print("[Recon] Evidence: Forged Document acquired at '%s'" % location_id)
+	elif tick % 24 > 18 \
+			and (location_id == "noble_estate" or location_id == "temple"):
+		var ev := PlayerIntelStore.EvidenceItem.new(
+			"Incriminating Artifact", 0.25, 0.0,
+			["SCANDAL", "HERESY"], tick)
+		_intel_store.add_evidence(ev)
+		msg += "\n[+] Incriminating Artifact acquired."
+		print("[Recon] Evidence: Incriminating Artifact acquired at '%s' tick=%d" % [location_id, tick])
+
 	emit_signal("action_performed", msg, true)
 	print("[Recon] Observe '%s' tick=%d — %d NPC(s) recorded" % [location_id, tick, n])
 
@@ -397,6 +436,10 @@ func _try_eavesdrop(target: Node2D) -> void:
 	if _world_ref.social_graph != null:
 		weight = _world_ref.social_graph.get_weight(id_a, id_b)
 
+	# Witness Account: check prior observation BEFORE overwriting with new intel.
+	var prior := _intel_store.get_relationship_intel(id_a, id_b)
+	var witness_account := prior != null and (tick - prior.observed_at) >= 24
+
 	var intel := PlayerIntelStore.RelationshipIntel.new(
 		id_a, id_b, name_a, name_b, weight, tick
 	)
@@ -415,6 +458,14 @@ func _try_eavesdrop(target: Node2D) -> void:
 		belief_line,
 		_intel_store.recon_actions_remaining
 	]
+
+	if witness_account:
+		var ev := PlayerIntelStore.EvidenceItem.new(
+			"Witness Account", 0.15, -0.15, [], tick)
+		_intel_store.add_evidence(ev)
+		msg += "\n[+] Witness Account acquired."
+		print("[Recon] Evidence: Witness Account acquired (%s <-> %s)" % [name_a, name_b])
+
 	emit_signal("action_performed", msg, true)
 	print("[Recon] Eavesdrop %s <-> %s  weight=%.2f  label=%s" % [
 		name_a, name_b, weight, intel.affinity_label])
@@ -604,6 +655,8 @@ func _try_bribe(target: Node2D) -> void:
 
 	# Consume bribe charge.
 	_intel_store.try_spend_bribe()
+
+	_flash_npc_bribed(target)
 
 	var tick := _current_tick()
 	emit_signal("action_performed",

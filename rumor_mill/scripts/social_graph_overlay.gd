@@ -317,8 +317,8 @@ func _build_legend() -> void:
 	_legend_label.append_text("[b]Edges[/b]\n")
 	_legend_label.append_text("[color=#1ad98c]—[/color] Active spread path\n")
 	_legend_label.append_text("[color=#ff8000]—[/color] Recent transmission\n")
-	_legend_label.append_text("[color=#e68c1a]—[/color] Trust decreased (ACT)\n")
-	_legend_label.append_text("[color=#4d8ce6]—[/color] Trust increased (ACT)\n")
+	_legend_label.append_text("[color=#e68c1a]—[/color] Trust fell (NPC acted on rumor)\n")
+	_legend_label.append_text("[color=#4d8ce6]—[/color] Trust rose (NPC spread praise)\n")
 
 	_legend_panel.add_child(_legend_label)
 	add_child(_legend_panel)
