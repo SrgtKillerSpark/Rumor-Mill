@@ -40,12 +40,24 @@ signal player_exposed
 ## Emitted when the player successfully bribes an NPC (for journal logging).
 signal bribe_executed(npc_name: String, tick: int)
 
+## Emitted once the first time the player hovers over any building.
+## Used by the tutorial hint system to trigger HINT-03 (hint_observe).
+signal building_first_hovered
+
+## Emitted when the player hovers an NPC that has a valid eavesdrop partner nearby.
+## Used by the tutorial hint system to trigger HINT-04 (hint_eavesdrop).
+signal valid_eavesdrop_hovered
+
 var _world_ref:       Node2D           = null
 var _intel_store:     PlayerIntelStore = null
 
 # ── Hover state ───────────────────────────────────────────────────────────────
 var _hovered_npc:      Node2D = null
 var _hovered_location: String = ""
+
+# ── Tutorial hint emission guards ─────────────────────────────────────────────
+var _building_hover_fired:      bool = false
+var _eavesdrop_hover_fired:     bool = false
 
 # ── Hover visual nodes (created in setup) ────────────────────────────────────
 var _tooltip_canvas: CanvasLayer = null
@@ -164,6 +176,10 @@ func _set_hovered_npc(npc: Node2D) -> void:
 	_hovered_npc = npc
 	if _hovered_npc != null:
 		_hovered_npc.call("set_hover", true)
+		# Emit once when player hovers an NPC that has a valid eavesdrop partner.
+		if not _eavesdrop_hover_fired and _find_conversation_partner(npc) != null:
+			_eavesdrop_hover_fired = true
+			valid_eavesdrop_hovered.emit()
 
 
 func _set_hovered_location(loc: String) -> void:
@@ -181,6 +197,10 @@ func _set_hovered_location(loc: String) -> void:
 		else:
 			_bldg_highlight.position = _cell_to_world(entry)
 			_bldg_highlight.visible  = true
+		# Emit once when the player first hovers any building.
+		if not _building_hover_fired:
+			_building_hover_fired = true
+			building_first_hovered.emit()
 
 
 func _show_tooltip(screen_pos: Vector2, text: String) -> void:

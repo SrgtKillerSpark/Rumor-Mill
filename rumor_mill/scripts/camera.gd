@@ -3,6 +3,10 @@ extends Camera2D
 ## camera.gd — free pan (WASD / arrow keys) and zoom (+/- or mouse wheel).
 ## Zoom range: 0.5× to 2.0× as specified in the vertical slice scope.
 
+## Emitted once the first time the player pans the camera (keyboard or drag).
+## Used by the tutorial hint system to unlock HINT-02 (hint_hover_npc).
+signal camera_moved
+
 @export var pan_speed: float = 400.0          # pixels/sec at zoom=1
 @export var zoom_speed: float = 0.15          # zoom delta per scroll event
 @export var zoom_min: float = 0.5
@@ -12,6 +16,8 @@ extends Camera2D
 var _target_zoom: float = 1.5
 var _drag_origin: Vector2 = Vector2.ZERO
 var _is_dragging: bool = false
+var _shake_tween: Tween = null
+var _camera_moved_emitted: bool = false
 
 
 func _ready() -> void:
@@ -51,6 +57,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var delta_pos: Vector2 = (get_viewport().get_mouse_position() - _drag_origin) / zoom.x
 		position -= delta_pos
 		_drag_origin = get_viewport().get_mouse_position()
+		_emit_camera_moved()
 		get_viewport().set_input_as_handled()
 
 
@@ -67,6 +74,7 @@ func _handle_keyboard_pan(delta: float) -> void:
 
 	if dir != Vector2.ZERO:
 		position += dir.normalized() * pan_speed * delta / zoom.x
+		_emit_camera_moved()
 
 	if Input.is_action_pressed("zoom_in"):
 		_target_zoom = clamp(_target_zoom + zoom_speed * delta * 5.0, zoom_min, zoom_max)
@@ -74,7 +82,33 @@ func _handle_keyboard_pan(delta: float) -> void:
 		_target_zoom = clamp(_target_zoom - zoom_speed * delta * 5.0, zoom_min, zoom_max)
 
 
+func _emit_camera_moved() -> void:
+	if not _camera_moved_emitted:
+		_camera_moved_emitted = true
+		camera_moved.emit()
+
+
 func _smooth_zoom(delta: float) -> void:
 	var current := zoom.x
 	var next: float = lerp(current, _target_zoom, zoom_lerp_speed * delta)
 	zoom = Vector2(next, next)
+
+
+## Trigger a screen shake.  Safe to call mid-shake — restarts with new params.
+## intensity: max pixel offset per step.  duration: total shake time in seconds.
+func shake_screen(intensity: float = 8.0, duration: float = 0.4) -> void:
+	if _shake_tween != null:
+		_shake_tween.kill()
+	_shake_tween = create_tween()
+	var step := 0.05
+	var steps := maxi(2, int(duration / step))
+	for i in steps:
+		# Decay intensity over the shake so it trails off naturally.
+		var t := float(i) / float(steps)
+		var cur_intensity := intensity * (1.0 - t * 0.6)
+		var rand_offset := Vector2(
+			randf_range(-cur_intensity, cur_intensity),
+			randf_range(-cur_intensity, cur_intensity)
+		)
+		_shake_tween.tween_property(self, "offset", rand_offset, step)
+	_shake_tween.tween_property(self, "offset", Vector2.ZERO, step)

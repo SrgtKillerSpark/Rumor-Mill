@@ -131,6 +131,98 @@ const TOOLTIP_DATA: Dictionary = {
 	},
 }
 
+## ── Scenario 1 non-blocking hint banner data ──────────────────────────────────
+##
+## 10 contextual hints for the non-blocking bottom-left banner system.
+## auto_dismiss_secs: how long the banner stays before auto-closing (7 or 9 s).
+## body may contain "[evidence_name]" which TutorialBanner substitutes at queue time.
+
+const HINT_DATA: Dictionary = {
+	"hint_camera": {
+		"title": "Navigate the Town",
+		"body":  (
+			"Use [b]WASD[/b] or arrow keys to pan.  "
+			+ "[b]Scroll wheel[/b] to zoom.  [b]Middle-mouse drag[/b] for free pan."
+		),
+		"auto_dismiss_secs": 7,
+	},
+	"hint_hover_npc": {
+		"title": "Inspect NPCs",
+		"body":  (
+			"[b]Hover[/b] over any townsperson to see their name and reputation.  "
+			+ "Their label colour shows how a rumour has affected them."
+		),
+		"auto_dismiss_secs": 7,
+	},
+	"hint_observe": {
+		"title": "Observe a Location",
+		"body":  (
+			"[b]Right-click a building[/b] to spend a Recon Action and record who is present.  "
+			+ "Choose well-attended locations to find the best rumour targets."
+		),
+		"auto_dismiss_secs": 7,
+	},
+	"hint_eavesdrop": {
+		"title": "Eavesdrop",
+		"body":  (
+			"Two NPCs are nearby — [b]right-click[/b] to eavesdrop.  "
+			+ "Learn how close they are.  Strong allies spread rumours fast.  "
+			+ "Nervous types may notice you."
+		),
+		"auto_dismiss_secs": 7,
+	},
+	"hint_journal": {
+		"title": "Review Intel",
+		"body":  (
+			"Press [b]J[/b] to open your Journal.  "
+			+ "The Intelligence tab logs every observation and relationship you have gathered."
+		),
+		"auto_dismiss_secs": 7,
+	},
+	"hint_rumour_panel": {
+		"title": "Craft a Rumour",
+		"body":  (
+			"Press [b]R[/b] to open the Rumour Panel.  "
+			+ "Pick a subject, choose a claim, then whisper it to a well-connected townsperson."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	"hint_seed_target": {
+		"title": "Choose Your Seed Target",
+		"body":  (
+			"Pick someone [b]well-connected[/b] — high sociability spreads your rumour further.  "
+			+ "NPCs you have eavesdropped will show their estimated reach."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	"hint_propagation": {
+		"title": "Watch the Rumour Spread",
+		"body":  (
+			"The seed target is now [b]Evaluating[/b] your rumour.  "
+			+ "Once they [b]Believe[/b], they will tell others.  "
+			+ "Check [b]Journal → Rumours[/b] to follow every believer."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	"hint_objectives": {
+		"title": "Track Your Goal",
+		"body":  (
+			"Press [b]J[/b] and open the [b]Objectives[/b] tab to see Lord Fenn's current "
+			+ "reputation and how many petitioners you still need.  You have 30 days."
+		),
+		"auto_dismiss_secs": 7,
+	},
+	"hint_evidence": {
+		"title": "Evidence Boosts Belief",
+		"body":  (
+			"You found [b][evidence_name][/b].  "
+			+ "Attach it in the Rumour Panel (Step 2) to boost believability.  "
+			+ "Evidence is consumed on use — choose the right moment."
+		),
+		"auto_dismiss_secs": 9,
+	},
+}
+
 ## Tracks which tooltip IDs have been seen this session.
 var _seen: Dictionary = {}
 
@@ -148,3 +240,8 @@ func mark_seen(tooltip_id: String) -> void:
 ## Return the data dict for a tooltip, or an empty dict if not found.
 func get_tooltip(tooltip_id: String) -> Dictionary:
 	return TOOLTIP_DATA.get(tooltip_id, {})
+
+
+## Return the data dict for a hint banner entry, or empty if not found.
+func get_hint(hint_id: String) -> Dictionary:
+	return HINT_DATA.get(hint_id, {})

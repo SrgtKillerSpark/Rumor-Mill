@@ -30,7 +30,14 @@ const PIP_SIZE := Vector2(14, 14)
 
 var _intel_store_ref:  PlayerIntelStore = null
 var _rumor_panel_ref:  CanvasLayer      = null
-var _toast_timer:      float            = 0.0
+
+# Toast animation tweens.
+var _toast_tween:       Tween = null
+var _toast_slide_tween: Tween = null
+
+# Toast panel resting offsets — saved in _ready() for slide animation reference.
+var _toast_normal_offset_top:    float = 0.0
+var _toast_normal_offset_bottom: float = 0.0
 
 # Track last pip counts to avoid rebuilding every frame.
 var _last_action_max:   int = -1
@@ -42,6 +49,8 @@ var _last_whisper_rem:  int = -1
 func _ready() -> void:
 	layer = 5
 	toast_panel.visible = false
+	_toast_normal_offset_top    = toast_panel.offset_top
+	_toast_normal_offset_bottom = toast_panel.offset_bottom
 	_build_pips(action_pips_row, 3, 3, PIP_FULL_ACTION, PIP_EMPTY_ACTION)
 	_build_pips(whisper_pips_row, 1, 1, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 
@@ -64,13 +73,8 @@ func _input(event: InputEvent) -> void:
 
 # ── Per-frame ─────────────────────────────────────────────────────────────────
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	_refresh_pips()
-
-	if _toast_timer > 0.0:
-		_toast_timer -= delta
-		if _toast_timer <= 0.0:
-			toast_panel.visible = false
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -79,8 +83,26 @@ func show_toast(message: String, success: bool) -> void:
 	toast_label.text = message
 	var color := Color(0.45, 1.00, 0.55, 1.0) if success else Color(1.00, 0.60, 0.20, 1.0)
 	toast_label.add_theme_color_override("font_color", color)
+
+	# Slide in from below, then fade out after TOAST_DURATION seconds.
+	if _toast_tween != null:
+		_toast_tween.kill()
+	if _toast_slide_tween != null:
+		_toast_slide_tween.kill()
+
+	toast_panel.modulate.a = 1.0
+	toast_panel.offset_top    = _toast_normal_offset_top    + 20.0
+	toast_panel.offset_bottom = _toast_normal_offset_bottom + 20.0
 	toast_panel.visible = true
-	_toast_timer = TOAST_DURATION
+
+	_toast_slide_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_toast_slide_tween.tween_property(toast_panel, "offset_top",    _toast_normal_offset_top,    0.18)
+	_toast_slide_tween.parallel().tween_property(toast_panel, "offset_bottom", _toast_normal_offset_bottom, 0.18)
+
+	_toast_tween = create_tween()
+	_toast_tween.tween_interval(TOAST_DURATION)
+	_toast_tween.tween_property(toast_panel, "modulate:a", 0.0, 0.35)
+	_toast_tween.tween_callback(func() -> void: toast_panel.visible = false)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

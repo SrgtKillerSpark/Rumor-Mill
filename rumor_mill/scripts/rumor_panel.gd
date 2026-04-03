@@ -19,6 +19,9 @@ extends CanvasLayer
 
 signal rumor_seeded(rumor_id: String, subject_name: String, claim_id: String, seed_target_name: String)
 signal evidence_first_shown
+## Emitted the first time the player reaches the Seed Target panel (panel 3).
+## Used by the tutorial hint system to trigger HINT-07 (hint_seed_target).
+signal panel_seed_shown
 
 # Panel index constants.
 const PANEL_SUBJECT   := 0
@@ -57,6 +60,7 @@ var _selected_seed_npc:    String = ""  # npc_id
 var _confirm_pending:      bool   = false  # true after first "Confirm & Seed" press
 var _selected_evidence_item               = null  # PlayerIntelStore.EvidenceItem or null
 var _evidence_tutorial_fired: bool        = false
+var _panel_seed_shown_fired:  bool        = false  # guard for panel_seed_shown signal
 
 # Panel titles / hints.
 const TITLES := [
@@ -170,6 +174,9 @@ func _open_panel(idx: int) -> void:
 	_btn_next.visible = true
 	if idx == PANEL_SEED:
 		_btn_next.text = "Confirm & Seed"
+		if not _panel_seed_shown_fired:
+			_panel_seed_shown_fired = true
+			panel_seed_shown.emit()
 	else:
 		_btn_next.text = "Next →"
 
