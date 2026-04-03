@@ -89,20 +89,38 @@ All assets must use only the colours below.
 
 ## NPC Sprite Specifications
 
-File: `assets/textures/npc_sprites.png` (224×144)  
+File: `assets/textures/npc_sprites.png` (224×288)  
 Frame size: **32×48px**  
-Sheet layout: 7 columns × 3 faction rows
+Sheet layout: 7 columns × 6 rows (3 faction rows + 3 archetype rows added in SPA-99)
 
-| Row | Faction  | Body colour     | Trim colour    |
-|-----|----------|-----------------|----------------|
-| 0   | Merchant | `MERCH_BODY`    | `MERCH_TRIM`   |
-| 1   | Noble    | `NOBLE_BODY`    | `NOBLE_TRIM`   |
-| 2   | Clergy   | `CLERGY_BODY`   | `CLERGY_TRIM`  |
+| Row | Type      | Faction / Archetype | Body colour     | Trim colour    |
+|-----|-----------|---------------------|-----------------|----------------|
+| 0   | Faction   | Merchant            | `MERCH_BODY`    | `MERCH_TRIM`   |
+| 1   | Faction   | Noble               | `NOBLE_BODY`    | `NOBLE_TRIM`   |
+| 2   | Faction   | Clergy              | `CLERGY_BODY`   | `CLERGY_TRIM`  |
+| 3   | Archetype | Guard               | `STONE_M`       | `STONE_D`      |
+| 4   | Archetype | Commoner            | `DIRT_M`        | `DIRT_D`       |
+| 5   | Archetype | Tavern Staff        | `WOOD_M`        | `PLASTER`      |
 
 | Cols | Animation | Speed  | Loop |
 |------|-----------|--------|------|
 | 0–2  | `idle`    | 4 fps  | yes  |
 | 3–6  | `walk`    | 8 fps  | yes  |
+
+---
+
+## VFX Colors
+
+These colors are **not** part of the locked palette. They are HDR-range modulate values (components > 1.0) applied at runtime to produce a bloom/glow effect. They exist only in code and must never be used for sprites or UI fills.
+
+Defined in `npc.gd` lines 885–887.
+
+| Token        | Godot `Color`              | RGB (normalised)          | Heat threshold | Purpose                        |
+|--------------|----------------------------|---------------------------|----------------|--------------------------------|
+| `HEAT_WARN`  | `Color(1.30, 0.65, 0.35)`  | 331, 166, 89 (HDR)        | heat 50–74     | Amber shimmer — moderate heat  |
+| `HEAT_ALARM` | `Color(1.45, 0.40, 0.25)`  | 370, 102, 64 (HDR)        | heat ≥ 75      | Red-orange alarm — severe heat |
+
+**Why HDR?** Values above 1.0 multiply the sprite's existing luminance beyond white, triggering Godot's bloom post-process and making the NPC visually distinct from palette colors at high heat. Do not clamp these values to [0, 1].
 
 ---
 
