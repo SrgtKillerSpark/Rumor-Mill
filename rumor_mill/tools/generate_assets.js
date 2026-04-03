@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * generate_assets.js — Art Pass 2 pixel-art generator for Rumor Mill (SPA-79)
+ * generate_assets.js — Art Pass 2 pixel-art generator for Rumor Mill (SPA-79/90)
  *
  * Produces all textures needed:
  *   assets/textures/tiles_ground.png      (192×32 — 3 ground variants)
@@ -13,6 +13,12 @@
  *   assets/textures/ui_parchment.png      (48×48 — 9-slice parchment border tile)
  *   assets/textures/ui_faction_badges.png (72×24 — 3 × 24px faction badges)
  *   assets/textures/ui_claim_icons.png    (80×16 — 5 × 16px claim-type icons)
+ *   assets/textures/ui_npc_portraits.png  (120×96 — 5 cols × 3 rows of 24×32 portraits)
+ *                                           col 0=merchant, 1=noble, 2=clergy, 3=guard, 4=commoner
+ *                                           row 0=male base, 1=female base, 2=elder/leader
+ *   assets/textures/ui_state_icons.png    (72×12 — 6 × 12px rumor-state icons)
+ *                                           col 0=EVALUATING, 1=BELIEVE, 2=SPREAD,
+ *                                               3=ACT, 4=CONTRADICTED, 5=EXPIRED
  *
  * Run from project root:  node tools/generate_assets.js
  */
@@ -956,6 +962,295 @@ function makeClaimIcons() {
   return cv.toPNG();
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// NPC PORTRAIT ATLAS  (ui_npc_portraits.png — 120×96, five 24×32 cols × 3 rows)
+//   Row 0 (y=  0): male archetypes    — merchant, noble, clergy, guard, commoner
+//   Row 1 (y= 32): female archetypes  — same faction/role order
+//   Row 2 (y= 64): elder/leader variants — cloak trim, rank accessory
+//
+// Portrait spec (24×32 px per cell):
+//   y  0‒ 3  hat / headwear
+//   y  4‒11  head (8×8, x 8‒15)
+//   y 12‒14  neck
+//   y 15‒29  upper torso / collar  (16 px wide, x 4‒19)
+//   y 30‒31  bottom border
+//
+// Hat styles:  'wide'(merchant) | 'coronet'(noble) | 'hood'(clergy)
+//              | 'helm'(guard) | 'cap'(commoner)
+// Elder row adds: cloak-trim stripe + rank brooch
+// Female row adds: flowing side-hair below head edges
+// ═══════════════════════════════════════════════════════════════════════════════
+function makeNPCPortraits() {
+  const cv = createCanvas(120, 96);
+
+  const drawPortrait = (ox, oy, opts) => {
+    const { body, trim, hatStyle, hat, hatTrim, female = false, elder = false } = opts;
+
+    // ── parchment background + ink border ────────────────────────────────────
+    cv.fillRect(ox, oy, 24, 32, ...c.PARCH_L);
+    cv.line(ox,    oy,    ox+23, oy,    ...c.INK);
+    cv.line(ox,    oy,    ox,    oy+31, ...c.INK);
+    cv.line(ox+23, oy,    ox+23, oy+31, ...c.INK);
+    cv.line(ox,    oy+31, ox+23, oy+31, ...c.INK);
+
+    // ── head (8×8 at x=ox+8, y=oy+4) ────────────────────────────────────────
+    const hx = ox+8, hy = oy+4;
+    cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    // eyes
+    cv.sp(hx+2, hy+3, ...c.HAIR);
+    cv.sp(hx+5, hy+3, ...c.HAIR);
+    // mouth — slight curve for female, flat line for male
+    if (female) {
+      cv.sp(hx+2, hy+6, ...c.HAIR, 100);
+      cv.sp(hx+3, hy+7, ...c.HAIR);
+      cv.sp(hx+4, hy+7, ...c.HAIR);
+      cv.sp(hx+5, hy+6, ...c.HAIR, 100);
+    } else {
+      cv.sp(hx+2, hy+6, ...c.HAIR, 80);
+      cv.sp(hx+5, hy+6, ...c.HAIR, 80);
+    }
+    // female: side-hair drapes 3px below head on each edge
+    if (female) {
+      cv.fillRect(hx-1, hy+2, 2, 9, ...c.HAIR);
+      cv.fillRect(hx+7, hy+2, 2, 9, ...c.HAIR);
+    }
+    // head outline
+    cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
+    cv.line(hx,   hy,   hx,   hy+7, ...c.OUTLINE);
+    cv.line(hx+7, hy,   hx+7, hy+7, ...c.OUTLINE);
+    cv.line(hx,   hy+7, hx+7, hy+7, ...c.OUTLINE);
+
+    // ── hat / headwear ────────────────────────────────────────────────────────
+    if (hatStyle === 'wide') {
+      // merchant: wide-brim felt hat
+      cv.fillRect(hx-2, hy-1, 12, 2, ...hat);        // wide brim
+      cv.fillRect(hx+1, hy-5, 6,  5, ...hat);        // crown
+      cv.fillRect(hx+2, hy-6, 4,  2, ...hatTrim);    // trim band
+      cv.line(hx-2, hy-1, hx+9,  hy-1, ...c.OUTLINE);
+      cv.line(hx+1, hy-5, hx+6,  hy-5, ...c.OUTLINE);
+    } else if (hatStyle === 'coronet') {
+      // noble: open coronet with 3 points and gem accents
+      cv.fillRect(hx, hy-1, 8, 2, ...hat);           // base band
+      cv.sp(hx+1, hy-3, ...hat); cv.sp(hx+2, hy-4, ...hat); cv.sp(hx+3, hy-3, ...hat);
+      cv.sp(hx+4, hy-3, ...hat); cv.sp(hx+5, hy-4, ...hat); cv.sp(hx+6, hy-3, ...hat);
+      cv.sp(hx+7, hy-3, ...hat);
+      cv.sp(hx+2, hy-4, ...hatTrim);                 // gem left
+      cv.sp(hx+5, hy-4, ...hatTrim);                 // gem right
+      cv.line(hx, hy-1, hx+7, hy-1, ...c.OUTLINE);
+    } else if (hatStyle === 'hood') {
+      // clergy: plain draped hood, darker than robe
+      cv.fillRect(hx-1, hy-3, 10, 4, ...hat);        // hood top
+      cv.fillRect(hx-1, hy,    2, 6, ...hat);        // left drape
+      cv.fillRect(hx+7, hy,    2, 6, ...hat);        // right drape
+      cv.line(hx-1, hy-3, hx+8, hy-3, ...c.OUTLINE);
+      cv.line(hx-1, hy-3, hx-1, hy+5, ...c.OUTLINE);
+      cv.line(hx+8, hy-3, hx+8, hy+5, ...c.OUTLINE);
+    } else if (hatStyle === 'helm') {
+      // guard: nasal helmet
+      cv.fillRect(hx-1, hy-3, 10, 5, ...c.STONE_M);
+      cv.fillRect(hx-2, hy,   12, 2, ...c.STONE_D);  // brim
+      cv.line(hx+4, hy-3, hx+4, hy+4, ...c.STONE_D); // nasal guard
+      cv.line(hx-2, hy,    hx+9,  hy,    ...c.OUTLINE);
+      cv.line(hx-1, hy-3,  hx+8,  hy-3,  ...c.OUTLINE);
+      cv.line(hx-1, hy-3,  hx-2,  hy,    ...c.OUTLINE);
+      cv.line(hx+8, hy-3,  hx+9,  hy,    ...c.OUTLINE);
+    } else if (hatStyle === 'cap') {
+      // commoner: soft cloth cap
+      cv.fillRect(hx,   hy-1, 8, 2, ...c.THATCH_D);
+      cv.fillRect(hx+1, hy-4, 6, 4, ...c.THATCH_D);
+      cv.fillRect(hx+2, hy-5, 4, 2, ...c.DIRT_D);
+      cv.line(hx,   hy-1, hx+7, hy-1, ...c.OUTLINE);
+      cv.line(hx+1, hy-4, hx+6, hy-4, ...c.OUTLINE);
+    }
+
+    // ── neck ──────────────────────────────────────────────────────────────────
+    cv.fillRect(ox+10, hy+8, 4, 4, ...c.SKIN);
+
+    // ── upper torso / collar (16×14 at x=ox+4, y=oy+15) ─────────────────────
+    const tx = ox+4, ty = oy+15;
+    cv.fillRect(tx, ty, 16, 14, ...body);
+    // collar V-notch
+    cv.fillPoly([[tx+6, ty], [tx+10, ty], [tx+8, ty+4]], ...c.PARCH_L);
+    // trim stripe along collar edge
+    cv.line(tx+6, ty, tx+8, ty+4, ...trim);
+    cv.line(tx+8, ty+4, tx+10, ty, ...trim);
+    // shoulder shading (right side darker)
+    cv.fillRect(tx+11, ty+1, 4, 12, ...body, 140);
+    // elder: cloak-trim stripe on shoulders + rank brooch
+    if (elder) {
+      cv.fillRect(tx,    ty,    4, 14, ...c.PARCH_L, 160); // left cloak trim
+      cv.fillRect(tx+12, ty,    4, 14, ...c.PARCH_L, 160); // right cloak trim
+      // brooch: 3×3 diamond
+      cv.sp(ox+11, ty+6, ...trim);
+      cv.sp(ox+10, ty+7, ...trim); cv.sp(ox+11, ty+7, ...c.PARCH_L); cv.sp(ox+12, ty+7, ...trim);
+      cv.sp(ox+11, ty+8, ...trim);
+    }
+    // torso outline
+    cv.line(tx,    ty,    tx+15, ty,    ...c.OUTLINE);
+    cv.line(tx,    ty,    tx,    ty+13, ...c.OUTLINE);
+    cv.line(tx+15, ty,    tx+15, ty+13, ...c.OUTLINE);
+    cv.line(tx,    ty+13, tx+15, ty+13, ...c.OUTLINE);
+  };
+
+  // ── Portrait definitions (col order: merchant, noble, clergy, guard, commoner)
+  const ARCHETYPES = [
+    { body: c.MERCH_B,   trim: c.MERCH_T,  hatStyle: 'wide',    hat: c.WOOD_M,     hatTrim: c.MERCH_T  },
+    { body: c.NOBLE_B,   trim: c.NOBLE_T,  hatStyle: 'coronet', hat: c.NOBLE_T,    hatTrim: c.PARCH_L  },
+    { body: c.CLERGY_B,  trim: c.CLERGY_T, hatStyle: 'hood',    hat: c.STONE_M,    hatTrim: c.PARCH_D  },
+    { body: c.STONE_M,   trim: c.STONE_L,  hatStyle: 'helm',    hat: c.STONE_M,    hatTrim: c.STONE_L  },
+    { body: c.DIRT_M,    trim: c.DIRT_D,   hatStyle: 'cap',     hat: c.THATCH_D,   hatTrim: c.DIRT_D   },
+  ];
+
+  // Row 0: male base
+  for (let i = 0; i < 5; i++)
+    drawPortrait(i*24, 0, { ...ARCHETYPES[i] });
+
+  // Row 1: female base
+  for (let i = 0; i < 5; i++)
+    drawPortrait(i*24, 32, { ...ARCHETYPES[i], female: true });
+
+  // Row 2: elder / leader variants
+  for (let i = 0; i < 5; i++)
+    drawPortrait(i*24, 64, { ...ARCHETYPES[i], elder: true });
+
+  return cv.toPNG();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RUMOR STATE ICONS  (ui_state_icons.png — 72×12, six 12×12 icons)
+//   col 0  EVALUATING  — hourglass (pondering / undecided)
+//   col 1  BELIEVE     — open scroll (accepted rumor)
+//   col 2  SPREAD      — speech bubble with ripple (actively spreading)
+//   col 3  ACT         — lightning bolt (acting on belief)
+//   col 4  CONTRADICTED— crossed arrows (conflicting rumors)
+//   col 5  EXPIRED     — broken circle X (rumor died out)
+//
+// Palette-locked; no colours outside P.  Background transparent.
+// Used by: social_graph_overlay, HUD state badges, journal rumor rows.
+// ═══════════════════════════════════════════════════════════════════════════════
+function makeStateIcons() {
+  const cv = createCanvas(72, 12);
+
+  // ── 0: EVALUATING — hourglass ─────────────────────────────────────────────
+  {
+    const ox = 0;
+    // top half (sand reservoir)
+    cv.fillPoly([[ox+2,1],[ox+9,1],[ox+7,5],[ox+4,5]], ...c.THATCH_L);
+    // bottom half (fallen sand)
+    cv.fillPoly([[ox+4,7],[ox+7,7],[ox+9,11],[ox+2,11]], ...c.THATCH_L);
+    // sand trickle at middle
+    cv.sp(ox+5, 5, ...c.MERCH_T);
+    cv.sp(ox+6, 5, ...c.MERCH_T);
+    cv.sp(ox+5, 6, ...c.MERCH_T);
+    cv.sp(ox+6, 6, ...c.MERCH_T);
+    // outline
+    cv.line(ox+2, 1, ox+9, 1,  ...c.OUTLINE);
+    cv.line(ox+9, 1, ox+7, 5,  ...c.OUTLINE);
+    cv.line(ox+7, 5, ox+9, 11, ...c.OUTLINE);
+    cv.line(ox+9, 11,ox+2, 11, ...c.OUTLINE);
+    cv.line(ox+2, 11,ox+4, 7,  ...c.OUTLINE);
+    cv.line(ox+4, 7, ox+4, 5,  ...c.OUTLINE);
+    cv.line(ox+4, 5, ox+2, 1,  ...c.OUTLINE);
+  }
+
+  // ── 1: BELIEVE — small scroll with text lines ─────────────────────────────
+  {
+    const ox = 12;
+    // scroll body
+    cv.fillRect(ox+1, 2, 9, 9, ...c.PARCH_M);
+    // rolled ends
+    cv.fillRect(ox+1, 1, 9, 2, ...c.PARCH_D);
+    cv.fillRect(ox+1, 9, 9, 2, ...c.PARCH_D);
+    // text lines
+    cv.line(ox+3, 4, ox+8, 4, ...c.INK, 180);
+    cv.line(ox+3, 6, ox+8, 6, ...c.INK, 140);
+    cv.line(ox+3, 8, ox+6, 8, ...c.INK, 120);
+    // check mark (belief confirmed)
+    cv.sp(ox+7, 7, ...c.WOOD_D);
+    cv.sp(ox+8, 8, ...c.WOOD_D);
+    cv.sp(ox+9, 6, ...c.WOOD_D);
+    // outline
+    cv.line(ox+1, 1, ox+9, 1,  ...c.OUTLINE);
+    cv.line(ox+1, 1, ox+1, 10, ...c.OUTLINE);
+    cv.line(ox+9, 1, ox+9, 10, ...c.OUTLINE);
+    cv.line(ox+1,10, ox+9, 10, ...c.OUTLINE);
+  }
+
+  // ── 2: SPREAD — speech bubble with outward ripple ────────────────────────
+  {
+    const ox = 24;
+    // bubble body
+    cv.fillRect(ox+1, 1, 8, 6, ...c.PARCH_L);
+    // tail
+    cv.fillPoly([[ox+2,7],[ox+5,7],[ox+3,10]], ...c.PARCH_L);
+    // dot contents (whisper dots)
+    cv.sp(ox+3, 3, ...c.CANVAS);
+    cv.sp(ox+5, 3, ...c.CANVAS);
+    cv.sp(ox+7, 3, ...c.CANVAS);
+    // ripple arc right
+    cv.sp(ox+10, 2, ...c.FORGE, 180);
+    cv.sp(ox+10, 4, ...c.FORGE, 200);
+    cv.sp(ox+10, 6, ...c.FORGE, 180);
+    // outline
+    cv.line(ox+1, 1, ox+8, 1,  ...c.OUTLINE);
+    cv.line(ox+1, 1, ox+1, 6,  ...c.OUTLINE);
+    cv.line(ox+1, 6, ox+8, 6,  ...c.OUTLINE);
+    cv.line(ox+8, 1, ox+8, 6,  ...c.OUTLINE);
+    cv.line(ox+2, 7, ox+3,10,  ...c.OUTLINE);
+    cv.line(ox+5, 7, ox+3,10,  ...c.OUTLINE);
+  }
+
+  // ── 3: ACT — lightning bolt ───────────────────────────────────────────────
+  {
+    const ox = 36;
+    cv.fillPoly([[ox+6,1],[ox+3,6],[ox+6,6],[ox+4,11],[ox+9,5],[ox+6,5],[ox+8,1]], ...c.FLAG_R);
+    // bright highlight on leading edge
+    cv.line(ox+6, 1, ox+8, 1, ...c.ROOF_TILE, 200);
+    cv.line(ox+9, 5, ox+6, 5, ...c.ROOF_TILE, 160);
+    // outline
+    cv.line(ox+6, 1, ox+8, 1,  ...c.OUTLINE);
+    cv.line(ox+8, 1, ox+9, 5,  ...c.OUTLINE);
+    cv.line(ox+9, 5, ox+6, 5,  ...c.OUTLINE);
+    cv.line(ox+6, 5, ox+4,11,  ...c.OUTLINE);
+    cv.line(ox+4,11, ox+3, 6,  ...c.OUTLINE);
+    cv.line(ox+3, 6, ox+6, 6,  ...c.OUTLINE);
+    cv.line(ox+6, 6, ox+6, 1,  ...c.OUTLINE);
+  }
+
+  // ── 4: CONTRADICTED — two arrows clashing ────────────────────────────────
+  {
+    const ox = 48;
+    // left-to-right arrow (belief rumor)
+    cv.line(ox+1, 4, ox+5, 4, ...c.MERCH_B);
+    cv.fillPoly([[ox+4,2],[ox+7,4],[ox+4,6]], ...c.MERCH_B);
+    // right-to-left arrow (contradicting rumor)
+    cv.line(ox+10,8, ox+6, 8, ...c.NOBLE_B);
+    cv.fillPoly([[ox+7,6],[ox+4,8],[ox+7,10]], ...c.NOBLE_B);
+    // clash X at center
+    cv.line(ox+4, 4, ox+8, 8,  ...c.OUTLINE);
+    cv.line(ox+8, 4, ox+4, 8,  ...c.OUTLINE);
+    // arrow outlines
+    cv.line(ox+1, 4, ox+4, 4,  ...c.OUTLINE);
+    cv.line(ox+10,8, ox+7, 8,  ...c.OUTLINE);
+  }
+
+  // ── 5: EXPIRED — circle with X ───────────────────────────────────────────
+  {
+    const ox = 60;
+    // circle (octagonal approx)
+    const pts = [[ox+5,1],[ox+8,2],[ox+10,5],[ox+10,7],[ox+8,10],[ox+5,10],[ox+2,8],[ox+1,5],[ox+2,3]];
+    cv.fillPoly(pts, ...c.STONE_M, 200);
+    // X cross
+    cv.line(ox+3, 3, ox+8, 8, ...c.STONE_D);
+    cv.line(ox+8, 3, ox+3, 8, ...c.STONE_D);
+    // outline circle
+    for (let i=0; i<pts.length; i++)
+      cv.line(...pts[i], ...pts[(i+1)%pts.length], ...c.OUTLINE);
+  }
+
+  return cv.toPNG();
+}
+
 // ─── Write helper ─────────────────────────────────────────────────────────────
 function write(relPath, buf) {
   const full = path.join(__dirname, '..', relPath);
@@ -965,7 +1260,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 2 asset generation (SPA-79)\n');
+console.log('\nRumor Mill — Art Pass 2 asset generation (SPA-79/90)\n');
 
 write('assets/textures/tiles_ground.png',       makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',    makeRoadDirt());
@@ -975,5 +1270,7 @@ write('assets/textures/npc_sprites.png',        makeNPCSprites());
 write('assets/textures/ui_parchment.png',       makeParchment());
 write('assets/textures/ui_faction_badges.png',  makeFactionBadges());
 write('assets/textures/ui_claim_icons.png',     makeClaimIcons());
+write('assets/textures/ui_npc_portraits.png',   makeNPCPortraits());
+write('assets/textures/ui_state_icons.png',     makeStateIcons());
 
 console.log('\nAll assets generated.\n');
