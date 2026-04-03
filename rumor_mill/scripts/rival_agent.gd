@@ -68,23 +68,28 @@ func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -
 		# Days 16+: metric-driven target — prioritise whichever metric the
 		# player is closest to failing on.
 		var rep: ReputationSystem = world.reputation_system
-		var progress: Dictionary = scenario_mgr.get_scenario_3_progress(rep)
-		var calder_score: int = progress.get("calder_score", 50)
-		var tomas_score:  int = progress.get("tomas_score",  50)
-
-		# Rival goal: push Tomas up, Calder down.
-		# calder_gap: distance above the fail floor (smaller = nearer to fail)
-		var calder_gap: int = calder_score - ScenarioManager.S3_FAIL_CALDER_BELOW
-		# tomas_gap: distance below the win ceiling for Tomas (smaller = Tomas
-		# is already low, so rival should push him up)
-		var tomas_gap: int = ScenarioManager.S3_WIN_TOMAS_MAX - tomas_score
-
-		if calder_gap <= tomas_gap:
-			claim_type_str = "scandal"
-			subject_id     = CALDER_FENN_ID
-		else:
+		if rep == null:
+			push_warning("[RivalAgent] reputation_system is null on day %d — defaulting to praise/Tomas" % day)
 			claim_type_str = "praise"
 			subject_id     = TOMAS_REEVE_ID
+		else:
+			var progress: Dictionary = scenario_mgr.get_scenario_3_progress(rep)
+			var calder_score: int = progress.get("calder_score", 50)
+			var tomas_score:  int = progress.get("tomas_score",  50)
+
+			# Rival goal: push Tomas up, Calder down.
+			# calder_gap: distance above the fail floor (smaller = nearer to fail)
+			var calder_gap: int = calder_score - ScenarioManager.S3_FAIL_CALDER_BELOW
+			# tomas_gap: distance below the win ceiling for Tomas (smaller = Tomas
+			# is already low, so rival should push him up)
+			var tomas_gap: int = ScenarioManager.S3_WIN_TOMAS_MAX - tomas_score
+
+			if calder_gap <= tomas_gap:
+				claim_type_str = "scandal"
+				subject_id     = CALDER_FENN_ID
+			else:
+				claim_type_str = "praise"
+				subject_id     = TOMAS_REEVE_ID
 
 	var seed_npc_id := _pick_seed_npc(world)
 	if seed_npc_id.is_empty():

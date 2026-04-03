@@ -634,7 +634,7 @@ func seed_rumor_from_player(
 	# Apply evidence bonuses at creation time (not recalculated on subsequent ticks).
 	if evidence_item != null:
 		rumor.current_believability = minf(1.0, rumor.current_believability + evidence_item.believability_bonus)
-		rumor.mutability = maxf(0.0, rumor.mutability + evidence_item.mutability_modifier)
+		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
 		rumor.bolstered_by_evidence = true
 		print("[World] Evidence '%s' applied to '%s' — believability=%.2f mutability=%.2f" % [
 			evidence_item.type, rumor_id, rumor.current_believability, rumor.mutability])
