@@ -338,16 +338,26 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 	# Status / shelf-life strip.
 	var ticks_elapsed: int = (_day_night_ref.current_tick - rumor.created_tick) \
 		if _day_night_ref != null else 0
+	var bolstered_tag: String = "   [Bolstered]" if rumor.bolstered_by_evidence else ""
 	var badge_label := Label.new()
-	badge_label.text = "  Seeded: %s   Believability: %.2f   Shelf life: %d/%d ticks" % [
+	badge_label.text = "  Seeded: %s   Believability: %.2f   Shelf life: %d/%d ticks%s" % [
 		seed_day_str,
 		rumor.current_believability,
 		ticks_elapsed,
-		rumor.shelf_life_ticks
+		rumor.shelf_life_ticks,
+		bolstered_tag
 	]
 	badge_label.add_theme_font_size_override("font_size", 10)
 	badge_label.add_theme_color_override("font_color", status_color)
 	_content_vbox.add_child(badge_label)
+
+	if rumor.bolstered_by_evidence:
+		var bolster_lbl := Label.new()
+		bolster_lbl.text = "  [*] Bolstered by evidence."
+		bolster_lbl.add_theme_font_size_override("font_size", 10)
+		bolster_lbl.add_theme_color_override("font_color", Color(0.95, 0.85, 0.35, 1.0))
+		bolster_lbl.tooltip_text = "Bolstered by evidence."
+		_content_vbox.add_child(bolster_lbl)
 
 	# "Suspect source" label — shown when this rumor was seeded by the rival agent.
 	if _world_ref != null and _world_ref.propagation_engine != null:

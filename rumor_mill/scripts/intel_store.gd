@@ -6,6 +6,7 @@ class_name PlayerIntelStore
 
 const MAX_DAILY_ACTIONS  := 3
 const MAX_DAILY_WHISPERS := 2
+const MAX_EVIDENCE       := 3
 
 var recon_actions_remaining:   int = MAX_DAILY_ACTIONS
 var whisper_tokens_remaining:  int = MAX_DAILY_WHISPERS
@@ -24,6 +25,9 @@ var heat_enabled: bool = false
 ## Bribe charges (2 per scenario, not dawn-refreshed). Active from Scenario 2+.
 ## 0 means bribery is disabled (Scenario 1 / tutorial).
 var bribe_charges: int = 0
+
+## Collectible evidence items the player can attach to a seeded rumor (max 3).
+var evidence_inventory: Array = []
 
 
 # ---------------------------------------------------------------------------
@@ -191,3 +195,54 @@ func get_relationships_for_npc(npc_id: String) -> Array:
 ## Canonical sort so (A,B) and (B,A) share the same key.
 static func _pair_key(a: String, b: String) -> String:
 	return (a + ":" + b) if a < b else (b + ":" + a)
+
+
+# ---------------------------------------------------------------------------
+# EvidenceItem — collectible item that boosts a seeded rumor's credibility.
+# ---------------------------------------------------------------------------
+class EvidenceItem:
+	var type: String
+	var believability_bonus: float
+	var mutability_modifier: float
+	var compatible_claims: Array  # empty = any claim type
+	var acquired_tick: int
+
+	func _init(
+			ev_type: String,
+			bel_bonus: float,
+			mut_mod: float,
+			compat: Array,
+			tick: int
+	) -> void:
+		type = ev_type
+		believability_bonus = bel_bonus
+		mutability_modifier = mut_mod
+		compatible_claims = compat
+		acquired_tick = tick
+
+
+# ---------------------------------------------------------------------------
+# Evidence inventory
+# ---------------------------------------------------------------------------
+
+## Add an evidence item. If over MAX_EVIDENCE, the oldest is discarded with a warning.
+func add_evidence(item: EvidenceItem) -> void:
+	evidence_inventory.append(item)
+	if evidence_inventory.size() > MAX_EVIDENCE:
+		var discarded: EvidenceItem = evidence_inventory.pop_front()
+		push_warning("[IntelStore] Evidence inventory full — discarded oldest item: %s" % discarded.type)
+
+
+## Remove a specific evidence item from the inventory after it is consumed.
+func consume_evidence(item: EvidenceItem) -> void:
+	evidence_inventory.erase(item)
+
+
+## Returns all inventory items whose compatible_claims include claim_type_upper,
+## or that accept any claim type (compatible_claims is empty).
+func get_compatible_evidence(claim_type_upper: String) -> Array:
+	var result: Array = []
+	for item in evidence_inventory:
+		if item.compatible_claims.is_empty() or claim_type_upper in item.compatible_claims:
+			result.append(item)
+	return result

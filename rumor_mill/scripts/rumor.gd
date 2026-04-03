@@ -34,6 +34,7 @@ var created_tick: int
 var shelf_life_ticks: int
 var current_believability: float
 var lineage_parent_id: String  # "" = original
+var bolstered_by_evidence: bool = false
 
 
 static func create(

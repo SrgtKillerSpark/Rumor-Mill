@@ -49,11 +49,12 @@ var _world_ref:       Node2D           = null
 var _intel_store_ref: PlayerIntelStore = null
 
 # Crafting state.
-var _current_panel:     int    = PANEL_SUBJECT
-var _selected_subject:  String = ""  # npc_id
-var _selected_claim_id: String = ""  # claims.json id
-var _selected_seed_npc: String = ""  # npc_id
-var _confirm_pending:   bool   = false  # true after first "Confirm & Seed" press
+var _current_panel:        int    = PANEL_SUBJECT
+var _selected_subject:     String = ""  # npc_id
+var _selected_claim_id:    String = ""  # claims.json id
+var _selected_seed_npc:    String = ""  # npc_id
+var _confirm_pending:      bool   = false  # true after first "Confirm & Seed" press
+var _selected_evidence_item               = null  # PlayerIntelStore.EvidenceItem or null
 
 # Panel titles / hints.
 const TITLES := [
@@ -424,6 +425,7 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 	btn.pressed.connect(func():
 		_selected_claim_id = captured_id
 		_selected_seed_npc = ""
+		_selected_evidence_item = null  # new claim may change compatible evidence
 		_rebuild_claim_list()
 	)
 	vbox.add_child(btn)
@@ -447,6 +449,12 @@ func _rebuild_seed_list() -> void:
 		"[W]".repeat(tokens) + "[ ]".repeat(max_t - tokens),
 		tokens, max_t
 	]
+
+	# Evidence attachment section — only shown when inventory is non-empty.
+	if _intel_store_ref != null and not _intel_store_ref.evidence_inventory.is_empty():
+		var claim_type_upper := _get_claim_type_upper(_selected_claim_id)
+		var compatible := _intel_store_ref.get_compatible_evidence(claim_type_upper)
+		_add_evidence_section(compatible)
 
 	for npc in _world_ref.npcs:
 		var npc_id:   String = npc.npc_data.get("id",      "")
@@ -536,12 +544,17 @@ func _try_confirm_seed() -> void:
 	var rumor_id: String = _world_ref.seed_rumor_from_player(
 		_selected_subject,
 		_selected_claim_id,
-		_selected_seed_npc
+		_selected_seed_npc,
+		_selected_evidence_item
 	)
 
 	if rumor_id.is_empty():
 		_flash_status("Failed to seed rumor. Check subject / claim / target.")
 		return
+
+	# Consume evidence now that seeding succeeded.
+	if _selected_evidence_item != null and _intel_store_ref != null:
+		_intel_store_ref.consume_evidence(_selected_evidence_item)
 
 	# Resolve names for the signal.
 	var subj_name  := _get_npc_name(_selected_subject)
@@ -550,10 +563,11 @@ func _try_confirm_seed() -> void:
 	emit_signal("rumor_seeded", rumor_id, subj_name, _selected_claim_id, seed_name)
 
 	# Reset state and close the panel.
-	_selected_subject  = ""
-	_selected_claim_id = ""
-	_selected_seed_npc = ""
-	_confirm_pending   = false
+	_selected_subject       = ""
+	_selected_claim_id      = ""
+	_selected_seed_npc      = ""
+	_confirm_pending        = false
+	_selected_evidence_item = null
 	panel.visible = false
 
 	print("[RumorPanel] Seeded rumor '%s' via %s" % [rumor_id, seed_name])
@@ -597,6 +611,90 @@ func _estimate_believability(seed_npc_id: String) -> float:
 		base += 0.15
 
 	return clampf(base, 0.0, 1.0)
+
+
+# ── Evidence helpers ──────────────────────────────────────────────────────────
+
+## Returns the claim type string (upper-case) for the given claim_id, or "".
+func _get_claim_type_upper(claim_id: String) -> String:
+	if _world_ref == null:
+		return ""
+	for c in _world_ref.get_claims():
+		if c.get("id", "") == claim_id:
+			return c.get("type", "").to_upper()
+	return ""
+
+
+## Builds and inserts the evidence attachment sub-section at the top of _seed_list.
+func _add_evidence_section(compatible: Array) -> void:
+	var hdr := Label.new()
+	hdr.add_theme_font_size_override("font_size", 11)
+	hdr.add_theme_color_override("font_color", Color(0.90, 0.75, 0.20, 1.0))
+	if compatible.is_empty():
+		hdr.text = "  [Evidence] No compatible evidence for this claim type."
+		_seed_list.add_child(hdr)
+		_seed_list.add_child(HSeparator.new())
+		return
+
+	hdr.text = "  [Evidence] Attach evidence to boost this rumor (optional):"
+	_seed_list.add_child(hdr)
+
+	for item in compatible:
+		_seed_list.add_child(_build_evidence_entry(item))
+
+	if _selected_evidence_item != null:
+		var clear_btn := Button.new()
+		clear_btn.text = "Remove Evidence"
+		clear_btn.add_theme_font_size_override("font_size", 10)
+		clear_btn.pressed.connect(func() -> void:
+			_selected_evidence_item = null
+			_confirm_pending = false
+			_btn_next.text   = "Confirm & Seed"
+			_rebuild_seed_list()
+		)
+		_seed_list.add_child(clear_btn)
+
+	_seed_list.add_child(HSeparator.new())
+
+
+func _build_evidence_entry(item) -> Control:
+	var outer := PanelContainer.new()
+	if item == _selected_evidence_item:
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.45, 0.30, 0.05, 0.55)
+		outer.add_theme_stylebox_override("panel", style)
+
+	var vbox := VBoxContainer.new()
+	outer.add_child(vbox)
+
+	var bonus_parts: Array = []
+	if item.believability_bonus != 0.0:
+		bonus_parts.append("Believability +%.2f" % item.believability_bonus)
+	if item.mutability_modifier != 0.0:
+		var sign_str: String = "+" if item.mutability_modifier >= 0.0 else ""
+		bonus_parts.append("Mutability %s%.2f" % [sign_str, item.mutability_modifier])
+	var type_lbl := Label.new()
+	type_lbl.text = "  %s — %s" % [item.type, "  |  ".join(bonus_parts)]
+	type_lbl.add_theme_font_size_override("font_size", 10)
+	type_lbl.add_theme_color_override("font_color", Color(0.95, 0.85, 0.50, 1.0))
+	vbox.add_child(type_lbl)
+
+	var btn := Button.new()
+	btn.add_theme_font_size_override("font_size", 10)
+	if item == _selected_evidence_item:
+		btn.text = "✓ Attached"
+	else:
+		btn.text = "Attach"
+	var captured_item := item
+	btn.pressed.connect(func() -> void:
+		_selected_evidence_item = captured_item
+		_confirm_pending = false
+		_btn_next.text   = "Confirm & Seed"
+		_rebuild_seed_list()
+	)
+	vbox.add_child(btn)
+
+	return outer
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
