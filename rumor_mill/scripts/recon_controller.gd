@@ -233,6 +233,26 @@ func _npc_tooltip_text(npc: Node2D) -> String:
 	return result
 
 
+## Flash the building highlight green briefly when evidence is acquired via Observe.
+## Pulses the existing highlight overlay: original gold → bright green → back.
+func _flash_bldg_evidence_acquired() -> void:
+	if _bldg_highlight == null or not _bldg_highlight.visible:
+		return
+	var orig_color := _bldg_highlight.color
+	var tween := _bldg_highlight.create_tween()
+	tween.tween_property(_bldg_highlight, "color", Color(0.35, 1.0, 0.45, 0.65), 0.10)
+	tween.tween_property(_bldg_highlight, "color", orig_color, 0.45)
+
+
+## Flash an NPC sprite teal briefly when a Witness Account evidence item is acquired.
+func _flash_npc_evidence_acquired(npc: Node2D) -> void:
+	if npc == null or not is_instance_valid(npc):
+		return
+	var tween := npc.create_tween()
+	tween.tween_property(npc, "modulate", Color(0.40, 1.80, 1.30, 1.0), 0.12)
+	tween.tween_property(npc, "modulate", NPC_NORMAL_MODULATE, 0.50)
+
+
 ## Flash the NPC sprite gold briefly to confirm a successful bribe.
 ## Single slow pulse: gold → normal over ~0.7 s.
 func _flash_npc_bribed(npc: Node2D) -> void:
@@ -380,6 +400,7 @@ func _try_observe(location_id: String) -> void:
 			"Forged Document", 0.20, 0.0,
 			["ACCUSATION", "SCANDAL", "HERESY"], tick)
 		_intel_store.add_evidence(ev)
+		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Forged Document acquired."
 		print("[Recon] Evidence: Forged Document acquired at '%s'" % location_id)
 	elif tick % 24 > 18 \
@@ -388,6 +409,7 @@ func _try_observe(location_id: String) -> void:
 			"Incriminating Artifact", 0.25, 0.0,
 			["SCANDAL", "HERESY"], tick)
 		_intel_store.add_evidence(ev)
+		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Incriminating Artifact acquired."
 		print("[Recon] Evidence: Incriminating Artifact acquired at '%s' tick=%d" % [location_id, tick])
 
@@ -463,6 +485,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Witness Account", 0.15, -0.15, [], tick)
 		_intel_store.add_evidence(ev)
+		_flash_npc_evidence_acquired(target)
 		msg += "\n[+] Witness Account acquired."
 		print("[Recon] Evidence: Witness Account acquired (%s <-> %s)" % [name_a, name_b])
 

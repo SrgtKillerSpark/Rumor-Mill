@@ -10,6 +10,9 @@
 
 class_name RivalAgent
 
+## Emitted each time the rival successfully seeds a counter-rumor.
+signal rival_acted(day: int, claim_type: String, subject_id: String)
+
 const TOMAS_REEVE_ID := "tomas_reeve"
 const CALDER_FENN_ID := "calder_fenn"
 
@@ -98,6 +101,7 @@ func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -
 
 	var rumor_id: String = world.inject_rumor(seed_npc_id, claim_type_str, intensity, subject_id, "rival")
 	if not rumor_id.is_empty():
+		rival_acted.emit(day, claim_type_str, subject_id)
 		print("[RivalAgent] Day %d: seeded '%s' about %s (intensity %d) via %s [%s]" % [
 			day, claim_type_str, subject_id, intensity, seed_npc_id, rumor_id])
 

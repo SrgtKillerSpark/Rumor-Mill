@@ -21,6 +21,8 @@ const TOOLTIP_ORDER: Array = [
 	"npc_state_change",
 	"rumor_crafting",
 	"reputation",
+	"evidence_items",
+	"rival_agent",
 ]
 
 ## Tooltip content: title + BBCode body text.
@@ -101,6 +103,30 @@ const TOOLTIP_DATA: Dictionary = {
 			+ "• [b]Disgraced (0–30)[/b] — social pariah\n"
 			+ "Win conditions target specific reputation thresholds — check\n"
 			+ "[b]Objectives[/b] in this journal to see exactly what is required."
+		),
+	},
+	"evidence_items": {
+		"title": "Evidence Items",
+		"body":  (
+			"Some recon actions yield [b]Evidence Items[/b] — consumable intel\n"
+			+ "that boosts a rumour's believability when attached at seeding:\n"
+			+ "• [b]Forged Document[/b] — double-action at Market or Guild\n"
+			+ "• [b]Incriminating Artifact[/b] — late-night at Temple or Noble Estate\n"
+			+ "• [b]Witness Account[/b] — eavesdrop a repeated conversation\n"
+			+ "Evidence is consumed on use. Each item shows its boost bar and\n"
+			+ "which claim types it works with in the Rumour Crafting panel."
+		),
+	},
+	"rival_agent": {
+		"title": "A Rival is Active",
+		"body":  (
+			"You are not alone. [b]An unseen rival[/b] is seeding counter-rumours\n"
+			+ "against your Scenario 3 objectives:\n"
+			+ "• They [b]praise Tomas Reeve[/b] to keep his reputation high.\n"
+			+ "• They [b]scandal Calder Fenn[/b] to drag his reputation down.\n"
+			+ "Their activity escalates as the deadline approaches.\n"
+			+ "Counter with high-intensity claims and well-connected seed targets.\n"
+			+ "Their last known action is shown in the [b]Scenario 3 HUD[/b]."
 		),
 	},
 }

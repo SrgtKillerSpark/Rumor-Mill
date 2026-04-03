@@ -33,6 +33,7 @@ var _end_screen: CanvasLayer = null
 var _observe_tooltip_fired:          bool = false
 var _eavesdrop_tooltip_fired:        bool = false
 var _npc_state_change_tooltip_fired: bool = false
+var _evidence_tooltip_fired:         bool = false
 
 # Guards against double-initialisation if begin_game fires more than once.
 var _game_started: bool = false
@@ -138,6 +139,9 @@ func _init_recon_system() -> void:
 	# Log each successfully seeded rumor to the journal timeline.
 	if rumor_panel != null and journal != null:
 		rumor_panel.rumor_seeded.connect(_on_rumor_seeded)
+	# Evidence tutorial — fires once when compatible evidence items first appear.
+	if rumor_panel != null:
+		rumor_panel.evidence_first_shown.connect(_on_evidence_first_shown)
 
 	# ReconController: input handler — created programmatically so it sits in
 	# the scene tree and receives _unhandled_input events.
@@ -258,6 +262,9 @@ func _init_tutorial_system() -> void:
 	_tutorial_hud.queue_tooltip("recon_actions")
 	# Tooltip 2: navigation controls (panning, zoom, hotkeys).
 	_tutorial_hud.queue_tooltip("navigation_controls")
+	# Rival agent tooltip: shown upfront in Scenario 3 so player knows a rival exists.
+	if world.active_scenario_id == "scenario_3":
+		_tutorial_hud.queue_tooltip("rival_agent")
 
 	# Tooltip 4: rumour crafting — first time the Rumor Panel becomes visible.
 	if rumor_panel != null:
@@ -292,6 +299,14 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 	elif not _eavesdrop_tooltip_fired and message.begins_with("Eavesdropped"):
 		_eavesdrop_tooltip_fired = true
 		_tutorial_hud.queue_tooltip("eavesdrop")
+
+
+## Evidence tutorial trigger — fires once when compatible evidence is first shown in the panel.
+func _on_evidence_first_shown() -> void:
+	if _evidence_tooltip_fired or _tutorial_hud == null:
+		return
+	_evidence_tooltip_fired = true
+	_tutorial_hud.queue_tooltip("evidence_items")
 
 
 ## Tooltip (npc_state_change) trigger — fires once when any NPC first enters EVALUATING.

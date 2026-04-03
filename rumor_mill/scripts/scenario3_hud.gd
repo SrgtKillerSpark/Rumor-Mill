@@ -35,6 +35,7 @@ var _tomas_bar:        ColorRect      = null
 var _tomas_bar_bg:     ColorRect      = null
 var _days_lbl:         Label          = null
 var _result_lbl:       Label          = null
+var _rival_lbl:        Label          = null
 
 # ── Runtime refs ──────────────────────────────────────────────────────────────
 var _world_ref:     Node2D = null
@@ -56,6 +57,10 @@ func setup(world: Node2D, day_night: Node) -> void:
 	# Wire scenario_resolved if world exposes scenario_manager.
 	if world != null and "scenario_manager" in world and world.scenario_manager != null:
 		world.scenario_manager.scenario_resolved.connect(_on_scenario_resolved)
+	# Wire rival_agent signal for activity indicator.
+	var rival = world.get("rival_agent") if world != null else null
+	if rival != null:
+		rival.rival_acted.connect(notify_rival_acted)
 	_refresh()
 
 
@@ -163,6 +168,13 @@ func _build_ui() -> void:
 	legend_lbl.text = "[green] on track  [orange] at risk  [red] failing"
 	right_vbox.add_child(legend_lbl)
 
+	# ── Rival activity indicator ──────────────────────────────────────────
+	_rival_lbl = Label.new()
+	_rival_lbl.add_theme_font_size_override("font_size", 9)
+	_rival_lbl.add_theme_color_override("font_color", Color(0.65, 0.55, 0.45, 0.80))
+	_rival_lbl.text = "Rival: no activity yet"
+	right_vbox.add_child(_rival_lbl)
+
 
 # ── Refresh ───────────────────────────────────────────────────────────────────
 
@@ -224,6 +236,21 @@ func _bar_color_for_score(score: int, higher_is_better: bool, win_target: int) -
 	if effective >= win_effective: return C_WIN
 	elif effective >= 40:          return C_NEUTRAL
 	else:                          return C_FAIL
+
+
+# ── Rival activity ────────────────────────────────────────────────────────────
+
+## Called by the rival_agent.rival_acted signal each time the rival seeds a rumor.
+func notify_rival_acted(day: int, claim_type: String, subject_id: String) -> void:
+	if _rival_lbl == null:
+		return
+	var subject_display := subject_id.replace("_", " ").capitalize()
+	_rival_lbl.text = "Rival: Day %d — %s on %s" % [day, claim_type.capitalize(), subject_display]
+	_rival_lbl.add_theme_color_override("font_color", Color(1.0, 0.40, 0.20, 1.0))
+	# Brief pulse to draw attention.
+	var tween := create_tween()
+	tween.tween_property(_rival_lbl, "modulate:a", 0.25, 0.12)
+	tween.tween_property(_rival_lbl, "modulate:a", 1.0, 0.30)
 
 
 # ── Signals ───────────────────────────────────────────────────────────────────

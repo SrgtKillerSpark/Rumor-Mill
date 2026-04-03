@@ -18,6 +18,7 @@ extends CanvasLayer
 ## Call setup(world, intel_store) after the scene tree is ready.
 
 signal rumor_seeded(rumor_id: String, subject_name: String, claim_id: String, seed_target_name: String)
+signal evidence_first_shown
 
 # Panel index constants.
 const PANEL_SUBJECT   := 0
@@ -55,6 +56,7 @@ var _selected_claim_id:    String = ""  # claims.json id
 var _selected_seed_npc:    String = ""  # npc_id
 var _confirm_pending:      bool   = false  # true after first "Confirm & Seed" press
 var _selected_evidence_item               = null  # PlayerIntelStore.EvidenceItem or null
+var _evidence_tutorial_fired: bool        = false
 
 # Panel titles / hints.
 const TITLES := [
@@ -639,6 +641,22 @@ func _add_evidence_section(compatible: Array) -> void:
 	hdr.text = "  [Evidence] Attach evidence to boost this rumor (optional):"
 	_seed_list.add_child(hdr)
 
+	# Fire evidence tutorial once the player first sees usable evidence items.
+	if not _evidence_tutorial_fired:
+		_evidence_tutorial_fired = true
+		evidence_first_shown.emit()
+
+	# When evidence is already attached, show a compact summary under the header.
+	if _selected_evidence_item != null:
+		var attached_lbl := Label.new()
+		attached_lbl.add_theme_font_size_override("font_size", 10)
+		attached_lbl.add_theme_color_override("font_color", Color(0.35, 0.90, 0.50, 1.0))
+		var bonus_str := ""
+		if _selected_evidence_item.believability_bonus != 0.0:
+			bonus_str = "  +%d%% Belief" % roundi(_selected_evidence_item.believability_bonus * 100.0)
+		attached_lbl.text = "  ✓ Attached: %s%s" % [_selected_evidence_item.type, bonus_str]
+		_seed_list.add_child(attached_lbl)
+
 	for item in compatible:
 		_seed_list.add_child(_build_evidence_entry(item))
 
@@ -667,6 +685,7 @@ func _build_evidence_entry(item) -> Control:
 	var vbox := VBoxContainer.new()
 	outer.add_child(vbox)
 
+	# Type + bonus text.
 	var bonus_parts: Array = []
 	if item.believability_bonus != 0.0:
 		bonus_parts.append("Believability +%.2f" % item.believability_bonus)
@@ -678,6 +697,23 @@ func _build_evidence_entry(item) -> Control:
 	type_lbl.add_theme_font_size_override("font_size", 10)
 	type_lbl.add_theme_color_override("font_color", Color(0.95, 0.85, 0.50, 1.0))
 	vbox.add_child(type_lbl)
+
+	# Visual boost bar — scale 0.0–0.25 bonus onto 1–5 bars.
+	if item.believability_bonus > 0.0:
+		var boost_bars: int = clampi(roundi(item.believability_bonus * 20.0), 1, 5)
+		var bar_lbl := Label.new()
+		bar_lbl.text = "    Boost: " + "▇".repeat(boost_bars) + "░".repeat(5 - boost_bars)
+		bar_lbl.add_theme_font_size_override("font_size", 10)
+		bar_lbl.add_theme_color_override("font_color", Color(0.35, 0.88, 0.52, 1.0))
+		vbox.add_child(bar_lbl)
+
+	# Compatible claim types hint.
+	if not item.compatible_claims.is_empty():
+		var compat_lbl := Label.new()
+		compat_lbl.text = "    Works with: " + ", ".join(item.compatible_claims)
+		compat_lbl.add_theme_font_size_override("font_size", 9)
+		compat_lbl.add_theme_color_override("font_color", Color(0.60, 0.60, 0.58, 0.90))
+		vbox.add_child(compat_lbl)
 
 	var btn := Button.new()
 	btn.add_theme_font_size_override("font_size", 10)
