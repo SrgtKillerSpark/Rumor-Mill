@@ -30,7 +30,7 @@ const C_CARD_HOVER   := Color(0.18, 0.13, 0.09, 1.0)
 const C_CARD_BORDER  := Color(0.45, 0.30, 0.12, 1.0)
 const C_CARD_SEL     := Color(0.70, 0.50, 0.15, 1.0)
 
-enum Phase { MAIN, SELECT, BRIEFING }
+enum Phase { MAIN, SELECT, BRIEFING, INTRO }
 
 # ── State ─────────────────────────────────────────────────────────────────────
 var _phase:              Phase     = Phase.MAIN
@@ -53,6 +53,11 @@ var _briefing_days:      Label      = null
 var _briefing_body:      RichTextLabel = null
 var _btn_begin:          Button     = null
 
+# Intro-phase refs
+var _panel_intro:        Control    = null
+var _intro_title:        Label      = null
+var _intro_body:         RichTextLabel = null
+
 
 func _ready() -> void:
 	layer = 50
@@ -61,6 +66,7 @@ func _ready() -> void:
 	_build_main_panel()
 	_build_select_panel()
 	_build_briefing_panel()
+	_build_intro_panel()
 	_show_phase(Phase.MAIN)
 
 
@@ -82,9 +88,10 @@ func _load_scenarios() -> void:
 
 func _show_phase(p: Phase) -> void:
 	_phase = p
-	_panel_main.visible    = (p == Phase.MAIN)
-	_panel_select.visible  = (p == Phase.SELECT)
+	_panel_main.visible     = (p == Phase.MAIN)
+	_panel_select.visible   = (p == Phase.SELECT)
 	_panel_briefing.visible = (p == Phase.BRIEFING)
+	_panel_intro.visible    = (p == Phase.INTRO)
 
 
 # ── Backdrop ──────────────────────────────────────────────────────────────────
@@ -326,8 +333,8 @@ func _build_briefing_panel() -> void:
 	btn_back.pressed.connect(_on_briefing_back)
 	btn_row.add_child(btn_back)
 
-	_btn_begin = _make_button("Begin", 140)
-	_btn_begin.pressed.connect(_on_begin_pressed)
+	_btn_begin = _make_button("Next", 140)
+	_btn_begin.pressed.connect(_on_briefing_next_pressed)
 	btn_row.add_child(_btn_begin)
 
 
@@ -365,7 +372,77 @@ func _on_briefing_back() -> void:
 	_show_phase(Phase.SELECT)
 
 
-func _on_begin_pressed() -> void:
+## Advance from BRIEFING to the atmospheric INTRO card.
+func _on_briefing_next_pressed() -> void:
+	_populate_intro()
+	_show_phase(Phase.INTRO)
+
+
+# ── Phase 4: Scenario Intro panel ─────────────────────────────────────────────
+
+func _build_intro_panel() -> void:
+	_panel_intro = _make_panel(700, 460)
+	add_child(_panel_intro)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 16)
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_panel_intro.add_child(vbox)
+
+	_intro_title = Label.new()
+	_intro_title.text = ""
+	_intro_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_intro_title.add_theme_font_size_override("font_size", 22)
+	_intro_title.add_theme_color_override("font_color", C_TITLE)
+	vbox.add_child(_intro_title)
+
+	vbox.add_child(_separator())
+
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(0, 16)
+	vbox.add_child(spacer)
+
+	_intro_body = RichTextLabel.new()
+	_intro_body.custom_minimum_size = Vector2(0, 240)
+	_intro_body.fit_content = false
+	_intro_body.scroll_active = false
+	_intro_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_intro_body.bbcode_enabled = true
+	_intro_body.add_theme_font_size_override("normal_font_size", 17)
+	_intro_body.add_theme_color_override("default_color", C_HEADING)
+	vbox.add_child(_intro_body)
+
+	var spacer2 := Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(spacer2)
+
+	vbox.add_child(_separator())
+
+	var btn_row := HBoxContainer.new()
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_theme_constant_override("separation", 20)
+	vbox.add_child(btn_row)
+
+	var btn_back := _make_button("Back", 140)
+	btn_back.pressed.connect(_on_intro_back)
+	btn_row.add_child(btn_back)
+
+	var btn_begin := _make_button("Begin", 140)
+	btn_begin.pressed.connect(_on_intro_begin_pressed)
+	btn_row.add_child(btn_begin)
+
+
+func _populate_intro() -> void:
+	_intro_title.text = _selected_scenario.get("title", "")
+	var intro_text: String = _selected_scenario.get("introText", "")
+	_intro_body.text = "[center][i]" + intro_text + "[/i][/center]"
+
+
+func _on_intro_back() -> void:
+	_show_phase(Phase.BRIEFING)
+
+
+func _on_intro_begin_pressed() -> void:
 	var scenario_id: String = _selected_scenario.get("scenarioId", "scenario_1")
 	begin_game.emit(scenario_id)
 

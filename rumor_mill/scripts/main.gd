@@ -1,11 +1,12 @@
 extends Node2D
 
-## main.gd — Sprint 8 entry point.
+## main.gd — Sprint 9 entry point.
 ## Wires DayNightCycle tick → World, debug tools, recon system, Player Journal,
 ## Social Graph Overlay, Scenario 3 HUD, Sprint 7 Tutorial Tooltip system,
-## Sprint 6 End Screen overlay, Sprint 7 AudioManager, and Sprint 8 Main Menu.
+## Sprint 6 End Screen overlay, Sprint 7 AudioManager, Sprint 8 Main Menu,
+## and Sprint 9 Scenario Intro Cards + Loading Tips.
 ##
-## Flow: MainMenu overlay shown first → player selects scenario → Begin →
+## Flow: MainMenu → Select → Briefing → Intro Card → loading tip (1.5 s) →
 ##       world unpaused, active scenario applied, all systems initialised.
 
 @onready var world:                Node2D      = $World
@@ -19,8 +20,11 @@ extends Node2D
 @onready var objective_hud:        CanvasLayer = $ObjectiveHUD
 
 # ── Sprint 8: main menu ───────────────────────────────────────────────────────
-var _main_menu:   CanvasLayer = null
-var _pause_menu:  CanvasLayer = null
+var _main_menu:    CanvasLayer = null
+var _pause_menu:   CanvasLayer = null
+
+# ── Sprint 9: loading tips (shown during game-start transition) ───────────────
+var _loading_tips: CanvasLayer = null
 
 # ── Sprint 7: tutorial system (created programmatically) ──────────────────────
 var _tutorial_sys: TutorialSystem = null
@@ -53,6 +57,11 @@ func _ready() -> void:
 	social_graph_overlay.visible = false
 	objective_hud.visible        = false
 
+	# ── Sprint 9: loading tips overlay (hidden until begin_game fires) ────────
+	_loading_tips = preload("res://scripts/loading_tips.gd").new()
+	_loading_tips.name = "LoadingTips"
+	add_child(_loading_tips)
+
 	# ── Sprint 8: show main menu (or auto-restart a scenario) ────────────────
 	var _pause_menu_script = preload("res://scripts/pause_menu.gd")
 	var _restart_id: String = _pause_menu_script._pending_restart_id
@@ -69,7 +78,9 @@ func _ready() -> void:
 	print("Rumor Mill — showing main menu (Sprint 8).")
 
 
-## Called when the player clicks Begin on the briefing screen.
+## Called when the player clicks Begin on the scenario intro screen.
+## Uses await so the loading tips screen renders for at least 1.5 s
+## (well above the 0.5 s threshold) while the world initialises.
 func _on_begin_game(scenario_id: String) -> void:
 	if _game_started:
 		return
@@ -79,6 +90,12 @@ func _on_begin_game(scenario_id: String) -> void:
 	if _main_menu != null:
 		_main_menu.queue_free()
 		_main_menu = null
+
+	# Show a loading tip. Await so the tip is actually visible on screen
+	# before the synchronous world init runs (~1.5 s > MIN_DURATION_SEC).
+	if _loading_tips != null:
+		_loading_tips.start_transition()
+	await get_tree().create_timer(1.5).timeout
 
 	# Apply the chosen scenario's edge/personality/reputation overrides.
 	world.active_scenario_id = scenario_id
@@ -124,7 +141,12 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_pause_menu()
 	_init_npc_tooltip()
 
-	print("Rumor Mill — Sprint 8 loaded. Scenario: %s" % scenario_id)
+	# Loading complete — dismiss the tip screen.
+	if _loading_tips != null:
+		_loading_tips.end_transition()
+		_loading_tips.force_hide()
+
+	print("Rumor Mill — Sprint 9 loaded. Scenario: %s" % scenario_id)
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph (debug)  |  F4: lineage tree")
 	print("  G: Social Graph Overlay  |  R: Rumor Crafting Panel  |  J: Player Journal")
 	print("  Right-click building: Observe  |  Right-click NPC: Eavesdrop")
