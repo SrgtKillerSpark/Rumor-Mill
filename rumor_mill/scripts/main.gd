@@ -161,6 +161,10 @@ func _on_begin_game(scenario_id: String) -> void:
 		_loading_tips.end_transition()
 		_loading_tips.force_hide()
 
+	# Restore saved state if a load was triggered from the pause menu.
+	if SaveManager.has_pending_load():
+		SaveManager.apply_pending_load(world, day_night, journal)
+
 	print("Rumor Mill — Sprint 9 loaded. Scenario: %s" % scenario_id)
 	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph (debug)  |  F4: lineage tree")
 	print("  G: Social Graph Overlay  |  R: Rumor Crafting Panel  |  J: Player Journal")
@@ -614,6 +618,7 @@ func _init_pause_menu() -> void:
 	_pause_menu.name = "PauseMenu"
 	add_child(_pause_menu)
 	_pause_menu.setup(world.active_scenario_id)
+	_pause_menu.setup_save_load(world, day_night, journal)
 	# S1: suppress banner while pause menu is open.
 	if world.active_scenario_id == "scenario_1" and _tutorial_banner != null:
 		_pause_menu.visibility_changed.connect(_on_pause_menu_visibility_changed_banner)

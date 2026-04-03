@@ -898,6 +898,13 @@ func push_timeline_event(tick: int, message: String) -> void:
 			_notif_dot.visible = true
 
 
+## Called by SaveManager after a load to restore the persisted timeline log.
+## Replaces _timeline_log in-place; clears any buffered pending events.
+func restore_timeline(entries: Array) -> void:
+	_timeline_log   = entries.duplicate(true)
+	_pending_events.clear()
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 func _add_section_header(title: String) -> void:

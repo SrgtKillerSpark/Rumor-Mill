@@ -4,6 +4,8 @@ extends CanvasLayer
 ## Created programmatically by main.gd after the game starts.
 ## Pauses the game tree while open.
 ## Resume: unpause and close.
+## Save Game: serialise state to user://saves/<scenario_id>.json.
+## Load Game: restore from that file via scene reload.
 ## Restart Scenario: unpause, then reload the scene and auto-start the same scenario.
 ## Quit to Menu: unpause then reload the scene (returns to main menu).
 
@@ -21,6 +23,13 @@ var _is_open: bool = false
 var _scenario_id: String = ""
 var _how_to_play: CanvasLayer = null
 
+# ── Save/load refs (wired by main.gd via setup_save_load) ─────────────────────
+var _world_ref:     Node2D      = null
+var _day_night_ref: Node        = null
+var _journal_ref:   CanvasLayer = null
+
+var _status_label: Label = null
+
 
 func _ready() -> void:
 	layer        = 20
@@ -35,6 +44,13 @@ func _ready() -> void:
 ## Called by main.gd immediately after adding this node.
 func setup(scenario_id: String) -> void:
 	_scenario_id = scenario_id
+
+
+## Called by main.gd to provide game-system references for save/load.
+func setup_save_load(world: Node2D, day_night: Node, journal: CanvasLayer) -> void:
+	_world_ref     = world
+	_day_night_ref = day_night
+	_journal_ref   = journal
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -55,6 +71,8 @@ func _open() -> void:
 	_is_open          = true
 	visible           = true
 	get_tree().paused = true
+	if _status_label != null:
+		_status_label.text = ""
 
 
 func _close() -> void:
@@ -71,9 +89,9 @@ func _build_ui() -> void:
 	bg.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(bg)
 
-	# Centred panel — tall enough for four buttons.
+	# Centred panel — tall enough for six buttons plus a status line.
 	var panel := Panel.new()
-	panel.custom_minimum_size = Vector2(300, 268)
+	panel.custom_minimum_size = Vector2(300, 390)
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	var style := StyleBoxFlat.new()
@@ -119,6 +137,16 @@ func _build_ui() -> void:
 	btn_howto.pressed.connect(_on_how_to_play)
 	vbox.add_child(btn_howto)
 
+	# Save Game button.
+	var btn_save := _make_pause_btn("Save Game", Color(0.60, 0.90, 0.65, 1.0))
+	btn_save.pressed.connect(_on_save_game)
+	vbox.add_child(btn_save)
+
+	# Load Game button.
+	var btn_load := _make_pause_btn("Load Game", Color(0.60, 0.80, 1.00, 1.0))
+	btn_load.pressed.connect(_on_load_game)
+	vbox.add_child(btn_load)
+
 	# Restart Scenario button.
 	var btn_restart := _make_pause_btn("Restart Scenario", Color(0.95, 0.80, 0.40, 1.0))
 	btn_restart.pressed.connect(_on_restart_scenario)
@@ -129,9 +157,51 @@ func _build_ui() -> void:
 	btn_quit.pressed.connect(_on_quit_to_menu)
 	vbox.add_child(btn_quit)
 
+	# Status label — shows save/load feedback.
+	_status_label = Label.new()
+	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status_label.autowrap_mode        = TextServer.AUTOWRAP_WORD_SMART
+	_status_label.custom_minimum_size  = Vector2(240, 0)
+	_status_label.add_theme_font_size_override("font_size", 11)
+	_status_label.add_theme_color_override("font_color", Color(0.80, 0.75, 0.55, 1.0))
+	_status_label.process_mode = Node.PROCESS_MODE_ALWAYS
+	vbox.add_child(_status_label)
+
 
 func _on_how_to_play() -> void:
 	_how_to_play.open()
+
+
+func _on_save_game() -> void:
+	if _world_ref == null or _day_night_ref == null or _journal_ref == null:
+		_set_status("Save unavailable — game not fully loaded.", Color(1.0, 0.5, 0.5, 1.0))
+		return
+	var err: String = SaveManager.save_game(_world_ref, _day_night_ref, _journal_ref)
+	if err.is_empty():
+		_set_status("Game saved.", Color(0.60, 0.90, 0.65, 1.0))
+	else:
+		_set_status("Save failed: " + err, Color(1.0, 0.5, 0.5, 1.0))
+
+
+func _on_load_game() -> void:
+	if _world_ref == null:
+		_set_status("Load unavailable — game not fully loaded.", Color(1.0, 0.5, 0.5, 1.0))
+		return
+	var err: String = SaveManager.prepare_load(_scenario_id)
+	if not err.is_empty():
+		_set_status(err, Color(1.0, 0.5, 0.5, 1.0))
+		return
+	# Reload the scene; main.gd will restore state via SaveManager.apply_pending_load().
+	_pending_restart_id = SaveManager.pending_scenario_id()
+	get_tree().paused   = false
+	get_tree().reload_current_scene()
+
+
+func _set_status(msg: String, colour: Color) -> void:
+	if _status_label == null:
+		return
+	_status_label.text = msg
+	_status_label.add_theme_color_override("font_color", colour)
 
 
 func _on_restart_scenario() -> void:
