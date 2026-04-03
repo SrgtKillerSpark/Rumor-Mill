@@ -87,7 +87,12 @@ func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -
 			# is already low, so rival should push him up)
 			var tomas_gap: int = ScenarioManager.S3_WIN_TOMAS_MAX - tomas_score
 
-			if calder_gap <= tomas_gap:
+			if calder_gap < 10:
+				# Urgency: Calder near fail floor, always attack regardless of tomas_gap sign.
+				claim_type_str = "scandal"
+				subject_id     = CALDER_FENN_ID
+			elif calder_gap <= max(tomas_gap, 0):
+				# Clamp tomas_gap to 0 to avoid negative comparison when tomas_score > 35.
 				claim_type_str = "scandal"
 				subject_id     = CALDER_FENN_ID
 			else:
