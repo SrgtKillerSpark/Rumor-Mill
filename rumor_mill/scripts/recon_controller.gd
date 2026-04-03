@@ -414,7 +414,7 @@ func _try_observe(location_id: String) -> void:
 		msg += "\n[+] Forged Document acquired."
 		print("[Recon] Evidence: Forged Document acquired at '%s'" % location_id)
 	elif tick % 24 > 18 \
-			and (location_id == "noble_estate" or location_id == "temple"):
+			and (location_id == "manor" or location_id == "chapel"):
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Incriminating Artifact", 0.25, 0.0,
 			["SCANDAL", "HERESY"], tick)
