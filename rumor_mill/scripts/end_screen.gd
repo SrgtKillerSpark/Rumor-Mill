@@ -308,7 +308,7 @@ func _populate_stats(scenario_id: int, won: bool) -> void:
 	# ── Peak Belief ───────────────────────────────────────────────────────────
 	var peak_belief := 0
 	if _world_ref != null and _world_ref.reputation_system != null:
-		var all_snaps := _world_ref.reputation_system.get_all_snapshots()
+		var all_snaps: Dictionary = _world_ref.reputation_system.get_all_snapshots()
 		for npc_id in all_snaps:
 			var snap: ReputationSystem.ReputationSnapshot = all_snaps[npc_id]
 			if snap.score > peak_belief:
@@ -354,9 +354,9 @@ func _build_bonus_stat(scenario_id: int) -> void:
 		1:
 			bonus_label_text = "Guard Suspicion"
 			if _world_ref != null and _world_ref.reputation_system != null:
-				var snap := _world_ref.reputation_system.get_snapshot("bram_guard")
+				var snap: Variant = _world_ref.reputation_system.get_snapshot("bram_guard")
 				if snap != null:
-					var s := snap.score
+					var s: int = snap.score
 					if s >= 80:
 						bonus_value_text = "Active"
 					elif s >= 60:

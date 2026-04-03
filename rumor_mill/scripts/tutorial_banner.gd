@@ -171,7 +171,7 @@ func _auto_dismiss() -> void:
 	if _dismiss_tween != null:
 		_dismiss_tween.kill()
 	_dismiss_tween = create_tween()
-	_dismiss_tween.tween_property(self, "modulate:a", 0.0, 0.4)
+	_dismiss_tween.tween_property(_container, "modulate:a", 0.0, 0.4)
 	_dismiss_tween.tween_callback(_finish_dismiss)
 
 
@@ -190,7 +190,7 @@ func _finish_dismiss() -> void:
 	if _tutorial_sys != null and _active_id != "":
 		_tutorial_sys.mark_seen(_active_id)
 	_active_id       = ""
-	modulate.a       = 1.0
+	_container.modulate.a = 1.0
 	visible          = false
 	_hovered         = false
 	if not _suppressed:
@@ -200,7 +200,7 @@ func _finish_dismiss() -> void:
 func _instant_hide() -> void:
 	if _dismiss_tween != null:
 		_dismiss_tween.kill()
-	modulate.a = 1.0
+	_container.modulate.a = 1.0
 	visible    = false
 
 
