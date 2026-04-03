@@ -95,16 +95,33 @@ fi
 echo ""
 echo "Step 2/2 — Merging main → stable..."
 
-# Switch to stable and fast-forward
-git checkout stable
-git merge --ff-only main -m "chore: merge main into stable (validated)
+# If `stable` is checked out in a linked worktree, we cannot switch to it from
+# here. Detect that case and merge via the worktree directly.
+STABLE_WORKTREE=""
+while IFS= read -r wt_line; do
+  # Each worktree block starts with the path; grab the one whose branch is stable
+  if [[ "$wt_line" == worktree\ * ]]; then
+    WT_PATH="${wt_line#worktree }"
+  elif [[ "$wt_line" == branch\ refs/heads/stable ]]; then
+    STABLE_WORKTREE="$WT_PATH"
+  fi
+done < <(git worktree list --porcelain)
+
+if [[ -n "$STABLE_WORKTREE" && "$STABLE_WORKTREE" != "$REPO_ROOT" ]]; then
+  # Merge from within the stable worktree
+  git -C "$STABLE_WORKTREE" merge --ff-only "$MAIN_SHA" -m "chore: merge main into stable (validated)
 
 Co-Authored-By: Paperclip <noreply@paperclip.ing>"
+else
+  # No separate worktree — switch to stable, merge, then return
+  git checkout stable
+  git merge --ff-only main -m "chore: merge main into stable (validated)
+
+Co-Authored-By: Paperclip <noreply@paperclip.ing>"
+  git checkout "$CURRENT_BRANCH"
+fi
 
 NEW_STABLE_SHA="$(git rev-parse stable)"
-
-# Return to original branch
-git checkout "$CURRENT_BRANCH"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
