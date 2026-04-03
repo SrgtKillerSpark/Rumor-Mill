@@ -88,8 +88,10 @@ func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
 
 func toggle() -> void:
 	if panel.visible:
+		AudioManager.play_sfx("rumor_panel_close")
 		panel.visible = false
 	else:
+		AudioManager.play_sfx("rumor_panel_open")
 		_open_panel(PANEL_SUBJECT)
 		panel.visible = true
 
@@ -765,6 +767,7 @@ func _make_nav_button(label_text: String) -> Button:
 	btn.add_theme_stylebox_override("focus",  focus)
 	btn.add_theme_color_override("font_color", Color(0.92, 0.82, 0.60, 1.0))
 	btn.add_theme_font_size_override("font_size", 12)
+	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))
 	return btn
 
 

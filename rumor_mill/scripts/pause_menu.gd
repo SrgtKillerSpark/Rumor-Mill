@@ -256,4 +256,5 @@ func _make_pause_btn(label_text: String, font_color: Color) -> Button:
 	btn.add_theme_stylebox_override("hover",   hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_stylebox_override("focus",   focus)
+	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))
 	return btn

@@ -688,6 +688,7 @@ func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id:
 
 
 func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: String) -> void:
+	AudioManager.play_sfx("whisper")
 	var tick: int = day_night.current_tick if day_night != null else 0
 	var msg := "%s whispered to %s" % [from_name, to_name]
 	if not rumor_id.is_empty():
