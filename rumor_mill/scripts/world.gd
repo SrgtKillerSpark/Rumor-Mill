@@ -102,7 +102,6 @@ func _ready() -> void:
 	_init_propagation_engine()
 	_init_intel_store()
 	_init_reputation_system()
-	_apply_active_scenario()
 	_wire_debug_nodes()
 
 
