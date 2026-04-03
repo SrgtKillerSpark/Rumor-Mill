@@ -82,7 +82,7 @@ func _load_scenarios() -> void:
 	if file == null:
 		push_error("MainMenu: cannot open scenarios.json")
 		return
-	var parsed = JSON.parse_string(file.get_as_text())
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	file.close()
 	if parsed is Array:
 		_scenarios = parsed

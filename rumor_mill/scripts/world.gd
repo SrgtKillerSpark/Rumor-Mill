@@ -407,7 +407,7 @@ func _apply_active_scenario() -> void:
 		reputation_system.recalculate_all(npcs, 0)
 		return
 
-	var parsed = JSON.parse_string(file.get_as_text())
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	file.close()
 	if not (parsed is Array):
 		push_error("World: failed to parse scenarios.json")
@@ -561,7 +561,7 @@ func get_claims() -> Array:
 		if file == null:
 			push_error("World: cannot open claims.json")
 			return []
-		var parsed = JSON.parse_string(file.get_as_text())
+		var parsed: Variant = JSON.parse_string(file.get_as_text())
 		file.close()
 		if parsed is Array:
 			_claims_data = parsed

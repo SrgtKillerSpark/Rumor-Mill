@@ -172,7 +172,7 @@ static func _load_dialogue_db() -> void:
 	if f == null:
 		_dialogue_loaded = true
 		return
-	var parsed = JSON.parse_string(f.get_as_text())
+	var parsed: Variant = JSON.parse_string(f.get_as_text())
 	f.close()
 	if parsed is Dictionary and parsed.has("npc_dialogue"):
 		_dialogue_data = parsed["npc_dialogue"]

@@ -688,7 +688,10 @@ func _make_button(label: String, min_width: int) -> Button:
 # ── Button handlers ───────────────────────────────────────────────────────────
 
 func _on_play_again() -> void:
-	var pause_menu_script = load("res://scripts/pause_menu.gd")
+	var pause_menu_script = load("res://scripts/pause_menu.gd") as Script
+	if pause_menu_script == null:
+		push_error("EndScreen: failed to load pause_menu.gd")
+		return
 	pause_menu_script._pending_restart_id = _current_scenario_id
 	get_tree().reload_current_scene()
 
@@ -697,12 +700,18 @@ func _on_next_scenario() -> void:
 	var next_id := _next_scenario_id(_current_scenario_id)
 	if next_id.is_empty():
 		return
-	var pause_menu_script = load("res://scripts/pause_menu.gd")
+	var pause_menu_script = load("res://scripts/pause_menu.gd") as Script
+	if pause_menu_script == null:
+		push_error("EndScreen: failed to load pause_menu.gd")
+		return
 	pause_menu_script._pending_restart_id = next_id
 	get_tree().reload_current_scene()
 
 
 func _on_main_menu() -> void:
-	var pause_menu_script = load("res://scripts/pause_menu.gd")
+	var pause_menu_script = load("res://scripts/pause_menu.gd") as Script
+	if pause_menu_script == null:
+		push_error("EndScreen: failed to load pause_menu.gd")
+		return
 	pause_menu_script._pending_restart_id = ""
 	get_tree().reload_current_scene()

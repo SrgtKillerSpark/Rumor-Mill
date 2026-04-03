@@ -21,7 +21,7 @@ static func get_completed() -> Array:
 	if f == null:
 		push_warning("ProgressData: failed to open '%s' for reading" % SAVE_PATH)
 		return []
-	var parsed = JSON.parse_string(f.get_as_text())
+	var parsed: Variant = JSON.parse_string(f.get_as_text())
 	f.close()
 	if parsed is Dictionary:
 		return parsed.get("completed", [])

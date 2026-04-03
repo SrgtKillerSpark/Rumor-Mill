@@ -84,7 +84,7 @@ func _load_flavor_text() -> void:
 	if file == null:
 		push_warning("NpcTooltip: flavor_text.json not found — bios disabled")
 		return
-	var parsed = JSON.parse_string(file.get_as_text())
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	file.close()
 	if parsed is Dictionary:
 		_flavor_text = parsed
