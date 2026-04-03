@@ -15,6 +15,7 @@ const STATE_COLORS := {
 	Rumor.RumorState.SPREAD:     Color(1.0, 0.55, 0.0, 0.9),
 	Rumor.RumorState.ACT:        Color(0.7, 0.0, 1.0, 0.9),
 	Rumor.RumorState.EXPIRED:    Color(0.25, 0.25, 0.25, 0.9),
+	Rumor.RumorState.DEFENDING:  Color(0.2, 0.7, 1.0, 0.9),  # sky blue
 }
 
 var show_states:  bool = true

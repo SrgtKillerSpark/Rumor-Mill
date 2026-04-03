@@ -21,7 +21,8 @@ enum RumorState {
 	SPREAD,
 	ACT,
 	CONTRADICTED, # subject has conflicting opposite-sentiment rumors both actively spreading
-	EXPIRED   # believability decayed to zero; stops propagating
+	EXPIRED,  # believability decayed to zero; stops propagating
+	DEFENDING # NPC rejected a rumor about a high-loyalty ally and is actively countering it
 }
 
 var id: String
@@ -107,6 +108,7 @@ static func state_name(state: RumorState) -> String:
 		RumorState.ACT:          return "ACT"
 		RumorState.CONTRADICTED: return "CONTRADICTED"
 		RumorState.EXPIRED:      return "EXPIRED"
+		RumorState.DEFENDING:    return "DEFENDING"
 		_:                       return "UNKNOWN"
 
 

@@ -90,6 +90,20 @@ const SPRITE_H := 48
 
 var _faction: String = "merchant"
 
+# ── Defender state (NPC-level, not per rumor slot) ───────────────────────────
+var _is_defending:            bool   = false
+var _defender_target_npc_id:  String = ""
+var _defender_ticks_remaining: int   = 0
+const _DEFENDER_PENALTY:      float  = 0.15
+const _DEFENDER_DURATION:     int    = 5
+const _DEFENSE_PENALTY_CAP:   float  = 0.30
+
+# subject_npc_id → float (accumulated penalty applied to this NPC's credulity)
+var _defense_modifiers: Dictionary = {}
+# subject_npc_id → int (ticks remaining before penalty expires)
+var _defense_modifier_ticks: Dictionary = {}
+const _DEFENSE_MOD_DURATION: int = 3
+
 # Sprite modulate tints per worst rumor state — subtle colour shifts so the
 # player can read NPC state at a glance without squinting at the state badge.
 const STATE_TINT := {
@@ -101,10 +115,17 @@ const STATE_TINT := {
 	Rumor.RumorState.REJECT:       Color(0.80, 0.80, 0.85, 1.0),  # cool grey-blue
 	Rumor.RumorState.CONTRADICTED: Color(0.75, 0.55, 1.00, 1.0),  # muted purple
 	Rumor.RumorState.EXPIRED:      Color(0.65, 0.65, 0.65, 1.0),  # grey
+	Rumor.RumorState.DEFENDING:    Color(0.50, 0.80, 1.00, 1.0),  # sky blue
 }
 
 # Tracks last worst state so we only emit rumor_state_changed on actual changes.
 var _last_worst_state: Rumor.RumorState = Rumor.RumorState.UNAWARE
+
+# Hover tint applied directly to sprite.modulate while this NPC is hovered.
+# Keeping it on the sprite (not the parent modulate) prevents compounding with
+# the parent node's modulate, which would muddy state colours.
+const NPC_HOVER_TINT := Color(1.5, 1.3, 0.5, 1.0)
+var _hovered: bool = false
 
 
 func _ready() -> void:
@@ -193,6 +214,8 @@ func init_from_data(
 func on_tick(tick: int) -> void:
 	_step_movement()
 	_process_rumor_slots(tick)
+	_tick_defender(tick)
+	_tick_defense_modifiers()
 	_update_label()
 
 
@@ -379,7 +402,14 @@ func _tick_evaluating(
 		rid: String
 ) -> void:
 	var rumor := slot.rumor
-	var believe_chance := _credulity * rumor.current_believability
+	var effective_credulity := _credulity
+
+	# Defense penalty: reduce credulity if a neighbor is defending the rumor's subject.
+	var subject_id: String = rumor.subject_npc_id
+	if _defense_modifiers.has(subject_id):
+		effective_credulity = maxf(effective_credulity - _defense_modifiers[subject_id], 0.0)
+
+	var believe_chance := effective_credulity * rumor.current_believability
 
 	# Same-faction source bonus.
 	if slot.source_faction == faction:
@@ -401,6 +431,15 @@ func _tick_evaluating(
 		slot.ticks_in_state = 0
 		if OS.is_debug_build():
 			print("[Rumor] %s REJECT '%s' (p=%.2f)" % [npc_name, rid, believe_chance])
+		# High-loyalty NPCs who reject a negative rumor about a close ally enter DEFENDING.
+		if _loyalty > 0.7 and not Rumor.is_positive_claim(rumor.claim_type) \
+				and not _is_defending:
+			_is_defending = true
+			_defender_target_npc_id = subject_id
+			_defender_ticks_remaining = _DEFENDER_DURATION
+			emit_signal("rumor_state_changed", npc_name, "DEFENDING", rid)
+			if OS.is_debug_build():
+				print("[Defender] %s entered DEFENDING for subject '%s'" % [npc_name, subject_id])
 
 
 func _tick_believe(
@@ -616,6 +655,58 @@ func _start_spread_clustering(rumor: Rumor) -> void:
 		_path.remove_at(0)
 
 
+# ── Defender tick logic ───────────────────────────────────────────────────────
+
+## Called each tick to advance the defending NPC's countdown and broadcast the
+## credibility penalty to all social-graph neighbours.
+func _tick_defender(tick: int) -> void:
+	if not _is_defending:
+		return
+	_defender_ticks_remaining -= 1
+	if _defender_ticks_remaining <= 0:
+		_is_defending = false
+		_defender_target_npc_id = ""
+		_defender_ticks_remaining = 0
+		return
+	_broadcast_defense(tick)
+
+
+## Broadcast a credulity penalty for the defended subject to all neighbours.
+func _broadcast_defense(_tick: int) -> void:
+	if social_graph_ref == null or all_npcs_ref.is_empty():
+		return
+	var npc_id: String = npc_data.get("id", "")
+	var neighbours: Dictionary = social_graph_ref.get_neighbours(npc_id)
+
+	for other in all_npcs_ref:
+		if other == self:
+			continue
+		var tid: String = other.npc_data.get("id", "")
+		if not neighbours.has(tid):
+			continue
+		other._apply_defense_penalty(_defender_target_npc_id, _DEFENDER_PENALTY)
+
+
+## Apply (or refresh) a credulity penalty on this NPC for the given subject.
+## Penalties are capped at _DEFENSE_PENALTY_CAP and last _DEFENSE_MOD_DURATION ticks.
+func _apply_defense_penalty(subject_id: String, penalty: float) -> void:
+	var current: float = _defense_modifiers.get(subject_id, 0.0)
+	_defense_modifiers[subject_id] = minf(current + penalty, _DEFENSE_PENALTY_CAP)
+	_defense_modifier_ticks[subject_id] = _DEFENSE_MOD_DURATION
+
+
+## Tick down defense modifier expiry; removes expired entries.
+func _tick_defense_modifiers() -> void:
+	var to_remove: Array = []
+	for sid in _defense_modifier_ticks.keys():
+		_defense_modifier_ticks[sid] -= 1
+		if _defense_modifier_ticks[sid] <= 0:
+			to_remove.append(sid)
+	for sid in to_remove:
+		_defense_modifiers.erase(sid)
+		_defense_modifier_ticks.erase(sid)
+
+
 # ── Query helpers ────────────────────────────────────────────────────────────
 
 func get_state_for_rumor(rumor_id: String) -> Rumor.RumorState:
@@ -625,7 +716,9 @@ func get_state_for_rumor(rumor_id: String) -> Rumor.RumorState:
 
 
 func get_worst_rumor_state() -> Rumor.RumorState:
-	# Priority order for display: ACT > SPREAD > CONTRADICTED > BELIEVE > EVALUATING > REJECT > EXPIRED > UNAWARE
+	# Priority order for display: ACT > DEFENDING > SPREAD > CONTRADICTED > BELIEVE > EVALUATING > REJECT > EXPIRED > UNAWARE
+	if _is_defending:
+		return Rumor.RumorState.DEFENDING
 	var priority := [
 		Rumor.RumorState.ACT,
 		Rumor.RumorState.SPREAD,
@@ -654,10 +747,12 @@ func _update_label() -> void:
 	else:
 		name_label.text = "%s\n[%s]" % [short_name, state_str]
 
-	# Apply sprite tint based on worst rumor state.
-	if sprite != null and sprite.sprite_frames != null:
-		var tint: Color = STATE_TINT.get(worst, Color.WHITE)
-		sprite.modulate = tint
+	# Apply sprite tint based on worst rumor state (skipped while hovered so the
+	# hover tint set by set_hover() isn't overwritten mid-frame).
+	if not _hovered:
+		if sprite != null and sprite.sprite_frames != null:
+			var tint: Color = STATE_TINT.get(worst, Color.WHITE)
+			sprite.modulate = tint
 
 	# Emit state-change signal so the journal + overlay can react.
 	if worst != _last_worst_state:
@@ -669,6 +764,22 @@ func _update_label() -> void:
 				wrid = rid
 				break
 		emit_signal("rumor_state_changed", short_name, state_str, wrid)
+
+
+# ── Hover highlight ──────────────────────────────────────────────────────────
+
+## Called by recon_controller to apply or remove the hover highlight.
+## Applies NPC_HOVER_TINT directly to sprite.modulate so the parent node's
+## modulate stays at Color(1,1,1,1) and doesn't multiply with state tints.
+func set_hover(hovered: bool) -> void:
+	_hovered = hovered
+	if sprite == null or sprite.sprite_frames == null:
+		return
+	if _hovered:
+		sprite.modulate = NPC_HOVER_TINT
+	else:
+		var worst := get_worst_rumor_state()
+		sprite.modulate = STATE_TINT.get(worst, Color.WHITE)
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────
