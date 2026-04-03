@@ -1,0 +1,48 @@
+name: Validate GDScript
+
+on:
+  push:
+    branches: ["main", "dev"]
+    paths:
+      - "rumor_mill/scripts/**"
+      - "rumor_mill/scenes/**"
+      - "rumor_mill/project.godot"
+  pull_request:
+    paths:
+      - "rumor_mill/scripts/**"
+      - "rumor_mill/scenes/**"
+      - "rumor_mill/project.godot"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: GDScript parse & type check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Godot 4 (headless)
+        run: |
+          GODOT_VERSION="4.3"
+          GODOT_RELEASE="stable"
+          FILENAME="Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64"
+          URL="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/${FILENAME}.zip"
+          echo "Downloading Godot $GODOT_VERSION $GODOT_RELEASE..."
+          curl -fsSL "$URL" -o godot.zip
+          unzip -q godot.zip -d godot_bin
+          chmod +x "godot_bin/${FILENAME}"
+          echo "$PWD/godot_bin" >> "$GITHUB_PATH"
+          echo "GODOT_BIN=$PWD/godot_bin/${FILENAME}" >> "$GITHUB_ENV"
+
+      - name: Import project assets (first-run cache build)
+        run: |
+          # First headless run builds the .godot/ import cache; errors here are expected
+          "$GODOT_BIN" --headless --path rumor_mill --import --quit || true
+
+      - name: Run GDScript validation
+        run: |
+          bash rumor_mill/tools/validate_gdscript.sh \
+            --godot "$GODOT_BIN" \
+            --project rumor_mill
