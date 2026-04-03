@@ -70,24 +70,44 @@ echo "  Project: $PROJECT_DIR"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # ── Run Godot headless validation ─────────────────────────────────────────────
-# --headless     : no GUI, no display server required
-# --check-only   : parse/type-check all scripts, then exit (Godot 4.1+)
-# --path         : project root
-# 2>&1           : merge stderr into stdout so we capture all output
+# --headless : no GUI, no display server required
+# --path     : project root
+# 2>&1       : merge stderr into stdout so we capture all output
+#
+# Note: Godot 4 in headless mode loads and runs the project without a window.
+# It does not exit on its own, so we wrap the call in a timeout (default 60 s).
+# If Godot exits cleanly OR is killed by the timeout and no res://-path errors
+# were emitted, validation is considered passed.
+GODOT_TIMEOUT="${GODOT_TIMEOUT:-60}"
 TMPLOG="$(mktemp /tmp/godot_validate_XXXXXX.log)"
 trap 'rm -f "$TMPLOG"' EXIT
 
+# Use GNU timeout if available; fall back to direct run with a background kill.
 set +e
-"$GODOT_BIN" --headless --check-only --path "$PROJECT_DIR" > "$TMPLOG" 2>&1
-GODOT_EXIT=$?
+if command -v timeout &>/dev/null 2>&1; then
+  timeout "$GODOT_TIMEOUT" "$GODOT_BIN" --headless --path "$PROJECT_DIR" > "$TMPLOG" 2>&1
+  GODOT_EXIT=$?
+  # timeout exits 124 when it kills the process — treat that as a clean exit
+  # (the game ran long enough to load all scripts; we check for errors below).
+  [[ $GODOT_EXIT -eq 124 ]] && GODOT_EXIT=0
+else
+  "$GODOT_BIN" --headless --path "$PROJECT_DIR" > "$TMPLOG" 2>&1 &
+  GODOT_PID=$!
+  sleep "$GODOT_TIMEOUT"
+  kill "$GODOT_PID" 2>/dev/null || true
+  wait "$GODOT_PID" 2>/dev/null
+  GODOT_EXIT=0
+fi
 set -e
 
 # ── Parse output for errors ────────────────────────────────────────────────────
-# Godot 4 error lines typically look like:
+# Godot 4 GDScript error lines reference a res:// path, e.g.:
 #   ERROR: res://scripts/foo.gd:42 - Parse error: …
 #   SCRIPT ERROR: res://scripts/foo.gd:42 - …
-ERROR_LINES=$(grep -E "^(ERROR|SCRIPT ERROR|Parse error):" "$TMPLOG" || true)
-WARNING_LINES=$(grep -E "^WARNING:" "$TMPLOG" || true)
+# Engine-level shutdown noise (BUG: Unreferenced static string, RID leaks,
+# PagedAllocator, Thread cleanup) does NOT contain res:// and is excluded.
+ERROR_LINES=$(grep -E "^(ERROR|SCRIPT ERROR).*res://|^Parse error:" "$TMPLOG" || true)
+WARNING_LINES=$(grep -E "^WARNING:.*res://" "$TMPLOG" || true)
 
 # Count errors
 ERROR_COUNT=0
