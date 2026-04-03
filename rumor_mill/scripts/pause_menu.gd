@@ -4,9 +4,14 @@ extends CanvasLayer
 ## Created programmatically by main.gd after the game starts.
 ## Pauses the game tree while open.
 ## Resume: unpause and close.
+## Restart Scenario: unpause, then reload the scene and auto-start the same scenario.
 ## Quit to Menu: unpause then reload the scene (returns to main menu).
 
+## Persists across scene reloads so main.gd can skip the menu on restart.
+static var _pending_restart_id: String = ""
+
 var _is_open: bool = false
+var _scenario_id: String = ""
 
 
 func _ready() -> void:
@@ -14,6 +19,11 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui()
 	visible = false
+
+
+## Called by main.gd immediately after adding this node.
+func setup(scenario_id: String) -> void:
+	_scenario_id = scenario_id
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -50,9 +60,9 @@ func _build_ui() -> void:
 	bg.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(bg)
 
-	# Centred panel.
+	# Centred panel — tall enough for three buttons.
 	var panel := Panel.new()
-	panel.custom_minimum_size = Vector2(300, 180)
+	panel.custom_minimum_size = Vector2(300, 230)
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	var style := StyleBoxFlat.new()
@@ -96,6 +106,15 @@ func _build_ui() -> void:
 	btn_resume.pressed.connect(_close)
 	vbox.add_child(btn_resume)
 
+	# Restart Scenario button.
+	var btn_restart := Button.new()
+	btn_restart.text = "Restart Scenario"
+	btn_restart.add_theme_font_size_override("font_size", 14)
+	btn_restart.add_theme_color_override("font_color", Color(0.95, 0.80, 0.40, 1.0))
+	btn_restart.process_mode = Node.PROCESS_MODE_ALWAYS
+	btn_restart.pressed.connect(_on_restart_scenario)
+	vbox.add_child(btn_restart)
+
 	# Quit to menu button.
 	var btn_quit := Button.new()
 	btn_quit.text = "Quit to Menu"
@@ -106,6 +125,13 @@ func _build_ui() -> void:
 	vbox.add_child(btn_quit)
 
 
+func _on_restart_scenario() -> void:
+	_pending_restart_id = _scenario_id
+	get_tree().paused = false
+	get_tree().reload_current_scene()
+
+
 func _on_quit_to_menu() -> void:
+	_pending_restart_id = ""
 	get_tree().paused = false
 	get_tree().reload_current_scene()

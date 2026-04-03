@@ -53,7 +53,14 @@ func _ready() -> void:
 	social_graph_overlay.visible = false
 	objective_hud.visible        = false
 
-	# ── Sprint 8: show main menu ───────────────────────────────────────────────
+	# ── Sprint 8: show main menu (or auto-restart a scenario) ────────────────
+	var _pause_menu_script = preload("res://scripts/pause_menu.gd")
+	var _restart_id: String = _pause_menu_script._pending_restart_id
+	if _restart_id != "":
+		_pause_menu_script._pending_restart_id = ""
+		_on_begin_game.call_deferred(_restart_id)
+		return
+
 	_main_menu = preload("res://scripts/main_menu.gd").new()
 	_main_menu.name = "MainMenu"
 	add_child(_main_menu)
@@ -368,6 +375,7 @@ func _init_pause_menu() -> void:
 	_pause_menu = preload("res://scripts/pause_menu.gd").new()
 	_pause_menu.name = "PauseMenu"
 	add_child(_pause_menu)
+	_pause_menu.setup(world.active_scenario_id)
 	print("Main: Pause menu wired (Escape to open)")
 
 
