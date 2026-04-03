@@ -70,17 +70,24 @@ const CALDER_FENN_ID   := "calder_fenn"
 const TOMAS_REEVE_ID   := "tomas_reeve"
 
 # Scenario 1 threshold.
-const S1_WIN_EDRIC_BELOW   := 25
+# SPA-98: raised from 25 — Edric's credulity=0.05 and loyalty=0.80 override make
+# the original 26-point drop punishing for a tutorial scenario.
+const S1_WIN_EDRIC_BELOW   := 30
 
 # Scenario 2 thresholds.
-# Win when 5+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
-const S2_WIN_ILLNESS_MIN   := 5
+# Win when 7+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
+# SPA-98: raised from 5 — 5 believers was trivially reachable in 3-4 days with ILL-01
+# (intensity=5). The real tension is avoiding Maren's contradiction, not the count.
+const S2_WIN_ILLNESS_MIN   := 7
 # Ticks per in-game day (matches DayNightCycle default).
 const TICKS_PER_DAY        := 24
 
 # Scenario 3 thresholds.
-const S3_WIN_CALDER_MIN    := 80
-const S3_WIN_TOMAS_MAX     := 30
+# SPA-98: eased from (Calder>=80, Tomas<=30) to (Calder>=75, Tomas<=35).
+# PRAISE claims have low intensity (1-2), so reaching +22 on Calder in 25 days
+# with 2 whispers/day was extremely difficult. Required gains now: +17 / -17.
+const S3_WIN_CALDER_MIN    := 75
+const S3_WIN_TOMAS_MAX     := 35
 const S3_FAIL_CALDER_BELOW := 40
 
 enum ScenarioState { ACTIVE, WON, FAILED }

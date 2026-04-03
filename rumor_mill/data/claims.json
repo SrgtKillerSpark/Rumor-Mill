@@ -40,7 +40,7 @@
     "type": "scandal",
     "templateText": "[subject] has been seen meeting privately with [other_npc]",
     "intensity": 2,
-    "mutability": 5,
+    "mutability": 4,
     "targetFactions": ["clergy", "noble"],
     "unlockedByDefault": true
   },
@@ -76,7 +76,7 @@
     "type": "prophecy",
     "templateText": "[subject] was named in a dream as a harbinger of misfortune",
     "intensity": 2,
-    "mutability": 5,
+    "mutability": 4,
     "targetFactions": ["clergy"],
     "unlockedByDefault": true
   },

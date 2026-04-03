@@ -95,19 +95,23 @@ func calc_beta(
 ) -> float:
 	var faction_mod := _faction_modifier(from_faction, to_faction)
 	var effective_credulity := clamp(credulity - heat_modifier, 0.0, 1.0)
-	# Scale factor 2.5 keeps probabilities in a useful range given all inputs ∈ [0,1].
-	return clamp(sociability * effective_credulity * edge_weight * faction_mod * 2.5, 0.0, 1.0)
+	# Scale factor 1.8 keeps probabilities in a useful range given all inputs ∈ [0,1].
+	# Reduced from 2.5 (SPA-98 balance pass): highly social NPCs still spread briskly,
+	# but moderate NPCs no longer guarantee daily spread to every connected neighbor.
+	return clamp(sociability * effective_credulity * edge_weight * faction_mod * 1.8, 0.0, 1.0)
 
 
 # ── γ — recovery probability ──────────────────────────────────────────────────
 
-## γ = loyalty × (1 − temperament) × 0.35
+## γ = loyalty × (1 − temperament) × 0.30
 ##
 ## Returns a clamped [0.0, 1.0] per-tick probability of transitioning from
 ## BELIEVE back to REJECT (the NPC recovers from / forgets the rumor).
 ## High loyalty + low temperament → higher recovery chance.
+## Reduced from 0.35 (SPA-98 balance pass): beliefs persist longer before
+## natural rejection, giving planted rumors more staying power.
 func calc_gamma(loyalty: float, temperament: float) -> float:
-	return clamp(loyalty * (1.0 - temperament) * 0.35, 0.0, 1.0)
+	return clamp(loyalty * (1.0 - temperament) * 0.30, 0.0, 1.0)
 
 
 # ── Mutation system ───────────────────────────────────────────────────────────

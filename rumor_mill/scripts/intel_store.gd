@@ -138,7 +138,7 @@ func decay_heat() -> void:
 	if not heat_enabled:
 		return
 	for npc_id in heat.keys():
-		heat[npc_id] = maxf(0.0, heat[npc_id] - 8.0)
+		heat[npc_id] = maxf(0.0, heat[npc_id] - 6.0)  # SPA-98: reduced from 8.0 so heat lingers ~2 days after a seed action
 
 
 # ---------------------------------------------------------------------------
