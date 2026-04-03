@@ -29,6 +29,9 @@ var bribe_charges: int = 0
 ## Collectible evidence items the player can attach to a seeded rumor (max 3).
 var evidence_inventory: Array = []
 
+## Running total of evidence items consumed this run (for end-screen stats).
+var evidence_used_count: int = 0
+
 
 # ---------------------------------------------------------------------------
 # LocationIntel — snapshot of which NPCs were at a location during one tick.
@@ -236,6 +239,7 @@ func add_evidence(item: EvidenceItem) -> void:
 ## Remove a specific evidence item from the inventory after it is consumed.
 func consume_evidence(item: EvidenceItem) -> void:
 	evidence_inventory.erase(item)
+	evidence_used_count += 1
 
 
 ## Returns all inventory items whose compatible_claims include claim_type_upper,
