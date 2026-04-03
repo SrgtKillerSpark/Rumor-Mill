@@ -75,6 +75,14 @@ theme_override_colors/font_color = Color(0.75, 0.68, 0.52, 1.0)
 name = "WhisperPips"
 theme_override_constants/separation = 3
 
+[node name="KeyHintRow" type="HBoxContainer" parent="CounterPanel/VBox"]
+theme_override_constants/separation = 0
+
+[node name="KeyHintLabel" type="Label" parent="CounterPanel/VBox/KeyHintRow"]
+text = "R: Craft Rumor"
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(0.50, 0.44, 0.32, 0.65)
+
 [node name="FavorsRow" type="HBoxContainer" parent="CounterPanel/VBox"]
 visible = false
 theme_override_constants/separation = 4

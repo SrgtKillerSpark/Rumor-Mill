@@ -156,3 +156,79 @@ offset_right = -5.0
 offset_bottom = 14.0
 color = Color(0.95, 0.25, 0.15, 1.0)
 visible = false
+
+[node name="EscHintPanel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -190.0
+offset_top = 126.0
+offset_right = -6.0
+offset_bottom = 148.0
+
+[node name="ParchBG" type="ColorRect" parent="EscHintPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.10, 0.07, 0.05, 0.75)
+
+[node name="LeftBar" type="ColorRect" parent="EscHintPanel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_right = 3.0
+color = Color(0.45, 0.30, 0.12, 0.80)
+
+[node name="HUDLabel" type="Label" parent="EscHintPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 0.0
+offset_right = -6.0
+offset_bottom = 0.0
+text = "Esc: Pause"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.60, 0.54, 0.40, 0.80)
+
+[node name="DebugHintPanel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -190.0
+offset_top = 150.0
+offset_right = -6.0
+offset_bottom = 170.0
+
+[node name="ParchBG" type="ColorRect" parent="DebugHintPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.10, 0.07, 0.05, 0.65)
+
+[node name="LeftBar" type="ColorRect" parent="DebugHintPanel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_right = 3.0
+color = Color(0.35, 0.25, 0.10, 0.65)
+
+[node name="HUDLabel" type="Label" parent="DebugHintPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 0.0
+offset_right = -6.0
+offset_bottom = 0.0
+text = "F1-F4: Debug"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.48, 0.43, 0.32, 0.65)
