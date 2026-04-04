@@ -252,6 +252,9 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	# ── Stats panel ───────────────────────────────────────────────────────────
 	_populate_stats(scenario_id, won)
 
+	# ── Record lifetime stats (SPA-273) ───────────────────────────────────────
+	_record_player_stats(scenario_id, won)
+
 	# ── NPC outcomes ──────────────────────────────────────────────────────────
 	_populate_npc_outcomes()
 
@@ -306,6 +309,51 @@ func _infer_fail_reason(scenario_id: int) -> String:
 	if scenario_id == 1:
 		return "exposed"
 	return "timeout"
+
+
+## Record end-of-game data into the PlayerStats autoload (SPA-273).
+func _record_player_stats(scenario_id: int, won: bool) -> void:
+	if _world_ref == null:
+		return
+	var sm: ScenarioManager = _world_ref.scenario_manager
+
+	var days_taken    := 0
+	if _day_night_ref != null and "current_day" in _day_night_ref:
+		days_taken = _day_night_ref.current_day
+
+	var rumors_spread := 0
+	if _world_ref.propagation_engine != null:
+		rumors_spread = _world_ref.propagation_engine.lineage.size()
+
+	var npcs_reached := 0
+	if not _world_ref.npcs.is_empty():
+		for npc in _world_ref.npcs:
+			if "rumor_slots" in npc and not npc.rumor_slots.is_empty():
+				npcs_reached += 1
+
+	var peak_belief := 0
+	if _world_ref.reputation_system != null:
+		var target: Dictionary = PEAK_BELIEF_TARGET.get(scenario_id, {})
+		if not target.is_empty():
+			var snap: Variant = _world_ref.reputation_system.get_snapshot(str(target["id"]))
+			if snap != null:
+				peak_belief = snap.score
+
+	# Bribe charges start at 2 for scenario 2+ (not dawn-refreshed).
+	var bribes_paid := 0
+	if scenario_id > 1 and _world_ref.intel_store != null:
+		bribes_paid = max(0, 2 - _world_ref.intel_store.bribe_charges)
+
+	PlayerStats.record_game(
+		_current_scenario_id,
+		GameState.selected_difficulty,
+		won,
+		days_taken,
+		rumors_spread,
+		npcs_reached,
+		peak_belief,
+		bribes_paid,
+	)
 
 
 ## Look up summary text from the SPA-128 table.

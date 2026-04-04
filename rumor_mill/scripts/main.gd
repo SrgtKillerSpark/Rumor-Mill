@@ -174,6 +174,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_pause_menu()
 	_init_npc_tooltip()
 	day_night.day_changed.connect(_on_new_day_auto_save)
+	PlayerStats.start_session()  # SPA-273: begin timing this play session
 
 	# Loading complete — dismiss the tip screen.
 	if _loading_tips != null:

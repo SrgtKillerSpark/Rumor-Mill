@@ -29,8 +29,12 @@ const C_CARD_BG      := Color(0.10, 0.07, 0.05, 1.0)
 const C_CARD_HOVER   := Color(0.18, 0.13, 0.09, 1.0)
 const C_CARD_BORDER  := Color(0.45, 0.30, 0.12, 1.0)
 const C_CARD_SEL     := Color(0.70, 0.50, 0.15, 1.0)
+const C_STAT_LABEL   := Color(0.75, 0.65, 0.50, 1.0)
+const C_STAT_VALUE   := Color(0.91, 0.85, 0.70, 1.0)
+const C_SCORE_WIN    := Color(0.92, 0.78, 0.12, 1.0)   # gold
+const C_SCORE_FAIL   := Color(0.85, 0.18, 0.12, 1.0)   # crimson
 
-enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS }
+enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS }
 
 # ── State ─────────────────────────────────────────────────────────────────────
 var _phase:              Phase     = Phase.MAIN
@@ -56,6 +60,9 @@ var _panel_settings:     Control    = null
 # Credits-phase refs
 var _panel_credits:      Control    = null
 var _version_label:      Label      = null
+
+# Stats-phase refs
+var _panel_stats:        Control    = null
 var _lbl_music_val:      Label      = null
 var _lbl_ambient_val:    Label      = null
 var _lbl_sfx_val:        Label      = null
@@ -84,6 +91,7 @@ func _ready() -> void:
 	_build_intro_panel()
 	_build_settings_panel()
 	_build_credits_panel()
+	_build_stats_panel()
 	_build_version_label()
 	_how_to_play = preload("res://scripts/how_to_play.gd").new()
 	_how_to_play.name = "HowToPlay"
@@ -133,6 +141,10 @@ func _show_phase(p: Phase) -> void:
 	_panel_intro.visible    = (p == Phase.INTRO)
 	_panel_settings.visible = (p == Phase.SETTINGS)
 	_panel_credits.visible  = (p == Phase.CREDITS)
+	_panel_stats.visible    = (p == Phase.STATS)
+	# Rebuild stats panel content each time it's shown so it reflects latest data.
+	if p == Phase.STATS:
+		_rebuild_stats_content()
 	# Set initial keyboard focus for the active phase.
 	call_deferred("_set_phase_focus", p)
 
@@ -153,6 +165,8 @@ func _set_phase_focus(p: Phase) -> void:
 			_grab_first_button(_panel_settings)
 		Phase.CREDITS:
 			_grab_first_button(_panel_credits)
+		Phase.STATS:
+			_grab_first_button(_panel_stats)
 
 
 ## Finds and focuses the first Button descendant of the given node.
@@ -184,6 +198,9 @@ func _unhandled_input(event: InputEvent) -> void:
 					get_viewport().set_input_as_handled()
 				Phase.CREDITS:
 					_on_credits_back()
+					get_viewport().set_input_as_handled()
+				Phase.STATS:
+					_on_stats_back()
 					get_viewport().set_input_as_handled()
 
 
@@ -251,6 +268,10 @@ func _build_main_panel() -> void:
 	var btn_credits := _make_button("Credits", 200)
 	btn_credits.pressed.connect(_on_credits_pressed)
 	btn_row.add_child(btn_credits)
+
+	var btn_stats := _make_button("Statistics", 200)
+	btn_stats.pressed.connect(_on_stats_pressed)
+	btn_row.add_child(btn_stats)
 
 	var btn_quit := _make_button("Quit", 200)
 	btn_quit.pressed.connect(get_tree().quit)
@@ -896,6 +917,200 @@ func _build_credits_panel() -> void:
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	btn_row.add_child(btn_back)
 	vbox.add_child(btn_row)
+
+
+# ── Phase 7: Statistics panel ─────────────────────────────────────────────────
+
+func _build_stats_panel() -> void:
+	_panel_stats = _make_panel(680, 520)
+	add_child(_panel_stats)
+
+	# Content is built dynamically in _rebuild_stats_content() to reflect live data.
+	# Placeholder VBox so the panel isn't empty at startup.
+	var vbox := VBoxContainer.new()
+	vbox.name = "StatsVBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_panel_stats.add_child(vbox)
+
+
+## Rebuild stats panel content from PlayerStats.  Called each time the phase is shown.
+func _rebuild_stats_content() -> void:
+	var vbox: VBoxContainer = _panel_stats.get_node_or_null("StatsVBox")
+	if vbox == null:
+		return
+	for child in vbox.get_children():
+		child.queue_free()
+
+	# ── Heading ───────────────────────────────────────────────────────────────
+	var heading := Label.new()
+	heading.text = "Statistics"
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_theme_font_size_override("font_size", 28)
+	heading.add_theme_color_override("font_color", C_TITLE)
+	vbox.add_child(heading)
+
+	vbox.add_child(_separator())
+
+	# ── Scrollable body ───────────────────────────────────────────────────────
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 10)
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(body)
+
+	if not PlayerStats.has_any_data():
+		var empty_lbl := Label.new()
+		empty_lbl.text = "No games recorded yet.\nPlay a scenario to start tracking your stats."
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_lbl.add_theme_color_override("font_color", C_MUTED)
+		empty_lbl.add_theme_font_size_override("font_size", 14)
+		body.add_child(empty_lbl)
+	else:
+		# ── Global totals ─────────────────────────────────────────────────────
+		var totals := PlayerStats.get_totals()
+		var totals_hdr := Label.new()
+		totals_hdr.text = "Lifetime Totals"
+		totals_hdr.add_theme_font_size_override("font_size", 16)
+		totals_hdr.add_theme_color_override("font_color", C_HEADING)
+		body.add_child(totals_hdr)
+
+		var play_sec: int = totals.get("total_play_time_sec", 0)
+		var play_str: String
+		if play_sec >= 3600:
+			play_str = "%dh %dm" % [play_sec / 3600, (play_sec % 3600) / 60]
+		else:
+			play_str = "%dm %ds" % [play_sec / 60, play_sec % 60]
+
+		var totals_grid := GridContainer.new()
+		totals_grid.columns = 2
+		totals_grid.add_theme_constant_override("h_separation", 24)
+		totals_grid.add_theme_constant_override("v_separation", 4)
+		body.add_child(totals_grid)
+		_add_grid_stat(totals_grid, "Play Time",        play_str)
+		_add_grid_stat(totals_grid, "Rumors Spread",    str(totals.get("total_rumors_spread",  0)))
+		_add_grid_stat(totals_grid, "NPCs Convinced",   str(totals.get("total_npcs_convinced", 0)))
+		_add_grid_stat(totals_grid, "Bribes Paid",      str(totals.get("total_bribes_paid",    0)))
+
+		body.add_child(_separator())
+
+		# ── Per-scenario table ────────────────────────────────────────────────
+		var sc_hdr := Label.new()
+		sc_hdr.text = "Scenario Records"
+		sc_hdr.add_theme_font_size_override("font_size", 16)
+		sc_hdr.add_theme_color_override("font_color", C_HEADING)
+		body.add_child(sc_hdr)
+
+		var scenario_names := {
+			"scenario_1": "1 — A Whisper in Autumn",
+			"scenario_2": "2 — The Herb-Wife's Ruin",
+			"scenario_3": "3 — The Fenn Succession",
+			"scenario_4": "4 — The Holy Inquisition",
+		}
+		var diff_labels := { "apprentice": "Appr.", "master": "Master", "spymaster": "Spym." }
+
+		for sid in PlayerStats.SCENARIO_IDS:
+			var has_sc_data := false
+			for diff in PlayerStats.DIFFICULTIES:
+				if PlayerStats.get_scenario_stats(sid, diff).get("games_played", 0) > 0:
+					has_sc_data = true
+					break
+			if not has_sc_data:
+				continue
+
+			var sc_name := scenario_names.get(sid, sid)
+			var sc_title := Label.new()
+			sc_title.text = sc_name
+			sc_title.add_theme_font_size_override("font_size", 13)
+			sc_title.add_theme_color_override("font_color", C_SUBHEADING)
+			body.add_child(sc_title)
+
+			# Column headers
+			var header_row := HBoxContainer.new()
+			header_row.add_theme_constant_override("separation", 0)
+			body.add_child(header_row)
+			_add_table_cell(header_row, "Difficulty", 100, C_MUTED, true)
+			_add_table_cell(header_row, "Played",      60, C_MUTED, true)
+			_add_table_cell(header_row, "Wins",        50, C_MUTED, true)
+			_add_table_cell(header_row, "Losses",      55, C_MUTED, true)
+			_add_table_cell(header_row, "Best Score",  80, C_MUTED, true)
+			_add_table_cell(header_row, "Fastest Win", 90, C_MUTED, true)
+
+			for diff in PlayerStats.DIFFICULTIES:
+				var rec := PlayerStats.get_scenario_stats(sid, diff)
+				if rec.get("games_played", 0) == 0:
+					continue
+				var fastest: int = rec.get("fastest_win_days", -1)
+				var fastest_str: String = ("%d days" % fastest) if fastest >= 0 else "—"
+				var row := HBoxContainer.new()
+				row.add_theme_constant_override("separation", 0)
+				body.add_child(row)
+				_add_table_cell(row, diff_labels.get(diff, diff), 100, C_BODY, false)
+				_add_table_cell(row, str(rec.get("games_played", 0)),   60, C_STAT_VALUE, false)
+				_add_table_cell(row, str(rec.get("wins",         0)),   50, C_SCORE_WIN,  false)
+				_add_table_cell(row, str(rec.get("losses",       0)),   55, C_SCORE_FAIL, false)
+				_add_table_cell(row, str(rec.get("best_score",   0)),   80, C_STAT_VALUE, false)
+				_add_table_cell(row, fastest_str,                       90, C_STAT_VALUE, false)
+
+	# ── Bottom buttons ────────────────────────────────────────────────────────
+	vbox.add_child(_separator())
+
+	var btn_row := HBoxContainer.new()
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_theme_constant_override("separation", 20)
+	vbox.add_child(btn_row)
+
+	var btn_back := _make_button("Back", 160)
+	btn_back.pressed.connect(_on_stats_back)
+	btn_row.add_child(btn_back)
+
+	if PlayerStats.has_any_data():
+		var btn_reset := _make_button("Reset Stats", 160)
+		btn_reset.pressed.connect(_on_stats_reset)
+		btn_row.add_child(btn_reset)
+
+
+## Add a label+value pair to a 2-column GridContainer.
+func _add_grid_stat(grid: GridContainer, label_text: String, value_text: String) -> void:
+	var lbl := Label.new()
+	lbl.text = label_text
+	lbl.add_theme_color_override("font_color", C_STAT_LABEL)
+	lbl.add_theme_font_size_override("font_size", 13)
+	grid.add_child(lbl)
+
+	var val := Label.new()
+	val.text = value_text
+	val.add_theme_color_override("font_color", C_STAT_VALUE)
+	val.add_theme_font_size_override("font_size", 13)
+	grid.add_child(val)
+
+
+## Add a fixed-width cell to a row HBoxContainer for the scenario table.
+func _add_table_cell(row: HBoxContainer, text: String, w: int, color: Color, bold: bool) -> void:
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.custom_minimum_size = Vector2(w, 0)
+	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_font_size_override("font_size", 12)
+	if bold:
+		lbl.add_theme_font_size_override("font_size", 11)
+	row.add_child(lbl)
+
+
+func _on_stats_pressed() -> void:
+	_show_phase(Phase.STATS)
+
+
+func _on_stats_back() -> void:
+	_show_phase(Phase.MAIN)
+
+
+func _on_stats_reset() -> void:
+	PlayerStats.reset_all()
+	_rebuild_stats_content()
 
 
 # ── Version corner label ──────────────────────────────────────────────────────
