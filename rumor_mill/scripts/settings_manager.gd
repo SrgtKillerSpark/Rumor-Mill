@@ -21,17 +21,29 @@ const DEFAULT_AMBIENT_VOL        := 60.0
 const DEFAULT_SFX_VOL            := 80.0
 const DEFAULT_GAME_SPEED         := 1.0    ## tick_duration_seconds
 const DEFAULT_ANALYTICS_ENABLED  := true   ## Opt-in local analytics (SPA-244)
+const DEFAULT_RESOLUTION_INDEX   := 0      ## 0=720p, 1=1080p, 2=1440p
+const DEFAULT_FULLSCREEN         := false
+
+## Available resolution presets (width × height).
+const RESOLUTIONS := [
+	Vector2i(1280, 720),
+	Vector2i(1920, 1080),
+	Vector2i(2560, 1440),
+]
 
 var music_volume:        float = DEFAULT_MUSIC_VOL
 var ambient_volume:      float = DEFAULT_AMBIENT_VOL
 var sfx_volume:          float = DEFAULT_SFX_VOL
 var game_speed:          float = DEFAULT_GAME_SPEED
 var analytics_enabled:   bool  = DEFAULT_ANALYTICS_ENABLED
+var resolution_index:    int   = DEFAULT_RESOLUTION_INDEX
+var fullscreen:          bool  = DEFAULT_FULLSCREEN
 
 
 func _ready() -> void:
 	load_settings()
 	apply_to_audio_manager()
+	apply_display_settings()
 
 
 func load_settings() -> void:
@@ -43,6 +55,8 @@ func load_settings() -> void:
 	sfx_volume        = cfg.get_value(SECTION, "sfx_volume",        DEFAULT_SFX_VOL)
 	game_speed        = cfg.get_value(SECTION, "game_speed",        DEFAULT_GAME_SPEED)
 	analytics_enabled = cfg.get_value(SECTION, "analytics_enabled", DEFAULT_ANALYTICS_ENABLED)
+	resolution_index  = cfg.get_value(SECTION, "resolution_index",  DEFAULT_RESOLUTION_INDEX)
+	fullscreen        = cfg.get_value(SECTION, "fullscreen",        DEFAULT_FULLSCREEN)
 
 
 func save_settings() -> void:
@@ -52,6 +66,8 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "sfx_volume",        sfx_volume)
 	cfg.set_value(SECTION, "game_speed",        game_speed)
 	cfg.set_value(SECTION, "analytics_enabled", analytics_enabled)
+	cfg.set_value(SECTION, "resolution_index",  resolution_index)
+	cfg.set_value(SECTION, "fullscreen",        fullscreen)
 	cfg.save(SAVE_PATH)
 
 
@@ -60,6 +76,28 @@ func apply_to_audio_manager() -> void:
 	AudioManager.set_music_volume_db(_to_db(music_volume))
 	AudioManager.set_ambient_volume_db(_to_db(ambient_volume))
 	AudioManager.set_sfx_volume_db(_to_db(sfx_volume))
+
+
+## Apply resolution and fullscreen settings to the display window.
+func apply_display_settings() -> void:
+	var idx: int = clampi(resolution_index, 0, RESOLUTIONS.size() - 1)
+	var res: Vector2i = RESOLUTIONS[idx]
+	if fullscreen:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		DisplayServer.window_set_size(res)
+		# Centre window on screen.
+		var screen_size := DisplayServer.screen_get_size()
+		var win_pos := Vector2i((screen_size.x - res.x) / 2, (screen_size.y - res.y) / 2)
+		DisplayServer.window_set_position(win_pos)
+
+
+## Get the label for the current resolution preset.
+func get_resolution_label() -> String:
+	var idx: int = clampi(resolution_index, 0, RESOLUTIONS.size() - 1)
+	var res: Vector2i = RESOLUTIONS[idx]
+	return "%dx%d" % [res.x, res.y]
 
 
 ## Convert linear 0-100 to dB. Returns -80 for zero (silence).

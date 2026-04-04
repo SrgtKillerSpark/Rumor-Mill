@@ -67,6 +67,8 @@ var _lbl_music_val:      Label      = null
 var _lbl_ambient_val:    Label      = null
 var _lbl_sfx_val:        Label      = null
 var _lbl_speed_val:      Label      = null
+var _btn_resolution:     Button     = null
+var _chk_fullscreen:     CheckButton = null
 
 # Briefing-phase refs
 var _briefing_title:     Label      = null
@@ -709,7 +711,7 @@ func _on_intro_begin_pressed() -> void:
 # ── Phase 5: Settings panel ───────────────────────────────────────────────────
 
 func _build_settings_panel() -> void:
-	_panel_settings = _make_panel(480, 420)
+	_panel_settings = _make_panel(480, 540)
 	add_child(_panel_settings)
 
 	var vbox := VBoxContainer.new()
@@ -723,6 +725,65 @@ func _build_settings_panel() -> void:
 	heading.add_theme_font_size_override("font_size", 22)
 	heading.add_theme_color_override("font_color", C_HEADING)
 	vbox.add_child(heading)
+
+	vbox.add_child(_separator())
+
+	# Display section
+	var display_lbl := Label.new()
+	display_lbl.text = "Display"
+	display_lbl.add_theme_font_size_override("font_size", 14)
+	display_lbl.add_theme_color_override("font_color", C_SUBHEADING)
+	vbox.add_child(display_lbl)
+
+	# Resolution cycle button
+	var res_row := HBoxContainer.new()
+	res_row.add_theme_constant_override("separation", 8)
+	vbox.add_child(res_row)
+
+	var res_name := Label.new()
+	res_name.text = "Resolution:"
+	res_name.custom_minimum_size = Vector2(80, 0)
+	res_name.add_theme_font_size_override("font_size", 13)
+	res_name.add_theme_color_override("font_color", C_BODY)
+	res_row.add_child(res_name)
+
+	_btn_resolution = Button.new()
+	_btn_resolution.text = SettingsManager.get_resolution_label()
+	_btn_resolution.custom_minimum_size = Vector2(120, 30)
+	_btn_resolution.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_btn_resolution.add_theme_font_size_override("font_size", 13)
+	_btn_resolution.add_theme_color_override("font_color", C_BTN_TEXT)
+	var res_normal := StyleBoxFlat.new()
+	res_normal.bg_color = C_BTN_NORMAL
+	res_normal.set_border_width_all(1)
+	res_normal.border_color = C_PANEL_BORDER
+	res_normal.set_content_margin_all(4)
+	var res_hover := StyleBoxFlat.new()
+	res_hover.bg_color = C_BTN_HOVER
+	res_hover.set_border_width_all(1)
+	res_hover.border_color = C_PANEL_BORDER
+	res_hover.set_content_margin_all(4)
+	_btn_resolution.add_theme_stylebox_override("normal", res_normal)
+	_btn_resolution.add_theme_stylebox_override("hover", res_hover)
+	_btn_resolution.pressed.connect(_on_resolution_cycle)
+	res_row.add_child(_btn_resolution)
+
+	# Fullscreen toggle
+	var fs_row := HBoxContainer.new()
+	fs_row.add_theme_constant_override("separation", 8)
+	vbox.add_child(fs_row)
+
+	var fs_name := Label.new()
+	fs_name.text = "Fullscreen:"
+	fs_name.custom_minimum_size = Vector2(80, 0)
+	fs_name.add_theme_font_size_override("font_size", 13)
+	fs_name.add_theme_color_override("font_color", C_BODY)
+	fs_row.add_child(fs_name)
+
+	_chk_fullscreen = CheckButton.new()
+	_chk_fullscreen.button_pressed = SettingsManager.fullscreen
+	_chk_fullscreen.toggled.connect(_on_fullscreen_toggled)
+	fs_row.add_child(_chk_fullscreen)
 
 	vbox.add_child(_separator())
 
@@ -863,6 +924,19 @@ func _on_game_speed_changed(value: float) -> void:
 	SettingsManager.game_speed = value
 	SettingsManager.save_settings()
 	_lbl_speed_val.text = _format_slider_val("Game Speed", value)
+
+
+func _on_resolution_cycle() -> void:
+	SettingsManager.resolution_index = (SettingsManager.resolution_index + 1) % SettingsManager.RESOLUTIONS.size()
+	SettingsManager.apply_display_settings()
+	SettingsManager.save_settings()
+	_btn_resolution.text = SettingsManager.get_resolution_label()
+
+
+func _on_fullscreen_toggled(pressed: bool) -> void:
+	SettingsManager.fullscreen = pressed
+	SettingsManager.apply_display_settings()
+	SettingsManager.save_settings()
 
 
 # ── Phase 6: Credits panel ────────────────────────────────────────────────────

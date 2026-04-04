@@ -310,7 +310,7 @@ func _init_objective_hud() -> void:
 		push_error("Main: world.scenario_manager is null — objective HUD not wired")
 		return
 	if objective_hud.has_method("setup"):
-		objective_hud.setup(sm, day_night, world.reputation_system)
+		objective_hud.setup(sm, day_night, world.reputation_system, world.intel_store)
 
 
 func _init_speed_hud() -> void:

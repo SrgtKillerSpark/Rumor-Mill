@@ -29,6 +29,7 @@ var _day_night_ref: Node        = null
 var _journal_ref:   CanvasLayer = null
 
 var _status_label: Label = null
+var _btn_resolution: Button = null
 
 # ── Slot picker state ──────────────────────────────────────────────────────────
 var _main_container:  VBoxContainer = null   # main menu buttons
@@ -108,9 +109,9 @@ func _build_ui() -> void:
 	bg.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(bg)
 
-	# Centred panel — tall enough for buttons + slot picker + analytics row + status line.
+	# Centred panel — tall enough for buttons + slot picker + display/analytics rows + status line.
 	var panel := Panel.new()
-	panel.custom_minimum_size = Vector2(300, 460)
+	panel.custom_minimum_size = Vector2(300, 560)
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	var style := StyleBoxFlat.new()
@@ -203,6 +204,75 @@ func _build_ui() -> void:
 		SettingsManager.save_settings()
 	)
 	analytics_row.add_child(analytics_check)
+
+	# ── Display settings ───────────────────────────────────────────────────────
+	var display_sep := HSeparator.new()
+	display_sep.process_mode = Node.PROCESS_MODE_ALWAYS
+	_main_container.add_child(display_sep)
+
+	# Resolution cycle button
+	var res_row := HBoxContainer.new()
+	res_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	res_row.process_mode = Node.PROCESS_MODE_ALWAYS
+	res_row.add_theme_constant_override("separation", 8)
+	_main_container.add_child(res_row)
+
+	var res_label := Label.new()
+	res_label.text = "Resolution"
+	res_label.add_theme_font_size_override("font_size", 12)
+	res_label.add_theme_color_override("font_color", Color(0.75, 0.70, 0.55, 1.0))
+	res_label.process_mode = Node.PROCESS_MODE_ALWAYS
+	res_row.add_child(res_label)
+
+	_btn_resolution = Button.new()
+	_btn_resolution.text = SettingsManager.get_resolution_label()
+	_btn_resolution.custom_minimum_size = Vector2(100, 28)
+	_btn_resolution.process_mode = Node.PROCESS_MODE_ALWAYS
+	_btn_resolution.add_theme_font_size_override("font_size", 12)
+	_btn_resolution.add_theme_color_override("font_color", C_BTN_TEXT)
+	var res_normal := StyleBoxFlat.new()
+	res_normal.bg_color = C_BTN_NORMAL
+	res_normal.set_border_width_all(1)
+	res_normal.border_color = C_BTN_BORDER
+	res_normal.set_content_margin_all(4)
+	_btn_resolution.add_theme_stylebox_override("normal", res_normal)
+	var res_hover := StyleBoxFlat.new()
+	res_hover.bg_color = C_BTN_HOVER
+	res_hover.set_border_width_all(1)
+	res_hover.border_color = C_BTN_BORDER
+	res_hover.set_content_margin_all(4)
+	_btn_resolution.add_theme_stylebox_override("hover", res_hover)
+	_btn_resolution.pressed.connect(func() -> void:
+		SettingsManager.resolution_index = (SettingsManager.resolution_index + 1) % SettingsManager.RESOLUTIONS.size()
+		SettingsManager.apply_display_settings()
+		SettingsManager.save_settings()
+		_btn_resolution.text = SettingsManager.get_resolution_label()
+	)
+	res_row.add_child(_btn_resolution)
+
+	# Fullscreen toggle
+	var fs_row := HBoxContainer.new()
+	fs_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	fs_row.process_mode = Node.PROCESS_MODE_ALWAYS
+	fs_row.add_theme_constant_override("separation", 8)
+	_main_container.add_child(fs_row)
+
+	var fs_label := Label.new()
+	fs_label.text = "Fullscreen"
+	fs_label.add_theme_font_size_override("font_size", 12)
+	fs_label.add_theme_color_override("font_color", Color(0.75, 0.70, 0.55, 1.0))
+	fs_label.process_mode = Node.PROCESS_MODE_ALWAYS
+	fs_row.add_child(fs_label)
+
+	var fs_check := CheckButton.new()
+	fs_check.process_mode = Node.PROCESS_MODE_ALWAYS
+	fs_check.button_pressed = SettingsManager.fullscreen
+	fs_check.toggled.connect(func(pressed: bool) -> void:
+		SettingsManager.fullscreen = pressed
+		SettingsManager.apply_display_settings()
+		SettingsManager.save_settings()
+	)
+	fs_row.add_child(fs_check)
 
 	# ── Slot picker container (hidden initially) ───────────────────────────────
 	_slot_container = VBoxContainer.new()

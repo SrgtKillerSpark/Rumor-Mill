@@ -21,23 +21,31 @@ var _days_allowed:     int             = 30
 
 # ── Dawn bulletin / deadline warning state ───────────────────────────────────
 var _reputation_system: ReputationSystem = null
+var _intel_store: PlayerIntelStore = null
 ## NPC id → score snapshot taken at previous dawn for overnight delta comparison.
 var _prev_dawn_scores: Dictionary = {}
 ## The programmatically-created banner label (shared for bulletin & warnings).
 var _banner_label: Label = null
 var _banner_tween: Tween = null
+## Programmatic metrics row added below the scene-defined progress bar.
+var _metrics_row: HBoxContainer = null
+var _lbl_rumors_active: Label = null
+var _lbl_rep_avg: Label = null
+var _lbl_believers: Label = null
 
 
 func _ready() -> void:
 	layer = 4
 	_build_banner()
+	_build_metrics_row()
 
 
-func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: ReputationSystem = null) -> void:
+func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: ReputationSystem = null, intel_store: PlayerIntelStore = null) -> void:
 	_scenario_manager  = scenario_manager
 	_day_night         = day_night
 	_days_allowed      = scenario_manager.get_days_allowed()
 	_reputation_system = rep_system
+	_intel_store       = intel_store
 	_refresh()
 	if day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_day_changed)
@@ -71,6 +79,7 @@ func _refresh() -> void:
 	objective_label.text = objective
 
 	_refresh_time()
+	_refresh_metrics()
 
 
 func _refresh_time() -> void:
@@ -104,6 +113,79 @@ func _refresh_time() -> void:
 			progress_bar.color = Color(0.85 + 0.1 * t, 0.55 - 0.35 * t, 0.10 - 0.10 * t, 1.0)
 		else:
 			progress_bar.color = Color(0.85, 0.55, 0.10, 1.0)
+
+
+# ── Metrics row (below progress bar) ─────────────────────────────────────────
+
+func _build_metrics_row() -> void:
+	# Expand the Panel to make room for the metrics row.
+	var panel: Panel = $Panel
+	panel.offset_bottom += 22
+
+	# Add metrics row as a child of Panel/VBox.
+	var vbox: VBoxContainer = $Panel/VBox
+	_metrics_row = HBoxContainer.new()
+	_metrics_row.add_theme_constant_override("separation", 12)
+	vbox.add_child(_metrics_row)
+
+	# Average reputation metric
+	_lbl_rep_avg = _make_metric_label("Avg Rep: --")
+	_lbl_rep_avg.add_theme_color_override("font_color", Color(0.55, 0.80, 0.55, 1.0))
+	_lbl_rep_avg.tooltip_text = "Average NPC reputation score (0-100)"
+	_metrics_row.add_child(_lbl_rep_avg)
+
+	# Affected NPCs count (NPCs whose reputation has shifted from rumor influence)
+	_lbl_believers = _make_metric_label("Affected: 0")
+	_lbl_believers.add_theme_color_override("font_color", Color(0.45, 0.75, 1.00, 1.0))
+	_lbl_believers.tooltip_text = "NPCs whose reputation was shifted by rumors"
+	_metrics_row.add_child(_lbl_believers)
+
+	# Socially dead count
+	_lbl_rumors_active = _make_metric_label("Dead: 0")
+	_lbl_rumors_active.add_theme_color_override("font_color", Color(0.90, 0.35, 0.25, 1.0))
+	_lbl_rumors_active.tooltip_text = "NPCs that are socially dead (reputation permanently frozen)"
+	_metrics_row.add_child(_lbl_rumors_active)
+
+
+func _make_metric_label(text: String) -> Label:
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 10)
+	lbl.add_theme_constant_override("outline_size", 1)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	return lbl
+
+
+func _refresh_metrics() -> void:
+	if _reputation_system == null:
+		return
+	var snaps: Dictionary = _reputation_system.get_all_snapshots()
+	if snaps.is_empty():
+		return
+	var total_score: int = 0
+	var affected_count: int = 0
+	var dead_count: int = 0
+	for npc_id in snaps:
+		var snap: ReputationSystem.ReputationSnapshot = snaps[npc_id]
+		total_score += snap.score
+		if absf(snap.rumor_delta) >= 1.0:
+			affected_count += 1
+		if snap.is_socially_dead:
+			dead_count += 1
+	var avg: int = total_score / max(snaps.size(), 1)
+	if _lbl_rep_avg != null:
+		_lbl_rep_avg.text = "Avg Rep: %d" % avg
+		if avg >= 40:
+			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.55, 0.80, 0.55, 1.0))
+		elif avg >= 25:
+			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.90, 0.75, 0.30, 1.0))
+		else:
+			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.90, 0.45, 0.35, 1.0))
+	if _lbl_believers != null:
+		_lbl_believers.text = "Affected: %d" % affected_count
+	if _lbl_rumors_active != null:
+		_lbl_rumors_active.text = "Dead: %d" % dead_count
 
 
 # ── Banner system (dawn bulletin + deadline warnings) ────────────────────────

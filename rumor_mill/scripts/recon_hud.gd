@@ -18,7 +18,12 @@ extends CanvasLayer
 @onready var toast_panel:      Panel         = $ToastPanel
 @onready var toast_label:      Label         = $ToastPanel/ToastLabel
 
+# Programmatic count labels added beside pip rows for clearer readability.
+var _action_count_label:  Label = null
+var _whisper_count_label: Label = null
+
 const TOAST_DURATION := 3.5
+const FLASH_DURATION := 0.3
 
 # Pip colours
 const PIP_FULL_ACTION   := Color(0.92, 0.65, 0.12, 1.0)  # amber
@@ -34,6 +39,8 @@ var _rumor_panel_ref:  CanvasLayer      = null
 # Toast animation tweens.
 var _toast_tween:       Tween = null
 var _toast_slide_tween: Tween = null
+var _flash_rect:        ColorRect = null
+var _flash_tween:       Tween = null
 
 # Toast panel resting offsets — saved in _ready() for slide animation reference.
 var _toast_normal_offset_top:    float = 0.0
@@ -53,6 +60,9 @@ func _ready() -> void:
 	_toast_normal_offset_bottom = toast_panel.offset_bottom
 	_build_pips(action_pips_row, 3, 3, PIP_FULL_ACTION, PIP_EMPTY_ACTION)
 	_build_pips(whisper_pips_row, 2, 2, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
+	_build_count_labels()
+	_build_extra_key_hints()
+	_build_flash_overlay()
 
 
 func setup(intel_store: PlayerIntelStore, rumor_panel: CanvasLayer) -> void:
@@ -84,6 +94,7 @@ func show_toast(message: String, success: bool) -> void:
 	toast_label.text = icon + message
 	var color := Color(0.45, 1.00, 0.55, 1.0) if success else Color(1.00, 0.60, 0.20, 1.0)
 	toast_label.add_theme_color_override("font_color", color)
+	show_action_flash(success)
 
 	# Slide in from below, then fade out after TOAST_DURATION seconds.
 	if _toast_tween != null:
@@ -104,6 +115,50 @@ func show_toast(message: String, success: bool) -> void:
 	_toast_tween.tween_interval(TOAST_DURATION)
 	_toast_tween.tween_property(toast_panel, "modulate:a", 0.0, 0.35)
 	_toast_tween.tween_callback(func() -> void: toast_panel.visible = false)
+
+
+# ── Count labels & extra key hints ───────────────────────────────────────────
+
+func _build_count_labels() -> void:
+	_action_count_label = Label.new()
+	_action_count_label.add_theme_font_size_override("font_size", 11)
+	_action_count_label.add_theme_color_override("font_color", PIP_FULL_ACTION)
+	action_pips_row.get_parent().add_child(_action_count_label)
+
+	_whisper_count_label = Label.new()
+	_whisper_count_label.add_theme_font_size_override("font_size", 11)
+	_whisper_count_label.add_theme_color_override("font_color", PIP_FULL_WHISPER)
+	whisper_pips_row.get_parent().add_child(_whisper_count_label)
+
+
+func _build_flash_overlay() -> void:
+	_flash_rect = ColorRect.new()
+	_flash_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_flash_rect.color = Color(0.0, 0.0, 0.0, 0.0)
+	_flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_flash_rect)
+
+
+## Brief screen-edge flash to confirm an action visually.
+func show_action_flash(success: bool) -> void:
+	if _flash_rect == null:
+		return
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	var color := Color(0.30, 0.85, 0.40, 0.12) if success else Color(0.95, 0.35, 0.15, 0.12)
+	_flash_rect.color = color
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(_flash_rect, "color:a", 0.0, FLASH_DURATION) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+
+
+func _build_extra_key_hints() -> void:
+	var key_hint_row: HBoxContainer = $CounterPanel/VBox/KeyHintRow
+	var extra := Label.new()
+	extra.text = "  J: Journal   G: Graph"
+	extra.add_theme_font_size_override("font_size", 12)
+	extra.add_theme_color_override("font_color", Color(0.50, 0.44, 0.32, 0.85))
+	key_hint_row.add_child(extra)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -138,6 +193,12 @@ func _refresh_pips() -> void:
 	# Update row tooltips so hovering the pip area explains the resource.
 	action_pips_row.get_parent().tooltip_text = "Recon Actions: %d / %d remaining (refresh at dawn)" % [remaining, max_val]
 	whisper_pips_row.get_parent().tooltip_text = "Whisper Tokens: %d / %d remaining (press R to craft a rumor)" % [whispers, max_w]
+
+	# Update numeric count labels beside pips.
+	if _action_count_label != null:
+		_action_count_label.text = "%d/%d" % [remaining, max_val]
+	if _whisper_count_label != null:
+		_whisper_count_label.text = "%d/%d" % [whispers, max_w]
 
 	# Favors row.
 	var show_favors: bool = _intel_store_ref.heat_enabled or favors > 0
