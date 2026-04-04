@@ -577,6 +577,10 @@ func on_game_tick(tick: int) -> void:
 	if scenario_manager != null and reputation_system != null:
 		scenario_manager.evaluate(reputation_system, tick)
 
+	# ── Time pressure: boost spread probability in the final 25% of the scenario. ──
+	if propagation_engine != null and scenario_manager != null:
+		propagation_engine.time_pressure_bonus = 0.20 if scenario_manager.is_final_quarter(tick) else 0.0
+
 	# ── Shelf-life decay: run before NPC state transitions so EXPIRED is visible. ──
 	if propagation_engine != null:
 		propagation_engine.tick_decay()

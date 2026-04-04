@@ -19,24 +19,40 @@ var _scenario_manager: ScenarioManager = null
 var _day_night:        Node            = null
 var _days_allowed:     int             = 30
 
+# ── Dawn bulletin / deadline warning state ───────────────────────────────────
+var _reputation_system: ReputationSystem = null
+## NPC id → score snapshot taken at previous dawn for overnight delta comparison.
+var _prev_dawn_scores: Dictionary = {}
+## The programmatically-created banner label (shared for bulletin & warnings).
+var _banner_label: Label = null
+var _banner_tween: Tween = null
+
 
 func _ready() -> void:
 	layer = 4
+	_build_banner()
 
 
-func setup(scenario_manager: ScenarioManager, day_night: Node) -> void:
-	_scenario_manager = scenario_manager
-	_day_night        = day_night
-	_days_allowed     = scenario_manager.get_days_allowed()
+func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: ReputationSystem = null) -> void:
+	_scenario_manager  = scenario_manager
+	_day_night         = day_night
+	_days_allowed      = scenario_manager.get_days_allowed()
+	_reputation_system = rep_system
 	_refresh()
 	if day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_day_changed)
 	if day_night.has_signal("game_tick"):
 		day_night.game_tick.connect(_on_tick)
+	if scenario_manager.has_signal("deadline_warning"):
+		scenario_manager.deadline_warning.connect(_on_deadline_warning)
+	# Capture initial reputation scores for the first dawn comparison.
+	_snapshot_dawn_scores()
 
 
 func _on_day_changed(_day: int) -> void:
 	_refresh()
+	_show_dawn_bulletin()
+	_snapshot_dawn_scores()
 
 
 func _on_tick(_tick: int) -> void:
@@ -88,3 +104,91 @@ func _refresh_time() -> void:
 			progress_bar.color = Color(0.85 + 0.1 * t, 0.55 - 0.35 * t, 0.10 - 0.10 * t, 1.0)
 		else:
 			progress_bar.color = Color(0.85, 0.55, 0.10, 1.0)
+
+
+# ── Banner system (dawn bulletin + deadline warnings) ────────────────────────
+
+func _build_banner() -> void:
+	_banner_label = Label.new()
+	_banner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner_label.anchors_preset = Control.PRESET_TOP_WIDE
+	_banner_label.offset_top = 110.0
+	_banner_label.offset_bottom = 180.0
+	_banner_label.offset_left = 40.0
+	_banner_label.offset_right = -40.0
+	_banner_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_banner_label.add_theme_font_size_override("font_size", 13)
+	_banner_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55, 1.0))
+	_banner_label.add_theme_constant_override("outline_size", 2)
+	_banner_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	_banner_label.modulate.a = 0.0
+	_banner_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_banner_label)
+
+
+func _show_banner(text: String, color: Color, duration: float = 6.0) -> void:
+	if _banner_label == null:
+		return
+	if _banner_tween != null and _banner_tween.is_valid():
+		_banner_tween.kill()
+	_banner_label.text = text
+	_banner_label.add_theme_color_override("font_color", color)
+	_banner_label.modulate.a = 0.0
+	_banner_tween = create_tween()
+	_banner_tween.tween_property(_banner_label, "modulate:a", 1.0, 0.4) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	_banner_tween.tween_interval(duration)
+	_banner_tween.tween_property(_banner_label, "modulate:a", 0.0, 1.2) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+
+
+## Capture reputation scores at dawn for overnight comparison.
+func _snapshot_dawn_scores() -> void:
+	if _reputation_system == null:
+		return
+	_prev_dawn_scores.clear()
+	var snaps: Dictionary = _reputation_system.get_all_snapshots()
+	for npc_id in snaps:
+		var snap: ReputationSystem.ReputationSnapshot = snaps[npc_id]
+		_prev_dawn_scores[npc_id] = snap.score
+
+
+## Show a morning popup summarizing significant overnight reputation changes.
+func _show_dawn_bulletin() -> void:
+	if _reputation_system == null or _prev_dawn_scores.is_empty():
+		return
+	var snaps: Dictionary = _reputation_system.get_all_snapshots()
+	var lines: Array[String] = []
+	for npc_id in snaps:
+		if not _prev_dawn_scores.has(npc_id):
+			continue
+		var snap: ReputationSystem.ReputationSnapshot = snaps[npc_id]
+		var prev_score: int = _prev_dawn_scores[npc_id]
+		var delta: int = snap.score - prev_score
+		if abs(delta) < 3:
+			continue
+		var arrow: String = "▲" if delta > 0 else "▼"
+		var npc_name: String = npc_id.replace("_", " ").capitalize()
+		lines.append("%s %s %+d (%d)" % [arrow, npc_name, delta, snap.score])
+	if lines.is_empty():
+		return
+	var bulletin: String = "☀ Dawn Report\n" + "\n".join(lines)
+	_show_banner(bulletin, Color(0.85, 0.78, 0.55, 1.0), 8.0)
+	print("[ObjectiveHUD] Dawn bulletin: %d NPC(s) changed overnight" % lines.size())
+
+
+## Show a deadline warning banner at 75% and 90% time thresholds.
+func _on_deadline_warning(threshold: float, days_remaining: int) -> void:
+	var urgency: String
+	var color: Color
+	if threshold >= 0.90:
+		urgency = "CRITICAL"
+		color = Color(0.95, 0.20, 0.10, 1.0)
+	else:
+		urgency = "WARNING"
+		color = Color(0.95, 0.65, 0.10, 1.0)
+	var text: String = "⚠ %s — %d day%s remaining!" % [
+		urgency, days_remaining, "" if days_remaining == 1 else "s"]
+	_show_banner(text, color, 5.0)
+	print("[ObjectiveHUD] Deadline warning: %s (%.0f%%, %d days left)" % [
+		urgency, threshold * 100.0, days_remaining])

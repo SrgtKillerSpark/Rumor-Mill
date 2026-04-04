@@ -108,10 +108,17 @@ enum ScenarioState { ACTIVE, WON, FAILED }
 ## scenario_id: 1, 2, 3, or 4.  state: WON or FAILED.
 signal scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioState)
 
+## Emitted once when the scenario crosses a deadline threshold (0.75 or 0.90).
+## threshold: 0.75 or 0.90.  days_remaining: int.
+signal deadline_warning(threshold: float, days_remaining: int)
+
 var scenario_1_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_2_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_3_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_4_state: ScenarioState = ScenarioState.ACTIVE
+
+## Tracks which deadline thresholds have already fired (0.75, 0.90).
+var _deadline_warnings_fired: Dictionary = {}
 
 ## Scenario 3 only: Calder's reputation score at the first evaluate() call.
 ## -1 means not yet recorded. Used by end_screen for the Calder Rep Delta stat.
@@ -123,11 +130,38 @@ var calder_score_final: int = -1
 ## Evaluate win/fail conditions for the active scenario only.
 ## Call once per tick, after reputation_system.recalculate_all().
 func evaluate(rep: ReputationSystem, current_tick: int) -> void:
+	_check_deadline_warnings(current_tick)
 	match _active_scenario:
 		1: _check_scenario_1(rep, current_tick)
 		2: _check_scenario_2(rep, current_tick)
 		3: _check_scenario_3(rep, current_tick)
 		4: _check_scenario_4(rep, current_tick)
+
+
+## Returns the fraction of time elapsed (0.0–1.0) for the current scenario.
+func get_time_fraction(current_tick: int) -> float:
+	if _days_allowed <= 1:
+		return 1.0
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	return clampf(float(current_day - 1) / float(_days_allowed - 1), 0.0, 1.0)
+
+
+## Returns true when the scenario is in the final 25% of its allowed time.
+func is_final_quarter(current_tick: int) -> bool:
+	return get_time_fraction(current_tick) >= 0.75
+
+
+## Check and emit deadline warning signals at 75% and 90% thresholds.
+func _check_deadline_warnings(current_tick: int) -> void:
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	var fraction := get_time_fraction(current_tick)
+	var days_remaining: int = maxi(_days_allowed - current_day, 0)
+	for threshold in [0.75, 0.90]:
+		if fraction >= threshold and not _deadline_warnings_fired.has(threshold):
+			_deadline_warnings_fired[threshold] = true
+			deadline_warning.emit(threshold, days_remaining)
+			print("[ScenarioManager] Deadline warning: %.0f%% time elapsed, %d days remaining" % [
+				threshold * 100.0, days_remaining])
 
 
 ## Called when the player is caught eavesdropping. Fails Scenario 1 if still active.

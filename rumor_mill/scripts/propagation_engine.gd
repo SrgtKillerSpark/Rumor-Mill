@@ -57,6 +57,10 @@ var lineage: Dictionary = {}
 ## Reference to the player intel store for heat tracking. Set by World.
 var intel_store_ref: PlayerIntelStore = null
 
+## Time pressure bonus added to spread probability in the final 25% of a scenario.
+## Set each tick by World based on scenario progress. 0.0 = no bonus, 0.20 = +20%.
+var time_pressure_bonus: float = 0.0
+
 ## Incremented each time an NPC transitions to CONTRADICTED/REJECT due to a
 ## credible public rebuttal (wired from NPC.gd where that state fires).
 ## Used by the Scenario 2 end-screen bonus stat.
@@ -113,7 +117,9 @@ func calc_beta(
 	# Scale factor 1.8 keeps probabilities in a useful range given all inputs ∈ [0,1].
 	# Reduced from 2.5 (SPA-98 balance pass): highly social NPCs still spread briskly,
 	# but moderate NPCs no longer guarantee daily spread to every connected neighbor.
-	return clamp(sociability * effective_credulity * edge_weight * faction_mod * 1.8, 0.0, 1.0)
+	var base := clamp(sociability * effective_credulity * edge_weight * faction_mod * 1.8, 0.0, 1.0)
+	# Time pressure: in the final 25% of a scenario, spread probability increases.
+	return clamp(base + time_pressure_bonus, 0.0, 1.0)
 
 
 # ── γ — recovery probability ──────────────────────────────────────────────────
