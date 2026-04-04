@@ -119,6 +119,20 @@ var _defense_modifiers: Dictionary = {}
 var _defense_modifier_ticks: Dictionary = {}
 const _DEFENSE_MOD_DURATION: int = 3
 
+# ── Rumor memory & relationship consequence tracking ──────────────────────────
+# Each entry: { "rumor_id": str, "subject_id": str, "claim_type": int,
+#               "outcome": str ("believed"|"act"|"rejected"), "tick": int }
+var rumor_history: Array = []
+# Subject NPC ids whose work-location this NPC will avoid after believing
+# a negative rumor about them.  Entries persist for the whole run.
+var _avoided_subject_ids: Array[String] = []
+# Cumulative credulity modifier from memory consequences.  Drives both
+# _credulity and npc_data["credulity"] so the change is visible everywhere.
+var _credulity_modifier:       float = 0.0
+const _CREDULITY_MODIFIER_FLOOR: float = -0.15   # rejection penalty cap
+const _CREDULITY_ACT_GAIN:       float =  0.10   # reward for acting on a rumor
+const _CREDULITY_REJECT_PENALTY: float = -0.05   # penalty per rejection
+
 # Sprite modulate tints per worst rumor state — subtle colour shifts so the
 # player can read NPC state at a glance without squinting at the state badge.
 const STATE_TINT := {
@@ -304,6 +318,7 @@ func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> 
 	var location_code: String = NpcSchedule.get_location(
 		archetype, slot, work_location, tick_overrides, day_pattern_overrides, day
 	)
+	location_code = _reroute_if_avoided(location_code)
 	current_location_code = location_code
 
 	var target: Vector2i
@@ -429,7 +444,7 @@ func _process_rumor_slots(tick: int) -> void:
 
 		match slot.state:
 			Rumor.RumorState.EVALUATING:
-				_tick_evaluating(slot, npc_name, faction, rid)
+				_tick_evaluating(slot, npc_name, faction, rid, tick)
 
 			Rumor.RumorState.BELIEVE:
 				_tick_believe(slot, npc_name, faction, rid, tick)
@@ -477,7 +492,8 @@ func _tick_evaluating(
 		slot: Rumor.NpcRumorSlot,
 		npc_name: String,
 		faction: String,
-		rid: String
+		rid: String,
+		tick: int
 ) -> void:
 	var rumor := slot.rumor
 	var effective_credulity := _credulity
@@ -504,6 +520,8 @@ func _tick_evaluating(
 		slot.ticks_in_state = 0
 		if OS.is_debug_build():
 			print("[Rumor] %s BELIEVE '%s' (p=%.2f)" % [npc_name, rid, believe_chance])
+		_record_rumor_history(rumor, subject_id, "believed", tick)
+		_update_schedule_avoidance(rumor)
 	else:
 		slot.state = Rumor.RumorState.REJECT
 		slot.ticks_in_state = 0
@@ -518,6 +536,8 @@ func _tick_evaluating(
 			emit_signal("rumor_state_changed", npc_name, "DEFENDING", rid)
 			if OS.is_debug_build():
 				print("[Defender] %s entered DEFENDING for subject '%s'" % [npc_name, subject_id])
+		_record_rumor_history(rumor, subject_id, "rejected", tick)
+		_apply_credulity_modifier(_CREDULITY_REJECT_PENALTY)
 
 
 func _tick_believe(
@@ -545,6 +565,8 @@ func _tick_believe(
 		if OS.is_debug_build():
 			print("[Rumor] %s ACT on '%s' after %d ticks" % [npc_name, rid, act_threshold])
 		_start_act_behavior(slot.rumor, tick)
+		_record_rumor_history(slot.rumor, slot.rumor.subject_npc_id, "act", tick)
+		_apply_credulity_modifier(_CREDULITY_ACT_GAIN)
 		return
 
 	# ── β: spread attempt to each nearby neighbour ───────────────────────────
@@ -820,6 +842,64 @@ func _tick_defense_modifiers() -> void:
 	for sid in to_remove:
 		_defense_modifiers.erase(sid)
 		_defense_modifier_ticks.erase(sid)
+
+
+# ── Rumor memory helpers ──────────────────────────────────────────────────────
+
+## Append an outcome entry to rumor_history.
+func _record_rumor_history(rumor: Rumor, subject_id: String, outcome: String, tick: int) -> void:
+	rumor_history.append({
+		"rumor_id":   rumor.id,
+		"subject_id": subject_id,
+		"claim_type": rumor.claim_type,
+		"outcome":    outcome,
+		"tick":       tick,
+	})
+
+
+## Apply delta to _credulity_modifier, clamped to _CREDULITY_MODIFIER_FLOOR.
+## Keeps _credulity and npc_data["credulity"] in sync so both own-belief
+## decisions and other NPCs' spread calculations reflect the change.
+func _apply_credulity_modifier(delta: float) -> void:
+	var prev := _credulity_modifier
+	_credulity_modifier = maxf(_credulity_modifier + delta, _CREDULITY_MODIFIER_FLOOR)
+	var actual_delta := _credulity_modifier - prev
+	if abs(actual_delta) < 0.0001:
+		return
+	_credulity = clamp(_credulity + actual_delta, 0.0, 1.0)
+	npc_data["credulity"] = _credulity
+	if OS.is_debug_build():
+		print("[Memory] %s credulity → %.2f (modifier=%.2f)" % [
+			npc_data.get("name", "?"), _credulity, _credulity_modifier])
+
+
+## Record that this NPC should avoid the subject's work-location.
+## Only applies to negative claim types; no-ops on positive claims or duplicates.
+func _update_schedule_avoidance(rumor: Rumor) -> void:
+	if Rumor.is_positive_claim(rumor.claim_type):
+		return
+	var subject_id := rumor.subject_npc_id
+	if _avoided_subject_ids.has(subject_id):
+		return
+	_avoided_subject_ids.append(subject_id)
+	if OS.is_debug_build():
+		print("[Memory] %s will avoid locations of '%s'" % [
+			npc_data.get("name", "?"), subject_id])
+
+
+## If location_code is the work-location of any avoided subject, return "home".
+## No-ops when avoidance list is empty or location is already "home".
+func _reroute_if_avoided(location_code: String) -> String:
+	if _avoided_subject_ids.is_empty() or location_code == "home":
+		return location_code
+	for other in all_npcs_ref:
+		var tid: String = other.npc_data.get("id", "")
+		if _avoided_subject_ids.has(tid) and other.work_location == location_code:
+			if OS.is_debug_build():
+				print("[Memory] %s rerouted from '%s' (avoids '%s') → home" % [
+					npc_data.get("name", "?"), location_code, tid])
+			return "home"
+	return location_code
 
 
 # ── Query helpers ────────────────────────────────────────────────────────────
