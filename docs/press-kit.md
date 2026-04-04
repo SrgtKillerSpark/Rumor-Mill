@@ -30,7 +30,7 @@ There is no combat. There are no levels. There is only the town, the people in i
 - **Rumor Crafting Panel** — choose your subject, your claim type (accusation, scandal, illness scare, prophecy), and your seeder. Each combination produces different spread patterns and mutation rates.
 - **Intel system** — observe NPCs at their workplaces and eavesdrop on conversations to build an intelligence picture before committing to a move.
 - **Player Journal** — track reputation scores, active rumors, and known relationships across the whole town.
-- **Three handcrafted scenarios** — distinct objectives, win conditions, failure states, and faction configurations. Each demands a different strategy.
+- **Four handcrafted scenarios** — offense, precision targeting, dual-front campaign against an AI opponent, and a purely defensive scenario. Each demands a different strategy.
 - **Day/night cycle** — NPC schedules shift through the day. The tavern crowd at evening is different from the market crowd at noon. Timing matters.
 - **Five factions** — Merchants' Guild, Town Guard, Clergy, Common Folk, Nobility — each with their own information networks and credibility dynamics.
 
@@ -46,6 +46,9 @@ A business rival has arrived in town and is undercutting your employer's trade n
 
 ### The Succession
 Raise one NPC's reputation and ruin another simultaneously, while keeping your client's hands completely clean. Twenty-five days. Two targets. Zero margin for a story that gets traced back to its source.
+
+### The Holy Inquisition
+Purely defensive play. An inquisitor has arrived with three names on his list. You have 20 days to keep their reputations intact while he seeds scandal claims engineered to prime for heresy escalation. There is no offensive option — your only tools are counter-rumors, reputation repair, and the same propagation engine your opponent is using against you.
 
 ---
 
@@ -146,5 +149,6 @@ The player Rumor Mill is designed for: someone who wants to feel clever, enjoys 
 
 ---
 
-*Document version: 1.0 — 2026-04-03*
-*Based on: SPA-154 (store copy), SPA-135 (asset specs and timeline), SPA-129 (screenshot priority list)*
+*Document version: 1.1 — 2026-04-04*
+*v1.0 ([SPA-154](/SPA/issues/SPA-154)): Initial press kit. Asset specs: [SPA-135](/SPA/issues/SPA-135) | Screenshot list: [SPA-129](/SPA/issues/SPA-129)*
+*v1.1 ([SPA-267](/SPA/issues/SPA-267)): Added Scenario 4 "The Holy Inquisition"; updated scenario count to four in Key Features.*

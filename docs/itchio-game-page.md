@@ -65,11 +65,12 @@ Then adapt.
 
 ---
 
-### Three Scenarios, Three Kinds of Problem
+### Four Scenarios, Four Kinds of Problem
 
 - **The Alderman's Ruin** — Discredit a nine-year incumbent before the autumn tax rolls. Thirty days. One target. Every ally he has is a wall between you and success.
 - **The Plague Scare** — A business rival has arrived and is undercutting your employer. Spread an illness rumor precisely enough to drive her out — but the Chapel watches, and overreach costs everything.
 - **The Succession** — Raise one reputation and ruin another simultaneously, while keeping your client's hands clean. Twenty-five days, two targets, zero margin.
+- **The Holy Inquisition** — Purely defensive. An inquisitor has three names. You have 20 days to keep their reputations intact while he seeds scandal claims designed to prime for heresy escalation. You are not the aggressor here. You are the only thing standing between them and the writ.
 
 ---
 
@@ -81,7 +82,7 @@ Then adapt.
 - Multiple claim types: accusations, scandals, illness scares, prophecies
 - Intel system — eavesdrop, observe, build your picture before committing
 - Player Journal — track reputation scores, active rumors, and known relationships
-- Three handcrafted scenarios with distinct objectives and faction configurations
+- Four handcrafted scenarios with distinct objectives and faction configurations
 - Day/night cycle — NPC schedules shift; timing your move matters
 - Accessibility options: colorblind-safe icons, adjustable font sizes, keyboard navigation
 
@@ -201,5 +202,6 @@ Before publishing the itch.io page:
 
 ---
 
-*Document version: 1.0 — 2026-04-03*
-*Task: [SPA-183](/SPA/issues/SPA-183) | Steam copy source: [SPA-168](/SPA/issues/SPA-168) | Devlog plan: [SPA-178](/SPA/issues/SPA-178)*
+*Document version: 1.1 — 2026-04-04*
+*v1.0 ([SPA-183](/SPA/issues/SPA-183)): Initial itch.io page copy. Steam copy source: [SPA-168](/SPA/issues/SPA-168) | Devlog plan: [SPA-178](/SPA/issues/SPA-178)*
+*v1.1 ([SPA-267](/SPA/issues/SPA-267)): Added Scenario 4 "The Holy Inquisition"; updated scenario count to four.*
