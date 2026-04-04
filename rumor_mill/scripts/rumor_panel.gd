@@ -214,6 +214,14 @@ func _open_panel(idx: int) -> void:
 		PANEL_SEED:
 			_rebuild_seed_list()
 
+	# Grab keyboard focus on the primary nav button for the active panel.
+	if idx == PANEL_SUBJECT:
+		if _btn_next != null:
+			_btn_next.call_deferred("grab_focus")
+	else:
+		if _btn_back != null:
+			_btn_back.call_deferred("grab_focus")
+
 
 # ── Nav callbacks ─────────────────────────────────────────────────────────────
 

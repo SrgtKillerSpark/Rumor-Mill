@@ -230,5 +230,5 @@ offset_top = 0.0
 offset_right = -6.0
 offset_bottom = 0.0
 text = "F1-F4: Debug"
-theme_override_font_sizes/font_size = 10
-theme_override_colors/font_color = Color(0.48, 0.43, 0.32, 0.65)
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.48, 0.43, 0.32, 0.85)

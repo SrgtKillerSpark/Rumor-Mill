@@ -39,6 +39,8 @@ func show_interior() -> void:
 	_overlay.visible = true
 	_panel.visible   = true
 	_open = true
+	if _close_btn != null:
+		_close_btn.call_deferred("grab_focus")
 
 
 func close_interior() -> void:

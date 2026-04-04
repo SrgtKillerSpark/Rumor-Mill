@@ -86,6 +86,6 @@ theme_override_font_sizes/normal_font_size = 12
 
 [node name="HintLabel" type="Label" parent="Panel/Layout"]
 text = "Press E or click × to close"
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.52, 0.38, 0.18, 1.0)
 horizontal_alignment = 2

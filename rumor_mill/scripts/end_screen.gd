@@ -892,6 +892,8 @@ func _show_tab_results() -> void:
 		_results_container.visible = true
 	if _replay_container != null:
 		_replay_container.visible = false
+	if _tab_results != null:
+		_tab_results.call_deferred("grab_focus")
 
 
 func _show_tab_replay() -> void:
@@ -901,6 +903,8 @@ func _show_tab_replay() -> void:
 		_results_container.visible = false
 	if _replay_container != null:
 		_replay_container.visible = true
+	if _tab_replay != null:
+		_tab_replay.call_deferred("grab_focus")
 
 
 ## Populate the Replay tab with analytics data from ScenarioAnalytics.

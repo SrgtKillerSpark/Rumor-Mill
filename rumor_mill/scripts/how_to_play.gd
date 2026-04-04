@@ -350,11 +350,15 @@ func _build_tab_mechanics() -> VBoxContainer:
 	vbox.add_child(_make_body("  Seeded rumors spread NPC-to-NPC through the social graph. Track via the Social Graph overlay (G)."))
 	vbox.add_child(_make_table_header("State", "Meaning"))
 	var prop_rows := [
-		["Evaluating",   "NPC is deciding whether to believe it"],
-		["Spreading",    "NPC is actively passing it on"],
-		["Stalling",     "NPC heard it but is not spreading further"],
-		["Contradicted", "Conflicting information reached this NPC"],
-		["Expired",      "Rumor has run its natural course"],
+		["○ Unaware",      "NPC has not heard this rumor yet"],
+		["◇ Evaluating",   "NPC is deciding whether to believe it"],
+		["✓ Believes",     "NPC believes the rumor but is not yet spreading it"],
+		["▶ Spreading",    "NPC is actively passing it on"],
+		["★ Acting",       "NPC is taking action based on the rumor"],
+		["✕ Rejecting",    "NPC heard it but refused to believe it"],
+		["⚡ Contradicted", "Conflicting information reached this NPC"],
+		["— Expired",      "Rumor has run its natural course"],
+		["◆ Defending",    "NPC is actively defending the rumor's target"],
 	]
 	for i in prop_rows.size():
 		vbox.add_child(_make_table_row(prop_rows[i][0], prop_rows[i][1], i % 2 == 1))
