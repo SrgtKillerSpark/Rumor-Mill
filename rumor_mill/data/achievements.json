@@ -1,0 +1,74 @@
+[
+  {
+    "id": "scenario_1_complete",
+    "name": "The Alderman Falls",
+    "description": "Complete Scenario 1: The Alderman's Ruin.",
+    "steam_api_name": "ACH_SCENARIO_1_COMPLETE"
+  },
+  {
+    "id": "scenario_2_complete",
+    "name": "The Town Fears",
+    "description": "Complete Scenario 2: The Plague Scare.",
+    "steam_api_name": "ACH_SCENARIO_2_COMPLETE"
+  },
+  {
+    "id": "scenario_3_complete",
+    "name": "The New Order",
+    "description": "Complete Scenario 3: The Succession.",
+    "steam_api_name": "ACH_SCENARIO_3_COMPLETE"
+  },
+  {
+    "id": "scenario_4_complete",
+    "name": "Faith Preserved",
+    "description": "Complete Scenario 4: The Holy Inquisition.",
+    "steam_api_name": "ACH_SCENARIO_4_COMPLETE"
+  },
+  {
+    "id": "master_victory",
+    "name": "Seasoned Schemer",
+    "description": "Win any scenario on Master difficulty.",
+    "steam_api_name": "ACH_MASTER_VICTORY"
+  },
+  {
+    "id": "spymaster_victory",
+    "name": "Shadow Weaver",
+    "description": "Win any scenario on Spymaster difficulty.",
+    "steam_api_name": "ACH_SPYMASTER_VICTORY"
+  },
+  {
+    "id": "whisper_network",
+    "name": "The Web Is Cast",
+    "description": "Spread a rumor to 20 or more unique NPCs in a single game.",
+    "steam_api_name": "ACH_WHISPER_NETWORK"
+  },
+  {
+    "id": "ghost",
+    "name": "Like a Ghost",
+    "description": "Win a scenario without ever being detected.",
+    "steam_api_name": "ACH_GHOST"
+  },
+  {
+    "id": "jack_of_all_trades",
+    "name": "Every Tool",
+    "description": "Use all four action types (Observe, Eavesdrop, Craft Rumor, Bribe) in one playthrough.",
+    "steam_api_name": "ACH_JACK_OF_ALL_TRADES"
+  },
+  {
+    "id": "speedrunner",
+    "name": "Rumor's Wind",
+    "description": "Win any scenario in under 10 days.",
+    "steam_api_name": "ACH_SPEEDRUNNER"
+  },
+  {
+    "id": "mastermind",
+    "name": "Grand Manipulator",
+    "description": "Complete all four scenarios.",
+    "steam_api_name": "ACH_MASTERMIND"
+  },
+  {
+    "id": "a_rumor_begins",
+    "name": "It Starts With a Whisper",
+    "description": "Seed your very first rumor.",
+    "steam_api_name": "ACH_A_RUMOR_BEGINS"
+  }
+]

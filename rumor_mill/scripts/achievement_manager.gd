@@ -1,0 +1,172 @@
+extends Node
+
+## achievement_manager.gd — Autoload singleton for Steam achievement tracking.
+##
+## Defines all achievement IDs and metadata.  On unlock, records the achievement
+## locally (user://achievements.json) and emits achievement_unlocked.
+## Actual Steam SDK calls are stubbed out; the TODO comment marks each one.
+##
+## Usage:
+##   AchievementManager.unlock("scenario_1_complete")
+##   AchievementManager.is_unlocked("ghost")
+##   AchievementManager.get_all()  → Array of dicts with id/name/description/unlocked
+
+# ---------------------------------------------------------------------------
+# Signal
+# ---------------------------------------------------------------------------
+
+## Emitted the first time an achievement is unlocked this session.
+signal achievement_unlocked(achievement_id: String, display_name: String)
+
+# ---------------------------------------------------------------------------
+# Achievement definitions
+# ---------------------------------------------------------------------------
+
+## Static table: achievement_id → { name, description, steam_api_name }
+const ACHIEVEMENTS: Dictionary = {
+	"scenario_1_complete": {
+		"name":           "The Alderman Falls",
+		"description":    "Complete Scenario 1: The Alderman's Ruin.",
+		"steam_api_name": "ACH_SCENARIO_1_COMPLETE",
+	},
+	"scenario_2_complete": {
+		"name":           "The Town Fears",
+		"description":    "Complete Scenario 2: The Plague Scare.",
+		"steam_api_name": "ACH_SCENARIO_2_COMPLETE",
+	},
+	"scenario_3_complete": {
+		"name":           "The New Order",
+		"description":    "Complete Scenario 3: The Succession.",
+		"steam_api_name": "ACH_SCENARIO_3_COMPLETE",
+	},
+	"scenario_4_complete": {
+		"name":           "Faith Preserved",
+		"description":    "Complete Scenario 4: The Holy Inquisition.",
+		"steam_api_name": "ACH_SCENARIO_4_COMPLETE",
+	},
+	"master_victory": {
+		"name":           "Seasoned Schemer",
+		"description":    "Win any scenario on Master difficulty.",
+		"steam_api_name": "ACH_MASTER_VICTORY",
+	},
+	"spymaster_victory": {
+		"name":           "Shadow Weaver",
+		"description":    "Win any scenario on Spymaster difficulty.",
+		"steam_api_name": "ACH_SPYMASTER_VICTORY",
+	},
+	"whisper_network": {
+		"name":           "The Web Is Cast",
+		"description":    "Spread a rumor to 20 or more unique NPCs in a single game.",
+		"steam_api_name": "ACH_WHISPER_NETWORK",
+	},
+	"ghost": {
+		"name":           "Like a Ghost",
+		"description":    "Win a scenario without ever being detected.",
+		"steam_api_name": "ACH_GHOST",
+	},
+	"jack_of_all_trades": {
+		"name":           "Every Tool",
+		"description":    "Use all four action types (Observe, Eavesdrop, Craft Rumor, Bribe) in one playthrough.",
+		"steam_api_name": "ACH_JACK_OF_ALL_TRADES",
+	},
+	"speedrunner": {
+		"name":           "Rumor's Wind",
+		"description":    "Win any scenario in under 10 days.",
+		"steam_api_name": "ACH_SPEEDRUNNER",
+	},
+	"mastermind": {
+		"name":           "Grand Manipulator",
+		"description":    "Complete all four scenarios.",
+		"steam_api_name": "ACH_MASTERMIND",
+	},
+	"a_rumor_begins": {
+		"name":           "It Starts With a Whisper",
+		"description":    "Seed your very first rumor.",
+		"steam_api_name": "ACH_A_RUMOR_BEGINS",
+	},
+}
+
+# ---------------------------------------------------------------------------
+# Persistence
+# ---------------------------------------------------------------------------
+
+const SAVE_PATH := "user://achievements.json"
+
+## Set of unlocked achievement ids (id → true).
+var _unlocked: Dictionary = {}
+
+
+func _ready() -> void:
+	_load()
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+## Unlock an achievement.  Safe to call multiple times; ignores already-unlocked ids.
+func unlock(achievement_id: String) -> void:
+	if _unlocked.has(achievement_id):
+		return
+	if not ACHIEVEMENTS.has(achievement_id):
+		push_warning("[AchievementManager] Unknown achievement id: '%s'" % achievement_id)
+		return
+
+	_unlocked[achievement_id] = true
+	_save()
+
+	var display_name: String = ACHIEVEMENTS[achievement_id].get("name", achievement_id)
+	print("[AchievementManager] Unlocked: %s — %s" % [achievement_id, display_name])
+
+	achievement_unlocked.emit(achievement_id, display_name)
+
+	# TODO: When GodotSteam is integrated, call:
+	#   Steam.setAchievement(ACHIEVEMENTS[achievement_id]["steam_api_name"])
+	#   Steam.storeStats()
+
+
+## Returns true if the given achievement has been unlocked.
+func is_unlocked(achievement_id: String) -> bool:
+	return _unlocked.has(achievement_id)
+
+
+## Returns an Array of all achievement definitions, each augmented with
+## an "id" key and an "unlocked" bool.
+func get_all() -> Array:
+	var result: Array = []
+	for ach_id in ACHIEVEMENTS:
+		var entry: Dictionary = ACHIEVEMENTS[ach_id].duplicate()
+		entry["id"]       = ach_id
+		entry["unlocked"] = _unlocked.has(ach_id)
+		result.append(entry)
+	return result
+
+
+# ---------------------------------------------------------------------------
+# Persistence helpers
+# ---------------------------------------------------------------------------
+
+func _save() -> void:
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file == null:
+		push_warning("[AchievementManager] Could not open '%s' for writing (err %d)" % [
+			SAVE_PATH, FileAccess.get_open_error()])
+		return
+	file.store_string(JSON.stringify(_unlocked))
+
+
+func _load() -> void:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return
+	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if file == null:
+		push_warning("[AchievementManager] Could not open '%s' for reading (err %d)" % [
+			SAVE_PATH, FileAccess.get_open_error()])
+		return
+	var text    := file.get_as_text()
+	var parsed  = JSON.parse_string(text)
+	if parsed is Dictionary:
+		_unlocked = parsed
+	else:
+		push_warning("[AchievementManager] Save file parse error — resetting unlock state")
+		_unlocked = {}
