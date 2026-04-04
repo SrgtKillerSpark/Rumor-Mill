@@ -288,9 +288,11 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	if won and not next_id.is_empty():
 		_btn_next.modulate = Color.WHITE
 		_btn_next.disabled = false
+		_btn_next.focus_mode = Control.FOCUS_ALL
 	else:
 		_btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		_btn_next.disabled = true
+		_btn_next.focus_mode = Control.FOCUS_NONE
 
 	# Default to Results tab.
 	_show_tab_results()
@@ -323,6 +325,13 @@ func _infer_fail_reason(scenario_id: int) -> String:
 		var rep: ReputationSystem = _world_ref.reputation_system
 		if rep != null and rep.has_illness_rejecter(ScenarioManager.ALYS_HERBWIFE_ID, ScenarioManager.MAREN_NUN_ID):
 			return "contradicted"
+	if scenario_id == 4:
+		var rep: ReputationSystem = _world_ref.reputation_system
+		if rep != null:
+			for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+				var snap := rep.get_snapshot(npc_id)
+				if snap != null and snap.score < ScenarioManager.S4_FAIL_REP_BELOW:
+					return "reputation_collapsed"
 	# Check days elapsed vs allowed.
 	if _day_night_ref != null and sm.get_days_allowed() > 0:
 		var days_elapsed: int = _day_night_ref.current_day if "current_day" in _day_night_ref else 0
