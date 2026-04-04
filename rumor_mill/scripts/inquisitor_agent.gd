@@ -19,6 +19,10 @@ var _active: bool = false
 var _last_seed_day: int = 0
 var _target_index: int = 0  # cycles through protected NPCs
 
+## Difficulty modifier applied to every cooldown tier (positive = slower inquisitor).
+## Set by World._apply_active_scenario() before activate() is called.
+var cooldown_offset: int = 0
+
 
 func activate() -> void:
 	_active = true
@@ -38,12 +42,14 @@ func tick(current_day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
 
 
 func _get_cooldown(day: int) -> int:
+	var base: int
 	if day <= 5:
-		return 3   # Slow start: seed every 3 days
+		base = 3   # Slow start: seed every 3 days
 	elif day <= 12:
-		return 2   # Mid-game pressure: every 2 days
+		base = 2   # Mid-game pressure: every 2 days
 	else:
-		return 1   # Endgame: every day
+		base = 1   # Endgame: every day
+	return maxi(1, base + cooldown_offset)
 
 
 func _seed_heresy_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -> void:

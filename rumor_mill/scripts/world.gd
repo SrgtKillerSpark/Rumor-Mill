@@ -506,6 +506,7 @@ func _apply_active_scenario() -> void:
 
 	# 8. Inquisitor agent — only active in Scenario 4.
 	inquisitor_agent = InquisitorAgent.new()
+	inquisitor_agent.cooldown_offset = int(diff_mods.get("inquisitor_cooldown_offset", 0))
 	if active_scenario_id == "scenario_4":
 		inquisitor_agent.activate()
 
