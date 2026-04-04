@@ -1,0 +1,53 @@
+THIRD PARTY LICENSES — Rumor Mill
+==================================
+
+This file lists all third-party software and assets used in Rumor Mill,
+along with their respective licenses and copyright notices.
+
+
+=== Godot Engine ===
+Version: 4.6
+License: MIT
+https://godotengine.org
+https://github.com/godotengine/godot/blob/master/LICENSE.txt
+
+Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md).
+Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+=== Audio Assets ===
+All music and sound effects in this build are procedurally synthesized
+original works created for Rumor Mill. No third-party audio assets are
+included in this release.
+
+NOTE: This section will be updated when licensed third-party audio assets
+are integrated in a future update (Phase 1 audio). Any externally sourced
+audio will be listed here with artist, source URL, and license.
+
+
+=== Art Assets ===
+All visual assets (sprites, tilesets, UI elements, icons) are original
+works created for Rumor Mill. No third-party art assets are included
+in this release.
+
+
+=== Godot Addons / Plugins ===
+No third-party Godot addons or plugins are used in this release.
