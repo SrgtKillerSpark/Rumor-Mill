@@ -17,13 +17,16 @@ class_name ReputationSystem
 ## Claim direction: +1 boosts reputation, -1 damages it.
 ## Prophecy treated as positive in vertical slice (blessing default).
 const CLAIM_DIRECTION: Dictionary = {
-	Rumor.ClaimType.PRAISE:      1,
-	Rumor.ClaimType.PROPHECY:    1,
-	Rumor.ClaimType.ACCUSATION: -1,
-	Rumor.ClaimType.SCANDAL:    -1,
-	Rumor.ClaimType.ILLNESS:    -1,
-	Rumor.ClaimType.DEATH:      -1,
-	Rumor.ClaimType.HERESY:     -1,
+	Rumor.ClaimType.PRAISE:            1,
+	Rumor.ClaimType.PROPHECY:          1,
+	Rumor.ClaimType.ACCUSATION:       -1,
+	Rumor.ClaimType.SCANDAL:          -1,
+	Rumor.ClaimType.ILLNESS:          -1,
+	Rumor.ClaimType.DEATH:            -1,
+	Rumor.ClaimType.HERESY:           -1,
+	Rumor.ClaimType.BLACKMAIL:        -1,
+	Rumor.ClaimType.SECRET_ALLIANCE:  -1,
+	Rumor.ClaimType.FORBIDDEN_ROMANCE:-1,
 }
 
 ## SOCIALLY_DEAD edge case thresholds.
