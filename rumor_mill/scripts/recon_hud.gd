@@ -113,9 +113,9 @@ func _refresh_pips() -> void:
 		return
 
 	var remaining: int = _intel_store_ref.recon_actions_remaining
-	var max_val:   int = PlayerIntelStore.MAX_DAILY_ACTIONS
+	var max_val:   int = _intel_store_ref.max_daily_actions
 	var whispers:  int = _intel_store_ref.whisper_tokens_remaining
-	var max_w:     int = PlayerIntelStore.MAX_DAILY_WHISPERS
+	var max_w:     int = _intel_store_ref.max_daily_whispers
 	var favors:    int = _intel_store_ref.bribe_charges
 
 	# Rebuild pips only when max changes; update colours when remaining changes.

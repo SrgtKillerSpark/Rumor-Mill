@@ -20,6 +20,10 @@ var _active: bool = false
 var _last_seed_day: int = 0
 var _alternate_flag: bool = false  # flips each seed during days 8–15
 
+## Difficulty modifier applied to every cooldown tier (positive = slower rival).
+## Set by World._apply_active_scenario() before activate() is called.
+var cooldown_offset: int = 0
+
 
 func activate() -> void:
 	_active = true
@@ -41,12 +45,16 @@ func tick(current_day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
 
 
 func _get_cooldown(day: int) -> int:
+	var base: int
 	if day <= 7:
-		return 3
+		base = 3
 	elif day <= 15:
-		return 2
+		base = 2
 	else:
-		return 1
+		base = 1
+	# cooldown_offset > 0 slows the rival (easier); < 0 speeds it up (harder).
+	# Clamp to at least 1 so the rival always waits at least one day between seeds.
+	return maxi(1, base + cooldown_offset)
 
 
 func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -> void:

@@ -67,6 +67,11 @@ func get_days_allowed() -> int:
 	return _days_allowed
 
 
+## Override the days allowed (e.g. applied by difficulty modifiers after load).
+func override_days_allowed(new_days: int) -> void:
+	_days_allowed = new_days
+
+
 ## Returns the current in-game day (1-based) derived from the tick counter.
 ## All scenario resolution checks use this formula, so HUDs should too.
 func get_current_day(current_tick: int) -> int:

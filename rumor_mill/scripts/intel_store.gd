@@ -8,6 +8,11 @@ const MAX_DAILY_ACTIONS  := 3
 const MAX_DAILY_WHISPERS := 2
 const MAX_EVIDENCE       := 3
 
+## Per-run caps — may be raised/lowered by difficulty modifiers before play begins.
+## Default to the class constants; World._apply_active_scenario() overrides these.
+var max_daily_actions:  int = MAX_DAILY_ACTIONS
+var max_daily_whispers: int = MAX_DAILY_WHISPERS
+
 var recon_actions_remaining:   int = MAX_DAILY_ACTIONS
 var whisper_tokens_remaining:  int = MAX_DAILY_WHISPERS
 
@@ -127,8 +132,8 @@ func try_spend_whisper() -> bool:
 
 ## Called at dawn (day_changed signal) to restore the daily budget.
 func replenish() -> void:
-	recon_actions_remaining  = MAX_DAILY_ACTIONS
-	whisper_tokens_remaining = MAX_DAILY_WHISPERS
+	recon_actions_remaining  = max_daily_actions
+	whisper_tokens_remaining = max_daily_whispers
 	decay_heat()
 
 

@@ -66,6 +66,7 @@ var _briefing_title:     Label      = null
 var _briefing_days:      Label      = null
 var _briefing_body:      RichTextLabel = null
 var _btn_begin:          Button     = null
+var _difficulty_buttons: Dictionary = {}   # preset_id → Button
 
 # Intro-phase refs
 var _panel_intro:        Control    = null
@@ -434,6 +435,30 @@ func _build_briefing_panel() -> void:
 
 	vbox.add_child(_separator())
 
+	# Difficulty selector row
+	var diff_label := Label.new()
+	diff_label.text = "Difficulty"
+	diff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	diff_label.add_theme_font_size_override("font_size", 12)
+	diff_label.add_theme_color_override("font_color", C_MUTED)
+	vbox.add_child(diff_label)
+
+	var diff_row := HBoxContainer.new()
+	diff_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	diff_row.add_theme_constant_override("separation", 8)
+	vbox.add_child(diff_row)
+
+	for preset in ["apprentice", "master", "spymaster"]:
+		var lbl: String = preset.capitalize()
+		var btn := _make_button(lbl, 120)
+		btn.pressed.connect(_on_difficulty_pressed.bind(preset))
+		diff_row.add_child(btn)
+		_difficulty_buttons[preset] = btn
+
+	_refresh_difficulty_buttons()
+
+	vbox.add_child(_separator())
+
 	# Button row
 	var btn_row := HBoxContainer.new()
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -451,9 +476,45 @@ func _build_briefing_panel() -> void:
 
 func _populate_briefing() -> void:
 	_briefing_title.text = _selected_scenario.get("title", "")
-	var days: int = int(_selected_scenario.get("daysAllowed", 30))
-	_briefing_days.text = "You have %d days." % days
+	_update_briefing_days()
 	_briefing_body.text = _selected_scenario.get("startingText", "")
+
+
+func _update_briefing_days() -> void:
+	if _selected_scenario.is_empty() or _briefing_days == null:
+		return
+	var base_days: int = int(_selected_scenario.get("daysAllowed", 30))
+	var mods: Dictionary = GameState.get_difficulty_modifiers(GameState.selected_difficulty)
+	var total_days: int = base_days + int(mods.get("days_bonus", 0))
+	_briefing_days.text = "You have %d days." % total_days
+
+
+func _on_difficulty_pressed(preset: String) -> void:
+	GameState.selected_difficulty = preset
+	_refresh_difficulty_buttons()
+	_update_briefing_days()
+
+
+func _refresh_difficulty_buttons() -> void:
+	var selected: String = GameState.selected_difficulty
+	for preset in _difficulty_buttons:
+		var btn: Button = _difficulty_buttons[preset]
+		if preset == selected:
+			btn.add_theme_color_override("font_color", C_TITLE)
+			btn.add_theme_stylebox_override("normal", _make_selected_stylebox())
+		else:
+			btn.remove_theme_color_override("font_color")
+			btn.remove_theme_stylebox_override("normal")
+
+
+func _make_selected_stylebox() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.55, 0.35, 0.05, 1.0)
+	sb.border_color = C_TITLE
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(4)
+	sb.set_content_margin_all(6)
+	return sb
 
 
 # ── Button / event handlers ───────────────────────────────────────────────────

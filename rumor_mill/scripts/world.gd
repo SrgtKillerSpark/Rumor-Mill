@@ -491,8 +491,36 @@ func _apply_active_scenario() -> void:
 		print("World: heat/bribe %s for '%s'" % [
 			"enabled (2 favors)" if non_tutorial else "disabled", active_scenario_id])
 
-	# 7. Rival agent — only active in Scenario 3.
+	# 7. Difficulty modifiers — adjust action budgets, heat decay, time limit, rival speed.
+	var diff_mods: Dictionary = GameState.get_difficulty_modifiers(GameState.selected_difficulty)
+	if intel_store != null:
+		var non_tutorial: bool = (active_scenario_id != "scenario_1")
+		# Whispers and recon actions: clamp to at least 1 so the player can always act.
+		intel_store.max_daily_whispers = maxi(1,
+			PlayerIntelStore.MAX_DAILY_WHISPERS + int(diff_mods.get("whisper_bonus", 0)))
+		intel_store.max_daily_actions  = maxi(1,
+			PlayerIntelStore.MAX_DAILY_ACTIONS  + int(diff_mods.get("action_bonus",  0)))
+		intel_store.whisper_tokens_remaining = intel_store.max_daily_whispers
+		intel_store.recon_actions_remaining  = intel_store.max_daily_actions
+		# Heat decay override (skip for tutorial where heat is disabled).
+		if non_tutorial:
+			intel_store.heat_decay_override = float(diff_mods.get("heat_decay", 6.0))
+		print("World: difficulty '%s' — whispers=%d actions=%d heat_decay=%.1f" % [
+			GameState.selected_difficulty,
+			intel_store.max_daily_whispers,
+			intel_store.max_daily_actions,
+			intel_store.heat_decay_override if non_tutorial else 6.0])
+	if scenario_manager != null:
+		var days_bonus: int = int(diff_mods.get("days_bonus", 0))
+		if days_bonus != 0:
+			var adjusted: int = maxi(1, scenario_manager.get_days_allowed() + days_bonus)
+			scenario_manager.override_days_allowed(adjusted)
+			print("World: difficulty '%s' — days_allowed adjusted to %d" % [
+				GameState.selected_difficulty, adjusted])
+
+	# 8. Rival agent — only active in Scenario 3.
 	rival_agent = RivalAgent.new()
+	rival_agent.cooldown_offset = int(diff_mods.get("rival_cooldown_offset", 0))
 	if active_scenario_id == "scenario_3":
 		rival_agent.activate()
 		print("World: RivalAgent activated for 'scenario_3'")
