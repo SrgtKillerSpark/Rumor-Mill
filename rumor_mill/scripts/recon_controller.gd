@@ -31,6 +31,10 @@ const BLDG_HALF_H := 20.0
 ## Tooltip offset from the mouse cursor (screen-space pixels).
 const TOOLTIP_OFFSET := Vector2(14.0, -32.0)
 
+## Panel colours — aligned with shared palette (C_PANEL_BORDER is an exact match).
+const C_PANEL_BG     := Color(0.10, 0.07, 0.05, 0.92)   ## tooltip / popup background
+const C_PANEL_BORDER := Color(0.55, 0.38, 0.18, 1.0)    ## border accent
+
 ## Emitted after every action attempt (success or failure).
 signal action_performed(message: String, success: bool)
 
@@ -90,12 +94,12 @@ func _create_hover_visuals() -> void:
 	_tooltip_canvas.add_child(_tooltip_panel)
 
 	var bg       := ColorRect.new()
-	bg.color      = Color(0.10, 0.07, 0.05, 0.92)
+	bg.color      = C_PANEL_BG
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_tooltip_panel.add_child(bg)
 
 	var border := ColorRect.new()
-	border.color = Color(0.55, 0.38, 0.18, 1.0)
+	border.color = C_PANEL_BORDER
 	border.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	border.offset_left   = 0.0
 	border.offset_top    = 0.0
@@ -696,7 +700,7 @@ func _show_action_popup(npc: Node2D, screen_pos: Vector2) -> void:
 	_popup_panel.add_child(bg)
 
 	var border_top := ColorRect.new()
-	border_top.color = Color(0.55, 0.38, 0.18, 1.0)
+	border_top.color = C_PANEL_BORDER
 	border_top.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	border_top.anchor_bottom = 0.0
 	border_top.offset_bottom = 2.0
