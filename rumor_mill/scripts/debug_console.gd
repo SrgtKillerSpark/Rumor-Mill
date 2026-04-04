@@ -2,7 +2,7 @@ extends CanvasLayer
 
 ## debug_console.gd — Sprint 2 in-game debug console.
 ##
-## F1           — toggle console visibility
+## F1 / F12     — toggle console visibility (debug builds only)
 ## Commands:
 ##   inject_rumor <npc_id> <claim_type> <intensity>
 ##   show_states
@@ -20,8 +20,14 @@ var _overlay_ref: CanvasLayer = null
 func _ready() -> void:
 	layer = 20
 	panel.visible = false
+	# Disable debug console entirely in release builds.
+	if not OS.is_debug_build():
+		visible = false
+		set_process(false)
+		set_process_input(false)
+		return
 	input_box.text_submitted.connect(_on_command_submitted)
-	_log("[color=cyan]Rumor Mill Debug Console — F1 to toggle[/color]")
+	_log("[color=cyan]Rumor Mill Debug Console — F1/F12 to toggle[/color]")
 	_log("[color=yellow]Commands: inject_rumor, show_states, show_social, list_npcs, lineage_tree[/color]")
 
 
@@ -35,7 +41,7 @@ func set_overlay(overlay: CanvasLayer) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_F1:
+		if event.keycode == KEY_F1 or event.keycode == KEY_F12:
 			panel.visible = not panel.visible
 			if panel.visible:
 				input_box.grab_focus()

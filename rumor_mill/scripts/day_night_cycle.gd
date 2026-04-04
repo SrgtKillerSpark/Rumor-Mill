@@ -30,6 +30,9 @@ const TIME_COLORS: Dictionary = {
 var current_tick: int = 0
 var current_day: int = 1
 
+# Precomputed sorted list of TIME_COLORS keys — avoids re-sorting every tick.
+var _time_keys: Array = []
+
 # ── Day transition flash overlay ──────────────────────────────────────────────
 var _day_flash_rect:  ColorRect = null
 var _day_flash_tween: Tween     = null
@@ -41,6 +44,8 @@ var time_label: Label = null
 
 
 func _ready() -> void:
+	_time_keys = TIME_COLORS.keys()
+	_time_keys.sort()
 	tick_duration_seconds = SettingsManager.game_speed
 	tick_timer.wait_time = tick_duration_seconds
 	tick_timer.timeout.connect(_on_tick_timer_timeout)
@@ -89,13 +94,10 @@ func _play_day_transition_flash() -> void:
 
 func _apply_time_of_day(hour: int) -> void:
 	# Interpolate between the two nearest keyframe colours.
-	var keys: Array = TIME_COLORS.keys()
-	keys.sort()
+	var prev_hour: int = _time_keys[0]
+	var next_hour: int = _time_keys[_time_keys.size() - 1]
 
-	var prev_hour: int = keys[0]
-	var next_hour: int = keys[keys.size() - 1]
-
-	for k in keys:
+	for k in _time_keys:
 		if k <= hour:
 			prev_hour = k
 		if k >= hour and k < next_hour:

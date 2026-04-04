@@ -95,7 +95,8 @@ func tick_decay() -> void:
 			expired_ids.append(rid)
 	for rid in expired_ids:
 		live_rumors.erase(rid)
-		print("[PropagationEngine] Rumor '%s' shelf-life expired" % rid)
+		if OS.is_debug_build():
+			print("[PropagationEngine] Rumor '%s' shelf-life expired" % rid)
 
 
 # ── β — spread probability ────────────────────────────────────────────────────
