@@ -248,7 +248,7 @@ func _npc_tooltip_text(npc: Node2D) -> String:
 	var snap = rep_sys.get_snapshot(npc_id)
 	if snap == null:
 		return base
-	var result: String = "%s\nRep: %d — %s" % [base, snap.score, _rep_tier_label(snap.score)]
+	var result: String = "%s\nRep: %d — %s" % [base, snap.score, ReputationSystem.score_label(snap.score)]
 	# Heat tier label (diegetic — no numeric value shown to player).
 	if _intel_store != null and _intel_store.heat_enabled:
 		var h := _intel_store.get_heat(npc_id)
@@ -352,14 +352,6 @@ func _show_eavesdrop_success(npc: Node2D) -> void:
 	tw.finished.connect(lbl.queue_free)
 
 
-## Map a 0-100 reputation score to a human-readable tier label.
-func _rep_tier_label(score: int) -> String:
-	if score >= 85: return "Revered"
-	elif score >= 70: return "Distinguished"
-	elif score >= 50: return "Respected"
-	elif score >= 35: return "Suspicious"
-	elif score >= 20: return "Disgraced"
-	else: return "Despised"
 
 
 # ── Input ─────────────────────────────────────────────────────────────────────

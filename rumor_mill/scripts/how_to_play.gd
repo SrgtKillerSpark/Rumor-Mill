@@ -46,6 +46,9 @@ func _input(event: InputEvent) -> void:
 func open() -> void:
 	visible = true
 	_switch_tab(Tab.CONTROLS)
+	# Grab focus on the first tab button so keyboard navigation works immediately.
+	if _tab_buttons.size() > 0:
+		_tab_buttons[0].call_deferred("grab_focus")
 
 
 func _close() -> void:
@@ -408,15 +411,13 @@ func _build_tab_systems() -> VBoxContainer:
 
 	# Reputation table
 	vbox.add_child(_make_body("Reputation"))
-	vbox.add_child(_make_body("  Your global reputation starts at 50 and shifts with faction sentiment. Six tiers affect available actions and NPC attitudes."))
+	vbox.add_child(_make_body("  Your global reputation starts at 50 and shifts with faction sentiment. Four tiers affect available actions and NPC attitudes."))
 	vbox.add_child(_make_table_header("Tier (Range)", "Effect"))
 	var rep_rows := [
-		["Revered (85–100)",   "Maximum trust; NPCs seek you out"],
-		["Respected (65–84)",  "Favorable reception"],
-		["Neutral (40–64)",    "Standard behavior"],
-		["Suspect (25–39)",    "NPCs are wary; some options closed"],
-		["Notorious (10–24)",  "Active distrust; most NPCs hostile"],
-		["Hunted (0–9)",       "Critical — scenario failure imminent"],
+		["Distinguished (71–100)", "Maximum trust; NPCs highly receptive"],
+		["Respected (51–70)",      "Favorable reception"],
+		["Suspect (31–50)",        "NPCs are wary; some options closed"],
+		["Disgraced (0–30)",       "Active distrust; most NPCs hostile"],
 	]
 	for i in rep_rows.size():
 		vbox.add_child(_make_table_row(rep_rows[i][0], rep_rows[i][1], i % 2 == 1))
