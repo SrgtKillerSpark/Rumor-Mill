@@ -192,10 +192,10 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 	var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
 	if snap == null:
 		return
-	if snap.score <= S1_WIN_EDRIC_BELOW:
+	if snap.score < S1_WIN_EDRIC_BELOW:
 		scenario_1_state = ScenarioState.WON
 		scenario_resolved.emit(1, ScenarioState.WON)
-		print("[ScenarioManager] Scenario 1 WIN — Edric Fenn reputation %d <= %d" % [
+		print("[ScenarioManager] Scenario 1 WIN — Edric Fenn reputation %d < %d" % [
 			snap.score, S1_WIN_EDRIC_BELOW])
 		return
 	# Timeout fail: days elapsed exceeds the scenario timer.

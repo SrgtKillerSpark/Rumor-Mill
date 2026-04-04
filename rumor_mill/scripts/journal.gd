@@ -910,9 +910,9 @@ func _build_objectives_section() -> void:
 
 	var win_body := Label.new()
 	win_body.text = (
-		"  Lord Edric Fenn reputation drops to %d or below.\n"
+		"  Lord Edric Fenn reputation drops below %d.\n"
 		+ "  Current:  %s / 100  — %s  %s\n"
-		+ "  Target:   \u2264 %d (Disgraced — faction loyalty collapses)"
+		+ "  Target:   < %d (Disgraced — faction loyalty collapses)"
 	) % [ScenarioManager.S1_WIN_EDRIC_BELOW, edric_score_str, edric_band_str, s1_win_status, ScenarioManager.S1_WIN_EDRIC_BELOW]
 	win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	win_body.add_theme_font_size_override("font_size", 12)
