@@ -904,10 +904,10 @@ func _build_objectives_section() -> void:
 
 	var win_body := Label.new()
 	win_body.text = (
-		"  Lord Edric Fenn reputation drops below 25.\n"
+		"  Lord Edric Fenn reputation drops to %d or below.\n"
 		+ "  Current:  %s / 100  — %s  %s\n"
-		+ "  Target:   < 25 (Disgraced — faction loyalty collapses)"
-	) % [edric_score_str, edric_band_str, s1_win_status]
+		+ "  Target:   \u2264 %d (Disgraced — faction loyalty collapses)"
+	) % [ScenarioManager.S1_WIN_EDRIC_BELOW, edric_score_str, edric_band_str, s1_win_status, ScenarioManager.S1_WIN_EDRIC_BELOW]
 	win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	win_body.add_theme_font_size_override("font_size", 12)
 	win_body.add_theme_color_override("font_color", s1_win_color)
@@ -955,11 +955,13 @@ func _build_objectives_section() -> void:
 
 	var s3_body := Label.new()
 	s3_body.text = (
-		"  WIN:  Calder Fenn \u2265 80  AND  Tomas Reeve \u2264 30\n"
+		"  WIN:  Calder Fenn \u2265 %d  AND  Tomas Reeve \u2264 %d\n"
 		+ "  FAIL: Calder Fenn < 40\n\n"
-		+ "  Calder Fenn:   %s / 100  — %s  (target: \u226580)\n"
-		+ "  Tomas Reeve:   %s / 100  — %s  (target: \u226430)"
-	) % [calder_score_str, calder_band_str, tomas_score_str, tomas_band_str]
+		+ "  Calder Fenn:   %s / 100  — %s  (target: \u2265%d)\n"
+		+ "  Tomas Reeve:   %s / 100  — %s  (target: \u2264%d)"
+	) % [ScenarioManager.S3_WIN_CALDER_MIN, ScenarioManager.S3_WIN_TOMAS_MAX,
+		calder_score_str, calder_band_str, ScenarioManager.S3_WIN_CALDER_MIN,
+		tomas_score_str, tomas_band_str, ScenarioManager.S3_WIN_TOMAS_MAX]
 	s3_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s3_body.add_theme_font_size_override("font_size", 12)
 	s3_body.add_theme_color_override("font_color", C_BODY)
