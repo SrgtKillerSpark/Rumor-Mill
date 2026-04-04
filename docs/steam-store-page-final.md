@@ -14,58 +14,37 @@
 
 ## Long Description
 
+*(Under 2,000 characters — Steamworks-ready copy)*
+
 **Words travel faster than truth. Use that.**
 
-Rumor Mill is a medieval social strategy game where you play as a hired agent whose only tools are whispers, half-truths, and a careful understanding of who talks to whom.
+Rumor Mill is a medieval social strategy game where your only weapons are whispers, half-truths, and a precise understanding of who talks to whom.
 
-You have arrived in a town of thirty people. They gossip, distrust, protect their allies, and repeat what they hear — with embellishments. Your job is to plant the right story with the right person at the right moment, and let the town do the rest.
+You arrive in a town of thirty people. They gossip, protect their allies, and repeat what they hear — with embellishments. Plant the right story with the right person at the right moment, and let the town do the rest.
 
-### Read the Room
+**Read the Room.** Every NPC has a personality, faction loyalty, and a web of relationships. Eavesdrop on conversations. Build an intelligence picture of who is vulnerable, who is trusted, and whose tongue cannot keep a secret.
 
-Every NPC has a personality, a faction, a daily schedule, and a web of relationships. Observe them at their workplaces. Eavesdrop on their conversations. Build an intelligence picture of who holds influence, who is vulnerable, and whose tongue cannot be trusted with a secret.
+**Craft Your Rumor.** Choose your subject and your claim — an accusation of theft, a plague scare, a dark prophecy, a heresy. Seed it through the right voice and watch the network carry it forward.
 
-### Craft Your Rumor
+**Watch It Spread.** The Social Graph Overlay shows your rumor moving in real time. Stories mutate. They cross faction lines. They reach targets you never intended — or stall in a dead end. Adapt or fail.
 
-Open the Rumor Crafting Panel and build your story: choose a subject, pick your claim — an accusation of theft, a scandal, a whispered illness scare, a dark prophecy — then decide who you seed it through. High-credibility spreaders carry your story further. Loose-lipped ones carry it faster, but change the details.
+**Four handcrafted scenarios** test your information warfare skills:
+- Discredit a nine-year alderman before the autumn tax rolls are signed
+- Drive out a rival herbalist before the town healer's clients return to her
+- Raise one reputation and ruin another — while an AI opponent works against you
+- Protect three innocents from an inquisitor's propaganda campaign for twenty days
 
-### Watch It Spread
-
-The Social Graph Overlay shows your rumor moving through the network in real time. Each NPC weighs the story against what they know and who told them. Rumors mutate. They cross faction lines. They reach targets you never intended — or stall in a dead end. Adapt.
-
-### Manage the Fallout
-
-Reputation is fragile and visible. Track your targets in the Player Journal. Time is finite — each scenario runs on a strict day count. Move too slowly and the window closes. Move too boldly and the Guard Captain starts watching your face.
-
-### Three Scenarios, Three Kinds of Problem
-
-- **The Alderman's Ruin** — Discredit a nine-year incumbent before the autumn tax rolls are signed. Thirty days. One target. Every ally he has is a wall between you and success.
-- **The Plague Scare** — A rival has arrived in town and is undercutting your employer. Spread an illness rumor precisely enough to drive her out — but the Chapel watches, and one overreach will undo everything.
-- **The Succession** — Raise one reputation and ruin another simultaneously, while keeping your client's hands clean. Twenty-five days, two targets, zero margin for a story that turns back on itself.
-
-### Features
-
-- **Living social network** — 30 NPCs with individual personalities, faction loyalties, and dynamic relationship weights that affect how rumors travel
-- **Rumor propagation simulation** — stories mutate, stall, accelerate, and backfire based on the real-time state of the network
-- **Full social graph visualization** — watch your whisper move through the town in real time
-- **Multiple claim types** — accusations, scandals, illness scares, prophecies, and more, each with different spread intensity and mutation behavior
-- **Intel system** — gather information through observation and eavesdropping before committing to a move
-- **Player Journal** — track reputation scores, known relationships, and active rumors across the whole town
-- **Three handcrafted scenarios** — each with unique objectives, win conditions, failure states, and faction configurations
-- **Day/night cycle** — NPC schedules change through the day; timing your approach matters
+There are no swords in Rumor Mill. Only the right word, in the right ear, at the right moment.
 
 ---
 
-## About This Game
+**Key Features**
 
-Rumor Mill is a single-player social strategy game about the mechanics of gossip, influence, and reputation — set in a medieval town that feels genuinely alive.
-
-There are no swords here. No armies. No magic. You are a hired agent with one tool: the right word in the right ear. Everything else follows from who believes what, who repeats it, and who started to wonder where the story came from.
-
-The town's 30 NPCs belong to five factions — Merchants, Guard, Clergy, Common Folk, and Nobility — each with their own loyalties, blind spots, and information networks. A rumor planted in the Tavern Quarter travels differently than one seeded through the Chapel. A high-credibility spreader makes your story stick. A loose-lipped gossip makes it fly — and mutate into something you barely recognize.
-
-You will plan. You will watch. You will sometimes fail because a detail got changed two conversations down the chain. You will learn who to trust with what, and you will get better.
-
-Each scenario is a puzzle with a social simulation underneath it. There is an optimal path. Finding it requires patience, observation, and a willingness to let the town do your dirty work.
+- **Living social network** — 30 NPCs with individual credulity, loyalty, and sociability stats that shape how every rumor travels
+- **Rumor propagation simulation** — stories mutate, stall, accelerate, and backfire based on real-time network state
+- **Intel system** — observe schedules, eavesdrop on relationships, collect evidence before committing
+- **Four handcrafted scenarios** — offense, counter-intel, dual-front campaigns, and pure defense against an AI opponent
+- **Social graph visualization** — watch your whisper move through the town in real time
 
 ---
 
@@ -129,5 +108,6 @@ Each scenario is a puzzle with a social simulation underneath it. There is an op
 
 ---
 
-*Document version: 1.0 — 2026-04-03*
-*Based on: SPA-154 (store copy draft), SPA-135 (launch checklist and asset specs)*
+*Document version: 1.1 — 2026-04-04*
+*v1.0 based on: SPA-154 (store copy draft), SPA-135 (launch checklist and asset specs)*
+*v1.1 (SPA-225): Added Scenario 4 "The Holy Inquisition"; rewrote long description to meet 2000-char Steamworks limit; consolidated to 5 key feature bullets; aligned tone with narrative-identity.md*
