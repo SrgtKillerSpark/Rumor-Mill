@@ -481,7 +481,7 @@ func _apply_active_scenario() -> void:
 	# 7. Difficulty modifiers — adjust action budgets, heat decay, time limit, rival speed.
 	var diff_mods: Dictionary = GameState.get_difficulty_modifiers(GameState.selected_difficulty)
 	if intel_store != null:
-		var non_tutorial: bool = (active_scenario_id != "scenario_1")
+		non_tutorial = (active_scenario_id != "scenario_1")
 		# Whispers and recon actions: clamp to at least 1 so the player can always act.
 		intel_store.max_daily_whispers = maxi(1,
 			PlayerIntelStore.MAX_DAILY_WHISPERS + int(diff_mods.get("whisper_bonus", 0)))

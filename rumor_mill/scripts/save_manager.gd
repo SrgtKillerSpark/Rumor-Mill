@@ -354,7 +354,13 @@ static func _restore_propagation(pe: PropagationEngine, d: Dictionary) -> void:
 		return
 	pe.live_rumors.clear()
 	for rid in d.get("live_rumors", {}):
-		var rd: Dictionary = d["live_rumors"][rid]
+		var rd: Variant = d["live_rumors"][rid]
+		if not rd is Dictionary:
+			push_error("save_manager: live_rumors[%s] is not a Dictionary — skipped" % rid)
+			continue
+		if not (rd.has("id") and rd.has("subject_npc_id") and rd.has("claim_type")):
+			push_error("save_manager: live_rumors[%s] missing required keys — skipped" % rid)
+			continue
 		var r := Rumor.create(
 			rd["id"],
 			rd["subject_npc_id"],

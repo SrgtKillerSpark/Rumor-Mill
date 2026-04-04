@@ -80,6 +80,10 @@ var _tween: Tween = null
 
 # rumor_id → Rumor.NpcRumorSlot
 var rumor_slots: Dictionary = {}
+## Dirty flag: set true whenever rumor_slots content or _is_defending changes.
+## get_worst_rumor_state() uses this to skip recomputation when nothing changed.
+var _worst_state_dirty: bool = true
+var _worst_state_cache: Rumor.RumorState = Rumor.RumorState.UNAWARE
 
 var _pathfinder: AstarPathfinder = null
 var _walkable: Array[Vector2i] = []
@@ -444,6 +448,7 @@ func hear_rumor(rumor: Rumor, source_faction: String) -> void:
 
 	var slot := Rumor.NpcRumorSlot.new(rumor, source_faction)
 	rumor_slots[rid] = slot
+	_worst_state_dirty = true
 	emit_signal("first_npc_became_evaluating")
 
 
@@ -463,6 +468,7 @@ func _process_rumor_slots(tick: int) -> void:
 				Rumor.RumorState.REJECT, Rumor.RumorState.ACT, Rumor.RumorState.EXPIRED]:
 			slot.state = Rumor.RumorState.EXPIRED
 			slot.ticks_in_state = 0
+			_worst_state_dirty = true
 			continue
 
 		match slot.state:
@@ -507,6 +513,7 @@ func _process_rumor_slots(tick: int) -> void:
 			if newest.state != Rumor.RumorState.CONTRADICTED:
 				newest.state = Rumor.RumorState.CONTRADICTED
 				newest.ticks_in_state = 0
+				_worst_state_dirty = true
 
 
 func _tick_evaluating(
@@ -552,6 +559,7 @@ func _tick_evaluating(
 		if _loyalty > 0.7 and not Rumor.is_positive_claim(rumor.claim_type) \
 				and not _is_defending:
 			_is_defending = true
+			_worst_state_dirty = true
 			_defender_target_npc_id = subject_id
 			_defender_ticks_remaining = _DEFENDER_DURATION
 			emit_signal("rumor_state_changed", npc_name, "DEFENDING", rid)
@@ -816,6 +824,7 @@ func _tick_defender(tick: int) -> void:
 	_defender_ticks_remaining -= 1
 	if _defender_ticks_remaining <= 0:
 		_is_defending = false
+		_worst_state_dirty = true
 		_defender_target_npc_id = ""
 		_defender_ticks_remaining = 0
 		return
@@ -926,9 +935,13 @@ func get_state_for_rumor(rumor_id: String) -> Rumor.RumorState:
 
 
 func get_worst_rumor_state() -> Rumor.RumorState:
+	if not _worst_state_dirty:
+		return _worst_state_cache
 	# Priority order for display: ACT > DEFENDING > SPREAD > CONTRADICTED > BELIEVE > EVALUATING > REJECT > EXPIRED > UNAWARE
 	if _is_defending:
-		return Rumor.RumorState.DEFENDING
+		_worst_state_cache = Rumor.RumorState.DEFENDING
+		_worst_state_dirty = false
+		return _worst_state_cache
 	var priority := [
 		Rumor.RumorState.ACT,
 		Rumor.RumorState.SPREAD,
@@ -942,8 +955,12 @@ func get_worst_rumor_state() -> Rumor.RumorState:
 	for p in priority:
 		for rid in rumor_slots:
 			if rumor_slots[rid].state == p:
-				return p
-	return Rumor.RumorState.UNAWARE
+				_worst_state_cache = p
+				_worst_state_dirty = false
+				return _worst_state_cache
+	_worst_state_cache = Rumor.RumorState.UNAWARE
+	_worst_state_dirty = false
+	return _worst_state_cache
 
 
 # ── Label update ─────────────────────────────────────────────────────────────
