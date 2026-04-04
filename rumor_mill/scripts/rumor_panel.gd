@@ -62,6 +62,10 @@ var _selected_evidence_item               = null  # PlayerIntelStore.EvidenceIte
 var _evidence_tutorial_fired: bool        = false
 var _panel_seed_shown_fired:  bool        = false  # guard for panel_seed_shown signal
 
+# Spread prediction overlay — draw node + hovered seed NPC.
+var _spread_draw_node:  Node2D = null
+var _hover_seed_npc_id: String = ""
+
 # Panel titles / hints.
 const TITLES := [
 	"Rumor Crafting — (1/3) Subject Selection",
@@ -79,6 +83,7 @@ func _ready() -> void:
 	layer = 15
 	panel.visible = false
 	_build_dynamic_panels()
+	_init_spread_overlay()
 
 
 func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
@@ -90,6 +95,7 @@ func toggle() -> void:
 	if panel.visible:
 		AudioManager.play_sfx("rumor_panel_close")
 		panel.visible = false
+		_on_seed_hover_exit()
 	else:
 		AudioManager.play_sfx("rumor_panel_open")
 		_open_panel(PANEL_SUBJECT)
@@ -156,6 +162,8 @@ func _build_dynamic_panels() -> void:
 # ── Panel switching ───────────────────────────────────────────────────────────
 
 func _open_panel(idx: int) -> void:
+	if idx != PANEL_SEED:
+		_on_seed_hover_exit()
 	_current_panel = idx
 	title_label.text = TITLES[idx]
 	hint_label.text  = HINTS[idx]
@@ -496,6 +504,11 @@ func _build_seed_entry(
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color(0.50, 0.25, 0.10, 0.55)
 		outer.add_theme_stylebox_override("panel", style)
+
+	# Spread prediction overlay: hover triggers ring drawing on world map.
+	var captured_npc_id := npc_id
+	outer.mouse_entered.connect(func() -> void: _on_seed_hover_enter(captured_npc_id))
+	outer.mouse_exited.connect(_on_seed_hover_exit)
 
 	var vbox := VBoxContainer.new()
 	outer.add_child(vbox)
@@ -869,3 +882,68 @@ static func _intensity_color(intensity: int) -> Color:
 		3:    return Color(1.0,  0.85, 0.30, 1.0)
 		4, 5: return Color(1.0,  0.35, 0.25, 1.0)
 		_:    return Color.WHITE
+
+
+# ── Spread prediction overlay ─────────────────────────────────────────────────
+
+func _init_spread_overlay() -> void:
+	_spread_draw_node = Node2D.new()
+	_spread_draw_node.name = "SpreadOverlay"
+	add_child(_spread_draw_node)
+	_spread_draw_node.draw.connect(_draw_spread_rings)
+
+
+func _on_seed_hover_enter(npc_id: String) -> void:
+	_hover_seed_npc_id = npc_id
+	if _spread_draw_node != null:
+		_spread_draw_node.queue_redraw()
+
+
+func _on_seed_hover_exit() -> void:
+	_hover_seed_npc_id = ""
+	if _spread_draw_node != null:
+		_spread_draw_node.queue_redraw()
+
+
+func _draw_spread_rings() -> void:
+	if _world_ref == null or _hover_seed_npc_id.is_empty():
+		return
+	var vp := get_viewport()
+	if vp == null:
+		return
+
+	# Find the hovered seed NPC node.
+	var seed_node: Node2D = null
+	for npc in _world_ref.npcs:
+		if npc.npc_data.get("id", "") == _hover_seed_npc_id:
+			seed_node = npc
+			break
+	if seed_node == null:
+		return
+
+	var ct := vp.get_canvas_transform()
+	const SPREAD_RADIUS_OVERLAY := 8  # matches _estimate_spread
+
+	# White ring on the seed NPC (initial whisper target).
+	var seed_screen := ct * seed_node.global_position
+	_spread_draw_node.draw_arc(seed_screen, 20.0, 0.0, TAU, 32, Color(1.0, 1.0, 1.0, 0.90), 3.0)
+
+	# Rings on NPCs within SPREAD_RADIUS, colored by sociability (spread likelihood).
+	for npc in _world_ref.npcs:
+		var npc_id: String = npc.npc_data.get("id", "")
+		if npc_id == _hover_seed_npc_id:
+			continue
+		var dist: int = abs((npc.current_cell as Vector2i).x - (seed_node.current_cell as Vector2i).x) \
+		              + abs((npc.current_cell as Vector2i).y - (seed_node.current_cell as Vector2i).y)
+		if dist > SPREAD_RADIUS_OVERLAY:
+			continue
+		var soc: float = float(npc.npc_data.get("sociability", 0.5))
+		var ring_color: Color
+		if soc >= 0.7:
+			ring_color = Color(1.0, 0.35, 0.15, 0.85)   # high — orange/red
+		elif soc >= 0.4:
+			ring_color = Color(1.0, 0.80, 0.15, 0.80)   # medium — yellow
+		else:
+			ring_color = Color(0.30, 0.90, 0.30, 0.75)  # low — green
+		var npc_screen := ct * npc.global_position
+		_spread_draw_node.draw_arc(npc_screen, 15.0, 0.0, TAU, 24, ring_color, 2.0)
