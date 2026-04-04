@@ -547,6 +547,15 @@ func _try_eavesdrop(target: Node2D) -> void:
 	var intel := PlayerIntelStore.RelationshipIntel.new(
 		id_a, id_b, name_a, name_b, weight, tick
 	)
+
+	# Rich context: active rumor belief states with trend direction.
+	var belief_ctx := _belief_context(target, partner)
+	intel.rich_context = belief_ctx
+
+	# Critical context: DEFENDING state reveals loyalty tier and protected target.
+	var critical_ctx := _critical_context(target, partner)
+	intel.critical_context = critical_ctx
+
 	_intel_store.add_relationship_intel(intel)
 
 	# Heat: +8 on successful eavesdrop to both NPCs.
@@ -554,12 +563,13 @@ func _try_eavesdrop(target: Node2D) -> void:
 	_intel_store.add_heat(id_b, 8.0)
 
 	var bar_str := "[" + "*".repeat(intel.bars()) + " ".repeat(3 - intel.bars()) + "]"
-	var belief_ctx := _belief_context(target, partner)
-	var belief_line := ("\n" + belief_ctx) if not belief_ctx.is_empty() else ""
-	var msg := "Eavesdropped: %s <-> %s  %s %s (%s)%s  (%d Recon left)" % [
+	var belief_line   := ("\n" + belief_ctx)   if not belief_ctx.is_empty()   else ""
+	var critical_line := ("\n" + critical_ctx) if not critical_ctx.is_empty() else ""
+	var msg := "Eavesdropped: %s <-> %s  %s %s (%s)%s%s  (%d Recon left)" % [
 		name_a, name_b,
 		bar_str, intel.affinity_label.capitalize(), intel.strength_label(),
 		belief_line,
+		critical_line,
 		_intel_store.recon_actions_remaining
 	]
 
@@ -580,7 +590,8 @@ func _try_eavesdrop(target: Node2D) -> void:
 
 
 ## Returns a short string describing what beliefs either NPC currently holds
-## (BELIEVE / SPREAD / ACT states only).  Empty string if neither believes anything.
+## (BELIEVE / SPREAD / ACT states only), with trend direction.
+## Empty string if neither NPC has an active rumor belief.
 func _belief_context(npc_a: Node2D, npc_b: Node2D) -> String:
 	var snippets: Array[String] = []
 	var active_states := [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]
@@ -591,13 +602,46 @@ func _belief_context(npc_a: Node2D, npc_b: Node2D) -> String:
 			if slot.state in active_states:
 				var claim_label := Rumor.claim_type_name(slot.rumor.claim_type)
 				var subject_name := _resolve_npc_name(slot.rumor.subject_npc_id)
-				snippets.append("%s [%s: %s about %s]" % [
+				var trend := _belief_trend(slot.ticks_in_state)
+				snippets.append("%s [%s: %s about %s, %s]" % [
 					npc_name,
 					Rumor.state_name(slot.state),
 					claim_label,
-					subject_name
+					subject_name,
+					trend
 				])
 				break  # one snippet per NPC is enough
+	return "\n".join(snippets)
+
+
+## Returns a trend direction string based on how long the NPC has held their belief.
+## Short stays = rising (freshly convinced); long stays = fading (losing conviction).
+func _belief_trend(ticks_in_state: int) -> String:
+	if ticks_in_state <= 3:
+		return "↑ rising"
+	elif ticks_in_state <= 8:
+		return "→ stable"
+	return "↓ fading"
+
+
+## Returns a critical intelligence string when either NPC is in DEFENDING state.
+## Reveals the NPC's loyalty tier and who they are shielding.
+## Empty string if neither NPC is defending.
+func _critical_context(npc_a: Node2D, npc_b: Node2D) -> String:
+	var snippets: Array[String] = []
+	for npc in [npc_a, npc_b]:
+		if not npc._is_defending:
+			continue
+		var npc_name: String  = npc.npc_data.get("name", "?")
+		var target_name: String = _resolve_npc_name(npc._defender_target_npc_id)
+		var loyalty_tier: String
+		if npc._loyalty > 0.7:
+			loyalty_tier = "high"
+		elif npc._loyalty > 0.4:
+			loyalty_tier = "moderate"
+		else:
+			loyalty_tier = "low"
+		snippets.append("⚠ %s DEFENDING %s (loyalty: %s)" % [npc_name, target_name, loyalty_tier])
 	return "\n".join(snippets)
 
 

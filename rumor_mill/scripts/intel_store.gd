@@ -62,6 +62,12 @@ class RelationshipIntel:
 	var edge_weight: float   ## Raw social graph weight 0.0–1.0 (hidden from player UI)
 	var affinity_label: String  ## "allied" | "neutral" | "suspicious"
 	var observed_at: int
+	## Rich context: rumor subjects, belief states, and trend directions for active
+	## rumors either NPC was discussing at observation time. Empty if neither believed.
+	var rich_context: String = ""
+	## Critical context: DEFENDING state disclosure — loyalty tier and protected target.
+	## Non-empty only when at least one NPC was in the DEFENDING state.
+	var critical_context: String = ""
 
 	func _init(
 			a_id: String, b_id: String,

@@ -203,12 +203,14 @@ static func _serialize_intel_store(store: PlayerIntelStore) -> Dictionary:
 	for key in store.relationship_intel:
 		var ri: PlayerIntelStore.RelationshipIntel = store.relationship_intel[key]
 		rel_intel[key] = {
-			"npc_a_id":    ri.npc_a_id,
-			"npc_b_id":    ri.npc_b_id,
-			"npc_a_name":  ri.npc_a_name,
-			"npc_b_name":  ri.npc_b_name,
-			"edge_weight": ri.edge_weight,
-			"observed_at": ri.observed_at,
+			"npc_a_id":         ri.npc_a_id,
+			"npc_b_id":         ri.npc_b_id,
+			"npc_a_name":       ri.npc_a_name,
+			"npc_b_name":       ri.npc_b_name,
+			"edge_weight":      ri.edge_weight,
+			"observed_at":      ri.observed_at,
+			"rich_context":     ri.rich_context,
+			"critical_context": ri.critical_context,
 		}
 
 	var evidence: Array = []
@@ -335,6 +337,8 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 			float(rd.get("edge_weight", 0.5)),
 			int(rd.get("observed_at", 0))
 		)
+		ri.rich_context     = rd.get("rich_context", "")
+		ri.critical_context = rd.get("critical_context", "")
 		store.relationship_intel[key] = ri
 
 	store.evidence_inventory.clear()
