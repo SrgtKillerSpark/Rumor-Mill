@@ -458,6 +458,10 @@ func _apply_active_scenario() -> void:
 					if key == "npcId":
 						continue
 					npc.npc_data[key] = po[key]
+				npc._credulity   = float(npc.npc_data.get("credulity",   0.5))
+				npc._sociability = float(npc.npc_data.get("sociability",  0.5))
+				npc._loyalty     = float(npc.npc_data.get("loyalty",      0.5))
+				npc._temperament = float(npc.npc_data.get("temperament",  0.5))
 				break
 	if not personality_overrides.is_empty():
 		print("World: applied %d personality overrides for '%s'" % [personality_overrides.size(), active_scenario_id])
