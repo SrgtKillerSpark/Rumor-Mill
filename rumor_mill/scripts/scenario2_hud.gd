@@ -214,7 +214,8 @@ func _refresh() -> void:
 		_rejecters_lbl.visible = false
 
 	# Days remaining.
-	var days_elapsed: int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
+	var days_elapsed: int = (sm.get_current_day(_day_night_ref.current_tick) - 1) \
+		if _day_night_ref != null else 0
 	var days_allowed: int = sm.get_days_allowed() if sm != null else 30
 	_days_lbl.text = "Days remaining: %d" % max(0, days_allowed - days_elapsed)
 

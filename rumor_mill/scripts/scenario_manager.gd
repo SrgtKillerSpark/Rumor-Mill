@@ -67,6 +67,12 @@ func get_days_allowed() -> int:
 	return _days_allowed
 
 
+## Returns the current in-game day (1-based) derived from the tick counter.
+## All scenario resolution checks use this formula, so HUDs should too.
+func get_current_day(current_tick: int) -> int:
+	return current_tick / TICKS_PER_DAY + 1
+
+
 # NPC IDs used for win/fail checks.
 const EDRIC_FENN_ID    := "edric_fenn"
 const ALYS_HERBWIFE_ID := "alys_herbwife"
