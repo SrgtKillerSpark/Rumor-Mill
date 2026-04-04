@@ -173,6 +173,9 @@ static func apply_pending_load(
 		world._socially_dead_ids[npc_id] = true
 	if journal != null and journal.has_method("restore_timeline"):
 		journal.restore_timeline(data.get("timeline", []))
+	# Rebuild reputation cache after all systems (including FactionEventSystem) are
+	# restored so that active event bonuses (e.g. religious_festival +10) are included.
+	world.reputation_system.recalculate_all(world.npcs, day_night.current_tick)
 
 
 # ── Serialisation ─────────────────────────────────────────────────────────────
