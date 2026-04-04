@@ -706,9 +706,6 @@ func _init_analytics_logger(scenario_id: String) -> void:
 	if sm != null:
 		sm.scenario_resolved.connect(_on_analytics_scenario_resolved)
 
-	print("Main: Analytics logger started (scenario=%s difficulty=%s)" % [
-			scenario_id, GameState.selected_difficulty])
-
 
 func _on_analytics_rumor_seeded(
 		_rumor_id: String,

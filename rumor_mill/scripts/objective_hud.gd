@@ -178,7 +178,6 @@ func _show_dawn_bulletin() -> void:
 		return
 	var bulletin: String = "☀ Dawn Report\n" + "\n".join(lines)
 	_show_banner(bulletin, Color(0.85, 0.78, 0.55, 1.0), 8.0)
-	print("[ObjectiveHUD] Dawn bulletin: %d NPC(s) changed overnight" % lines.size())
 
 
 ## Show a deadline warning banner at 75% and 90% time thresholds.
@@ -194,5 +193,4 @@ func _on_deadline_warning(threshold: float, days_remaining: int) -> void:
 	var text: String = "⚠ %s — %d day%s remaining!" % [
 		urgency, days_remaining, "" if days_remaining == 1 else "s"]
 	_show_banner(text, color, 5.0)
-	print("[ObjectiveHUD] Deadline warning: %s (%.0f%%, %d days left)" % [
 		urgency, threshold * 100.0, days_remaining])

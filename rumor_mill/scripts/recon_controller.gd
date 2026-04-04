@@ -471,7 +471,6 @@ func _try_observe(location_id: String) -> void:
 		_intel_store.add_evidence(ev)
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Forged Document acquired."
-		print("[Recon] Evidence: Forged Document acquired at '%s'" % location_id)
 	elif tick % 24 > 18 \
 			and (location_id == "manor" or location_id == "chapel"):
 		var ev := PlayerIntelStore.EvidenceItem.new(
@@ -480,7 +479,6 @@ func _try_observe(location_id: String) -> void:
 		_intel_store.add_evidence(ev)
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Incriminating Artifact acquired."
-		print("[Recon] Evidence: Incriminating Artifact acquired at '%s' tick=%d" % [location_id, tick])
 
 	emit_signal("action_performed", msg, true)
 	_show_observe_sparkle()
@@ -488,7 +486,6 @@ func _try_observe(location_id: String) -> void:
 	for npc in _world_ref.npcs:
 		if (npc.current_cell - entry_cell).length() <= 4:
 			npc.show_observed()
-	print("[Recon] Observe '%s' tick=%d — %d NPC(s) recorded" % [location_id, tick, n])
 
 
 # ── Eavesdrop action ──────────────────────────────────────────────────────────
@@ -514,7 +511,6 @@ func _try_eavesdrop(target: Node2D) -> void:
 			"\"%s seemed to glance your way.\" (%d Recon left)" % [
 				name_a, _intel_store.recon_actions_remaining],
 			false)
-		print("[Recon] Eavesdrop NOTICED by %s (temperament=%.2f)" % [name_a, temperament])
 		_flash_npc_detected(target)
 		# Heat: +4 on detection failure to both NPCs involved.
 		_intel_store.add_heat(target.npc_data.get("id", ""), 4.0)
@@ -571,14 +567,11 @@ func _try_eavesdrop(target: Node2D) -> void:
 		_intel_store.add_evidence(ev)
 		_flash_npc_evidence_acquired(target)
 		msg += "\n[+] Witness Account acquired."
-		print("[Recon] Evidence: Witness Account acquired (%s <-> %s)" % [name_a, name_b])
 
 	emit_signal("action_performed", msg, true)
 	_show_eavesdrop_success(target)
 	# Trigger an "eavesdrop" dialogue bubble on the target NPC.
 	target.show_eavesdropped()
-	print("[Recon] Eavesdrop %s <-> %s  weight=%.2f  label=%s" % [
-		name_a, name_b, weight, intel.affinity_label])
 
 
 ## Returns a short string describing what beliefs either NPC currently holds
@@ -816,7 +809,6 @@ func _try_bribe(target: Node2D) -> void:
 		"Bribed %s — they now believe the rumor.  (%d Favors left)" % [
 			npc_name, _intel_store.bribe_charges], true)
 	emit_signal("bribe_executed", npc_name, tick)
-	print("[Recon] Bribe: %s forced BELIEVE '%s'" % [npc_name, forced_id])
 
 
 ## Return Calder Fenn's faction string, or "" if not found.

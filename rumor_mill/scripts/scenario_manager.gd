@@ -175,7 +175,6 @@ func _check_deadline_warnings(current_tick: int) -> void:
 		if fraction >= threshold and not _deadline_warnings_fired.has(threshold):
 			_deadline_warnings_fired[threshold] = true
 			deadline_warning.emit(threshold, days_remaining)
-			print("[ScenarioManager] Deadline warning: %.0f%% time elapsed, %d days remaining" % [
 				threshold * 100.0, days_remaining])
 
 
@@ -187,7 +186,6 @@ func on_player_exposed() -> void:
 		return
 	scenario_1_state = ScenarioState.FAILED
 	scenario_resolved.emit(1, ScenarioState.FAILED)
-	print("[ScenarioManager] Scenario 1 FAIL — player exposed during eavesdrop")
 
 
 func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
@@ -199,16 +197,12 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 	if snap.score < S1_WIN_EDRIC_BELOW:
 		scenario_1_state = ScenarioState.WON
 		scenario_resolved.emit(1, ScenarioState.WON)
-		print("[ScenarioManager] Scenario 1 WIN — Edric Fenn reputation %d < %d" % [
-			snap.score, S1_WIN_EDRIC_BELOW])
 		return
 	# Timeout fail: days elapsed exceeds the scenario timer.
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
 	if current_day > _days_allowed:
 		scenario_1_state = ScenarioState.FAILED
 		scenario_resolved.emit(1, ScenarioState.FAILED)
-		print("[ScenarioManager] Scenario 1 FAIL — timeout, day %d > allowed %d" % [
-			current_day, _days_allowed])
 
 
 func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
@@ -218,22 +212,17 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 	if illness_count >= S2_WIN_ILLNESS_MIN:
 		scenario_2_state = ScenarioState.WON
 		scenario_resolved.emit(2, ScenarioState.WON)
-		print("[ScenarioManager] Scenario 2 WIN — %d NPCs believe illness about Alys Herbwife (>= %d)" % [
-			illness_count, S2_WIN_ILLNESS_MIN])
 		return
 	# Contradicted fail: Sister Maren rejects illness rumors about Alys Herbwife.
 	if rep.has_illness_rejecter(ALYS_HERBWIFE_ID, MAREN_NUN_ID):
 		scenario_2_state = ScenarioState.FAILED
 		scenario_resolved.emit(2, ScenarioState.FAILED)
-		print("[ScenarioManager] Scenario 2 FAIL — Sister Maren rejected illness rumors about Alys Herbwife")
 		return
 	# Timeout fail: days elapsed exceeds the scenario timer.
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
 	if current_day > _days_allowed:
 		scenario_2_state = ScenarioState.FAILED
 		scenario_resolved.emit(2, ScenarioState.FAILED)
-		print("[ScenarioManager] Scenario 2 FAIL — timeout, day %d > allowed %d" % [
-			current_day, _days_allowed])
 
 
 func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
@@ -254,15 +243,11 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 	if calder.score >= S3_WIN_CALDER_MIN and tomas.score <= S3_WIN_TOMAS_MAX:
 		scenario_3_state = ScenarioState.WON
 		scenario_resolved.emit(3, ScenarioState.WON)
-		print("[ScenarioManager] Scenario 3 WIN — Calder %d >= %d, Tomas %d <= %d" % [
-			calder.score, S3_WIN_CALDER_MIN, tomas.score, S3_WIN_TOMAS_MAX])
 		return
 
 	if calder.score < S3_FAIL_CALDER_BELOW:
 		scenario_3_state = ScenarioState.FAILED
 		scenario_resolved.emit(3, ScenarioState.FAILED)
-		print("[ScenarioManager] Scenario 3 FAIL — Calder %d < %d" % [
-			calder.score, S3_FAIL_CALDER_BELOW])
 		return
 
 	# Timeout fail: days elapsed exceeds the scenario timer.
@@ -270,8 +255,6 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 	if current_day > _days_allowed:
 		scenario_3_state = ScenarioState.FAILED
 		scenario_resolved.emit(3, ScenarioState.FAILED)
-		print("[ScenarioManager] Scenario 3 FAIL — timeout, day %d > allowed %d" % [
-			current_day, _days_allowed])
 
 
 # ---------------------------------------------------------------------------
@@ -310,8 +293,6 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 		if snap.score < S4_FAIL_REP_BELOW:
 			scenario_4_state = ScenarioState.FAILED
 			scenario_resolved.emit(4, ScenarioState.FAILED)
-			print("[ScenarioManager] Scenario 4 FAIL — %s reputation %d < %d" % [
-				npc_id, snap.score, S4_FAIL_REP_BELOW])
 			return
 	# Win: all 20 days survived AND all protected NPCs still above 50.
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
@@ -325,12 +306,9 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 		if all_above:
 			scenario_4_state = ScenarioState.WON
 			scenario_resolved.emit(4, ScenarioState.WON)
-			print("[ScenarioManager] Scenario 4 WIN — all protected NPCs above %d after %d days" % [
-				S4_WIN_REP_MIN, _days_allowed])
 		else:
 			scenario_4_state = ScenarioState.FAILED
 			scenario_resolved.emit(4, ScenarioState.FAILED)
-			print("[ScenarioManager] Scenario 4 FAIL — timeout, not all protected NPCs above %d" % S4_WIN_REP_MIN)
 
 
 ## Returns the current Scenario 3 progress dict.

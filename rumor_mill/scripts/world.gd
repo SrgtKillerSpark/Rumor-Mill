@@ -275,7 +275,6 @@ func _build_gathering_points() -> void:
 			var desired: Vector2i = placeholders[loc]
 			_gathering_points[loc] = AstarPathfinder.nearest_walkable(desired, walkable_cells)
 
-	print("World: gathering points registered: %s" % str(_gathering_points.keys()))
 
 
 # ── A* pathfinder ────────────────────────────────────────────────────────────
@@ -283,7 +282,6 @@ func _build_gathering_points() -> void:
 func _init_pathfinder() -> void:
 	_pathfinder = AstarPathfinder.new()
 	_pathfinder.setup(Vector2i(GRID_W, GRID_H), walkable_cells)
-	print("World: AstarPathfinder initialised (%d walkable cells)" % walkable_cells.size())
 
 
 # ── NPC spawning ─────────────────────────────────────────────────────────────
@@ -326,7 +324,6 @@ func _spawn_npcs() -> void:
 		npc.rumor_transmitted.connect(_on_npc_rumor_transmitted)
 		npc.graph_edge_mutated.connect(_on_npc_graph_edge_mutated)
 
-	print("World: spawned %d NPCs" % npcs.size())
 
 
 # ── Propagation engine ────────────────────────────────────────────────────────
@@ -335,7 +332,6 @@ func _init_propagation_engine() -> void:
 	propagation_engine = PropagationEngine.new()
 	for npc in npcs:
 		npc.propagation_engine_ref = propagation_engine
-	print("World: PropagationEngine initialised and wired to %d NPCs" % npcs.size())
 
 
 func _build_schedule(faction: String, start_cell: Vector2i) -> Array[Vector2i]:
@@ -371,7 +367,6 @@ func _init_social_graph() -> void:
 	for npc in npcs:
 		npc.social_graph_ref = social_graph
 
-	print("World: SocialGraph built for %d NPCs" % npcs.size())
 
 
 # ── Recon intel store ────────────────────────────────────────────────────────
@@ -384,7 +379,6 @@ func _init_intel_store() -> void:
 	# Replenish the daily recon budget at dawn (when the day counter increments).
 	if day_night != null:
 		day_night.day_changed.connect(_on_day_changed)
-	print("World: PlayerIntelStore initialised (%d daily actions)" % PlayerIntelStore.MAX_DAILY_ACTIONS)
 
 
 # ── Reputation system ────────────────────────────────────────────────────────
@@ -394,13 +388,11 @@ func _init_reputation_system() -> void:
 	scenario_manager  = ScenarioManager.new()
 	# recalculate_all is called by _apply_active_scenario() after loading
 	# starting reputation overrides so that the initial cache reflects them.
-	print("World: ReputationSystem and ScenarioManager initialised")
 
 
 func _on_day_changed(_day: int) -> void:
 	if intel_store != null:
 		intel_store.replenish()
-		print("World: Recon actions replenished at dawn (day %d)" % _day)
 	if rival_agent != null and scenario_manager != null:
 		rival_agent.tick(_day, self, scenario_manager)
 	if inquisitor_agent != null and scenario_manager != null:
@@ -446,7 +438,6 @@ func _apply_active_scenario() -> void:
 	var edge_overrides: Array = scenario_data.get("edgeOverrides", [])
 	if social_graph != null and not edge_overrides.is_empty():
 		social_graph.apply_overrides(edge_overrides)
-		print("World: applied %d edge overrides for '%s'" % [edge_overrides.size(), active_scenario_id])
 
 	# 2. Personality overrides (patch individual NPC data dicts).
 	var personality_overrides: Array = scenario_data.get("personalityOverrides", [])
@@ -464,7 +455,6 @@ func _apply_active_scenario() -> void:
 				npc._temperament = float(npc.npc_data.get("temperament",  0.5))
 				break
 	if not personality_overrides.is_empty():
-		print("World: applied %d personality overrides for '%s'" % [personality_overrides.size(), active_scenario_id])
 
 	# 3. Starting reputations (override base_score per NPC in reputation system).
 	var starting_reps: Dictionary = scenario_data.get("startingReputations", {})
@@ -473,26 +463,22 @@ func _apply_active_scenario() -> void:
 		for npc_id in starting_reps:
 			reputation_system.set_base_override(npc_id, int(starting_reps[npc_id]))
 		if not starting_reps.is_empty():
-			print("World: applied %d starting reputation overrides for '%s'" % [starting_reps.size(), active_scenario_id])
 
 	# 4. Narrative text into scenario manager.
 	if scenario_manager != null:
 		scenario_manager.load_scenario_data(scenario_data)
-		print("World: loaded narrative text for '%s' — %s" % [active_scenario_id, scenario_manager.get_title()])
 
 	# 5. Propagation engine mutation filters.
 	if propagation_engine != null:
 		var excluded: Array = scenario_data.get("targetShiftExcluded", [])
 		propagation_engine.target_shift_excluded_ids.assign(excluded)
 		if not excluded.is_empty():
-			print("World: target_shift excluded ids for '%s': %s" % [active_scenario_id, excluded])
 
 	# 6. Heat + Bribery: disabled in Scenario 1 (tutorial), active from Scenario 2 onward.
 	if intel_store != null:
 		var non_tutorial := (active_scenario_id != "scenario_1")
 		intel_store.heat_enabled   = non_tutorial
 		intel_store.bribe_charges  = 2 if non_tutorial else 0
-		print("World: heat/bribe %s for '%s'" % [
 			"enabled (2 favors)" if non_tutorial else "disabled", active_scenario_id])
 
 	# 7. Difficulty modifiers — adjust action budgets, heat decay, time limit, rival speed.
@@ -509,7 +495,6 @@ func _apply_active_scenario() -> void:
 		# Heat decay override (skip for tutorial where heat is disabled).
 		if non_tutorial:
 			intel_store.heat_decay_override = float(diff_mods.get("heat_decay", 6.0))
-		print("World: difficulty '%s' — whispers=%d actions=%d heat_decay=%.1f" % [
 			GameState.selected_difficulty,
 			intel_store.max_daily_whispers,
 			intel_store.max_daily_actions,
@@ -519,7 +504,6 @@ func _apply_active_scenario() -> void:
 		if days_bonus != 0:
 			var adjusted: int = maxi(1, scenario_manager.get_days_allowed() + days_bonus)
 			scenario_manager.override_days_allowed(adjusted)
-			print("World: difficulty '%s' — days_allowed adjusted to %d" % [
 				GameState.selected_difficulty, adjusted])
 
 	# 8. Rival agent — only active in Scenario 3.
@@ -527,26 +511,20 @@ func _apply_active_scenario() -> void:
 	rival_agent.cooldown_offset = int(diff_mods.get("rival_cooldown_offset", 0))
 	if active_scenario_id == "scenario_3":
 		rival_agent.activate()
-		print("World: RivalAgent activated for 'scenario_3'")
 	else:
-		print("World: RivalAgent inactive for '%s'" % active_scenario_id)
 
 	# 8. Inquisitor agent — only active in Scenario 4.
 	inquisitor_agent = InquisitorAgent.new()
 	if active_scenario_id == "scenario_4":
 		inquisitor_agent.activate()
-		print("World: InquisitorAgent activated for 'scenario_4'")
 	else:
-		print("World: InquisitorAgent inactive for '%s'" % active_scenario_id)
 
 	# 8. Faction event system — initialise after all subsystems are ready.
 	faction_event_system = FactionEventSystem.new()
 	faction_event_system.initialize(self)
-	print("World: FactionEventSystem initialised for '%s'" % active_scenario_id)
 
 	# Seed the reputation cache now that all overrides are in place.
 	reputation_system.recalculate_all(npcs, 0)
-	print("World: reputation cache seeded for '%s'" % active_scenario_id)
 
 
 # ── Debug node wiring ────────────────────────────────────────────────────────
@@ -559,14 +537,12 @@ func _wire_debug_nodes() -> void:
 
 	if overlay != null and overlay.has_method("set_world"):
 		overlay.set_world(self)
-		print("World: wired DebugOverlay")
 
 	if console_ != null:
 		if console_.has_method("set_world"):
 			console_.set_world(self)
 		if console_.has_method("set_overlay") and overlay != null:
 			console_.set_overlay(overlay)
-		print("World: wired DebugConsole")
 
 
 func _find_node_by_class(class_tag: String) -> Node:
@@ -714,7 +690,6 @@ func seed_rumor_from_player(
 		rumor.current_believability = minf(1.0, rumor.current_believability + evidence_item.believability_bonus)
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
 		rumor.bolstered_by_evidence = true
-		print("[World] Evidence '%s' applied to '%s' — believability=%.2f mutability=%.2f" % [
 			evidence_item.type, rumor_id, rumor.current_believability, rumor.mutability])
 
 	# Chain detection: check if this subject already has an active rumor that
@@ -748,7 +723,6 @@ func seed_rumor_from_player(
 	if intel_store != null:
 		intel_store.add_heat(seed_target_npc_id, 12.0)
 
-	print("[World] seed_rumor_from_player '%s' claim=%s intensity=%d → %s about %s" % [
 		rumor_id, claim_id, intensity,
 		seed_target_npc.npc_data.get("name", "?"),
 		subject_npc.npc_data.get("name", "?")])
@@ -788,7 +762,6 @@ func vouch_for_npc(voucher_npc_id: String, subject_npc_id: String) -> bool:
 		intel_store.add_heat(voucher_npc_id, 12.0)
 
 	var voucher_name: String = voucher_npc.npc_data.get("name", voucher_npc_id)
-	print("[World] vouch_for_npc: %s now DEFENDING '%s' (heat +12)" % [voucher_name, subject_npc_id])
 	emit_signal("rumor_event",
 		"[VOUCH] %s is now defending %s against the inquisitor's claims." % [voucher_name, subject_npc_id],
 		day_night.current_tick if day_night != null else 0)
@@ -883,7 +856,6 @@ func inject_rumor(
 
 	target_npc.hear_rumor(rumor, source_faction)
 
-	print("[World] inject_rumor '%s' (type=%s, intensity=%d, parent='%s') → %s about %s" % [
 		rumor_id, claim_type_str, intensity, lineage_parent_id,
 		target_npc.npc_data.get("name", "?"),
 		subject_id

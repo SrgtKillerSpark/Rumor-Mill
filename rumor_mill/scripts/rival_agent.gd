@@ -112,14 +112,11 @@ func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -
 
 	var seed_npc_id := _pick_seed_npc(world)
 	if seed_npc_id.is_empty():
-		print("[RivalAgent] No eligible seed NPC found for day %d — skipping" % day)
 		return
 
 	var rumor_id: String = world.inject_rumor(seed_npc_id, claim_type_str, intensity, subject_id, "rival")
 	if not rumor_id.is_empty():
 		rival_acted.emit(day, claim_type_str, subject_id)
-		print("[RivalAgent] Day %d: seeded '%s' about %s (intensity %d) via %s [%s]" % [
-			day, claim_type_str, subject_id, intensity, seed_npc_id, rumor_id])
 
 
 ## Picks the highest-sociability NPC at a market or tavern whose heat is <= 50

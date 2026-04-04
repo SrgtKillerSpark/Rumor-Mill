@@ -151,7 +151,6 @@ func _schedule_events() -> void:
 		_configure_event(ev)
 		_events.append(ev)
 		if OS.is_debug_build():
-			print("[FactionEventSystem] Scheduled '%s' for day %d" % [
 				ev.event_type, ev.trigger_day])
 
 
@@ -225,7 +224,6 @@ func _activate_event(ev: FactionEvent, day: int) -> void:
 	var lbl: String = _label(ev.event_type)
 	event_activated.emit(lbl, day)
 	if OS.is_debug_build():
-		print("[FactionEventSystem] Activated '%s' on day %d (npcs: %s)" % [
 			ev.event_type, day, str(ev.affected_npc_ids)])
 
 
@@ -307,7 +305,6 @@ func _activate_guard_crackdown(ev: FactionEvent) -> void:
 	if _intel_store != null:
 		_intel_store.heat_decay_override = GUARD_CRACKDOWN_HEAT_DECAY
 	if OS.is_debug_build():
-		print("[FactionEventSystem] Guard crackdown: heat decay slowed to %.1f/day" % \
 			GUARD_CRACKDOWN_HEAT_DECAY)
 
 
@@ -332,8 +329,6 @@ func _expire_event(ev: FactionEvent, day: int) -> void:
 			if _intel_store != null:
 				_intel_store.heat_decay_override = -1.0   ## restore default
 	event_expired.emit(_label(ev.event_type), day)
-	if OS.is_debug_build():
-		print("[FactionEventSystem] Expired '%s' on day %d" % [ev.event_type, day])
 
 
 func _remove_injected_overrides(ev: FactionEvent) -> void:

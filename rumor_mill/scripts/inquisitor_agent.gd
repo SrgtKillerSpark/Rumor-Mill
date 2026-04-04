@@ -62,16 +62,11 @@ func _seed_heresy_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) ->
 
 	var seed_npc_id := _pick_seed_npc(world)
 	if seed_npc_id.is_empty():
-		if OS.is_debug_build():
-			print("[InquisitorAgent] No eligible seed NPC found for day %d — skipping" % day)
 		return
 
 	var rumor_id: String = world.inject_rumor(seed_npc_id, claim_type_str, intensity, subject_id, "inquisitor")
 	if not rumor_id.is_empty():
 		inquisitor_acted.emit(day, claim_type_str, subject_id)
-		if OS.is_debug_build():
-			print("[InquisitorAgent] Day %d: seeded '%s' about %s (intensity %d) via %s [%s]" % [
-				day, claim_type_str, subject_id, intensity, seed_npc_id, rumor_id])
 
 
 func _pick_target(rep: ReputationSystem) -> String:

@@ -116,7 +116,6 @@ func unlock(achievement_id: String) -> void:
 	_save()
 
 	var display_name: String = ACHIEVEMENTS[achievement_id].get("name", achievement_id)
-	print("[AchievementManager] Unlocked: %s — %s" % [achievement_id, display_name])
 
 	achievement_unlocked.emit(achievement_id, display_name)
 

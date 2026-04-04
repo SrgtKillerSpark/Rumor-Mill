@@ -424,8 +424,6 @@ func hear_rumor(rumor: Rumor, source_faction: String) -> void:
 	var slot := Rumor.NpcRumorSlot.new(rumor, source_faction)
 	rumor_slots[rid] = slot
 	emit_signal("first_npc_became_evaluating")
-	if OS.is_debug_build():
-		print("[Rumor] %s → EVALUATING '%s'" % [npc_data.get("name", "?"), rid])
 
 
 # ── State machine ────────────────────────────────────────────────────────────
@@ -444,8 +442,6 @@ func _process_rumor_slots(tick: int) -> void:
 				Rumor.RumorState.REJECT, Rumor.RumorState.ACT, Rumor.RumorState.EXPIRED]:
 			slot.state = Rumor.RumorState.EXPIRED
 			slot.ticks_in_state = 0
-			if OS.is_debug_build():
-				print("[Rumor] %s EXPIRED '%s' (believability decayed to 0)" % [npc_name, rid])
 			continue
 
 		match slot.state:
@@ -490,8 +486,6 @@ func _process_rumor_slots(tick: int) -> void:
 			if newest.state != Rumor.RumorState.CONTRADICTED:
 				newest.state = Rumor.RumorState.CONTRADICTED
 				newest.ticks_in_state = 0
-				if OS.is_debug_build():
-					print("[Rumor] %s CONTRADICTED for subject '%s'" % [npc_name, sid])
 
 
 func _tick_evaluating(
@@ -528,15 +522,11 @@ func _tick_evaluating(
 	if randf() < believe_chance:
 		slot.state = Rumor.RumorState.BELIEVE
 		slot.ticks_in_state = 0
-		if OS.is_debug_build():
-			print("[Rumor] %s BELIEVE '%s' (p=%.2f)" % [npc_name, rid, believe_chance])
 		_record_rumor_history(rumor, subject_id, "believed", tick)
 		_update_schedule_avoidance(rumor)
 	else:
 		slot.state = Rumor.RumorState.REJECT
 		slot.ticks_in_state = 0
-		if OS.is_debug_build():
-			print("[Rumor] %s REJECT '%s' (p=%.2f)" % [npc_name, rid, believe_chance])
 		# High-loyalty NPCs who reject a negative rumor about a close ally enter DEFENDING.
 		if _loyalty > 0.7 and not Rumor.is_positive_claim(rumor.claim_type) \
 				and not _is_defending:
@@ -544,8 +534,6 @@ func _tick_evaluating(
 			_defender_target_npc_id = subject_id
 			_defender_ticks_remaining = _DEFENDER_DURATION
 			emit_signal("rumor_state_changed", npc_name, "DEFENDING", rid)
-			if OS.is_debug_build():
-				print("[Defender] %s entered DEFENDING for subject '%s'" % [npc_name, subject_id])
 		_record_rumor_history(rumor, subject_id, "rejected", tick)
 		_apply_credulity_modifier(_CREDULITY_REJECT_PENALTY)
 
@@ -563,8 +551,6 @@ func _tick_believe(
 		if randf() < gamma:
 			slot.state = Rumor.RumorState.REJECT
 			slot.ticks_in_state = 0
-			if OS.is_debug_build():
-				print("[Rumor] %s RECOVERED (REJECT) '%s' (γ=%.2f)" % [npc_name, rid, gamma])
 			return
 
 	# ── ACT threshold ────────────────────────────────────────────────────────
@@ -572,8 +558,6 @@ func _tick_believe(
 	if slot.ticks_in_state >= act_threshold:
 		slot.state = Rumor.RumorState.ACT
 		slot.ticks_in_state = 0
-		if OS.is_debug_build():
-			print("[Rumor] %s ACT on '%s' after %d ticks" % [npc_name, rid, act_threshold])
 		_start_act_behavior(slot.rumor, tick)
 		_record_rumor_history(slot.rumor, slot.rumor.subject_npc_id, "act", tick)
 		_apply_credulity_modifier(_CREDULITY_ACT_GAIN)
@@ -881,7 +865,6 @@ func _apply_credulity_modifier(delta: float) -> void:
 	_credulity = clamp(_credulity + actual_delta, 0.0, 1.0)
 	npc_data["credulity"] = _credulity
 	if OS.is_debug_build():
-		print("[Memory] %s credulity → %.2f (modifier=%.2f)" % [
 			npc_data.get("name", "?"), _credulity, _credulity_modifier])
 
 
@@ -895,7 +878,6 @@ func _update_schedule_avoidance(rumor: Rumor) -> void:
 		return
 	_avoided_subject_ids.append(subject_id)
 	if OS.is_debug_build():
-		print("[Memory] %s will avoid locations of '%s'" % [
 			npc_data.get("name", "?"), subject_id])
 
 
@@ -908,7 +890,6 @@ func _reroute_if_avoided(location_code: String) -> String:
 		var tid: String = other.npc_data.get("id", "")
 		if _avoided_subject_ids.has(tid) and other.work_location == location_code:
 			if OS.is_debug_build():
-				print("[Memory] %s rerouted from '%s' (avoids '%s') → home" % [
 					npc_data.get("name", "?"), location_code, tid])
 			return "home"
 	return location_code
@@ -924,8 +905,6 @@ func force_believe() -> String:
 		if slot.state == Rumor.RumorState.EVALUATING:
 			slot.state = Rumor.RumorState.BELIEVE
 			slot.ticks_in_state = 0
-			if OS.is_debug_build():
-				print("[Bribe] %s forced to BELIEVE '%s'" % [npc_data.get("name", "?"), rid])
 			return rid
 	return ""
 

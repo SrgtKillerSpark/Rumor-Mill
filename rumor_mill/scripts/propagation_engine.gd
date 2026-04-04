@@ -95,8 +95,6 @@ func tick_decay() -> void:
 			expired_ids.append(rid)
 	for rid in expired_ids:
 		live_rumors.erase(rid)
-		if OS.is_debug_build():
-			print("[PropagationEngine] Rumor '%s' shelf-life expired" % rid)
 
 
 # ── β — spread probability ────────────────────────────────────────────────────
@@ -206,9 +204,6 @@ func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
 		"tick":          tick,
 	}
 
-	if OS.is_debug_build():
-		print("[PropagationEngine] Mutation '%s' ← '%s' [%s] tick=%d" % [
-			new_id, source.id, ",".join(mut_tags), tick])
 	return mutated
 
 
@@ -330,17 +325,11 @@ func apply_chain_bonus(rumor: Rumor, chain_info: Dictionary) -> ChainType:
 		ChainType.SAME_TYPE:
 			rumor.current_believability = minf(1.0, rumor.current_believability + 0.15)
 			rumor.intensity = mini(rumor.intensity + 1, 5)
-			if OS.is_debug_build():
-				print("[PropagationEngine] Same-type chain on '%s': +0.15 believe, +1 intensity" % rumor.subject_npc_id)
 		ChainType.ESCALATION:
 			rumor.current_believability = minf(1.0, rumor.current_believability + 0.25)
 			rumor.mutability *= 0.5
-			if OS.is_debug_build():
-				print("[PropagationEngine] Escalation chain on '%s': +0.25 believe, -50%% mutation" % rumor.subject_npc_id)
 		ChainType.CONTRADICTION:
 			rumor.current_believability = maxf(0.0, rumor.current_believability - 0.10)
-			if OS.is_debug_build():
-				print("[PropagationEngine] Contradiction chain on '%s': -0.10 believe" % rumor.subject_npc_id)
 	return ct
 
 
