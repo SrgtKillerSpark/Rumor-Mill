@@ -93,6 +93,10 @@ var _cache: Dictionary = {}
 ## illness-type rumors targeting that NPC.  Used by Scenario 2 evaluator.
 var _illness_believer_counts: Dictionary = {}
 
+## Per-tick cache: subject_npc_id → { observer_npc_id: true } for individual
+## NPCs in BELIEVE/SPREAD/ACT state for illness-type rumors.  Used by S2 HUD.
+var _illness_believer_ids: Dictionary = {}
+
 ## Per-tick cache: subject_npc_id → { observer_npc_id: true } for NPCs in
 ## REJECT state for illness-type rumors.  Used by Scenario 2 contradicted-fail.
 var _illness_rejecter_ids: Dictionary = {}
@@ -132,6 +136,7 @@ func recalculate_all(all_npcs: Array, current_tick: int) -> void:
 	var death_info:        Dictionary = {}
 	var faction_bel_info:  Dictionary = {}
 
+	_illness_believer_ids.clear()
 	_illness_rejecter_ids.clear()
 	for npc in all_npcs:
 		var npc_faction: String = npc.npc_data.get("faction", "")
@@ -148,6 +153,14 @@ func recalculate_all(all_npcs: Array, current_tick: int) -> void:
 					if not _illness_rejecter_ids.has(subject):
 						_illness_rejecter_ids[subject] = {}
 					_illness_rejecter_ids[subject][observer_id] = true
+
+			# Track individual illness believers (used by Scenario 2 HUD).
+			if is_believer and slot.rumor.claim_type == Rumor.ClaimType.ILLNESS:
+				var believer_id: String = npc.npc_data.get("id", "")
+				if not believer_id.is_empty():
+					if not _illness_believer_ids.has(subject):
+						_illness_believer_ids[subject] = {}
+					_illness_believer_ids[subject][believer_id] = true
 
 			# First-encounter slot stores rumor properties for delta computation.
 			if not rumor_first_slot.has(rid):
@@ -183,15 +196,13 @@ func recalculate_all(all_npcs: Array, current_tick: int) -> void:
 					fbis[npc_faction]["ct_counts"].get(ct, 0) + 1
 
 	# ── Build illness-believer lookup (Scenario 2) ────────────────────────────
+	# Use _illness_believer_ids (unique NPC set per subject) to avoid
+	# double-counting NPCs who believe both original and mutated rumor IDs.
 	_illness_believer_counts.clear()
-	for npc_id in rids_by_subject:
-		var ill_count := 0
-		for rid in rids_by_subject[npc_id]:
-			var slot: Rumor.NpcRumorSlot = rumor_first_slot.get(rid, null)
-			if slot != null and slot.rumor.claim_type == Rumor.ClaimType.ILLNESS:
-				ill_count += believer_counts.get(rid, 0)
-		if ill_count > 0:
-			_illness_believer_counts[npc_id] = ill_count
+	for npc_id in _illness_believer_ids:
+		var count: int = _illness_believer_ids[npc_id].size()
+		if count > 0:
+			_illness_believer_counts[npc_id] = count
 
 	# ── Compute each NPC's snapshot using pre-built tables (O(unique_rids)) ─
 	_cache.clear()
@@ -229,6 +240,22 @@ func has_illness_rejecter(subject_npc_id: String, observer_npc_id: String) -> bo
 	if not _illness_rejecter_ids.has(subject_npc_id):
 		return false
 	return _illness_rejecter_ids[subject_npc_id].has(observer_npc_id)
+
+
+## Returns an array of NPC ids currently believing illness rumors about the
+## given subject.  Used by the Scenario 2 HUD to list individual believers.
+func get_illness_believer_ids(subject_npc_id: String) -> Array:
+	if not _illness_believer_ids.has(subject_npc_id):
+		return []
+	return _illness_believer_ids[subject_npc_id].keys()
+
+
+## Returns an array of NPC ids currently rejecting illness rumors about the
+## given subject.  Used by the Scenario 2 HUD.
+func get_illness_rejecter_ids(subject_npc_id: String) -> Array:
+	if not _illness_rejecter_ids.has(subject_npc_id):
+		return []
+	return _illness_rejecter_ids[subject_npc_id].keys()
 
 
 # ---------------------------------------------------------------------------

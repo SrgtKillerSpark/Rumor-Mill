@@ -97,10 +97,10 @@ const S3_FAIL_CALDER_BELOW := 40
 
 # Scenario 4 thresholds & NPC ids.
 # Protected NPCs must stay above S4_WIN_REP_MIN for the full duration.
-# If any drops below S4_FAIL_REP_BELOW, the scenario is lost immediately.
+# Fail threshold matches win threshold — no silent dead zone.
 const S4_PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
 const S4_WIN_REP_MIN       := 50
-const S4_FAIL_REP_BELOW    := 30
+const S4_FAIL_REP_BELOW    := 50
 
 enum ScenarioState { ACTIVE, WON, FAILED }
 
@@ -181,10 +181,10 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 	var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
 	if snap == null:
 		return
-	if snap.score < S1_WIN_EDRIC_BELOW:
+	if snap.score <= S1_WIN_EDRIC_BELOW:
 		scenario_1_state = ScenarioState.WON
 		scenario_resolved.emit(1, ScenarioState.WON)
-		print("[ScenarioManager] Scenario 1 WIN — Edric Fenn reputation %d < %d" % [
+		print("[ScenarioManager] Scenario 1 WIN — Edric Fenn reputation %d <= %d" % [
 			snap.score, S1_WIN_EDRIC_BELOW])
 		return
 	# Timeout fail: days elapsed exceeds the scenario timer.
@@ -267,6 +267,8 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 func get_scenario_2_progress(rep: ReputationSystem) -> Dictionary:
 	return {
 		"illness_believer_count": rep.get_illness_believer_count(ALYS_HERBWIFE_ID),
+		"illness_believer_ids":   rep.get_illness_believer_ids(ALYS_HERBWIFE_ID),
+		"illness_rejecter_ids":   rep.get_illness_rejecter_ids(ALYS_HERBWIFE_ID),
 		"win_threshold":          S2_WIN_ILLNESS_MIN,
 		"state":                  scenario_2_state,
 	}
