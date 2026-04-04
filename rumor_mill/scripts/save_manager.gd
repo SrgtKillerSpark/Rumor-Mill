@@ -298,12 +298,13 @@ static func _serialize_reputation(rs: ReputationSystem) -> Dictionary:
 
 static func _serialize_scenario_manager(sm: ScenarioManager) -> Dictionary:
 	return {
-		"scenario_1_state":   int(sm.scenario_1_state),
-		"scenario_2_state":   int(sm.scenario_2_state),
-		"scenario_3_state":   int(sm.scenario_3_state),
-		"scenario_4_state":   int(sm.scenario_4_state),
-		"calder_score_start": sm.calder_score_start,
-		"calder_score_final": sm.calder_score_final,
+		"scenario_1_state":        int(sm.scenario_1_state),
+		"scenario_2_state":        int(sm.scenario_2_state),
+		"scenario_3_state":        int(sm.scenario_3_state),
+		"scenario_4_state":        int(sm.scenario_4_state),
+		"calder_score_start":      sm.calder_score_start,
+		"calder_score_final":      sm.calder_score_final,
+		"deadline_warnings_fired": sm._deadline_warnings_fired.duplicate(),
 	}
 
 
@@ -462,8 +463,9 @@ static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> voi
 	sm.scenario_2_state   = int(d.get("scenario_2_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.scenario_3_state   = int(d.get("scenario_3_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.scenario_4_state   = int(d.get("scenario_4_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
-	sm.calder_score_start = int(d.get("calder_score_start", -1))
-	sm.calder_score_final = int(d.get("calder_score_final", -1))
+	sm.calder_score_start        = int(d.get("calder_score_start", -1))
+	sm.calder_score_final        = int(d.get("calder_score_final", -1))
+	sm._deadline_warnings_fired  = d.get("deadline_warnings_fired", {}).duplicate()
 
 
 static func _restore_rival_agent(ra: RivalAgent, d: Dictionary) -> void:
