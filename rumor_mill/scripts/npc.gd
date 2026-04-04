@@ -715,7 +715,9 @@ func _start_act_behavior(rumor: Rumor, tick: int) -> void:
 	var delta: float = 0.0
 	match rumor.claim_type:
 		Rumor.ClaimType.ACCUSATION, Rumor.ClaimType.SCANDAL, \
-		Rumor.ClaimType.HERESY, Rumor.ClaimType.ILLNESS:
+		Rumor.ClaimType.HERESY, Rumor.ClaimType.ILLNESS, \
+		Rumor.ClaimType.BLACKMAIL, Rumor.ClaimType.SECRET_ALLIANCE, \
+		Rumor.ClaimType.FORBIDDEN_ROMANCE:
 			delta = -0.15
 		Rumor.ClaimType.PRAISE:
 			delta = 0.10

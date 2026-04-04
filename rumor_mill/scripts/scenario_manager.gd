@@ -298,7 +298,7 @@ func get_scenario_1_progress(rep: ReputationSystem) -> Dictionary:
 func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_4_state != ScenarioState.ACTIVE:
 		return
-	# Fail: any protected NPC drops below 30.
+	# Fail: any protected NPC drops below 50.
 	for npc_id in S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 		if snap == null:
