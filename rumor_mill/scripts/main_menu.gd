@@ -273,9 +273,10 @@ func _build_main_panel() -> void:
 	btn_stats.pressed.connect(_on_stats_pressed)
 	btn_row.add_child(btn_stats)
 
-	var btn_quit := _make_button("Quit", 200)
-	btn_quit.pressed.connect(get_tree().quit)
-	btn_row.add_child(btn_quit)
+	if not OS.has_feature("web"):
+		var btn_quit := _make_button("Quit", 200)
+		btn_quit.pressed.connect(get_tree().quit)
+		btn_row.add_child(btn_quit)
 
 
 # ── Phase 2: Scenario Select panel ───────────────────────────────────────────
