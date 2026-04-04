@@ -892,6 +892,7 @@ func _build_objectives_section() -> void:
 	var s1_days_remaining: int = max(0, S1_DAYS - days_elapsed)
 	var s2_days_remaining: int = max(0, S2_DAYS - days_elapsed)
 	var s3_days_remaining: int = max(0, S3_DAYS - days_elapsed)
+	var s4_days_remaining: int = max(0, S4_DAYS - days_elapsed)
 
 	var edric_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("edric_fenn")  if rep != null else null
 	var calder_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("calder_fenn") if rep != null else null
@@ -1034,6 +1035,12 @@ func _build_objectives_section() -> void:
 	s3_lbl.add_theme_color_override("font_color", C_HEADING)
 	_content_vbox.add_child(s3_lbl)
 
+	var s3_days_lbl := Label.new()
+	s3_days_lbl.text = "Days remaining: %d / %d" % [s3_days_remaining, S3_DAYS]
+	s3_days_lbl.add_theme_font_size_override("font_size", 12)
+	s3_days_lbl.add_theme_color_override("font_color", C_BODY)
+	_content_vbox.add_child(s3_days_lbl)
+
 	var calder_score_str := "50"
 	var calder_band_str  := "Respected"
 	if calder_snap != null:
@@ -1059,6 +1066,21 @@ func _build_objectives_section() -> void:
 	s3_body.add_theme_font_size_override("font_size", 12)
 	s3_body.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(s3_body)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	# ── Scenario 4 ────────────────────────────────────────────────────────
+	var s4_lbl := Label.new()
+	s4_lbl.text = "Scenario 4: The Protector  (upcoming)"
+	s4_lbl.add_theme_font_size_override("font_size", 14)
+	s4_lbl.add_theme_color_override("font_color", C_HEADING)
+	_content_vbox.add_child(s4_lbl)
+
+	var s4_days_lbl := Label.new()
+	s4_days_lbl.text = "Days remaining: %d / %d" % [s4_days_remaining, S4_DAYS]
+	s4_days_lbl.add_theme_font_size_override("font_size", 12)
+	s4_days_lbl.add_theme_color_override("font_color", C_BODY)
+	_content_vbox.add_child(s4_days_lbl)
 
 
 # ── Notification dot ──────────────────────────────────────────────────────────
