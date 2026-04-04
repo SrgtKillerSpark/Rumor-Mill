@@ -920,11 +920,12 @@ func _build_objectives_section() -> void:
 	s1_lbl.add_theme_color_override("font_color", C_HEADING)
 	_content_vbox.add_child(s1_lbl)
 
-	var days_lbl := Label.new()
-	days_lbl.text = "Days remaining: %d / %d" % [s1_days_remaining, S1_DAYS]
-	days_lbl.add_theme_font_size_override("font_size", 12)
-	days_lbl.add_theme_color_override("font_color", C_BODY)
-	_content_vbox.add_child(days_lbl)
+	if active_scenario_id == "scenario_1" or active_scenario_id.is_empty():
+		var days_lbl := Label.new()
+		days_lbl.text = "Days remaining: %d / %d" % [s1_days_remaining, S1_DAYS]
+		days_lbl.add_theme_font_size_override("font_size", 12)
+		days_lbl.add_theme_color_override("font_color", C_BODY)
+		_content_vbox.add_child(days_lbl)
 
 	_content_vbox.add_child(HSeparator.new())
 
@@ -1010,10 +1011,14 @@ func _build_objectives_section() -> void:
 	s2_win_hdr.add_theme_color_override("font_color", C_SPREADING)
 	_content_vbox.add_child(s2_win_hdr)
 
+	var illness_count := 0
+	if sm != null and rep != null:
+		illness_count = sm.get_scenario_2_progress(rep).get("illness_believer_count", 0)
+
 	var s2_win_body := Label.new()
 	s2_win_body.text = (
-		"  At least %d townsfolk believe Alys Herbwife is spreading illness.  %s"
-	) % [ScenarioManager.S2_WIN_ILLNESS_MIN, s2_win_status]
+		"  %d / %d townsfolk believe Alys Herbwife is spreading illness.  %s"
+	) % [illness_count, ScenarioManager.S2_WIN_ILLNESS_MIN, s2_win_status]
 	s2_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s2_win_body.add_theme_font_size_override("font_size", 12)
 	s2_win_body.add_theme_color_override("font_color", s2_win_color)
@@ -1027,11 +1032,15 @@ func _build_objectives_section() -> void:
 	s2_fail_hdr.add_theme_color_override("font_color", C_CONTRADICTED)
 	_content_vbox.add_child(s2_fail_hdr)
 
+	var maren_rejected := rep != null and rep.has_illness_rejecter(ScenarioManager.ALYS_HERBWIFE_ID, ScenarioManager.MAREN_NUN_ID)
+	var s2_timed_out   := s2_days_remaining == 0
+
 	var s2_fail_body := Label.new()
 	s2_fail_body.text = (
-		"  [ ] Sister Maren contradicts illness rumors about Alys Herbwife\n"
-		+ "  [ ] %d days elapsed without win condition  (days remaining: %d)"
-	) % [S2_DAYS, s2_days_remaining]
+		"  %s Sister Maren contradicts illness rumors about Alys Herbwife\n"
+		+ "  %s %d days elapsed without win condition  (days remaining: %d)"
+	) % ["[x]" if maren_rejected else "[ ]",
+		"[x]" if s2_timed_out else "[ ]", S2_DAYS, s2_days_remaining]
 	s2_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s2_fail_body.add_theme_font_size_override("font_size", 12)
 	s2_fail_body.add_theme_color_override("font_color", C_BODY)
@@ -1039,18 +1048,20 @@ func _build_objectives_section() -> void:
 
 	_content_vbox.add_child(HSeparator.new())
 
-	# ── Scenario 3 preview ────────────────────────────────────────────────
+	# ── Scenario 3 ────────────────────────────────────────────────────────
+	var s3_suffix := "  (upcoming)" if active_scenario_id != "scenario_3" else ""
 	var s3_lbl := Label.new()
-	s3_lbl.text = "Scenario 3: The Succession  (upcoming)"
+	s3_lbl.text = "Scenario 3: The Succession%s" % s3_suffix
 	s3_lbl.add_theme_font_size_override("font_size", 14)
 	s3_lbl.add_theme_color_override("font_color", C_HEADING)
 	_content_vbox.add_child(s3_lbl)
 
-	var s3_days_lbl := Label.new()
-	s3_days_lbl.text = "Days remaining: %d / %d" % [s3_days_remaining, S3_DAYS]
-	s3_days_lbl.add_theme_font_size_override("font_size", 12)
-	s3_days_lbl.add_theme_color_override("font_color", C_BODY)
-	_content_vbox.add_child(s3_days_lbl)
+	if active_scenario_id == "scenario_3":
+		var s3_days_lbl := Label.new()
+		s3_days_lbl.text = "Days remaining: %d / %d" % [s3_days_remaining, S3_DAYS]
+		s3_days_lbl.add_theme_font_size_override("font_size", 12)
+		s3_days_lbl.add_theme_color_override("font_color", C_BODY)
+		_content_vbox.add_child(s3_days_lbl)
 
 	var calder_score_str := "50"
 	var calder_band_str  := "Respected"
@@ -1098,11 +1109,12 @@ func _build_objectives_section() -> void:
 			s4_win_status = "[FAILED]"
 			s4_win_color  = C_CONTRADICTED
 
-	var s4_days_lbl := Label.new()
-	s4_days_lbl.text = "Days remaining: %d / %d" % [s4_days_remaining, S4_DAYS]
-	s4_days_lbl.add_theme_font_size_override("font_size", 12)
-	s4_days_lbl.add_theme_color_override("font_color", C_BODY)
-	_content_vbox.add_child(s4_days_lbl)
+	if active_scenario_id == "scenario_4":
+		var s4_days_lbl := Label.new()
+		s4_days_lbl.text = "Days remaining: %d / %d" % [s4_days_remaining, S4_DAYS]
+		s4_days_lbl.add_theme_font_size_override("font_size", 12)
+		s4_days_lbl.add_theme_color_override("font_color", C_BODY)
+		_content_vbox.add_child(s4_days_lbl)
 
 	_content_vbox.add_child(HSeparator.new())
 
