@@ -42,6 +42,7 @@
     "storage": "The warehouse district holds the town's surplus in cool shadow — a practical place, largely overlooked except by those who need it.",
     "tanner": "The tanning yard sits at the edge of town for good reason; the smell of cured hides carries, and Oswin prefers the solitude that drives most others away.",
     "town_hall": "The civic hall where the alderman conducts official business, its doors open to those with legitimate grievances and firmly shut to those without.",
+    "guardpost": "A sturdy watchtower near the town square where the guard keeps vigil, its narrow windows offering a clear view of the comings and goings below.",
     "graveyard": "A quiet and well-kept plot beyond the chapel where the town's dead rest, tended by Denny's steady if grim attention."
   }
 }
