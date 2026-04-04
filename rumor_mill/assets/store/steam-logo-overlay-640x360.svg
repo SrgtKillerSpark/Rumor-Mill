@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <!-- Steam Logo Overlay: 640×360 PNG-32 (transparent background)
+       RUMOR MILL wordmark (parchment variant) centered.
+       Parchment plate at ~90% opacity. Quill motif at 60% opacity behind text.
+       NO drop shadows or glows — Steam composites this asset. -->
+
+  <!-- Fully transparent background — render as PNG-32 with alpha -->
+  <!-- Nothing here, background is transparent -->
+
+  <!-- ── Logo plate (parchment rectangle, 480px wide, slight irregularity) ── -->
+  <!-- Plate bounds: x=80, y=100, w=480, h=160 (centered in 640×360) -->
+  <!-- 90% opacity parchment plate -->
+  <rect x="80" y="100" width="480" height="160" rx="4" ry="4"
+        fill="#F2E8CE" fill-opacity="0.90"/>
+  <!-- Subtle inner border (deckled edge suggestion) -->
+  <rect x="83" y="103" width="474" height="154" rx="3" ry="3"
+        fill="none" stroke="#D4C49A" stroke-width="1" stroke-opacity="0.6"/>
+  <!-- Faint foxing marks -->
+  <g fill="#8B6040" fill-opacity="0.08">
+    <circle cx="120" cy="125" r="5"/>
+    <circle cx="490" cy="115" r="4"/>
+    <circle cx="520" cy="200" r="6"/>
+    <circle cx="110" cy="210" r="4"/>
+    <circle cx="380" cy="240" r="5"/>
+    <circle cx="210" cy="238" r="3"/>
+    <circle cx="310" cy="110" r="3"/>
+  </g>
+
+  <!-- ── Quill motif behind wordmark (30° diagonal, 60% opacity) ── -->
+  <!-- Quill shaft crossing the full logo -->
+  <line x1="130" y1="225" x2="510" y2="135"
+        stroke="#C8A96E" stroke-opacity="0.60" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Feather barbs (left side of shaft) -->
+  <g stroke="#C8A96E" stroke-opacity="0.45" stroke-width="1.5" fill="none">
+    <path d="M 488,145 Q 478,150 468,145"/>
+    <path d="M 465,156 Q 453,163 441,157"/>
+    <path d="M 440,168 Q 427,176 413,170"/>
+    <path d="M 413,181 Q 398,190 383,184"/>
+    <path d="M 383,194 Q 367,203 351,197"/>
+    <path d="M 352,207 Q 334,217 317,211"/>
+    <path d="M 320,220 Q 300,230 282,224"/>
+    <path d="M 286,232 Q 265,243 246,237"/>
+    <path d="M 250,245 Q 228,256 208,250"/>
+    <path d="M 212,258 Q 189,270 168,263"/>
+  </g>
+  <!-- Feather barbs (right side of shaft) -->
+  <g stroke="#C8A96E" stroke-opacity="0.45" stroke-width="1.5" fill="none">
+    <path d="M 488,145 Q 498,138 506,142"/>
+    <path d="M 465,156 Q 476,148 486,152"/>
+    <path d="M 440,168 Q 452,159 463,163"/>
+    <path d="M 413,181 Q 426,171 438,175"/>
+    <path d="M 383,194 Q 397,183 409,188"/>
+    <path d="M 352,207 Q 367,196 379,201"/>
+    <path d="M 320,220 Q 335,208 348,214"/>
+    <path d="M 286,232 Q 302,220 315,227"/>
+    <path d="M 250,245 Q 267,232 281,239"/>
+    <path d="M 212,258 Q 230,244 244,252"/>
+  </g>
+  <!-- Quill nib + whisper tail (at lower-left) -->
+  <path d="M 136,220 L 130,230 Q 122,248 113,254 Q 121,240 128,228 Z"
+        fill="#C8A96E" fill-opacity="0.55"/>
+  <!-- Speech bubble tail from nib -->
+  <path d="M 113,254 Q 103,265 94,268 Q 105,260 112,252 Z"
+        fill="none" stroke="#C8A96E" stroke-width="1.5" stroke-opacity="0.4"
+        stroke-linecap="round"/>
+
+  <!-- Ghost wax seal (lower-right corner of plate, ~15% opacity) -->
+  <circle cx="530" cy="235" r="28" fill="none" stroke="#6B1A1A"
+          stroke-width="5" stroke-opacity="0.10"/>
+  <circle cx="530" cy="235" r="14" fill="none" stroke="#6B1A1A"
+          stroke-width="1" stroke-opacity="0.08"/>
+  <g stroke="#6B1A1A" stroke-width="1.5" stroke-opacity="0.08">
+    <line x1="530" y1="221" x2="530" y2="249"/>
+    <line x1="516" y1="235" x2="544" y2="235"/>
+    <line x1="520" y1="225" x2="540" y2="245"/>
+    <line x1="540" y1="225" x2="520" y2="245"/>
+  </g>
+
+  <!-- ── RUMOR MILL Wordmark (parchment variant) ── -->
+  <!-- "RUMOR" -->
+  <text x="320" y="178"
+        font-family="Georgia, 'Palatino Linotype', 'Times New Roman', serif"
+        font-size="56" font-weight="bold" letter-spacing="10"
+        text-anchor="middle" fill="#1A1208">RUMOR</text>
+  <!-- "MILL" (bolder anchor) -->
+  <text x="320" y="228"
+        font-family="Georgia, 'Palatino Linotype', 'Times New Roman', serif"
+        font-size="50" font-weight="bold" letter-spacing="18"
+        text-anchor="middle" fill="#1A1208">MILL</text>
+</svg>

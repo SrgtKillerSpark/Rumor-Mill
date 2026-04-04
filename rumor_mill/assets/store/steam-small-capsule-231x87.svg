@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="231" height="87" viewBox="0 0 231 87">
+  <defs>
+    <radialGradient id="goldGrad" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#DFC07E"/>
+      <stop offset="60%" stop-color="#C8A96E"/>
+      <stop offset="100%" stop-color="#A07840"/>
+    </radialGradient>
+    <radialGradient id="waxGrad" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#7A2020"/>
+      <stop offset="70%" stop-color="#6B1A1A"/>
+      <stop offset="100%" stop-color="#4A0E0E"/>
+    </radialGradient>
+    <!-- Glow under the seal -->
+    <radialGradient id="sealGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6B1A1A" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#6B1A1A" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="spokeShadow">
+      <feDropShadow dx="-0.5" dy="1" stdDeviation="1" flood-color="#0D0A06" flood-opacity="0.7"/>
+    </filter>
+  </defs>
+
+  <!-- Background: near-black -->
+  <rect width="231" height="87" fill="#0D0A06"/>
+
+  <!-- Subtle glow behind seal -->
+  <ellipse cx="115" cy="40" rx="50" ry="50" fill="url(#sealGlow)"/>
+
+  <!-- ── Wax seal, scaled to fill ~60px height centered, tight crop ──
+       Seal diameter ≈ 66px, centered at (115, 37)
+       Outer ring outer-r=33, inner-r=24  (ring width ~9px) ── -->
+  <!-- Outer wax ring -->
+  <circle cx="115" cy="37" r="33" fill="url(#waxGrad)"/>
+  <!-- Ring inner cutout -->
+  <circle cx="115" cy="37" r="24" fill="#0D0A06"/>
+
+  <!-- Embossed quill/bubble motifs on ring — simplified at this scale -->
+  <g fill="#8A3030" opacity="0.7" font-size="4">
+    <!-- 8 small dots representing embossed motifs -->
+    <circle cx="115" cy="5" r="2"/>
+    <circle cx="138" cy="12" r="2"/>
+    <circle cx="148" cy="37" r="2"/>
+    <circle cx="138" cy="62" r="2"/>
+    <circle cx="115" cy="69" r="2"/>
+    <circle cx="92" cy="62" r="2"/>
+    <circle cx="82" cy="37" r="2"/>
+    <circle cx="92" cy="12" r="2"/>
+  </g>
+
+  <!-- Center emblem field -->
+  <circle cx="115" cy="37" r="22" fill="#0D0A06"/>
+  <!-- Faint radial texture -->
+  <circle cx="115" cy="37" r="20" fill="#1A1208" fill-opacity="0.5"/>
+
+  <!-- Mill wheel: 8 spokes, r_outer=20, r_hub=5 -->
+  <g fill="url(#goldGrad)" filter="url(#spokeShadow)">
+    <path d="M115,32 C113,29 112,22 115,17 C118,22 117,29 115,32 Z" transform="rotate(0,115,37)"/>
+    <path d="M115,32 C113,29 112,22 115,17 C118,22 117,29 115,32 Z" transform="rotate(45,115,37)"/>
+    <path d="M115,32 C113,29 112,22 115,17 C118,22 117,29 115,32 Z" transform="rotate(90,115,37)"/>
+    <path d="M115,32 C113,29 112,22 115,17 C118,22 117,29 115,32 Z" transform="rotate(135,115,37)"/>
+    <path d="M115,32 C113,29 112,22 115,17 C118,22 117,29 115,32 Z" transform="rotate(180,115,37)"/>
+    <path d="M115,32 C113,29 112,22 115,17 C118,22 117,29 115,32 Z" transform="rotate(225,115,37)"/>
+    <path d="M115,32 C113,29 112,22 115,17 C118,22 117,29 115,32 Z" transform="rotate(270,115,37)"/>
+    <path d="M115,32 C113,29 112,22 115,17 C118,22 117,29 115,32 Z" transform="rotate(315,115,37)"/>
+  </g>
+  <!-- Rim ring -->
+  <circle cx="115" cy="37" r="20" fill="none" stroke="#C8A96E" stroke-width="1" opacity="0.5"/>
+
+  <!-- Hub -->
+  <circle cx="115" cy="37" r="5.5" fill="url(#goldGrad)"/>
+  <circle cx="115" cy="37" r="4" fill="#1A1208"/>
+  <!-- Eye slit -->
+  <ellipse cx="115" cy="37" rx="1" ry="3" fill="#C8A96E" opacity="0.8"/>
+
+  <!-- ── Bottom text strip: "RUMOR MILL" ── -->
+  <!-- Dark strip at bottom 18px -->
+  <rect x="0" y="69" width="231" height="18" fill="#0D0A06"/>
+  <rect x="0" y="69" width="231" height="1" fill="#6B1A1A" opacity="0.4"/>
+  <text x="115" y="82"
+        font-family="Georgia, 'Palatino Linotype', 'Times New Roman', serif"
+        font-size="10"
+        font-weight="bold"
+        letter-spacing="3"
+        text-anchor="middle"
+        fill="#F2E8CE">RUMOR MILL</text>
+</svg>

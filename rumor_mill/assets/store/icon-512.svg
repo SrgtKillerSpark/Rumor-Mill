@@ -1,0 +1,258 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <!-- Parchment corner bleed texture -->
+    <radialGradient id="bgBleed" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0D0A06" stop-opacity="1"/>
+      <stop offset="85%" stop-color="#F2E8CE" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#F2E8CE" stop-opacity="0.10"/>
+    </radialGradient>
+
+    <!-- Wax ring surface texture using noise filter -->
+    <filter id="waxTexture" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" seed="7" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+      <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blended"/>
+      <feComposite in="blended" in2="SourceGraphic" operator="in"/>
+    </filter>
+
+    <!-- Inner wheel radial texture -->
+    <radialGradient id="wheelBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1A1208" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0D0A06" stop-opacity="0.6"/>
+    </radialGradient>
+
+    <!-- Gold gradient for depth -->
+    <radialGradient id="goldGrad" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#DFC07E"/>
+      <stop offset="60%" stop-color="#C8A96E"/>
+      <stop offset="100%" stop-color="#A07840"/>
+    </radialGradient>
+
+    <!-- Wax ring radial gradient for depth -->
+    <radialGradient id="waxGrad" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#7A2020"/>
+      <stop offset="70%" stop-color="#6B1A1A"/>
+      <stop offset="100%" stop-color="#4A0E0E"/>
+    </radialGradient>
+
+    <!-- Embossed motif (lighter wax) -->
+    <radialGradient id="embossGrad" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#9A3535"/>
+      <stop offset="100%" stop-color="#7A2020"/>
+    </radialGradient>
+
+    <!-- Clip for the seal circle -->
+    <clipPath id="sealClip">
+      <circle cx="256" cy="256" r="240"/>
+    </clipPath>
+
+    <!-- Clip for wax ring (donut) -->
+    <clipPath id="waxRingClip">
+      <path d="M256,16 A240,240 0 1,1 255.999,16 Z M256,130 A126,126 0 1,0 256.001,130 Z" fill-rule="evenodd"/>
+    </clipPath>
+
+    <!-- Spoke shadow filter -->
+    <filter id="spokeShadow">
+      <feDropShadow dx="-1" dy="2" stdDeviation="2" flood-color="#0D0A06" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- ── Background ── -->
+  <rect width="512" height="512" fill="#0D0A06"/>
+  <!-- Faint parchment bleed from corners -->
+  <rect width="512" height="512" fill="url(#bgBleed)"/>
+  <circle cx="0" cy="0" r="180" fill="#F2E8CE" fill-opacity="0.04"/>
+  <circle cx="512" cy="0" r="180" fill="#F2E8CE" fill-opacity="0.04"/>
+  <circle cx="0" cy="512" r="180" fill="#F2E8CE" fill-opacity="0.04"/>
+  <circle cx="512" cy="512" r="180" fill="#F2E8CE" fill-opacity="0.04"/>
+
+  <!-- ── Wax ring (outer 480px diameter, inner 380px diameter) ── -->
+  <!-- Ring = outer circle minus inner circle, filled with wax -->
+  <circle cx="256" cy="256" r="240" fill="url(#waxGrad)"/>
+  <!-- Inner cutout to form the ring -->
+  <circle cx="256" cy="256" r="190" fill="#0D0A06"/>
+  <!-- Wax texture overlay on ring -->
+  <circle cx="256" cy="256" r="240" fill="none" filter="url(#waxTexture)" opacity="0.3"/>
+  <!-- Subtle crack lines in wax -->
+  <g opacity="0.2" stroke="#4A0E0E" stroke-width="1" fill="none">
+    <path d="M 80 180 Q 90 200 85 220"/>
+    <path d="M 430 290 Q 440 310 435 330"/>
+    <path d="M 200 50 Q 215 60 210 75"/>
+    <path d="M 320 455 Q 330 465 325 480"/>
+    <path d="M 60 310 Q 68 320 65 340"/>
+    <path d="M 450 170 Q 460 180 455 200"/>
+  </g>
+
+  <!-- ── Embossed motifs on inner edge of wax ring ──
+       16 total: 8 quills + 8 speech bubbles, alternating, at 22.5° intervals
+       Placed at radius ~205 (just inside inner edge of ring) ── -->
+  <g fill="url(#embossGrad)" opacity="0.85">
+    <!-- Quill at 0° (top) -->
+    <g transform="translate(256,256) rotate(0) translate(0,-205)">
+      <!-- Quill silhouette: feather + shaft -->
+      <ellipse cx="0" cy="0" rx="5" ry="9" transform="rotate(-30)"/>
+      <line x1="0" y1="0" x2="3" y2="7" stroke="#8A3030" stroke-width="1.5"/>
+    </g>
+    <!-- Speech bubble at 22.5° -->
+    <g transform="translate(256,256) rotate(22.5) translate(0,-205)">
+      <ellipse cx="0" cy="-2" rx="5" ry="4"/>
+      <polygon points="-1,2 1,2 0,5"/>
+    </g>
+    <!-- Quill at 45° -->
+    <g transform="translate(256,256) rotate(45) translate(0,-205)">
+      <ellipse cx="0" cy="0" rx="5" ry="9" transform="rotate(-30)"/>
+      <line x1="0" y1="0" x2="3" y2="7" stroke="#8A3030" stroke-width="1.5"/>
+    </g>
+    <!-- Speech bubble at 67.5° -->
+    <g transform="translate(256,256) rotate(67.5) translate(0,-205)">
+      <ellipse cx="0" cy="-2" rx="5" ry="4"/>
+      <polygon points="-1,2 1,2 0,5"/>
+    </g>
+    <!-- Quill at 90° -->
+    <g transform="translate(256,256) rotate(90) translate(0,-205)">
+      <ellipse cx="0" cy="0" rx="5" ry="9" transform="rotate(-30)"/>
+      <line x1="0" y1="0" x2="3" y2="7" stroke="#8A3030" stroke-width="1.5"/>
+    </g>
+    <!-- Speech bubble at 112.5° -->
+    <g transform="translate(256,256) rotate(112.5) translate(0,-205)">
+      <ellipse cx="0" cy="-2" rx="5" ry="4"/>
+      <polygon points="-1,2 1,2 0,5"/>
+    </g>
+    <!-- Quill at 135° -->
+    <g transform="translate(256,256) rotate(135) translate(0,-205)">
+      <ellipse cx="0" cy="0" rx="5" ry="9" transform="rotate(-30)"/>
+      <line x1="0" y1="0" x2="3" y2="7" stroke="#8A3030" stroke-width="1.5"/>
+    </g>
+    <!-- Speech bubble at 157.5° -->
+    <g transform="translate(256,256) rotate(157.5) translate(0,-205)">
+      <ellipse cx="0" cy="-2" rx="5" ry="4"/>
+      <polygon points="-1,2 1,2 0,5"/>
+    </g>
+    <!-- Quill at 180° -->
+    <g transform="translate(256,256) rotate(180) translate(0,-205)">
+      <ellipse cx="0" cy="0" rx="5" ry="9" transform="rotate(-30)"/>
+      <line x1="0" y1="0" x2="3" y2="7" stroke="#8A3030" stroke-width="1.5"/>
+    </g>
+    <!-- Speech bubble at 202.5° -->
+    <g transform="translate(256,256) rotate(202.5) translate(0,-205)">
+      <ellipse cx="0" cy="-2" rx="5" ry="4"/>
+      <polygon points="-1,2 1,2 0,5"/>
+    </g>
+    <!-- Quill at 225° -->
+    <g transform="translate(256,256) rotate(225) translate(0,-205)">
+      <ellipse cx="0" cy="0" rx="5" ry="9" transform="rotate(-30)"/>
+      <line x1="0" y1="0" x2="3" y2="7" stroke="#8A3030" stroke-width="1.5"/>
+    </g>
+    <!-- Speech bubble at 247.5° -->
+    <g transform="translate(256,256) rotate(247.5) translate(0,-205)">
+      <ellipse cx="0" cy="-2" rx="5" ry="4"/>
+      <polygon points="-1,2 1,2 0,5"/>
+    </g>
+    <!-- Quill at 270° -->
+    <g transform="translate(256,256) rotate(270) translate(0,-205)">
+      <ellipse cx="0" cy="0" rx="5" ry="9" transform="rotate(-30)"/>
+      <line x1="0" y1="0" x2="3" y2="7" stroke="#8A3030" stroke-width="1.5"/>
+    </g>
+    <!-- Speech bubble at 292.5° -->
+    <g transform="translate(256,256) rotate(292.5) translate(0,-205)">
+      <ellipse cx="0" cy="-2" rx="5" ry="4"/>
+      <polygon points="-1,2 1,2 0,5"/>
+    </g>
+    <!-- Quill at 315° -->
+    <g transform="translate(256,256) rotate(315) translate(0,-205)">
+      <ellipse cx="0" cy="0" rx="5" ry="9" transform="rotate(-30)"/>
+      <line x1="0" y1="0" x2="3" y2="7" stroke="#8A3030" stroke-width="1.5"/>
+    </g>
+    <!-- Speech bubble at 337.5° -->
+    <g transform="translate(256,256) rotate(337.5) translate(0,-205)">
+      <ellipse cx="0" cy="-2" rx="5" ry="4"/>
+      <polygon points="-1,2 1,2 0,5"/>
+    </g>
+  </g>
+
+  <!-- ── Center emblem field (radius 190 = inside the ring) ── -->
+  <!-- Dark center with faint radial texture -->
+  <circle cx="256" cy="256" r="188" fill="#0D0A06"/>
+  <!-- Subtle radial paper-fibre texture -->
+  <circle cx="256" cy="256" r="150" fill="url(#wheelBg)"/>
+
+  <!-- ── Mill wheel: 8 scythe-blade spokes, diameter 300px (radius 150) ──
+       Each spoke is a curved blade shape.
+       Hub radius: 25px  Outer rim radius: 148px
+       Spokes at 0,45,90,135,180,225,270,315° ── -->
+  <g fill="url(#goldGrad)" filter="url(#spokeShadow)">
+    <!-- Spoke 0° -->
+    <path d="M 256,231
+             C 248,220 244,180 256,108
+             C 268,180 264,220 256,231 Z"
+          transform="rotate(0,256,256)"/>
+    <!-- Spoke 45° -->
+    <path d="M 256,231
+             C 248,220 244,180 256,108
+             C 268,180 264,220 256,231 Z"
+          transform="rotate(45,256,256)"/>
+    <!-- Spoke 90° -->
+    <path d="M 256,231
+             C 248,220 244,180 256,108
+             C 268,180 264,220 256,231 Z"
+          transform="rotate(90,256,256)"/>
+    <!-- Spoke 135° -->
+    <path d="M 256,231
+             C 248,220 244,180 256,108
+             C 268,180 264,220 256,231 Z"
+          transform="rotate(135,256,256)"/>
+    <!-- Spoke 180° -->
+    <path d="M 256,231
+             C 248,220 244,180 256,108
+             C 268,180 264,220 256,231 Z"
+          transform="rotate(180,256,256)"/>
+    <!-- Spoke 225° -->
+    <path d="M 256,231
+             C 248,220 244,180 256,108
+             C 268,180 264,220 256,231 Z"
+          transform="rotate(225,256,256)"/>
+    <!-- Spoke 270° -->
+    <path d="M 256,231
+             C 248,220 244,180 256,108
+             C 268,180 264,220 256,231 Z"
+          transform="rotate(270,256,256)"/>
+    <!-- Spoke 315° -->
+    <path d="M 256,231
+             C 248,220 244,180 256,108
+             C 268,180 264,220 256,231 Z"
+          transform="rotate(315,256,256)"/>
+  </g>
+
+  <!-- Wheel rim ring (thin) -->
+  <circle cx="256" cy="256" r="148" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.6"/>
+
+  <!-- Hub disc -->
+  <circle cx="256" cy="256" r="28" fill="url(#goldGrad)"/>
+  <circle cx="256" cy="256" r="22" fill="#1A1208"/>
+
+  <!-- Eye hub: open eye with vertical slit pupil -->
+  <!-- Eye whites / almond shape -->
+  <ellipse cx="256" cy="256" rx="18" ry="10" fill="url(#goldGrad)"/>
+  <!-- Iris -->
+  <ellipse cx="256" cy="256" rx="10" ry="10" fill="#C8A96E"/>
+  <!-- Vertical slit pupil (slightly unsettling) -->
+  <ellipse cx="256" cy="256" rx="3" ry="9" fill="#0D0A06"/>
+  <!-- Eye lid lines -->
+  <path d="M 238,256 Q 256,246 274,256" fill="none" stroke="#A07840" stroke-width="1"/>
+  <path d="M 238,256 Q 256,266 274,256" fill="none" stroke="#A07840" stroke-width="1"/>
+
+  <!-- ── "RUMOR MILL" arc text at bottom of seal ──
+       Text along path curving inside the outer wax ring, at ~r=215 arc bottom ── -->
+  <defs>
+    <path id="arcText" d="M 90,256 A 166,166 0 0,0 422,256"/>
+  </defs>
+  <!-- Embossed text effect: slightly lighter than wax -->
+  <text font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="bold"
+        letter-spacing="4" fill="#8A3030" text-anchor="middle">
+    <textPath href="#arcText" startOffset="50%">RUMOR MILL</textPath>
+  </text>
+
+  <!-- Inner wax ring edge accent -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#4A0E0E" stroke-width="2" opacity="0.6"/>
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#4A0E0E" stroke-width="2" opacity="0.4"/>
+</svg>

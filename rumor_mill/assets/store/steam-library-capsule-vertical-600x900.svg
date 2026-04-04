@@ -1,0 +1,277 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900" viewBox="0 0 600 900">
+  <!-- Steam Library Capsule (Vertical): The Town Portal — 600×900
+       Top third: night sky + stars
+       Middle third: town silhouettes, mill wheel centered
+       Bottom third: cobblestone square with cloaked figures + social graph overlay
+       Logo: centered at y=820 (dark variant, 320px wide) -->
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0718"/>
+      <stop offset="60%" stop-color="#1A0C04"/>
+      <stop offset="100%" stop-color="#3D1C02"/>
+    </linearGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1A0C02"/>
+      <stop offset="100%" stop-color="#0D0A06"/>
+    </linearGradient>
+    <radialGradient id="lanternGlow" cx="50%" cy="70%" r="40%">
+      <stop offset="0%" stop-color="#FF7A1A" stop-opacity="0.65"/>
+      <stop offset="35%" stop-color="#E8821A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#FF7A1A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="lanternCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF0C0"/>
+      <stop offset="40%" stop-color="#FF9A30" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FF7A1A" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fogGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cloakGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2A2018"/>
+      <stop offset="100%" stop-color="#0D0A06"/>
+    </linearGradient>
+    <linearGradient id="logoPlateBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0D0A06" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#0D0A06" stop-opacity="0.88"/>
+    </linearGradient>
+    <!-- Bottom vignette to fade content into logo area -->
+    <linearGradient id="bottomVignette" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="transparent"/>
+      <stop offset="75%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#0D0A06" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ── Top third: Sky (0–300px) ── -->
+  <rect width="600" height="900" fill="#0D0A06"/>
+  <rect width="600" height="350" fill="url(#skyGrad)"/>
+
+  <!-- Stars -->
+  <g fill="#F2E8CE" opacity="0.55">
+    <circle cx="45" cy="20" r="0.9"/>
+    <circle cx="110" cy="12" r="0.6"/>
+    <circle cx="175" cy="35" r="0.8"/>
+    <circle cx="240" cy="8" r="0.6"/>
+    <circle cx="310" cy="28" r="0.7"/>
+    <circle cx="380" cy="15" r="0.8"/>
+    <circle cx="450" cy="40" r="0.5"/>
+    <circle cx="520" cy="10" r="0.7"/>
+    <circle cx="570" cy="28" r="0.9"/>
+    <circle cx="30" cy="60" r="0.5"/>
+    <circle cx="95" cy="55" r="0.6"/>
+    <circle cx="165" cy="70" r="0.5"/>
+    <circle cx="235" cy="60" r="0.7"/>
+    <circle cx="300" cy="75" r="0.6"/>
+    <circle cx="370" cy="62" r="0.5"/>
+    <circle cx="440" cy="72" r="0.6"/>
+    <circle cx="510" cy="58" r="0.7"/>
+    <circle cx="565" cy="68" r="0.5"/>
+    <circle cx="60" cy="100" r="0.5"/>
+    <circle cx="190" cy="95" r="0.6"/>
+    <circle cx="340" cy="108" r="0.5"/>
+    <circle cx="480" cy="98" r="0.6"/>
+    <circle cx="148" cy="145" r="0.5"/>
+    <circle cx="415" cy="138" r="0.5"/>
+    <circle cx="545" cy="125" r="0.6"/>
+  </g>
+
+  <!-- Horizon line glow (amber at ~y=300) -->
+  <rect x="0" y="285" width="600" height="30" fill="#3D1C02" fill-opacity="0.4"/>
+
+  <!-- ── Middle third: Town (300–600px) ── -->
+  <rect x="0" y="300" width="600" height="300" fill="url(#groundGrad)"/>
+
+  <!-- City wall (far background) -->
+  <rect x="0" y="295" width="600" height="20" fill="#110C07"/>
+  <g fill="#140E08">
+    <rect x="10" y="283" width="12" height="14"/>
+    <rect x="35" y="283" width="12" height="14"/>
+    <rect x="60" y="283" width="12" height="14"/>
+    <rect x="140" y="283" width="12" height="14"/>
+    <rect x="510" y="283" width="12" height="14"/>
+    <rect x="538" y="283" width="12" height="14"/>
+    <rect x="566" y="283" width="12" height="14"/>
+  </g>
+
+  <!-- Tavern (left) -->
+  <rect x="15" y="320" width="130" height="190" fill="#18100A"/>
+  <polygon points="0,320 80,280 160,320" fill="#140D05"/>
+  <!-- Tavern windows -->
+  <rect x="30" y="335" width="20" height="16" fill="#3A1E04"/>
+  <rect x="32" y="337" width="16" height="12" fill="#FF9030" fill-opacity="0.22"/>
+  <rect x="70" y="335" width="20" height="16" fill="#3A1E04"/>
+  <rect x="72" y="337" width="16" height="12" fill="#FF9030" fill-opacity="0.18"/>
+  <rect x="105" y="335" width="20" height="16" fill="#3A1E04"/>
+  <rect x="107" y="337" width="16" height="12" fill="#FF9030" fill-opacity="0.12"/>
+  <rect x="50" y="295" width="18" height="14" fill="#3A1E04"/>
+  <rect x="52" y="297" width="14" height="10" fill="#FF9030" fill-opacity="0.10"/>
+
+  <!-- Church / spire (right background) -->
+  <rect x="470" y="330" width="80" height="170" fill="#161008"/>
+  <polygon points="455,330 510,270 555,330" fill="#120D05"/>
+  <!-- Church cross on spire -->
+  <rect x="506" y="270" width="8" height="28" fill="#161008"/>
+  <rect x="497" y="278" width="26" height="6" fill="#161008"/>
+  <!-- Church window (rose window hint) -->
+  <circle cx="510" cy="345" r="12" fill="#0D0A06" stroke="#221508" stroke-width="2"/>
+  <circle cx="510" cy="345" r="7" fill="#3A1E04"/>
+  <circle cx="510" cy="345" r="3" fill="#FF9030" fill-opacity="0.15"/>
+
+  <!-- ── Watermill (centered, the dominant mid-ground shape) ── -->
+  <!-- Mill building -->
+  <rect x="230" y="310" width="140" height="190" fill="#1A1008"/>
+  <polygon points="215,310 300,258 385,310" fill="#150D04"/>
+  <!-- Mill window -->
+  <rect x="268" y="330" width="24" height="20" fill="#3A1E04"/>
+  <rect x="270" y="332" width="20" height="16" fill="#FF9030" fill-opacity="0.12" rx="1"/>
+  <!-- Mill wheel (centered, prominent) -->
+  <circle cx="218" cy="390" r="6" fill="#2A1A08"/>
+  <circle cx="218" cy="390" r="80" stroke="#221508" stroke-width="9" fill="none"/>
+  <g stroke="#221508" stroke-width="7">
+    <line x1="218" y1="310" x2="218" y2="470"/>
+    <line x1="138" y1="390" x2="298" y2="390"/>
+    <line x1="161" y1="333" x2="275" y2="447"/>
+    <line x1="275" y1="333" x2="161" y2="447"/>
+  </g>
+  <!-- One blade catching lantern light -->
+  <path d="M 211,310 L 225,310 L 225,340 L 211,340 Z" fill="#FF9030" fill-opacity="0.22"/>
+  <!-- Paddles -->
+  <rect x="212" y="308" width="12" height="15" fill="#18100A" stroke="#221508" stroke-width="1"/>
+  <rect x="283" y="384" width="15" height="12" fill="#18100A" stroke="#221508" stroke-width="1"/>
+  <rect x="212" y="452" width="12" height="15" fill="#18100A" stroke="#221508" stroke-width="1"/>
+  <rect x="140" y="384" width="15" height="12" fill="#18100A" stroke="#221508" stroke-width="1"/>
+
+  <!-- Lantern posts in mid-ground -->
+  <rect x="167" y="370" width="4" height="55" fill="#2A1A08"/>
+  <rect x="416" y="362" width="4" height="55" fill="#2A1A08"/>
+  <!-- Small lantern glow on each post -->
+  <circle cx="169" cy="370" r="6" fill="#FF9030" fill-opacity="0.5"/>
+  <circle cx="418" cy="362" r="6" fill="#FF9030" fill-opacity="0.4"/>
+  <circle cx="169" cy="370" r="16" fill="#FF7A1A" fill-opacity="0.06"/>
+  <circle cx="418" cy="362" r="14" fill="#FF7A1A" fill-opacity="0.05"/>
+
+  <!-- ── Bottom third: Cobblestone foreground with social graph overlay (600–900px) ── -->
+  <rect x="0" y="600" width="600" height="300" fill="#0D0A06"/>
+
+  <!-- Cobblestone pattern (subtle) -->
+  <g fill="none" stroke="#161208" stroke-width="0.8" opacity="0.4">
+    <ellipse cx="80" cy="650" rx="28" ry="14"/>
+    <ellipse cx="155" cy="665" rx="24" ry="12"/>
+    <ellipse cx="240" cy="645" rx="30" ry="14"/>
+    <ellipse cx="330" cy="658" rx="26" ry="13"/>
+    <ellipse cx="418" cy="648" rx="28" ry="14"/>
+    <ellipse cx="510" cy="660" rx="25" ry="12"/>
+    <ellipse cx="570" cy="642" rx="22" ry="11"/>
+    <ellipse cx="40" cy="690" rx="22" ry="11"/>
+    <ellipse cx="118" cy="702" rx="26" ry="13"/>
+    <ellipse cx="200" cy="688" rx="28" ry="14"/>
+    <ellipse cx="290" cy="698" rx="24" ry="12"/>
+    <ellipse cx="375" cy="685" rx="26" ry="13"/>
+    <ellipse cx="455" cy="696" rx="23" ry="11"/>
+    <ellipse cx="538" cy="690" rx="27" ry="13"/>
+    <ellipse cx="70" cy="728" rx="24" ry="12"/>
+    <ellipse cx="165" cy="738" rx="28" ry="13"/>
+    <ellipse cx="260" cy="728" rx="26" ry="12"/>
+    <ellipse cx="350" cy="740" rx="24" ry="12"/>
+    <ellipse cx="440" cy="730" rx="26" ry="13"/>
+    <ellipse cx="530" cy="738" rx="23" ry="11"/>
+  </g>
+
+  <!-- Lantern glow (main, casting light onto figures) -->
+  <ellipse cx="300" cy="650" rx="200" ry="130" fill="url(#lanternGlow)"/>
+
+  <!-- Lantern post -->
+  <rect x="297" y="580" width="5" height="90" fill="#2A1A08"/>
+  <rect x="295" y="665" width="9" height="6" fill="#2A1A08"/>
+  <rect x="287" y="567" width="22" height="17" fill="#3A2810" rx="2"/>
+  <rect x="289" y="569" width="18" height="13" fill="#FF9030" fill-opacity="0.85" rx="1"/>
+  <ellipse cx="299" cy="576" rx="6" ry="5" fill="url(#lanternCore)"/>
+  <polygon points="284,567 299,557 316,567" fill="#2A1A08"/>
+
+  <!-- Two cloaked figures (seen from slightly above, smaller in frame) -->
+  <!-- Figure LEFT -->
+  <g transform="translate(252, 650)">
+    <path d="M 0,0 L -15,75 L 15,75 L 12,0 Z" fill="url(#cloakGrad)"/>
+    <path d="M 12,0 L 15,75 L 10,75 L 7,0 Z" fill="#FF7A1A" fill-opacity="0.15"/>
+    <ellipse cx="6" cy="-3" rx="12" ry="7" fill="#1C1410"/>
+    <ellipse cx="6" cy="-14" rx="9" ry="11" fill="#161008"/>
+    <path d="M 15,10 Q 28,4 34,-6" fill="none" stroke="#1C1410" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <!-- Figure RIGHT -->
+  <g transform="translate(340, 646)">
+    <path d="M 0,0 L -15,78 L 15,78 L 12,0 Z" fill="url(#cloakGrad)"/>
+    <path d="M -15,0 L -12,78 L -7,78 L -4,0 Z" fill="#FF7A1A" fill-opacity="0.12"/>
+    <ellipse cx="-2" cy="-3" rx="12" ry="7" fill="#1C1410"/>
+    <ellipse cx="-2" cy="-14" rx="9" ry="11" fill="#161008"/>
+    <path d="M -14,10 Q -26,5 -32,-5" fill="none" stroke="#1C1410" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <!-- ── Social graph overlay (thin gold lines, 25% opacity) ── -->
+  <!-- Node dots representing other townspeople -->
+  <!-- Nodes -->
+  <g fill="#C8A96E" fill-opacity="0.28">
+    <circle cx="80" cy="620" r="3.5"/>
+    <circle cx="145" cy="680" r="3"/>
+    <circle cx="200" cy="610" r="3"/>
+    <circle cx="430" cy="625" r="3.5"/>
+    <circle cx="490" cy="678" r="3"/>
+    <circle cx="540" cy="610" r="3"/>
+    <circle cx="300" cy="760" r="3"/>
+    <circle cx="160" cy="760" r="2.5"/>
+    <circle cx="450" cy="758" r="2.5"/>
+    <circle cx="100" cy="720" r="2"/>
+    <circle cx="510" cy="715" r="2"/>
+  </g>
+  <!-- Connection lines from figures to nodes -->
+  <g stroke="#C8A96E" stroke-opacity="0.22" stroke-width="1" fill="none">
+    <!-- From figure L (approx 260, 680) -->
+    <line x1="260" y1="668" x2="80" y2="620"/>
+    <line x1="260" y1="668" x2="145" y2="680"/>
+    <line x1="260" y1="668" x2="200" y2="610"/>
+    <line x1="260" y1="668" x2="300" y2="760"/>
+    <line x1="260" y1="668" x2="160" y2="760"/>
+    <line x1="260" y1="668" x2="100" y2="720"/>
+    <!-- From figure R (approx 342, 674) -->
+    <line x1="342" y1="664" x2="430" y2="625"/>
+    <line x1="342" y1="664" x2="490" y2="678"/>
+    <line x1="342" y1="664" x2="540" y2="610"/>
+    <line x1="342" y1="664" x2="450" y2="758"/>
+    <line x1="342" y1="664" x2="510" y2="715"/>
+    <line x1="342" y1="664" x2="300" y2="760"/>
+    <!-- Cross connections between nodes -->
+    <line x1="80" y1="620" x2="145" y2="680"/>
+    <line x1="145" y1="680" x2="160" y2="760"/>
+    <line x1="430" y1="625" x2="490" y2="678"/>
+    <line x1="490" y1="678" x2="450" y2="758"/>
+    <!-- Node to node (faint) -->
+    <line x1="200" y1="610" x2="80" y2="620" stroke-opacity="0.12"/>
+    <line x1="540" y1="610" x2="430" y2="625" stroke-opacity="0.12"/>
+  </g>
+  <!-- Line between figures (the whisper connection) -->
+  <line x1="262" y1="660" x2="340" y2="658"
+        stroke="#C8A96E" stroke-opacity="0.50" stroke-width="1.5"/>
+
+  <!-- Fog at ground level -->
+  <rect x="0" y="730" width="600" height="80" fill="url(#fogGrad)"/>
+
+  <!-- Bottom vignette -->
+  <rect width="600" height="900" fill="url(#bottomVignette)"/>
+
+  <!-- ── Logo: RUMOR MILL dark variant, centered at y=820, 320px wide ── -->
+  <rect x="140" y="790" width="320" height="68" rx="3" fill="url(#logoPlateBg)"/>
+  <rect x="140" y="790" width="320" height="68" rx="3" fill="none"
+        stroke="#C8A96E" stroke-width="0.5" stroke-opacity="0.35"/>
+  <!-- Quill -->
+  <line x1="148" y1="850" x2="452" y2="796"
+        stroke="#C8A96E" stroke-opacity="0.15" stroke-width="1.5"/>
+  <text x="300" y="820"
+        font-family="Georgia, 'Palatino Linotype', 'Times New Roman', serif"
+        font-size="26" font-weight="bold" letter-spacing="6"
+        text-anchor="middle" fill="#F2E8CE">RUMOR</text>
+  <text x="300" y="848"
+        font-family="Georgia, 'Palatino Linotype', 'Times New Roman', serif"
+        font-size="23" font-weight="bold" letter-spacing="12"
+        text-anchor="middle" fill="#F2E8CE">MILL</text>
+</svg>

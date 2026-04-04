@@ -19,7 +19,7 @@ const STATE_COLORS := {
 	Rumor.RumorState.CONTRADICTED: Color(0.75, 0.45, 1.0, 0.9),  # muted purple
 }
 
-var show_states:  bool = true
+var show_states:  bool = false
 var show_social:  bool = false
 var show_lineage: bool = false
 
@@ -33,6 +33,12 @@ var _lineage_label: RichTextLabel  = null
 
 func _ready() -> void:
 	layer = 10
+	# Hide all debug visuals in release builds.
+	if not OS.is_debug_build():
+		visible = false
+		set_process(false)
+		set_process_input(false)
+		return
 	_draw_node = Node2D.new()
 	_draw_node.name = "DebugDraw"
 	add_child(_draw_node)

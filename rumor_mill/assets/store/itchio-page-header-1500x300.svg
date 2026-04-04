@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="300" viewBox="0 0 1500 300">
+  <!-- itch.io Game Page Header Banner: 1500×300 — The Town at Night, Panoramic Strip
+       Pure silhouette language: dark shapes against dusk-to-night sky.
+       No text, no logo. Center 900px always visible. -->
+  <defs>
+    <!-- Sky gradient: left to right variation + vertical amber-to-indigo -->
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0718"/>
+      <stop offset="55%" stop-color="#1A0C04"/>
+      <stop offset="100%" stop-color="#3D1C02"/>
+    </linearGradient>
+    <!-- Horizontal center brightness (sky slightly lighter at center) -->
+    <radialGradient id="skyCenter" cx="50%" cy="80%" r="50%">
+      <stop offset="0%" stop-color="#3D1C02" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#3D1C02" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Fog at ground level -->
+    <linearGradient id="fogGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.09"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Edge fade (left and right atmospheric haze) -->
+    <linearGradient id="leftFade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0A0718" stop-opacity="0.9"/>
+      <stop offset="20%" stop-color="#0A0718" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0A0718" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rightFade" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#0A0718" stop-opacity="0.9"/>
+      <stop offset="20%" stop-color="#0A0718" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0A0718" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Small lantern glow -->
+    <radialGradient id="lanternGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF7A1A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#FF7A1A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ── Sky ── -->
+  <rect width="1500" height="300" fill="url(#skyGrad)"/>
+  <rect width="1500" height="300" fill="url(#skyCenter)"/>
+
+  <!-- Stars scattered across the sky -->
+  <g fill="#F2E8CE" opacity="0.45">
+    <!-- Left zone -->
+    <circle cx="45" cy="18" r="0.9"/>
+    <circle cx="110" cy="10" r="0.6"/>
+    <circle cx="180" cy="32" r="0.8"/>
+    <circle cx="255" cy="8" r="0.6"/>
+    <circle cx="90" cy="55" r="0.5"/>
+    <circle cx="160" cy="68" r="0.6"/>
+    <circle cx="235" cy="50" r="0.5"/>
+    <circle cx="30" cy="80" r="0.5"/>
+    <circle cx="128" cy="90" r="0.6"/>
+    <!-- Center-left -->
+    <circle cx="330" cy="22" r="0.7"/>
+    <circle cx="415" cy="12" r="0.5"/>
+    <circle cx="490" cy="38" r="0.7"/>
+    <circle cx="560" cy="15" r="0.8"/>
+    <circle cx="380" cy="60" r="0.5"/>
+    <circle cx="455" cy="72" r="0.6"/>
+    <circle cx="525" cy="55" r="0.5"/>
+    <circle cx="610" cy="25" r="0.6"/>
+    <!-- Center -->
+    <circle cx="680" cy="18" r="0.8"/>
+    <circle cx="750" cy="8" r="0.6"/>
+    <circle cx="820" cy="30" r="0.7"/>
+    <circle cx="700" cy="58" r="0.5"/>
+    <circle cx="775" cy="70" r="0.6"/>
+    <circle cx="848" cy="50" r="0.5"/>
+    <!-- Center-right -->
+    <circle cx="920" cy="22" r="0.7"/>
+    <circle cx="990" cy="12" r="0.5"/>
+    <circle cx="1060" cy="38" r="0.7"/>
+    <circle cx="1130" cy="15" r="0.8"/>
+    <circle cx="950" cy="60" r="0.5"/>
+    <circle cx="1020" cy="72" r="0.6"/>
+    <circle cx="1090" cy="55" r="0.5"/>
+    <circle cx="1160" cy="25" r="0.6"/>
+    <!-- Right zone -->
+    <circle cx="1230" cy="18" r="0.9"/>
+    <circle cx="1300" cy="10" r="0.6"/>
+    <circle cx="1370" cy="32" r="0.8"/>
+    <circle cx="1440" cy="8" r="0.6"/>
+    <circle cx="1260" cy="55" r="0.5"/>
+    <circle cx="1330" cy="68" r="0.6"/>
+    <circle cx="1400" cy="50" r="0.5"/>
+    <circle cx="1475" cy="80" r="0.5"/>
+  </g>
+
+  <!-- ── Far background: rolling hills (leftmost) ── -->
+  <path d="M 0,200 Q 80,160 160,185 Q 240,170 300,190 L 300,300 L 0,300 Z" fill="#0D0A06"/>
+
+  <!-- Watchtower with lit torch (left, on hill) -->
+  <rect x="62" y="140" width="20" height="62" fill="#110D08"/>
+  <rect x="56" y="135" width="32" height="10" fill="#110D08"/>
+  <!-- Crenellations -->
+  <rect x="57" y="126" width="7" height="10" fill="#110D08"/>
+  <rect x="69" y="126" width="7" height="10" fill="#110D08"/>
+  <rect x="81" y="126" width="7" height="10" fill="#110D08"/>
+  <!-- Torch (lit) -->
+  <rect x="69" y="118" width="4" height="10" fill="#2A1A08"/>
+  <ellipse cx="71" cy="116" rx="5" ry="4" fill="#FF7A1A" fill-opacity="0.8"/>
+  <circle cx="71" cy="116" r="10" fill="#FF7A1A" fill-opacity="0.15"/>
+  <!-- Window slit -->
+  <rect x="68" y="158" width="6" height="12" fill="#0D0A06"/>
+
+  <!-- City wall left section -->
+  <path d="M 0,190 L 0,210 L 300,210 L 300,185" fill="none" stroke="#140E09" stroke-width="2"/>
+  <rect x="0" y="190" width="62" height="18" fill="#110D08"/>
+  <rect x="82" y="190" width="220" height="18" fill="#110D08"/>
+
+  <!-- ── LEFT TOWN: Tavern district ── -->
+  <!-- Tavern 1 -->
+  <rect x="300" y="170" width="80" height="130" fill="#18100A"/>
+  <polygon points="285,170 340,140 395,170" fill="#140D05"/>
+  <rect x="315" y="185" width="16" height="13" fill="#3A1E04"/>
+  <rect x="317" y="187" width="12" height="9" fill="#FF9030" fill-opacity="0.22"/>
+  <rect x="350" y="185" width="16" height="13" fill="#3A1E04"/>
+  <rect x="352" y="187" width="12" height="9" fill="#FF9030" fill-opacity="0.18"/>
+  <!-- Tavern sign -->
+  <rect x="378" y="178" width="3" height="20" fill="#2A1A08"/>
+  <rect x="376" y="178" width="18" height="10" fill="#2A1A08" rx="1"/>
+
+  <!-- Tavern 2 (smaller, adjacent) -->
+  <rect x="390" y="190" width="60" height="110" fill="#161008"/>
+  <polygon points="378,190 420,165 462,190" fill="#120C04"/>
+  <rect x="400" y="205" width="14" height="11" fill="#3A1E04"/>
+  <rect x="402" y="207" width="10" height="7" fill="#FF9030" fill-opacity="0.15"/>
+
+  <!-- ── CENTER: Market square, mill, well ── -->
+  <!-- Stone well -->
+  <ellipse cx="570" cy="250" rx="20" ry="9" fill="#1E1610"/>
+  <rect x="550" y="225" width="40" height="27" fill="#1A1208"/>
+  <rect x="550" y="216" width="40" height="12" fill="#201810" rx="1"/>
+  <rect x="552" y="185" width="3" height="34" fill="#201810"/>
+  <rect x="585" y="185" width="3" height="34" fill="#201810"/>
+  <polygon points="546,185 571,170 596,185" fill="#181008"/>
+
+  <!-- Watermill (center of panorama, dominant) -->
+  <rect x="660" y="150" width="120" height="150" fill="#1A1008"/>
+  <polygon points="645,150 720,108 795,150" fill="#140D04"/>
+  <!-- Mill wheel (large, centered in panorama) -->
+  <circle cx="648" cy="220" r="5" fill="#2A1A08"/>
+  <circle cx="648" cy="220" r="72" stroke="#221508" stroke-width="8" fill="none"/>
+  <g stroke="#221508" stroke-width="7">
+    <line x1="648" y1="148" x2="648" y2="292"/>
+    <line x1="576" y1="220" x2="720" y2="220"/>
+    <line x1="597" y1="169" x2="699" y2="271"/>
+    <line x1="699" y1="169" x2="597" y2="271"/>
+  </g>
+  <rect x="642" y="146" width="12" height="14" fill="#18100A" stroke="#221508" stroke-width="1"/>
+  <rect x="714" y="214" width="14" height="12" fill="#18100A" stroke="#221508" stroke-width="1"/>
+  <rect x="642" y="256" width="12" height="14" fill="#18100A" stroke="#221508" stroke-width="1"/>
+  <rect x="570" y="214" width="14" height="12" fill="#18100A" stroke="#221508" stroke-width="1"/>
+  <!-- Blade catching ambient glow -->
+  <path d="M 641,146 L 655,146 L 655,170 L 641,170 Z" fill="#FF9030" fill-opacity="0.15"/>
+
+  <!-- Lantern post center -->
+  <rect x="754" y="195" width="5" height="80" fill="#2A1A08"/>
+  <rect x="746" y="183" width="20" height="15" fill="#3A2810" rx="2"/>
+  <rect x="748" y="185" width="16" height="11" fill="#FF9030" fill-opacity="0.75" rx="1"/>
+  <polygon points="743,183 757,174 772,183" fill="#2A1A08"/>
+  <!-- Lantern glow pool -->
+  <ellipse cx="757" cy="235" rx="55" ry="40" fill="#FF7A1A" fill-opacity="0.12"/>
+
+  <!-- Market stalls (closed, center-right) -->
+  <rect x="800" y="200" width="70" height="80" fill="#18100A"/>
+  <polygon points="790,200 835,178 880,200" fill="#140D04"/>
+  <path d="M 790,200 L 797,197 L 804,200 L 811,197 L 818,200 L 825,197 L 832,200 L 839,197 L 846,200 L 853,197 L 860,200 L 867,197 L 874,200 L 880,200"
+        fill="none" stroke="#2A1A08" stroke-width="1.5"/>
+
+  <!-- ── RIGHT TOWN: More rooftops, church, city gate ── -->
+  <!-- Merchant row -->
+  <rect x="880" y="205" width="65" height="90" fill="#18100A"/>
+  <polygon points="868,205 913,182 948,205" fill="#140D05"/>
+  <rect x="895" y="218" width="14" height="11" fill="#3A1E04"/>
+  <rect x="897" y="220" width="10" height="7" fill="#FF9030" fill-opacity="0.12"/>
+
+  <rect x="952" y="210" width="70" height="85" fill="#16100A"/>
+  <polygon points="940,210 987,185 1034,210" fill="#120D04"/>
+  <rect x="963" y="222" width="14" height="11" fill="#3A1E04"/>
+  <rect x="965" y="224" width="10" height="7" fill="#FF9030" fill-opacity="0.10"/>
+
+  <!-- Church tower (right zone) -->
+  <rect x="1060" y="168" width="55" height="132" fill="#161008"/>
+  <polygon points="1047,168 1087,130 1127,168" fill="#120D04"/>
+  <rect x="1082" y="130" width="8" height="22" fill="#161008"/>
+  <rect x="1074" y="137" width="24" height="6" fill="#161008"/>
+  <circle cx="1087" cy="188" r="10" fill="#0D0A06" stroke="#221508" stroke-width="1.5"/>
+  <circle cx="1087" cy="188" r="5" fill="#3A1E04"/>
+
+  <!-- Approach road, guard tower (right edge, partially fading) -->
+  <rect x="1180" y="175" width="25" height="90" fill="#140E08" opacity="0.8"/>
+  <rect x="1165" y="165" width="55" height="14" fill="#140E08" opacity="0.7"/>
+  <rect x="1167" y="156" width="8" height="10" fill="#140E08" opacity="0.7"/>
+  <rect x="1184" y="156" width="8" height="10" fill="#140E08" opacity="0.7"/>
+  <rect x="1201" y="156" width="8" height="10" fill="#140E08" opacity="0.7"/>
+  <!-- Torch on guard tower -->
+  <rect x="1186" y="148" width="3" height="9" fill="#2A1A08" opacity="0.7"/>
+  <circle cx="1188" cy="147" r="5" fill="#FF7A1A" fill-opacity="0.5"/>
+
+  <!-- City gate arch -->
+  <path d="M 1240,300 L 1240,220 Q 1260,195 1280,220 L 1280,300 Z" fill="#110D08" opacity="0.8"/>
+  <rect x="1235" y="195" width="50" height="18" fill="#110D08" opacity="0.7"/>
+  <rect x="1237" y="185" width="8" height="12" fill="#110D08" opacity="0.7"/>
+  <rect x="1252" y="185" width="8" height="12" fill="#110D08" opacity="0.7"/>
+  <rect x="1267" y="185" width="8" height="12" fill="#110D08" opacity="0.7"/>
+
+  <!-- Far right hills fading into haze -->
+  <path d="M 1300,235 Q 1380,185 1450,210 Q 1490,195 1500,205 L 1500,300 L 1300,300 Z"
+        fill="#0D0A06" opacity="0.9"/>
+
+  <!-- ── Fog / mist at ground level (bottom 60px) ── -->
+  <rect x="0" y="240" width="1500" height="60" fill="url(#fogGrad)"/>
+  <ellipse cx="300" cy="275" rx="280" ry="20" fill="#FFFFFF" fill-opacity="0.03"/>
+  <ellipse cx="750" cy="265" rx="350" ry="18" fill="#FFFFFF" fill-opacity="0.025"/>
+  <ellipse cx="1200" cy="278" rx="280" ry="20" fill="#FFFFFF" fill-opacity="0.03"/>
+
+  <!-- ── Edge atmospheric haze ── -->
+  <rect width="1500" height="300" fill="url(#leftFade)"/>
+  <rect width="1500" height="300" fill="url(#rightFade)"/>
+</svg>

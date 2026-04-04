@@ -1,0 +1,424 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="1240" viewBox="0 0 3840 1240">
+  <!-- Steam Library Hero: 3840×1240 ultra-wide panoramic painting
+       Lamplighter's Square at night, full-bleed.
+       Center 2560px: town square, lantern, two figures, mill wheel, tavern.
+       Left extension: tavern district in shadow, merchant stall row.
+       Right extension: approach road to city gate, guard tower far right.
+       Strong center-weighted lighting: warm lantern at center, deep blue-black toward edges.
+       No text (logo overlay added via Steam's PNG composite).
+  -->
+  <defs>
+    <!-- Sky gradient -->
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0718"/>
+      <stop offset="50%" stop-color="#130C05"/>
+      <stop offset="100%" stop-color="#3D1C02"/>
+    </linearGradient>
+
+    <!-- Ground gradient -->
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1C0E02"/>
+      <stop offset="100%" stop-color="#0D0A06"/>
+    </linearGradient>
+
+    <!-- Center lantern warm glow — DOMINANT light source -->
+    <radialGradient id="lanternGlow" cx="50%" cy="58%" r="28%">
+      <stop offset="0%" stop-color="#FF7A1A" stop-opacity="0.80"/>
+      <stop offset="20%" stop-color="#E8821A" stop-opacity="0.45"/>
+      <stop offset="50%" stop-color="#FF7A1A" stop-opacity="0.12"/>
+      <stop offset="80%" stop-color="#FF7A1A" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="#FF7A1A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Lantern core -->
+    <radialGradient id="lanternCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF0C0"/>
+      <stop offset="35%" stop-color="#FF9A30" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FF7A1A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Deep edge vignette left -->
+    <linearGradient id="leftVignette" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0A0718" stop-opacity="0.95"/>
+      <stop offset="16%" stop-color="#0A0718" stop-opacity="0.6"/>
+      <stop offset="30%" stop-color="#0A0718" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Deep edge vignette right -->
+    <linearGradient id="rightVignette" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#0A0718" stop-opacity="0.95"/>
+      <stop offset="16%" stop-color="#0A0718" stop-opacity="0.6"/>
+      <stop offset="30%" stop-color="#0A0718" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Bottom vignette -->
+    <linearGradient id="bottomVignette" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="transparent"/>
+      <stop offset="75%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#0D0A06" stop-opacity="0.5"/>
+    </linearGradient>
+
+    <!-- Fog gradient -->
+    <linearGradient id="fogGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Cloak gradient -->
+    <linearGradient id="cloakGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2A2018"/>
+      <stop offset="100%" stop-color="#0D0A06"/>
+    </linearGradient>
+
+    <!-- Cobblestone texture hint -->
+    <pattern id="cobbles" x="0" y="0" width="80" height="55" patternUnits="userSpaceOnUse">
+      <ellipse cx="20" cy="15" rx="18" ry="12" fill="none" stroke="#1C1510" stroke-width="1"/>
+      <ellipse cx="60" cy="15" rx="18" ry="12" fill="none" stroke="#1C1510" stroke-width="1"/>
+      <ellipse cx="40" cy="40" rx="18" ry="12" fill="none" stroke="#1C1510" stroke-width="1"/>
+      <ellipse cx="0" cy="40" rx="18" ry="12" fill="none" stroke="#1C1510" stroke-width="1"/>
+      <ellipse cx="80" cy="40" rx="18" ry="12" fill="none" stroke="#1C1510" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- ── Sky (full canvas background) ── -->
+  <rect width="3840" height="1240" fill="url(#skyGrad)"/>
+
+  <!-- Stars — dense field across the whole sky -->
+  <g fill="#F2E8CE" opacity="0.45">
+    <!-- Left quarter -->
+    <circle cx="80" cy="40" r="1.5"/>  <circle cx="180" cy="22" r="1.2"/>
+    <circle cx="280" cy="55" r="1.4"/> <circle cx="380" cy="18" r="1.1"/>
+    <circle cx="120" cy="90" r="1.0"/> <circle cx="220" cy="108" r="1.2"/>
+    <circle cx="330" cy="78" r="1.0"/> <circle cx="450" cy="35" r="1.3"/>
+    <circle cx="550" cy="65" r="1.0"/> <circle cx="660" cy="28" r="1.4"/>
+    <circle cx="760" cy="88" r="1.1"/> <circle cx="850" cy="15" r="1.2"/>
+    <circle cx="940" cy="48" r="1.3"/> <circle cx="50" cy="145" r="0.9"/>
+    <circle cx="160" cy="158" r="1.0"/><circle cx="290" cy="130" r="1.1"/>
+    <circle cx="410" cy="155" r="0.9"/><circle cx="530" cy="125" r="1.0"/>
+    <circle cx="650" cy="145" r="1.1"/><circle cx="770" cy="135" r="0.9"/>
+    <circle cx="900" cy="160" r="1.0"/><circle cx="40" cy="195" r="0.8"/>
+    <circle cx="195" cy="210" r="0.9"/><circle cx="360" cy="188" r="0.8"/>
+    <circle cx="500" cy="205" r="0.9"/><circle cx="700" cy="192" r="0.8"/>
+    <circle cx="840" cy="218" r="0.9"/>
+    <!-- Left-center -->
+    <circle cx="1050" cy="35" r="1.3"/><circle cx="1150" cy="15" r="1.1"/>
+    <circle cx="1250" cy="58" r="1.4"/><circle cx="1350" cy="22" r="1.0"/>
+    <circle cx="1080" cy="95" r="1.0"/><circle cx="1185" cy="115" r="1.1"/>
+    <circle cx="1290" cy="80" r="1.2"/><circle cx="1400" cy="42" r="1.0"/>
+    <circle cx="1100" cy="152" r="0.9"/><circle cx="1210" cy="168" r="1.0"/>
+    <circle cx="1330" cy="140" r="0.8"/><circle cx="1450" cy="162" r="0.9"/>
+    <!-- Center (fewer stars — sky is slightly lighter here near lantern glow) -->
+    <circle cx="1700" cy="30" r="1.2"/><circle cx="1800" cy="12" r="1.0"/>
+    <circle cx="1900" cy="48" r="1.1"/><circle cx="2000" cy="20" r="1.3"/>
+    <circle cx="2100" cy="55" r="1.0"/><circle cx="2200" cy="35" r="1.2"/>
+    <circle cx="1720" cy="85" r="0.8"/><circle cx="1850" cy="100" r="0.9"/>
+    <circle cx="1980" cy="75" r="0.8"/><circle cx="2120" cy="95" r="0.9"/>
+    <!-- Right-center -->
+    <circle cx="2450" cy="35" r="1.3"/><circle cx="2550" cy="15" r="1.1"/>
+    <circle cx="2650" cy="58" r="1.4"/><circle cx="2750" cy="22" r="1.0"/>
+    <circle cx="2480" cy="95" r="1.0"/><circle cx="2585" cy="115" r="1.1"/>
+    <circle cx="2690" cy="80" r="1.2"/><circle cx="2800" cy="42" r="1.0"/>
+    <circle cx="2500" cy="152" r="0.9"/><circle cx="2610" cy="168" r="1.0"/>
+    <circle cx="2730" cy="140" r="0.8"/><circle cx="2850" cy="162" r="0.9"/>
+    <!-- Right quarter -->
+    <circle cx="2960" cy="40" r="1.5"/> <circle cx="3060" cy="22" r="1.2"/>
+    <circle cx="3160" cy="55" r="1.4"/> <circle cx="3260" cy="18" r="1.1"/>
+    <circle cx="3000" cy="90" r="1.0"/> <circle cx="3100" cy="108" r="1.2"/>
+    <circle cx="3210" cy="78" r="1.0"/> <circle cx="3330" cy="35" r="1.3"/>
+    <circle cx="3430" cy="65" r="1.0"/> <circle cx="3540" cy="28" r="1.4"/>
+    <circle cx="3640" cy="88" r="1.1"/> <circle cx="3730" cy="15" r="1.2"/>
+    <circle cx="3820" cy="48" r="1.3"/>
+    <circle cx="2940" cy="145" r="0.9"/><circle cx="3050" cy="158" r="1.0"/>
+    <circle cx="3180" cy="130" r="1.1"/><circle cx="3300" cy="155" r="0.9"/>
+    <circle cx="3420" cy="125" r="1.0"/><circle cx="3550" cy="145" r="1.1"/>
+    <circle cx="3670" cy="135" r="0.9"/><circle cx="3790" cy="160" r="1.0"/>
+  </g>
+
+  <!-- ── Ground base ── -->
+  <rect x="0" y="580" width="3840" height="660" fill="url(#groundGrad)"/>
+
+  <!-- ── FAR LEFT extension: tavern district ── -->
+  <!-- Hills and city wall (leftmost) -->
+  <path d="M 0,620 Q 150,550 300,580 Q 450,560 600,585 L 600,1240 L 0,1240 Z" fill="#0D0A06"/>
+  <rect x="0" y="590" width="600" height="30" fill="#110D08"/>
+  <!-- City wall crenellations -->
+  <g fill="#140E09">
+    <rect x="10" y="575" width="18" height="18"/>
+    <rect x="40" y="575" width="18" height="18"/>
+    <rect x="70" y="575" width="18" height="18"/>
+    <rect x="100" y="575" width="18" height="18"/>
+    <rect x="130" y="575" width="18" height="18"/>
+    <rect x="160" y="575" width="18" height="18"/>
+    <rect x="200" y="580" width="18" height="16"/>
+    <rect x="230" y="580" width="18" height="16"/>
+    <rect x="260" y="580" width="18" height="16"/>
+    <rect x="300" y="575" width="18" height="18"/>
+    <rect x="330" y="575" width="18" height="18"/>
+    <rect x="360" y="575" width="18" height="18"/>
+    <rect x="400" y="578" width="18" height="16"/>
+    <rect x="430" y="578" width="18" height="16"/>
+    <rect x="460" y="578" width="18" height="16"/>
+    <rect x="500" y="575" width="18" height="18"/>
+    <rect x="530" y="575" width="18" height="18"/>
+    <rect x="560" y="575" width="18" height="18"/>
+  </g>
+  <!-- Far-left watchtower -->
+  <rect x="60" y="492" width="38" height="112" fill="#120D08"/>
+  <rect x="50" y="484" width="58" height="15" fill="#120D08"/>
+  <rect x="52" y="468" width="14" height="18" fill="#120D08"/>
+  <rect x="72" y="468" width="14" height="18" fill="#120D08"/>
+  <rect x="92" y="468" width="10" height="18" fill="#120D08"/>
+  <!-- Torch lit -->
+  <rect x="74" y="455" width="6" height="16" fill="#2A1A08"/>
+  <ellipse cx="77" cy="452" rx="9" ry="7" fill="#FF7A1A" fill-opacity="0.75"/>
+  <circle cx="77" cy="452" r="20" fill="#FF7A1A" fill-opacity="0.12"/>
+  <!-- Window -->
+  <rect x="71" y="520" width="10" height="20" fill="#0D0A06"/>
+
+  <!-- Tavern district buildings (left extension) -->
+  <!-- Tavern A -->
+  <rect x="310" y="560" width="180" height="310" fill="#1A1008"/>
+  <polygon points="288,560 400,498 512,560" fill="#150D04"/>
+  <!-- Windows with candlelight -->
+  <rect x="338" y="582" width="30" height="24" fill="#3A1E04"/>
+  <rect x="341" y="585" width="24" height="18" fill="#FF9030" fill-opacity="0.28"/>
+  <rect x="392" y="582" width="30" height="24" fill="#3A1E04"/>
+  <rect x="395" y="585" width="24" height="18" fill="#FF9030" fill-opacity="0.22"/>
+  <rect x="338" y="635" width="30" height="24" fill="#3A1E04"/>
+  <rect x="341" y="638" width="24" height="18" fill="#FF9030" fill-opacity="0.18"/>
+  <rect x="362" y="520" width="24" height="20" fill="#3A1E04"/>
+  <rect x="365" y="523" width="18" height="14" fill="#FF9030" fill-opacity="0.15"/>
+  <!-- Tavern sign post -->
+  <rect x="488" y="558" width="5" height="40" fill="#2A1A08"/>
+  <rect x="485" y="558" width="32" height="18" fill="#2A1A08" rx="2"/>
+
+  <!-- Tavern B (smaller, partially in shadow) -->
+  <rect x="520" y="585" width="140" height="290" fill="#160E07"/>
+  <polygon points="508,585 590,545 672,585" fill="#120C04"/>
+  <rect x="535" y="602" width="24" height="18" fill="#3A1E04"/>
+  <rect x="537" y="604" width="20" height="14" fill="#FF9030" fill-opacity="0.16"/>
+  <rect x="575" y="602" width="24" height="18" fill="#3A1E04"/>
+  <rect x="577" y="604" width="20" height="14" fill="#FF9030" fill-opacity="0.12"/>
+
+  <!-- Merchant stall row (partially lit by distant lantern glow) -->
+  <rect x="680" y="610" width="120" height="175" fill="#18100A"/>
+  <polygon points="668,610 740,575 812,610" fill="#140D05"/>
+  <path d="M 668,610 L 676,607 L 684,611 L 692,607 L 700,611 L 708,607 L 716,611 L 724,607 L 732,611 L 740,607 L 748,611 L 756,607 L 764,611 L 772,607 L 780,611 L 788,607 L 796,611 L 804,607 L 812,610"
+        fill="none" stroke="#2A1A08" stroke-width="2"/>
+  <rect x="820" y="625" width="110" height="155" fill="#18100A"/>
+  <polygon points="808,625 875,595 942,625" fill="#140D05"/>
+  <path d="M 808,625 L 816,622 L 824,626 L 832,622 L 840,626 L 848,622 L 856,626 L 864,622 L 872,626 L 880,622 L 888,626 L 896,622 L 904,626 L 912,622 L 920,626 L 928,622 L 936,626 L 942,625"
+        fill="none" stroke="#2A1A08" stroke-width="2"/>
+
+  <!-- ── CENTER CORE: Lamplighter's Square ── -->
+  <!-- Town square ground (cobblestone) -->
+  <rect x="960" y="600" width="1920" height="640" fill="#0E0B07" opacity="0.5"/>
+  <rect x="960" y="600" width="1920" height="640" fill="url(#cobbles)" opacity="0.3"/>
+
+  <!-- Main tavern (center-left) -->
+  <rect x="1020" y="540" width="280" height="420" fill="#1A1008"/>
+  <polygon points="995,540 1160,468 1325,540" fill="#150D04"/>
+  <!-- Large windows glowing -->
+  <rect x="1045" y="560" width="40" height="32" fill="#3A1E04"/>
+  <rect x="1048" y="563" width="34" height="26" fill="#FF9030" fill-opacity="0.32"/>
+  <rect x="1115" y="560" width="40" height="32" fill="#3A1E04"/>
+  <rect x="1118" y="563" width="34" height="26" fill="#FF9030" fill-opacity="0.28"/>
+  <rect x="1185" y="560" width="40" height="32" fill="#3A1E04"/>
+  <rect x="1188" y="563" width="34" height="26" fill="#FF9030" fill-opacity="0.24"/>
+  <rect x="1255" y="560" width="40" height="32" fill="#3A1E04"/>
+  <rect x="1258" y="563" width="34" height="26" fill="#FF9030" fill-opacity="0.20"/>
+  <!-- Upstairs windows -->
+  <rect x="1080" y="490" width="32" height="26" fill="#3A1E04"/>
+  <rect x="1083" y="493" width="26" height="20" fill="#FF9030" fill-opacity="0.20"/>
+  <rect x="1200" y="490" width="32" height="26" fill="#3A1E04"/>
+  <rect x="1203" y="493" width="26" height="20" fill="#FF9030" fill-opacity="0.16"/>
+  <!-- Tavern door -->
+  <rect x="1110" y="840" width="40" height="120" fill="#1C1008" rx="3"/>
+  <rect x="1113" y="843" width="34" height="114" fill="#140C05" rx="2"/>
+  <!-- Tavern sign -->
+  <rect x="1298" y="536" width="5" height="52" fill="#2A1A08"/>
+  <rect x="1294" y="536" width="42" height="24" fill="#2A1A08" rx="2"/>
+
+  <!-- Stone well (center foreground) -->
+  <ellipse cx="1960" cy="980" rx="55" ry="25" fill="#1E1610"/>
+  <rect x="1905" y="900" width="110" height="82" fill="#1A1208"/>
+  <rect x="1905" y="878" width="110" height="28" fill="#201810" rx="3"/>
+  <rect x="1908" y="812" width="8" height="90" fill="#201810"/>
+  <rect x="2004" y="812" width="8" height="90" fill="#201810"/>
+  <polygon points="1895,812 1960,762 2025,812" fill="#181008"/>
+  <!-- NPC at well, back turned -->
+  <rect x="2035" y="870" width="42" height="100" fill="#1C1410" rx="6"/>
+  <circle cx="2056" cy="858" r="26" fill="#1C1410"/>
+  <ellipse cx="2056" cy="970" rx="28" ry="10" fill="#161008"/>
+
+  <!-- ── WATERMILL (center-right, dominant feature) ── -->
+  <!-- Mill building -->
+  <rect x="2300" y="510" width="320" height="450" fill="#1A1008"/>
+  <polygon points="2268,510 2460,430 2652,510" fill="#140D04"/>
+  <!-- Mill windows -->
+  <rect x="2330" y="535" width="52" height="44" fill="#3A1E04"/>
+  <rect x="2334" y="539" width="44" height="36" fill="#FF9030" fill-opacity="0.18"/>
+  <rect x="2430" y="535" width="52" height="44" fill="#3A1E04"/>
+  <rect x="2434" y="539" width="44" height="36" fill="#FF9030" fill-opacity="0.14"/>
+  <rect x="2530" y="535" width="52" height="44" fill="#3A1E04"/>
+  <rect x="2534" y="539" width="44" height="36" fill="#FF9030" fill-opacity="0.10"/>
+  <!-- Mill wheel (LARGE, the hero element) -->
+  <circle cx="2285" cy="760" r="18" fill="#2A1A08"/>
+  <!-- Wheel rim -->
+  <circle cx="2285" cy="760" r="210" stroke="#221508" stroke-width="22" fill="none"/>
+  <!-- Spokes -->
+  <g stroke="#221508" stroke-width="18" stroke-linecap="round">
+    <line x1="2285" y1="550" x2="2285" y2="970"/>
+    <line x1="2075" y1="760" x2="2495" y2="760"/>
+    <line x1="2136" y1="611" x2="2434" y2="909"/>
+    <line x1="2434" y1="611" x2="2136" y2="909"/>
+  </g>
+  <!-- Paddles (8) -->
+  <g fill="#18100A" stroke="#221508" stroke-width="2">
+    <rect x="2272" y="547" width="26" height="36" rx="2"/>
+    <rect x="2454" y="596" width="36" height="26" rx="2"/>
+    <rect x="2454" y="912" width="36" height="26" rx="2" transform="rotate(180 2472 925)"/>
+    <rect x="2272" y="932" width="26" height="36" rx="2"/>
+    <rect x="2068" y="912" width="36" height="26" rx="2"/>
+    <rect x="2068" y="596" width="36" height="26" rx="2"/>
+    <rect x="2190" y="558" width="24" height="32" rx="2" transform="rotate(-45 2202 574)"/>
+    <rect x="2358" y="558" width="24" height="32" rx="2" transform="rotate(45 2370 574)"/>
+  </g>
+  <!-- Blade catching lantern light (top blade) -->
+  <path d="M 2272,547 L 2298,547 L 2298,600 L 2272,600 Z" fill="#FF9030" fill-opacity="0.22"/>
+
+  <!-- ── MAIN LANTERN (center of composition) ── -->
+  <!-- Wide ambient glow -->
+  <ellipse cx="1920" cy="880" rx="700" ry="480" fill="url(#lanternGlow)"/>
+  <!-- Tighter warm pool -->
+  <ellipse cx="1920" cy="870" rx="280" ry="210" fill="#FF7A1A" fill-opacity="0.10"/>
+
+  <!-- Lantern post -->
+  <rect x="1912" y="680" width="14" height="280" fill="#2A1A08"/>
+  <rect x="1908" y="955" width="22" height="18" fill="#2A1A08"/>
+  <!-- Lantern housing -->
+  <rect x="1885" y="642" width="58" height="44" fill="#3A2810" rx="4"/>
+  <rect x="1890" y="647" width="48" height="34" fill="#FF9030" fill-opacity="0.88" rx="2"/>
+  <ellipse cx="1920" cy="660" rx="18" ry="14" fill="url(#lanternCore)"/>
+  <polygon points="1878,642 1920,618 1964,642" fill="#2A1A08"/>
+
+  <!-- ── TWO WHISPERING FIGURES (center, intimate, small vs grand scene) ── -->
+  <!-- Figure LEFT (slightly right of center-left, at ~x=1740) -->
+  <g transform="translate(1735, 885)">
+    <!-- Cloak (dark charcoal, worn hems) -->
+    <path d="M 0,0 L -50,240 L 50,240 L 40,0 Z" fill="url(#cloakGrad)"/>
+    <!-- Lantern rim light on right edge -->
+    <path d="M 40,0 L 50,240 L 36,240 L 26,0 Z" fill="#FF7A1A" fill-opacity="0.22"/>
+    <!-- Shoulders -->
+    <ellipse cx="20" cy="-10" rx="48" ry="25" fill="#1C1410"/>
+    <!-- Hood/head in shadow -->
+    <ellipse cx="20" cy="-42" rx="34" ry="40" fill="#161008"/>
+    <!-- Raised arm gesture toward other's ear -->
+    <path d="M 48,32 Q 110,10 130,-22"
+          fill="none" stroke="#1C1410" stroke-width="22" stroke-linecap="round"/>
+    <circle cx="130" cy="-22" r="14" fill="#1C1410"/>
+    <!-- Cloak hem fringe -->
+    <path d="M -50,240 Q -36,250 -22,240 Q -8,250 6,240 Q 20,250 34,240 Q 44,250 50,240"
+          fill="none" stroke="#161008" stroke-width="4"/>
+  </g>
+
+  <!-- Figure RIGHT (at ~x=2095) -->
+  <g transform="translate(2098, 875)">
+    <!-- Cloak -->
+    <path d="M 0,0 L -50,250 L 50,250 L 40,0 Z" fill="url(#cloakGrad)"/>
+    <!-- Lantern rim light on left edge -->
+    <path d="M -50,0 L -40,250 L -26,250 L -16,0 Z" fill="#FF7A1A" fill-opacity="0.18"/>
+    <!-- Shoulders -->
+    <ellipse cx="-6" cy="-10" rx="48" ry="25" fill="#1C1410"/>
+    <!-- Hood/head -->
+    <ellipse cx="-8" cy="-42" rx="34" ry="40" fill="#161008"/>
+    <!-- Hand raised to ear -->
+    <path d="M -44,32 Q -106,12 -125,-20"
+          fill="none" stroke="#1C1410" stroke-width="20" stroke-linecap="round"/>
+    <circle cx="-125" cy="-20" r="12" fill="#1C1410"/>
+    <!-- Hem fringe -->
+    <path d="M -50,250 Q -36,260 -22,250 Q -8,260 6,250 Q 20,260 34,250 Q 44,260 50,250"
+          fill="none" stroke="#161008" stroke-width="4"/>
+  </g>
+
+  <!-- ── RIGHT EXTENSION: merchant row, church, approach road, guard tower ── -->
+  <!-- Church spire (right zone) -->
+  <rect x="2720" y="510" width="160" height="480" fill="#161008"/>
+  <polygon points="2695,510 2800,425 2905,510" fill="#120C04"/>
+  <!-- Spire cross -->
+  <rect x="2792" y="424" width="16" height="58" fill="#120C04"/>
+  <rect x="2768" y="440" width="64" height="14" fill="#120C04"/>
+  <!-- Rose window -->
+  <circle cx="2800" cy="560" r="32" fill="#0D0A06" stroke="#221508" stroke-width="4"/>
+  <circle cx="2800" cy="560" r="20" fill="#3A1E04"/>
+  <circle cx="2800" cy="560" r="8" fill="#FF9030" fill-opacity="0.15"/>
+  <!-- Church windows -->
+  <rect x="2762" y="625" width="30" height="50" fill="#3A1E04" rx="15"/>
+  <rect x="2806" y="625" width="30" height="50" fill="#3A1E04" rx="15"/>
+  <rect x="2764" y="628" width="26" height="44" fill="#FF9030" fill-opacity="0.10" rx="13"/>
+
+  <!-- More merchant buildings (right of church) -->
+  <rect x="2920" y="570" width="200" height="420" fill="#18100A"/>
+  <polygon points="2905,570 3020,520 3135,570" fill="#140D05"/>
+  <rect x="2940" y="590" width="34" height="26" fill="#3A1E04"/>
+  <rect x="2942" y="592" width="30" height="22" fill="#FF9030" fill-opacity="0.14"/>
+  <rect x="3000" y="590" width="34" height="26" fill="#3A1E04"/>
+  <rect x="3002" y="592" width="30" height="22" fill="#FF9030" fill-opacity="0.10"/>
+
+  <rect x="3145" y="595" width="175" height="400" fill="#161008"/>
+  <polygon points="3130,595 3233,550 3336,595" fill="#120C04"/>
+  <rect x="3162" y="614" width="28" height="22" fill="#3A1E04"/>
+  <rect x="3164" y="616" width="24" height="18" fill="#FF9030" fill-opacity="0.10"/>
+
+  <!-- City gate and approach road -->
+  <!-- Gate arch -->
+  <rect x="3350" y="568" width="20" height="280" fill="#130E09" opacity="0.9"/>
+  <rect x="3480" y="568" width="20" height="280" fill="#130E09" opacity="0.9"/>
+  <rect x="3348" y="548" width="154" height="26" fill="#130E09" opacity="0.9"/>
+  <!-- Gate arch curve -->
+  <path d="M 3350,568 Q 3425,510 3500,568" fill="#130E09" fill-opacity="0.9" stroke="none"/>
+  <!-- Gate crenellations -->
+  <g fill="#130E09" opacity="0.85">
+    <rect x="3352" y="528" width="15" height="22"/>
+    <rect x="3374" y="528" width="15" height="22"/>
+    <rect x="3396" y="528" width="15" height="22"/>
+    <rect x="3418" y="528" width="15" height="22"/>
+    <rect x="3440" y="528" width="15" height="22"/>
+    <rect x="3462" y="528" width="15" height="22"/>
+    <rect x="3484" y="528" width="15" height="22"/>
+  </g>
+  <!-- Road leading to gate -->
+  <path d="M 1920,1240 L 3370,1000 L 3370,1240 Z" fill="#0E0B07" opacity="0.4"/>
+  <path d="M 1920,1240 L 3500,1000 L 3500,1240 Z" fill="#0E0B07" opacity="0.3"/>
+
+  <!-- Guard tower (far right, glimpsed) -->
+  <rect x="3620" y="468" width="55" height="200" fill="#110D08" opacity="0.8"/>
+  <rect x="3605" y="456" width="85" height="20" fill="#110D08" opacity="0.8"/>
+  <rect x="3608" y="438" width="15" height="20" fill="#110D08" opacity="0.8"/>
+  <rect x="3630" y="438" width="15" height="20" fill="#110D08" opacity="0.8"/>
+  <rect x="3652" y="438" width="15" height="20" fill="#110D08" opacity="0.8"/>
+  <rect x="3674" y="438" width="15" height="20" fill="#110D08" opacity="0.8"/>
+  <!-- Guard tower torch -->
+  <rect x="3640" y="420" width="5" height="20" fill="#2A1A08" opacity="0.8"/>
+  <ellipse cx="3643" cy="418" rx="8" ry="6" fill="#FF7A1A" fill-opacity="0.6"/>
+  <circle cx="3643" cy="418" r="18" fill="#FF7A1A" fill-opacity="0.10"/>
+  <!-- Tower window -->
+  <rect x="3634" y="500" width="10" height="22" fill="#0D0A06"/>
+
+  <!-- Far-right hills dissolving into dark -->
+  <path d="M 3700,720 Q 3760,660 3840,700 L 3840,1240 L 3700,1240 Z" fill="#0D0A06"/>
+
+  <!-- ── Cobblestone path detail (center foreground) ── -->
+  <rect x="960" y="950" width="1920" height="290" fill="url(#cobbles)" opacity="0.25"/>
+
+  <!-- ── Ground fog ── -->
+  <rect x="0" y="1100" width="3840" height="140" fill="url(#fogGrad)"/>
+  <ellipse cx="640" cy="1160" rx="700" ry="55" fill="#FFFFFF" fill-opacity="0.03"/>
+  <ellipse cx="1920" cy="1140" rx="900" ry="48" fill="#FFFFFF" fill-opacity="0.025"/>
+  <ellipse cx="3200" cy="1155" rx="700" ry="52" fill="#FFFFFF" fill-opacity="0.03"/>
+
+  <!-- ── Vignettes ── -->
+  <rect width="3840" height="1240" fill="url(#leftVignette)"/>
+  <rect width="3840" height="1240" fill="url(#rightVignette)"/>
+  <rect width="3840" height="1240" fill="url(#bottomVignette)"/>
+</svg>
