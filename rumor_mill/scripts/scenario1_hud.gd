@@ -1,43 +1,42 @@
 extends CanvasLayer
 
-## scenario2_hud.gd — Persistent illness-spread tracking display.
+## scenario1_hud.gd — Persistent Edric Fenn reputation tracker for Scenario 1.
 ##
-## Shows a thin header at the top of the screen tracking how many NPCs
-## believe the illness rumor about Alys Herbwife, who believes/rejects,
-## and days remaining.
+## Shows a thin header at the top of the screen tracking Lord Edric Fenn's
+## current reputation score versus the <30 win threshold, plus days remaining.
 ##
 ## Layout:
-##   Scenario 2: The Plague Scare
-##   Believers: 3 / 7+   [progress bar]   Days remaining: 18
-##   ✓ Tomas, Calder, Finn   ✗ Sister Maren
+##   Scenario 1: The Alderman's Ruin
+##   Edric Fenn  Rep: 67 / 100  Target: <30   [reputation bar]   Days remaining: 29
+##   ⚠ Avoid detection — do not get caught eavesdropping
 ##
 ## Wire via setup(world, day_night) from main.gd.
 ## Subscribes to game_tick and scenario_resolved signals.
 
-# ── Palette (matches journal.gd / scenario3_hud.gd / scenario4_hud.gd) ─────
-const C_PANEL_BG   := Color(0.15, 0.10, 0.08, 0.88)
-const C_HEADING    := Color(0.91, 0.85, 0.70, 1.0)
-const C_BODY       := Color(0.75, 0.70, 0.60, 1.0)
-const C_WIN        := Color(0.10, 0.75, 0.22, 1.0)
-const C_FAIL       := Color(0.85, 0.15, 0.15, 1.0)
-const C_NEUTRAL    := Color(0.85, 0.55, 0.10, 1.0)
-const C_ILLNESS    := Color(0.60, 0.85, 0.30, 1.0)  # sickly green for plague theme
+# ── Palette (matches scenario2_hud.gd / scenario3_hud.gd / scenario4_hud.gd) ─
+const C_PANEL_BG  := Color(0.15, 0.10, 0.08, 0.88)
+const C_HEADING   := Color(0.91, 0.85, 0.70, 1.0)
+const C_BODY      := Color(0.75, 0.70, 0.60, 1.0)
+const C_WIN       := Color(0.10, 0.75, 0.22, 1.0)
+const C_FAIL      := Color(0.85, 0.15, 0.15, 1.0)
+const C_SAFE      := Color(0.85, 0.55, 0.10, 1.0)   # amber — rep still high
+const C_DANGER    := Color(0.90, 0.30, 0.10, 1.0)   # orange-red — nearing win
+const C_CAUTION   := Color(0.95, 0.80, 0.15, 1.0)   # yellow — getting close
 
 const BAR_WIDTH  := 140
 const BAR_HEIGHT := 10
 
-# Maximum NPCs to show in the believer/rejecter name list before truncating.
-const MAX_NAMES_SHOWN := 5
+# Win threshold — rep must fall BELOW this.
+const WIN_THRESHOLD := 30
 
 # ── Node refs (built in _ready) ─────────────────────────────────────────────
-var _panel:            Panel     = null
-var _count_lbl:        Label     = null
-var _bar:              ColorRect = null
-var _bar_bg:           ColorRect = null
-var _days_lbl:         Label     = null
-var _believers_lbl:    Label     = null
-var _rejecters_lbl:    Label     = null
-var _result_lbl:       Label     = null
+var _panel:       Panel     = null
+var _score_lbl:   Label     = null
+var _bar:         ColorRect = null
+var _bar_bg:      ColorRect = null
+var _days_lbl:    Label     = null
+var _result_lbl:  Label     = null
+var _caution_lbl: Label     = null
 
 # ── Runtime refs ────────────────────────────────────────────────────────────
 var _world_ref:     Node2D = null
@@ -45,7 +44,7 @@ var _day_night_ref: Node   = null
 
 
 func _ready() -> void:
-	layer = 14   # Above journal (12), consistent with S3/S4 HUDs.
+	layer = 14   # Above journal (12), consistent with S2/S3/S4 HUDs.
 	_build_ui()
 	visible = false   # Hidden until setup() is called.
 
@@ -65,7 +64,7 @@ func setup(world: Node2D, day_night: Node) -> void:
 
 func _build_ui() -> void:
 	_panel = Panel.new()
-	_panel.name = "Scenario2Panel"
+	_panel.name = "Scenario1Panel"
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = C_PANEL_BG
 	panel_style.set_corner_radius_all(4)
@@ -87,56 +86,49 @@ func _build_ui() -> void:
 
 	# ── Scenario label ────────────────────────────────────────────────────
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 2:"
+	title_lbl.text = "Scenario 1:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
+	title_lbl.tooltip_text = "The Alderman's Ruin — ruin Lord Edric Fenn's reputation before the tax rolls are signed."
+	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
 
-	# ── Believer count + progress bar ─────────────────────────────────────
-	var count_vbox := VBoxContainer.new()
-	count_vbox.add_theme_constant_override("separation", 3)
-	hbox.add_child(count_vbox)
+	# ── Rep score + bar ───────────────────────────────────────────────────
+	var score_vbox := VBoxContainer.new()
+	score_vbox.add_theme_constant_override("separation", 3)
+	hbox.add_child(score_vbox)
 
-	_count_lbl = Label.new()
-	_count_lbl.add_theme_font_size_override("font_size", 12)
-	_count_lbl.add_theme_color_override("font_color", C_BODY)
-	_count_lbl.text = "Believers: 0 / 7+"
-	_count_lbl.tooltip_text = "Number of townspeople who believe the illness rumor about Alys Herbwife. Win when 7 or more believe it."
-	_count_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
-	count_vbox.add_child(_count_lbl)
+	_score_lbl = Label.new()
+	_score_lbl.add_theme_font_size_override("font_size", 12)
+	_score_lbl.add_theme_color_override("font_color", C_BODY)
+	_score_lbl.text = "Edric Fenn  Rep: — / 100  Target: <30"
+	_score_lbl.tooltip_text = "Lord Edric Fenn's current reputation (0–100). Win when it drops below 30."
+	_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	score_vbox.add_child(_score_lbl)
 
 	var bar_hbox := HBoxContainer.new()
-	count_vbox.add_child(bar_hbox)
+	score_vbox.add_child(bar_hbox)
 
 	_bar_bg = ColorRect.new()
 	_bar_bg.custom_minimum_size = Vector2(BAR_WIDTH, BAR_HEIGHT)
 	_bar_bg.color = Color(0.25, 0.25, 0.25)
-	_bar_bg.tooltip_text = "Progress toward 7 believers. Green = win threshold reached; amber = halfway; sickly green = early stage."
+	_bar_bg.tooltip_text = "Edric's reputation bar — shrinks as rumors take hold. Win when the bar drops into the red zone."
 	_bar_bg.mouse_filter = Control.MOUSE_FILTER_PASS
 	bar_hbox.add_child(_bar_bg)
 
 	_bar = ColorRect.new()
-	_bar.custom_minimum_size = Vector2(0, BAR_HEIGHT)
-	_bar.color = C_NEUTRAL
+	_bar.custom_minimum_size = Vector2(BAR_WIDTH, BAR_HEIGHT)
+	_bar.color = C_SAFE
 	_bar_bg.add_child(_bar)
 
-	# ── NPC names column ──────────────────────────────────────────────────
-	var names_vbox := VBoxContainer.new()
-	names_vbox.add_theme_constant_override("separation", 2)
-	hbox.add_child(names_vbox)
-
-	_believers_lbl = Label.new()
-	_believers_lbl.add_theme_font_size_override("font_size", 11)
-	_believers_lbl.add_theme_color_override("font_color", C_ILLNESS)
-	_believers_lbl.text = "Believe: —"
-	names_vbox.add_child(_believers_lbl)
-
-	_rejecters_lbl = Label.new()
-	_rejecters_lbl.add_theme_font_size_override("font_size", 11)
-	_rejecters_lbl.add_theme_color_override("font_color", C_FAIL)
-	_rejecters_lbl.text = ""
-	_rejecters_lbl.visible = false
-	names_vbox.add_child(_rejecters_lbl)
+	# ── Caution note ──────────────────────────────────────────────────────
+	_caution_lbl = Label.new()
+	_caution_lbl.add_theme_font_size_override("font_size", 11)
+	_caution_lbl.add_theme_color_override("font_color", Color(0.75, 0.60, 0.35, 0.85))
+	_caution_lbl.text = "⚠ Avoid detection"
+	_caution_lbl.tooltip_text = "Getting caught eavesdropping fails the scenario immediately."
+	_caution_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	hbox.add_child(_caution_lbl)
 
 	# ── Days remaining / result ───────────────────────────────────────────
 	var right_vbox := VBoxContainer.new()
@@ -147,7 +139,7 @@ func _build_ui() -> void:
 	_days_lbl.add_theme_font_size_override("font_size", 12)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 30"
-	_days_lbl.tooltip_text = "Days remaining before the autumn market closes. Fail if you run out of time."
+	_days_lbl.tooltip_text = "Days left before the tax rolls are signed. The scenario fails on timeout."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_days_lbl)
 
@@ -160,7 +152,9 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "Target: 7+ believers"
+	legend_lbl.text = "Target: Edric Fenn Rep < 30"
+	legend_lbl.tooltip_text = "Ruin Edric Fenn's reputation below 30 to win the scenario."
+	legend_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(legend_lbl)
 
 
@@ -174,72 +168,53 @@ func _refresh() -> void:
 	if not ("scenario_manager" in _world_ref) or _world_ref.scenario_manager == null:
 		return
 
-	var rep: ReputationSystem  = _world_ref.reputation_system
-	var sm:  ScenarioManager   = _world_ref.scenario_manager
-	var progress: Dictionary   = sm.get_scenario_2_progress(rep)
+	var rep: ReputationSystem = _world_ref.reputation_system
+	var sm:  ScenarioManager  = _world_ref.scenario_manager
+	var progress: Dictionary  = sm.get_scenario_1_progress(rep)
 
-	var count: int       = progress["illness_believer_count"]
-	var threshold: int   = progress["win_threshold"]
-	var believers: Array = progress["illness_believer_ids"]
-	var rejecters: Array = progress["illness_rejecter_ids"]
-	var state            = progress["state"]
+	var score: int = progress["edric_score"]
+	var state      = progress["state"]
 
-	# Count label.
-	_count_lbl.text = "Believers: %d / %d+" % [count, threshold]
+	# Score label — show the actual value.
+	_score_lbl.text = "Edric Fenn  Rep: %d / 100  Target: <%d" % [score, WIN_THRESHOLD]
 
-	# Progress bar — fills toward the win threshold.
-	var ratio: float = clamp(float(count) / float(threshold), 0.0, 1.0)
-	_bar.custom_minimum_size.x = BAR_WIDTH * ratio
-	if count >= threshold:
+	# Color the label to reflect proximity to the win threshold.
+	if score < WIN_THRESHOLD:
+		_score_lbl.add_theme_color_override("font_color", C_WIN)
+	elif score < WIN_THRESHOLD + 15:
+		_score_lbl.add_theme_color_override("font_color", C_CAUTION)
+	else:
+		_score_lbl.add_theme_color_override("font_color", C_BODY)
+
+	# Progress bar — shows how far Edric's rep has fallen (100 → 0 is full → empty).
+	# The bar shrinks as his reputation drops — visually it "drains" toward victory.
+	var ratio: float = clamp(float(score) / 100.0, 0.0, 1.0)
+	_bar.anchor_right = ratio
+	if score < WIN_THRESHOLD:
 		_bar.color = C_WIN
-	elif count >= threshold / 2:
-		_bar.color = C_NEUTRAL
+	elif score < WIN_THRESHOLD + 15:
+		_bar.color = C_DANGER
+	elif score < WIN_THRESHOLD + 30:
+		_bar.color = C_CAUTION
 	else:
-		_bar.color = C_ILLNESS
-
-	# Believer names.
-	if believers.size() > 0:
-		var names: Array = []
-		for npc_id in believers.slice(0, MAX_NAMES_SHOWN):
-			names.append(_display_name(npc_id))
-		var suffix := ""
-		if believers.size() > MAX_NAMES_SHOWN:
-			suffix = " +%d more" % (believers.size() - MAX_NAMES_SHOWN)
-		_believers_lbl.text = "Believe: " + ", ".join(names) + suffix
-	else:
-		_believers_lbl.text = "Believe: —"
-
-	# Rejecter names.
-	if rejecters.size() > 0:
-		var names: Array = []
-		for npc_id in rejecters:
-			names.append(_display_name(npc_id))
-		_rejecters_lbl.text = "Reject: " + ", ".join(names)
-		_rejecters_lbl.visible = true
-	else:
-		_rejecters_lbl.visible = false
+		_bar.color = C_SAFE
 
 	# Days remaining.
 	var days_elapsed: int = (sm.get_current_day(_day_night_ref.current_tick) - 1) \
 		if _day_night_ref != null else 0
-	var days_allowed: int = sm.get_days_allowed() if sm != null else 30
+	var days_allowed: int = sm.get_days_allowed()
 	_days_lbl.text = "Days remaining: %d" % max(0, days_allowed - days_elapsed)
 
 	# Result label.
 	match state:
 		ScenarioManager.ScenarioState.WON:
-			_result_lbl.text = "VICTORY — The plague scare spreads"
+			_result_lbl.text = "VICTORY — Fenn steps down"
 			_result_lbl.add_theme_color_override("font_color", C_WIN)
 		ScenarioManager.ScenarioState.FAILED:
-			_result_lbl.text = "FAILED — The truth prevails"
+			_result_lbl.text = "FAILED"
 			_result_lbl.add_theme_color_override("font_color", C_FAIL)
 		_:
 			_result_lbl.text = ""
-
-
-## Convert npc_id like "tomas_reeve" to "Tomas Reeve".
-func _display_name(npc_id: String) -> String:
-	return npc_id.replace("_", " ").capitalize()
 
 
 # ── Signals ─────────────────────────────────────────────────────────────────
@@ -249,7 +224,7 @@ func _on_game_tick(_tick: int) -> void:
 
 
 func _on_scenario_resolved(scenario_id: int, _state: ScenarioManager.ScenarioState) -> void:
-	if scenario_id != 2:
+	if scenario_id != 1:
 		return
 	_refresh()
 	if _result_lbl != null:

@@ -105,6 +105,8 @@ func _build_ui() -> void:
 	_calder_score_lbl.add_theme_font_size_override("font_size", 12)
 	_calder_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_calder_score_lbl.text = "Calder Fenn  Rep: 50 / 100  Target: 75+"
+	_calder_score_lbl.tooltip_text = "Calder Fenn's reputation. Win condition: raise to 75 or higher."
+	_calder_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	calder_vbox.add_child(_calder_score_lbl)
 
 	var calder_bar_hbox := HBoxContainer.new()
@@ -113,6 +115,8 @@ func _build_ui() -> void:
 	_calder_bar_bg = ColorRect.new()
 	_calder_bar_bg.custom_minimum_size = Vector2(BAR_WIDTH, BAR_HEIGHT)
 	_calder_bar_bg.color = Color(0.25, 0.25, 0.25)
+	_calder_bar_bg.tooltip_text = "Calder's reputation bar. Grows as you spread praise about him. Aim for 75+."
+	_calder_bar_bg.mouse_filter = Control.MOUSE_FILTER_PASS
 	calder_bar_hbox.add_child(_calder_bar_bg)
 
 	_calder_bar = ColorRect.new()
@@ -129,6 +133,8 @@ func _build_ui() -> void:
 	_tomas_score_lbl.add_theme_font_size_override("font_size", 12)
 	_tomas_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_tomas_score_lbl.text = "Tomas Reeve  Rep: 50 / 100  Target: ≤35"
+	_tomas_score_lbl.tooltip_text = "Tomas Reeve's reputation. Win condition: drag it down to 35 or lower."
+	_tomas_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	tomas_vbox.add_child(_tomas_score_lbl)
 
 	var tomas_bar_hbox := HBoxContainer.new()
@@ -137,6 +143,8 @@ func _build_ui() -> void:
 	_tomas_bar_bg = ColorRect.new()
 	_tomas_bar_bg.custom_minimum_size = Vector2(BAR_WIDTH, BAR_HEIGHT)
 	_tomas_bar_bg.color = Color(0.25, 0.25, 0.25)
+	_tomas_bar_bg.tooltip_text = "Tomas's reputation bar. Shrinks as scandal and accusation rumors take hold. Aim to bring it below 35."
+	_tomas_bar_bg.mouse_filter = Control.MOUSE_FILTER_PASS
 	tomas_bar_hbox.add_child(_tomas_bar_bg)
 
 	_tomas_bar = ColorRect.new()
@@ -173,6 +181,8 @@ func _build_ui() -> void:
 	_rival_lbl.add_theme_font_size_override("font_size", 12)
 	_rival_lbl.add_theme_color_override("font_color", Color(0.65, 0.55, 0.45, 0.80))
 	_rival_lbl.text = "Rival: no activity yet"
+	_rival_lbl.tooltip_text = "An unseen rival is working against you — praising Tomas and scandaling Calder. Their last known action is shown here."
+	_rival_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_rival_lbl)
 
 

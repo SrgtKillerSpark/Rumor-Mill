@@ -72,6 +72,17 @@ func get_days_allowed() -> int:
 	return _days_allowed
 
 
+## Returns a short, actionable one-line objective for HUD display.
+## More compact and player-facing than the narrative startingText.
+func get_objective_one_liner() -> String:
+	match _active_scenario:
+		1: return "Ruin Lord Edric Fenn's reputation — bring it below 30 before the tax rolls are signed."
+		2: return "Spread the illness rumor to 7+ townspeople. Avoid Sister Maren rejecting it."
+		3: return "Raise Calder Fenn to 75+ reputation and drag Tomas Reeve to 35 or lower."
+		4: return "Keep Aldous Prior, Vera Midwife, and Finn Monk above 50 reputation for 20 days."
+	return _starting_text.substr(0, mini(_starting_text.find(".") + 1, 80))
+
+
 ## Override the days allowed (e.g. applied by difficulty modifiers after load).
 func override_days_allowed(new_days: int) -> void:
 	_days_allowed = new_days

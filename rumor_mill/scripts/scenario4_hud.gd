@@ -93,9 +93,16 @@ func _build_ui() -> void:
 	title_lbl.text = "Scenario 4:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
+	title_lbl.tooltip_text = "The Holy Inquisition — keep all three accused above 50 reputation for 20 days."
+	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
 
 	# NPC tracks
+	const NPC_TOOLTIPS := {
+		"aldous_prior": "Aldous Prior's reputation. Keep above 50 or the scenario fails immediately.",
+		"vera_midwife": "Vera Midwife's reputation. Keep above 50 or the scenario fails immediately.",
+		"finn_monk":    "Finn Monk's reputation. Keep above 50 or the scenario fails immediately.",
+	}
 	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
 		var vbox := VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 2)
@@ -105,12 +112,16 @@ func _build_ui() -> void:
 		lbl.add_theme_font_size_override("font_size", 11)
 		lbl.add_theme_color_override("font_color", C_BODY)
 		lbl.text = "%s  Rep: 50 / 100  Floor: 50" % NPC_DISPLAY_NAMES.get(npc_id, npc_id)
+		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Keep this NPC's reputation above 50.")
+		lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 		vbox.add_child(lbl)
 		_score_labels[npc_id] = lbl
 
 		var bar_bg := ColorRect.new()
 		bar_bg.custom_minimum_size = Vector2(BAR_WIDTH, BAR_HEIGHT)
 		bar_bg.color = Color(0.25, 0.25, 0.25)
+		bar_bg.tooltip_text = "Reputation bar — green means safe (>=50), red means failing (<50)."
+		bar_bg.mouse_filter = Control.MOUSE_FILTER_PASS
 		vbox.add_child(bar_bg)
 		_bar_bgs[npc_id] = bar_bg
 
@@ -129,6 +140,8 @@ func _build_ui() -> void:
 	_days_lbl.add_theme_font_size_override("font_size", 12)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 20"
+	_days_lbl.tooltip_text = "Days before the Inquisitor presents his findings to the Bishop. Survive all 20 days with all three above 50 to win."
+	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
@@ -147,6 +160,8 @@ func _build_ui() -> void:
 	_inquisitor_lbl.add_theme_font_size_override("font_size", 12)
 	_inquisitor_lbl.add_theme_color_override("font_color", Color(0.65, 0.55, 0.45, 0.80))
 	_inquisitor_lbl.text = "Inquisitor: no activity yet"
+	_inquisitor_lbl.tooltip_text = "The inquisitor seeds accusation and heresy rumors against the three protected NPCs. Counter with praise and defend rumors."
+	_inquisitor_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_inquisitor_lbl)
 
 

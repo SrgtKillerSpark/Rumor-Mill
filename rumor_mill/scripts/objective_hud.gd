@@ -72,11 +72,7 @@ func _refresh() -> void:
 		return
 
 	title_label.text = _scenario_manager.get_title()
-
-	var starting_text: String = _scenario_manager.get_starting_text()
-	var dot_pos: int = starting_text.find(".")
-	var objective: String = starting_text if dot_pos == -1 else starting_text.substr(0, dot_pos + 1)
-	objective_label.text = objective
+	objective_label.text = _scenario_manager.get_objective_one_liner()
 
 	_refresh_time()
 	_refresh_metrics()

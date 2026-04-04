@@ -165,6 +165,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_objective_hud()
 	_init_speed_hud()
 	_init_npc_conversation_overlay()
+	_init_scenario1_hud()
 	_init_scenario2_hud()
 	_init_scenario3_hud()
 	_init_scenario4_hud()
@@ -288,17 +289,27 @@ func _wire_rumor_events() -> void:
 
 
 ## Relay world rumor events into the Journal timeline and overlay.
+## Also fire milestone HUD effects for the most impactful events.
 func _on_rumor_event(message: String, tick: int) -> void:
 	if journal != null and journal.has_method("push_timeline_event"):
 		journal.push_timeline_event(tick, message)
 	if social_graph_overlay != null and social_graph_overlay.has_method("on_rumor_event"):
 		social_graph_overlay.on_rumor_event(message)
+	# Milestone visual feedback for key events.
+	if recon_hud != null and recon_hud.has_method("show_milestone"):
+		if message.contains("whispered to"):
+			recon_hud.show_milestone("Rumor spreading...", Color(1.00, 0.70, 0.30, 1.0))
+		elif message.contains("→ Believe"):
+			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
+			recon_hud.show_milestone("%s is convinced!" % npc_name, Color(0.50, 1.00, 0.55, 1.0))
 
 
-## Show a HUD toast when an NPC first becomes SOCIALLY_DEAD.
+## Show a HUD toast + milestone when an NPC first becomes SOCIALLY_DEAD.
 func _on_socially_dead_triggered(_npc_id: String, npc_name: String, _tick: int) -> void:
 	if recon_hud != null and recon_hud.has_method("show_toast"):
 		recon_hud.show_toast("%s is SOCIALLY DEAD — reputation permanently frozen" % npc_name, false)
+	if recon_hud != null and recon_hud.has_method("show_milestone"):
+		recon_hud.show_milestone("☠ %s — SOCIALLY DEAD" % npc_name, Color(0.85, 0.15, 0.15, 1.0))
 
 
 func _init_objective_hud() -> void:
@@ -327,6 +338,16 @@ func _init_npc_conversation_overlay() -> void:
 	add_child(overlay)
 	if overlay.has_method("setup"):
 		overlay.setup(world)
+
+
+func _init_scenario1_hud() -> void:
+	if world.active_scenario_id != "scenario_1":
+		return
+	var hud := preload("res://scripts/scenario1_hud.gd").new()
+	hud.name = "Scenario1HUD"
+	add_child(hud)
+	if hud.has_method("setup"):
+		hud.setup(world, day_night)
 
 
 func _init_scenario2_hud() -> void:
