@@ -134,10 +134,10 @@ func _build_metrics_row() -> void:
 	_lbl_rep_avg.tooltip_text = "Average NPC reputation score (0-100)"
 	_metrics_row.add_child(_lbl_rep_avg)
 
-	# Affected NPCs count (NPCs whose reputation has shifted from rumor influence)
-	_lbl_believers = _make_metric_label("Affected: 0")
+	# Believers count (unique NPCs in BELIEVE/SPREAD/ACT state for any rumor)
+	_lbl_believers = _make_metric_label("Believers: 0")
 	_lbl_believers.add_theme_color_override("font_color", Color(0.345, 0.580, 0.769, 1.0))  # WATER_L (#5894C4)
-	_lbl_believers.tooltip_text = "NPCs whose reputation was shifted by rumors"
+	_lbl_believers.tooltip_text = "NPCs who believe at least one active rumor"
 	_metrics_row.add_child(_lbl_believers)
 
 	# Socially dead count
@@ -164,13 +164,10 @@ func _refresh_metrics() -> void:
 	if snaps.is_empty():
 		return
 	var total_score: int = 0
-	var affected_count: int = 0
 	var dead_count: int = 0
 	for npc_id in snaps:
 		var snap: ReputationSystem.ReputationSnapshot = snaps[npc_id]
 		total_score += snap.score
-		if absf(snap.rumor_delta) >= 1.0:
-			affected_count += 1
 		if snap.is_socially_dead:
 			dead_count += 1
 	var avg: int = total_score / max(snaps.size(), 1)
@@ -183,7 +180,7 @@ func _refresh_metrics() -> void:
 		else:
 			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.90, 0.45, 0.35, 1.0))
 	if _lbl_believers != null:
-		_lbl_believers.text = "Affected: %d" % affected_count
+		_lbl_believers.text = "Believers: %d" % _reputation_system.get_global_believer_count()
 	if _lbl_rumors_active != null:
 		_lbl_rumors_active.text = "Dead: %d" % dead_count
 

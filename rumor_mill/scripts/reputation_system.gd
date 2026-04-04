@@ -92,6 +92,9 @@ func clear_faction_sentiment_bonus(npc_id: String) -> void:
 # ---------------------------------------------------------------------------
 var _cache: Dictionary = {}
 
+## Per-tick cache: count of unique NPCs in BELIEVE/SPREAD/ACT state for any rumor.
+var _global_believer_count: int = 0
+
 ## Per-tick cache: npc_id → count of NPCs in BELIEVE/SPREAD/ACT state for
 ## illness-type rumors targeting that NPC.  Used by Scenario 2 evaluator.
 var _illness_believer_counts: Dictionary = {}
@@ -138,6 +141,7 @@ func recalculate_all(all_npcs: Array, current_tick: int) -> void:
 	var rids_by_subject:   Dictionary = {}
 	var death_info:        Dictionary = {}
 	var faction_bel_info:  Dictionary = {}
+	var global_believer_ids: Dictionary = {}  # npc_id → true; for unique believer count
 
 	_illness_believer_ids.clear()
 	_illness_rejecter_ids.clear()
@@ -176,6 +180,9 @@ func recalculate_all(all_npcs: Array, current_tick: int) -> void:
 
 			if is_believer:
 				believer_counts[rid] = believer_counts.get(rid, 0) + 1
+				var believer_nid: String = npc.npc_data.get("id", "")
+				if not believer_nid.is_empty():
+					global_believer_ids[believer_nid] = true
 
 				# SOCIALLY_DEAD accumulation (Death rumors only).
 				if slot.rumor.claim_type == Rumor.ClaimType.DEATH:
@@ -206,6 +213,8 @@ func recalculate_all(all_npcs: Array, current_tick: int) -> void:
 		var count: int = _illness_believer_ids[npc_id].size()
 		if count > 0:
 			_illness_believer_counts[npc_id] = count
+
+	_global_believer_count = global_believer_ids.size()
 
 	# ── Compute each NPC's snapshot using pre-built tables (O(unique_rids)) ─
 	_cache.clear()
@@ -259,6 +268,12 @@ func get_illness_rejecter_ids(subject_npc_id: String) -> Array:
 	if not _illness_rejecter_ids.has(subject_npc_id):
 		return []
 	return _illness_rejecter_ids[subject_npc_id].keys()
+
+
+## Returns the count of unique NPCs currently in BELIEVE/SPREAD/ACT state
+## for any rumor.  Used by the Objective HUD believers metric.
+func get_global_believer_count() -> int:
+	return _global_believer_count
 
 
 # ---------------------------------------------------------------------------
