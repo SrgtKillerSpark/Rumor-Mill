@@ -93,10 +93,10 @@ func _pick_claim_type(day: int) -> String:
 	# Mix heresy with accusations and scandals for variety.
 	if day <= 5:
 		return "heresy"
-	elif day % 3 == 0:
-		return "accusation"
 	elif day % 5 == 0:
 		return "scandal"
+	elif day % 3 == 0:
+		return "accusation"
 	else:
 		return "heresy"
 

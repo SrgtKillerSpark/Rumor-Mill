@@ -1106,7 +1106,7 @@ func _add_table_cell(row: HBoxContainer, text: String, w: int, color: Color, bol
 	lbl.add_theme_color_override("font_color", color)
 	lbl.add_theme_font_size_override("font_size", 12)
 	if bold:
-		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_font_size_override("font_size", 13)
 	row.add_child(lbl)
 
 

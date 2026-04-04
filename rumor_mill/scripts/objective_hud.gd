@@ -193,4 +193,3 @@ func _on_deadline_warning(threshold: float, days_remaining: int) -> void:
 	var text: String = "⚠ %s — %d day%s remaining!" % [
 		urgency, days_remaining, "" if days_remaining == 1 else "s"]
 	_show_banner(text, color, 5.0)
-		urgency, threshold * 100.0, days_remaining])

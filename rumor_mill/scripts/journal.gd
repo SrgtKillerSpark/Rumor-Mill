@@ -851,16 +851,17 @@ func _build_timeline_section() -> void:
 func _build_objectives_section() -> void:
 	_add_section_header("Objectives")
 
-	var days_elapsed:   int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
-	var days_remaining: int = max(0, 30 - days_elapsed)
-
-	# Pull reputation snapshots (may be null early in game).
+	# Pull reputation snapshots and scenario manager (may be null early in game).
 	var rep: ReputationSystem = null
 	var sm:  ScenarioManager  = null
 	if _world_ref != null and "reputation_system" in _world_ref:
 		rep = _world_ref.reputation_system
 	if _world_ref != null and "scenario_manager" in _world_ref:
 		sm = _world_ref.scenario_manager
+
+	var days_elapsed:   int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
+	var days_allowed:   int = sm.get_days_allowed() if sm != null else 30
+	var days_remaining: int = max(0, days_allowed - days_elapsed)
 
 	var edric_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("edric_fenn")  if rep != null else null
 	var calder_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("calder_fenn") if rep != null else null
@@ -878,7 +879,7 @@ func _build_objectives_section() -> void:
 	_content_vbox.add_child(s1_lbl)
 
 	var days_lbl := Label.new()
-	days_lbl.text = "Days remaining: %d / 30" % days_remaining
+	days_lbl.text = "Days remaining: %d / %d" % [days_remaining, days_allowed]
 	days_lbl.add_theme_font_size_override("font_size", 12)
 	days_lbl.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(days_lbl)
@@ -932,11 +933,67 @@ func _build_objectives_section() -> void:
 	fail_body.text = (
 		"  [ ] Identified as rumor source by Sergeant Bram — suspicion: LOW\n"
 		+ "  [ ] %d days elapsed without win condition  (days remaining: %d)"
-	) % [30, days_remaining]
+	) % [days_allowed, days_remaining]
 	fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	fail_body.add_theme_font_size_override("font_size", 12)
 	fail_body.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(fail_body)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	# ── Scenario 2 ────────────────────────────────────────────────────────
+	var s2_state := ScenarioManager.ScenarioState.ACTIVE
+	if sm != null:
+		s2_state = sm.scenario_2_state
+
+	var s2_lbl := Label.new()
+	s2_lbl.text = "Scenario 2: The Plague Scare"
+	s2_lbl.add_theme_font_size_override("font_size", 14)
+	s2_lbl.add_theme_color_override("font_color", C_HEADING)
+	_content_vbox.add_child(s2_lbl)
+
+	var s2_win_status := "[ACTIVE]"
+	var s2_win_color  := C_BODY
+	match s2_state:
+		ScenarioManager.ScenarioState.WON:
+			s2_win_status = "[WON]"
+			s2_win_color  = C_SPREADING
+		ScenarioManager.ScenarioState.FAILED:
+			s2_win_status = "[FAILED]"
+			s2_win_color  = C_CONTRADICTED
+
+	var s2_win_hdr := Label.new()
+	s2_win_hdr.text = "WIN CONDITION"
+	s2_win_hdr.add_theme_font_size_override("font_size", 12)
+	s2_win_hdr.add_theme_color_override("font_color", C_SPREADING)
+	_content_vbox.add_child(s2_win_hdr)
+
+	var s2_win_body := Label.new()
+	s2_win_body.text = (
+		"  At least %d townsfolk believe Alys Herbwife is spreading illness.  %s"
+	) % [ScenarioManager.S2_WIN_ILLNESS_MIN, s2_win_status]
+	s2_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
+	s2_win_body.add_theme_font_size_override("font_size", 12)
+	s2_win_body.add_theme_color_override("font_color", s2_win_color)
+	_content_vbox.add_child(s2_win_body)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	var s2_fail_hdr := Label.new()
+	s2_fail_hdr.text = "FAIL CONDITIONS"
+	s2_fail_hdr.add_theme_font_size_override("font_size", 12)
+	s2_fail_hdr.add_theme_color_override("font_color", C_CONTRADICTED)
+	_content_vbox.add_child(s2_fail_hdr)
+
+	var s2_fail_body := Label.new()
+	s2_fail_body.text = (
+		"  [ ] Sister Maren contradicts illness rumors about Alys Herbwife\n"
+		+ "  [ ] %d days elapsed without win condition  (days remaining: %d)"
+	) % [days_allowed, days_remaining]
+	s2_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
+	s2_fail_body.add_theme_font_size_override("font_size", 12)
+	s2_fail_body.add_theme_color_override("font_color", C_BODY)
+	_content_vbox.add_child(s2_fail_body)
 
 	_content_vbox.add_child(HSeparator.new())
 

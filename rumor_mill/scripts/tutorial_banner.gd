@@ -53,6 +53,7 @@ var _dismiss_tween: Tween        = null
 var _tutorial_sys:  TutorialSystem = null
 var _queue:         Array          = []   ## Array[Dictionary] — {id, body_override}
 var _active_id:     String         = ""
+var _active_body:   String         = ""   ## body_override of the currently-showing hint
 var _auto_secs:     float          = 7.0
 var _timer:         float          = 0.0
 var _suppressed:    bool           = false
@@ -106,8 +107,9 @@ func unsuppress() -> void:
 	_suppressed = false
 	# If there was an active hint when suppressed, re-queue it at front.
 	if _active_id != "":
-		_queue.push_front({"id": _active_id, "body_override": ""})
-		_active_id = ""
+		_queue.push_front({"id": _active_id, "body_override": _active_body})
+		_active_id   = ""
+		_active_body = ""
 	if not _queue.is_empty():
 		_show_next()
 
@@ -149,6 +151,7 @@ func _show_next() -> void:
 	_timer      = _auto_secs
 
 	var body_override: String = str(entry["body_override"])
+	_active_body = body_override
 	var body: String = body_override if body_override != "" \
 		else str(data.get("body", ""))
 	_title_label.text = data.get("title", "")
@@ -206,8 +209,10 @@ func _instant_hide() -> void:
 
 
 func _on_dismiss_pressed() -> void:
-	_tutorial_sys.mark_seen(_active_id)
-	_active_id = ""
+	if _tutorial_sys != null and _active_id != "":
+		_tutorial_sys.mark_seen(_active_id)
+	_active_id   = ""
+	_active_body = ""
 	_slide_out_dismiss()
 
 

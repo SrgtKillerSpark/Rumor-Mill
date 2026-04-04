@@ -1,14 +1,18 @@
 ## tutorial_system.gd — Tutorial tooltip data and first-encounter tracking.
 ##
-## Plain class (no Node).  Holds the five first-encounter tooltip definitions
+## Plain class (no Node).  Holds nine first-encounter tooltip definitions
 ## and tracks which ones the player has already seen this session.
 ##
 ## Tooltip IDs and their intended triggers (wired by main.gd):
-##   "recon_actions"  — shown once on game start
-##   "observe"        — shown after the first successful Observe action
-##   "eavesdrop"      — shown after the first successful Eavesdrop action
-##   "rumor_crafting" — shown when the Rumor Panel first becomes visible
-##   "reputation"     — shown when the Player Journal first becomes visible
+##   "recon_actions"        — shown once on game start
+##   "navigation_controls"  — shown once on game start (after recon_actions)
+##   "observe"              — shown after the first successful Observe action
+##   "eavesdrop"            — shown after the first successful Eavesdrop action
+##   "npc_state_change"     — shown on first NPC state transition
+##   "rumor_crafting"       — shown when the Rumor Panel first becomes visible
+##   "reputation"           — shown when the Player Journal first becomes visible
+##   "evidence_items"       — shown on first evidence discovery
+##   "rival_agent"          — shown on Scenario 3 rival agent introduction
 
 class_name TutorialSystem
 

@@ -6,8 +6,8 @@ extends CanvasLayer
 ## Tomas Reeve's reputation scores against their Scenario 3 win targets.
 ##
 ## Layout:
-##   [Calder Fenn]  Rep: 62 / 100  Target: 80+   [progress bar]
-##   [Tomas Reeve]  Rep: 44 / 100  Target: ≤30   [decay bar]
+##   [Calder Fenn]  Rep: 62 / 100  Target: 75+   [progress bar]
+##   [Tomas Reeve]  Rep: 44 / 100  Target: ≤35   [decay bar]
 ##   Days remaining: 18
 ##
 ## Wire via setup(world, day_night) from main.gd.
