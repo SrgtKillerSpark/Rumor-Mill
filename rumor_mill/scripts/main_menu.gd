@@ -68,7 +68,7 @@ var _lbl_ambient_val:    Label      = null
 var _lbl_sfx_val:        Label      = null
 var _lbl_speed_val:      Label      = null
 var _btn_resolution:     Button     = null
-var _chk_fullscreen:     CheckButton = null
+var _btn_window_mode:    Button     = null
 
 # Briefing-phase refs
 var _briefing_title:     Label      = null
@@ -768,22 +768,38 @@ func _build_settings_panel() -> void:
 	_btn_resolution.pressed.connect(_on_resolution_cycle)
 	res_row.add_child(_btn_resolution)
 
-	# Fullscreen toggle
+	# Window mode cycle button (Windowed / Borderless / Fullscreen)
 	var fs_row := HBoxContainer.new()
 	fs_row.add_theme_constant_override("separation", 8)
 	vbox.add_child(fs_row)
 
 	var fs_name := Label.new()
-	fs_name.text = "Fullscreen:"
+	fs_name.text = "Window:"
 	fs_name.custom_minimum_size = Vector2(80, 0)
 	fs_name.add_theme_font_size_override("font_size", 13)
 	fs_name.add_theme_color_override("font_color", C_BODY)
 	fs_row.add_child(fs_name)
 
-	_chk_fullscreen = CheckButton.new()
-	_chk_fullscreen.button_pressed = SettingsManager.fullscreen
-	_chk_fullscreen.toggled.connect(_on_fullscreen_toggled)
-	fs_row.add_child(_chk_fullscreen)
+	_btn_window_mode = Button.new()
+	_btn_window_mode.text = SettingsManager.get_window_mode_label()
+	_btn_window_mode.custom_minimum_size = Vector2(120, 30)
+	_btn_window_mode.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_btn_window_mode.add_theme_font_size_override("font_size", 13)
+	_btn_window_mode.add_theme_color_override("font_color", C_BTN_TEXT)
+	var wm_normal := StyleBoxFlat.new()
+	wm_normal.bg_color = C_BTN_NORMAL
+	wm_normal.set_border_width_all(1)
+	wm_normal.border_color = C_PANEL_BORDER
+	wm_normal.set_content_margin_all(4)
+	var wm_hover := StyleBoxFlat.new()
+	wm_hover.bg_color = C_BTN_HOVER
+	wm_hover.set_border_width_all(1)
+	wm_hover.border_color = C_PANEL_BORDER
+	wm_hover.set_content_margin_all(4)
+	_btn_window_mode.add_theme_stylebox_override("normal", wm_normal)
+	_btn_window_mode.add_theme_stylebox_override("hover", wm_hover)
+	_btn_window_mode.pressed.connect(_on_window_mode_cycle)
+	fs_row.add_child(_btn_window_mode)
 
 	vbox.add_child(_separator())
 
@@ -933,10 +949,11 @@ func _on_resolution_cycle() -> void:
 	_btn_resolution.text = SettingsManager.get_resolution_label()
 
 
-func _on_fullscreen_toggled(pressed: bool) -> void:
-	SettingsManager.fullscreen = pressed
+func _on_window_mode_cycle() -> void:
+	SettingsManager.window_mode = (SettingsManager.window_mode + 1) % 3
 	SettingsManager.apply_display_settings()
 	SettingsManager.save_settings()
+	_btn_window_mode.text = SettingsManager.get_window_mode_label()
 
 
 # ── Phase 6: Credits panel ────────────────────────────────────────────────────

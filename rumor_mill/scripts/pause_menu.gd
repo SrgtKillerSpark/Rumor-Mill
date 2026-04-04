@@ -30,6 +30,7 @@ var _journal_ref:   CanvasLayer = null
 
 var _status_label: Label = null
 var _btn_resolution: Button = null
+var _btn_window_mode: Button = null
 
 # ── Slot picker state ──────────────────────────────────────────────────────────
 var _main_container:  VBoxContainer = null   # main menu buttons
@@ -250,7 +251,7 @@ func _build_ui() -> void:
 	)
 	res_row.add_child(_btn_resolution)
 
-	# Fullscreen toggle
+	# Window mode cycle button (Windowed / Borderless / Fullscreen)
 	var fs_row := HBoxContainer.new()
 	fs_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	fs_row.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -258,21 +259,37 @@ func _build_ui() -> void:
 	_main_container.add_child(fs_row)
 
 	var fs_label := Label.new()
-	fs_label.text = "Fullscreen"
+	fs_label.text = "Window"
 	fs_label.add_theme_font_size_override("font_size", 12)
 	fs_label.add_theme_color_override("font_color", Color(0.75, 0.70, 0.55, 1.0))
 	fs_label.process_mode = Node.PROCESS_MODE_ALWAYS
 	fs_row.add_child(fs_label)
 
-	var fs_check := CheckButton.new()
-	fs_check.process_mode = Node.PROCESS_MODE_ALWAYS
-	fs_check.button_pressed = SettingsManager.fullscreen
-	fs_check.toggled.connect(func(pressed: bool) -> void:
-		SettingsManager.fullscreen = pressed
+	_btn_window_mode = Button.new()
+	_btn_window_mode.text = SettingsManager.get_window_mode_label()
+	_btn_window_mode.custom_minimum_size = Vector2(100, 28)
+	_btn_window_mode.process_mode = Node.PROCESS_MODE_ALWAYS
+	_btn_window_mode.add_theme_font_size_override("font_size", 12)
+	_btn_window_mode.add_theme_color_override("font_color", C_BTN_TEXT)
+	var wm_normal := StyleBoxFlat.new()
+	wm_normal.bg_color = C_BTN_NORMAL
+	wm_normal.set_border_width_all(1)
+	wm_normal.border_color = C_BTN_BORDER
+	wm_normal.set_content_margin_all(4)
+	_btn_window_mode.add_theme_stylebox_override("normal", wm_normal)
+	var wm_hover := StyleBoxFlat.new()
+	wm_hover.bg_color = C_BTN_HOVER
+	wm_hover.set_border_width_all(1)
+	wm_hover.border_color = C_BTN_BORDER
+	wm_hover.set_content_margin_all(4)
+	_btn_window_mode.add_theme_stylebox_override("hover", wm_hover)
+	_btn_window_mode.pressed.connect(func() -> void:
+		SettingsManager.window_mode = (SettingsManager.window_mode + 1) % 3
 		SettingsManager.apply_display_settings()
 		SettingsManager.save_settings()
+		_btn_window_mode.text = SettingsManager.get_window_mode_label()
 	)
-	fs_row.add_child(fs_check)
+	fs_row.add_child(_btn_window_mode)
 
 	# ── Slot picker container (hidden initially) ───────────────────────────────
 	_slot_container = VBoxContainer.new()

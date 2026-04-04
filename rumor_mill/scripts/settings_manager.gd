@@ -8,6 +8,7 @@ extends Node
 ##   ambient_volume — linear 0-100 (maps to AudioManager.set_ambient_volume_db)
 ##   sfx_volume     — linear 0-100 (maps to AudioManager.set_sfx_volume_db)
 ##   game_speed     — tick_duration_seconds (0.25 = fast, 1.0 = normal, 4.0 = slow)
+##   window_mode    — 0=Windowed, 1=Borderless, 2=Fullscreen
 ##
 ## Usage:
 ##   SettingsManager.music_volume = 80.0
@@ -22,7 +23,12 @@ const DEFAULT_SFX_VOL            := 80.0
 const DEFAULT_GAME_SPEED         := 1.0    ## tick_duration_seconds
 const DEFAULT_ANALYTICS_ENABLED  := true   ## Opt-in local analytics (SPA-244)
 const DEFAULT_RESOLUTION_INDEX   := 0      ## 0=720p, 1=1080p, 2=1440p
-const DEFAULT_FULLSCREEN         := false
+const DEFAULT_WINDOW_MODE        := 0      ## 0=Windowed, 1=Borderless, 2=Fullscreen
+
+## Window mode constants.
+const WINDOW_WINDOWED   := 0   ## Regular window with title bar and decorations.
+const WINDOW_BORDERLESS := 1   ## Borderless fullscreen (windowed fullscreen).
+const WINDOW_FULLSCREEN := 2   ## Exclusive fullscreen.
 
 ## Available resolution presets (width × height).
 const RESOLUTIONS := [
@@ -37,7 +43,7 @@ var sfx_volume:          float = DEFAULT_SFX_VOL
 var game_speed:          float = DEFAULT_GAME_SPEED
 var analytics_enabled:   bool  = DEFAULT_ANALYTICS_ENABLED
 var resolution_index:    int   = DEFAULT_RESOLUTION_INDEX
-var fullscreen:          bool  = DEFAULT_FULLSCREEN
+var window_mode:         int   = DEFAULT_WINDOW_MODE
 
 
 func _ready() -> void:
@@ -56,7 +62,10 @@ func load_settings() -> void:
 	game_speed        = cfg.get_value(SECTION, "game_speed",        DEFAULT_GAME_SPEED)
 	analytics_enabled = cfg.get_value(SECTION, "analytics_enabled", DEFAULT_ANALYTICS_ENABLED)
 	resolution_index  = cfg.get_value(SECTION, "resolution_index",  DEFAULT_RESOLUTION_INDEX)
-	fullscreen        = cfg.get_value(SECTION, "fullscreen",        DEFAULT_FULLSCREEN)
+	# Migrate legacy bool fullscreen → window_mode.
+	var _legacy_fs: bool = cfg.get_value(SECTION, "fullscreen", false)
+	window_mode = cfg.get_value(SECTION, "window_mode",
+		WINDOW_FULLSCREEN if _legacy_fs else DEFAULT_WINDOW_MODE)
 
 
 func save_settings() -> void:
@@ -67,7 +76,7 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "game_speed",        game_speed)
 	cfg.set_value(SECTION, "analytics_enabled", analytics_enabled)
 	cfg.set_value(SECTION, "resolution_index",  resolution_index)
-	cfg.set_value(SECTION, "fullscreen",        fullscreen)
+	cfg.set_value(SECTION, "window_mode",       window_mode)
 	cfg.save(SAVE_PATH)
 
 
@@ -78,19 +87,22 @@ func apply_to_audio_manager() -> void:
 	AudioManager.set_sfx_volume_db(_to_db(sfx_volume))
 
 
-## Apply resolution and fullscreen settings to the display window.
+## Apply resolution and window mode settings to the display window.
 func apply_display_settings() -> void:
 	var idx: int = clampi(resolution_index, 0, RESOLUTIONS.size() - 1)
 	var res: Vector2i = RESOLUTIONS[idx]
-	if fullscreen:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
-	else:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-		DisplayServer.window_set_size(res)
-		# Centre window on screen.
-		var screen_size := DisplayServer.screen_get_size()
-		var win_pos := Vector2i((screen_size.x - res.x) / 2, (screen_size.y - res.y) / 2)
-		DisplayServer.window_set_position(win_pos)
+	match window_mode:
+		WINDOW_FULLSCREEN:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+		WINDOW_BORDERLESS:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		_:  # WINDOW_WINDOWED
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+			DisplayServer.window_set_size(res)
+			# Centre window on screen.
+			var screen_size := DisplayServer.screen_get_size()
+			var win_pos := Vector2i((screen_size.x - res.x) / 2, (screen_size.y - res.y) / 2)
+			DisplayServer.window_set_position(win_pos)
 
 
 ## Get the label for the current resolution preset.
@@ -98,6 +110,14 @@ func get_resolution_label() -> String:
 	var idx: int = clampi(resolution_index, 0, RESOLUTIONS.size() - 1)
 	var res: Vector2i = RESOLUTIONS[idx]
 	return "%dx%d" % [res.x, res.y]
+
+
+## Get the display label for the current window mode.
+func get_window_mode_label() -> String:
+	match window_mode:
+		WINDOW_BORDERLESS: return "Borderless"
+		WINDOW_FULLSCREEN: return "Fullscreen"
+		_: return "Windowed"
 
 
 ## Convert linear 0-100 to dB. Returns -80 for zero (silence).
