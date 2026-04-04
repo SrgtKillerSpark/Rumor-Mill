@@ -243,7 +243,7 @@
       "mission": "Defend three accused townsfolk from the Inquisitor's slander.",
       "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk's reputations above 50.",
       "timeLimit": "You have 20 days.",
-      "danger": "Finn starts at exactly 50 — protect him first. The Inquisitor is an AI opponent who actively spreads accusations.",
+      "danger": "Finn starts at exactly 55 — protect him first. The Inquisitor is an AI opponent who actively spreads accusations.",
       "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize Finn Monk."
     }
   }
