@@ -391,6 +391,7 @@ static func _restore_npc_slots(
 		npc.rumor_slots.clear()
 		for rid in slot_data:
 			if not pe.live_rumors.has(rid):
+				push_warning("Save/load: NPC %s references missing rumor %s — slot dropped" % [npc_id, rid])
 				continue
 			var sd: Dictionary = slot_data[rid]
 			var r: Rumor       = pe.live_rumors[rid]
