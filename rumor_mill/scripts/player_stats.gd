@@ -1,13 +1,17 @@
 extends Node
 
 ## player_stats.gd — SPA-273: Persistent player statistics across play sessions.
+## SPA-335: Added session-length flush, tutorial completion tracking, retry counter.
 ##
 ## Autoload singleton (PlayerStats). Tracks lifetime stats and per-scenario,
 ## per-difficulty bests. Persists to user://player_stats.json.
 ##
 ## Usage:
 ##   PlayerStats.start_session()                   # call when a new game begins
+##   PlayerStats.flush_session_time()              # call on pause / app quit
 ##   PlayerStats.record_game(scenario_id, ...)     # call at game end
+##   PlayerStats.record_tutorial_steps(sid, diff, seen, total) # call at game end
+##   PlayerStats.record_retry(sid, diff)           # call when same scenario restarts
 ##   PlayerStats.get_scenario_stats(sid, diff)     # for stats screen
 ##   PlayerStats.get_totals()                      # global lifetime totals
 
@@ -38,6 +42,19 @@ func get_session_duration_sec() -> int:
 	if _session_start_time == 0:
 		return 0
 	return int(Time.get_unix_time_from_system()) - _session_start_time
+
+
+## Persist current partial session time without ending the session.
+## Call on pause or app quit so play time is not lost if the player exits mid-game.
+## Resets the internal start time so the next flush / record_game only counts
+## the time elapsed since this call.
+func flush_session_time() -> void:
+	if _session_start_time == 0:
+		return
+	var elapsed := int(Time.get_unix_time_from_system()) - _session_start_time
+	_data["total_play_time_sec"] = _data.get("total_play_time_sec", 0) + elapsed
+	_session_start_time = int(Time.get_unix_time_from_system())
+	_save()
 
 
 ## Record the results of a completed game. Saves immediately.
@@ -117,6 +134,30 @@ func has_any_data() -> bool:
 			if get_scenario_stats(sid, diff).get("games_played", 0) > 0:
 				return true
 	return false
+
+
+## Record a post-scenario feedback response (SPA-336). Saves immediately.
+##
+## scenario_id   — e.g. "scenario_1"
+## difficulty    — "apprentice", "master", or "spymaster"
+## preset_index  — 0-3 matching FeedbackPrompt.PRESETS order, or -1 if none selected
+## freetext      — optional open text (clamped to 200 chars on save)
+func record_feedback(
+	scenario_id:  String,
+	difficulty:   String,
+	preset_index: int,
+	freetext:     String,
+) -> void:
+	if not _data.has("feedback"):
+		_data["feedback"] = []
+	_data["feedback"].append({
+		"scenario_id":  scenario_id,
+		"difficulty":   difficulty,
+		"preset_index": preset_index,
+		"freetext":     freetext.left(200),
+		"timestamp":    int(Time.get_unix_time_from_system()),
+	})
+	_save()
 
 
 ## Wipes all recorded stats and saves (used by stats screen reset button).

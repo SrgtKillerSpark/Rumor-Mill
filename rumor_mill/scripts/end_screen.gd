@@ -204,6 +204,26 @@ var _world_ref:     Node2D = null
 var _day_night_ref: Node   = null
 var _analytics_ref: ScenarioAnalytics = null
 
+# ── SPA-336: Feedback prompt ─────────────────────────────────────────────────
+const FEEDBACK_PRESETS := [
+	"Understanding the social graph",
+	"Managing whisper tokens",
+	"Avoiding detection",
+	"Knowing which NPCs to target",
+]
+const FEEDBACK_PANEL_W := 500
+const FEEDBACK_PANEL_H := 360
+const C_PRESET_NORMAL   := Color(0.22, 0.15, 0.10, 1.0)
+const C_PRESET_SELECTED := Color(0.55, 0.38, 0.18, 1.0)
+const FEEDBACK_CHAR_LIMIT := 200
+
+var _feedback_backdrop:       ColorRect      = null
+var _feedback_panel:          PanelContainer = null
+var _feedback_preset_btns:    Array          = []
+var _feedback_selected_preset: int           = -1
+var _feedback_text_edit:      TextEdit       = null
+var _feedback_char_lbl:       Label          = null
+
 # ── Active scenario id captured on resolve ────────────────────────────────────
 var _current_scenario_id: String = ""
 
@@ -283,6 +303,9 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 
 	# ── Count-up tween ────────────────────────────────────────────────────────
 	_start_count_up_tween()
+
+	# ── SPA-336: Show feedback prompt after a short delay ────────────────────
+	get_tree().create_timer(1.6).timeout.connect(_show_feedback_prompt)
 
 
 ## Guess the fail reason for the fail-text lookup.
@@ -1111,6 +1134,204 @@ func _moment_color(moment_type: String) -> Color:
 		"contradiction": return C_MOMENT_BAD
 		"state_change":  return C_BAR_MED
 		_:               return C_BODY
+
+
+# ── SPA-336: Feedback prompt ─────────────────────────────────────────────────
+
+## Build and show the feedback modal overlay.
+func _show_feedback_prompt() -> void:
+	if not visible:
+		return   # End screen was dismissed before timer fired.
+
+	_feedback_selected_preset = -1
+	_feedback_preset_btns.clear()
+
+	# ── Dimming overlay (sits above the end-screen panel) ────────────────────
+	_feedback_backdrop = ColorRect.new()
+	_feedback_backdrop.color = Color(0.0, 0.0, 0.0, 0.55)
+	_feedback_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_feedback_backdrop)
+
+	# ── Centred panel ─────────────────────────────────────────────────────────
+	_feedback_panel = PanelContainer.new()
+	_feedback_panel.custom_minimum_size = Vector2(FEEDBACK_PANEL_W, FEEDBACK_PANEL_H)
+	_feedback_panel.set_anchor(SIDE_LEFT,   0.5)
+	_feedback_panel.set_anchor(SIDE_RIGHT,  0.5)
+	_feedback_panel.set_anchor(SIDE_TOP,    0.5)
+	_feedback_panel.set_anchor(SIDE_BOTTOM, 0.5)
+	_feedback_panel.set_offset(SIDE_LEFT,   -FEEDBACK_PANEL_W / 2.0)
+	_feedback_panel.set_offset(SIDE_RIGHT,   FEEDBACK_PANEL_W / 2.0)
+	_feedback_panel.set_offset(SIDE_TOP,    -FEEDBACK_PANEL_H / 2.0)
+	_feedback_panel.set_offset(SIDE_BOTTOM,  FEEDBACK_PANEL_H / 2.0)
+
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color     = C_PANEL_BG
+	panel_style.border_color = C_PANEL_BORDER
+	panel_style.set_border_width_all(2)
+	panel_style.set_content_margin_all(24)
+	_feedback_panel.add_theme_stylebox_override("panel", panel_style)
+	add_child(_feedback_panel)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	_feedback_panel.add_child(vbox)
+
+	# ── Header ────────────────────────────────────────────────────────────────
+	var title_lbl := Label.new()
+	title_lbl.text = "Before you go…"
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.add_theme_font_size_override("font_size", 20)
+	title_lbl.add_theme_color_override("font_color", C_WIN)
+	vbox.add_child(title_lbl)
+
+	vbox.add_child(_make_separator())
+
+	# ── Question ──────────────────────────────────────────────────────────────
+	var question_lbl := Label.new()
+	question_lbl.text = "What was the hardest part?"
+	question_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	question_lbl.add_theme_font_size_override("font_size", 15)
+	question_lbl.add_theme_color_override("font_color", C_HEADING)
+	vbox.add_child(question_lbl)
+
+	# ── Preset option buttons ─────────────────────────────────────────────────
+	var options_vbox := VBoxContainer.new()
+	options_vbox.add_theme_constant_override("separation", 5)
+	vbox.add_child(options_vbox)
+
+	for i in range(FEEDBACK_PRESETS.size()):
+		var opt_btn := _make_preset_button(FEEDBACK_PRESETS[i], i)
+		_feedback_preset_btns.append(opt_btn)
+		options_vbox.add_child(opt_btn)
+
+	# ── Freetext field ────────────────────────────────────────────────────────
+	var text_label := Label.new()
+	text_label.text = "Other thoughts (optional)"
+	text_label.add_theme_font_size_override("font_size", 12)
+	text_label.add_theme_color_override("font_color", C_SUBHEADING)
+	vbox.add_child(text_label)
+
+	_feedback_text_edit = TextEdit.new()
+	_feedback_text_edit.custom_minimum_size = Vector2(0, 52)
+	_feedback_text_edit.placeholder_text = "Up to 200 characters…"
+	_feedback_text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+
+	var te_style := StyleBoxFlat.new()
+	te_style.bg_color = C_CARD_BG
+	te_style.border_color = C_PANEL_BORDER
+	te_style.set_border_width_all(1)
+	te_style.set_content_margin_all(6)
+	_feedback_text_edit.add_theme_stylebox_override("normal", te_style)
+	_feedback_text_edit.add_theme_stylebox_override("focus",  te_style)
+	_feedback_text_edit.add_theme_color_override("font_color", C_BODY)
+	_feedback_text_edit.text_changed.connect(_on_feedback_text_changed)
+	vbox.add_child(_feedback_text_edit)
+
+	# Char count indicator.
+	_feedback_char_lbl = Label.new()
+	_feedback_char_lbl.text = "0 / %d" % FEEDBACK_CHAR_LIMIT
+	_feedback_char_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_feedback_char_lbl.add_theme_font_size_override("font_size", 11)
+	_feedback_char_lbl.add_theme_color_override("font_color", C_MUTED)
+	vbox.add_child(_feedback_char_lbl)
+
+	# ── Action buttons ────────────────────────────────────────────────────────
+	var btn_row := HBoxContainer.new()
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_theme_constant_override("separation", 16)
+	vbox.add_child(btn_row)
+
+	var btn_submit := _make_button("Submit", 130)
+	btn_submit.pressed.connect(_on_feedback_submit)
+	btn_row.add_child(btn_submit)
+
+	var btn_skip := _make_button("Skip", 100)
+	btn_skip.pressed.connect(_on_feedback_skip)
+	btn_row.add_child(btn_skip)
+
+	btn_submit.call_deferred("grab_focus")
+
+
+## Create a toggle-style preset option button.
+func _make_preset_button(label_text: String, index: int) -> Button:
+	var btn := Button.new()
+	btn.text = label_text
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.custom_minimum_size = Vector2(0, 30)
+	btn.add_theme_font_size_override("font_size", 13)
+	btn.add_theme_color_override("font_color", C_BTN_TEXT)
+
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = C_PRESET_NORMAL
+	normal.border_color = C_PANEL_BORDER
+	normal.set_border_width_all(1)
+	normal.set_content_margin_all(6)
+
+	var hover := StyleBoxFlat.new()
+	hover.bg_color = C_BTN_HOVER
+	hover.border_color = C_PANEL_BORDER
+	hover.set_border_width_all(1)
+	hover.set_content_margin_all(6)
+
+	btn.add_theme_stylebox_override("normal",  normal)
+	btn.add_theme_stylebox_override("hover",   hover)
+	btn.add_theme_stylebox_override("pressed", normal)
+
+	btn.pressed.connect(func() -> void: _on_preset_selected(index))
+	return btn
+
+
+## Highlight the selected preset and deselect others.
+func _on_preset_selected(index: int) -> void:
+	_feedback_selected_preset = index
+	for i in range(_feedback_preset_btns.size()):
+		var b: Button = _feedback_preset_btns[i]
+		var style := b.get_theme_stylebox("normal") as StyleBoxFlat
+		if style != null:
+			style.bg_color = C_PRESET_SELECTED if i == index else C_PRESET_NORMAL
+
+
+## Enforce FEEDBACK_CHAR_LIMIT and update the char count label.
+func _on_feedback_text_changed() -> void:
+	if _feedback_text_edit == null or _feedback_char_lbl == null:
+		return
+	var txt := _feedback_text_edit.text
+	if txt.length() > FEEDBACK_CHAR_LIMIT:
+		_feedback_text_edit.text = txt.left(FEEDBACK_CHAR_LIMIT)
+		_feedback_text_edit.set_caret_column(FEEDBACK_CHAR_LIMIT)
+	_feedback_char_lbl.text = "%d / %d" % [_feedback_text_edit.text.length(), FEEDBACK_CHAR_LIMIT]
+
+
+## Save the feedback response and dismiss the prompt.
+func _on_feedback_submit() -> void:
+	var freetext := _feedback_text_edit.text.strip_edges() if _feedback_text_edit != null else ""
+	PlayerStats.record_feedback(
+		_current_scenario_id,
+		GameState.selected_difficulty,
+		_feedback_selected_preset,
+		freetext,
+	)
+	_dismiss_feedback_prompt()
+
+
+## Dismiss without recording.
+func _on_feedback_skip() -> void:
+	_dismiss_feedback_prompt()
+
+
+func _dismiss_feedback_prompt() -> void:
+	if _feedback_backdrop != null:
+		_feedback_backdrop.queue_free()
+		_feedback_backdrop = null
+	if _feedback_panel != null:
+		_feedback_panel.queue_free()
+		_feedback_panel = null
+	_feedback_text_edit = null
+	_feedback_char_lbl = null
+	_feedback_preset_btns.clear()
+	# Return keyboard focus to the first action button.
+	if _btn_again != null:
+		_btn_again.call_deferred("grab_focus")
 
 
 # ── Button handlers ───────────────────────────────────────────────────────────
