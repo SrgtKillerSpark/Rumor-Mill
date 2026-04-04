@@ -467,7 +467,11 @@ static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> voi
 	sm.scenario_4_state   = int(d.get("scenario_4_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.calder_score_start        = int(d.get("calder_score_start", -1))
 	sm.calder_score_final        = int(d.get("calder_score_final", -1))
-	sm._deadline_warnings_fired  = d.get("deadline_warnings_fired", {}).duplicate()
+	var _raw_fired: Dictionary = d.get("deadline_warnings_fired", {})
+	var _fired: Dictionary = {}
+	for _k in _raw_fired:
+		_fired[float(_k)] = _raw_fired[_k]
+	sm._deadline_warnings_fired = _fired
 
 
 static func _restore_rival_agent(ra: RivalAgent, d: Dictionary) -> void:
