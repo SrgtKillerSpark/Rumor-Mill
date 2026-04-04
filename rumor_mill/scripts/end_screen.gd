@@ -278,8 +278,8 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	visible = true
 
 	# Set keyboard focus on the first action button.
-	if _btn_play_again != null:
-		_btn_play_again.call_deferred("grab_focus")
+	if _btn_again != null:
+		_btn_again.call_deferred("grab_focus")
 
 	# ── Count-up tween ────────────────────────────────────────────────────────
 	_start_count_up_tween()
