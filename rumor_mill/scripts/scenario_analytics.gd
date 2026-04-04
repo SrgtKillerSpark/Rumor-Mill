@@ -4,6 +4,7 @@
 ## Wire via setup(world, day_night) from main.gd after world is ready.
 ## Read via get_timeline_data(), get_influence_ranking(), get_key_moments().
 
+extends RefCounted
 class_name ScenarioAnalytics
 
 var _world_ref: Node2D = null

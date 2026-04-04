@@ -77,6 +77,7 @@ var rumor_slots: Dictionary = {}
 var _pathfinder: AstarPathfinder = null
 var _walkable: Array[Vector2i] = []
 var _flash_tween: Tween = null
+var _base_color: Color = Color.WHITE
 
 # ── Visuals ──────────────────────────────────────────────────────────────────
 # Faction row index in npc_sprites.png (rows 0-2)

@@ -945,5 +945,5 @@ func _draw_spread_rings() -> void:
 			ring_color = Color(1.0, 0.80, 0.15, 0.80)   # medium — yellow
 		else:
 			ring_color = Color(0.30, 0.90, 0.30, 0.75)  # low — green
-		var npc_screen := ct * npc.global_position
+		var npc_screen: Vector2 = ct * npc.global_position
 		_spread_draw_node.draw_arc(npc_screen, 15.0, 0.0, TAU, 24, ring_color, 2.0)

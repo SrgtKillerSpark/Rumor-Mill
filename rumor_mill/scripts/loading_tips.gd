@@ -33,6 +33,7 @@ var _loading_label: Label         = null
 var _start_time:    float         = 0.0
 var _active:        bool          = false
 var _fade_tween:    Tween         = null
+var _wrapper:       Control       = null
 
 
 func _ready() -> void:
@@ -42,14 +43,18 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
+	_wrapper = Control.new()
+	_wrapper.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_wrapper)
+
 	var backdrop := ColorRect.new()
 	backdrop.color = C_BACKDROP
 	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(backdrop)
+	_wrapper.add_child(backdrop)
 
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
+	_wrapper.add_child(center)
 
 	var vbox := VBoxContainer.new()
 	vbox.custom_minimum_size = Vector2(640, 0)
@@ -78,12 +83,12 @@ func start_transition() -> void:
 	_start_time = Time.get_ticks_msec() / 1000.0
 	_active = true
 	_tip_label.text = "[center]" + TIPS[randi() % TIPS.size()] + "[/center]"
-	modulate = Color(1.0, 1.0, 1.0, 0.0)
+	_wrapper.modulate = Color(1.0, 1.0, 1.0, 0.0)
 	visible = true
 	if _fade_tween:
 		_fade_tween.kill()
 	_fade_tween = create_tween()
-	_fade_tween.tween_property(self, "modulate:a", 1.0, 0.25)
+	_fade_tween.tween_property(_wrapper, "modulate:a", 1.0, 0.25)
 
 
 ## Call when the transition finishes. Hides immediately if it was faster than
@@ -103,5 +108,5 @@ func force_hide() -> void:
 	if _fade_tween:
 		_fade_tween.kill()
 		_fade_tween = null
-	modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_wrapper.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	visible = false
