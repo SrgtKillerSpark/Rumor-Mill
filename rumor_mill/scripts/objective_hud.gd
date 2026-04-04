@@ -128,13 +128,13 @@ func _build_metrics_row() -> void:
 
 	# Average reputation metric
 	_lbl_rep_avg = _make_metric_label("Avg Rep: --")
-	_lbl_rep_avg.add_theme_color_override("font_color", Color(0.55, 0.80, 0.55, 1.0))
+	_lbl_rep_avg.add_theme_color_override("font_color", Color(0.784, 0.635, 0.180, 1.0))  # MERCH_TRIM gold
 	_lbl_rep_avg.tooltip_text = "Average NPC reputation score (0-100)"
 	_metrics_row.add_child(_lbl_rep_avg)
 
 	# Affected NPCs count (NPCs whose reputation has shifted from rumor influence)
 	_lbl_believers = _make_metric_label("Affected: 0")
-	_lbl_believers.add_theme_color_override("font_color", Color(0.45, 0.75, 1.00, 1.0))
+	_lbl_believers.add_theme_color_override("font_color", Color(0.345, 0.580, 0.769, 1.0))  # WATER_L (#5894C4)
 	_lbl_believers.tooltip_text = "NPCs whose reputation was shifted by rumors"
 	_metrics_row.add_child(_lbl_believers)
 
@@ -175,7 +175,7 @@ func _refresh_metrics() -> void:
 	if _lbl_rep_avg != null:
 		_lbl_rep_avg.text = "Avg Rep: %d" % avg
 		if avg >= 40:
-			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.55, 0.80, 0.55, 1.0))
+			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.784, 0.635, 0.180, 1.0))  # MERCH_TRIM gold
 		elif avg >= 25:
 			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.90, 0.75, 0.30, 1.0))
 		else:

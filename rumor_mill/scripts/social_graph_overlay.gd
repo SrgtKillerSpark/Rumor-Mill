@@ -16,7 +16,7 @@ extends CanvasLayer
 
 const FACTION_FILL := {
 	"merchant": Color(0.85, 0.65, 0.10, 1.0),   # warm gold
-	"noble":    Color(0.35, 0.50, 0.85, 1.0),   # muted royal blue
+	"noble":    Color(0.424, 0.086, 0.165, 1.0),  # NOBLE_BODY burgundy (#6C162A)
 	"clergy":   Color(0.88, 0.88, 0.88, 1.0),   # pale grey-white
 }
 

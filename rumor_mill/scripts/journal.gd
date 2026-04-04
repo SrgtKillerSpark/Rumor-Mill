@@ -29,7 +29,7 @@ const C_EVALUATING    := Color(0.25, 0.45, 0.90, 1.0)   # blue
 const C_SPREADING     := Color(0.10, 0.68, 0.22, 1.0)   # green
 const C_STALLING      := Color(0.82, 0.50, 0.10, 1.0)   # amber
 const C_CONTRADICTED  := Color(0.80, 0.10, 0.10, 1.0)   # red
-const C_EXPIRED       := Color(0.48, 0.48, 0.48, 1.0)   # grey
+const C_EXPIRED       := Color(0.455, 0.431, 0.376, 1.0) # STONE_M (#746E60) — warm grey
 
 # ── Section enum ──────────────────────────────────────────────────────────────
 

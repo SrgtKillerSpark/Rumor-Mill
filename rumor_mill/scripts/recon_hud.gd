@@ -28,7 +28,7 @@ const FLASH_DURATION := 0.3
 # Pip colours
 const PIP_FULL_ACTION   := Color(0.92, 0.65, 0.12, 1.0)  # amber
 const PIP_EMPTY_ACTION  := Color(0.30, 0.22, 0.12, 1.0)  # dark
-const PIP_FULL_WHISPER  := Color(0.45, 0.75, 1.00, 1.0)  # pale blue
+const PIP_FULL_WHISPER  := Color(0.345, 0.580, 0.769, 1.0) # WATER_L (#5894C4)
 const PIP_EMPTY_WHISPER := Color(0.15, 0.20, 0.28, 1.0)  # dark blue
 
 const PIP_SIZE := Vector2(14, 14)
@@ -102,7 +102,7 @@ func _process(_delta: float) -> void:
 func show_toast(message: String, success: bool) -> void:
 	var icon := "✓ " if success else "✗ "
 	toast_label.text = icon + message
-	var color := Color(0.45, 1.00, 0.55, 1.0) if success else Color(1.00, 0.60, 0.20, 1.0)
+	var color := Color(0.894, 0.820, 0.659, 1.0) if success else Color(0.941, 0.510, 0.173, 1.0)  # PARCH_L / FORGE
 	toast_label.add_theme_color_override("font_color", color)
 	show_action_flash(success)
 
@@ -202,7 +202,7 @@ func _build_extra_key_hints() -> void:
 	var key_hint_row: HBoxContainer = $CounterPanel/VBox/KeyHintRow
 	key_hint_row.add_theme_constant_override("separation", 6)
 	_add_key_hint(key_hint_row, "R", "Rumor", Color(0.92, 0.65, 0.12, 1.0))
-	_add_key_hint(key_hint_row, "J", "Journal", Color(0.65, 0.85, 0.55, 1.0))
+	_add_key_hint(key_hint_row, "J", "Journal", Color(0.894, 0.820, 0.659, 1.0))  # PARCH_L
 	_add_key_hint(key_hint_row, "G", "Graph", Color(0.55, 0.75, 1.00, 1.0))
 
 
