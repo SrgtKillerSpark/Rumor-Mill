@@ -72,8 +72,10 @@ static func save_game(
 		dir.make_dir("saves")
 
 	# Combine flushed log + any pending (buffered-this-tick) events.
-	var timeline: Array = journal._timeline_log.duplicate()
-	timeline.append_array(journal._pending_events)
+	var timeline: Array = []
+	if journal != null:
+		timeline = journal._timeline_log.duplicate()
+		timeline.append_array(journal._pending_events)
 
 	var data := {
 		"version":          SAVE_VERSION,
@@ -169,8 +171,6 @@ static func apply_pending_load(
 		world._socially_dead_ids[npc_id] = true
 	if journal != null and journal.has_method("restore_timeline"):
 		journal.restore_timeline(data.get("timeline", []))
-	print("[SaveManager] Save data applied. Tick=%d Day=%d" % [
-		day_night.current_tick, day_night.current_day])
 
 
 # ── Serialisation ─────────────────────────────────────────────────────────────

@@ -96,7 +96,6 @@ func _ready() -> void:
 	add_child(_main_menu)
 	_main_menu.begin_game.connect(_on_begin_game)
 
-	print("Rumor Mill — showing main menu (Sprint 8).")
 
 
 ## Called when the player clicks Begin on the scenario intro screen.
@@ -176,11 +175,6 @@ func _on_begin_game(scenario_id: String) -> void:
 	if SaveManager.has_pending_load():
 		SaveManager.apply_pending_load(world, day_night, journal)
 
-	print("Rumor Mill — Sprint 9 loaded. Scenario: %s" % scenario_id)
-	print("  F1: debug console  |  F2: NPC state badges  |  F3: social graph (debug)  |  F4: lineage tree")
-	print("  G: Social Graph Overlay  |  R: Rumor Crafting Panel  |  J: Player Journal")
-	print("  Right-click building: Observe  |  Right-click NPC: Eavesdrop")
-	print("  Esc: Pause / return to menu")
 
 
 func _init_recon_system() -> void:
@@ -229,7 +223,6 @@ func _init_recon_system() -> void:
 	# Wire bribe_executed → journal timeline entry.
 	recon_ctrl.bribe_executed.connect(_on_bribe_executed)
 
-	print("Main: recon system wired (intel_store + controller + HUD + 3-panel rumor modal)")
 
 
 func _init_journal() -> void:
@@ -241,7 +234,6 @@ func _init_journal() -> void:
 	if journal.has_method("setup"):
 		journal.setup(world, intel_store, day_night)
 
-	print("Main: Player Journal wired (J to open)")
 
 
 ## Called when the player successfully seeds a rumor via the crafting panel.
@@ -251,8 +243,6 @@ func _on_rumor_seeded(
 		claim_id: String,
 		seed_target_name: String
 ) -> void:
-	print("Main: rumor seeded — id=%s claim=%s about=%s via=%s" % [
-		rumor_id, claim_id, subject_name, seed_target_name])
 	AudioManager.on_rumor_seeded(rumor_id, subject_name, claim_id, seed_target_name)
 	if journal != null and journal.has_method("push_timeline_event"):
 		var _seed_tick: int = day_night.current_tick if day_night != null else 0
@@ -276,7 +266,6 @@ func _wire_rumor_events() -> void:
 		return
 	world.rumor_event.connect(_on_rumor_event)
 	world.socially_dead_triggered.connect(_on_socially_dead_triggered)
-	print("Main: rumor_event wired to journal timeline")
 
 
 ## Relay world rumor events into the Journal timeline and overlay.
@@ -303,7 +292,6 @@ func _init_objective_hud() -> void:
 		return
 	if objective_hud.has_method("setup"):
 		objective_hud.setup(sm, day_night, world.reputation_system)
-	print("Main: Objective HUD wired")
 
 
 func _init_speed_hud() -> void:
@@ -312,7 +300,6 @@ func _init_speed_hud() -> void:
 	add_child(hud)
 	if hud.has_method("setup"):
 		hud.setup(day_night)
-	print("Main: Speed HUD wired (Space = pause, || / 1× / 3×)")
 
 
 func _init_npc_conversation_overlay() -> void:
@@ -321,7 +308,6 @@ func _init_npc_conversation_overlay() -> void:
 	add_child(overlay)
 	if overlay.has_method("setup"):
 		overlay.setup(world)
-	print("Main: NPC Conversation Overlay wired (proximity lines + transmission pulse)")
 
 
 func _init_scenario2_hud() -> void:
@@ -332,7 +318,6 @@ func _init_scenario2_hud() -> void:
 	add_child(hud)
 	if hud.has_method("setup"):
 		hud.setup(world, day_night)
-	print("Main: Scenario 2 HUD wired")
 
 
 func _init_scenario3_hud() -> void:
@@ -344,7 +329,6 @@ func _init_scenario3_hud() -> void:
 	add_child(hud)
 	if hud.has_method("setup"):
 		hud.setup(world, day_night)
-	print("Main: Scenario 3 HUD wired")
 
 
 func _init_scenario4_hud() -> void:
@@ -355,7 +339,6 @@ func _init_scenario4_hud() -> void:
 	add_child(hud)
 	if hud.has_method("setup"):
 		hud.setup(world, day_night)
-	print("Main: Scenario 4 HUD wired")
 
 
 # ── Sprint 7 / Sprint 10: Tutorial system ─────────────────────────────────────
@@ -388,7 +371,6 @@ func _init_tutorial_hud_s2s3() -> void:
 	for npc in world.npcs:
 		npc.first_npc_became_evaluating.connect(_on_first_npc_state_change)
 
-	print("Main: Tutorial HUD wired for S2/S3 (modal tooltips)")
 
 
 ## S1: non-blocking banner hint system (SPA-131).
@@ -453,7 +435,6 @@ func _init_tutorial_banner_s1() -> void:
 	if _recon_ctrl_ref != null:
 		_wire_s1_recon_hints(_recon_ctrl_ref)
 
-	print("Main: Tutorial Banner wired for S1 (10 contextual hints)")
 
 
 ## Wires S1 hint signals from recon_ctrl and NPCs to the tutorial banner.
@@ -669,7 +650,6 @@ func _init_end_screen() -> void:
 	_end_screen.name = "EndScreen"
 	add_child(_end_screen)
 	_end_screen.setup(world, day_night, _analytics)
-	print("Main: End Screen + Analytics wired")
 
 
 # ── Sprint 7: Audio ────────────────────────────────────────────────────────────
@@ -683,7 +663,6 @@ func _init_audio() -> void:
 	if sm != null:
 		sm.scenario_resolved.connect(_on_scenario_resolved_audio)
 
-	print("AudioManager: wired into main scene")
 
 
 # ── Pause Menu ────────────────────────────────────────────────────────────────
@@ -697,7 +676,6 @@ func _init_pause_menu() -> void:
 	# S1: suppress banner while pause menu is open.
 	if world.active_scenario_id == "scenario_1" and _tutorial_banner != null:
 		_pause_menu.visibility_changed.connect(_on_pause_menu_visibility_changed_banner)
-	print("Main: Pause menu wired (Escape to open)")
 
 
 # ── NPC Tooltip ───────────────────────────────────────────────────────────────
@@ -707,21 +685,16 @@ func _init_npc_tooltip() -> void:
 	tooltip.name = "NpcTooltip"
 	add_child(tooltip)
 	tooltip.setup(world)
-	print("Main: NPC hover tooltip wired")
-
 	var bldg_tooltip := preload("res://scripts/building_tooltip.gd").new()
 	bldg_tooltip.name = "BuildingTooltip"
 	add_child(bldg_tooltip)
 	bldg_tooltip.setup(world)
-	print("Main: Building hover tooltip wired")
 
 
 ## Auto-save to slot 0 at the start of each new day (SPA-220).
 func _on_new_day_auto_save(day: int) -> void:
 	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT)
-	if err.is_empty():
-		print("[Main] Auto-save complete (Day %d)" % day)
-	else:
+	if not err.is_empty():
 		push_warning("[Main] Auto-save failed on day %d: %s" % [day, err])
 
 
@@ -745,8 +718,3 @@ func _camera_shake(intensity: float, duration: float) -> void:
 	if camera != null and camera.has_method("shake_screen"):
 		camera.shake_screen(intensity, duration)
 
-
-## Called from ReconController — detection event triggers a medium shake.
-func _on_recon_action_shake(message: String, success: bool) -> void:
-	if not success and "glance" in message:
-		_camera_shake(8.0, 0.35)
