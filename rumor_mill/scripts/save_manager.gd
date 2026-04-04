@@ -83,9 +83,10 @@ static func save_game(
 		"npc_slots":        _serialize_npc_slots(world.npcs),
 		"intel_store":      _serialize_intel_store(world.intel_store),
 		"scenario":         _serialize_scenario_manager(world.scenario_manager),
-		"rival_agent":      _serialize_rival_agent(world.rival_agent),
-		"inquisitor_agent": _serialize_inquisitor_agent(world.inquisitor_agent),
-		"timeline":         timeline,
+		"rival_agent":        _serialize_rival_agent(world.rival_agent),
+		"inquisitor_agent":   _serialize_inquisitor_agent(world.inquisitor_agent),
+		"socially_dead_ids":  world._socially_dead_ids.keys(),
+		"timeline":           timeline,
 	}
 
 	var path := save_path(world.active_scenario_id, slot)
@@ -159,6 +160,9 @@ static func apply_pending_load(
 	_restore_scenario_manager(world.scenario_manager, data.get("scenario", {}))
 	_restore_rival_agent(world.rival_agent, data.get("rival_agent", {}))
 	_restore_inquisitor_agent(world.inquisitor_agent, data.get("inquisitor_agent", {}))
+	world._socially_dead_ids.clear()
+	for npc_id in data.get("socially_dead_ids", []):
+		world._socially_dead_ids[npc_id] = true
 	if journal != null and journal.has_method("restore_timeline"):
 		journal.restore_timeline(data.get("timeline", []))
 	print("[SaveManager] Save data applied. Tick=%d Day=%d" % [
@@ -193,9 +197,11 @@ static func _serialize_propagation(pe: PropagationEngine) -> Dictionary:
 			"bolstered_by_evidence": r.bolstered_by_evidence,
 		}
 	return {
-		"live_rumors":         rumors,
-		"lineage":             pe.lineage.duplicate(true),
-		"contradiction_count": pe.contradiction_count,
+		"live_rumors":               rumors,
+		"lineage":                   pe.lineage.duplicate(true),
+		"contradiction_count":       pe.contradiction_count,
+		"time_pressure_bonus":       pe.time_pressure_bonus,
+		"target_shift_excluded_ids": pe.target_shift_excluded_ids.duplicate(),
 	}
 
 
@@ -335,6 +341,8 @@ static func _restore_propagation(pe: PropagationEngine, d: Dictionary) -> void:
 		pe.live_rumors[rid] = r
 	pe.lineage             = d.get("lineage", {}).duplicate(true)
 	pe.contradiction_count = int(d.get("contradiction_count", 0))
+	pe.time_pressure_bonus = float(d.get("time_pressure_bonus", 0.0))
+	pe.target_shift_excluded_ids.assign(d.get("target_shift_excluded_ids", []))
 
 
 static func _restore_npc_slots(
