@@ -52,7 +52,7 @@ func _ready() -> void:
 	_toast_normal_offset_top    = toast_panel.offset_top
 	_toast_normal_offset_bottom = toast_panel.offset_bottom
 	_build_pips(action_pips_row, 3, 3, PIP_FULL_ACTION, PIP_EMPTY_ACTION)
-	_build_pips(whisper_pips_row, 1, 1, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
+	_build_pips(whisper_pips_row, 2, 2, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 
 
 func setup(intel_store: PlayerIntelStore, rumor_panel: CanvasLayer) -> void:

@@ -30,7 +30,7 @@ const TOOLTIP_DATA: Dictionary = {
 	"recon_actions": {
 		"title": "Recon Actions",
 		"body":  (
-			"Each day you have [b]3 Recon Actions[/b] and [b]1 Whisper Token[/b].\n"
+			"Each day you have [b]3 Recon Actions[/b] and [b]2 Whisper Tokens[/b].\n"
 			+ "• [b]Right-click a building[/b] to [b]Observe[/b] — note who is present.\n"
 			+ "• [b]Right-click an NPC[/b] in conversation to [b]Eavesdrop[/b] — learn relationships.\n"
 			+ "• [b]Press R[/b] to craft and seed a rumour (costs one Whisper Token).\n"
