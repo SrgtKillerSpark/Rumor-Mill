@@ -90,6 +90,7 @@ func _input(event: InputEvent) -> void:
 			_legend_panel.visible = visible_overlay
 			_draw_node.queue_redraw()
 			print("[SocialGraphOverlay] %s" % ("ON" if visible_overlay else "OFF"))
+			get_viewport().set_input_as_handled()
 
 
 # ── Draw loop ──────────────────────────────────────────────────────────────────
