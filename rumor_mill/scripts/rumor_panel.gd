@@ -28,6 +28,78 @@ const PANEL_SUBJECT   := 0
 const PANEL_CLAIM     := 1
 const PANEL_SEED      := 2
 
+# ── Colour palette ────────────────────────────────────────────────────────────
+# Parchment / UI base colours.
+const C_NPC_NAME       := Color(0.88, 0.80, 0.60, 1.0)   # NPC name label
+const C_LOCKED         := Color(0.42, 0.38, 0.30, 1.0)   # locked / unknown
+const C_TEMPLATE_TEXT  := Color(0.88, 0.88, 0.80, 1.0)   # claim template wording
+const C_COMPAT_HINT    := Color(0.60, 0.60, 0.58, 0.90)  # evidence compatible-claims hint
+
+# Gold accent colours.
+const C_GOLD           := Color(0.90, 0.75, 0.20, 1.0)   # whisper bar, section headers
+const C_GOLD_BRIGHT    := Color(0.92, 0.78, 0.12, 1.0)   # button hover border
+const C_FOCUS_RING     := Color(1.00, 0.90, 0.40, 1.0)   # keyboard focus ring
+
+# Status / feedback colours.
+const C_STATUS_WARN    := Color(1.0,  0.65, 0.20, 1.0)   # inline status warning text
+const C_ESTIMATE       := Color(0.75, 0.85, 0.65, 1.0)   # spread / believability estimates
+const C_CHAIN_ICON     := Color(1.0,  0.90, 0.40, 1.0)   # chain indicator icon
+const C_CHAIN_DESC     := Color(0.95, 0.95, 0.85, 1.0)   # chain description text
+
+# Relation colours.
+const C_RELATION_SUSPICIOUS := Color(1.0,  0.40, 0.35, 1.0)  # suspicious / hostile
+const C_RELATION_ALLIED     := Color(0.35, 1.0,  0.45, 1.0)  # allied / close
+const C_RELATION_NEUTRAL    := Color(0.95, 0.95, 0.40, 1.0)  # neutral / knows
+
+# Panel selection highlight colours (semi-transparent backgrounds).
+const C_SELECTED_SUBJECT_BG  := Color(0.20, 0.45, 0.20, 0.55)  # selected subject row
+const C_SELECTED_CLAIM_BG    := Color(0.20, 0.35, 0.60, 0.55)  # selected claim card
+const C_SELECTED_SEED_BG     := Color(0.50, 0.25, 0.10, 0.55)  # selected seed target
+const C_SELECTED_EVIDENCE_BG := Color(0.45, 0.30, 0.05, 0.55)  # selected evidence item
+
+# Evidence / boost colours.
+const C_EVIDENCE_TYPE     := Color(0.95, 0.85, 0.50, 1.0)  # evidence type + bonus text
+const C_EVIDENCE_ATTACHED := Color(0.35, 0.90, 0.50, 1.0)  # "attached" confirmation
+const C_BOOST_BAR         := Color(0.35, 0.88, 0.52, 1.0)  # believability boost bars
+const C_MUTABILITY        := Color(0.60, 0.75, 1.0,  1.0)  # mutability bar
+
+# Button colours.
+const C_BTN_NORMAL_BG := Color(0.35, 0.22, 0.08, 1.0)  # nav button default bg
+const C_BTN_BORDER    := Color(0.55, 0.38, 0.18, 1.0)  # nav button default border
+const C_BTN_HOVER_BG  := Color(0.55, 0.35, 0.12, 1.0)  # nav button hover / focus bg
+const C_BTN_TEXT      := Color(0.92, 0.82, 0.60, 1.0)  # nav button font
+
+# Chain indicator background colours (accent — intentionally outside parchment palette).
+const C_CHAIN_SAME_BG          := Color(0.20, 0.45, 0.70, 0.50)  # same-type chain
+const C_CHAIN_ESCALATION_BG    := Color(0.55, 0.20, 0.60, 0.50)  # escalation chain
+const C_CHAIN_CONTRADICTION_BG := Color(0.70, 0.35, 0.15, 0.50)  # contradiction chain
+
+# Faction accent colours (accent — each faction has a distinct identity colour).
+const C_FACTION_MERCHANT := Color(1.0,  0.80, 0.20, 1.0)  # gold-yellow
+const C_FACTION_NOBLE    := Color(0.40, 0.60, 1.0,  1.0)  # royal blue
+const C_FACTION_CLERGY   := Color(0.90, 0.90, 0.90, 1.0)  # silver-white
+
+# Claim-type accent colours (accent — each rumour type has a thematic colour).
+const C_CLAIM_ACCUSATION := Color(1.0,  0.35, 0.25, 1.0)  # crimson-red
+const C_CLAIM_SCANDAL    := Color(1.0,  0.70, 0.10, 1.0)  # amber
+const C_CLAIM_ILLNESS    := Color(0.60, 1.0,  0.55, 1.0)  # sickly green
+const C_CLAIM_PROPHECY   := Color(0.70, 0.55, 1.0,  1.0)  # mystic purple
+const C_CLAIM_PRAISE     := Color(0.40, 0.85, 1.0,  1.0)  # sky blue
+const C_CLAIM_DEATH      := Color(0.55, 0.55, 0.55, 1.0)  # slate grey
+const C_CLAIM_HERESY     := Color(1.0,  0.45, 0.85, 1.0)  # hot pink
+
+# Intensity colours (accent — low-to-high severity ramp).
+const C_INTENSITY_LOW  := Color(0.55, 1.0,  0.55, 1.0)  # intensity 1-2
+const C_INTENSITY_MED  := Color(1.0,  0.85, 0.30, 1.0)  # intensity 3
+const C_INTENSITY_HIGH := Color(1.0,  0.35, 0.25, 1.0)  # intensity 4-5 (matches C_CLAIM_ACCUSATION by design)
+
+# Spread-overlay ring colours (accent — sociability heat-map on the world map).
+const C_SPREAD_RING_SEED := Color(1.0,  1.0,  1.0,  0.90)  # seed NPC target ring
+const C_SPREAD_HIGH      := Color(1.0,  0.35, 0.15, 0.85)  # high sociability (>= 0.7)
+const C_SPREAD_MED       := Color(1.0,  0.80, 0.15, 0.80)  # medium sociability (>= 0.4)
+const C_SPREAD_LOW       := Color(0.30, 0.90, 0.30, 0.75)  # low sociability (< 0.4)
+# ─────────────────────────────────────────────────────────────────────────────
+
 # Scene nodes (from RumorPanel.tscn).
 @onready var panel:       Panel         = $Panel
 @onready var title_label: Label         = $Panel/VBox/TitleLabel
@@ -139,7 +211,7 @@ func _build_dynamic_panels() -> void:
 	# Whisper Token bar (shown only on panel 3, hidden otherwise).
 	_whisper_bar = Label.new()
 	_whisper_bar.add_theme_font_size_override("font_size", 12)
-	_whisper_bar.add_theme_color_override("font_color", Color(0.90, 0.75, 0.20, 1.0))
+	_whisper_bar.add_theme_color_override("font_color", C_GOLD)
 	_whisper_bar.visible = false
 	vbox.add_child(_whisper_bar)
 
@@ -164,7 +236,7 @@ func _build_dynamic_panels() -> void:
 	# ── Status label (feedback on panel 3) ──────────────────────────────────
 	_status_label = Label.new()
 	_status_label.add_theme_font_size_override("font_size", 12)
-	_status_label.add_theme_color_override("font_color", Color(1.0, 0.65, 0.2, 1.0))
+	_status_label.add_theme_color_override("font_color", C_STATUS_WARN)
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_label.visible = false
 	vbox.add_child(_status_label)
@@ -313,7 +385,7 @@ func _build_subject_entry(
 	# Highlight if selected.
 	if npc_id == _selected_subject:
 		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.20, 0.45, 0.20, 0.55)
+		style.bg_color = C_SELECTED_SUBJECT_BG
 		outer.add_theme_stylebox_override("panel", style)
 
 	var vbox := VBoxContainer.new()
@@ -332,7 +404,7 @@ func _build_subject_entry(
 	var name_lbl := Label.new()
 	name_lbl.text = "  " + npc_name
 	name_lbl.add_theme_font_size_override("font_size", 12)
-	name_lbl.add_theme_color_override("font_color", Color(0.88, 0.80, 0.60, 1.0))
+	name_lbl.add_theme_color_override("font_color", C_NPC_NAME)
 	header.add_child(name_lbl)
 
 	var faction_lbl := Label.new()
@@ -346,7 +418,7 @@ func _build_subject_entry(
 		var lock_lbl := Label.new()
 		lock_lbl.text = "    🔒 Relationship: Unknown"
 		lock_lbl.add_theme_font_size_override("font_size", 12)
-		lock_lbl.add_theme_color_override("font_color", Color(0.42, 0.38, 0.30, 1.0))
+		lock_lbl.add_theme_color_override("font_color", C_LOCKED)
 		vbox.add_child(lock_lbl)
 	else:
 		for intel in rels:
@@ -361,13 +433,13 @@ func _build_subject_entry(
 			var color: Color
 			if intel.affinity_label == "suspicious":
 				prefix = "    [!] Suspicious of: "
-				color  = Color(1.0, 0.40, 0.35, 1.0)
+				color  = C_RELATION_SUSPICIOUS
 			elif intel.affinity_label == "allied":
 				prefix = "    [*] Close with: "
-				color  = Color(0.35, 1.0, 0.45, 1.0)
+				color  = C_RELATION_ALLIED
 			else:
 				prefix = "    [~] Knows: "
-				color  = Color(0.95, 0.95, 0.40, 1.0)
+				color  = C_RELATION_NEUTRAL
 
 			var rel_lbl := Label.new()
 			rel_lbl.text = "%s%s  %s (%s)" % [
@@ -430,7 +502,7 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 
 	if claim_id == _selected_claim_id:
 		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.20, 0.35, 0.60, 0.55)
+		style.bg_color = C_SELECTED_CLAIM_BG
 		outer.add_theme_stylebox_override("panel", style)
 
 	var vbox := VBoxContainer.new()
@@ -450,7 +522,7 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 	var tmpl_lbl := Label.new()
 	tmpl_lbl.text = '  "' + tmpl_text + '"'
 	tmpl_lbl.add_theme_font_size_override("font_size", 12)
-	tmpl_lbl.add_theme_color_override("font_color", Color(0.88, 0.88, 0.80, 1.0))
+	tmpl_lbl.add_theme_color_override("font_color", C_TEMPLATE_TEXT)
 	tmpl_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(tmpl_lbl)
 
@@ -468,7 +540,7 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 	var mut_lbl  := Label.new()
 	mut_lbl.text = "   Mutability: " + "█".repeat(mut_bars) + "░".repeat(5 - mut_bars)
 	mut_lbl.add_theme_font_size_override("font_size", 12)
-	mut_lbl.add_theme_color_override("font_color", Color(0.60, 0.75, 1.0, 1.0))
+	mut_lbl.add_theme_color_override("font_color", C_MUTABILITY)
 	stats_row.add_child(mut_lbl)
 
 	vbox.add_child(HSeparator.new())
@@ -539,7 +611,7 @@ func _build_seed_entry(
 
 	if npc_id == _selected_seed_npc:
 		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.50, 0.25, 0.10, 0.55)
+		style.bg_color = C_SELECTED_SEED_BG
 		outer.add_theme_stylebox_override("panel", style)
 
 	# Spread prediction overlay: hover triggers ring drawing on world map.
@@ -573,7 +645,7 @@ func _build_seed_entry(
 		roundi(spread_est), roundi(belief_est * 100.0)
 	]
 	est_lbl.add_theme_font_size_override("font_size", 12)
-	est_lbl.add_theme_color_override("font_color", Color(0.75, 0.85, 0.65, 1.0))
+	est_lbl.add_theme_color_override("font_color", C_ESTIMATE)
 	vbox.add_child(est_lbl)
 
 	vbox.add_child(HSeparator.new())
@@ -706,11 +778,11 @@ func _add_chain_indicator(chain_type: PropagationEngine.ChainType) -> void:
 	var style := StyleBoxFlat.new()
 	match chain_type:
 		PropagationEngine.ChainType.SAME_TYPE:
-			style.bg_color = Color(0.20, 0.45, 0.70, 0.50)
+			style.bg_color = C_CHAIN_SAME_BG
 		PropagationEngine.ChainType.ESCALATION:
-			style.bg_color = Color(0.55, 0.20, 0.60, 0.50)
+			style.bg_color = C_CHAIN_ESCALATION_BG
 		PropagationEngine.ChainType.CONTRADICTION:
-			style.bg_color = Color(0.70, 0.35, 0.15, 0.50)
+			style.bg_color = C_CHAIN_CONTRADICTION_BG
 	style.set_corner_radius_all(4)
 	banner.add_theme_stylebox_override("panel", style)
 
@@ -720,12 +792,12 @@ func _add_chain_indicator(chain_type: PropagationEngine.ChainType) -> void:
 	var icon_lbl := Label.new()
 	icon_lbl.text = " [CHAIN] "
 	icon_lbl.add_theme_font_size_override("font_size", 13)
-	icon_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4, 1.0))
+	icon_lbl.add_theme_color_override("font_color", C_CHAIN_ICON)
 	hbox.add_child(icon_lbl)
 
 	var desc_lbl := Label.new()
 	desc_lbl.add_theme_font_size_override("font_size", 11)
-	desc_lbl.add_theme_color_override("font_color", Color(0.95, 0.95, 0.85, 1.0))
+	desc_lbl.add_theme_color_override("font_color", C_CHAIN_DESC)
 	match chain_type:
 		PropagationEngine.ChainType.SAME_TYPE:
 			desc_lbl.text = "Same-Type Chain: +15% believability, +1 intensity"
@@ -742,7 +814,7 @@ func _add_chain_indicator(chain_type: PropagationEngine.ChainType) -> void:
 func _add_evidence_section(compatible: Array) -> void:
 	var hdr := Label.new()
 	hdr.add_theme_font_size_override("font_size", 12)
-	hdr.add_theme_color_override("font_color", Color(0.90, 0.75, 0.20, 1.0))
+	hdr.add_theme_color_override("font_color", C_GOLD)
 	if compatible.is_empty():
 		hdr.text = "  [Evidence] No compatible evidence for this claim type."
 		_seed_list.add_child(hdr)
@@ -761,7 +833,7 @@ func _add_evidence_section(compatible: Array) -> void:
 	if _selected_evidence_item != null:
 		var attached_lbl := Label.new()
 		attached_lbl.add_theme_font_size_override("font_size", 12)
-		attached_lbl.add_theme_color_override("font_color", Color(0.35, 0.90, 0.50, 1.0))
+		attached_lbl.add_theme_color_override("font_color", C_EVIDENCE_ATTACHED)
 		var bonus_str := ""
 		if _selected_evidence_item.believability_bonus != 0.0:
 			bonus_str = "  +%d%% Belief" % roundi(_selected_evidence_item.believability_bonus * 100.0)
@@ -790,7 +862,7 @@ func _build_evidence_entry(item) -> Control:
 	var outer := PanelContainer.new()
 	if item == _selected_evidence_item:
 		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.45, 0.30, 0.05, 0.55)
+		style.bg_color = C_SELECTED_EVIDENCE_BG
 		outer.add_theme_stylebox_override("panel", style)
 
 	var vbox := VBoxContainer.new()
@@ -806,7 +878,7 @@ func _build_evidence_entry(item) -> Control:
 	var type_lbl := Label.new()
 	type_lbl.text = "  %s — %s" % [item.type, "  |  ".join(bonus_parts)]
 	type_lbl.add_theme_font_size_override("font_size", 12)
-	type_lbl.add_theme_color_override("font_color", Color(0.95, 0.85, 0.50, 1.0))
+	type_lbl.add_theme_color_override("font_color", C_EVIDENCE_TYPE)
 	vbox.add_child(type_lbl)
 
 	# Visual boost bar — scale 0.0–0.25 bonus onto 1–5 bars.
@@ -815,7 +887,7 @@ func _build_evidence_entry(item) -> Control:
 		var bar_lbl := Label.new()
 		bar_lbl.text = "    Boost: " + "▇".repeat(boost_bars) + "░".repeat(5 - boost_bars)
 		bar_lbl.add_theme_font_size_override("font_size", 12)
-		bar_lbl.add_theme_color_override("font_color", Color(0.35, 0.88, 0.52, 1.0))
+		bar_lbl.add_theme_color_override("font_color", C_BOOST_BAR)
 		vbox.add_child(bar_lbl)
 
 	# Compatible claim types hint.
@@ -823,7 +895,7 @@ func _build_evidence_entry(item) -> Control:
 		var compat_lbl := Label.new()
 		compat_lbl.text = "    Works with: " + ", ".join(item.compatible_claims)
 		compat_lbl.add_theme_font_size_override("font_size", 12)
-		compat_lbl.add_theme_color_override("font_color", Color(0.60, 0.60, 0.58, 0.90))
+		compat_lbl.add_theme_color_override("font_color", C_COMPAT_HINT)
 		vbox.add_child(compat_lbl)
 
 	var btn := Button.new()
@@ -851,24 +923,24 @@ func _make_nav_button(label_text: String) -> Button:
 	btn.text = label_text
 	btn.custom_minimum_size = Vector2(100, 32)
 	var normal := StyleBoxFlat.new()
-	normal.bg_color     = Color(0.35, 0.22, 0.08, 1.0)
-	normal.border_color = Color(0.55, 0.38, 0.18, 1.0)
+	normal.bg_color     = C_BTN_NORMAL_BG
+	normal.border_color = C_BTN_BORDER
 	normal.set_border_width_all(1)
 	normal.set_content_margin_all(6)
 	var hover := StyleBoxFlat.new()
-	hover.bg_color     = Color(0.55, 0.35, 0.12, 1.0)
-	hover.border_color = Color(0.92, 0.78, 0.12, 1.0)
+	hover.bg_color     = C_BTN_HOVER_BG
+	hover.border_color = C_GOLD_BRIGHT
 	hover.set_border_width_all(1)
 	hover.set_content_margin_all(6)
 	var focus := StyleBoxFlat.new()
-	focus.bg_color     = Color(0.55, 0.35, 0.12, 1.0)
-	focus.border_color = Color(1.00, 0.90, 0.40, 1.0)  # bright gold focus ring
+	focus.bg_color     = C_BTN_HOVER_BG
+	focus.border_color = C_FOCUS_RING
 	focus.set_border_width_all(2)
 	focus.set_content_margin_all(6)
 	btn.add_theme_stylebox_override("normal", normal)
 	btn.add_theme_stylebox_override("hover",  hover)
 	btn.add_theme_stylebox_override("focus",  focus)
-	btn.add_theme_color_override("font_color", Color(0.92, 0.82, 0.60, 1.0))
+	btn.add_theme_color_override("font_color", C_BTN_TEXT)
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))
 	btn.mouse_entered.connect(func() -> void: AudioManager.play_sfx_pitched("ui_click", 2.0))
@@ -895,29 +967,29 @@ func _get_npc_name(npc_id: String) -> String:
 
 static func _faction_color(faction: String) -> Color:
 	match faction:
-		"merchant": return Color(1.0, 0.80, 0.20, 1.0)
-		"noble":    return Color(0.40, 0.60, 1.0,  1.0)
-		"clergy":   return Color(0.90, 0.90, 0.90, 1.0)
+		"merchant": return C_FACTION_MERCHANT
+		"noble":    return C_FACTION_NOBLE
+		"clergy":   return C_FACTION_CLERGY
 		_:          return Color.WHITE
 
 
 static func _claim_type_color(type_str: String) -> Color:
 	match type_str.to_lower():
-		"accusation": return Color(1.0,  0.35, 0.25, 1.0)
-		"scandal":    return Color(1.0,  0.70, 0.10, 1.0)
-		"illness":    return Color(0.60, 1.0,  0.55, 1.0)
-		"prophecy":   return Color(0.70, 0.55, 1.0,  1.0)
-		"praise":     return Color(0.40, 0.85, 1.0,  1.0)
-		"death":      return Color(0.55, 0.55, 0.55, 1.0)
-		"heresy":     return Color(1.0,  0.45, 0.85, 1.0)
+		"accusation": return C_CLAIM_ACCUSATION
+		"scandal":    return C_CLAIM_SCANDAL
+		"illness":    return C_CLAIM_ILLNESS
+		"prophecy":   return C_CLAIM_PROPHECY
+		"praise":     return C_CLAIM_PRAISE
+		"death":      return C_CLAIM_DEATH
+		"heresy":     return C_CLAIM_HERESY
 		_:            return Color.WHITE
 
 
 static func _intensity_color(intensity: int) -> Color:
 	match intensity:
-		1, 2: return Color(0.55, 1.0, 0.55, 1.0)
-		3:    return Color(1.0,  0.85, 0.30, 1.0)
-		4, 5: return Color(1.0,  0.35, 0.25, 1.0)
+		1, 2: return C_INTENSITY_LOW
+		3:    return C_INTENSITY_MED
+		4, 5: return C_INTENSITY_HIGH
 		_:    return Color.WHITE
 
 
@@ -963,7 +1035,7 @@ func _draw_spread_rings() -> void:
 
 	# White ring on the seed NPC (initial whisper target).
 	var seed_screen := ct * seed_node.global_position
-	_spread_draw_node.draw_arc(seed_screen, 20.0, 0.0, TAU, 32, Color(1.0, 1.0, 1.0, 0.90), 3.0)
+	_spread_draw_node.draw_arc(seed_screen, 20.0, 0.0, TAU, 32, C_SPREAD_RING_SEED, 3.0)
 
 	# Rings on NPCs within SPREAD_RADIUS, colored by sociability (spread likelihood).
 	for npc in _world_ref.npcs:
@@ -977,10 +1049,10 @@ func _draw_spread_rings() -> void:
 		var soc: float = float(npc.npc_data.get("sociability", 0.5))
 		var ring_color: Color
 		if soc >= 0.7:
-			ring_color = Color(1.0, 0.35, 0.15, 0.85)   # high — orange/red
+			ring_color = C_SPREAD_HIGH   # high sociability — orange/red
 		elif soc >= 0.4:
-			ring_color = Color(1.0, 0.80, 0.15, 0.80)   # medium — yellow
+			ring_color = C_SPREAD_MED    # medium sociability — yellow
 		else:
-			ring_color = Color(0.30, 0.90, 0.30, 0.75)  # low — green
+			ring_color = C_SPREAD_LOW    # low sociability — green
 		var npc_screen: Vector2 = ct * npc.global_position
 		_spread_draw_node.draw_arc(npc_screen, 15.0, 0.0, TAU, 24, ring_color, 2.0)
