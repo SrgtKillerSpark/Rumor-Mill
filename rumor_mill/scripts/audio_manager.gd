@@ -103,7 +103,6 @@ func _ready() -> void:
 	_build_players()
 	_preload_all()
 	play_music("main_theme")
-	print("AudioManager: ready (music=%s, sfx pool=%d voices)" % ["main_theme", SFX_POOL_SIZE])
 
 
 func _build_players() -> void:
@@ -134,7 +133,10 @@ func _make_player(node_name: String, volume_db: float, autoplay: bool) -> AudioS
 
 func _preload_all() -> void:
 	for key: String in MUSIC_FILES:
-		_music_cache[key] = _load_stream(MUSIC_FILES[key])
+		var stream := _load_stream(MUSIC_FILES[key])
+		if stream is AudioStreamWAV:
+			stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		_music_cache[key] = stream
 	for key: String in SFX_FILES:
 		_sfx_cache[key] = _load_stream(SFX_FILES[key])
 
@@ -228,6 +230,16 @@ func play_sfx(sfx_name: String) -> void:
 		pb.play_stream(stream)
 
 
+## Play a named SFX at a custom pitch scale. Useful for hover variants of click sounds.
+func play_sfx_pitched(sfx_name: String, pitch_scale: float) -> void:
+	var stream: AudioStream = _sfx_cache.get(sfx_name, null)
+	if stream == null:
+		return
+	var pb := _sfx_player.get_stream_playback() as AudioStreamPlaybackPolyphonic
+	if pb != null:
+		pb.play_stream(stream, 0, 0.0, pitch_scale)
+
+
 # ── Public API — Volume control ────────────────────────────────────────────────
 
 func set_music_volume_db(db: float) -> void:
@@ -263,7 +275,6 @@ func connect_to_day_night(day_night: Node) -> void:
 	if stream != null:
 		ap.volume_db = DEFAULT_AMBIENT_DB
 		ap.play()
-	print("AudioManager: connected to DayNightCycle (initial_ambient=%s)" % initial_track)
 
 
 ## Called when the player successfully seeds a rumor.

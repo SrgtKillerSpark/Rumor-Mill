@@ -433,6 +433,8 @@ func _on_card_hover(card: PanelContainer, entering: bool) -> void:
 	var idx: int = card.get_meta("scenario_idx", -1)
 	if idx == _selected_card_idx:
 		return  # keep selected style
+	if entering:
+		AudioManager.play_sfx_pitched("ui_click", 2.0)
 	var style = card.get_meta("style_hover") if entering else card.get_meta("style_normal")
 	card.add_theme_stylebox_override("panel", style)
 
@@ -458,6 +460,7 @@ func _on_card_pressed(idx: int) -> void:
 	_selected_card_idx = idx
 	card.add_theme_stylebox_override("panel", _card_style(C_CARD_HOVER, C_CARD_SEL))
 	_selected_scenario = _scenarios[idx]
+	AudioManager.play_sfx("ui_click")
 
 
 ## Called when the player clicks "Play anyway →" on a locked scenario card.
@@ -1197,6 +1200,7 @@ func _make_button(label_text: String, w: int) -> Button:
 	btn.add_theme_stylebox_override("focus",   focus_style)
 	btn.add_theme_color_override("font_color", C_BTN_TEXT)
 	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))
+	btn.mouse_entered.connect(func() -> void: AudioManager.play_sfx_pitched("ui_click", 2.0))
 	return btn
 
 

@@ -619,7 +619,6 @@ func _try_confirm_seed() -> void:
 	_selected_evidence_item = null
 	panel.visible = false
 
-	print("[RumorPanel] Seeded rumor '%s' via %s" % [rumor_id, seed_name])
 
 
 # ── Estimates ─────────────────────────────────────────────────────────────────
@@ -855,6 +854,7 @@ func _make_nav_button(label_text: String) -> Button:
 	btn.add_theme_color_override("font_color", Color(0.92, 0.82, 0.60, 1.0))
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))
+	btn.mouse_entered.connect(func() -> void: AudioManager.play_sfx_pitched("ui_click", 2.0))
 	return btn
 
 

@@ -33,3 +33,16 @@ Crossfade duration: 2 seconds.
 | `fail.wav`              | Fail / day-limit condition reached               |
 | `ui_click.wav`          | Generic UI button press                          |
 | `new_day.wav`           | New in-game day begins                           |
+
+## Hover Sound
+
+Button hover uses `AudioManager.play_sfx_pitched("ui_click", 2.0)` — the same `ui_click.wav`
+played at 2× pitch scale, producing a lighter tick distinct from the full click.
+No separate `ui_hover.wav` asset is required. Wired in: `main_menu.gd`, `pause_menu.gd`,
+`speed_hud.gd`, `rumor_panel.gd`.
+
+## Music Looping
+
+Music and ambient tracks have `edit/loop_mode=0` in their `.import` files (Godot default).
+`AudioManager._preload_all()` sets `stream.loop_mode = AudioStreamWAV.LOOP_FORWARD` at runtime
+for all entries in `MUSIC_FILES`, ensuring continuous playback without editor reimport.
