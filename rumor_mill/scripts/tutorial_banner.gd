@@ -320,6 +320,6 @@ func _build_ui() -> void:
 	_body_label.custom_minimum_size = Vector2(BANNER_WIDTH - ACCENT_WIDTH - 30, 0)
 	_body_label.add_theme_color_override("default_color",   C_BODY)
 	_body_label.add_theme_color_override("font_bold_color", C_HEADING)
-	_body_label.add_theme_font_size_override("normal_font_size", 11)
-	_body_label.add_theme_font_size_override("bold_font_size",   11)
+	_body_label.add_theme_font_size_override("normal_font_size", 12)
+	_body_label.add_theme_font_size_override("bold_font_size",   12)
 	vbox.add_child(_body_label)
