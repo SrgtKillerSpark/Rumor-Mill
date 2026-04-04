@@ -43,7 +43,14 @@ const SPREAD_RADIUS := 8   # tiles (manhattan distance)
 # ── Data set by World ────────────────────────────────────────────────────────
 var npc_data: Dictionary = {}
 var schedule_waypoints: Array[Vector2i] = []
-var all_npcs_ref: Array = []
+var all_npcs_ref: Array = []:
+	set(value):
+		all_npcs_ref = value
+		_rebuild_npc_id_dict()
+## NPC id → NPC node; rebuilt whenever all_npcs_ref is assigned. Gives O(1) subject lookups.
+var _npc_id_dict: Dictionary = {}
+## Pre-sampled subset of _walkable for _cell_furthest_from (avoids scanning ~1000 cells).
+var _walkable_sample: Array[Vector2i] = []
 var social_graph_ref: SocialGraph = null
 var propagation_engine_ref: PropagationEngine = null
 
@@ -261,6 +268,14 @@ func _setup_sprite(faction: String) -> void:
 
 # ── Initialisation ───────────────────────────────────────────────────────────
 
+func _rebuild_npc_id_dict() -> void:
+	_npc_id_dict.clear()
+	for npc in all_npcs_ref:
+		var nid: String = npc.npc_data.get("id", "")
+		if nid != "":
+			_npc_id_dict[nid] = npc
+
+
 func init_from_data(
 		data: Dictionary,
 		start_cell: Vector2i,
@@ -272,6 +287,12 @@ func init_from_data(
 	_walkable    = walkable
 	current_cell = start_cell
 	_home_cell   = start_cell
+
+	# Pre-sample walkable cells so _cell_furthest_from avoids a full ~1000-cell scan.
+	_walkable_sample = walkable.duplicate()
+	_walkable_sample.shuffle()
+	if _walkable_sample.size() > 64:
+		_walkable_sample.resize(64)
 
 	_credulity   = float(data.get("credulity",   0.5))
 	_sociability = float(data.get("sociability",  0.5))
@@ -713,10 +734,9 @@ func _start_act_behavior(rumor: Rumor, tick: int) -> void:
 		social_graph_ref.mutate_edge(rumor.subject_npc_id, actor_id, delta * 0.5, tick)
 
 		var subject_name := rumor.subject_npc_id
-		for other in all_npcs_ref:
-			if other.npc_data.get("id", "") == rumor.subject_npc_id:
-				subject_name = other.npc_data.get("name", rumor.subject_npc_id)
-				break
+		var subj_node = _npc_id_dict.get(rumor.subject_npc_id, null)
+		if subj_node != null:
+			subject_name = subj_node.npc_data.get("name", rumor.subject_npc_id)
 		emit_signal("graph_edge_mutated", npc_data.get("name", ""), subject_name, delta)
 
 
@@ -740,13 +760,10 @@ func _show_act_icon() -> void:
 func _navigate_relative_to_subject(subject_id: String, toward: bool) -> void:
 	if _pathfinder == null or _walkable.is_empty():
 		return
-	var subject_cell := Vector2i(-1, -1)
-	for npc in all_npcs_ref:
-		if npc.npc_data.get("id", "") == subject_id:
-			subject_cell = npc.current_cell
-			break
-	if subject_cell == Vector2i(-1, -1):
+	var subj_node = _npc_id_dict.get(subject_id, null)
+	if subj_node == null:
 		return
+	var subject_cell: Vector2i = subj_node.current_cell
 	var target_cell: Vector2i = subject_cell if toward else _cell_furthest_from(subject_cell)
 	_path = _pathfinder.get_path(current_cell, target_cell)
 	if _path.size() > 0 and _path[0] == current_cell:
@@ -754,10 +771,11 @@ func _navigate_relative_to_subject(subject_id: String, toward: bool) -> void:
 
 
 ## Return the walkable cell that maximises squared distance from from_cell.
+## Uses a pre-sampled 64-cell candidate list instead of scanning all ~1000 walkable cells.
 func _cell_furthest_from(from_cell: Vector2i) -> Vector2i:
 	var best_cell := current_cell
 	var best_dist := 0
-	for cell in _walkable:
+	for cell in _walkable_sample:
 		var d := (cell - from_cell).length_squared()
 		if d > best_dist:
 			best_dist = d
@@ -811,11 +829,9 @@ func _broadcast_defense(_tick: int) -> void:
 	var npc_id: String = npc_data.get("id", "")
 	var neighbours: Dictionary = social_graph_ref.get_neighbours(npc_id)
 
-	for other in all_npcs_ref:
-		if other == self:
-			continue
-		var tid: String = other.npc_data.get("id", "")
-		if not neighbours.has(tid):
+	for tid in neighbours:
+		var other = _npc_id_dict.get(tid, null)
+		if other == null or other == self:
 			continue
 		other._apply_defense_penalty(_defender_target_npc_id, _DEFENDER_PENALTY)
 
