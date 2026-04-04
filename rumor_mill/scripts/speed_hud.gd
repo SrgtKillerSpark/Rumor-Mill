@@ -4,7 +4,8 @@ extends CanvasLayer
 ## SPA-214: Tier 3, Item #10.
 ##
 ## Shown top-right during gameplay.
-## Keyboard: Space = pause toggle (ignored while pause menu is open).
+## Keyboard: Space = pause toggle, 1 = normal speed, 3 = fast speed
+##           (all ignored while pause menu is open).
 
 const C_ACTIVE := Color(0.70, 0.55, 0.20, 1.0)
 const C_NORMAL := Color(0.20, 0.15, 0.08, 0.90)
@@ -35,10 +36,19 @@ func setup(day_night: Node) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		# Space toggles pause, but only when the pause menu is not open.
-		if event.keycode == KEY_SPACE and not get_tree().paused:
-			_set_speed(Speed.PAUSE if _speed != Speed.PAUSE else Speed.NORMAL)
-			get_viewport().set_input_as_handled()
+		if get_tree().paused:
+			return
+		match event.keycode:
+			KEY_SPACE:
+				# Space toggles pause.
+				_set_speed(Speed.PAUSE if _speed != Speed.PAUSE else Speed.NORMAL)
+				get_viewport().set_input_as_handled()
+			KEY_1:
+				_set_speed(Speed.NORMAL)
+				get_viewport().set_input_as_handled()
+			KEY_3:
+				_set_speed(Speed.FAST)
+				get_viewport().set_input_as_handled()
 
 
 func _set_speed(s: Speed) -> void:
@@ -81,8 +91,8 @@ func _build_ui() -> void:
 	_btn_fast   = _make_btn("  3×  ")
 
 	_btn_pause.tooltip_text  = "Pause  (Space)"
-	_btn_normal.tooltip_text = "Normal Speed  (1×)"
-	_btn_fast.tooltip_text   = "Fast Speed  (3×)"
+	_btn_normal.tooltip_text = "Normal Speed  (1)"
+	_btn_fast.tooltip_text   = "Fast Speed  (3)"
 
 	_btn_pause.pressed.connect(func() -> void:  _set_speed(Speed.PAUSE))
 	_btn_normal.pressed.connect(func() -> void: _set_speed(Speed.NORMAL))

@@ -322,6 +322,18 @@ func _build_tab_controls() -> VBoxContainer:
 	for i in gp_rows.size():
 		vbox.add_child(_make_table_row(gp_rows[i][0], gp_rows[i][1], i % 2 == 1))
 
+	vbox.add_child(_make_spacer(8))
+
+	# Game Speed
+	vbox.add_child(_make_table_header("Input", "Game Speed Action"))
+	var spd_rows := [
+		["Space",  "Toggle pause / resume"],
+		["1",      "Set speed to 1× (normal)"],
+		["3",      "Set speed to 3× (fast-forward)"],
+	]
+	for i in spd_rows.size():
+		vbox.add_child(_make_table_row(spd_rows[i][0], spd_rows[i][1], i % 2 == 1))
+
 	return vbox
 
 
