@@ -881,9 +881,17 @@ func _build_objectives_section() -> void:
 	if _world_ref != null and "scenario_manager" in _world_ref:
 		sm = _world_ref.scenario_manager
 
-	var days_elapsed:   int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
-	var days_allowed:   int = sm.get_days_allowed() if sm != null else 30
-	var days_remaining: int = max(0, days_allowed - days_elapsed)
+	var days_elapsed: int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
+
+	# Per-scenario day limits (from scenarios.json); used for cross-scenario display.
+	const S1_DAYS := 30
+	const S2_DAYS := 20
+	const S3_DAYS := 25
+	const S4_DAYS := 20
+
+	var s1_days_remaining: int = max(0, S1_DAYS - days_elapsed)
+	var s2_days_remaining: int = max(0, S2_DAYS - days_elapsed)
+	var s3_days_remaining: int = max(0, S3_DAYS - days_elapsed)
 
 	var edric_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("edric_fenn")  if rep != null else null
 	var calder_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("calder_fenn") if rep != null else null
@@ -901,7 +909,7 @@ func _build_objectives_section() -> void:
 	_content_vbox.add_child(s1_lbl)
 
 	var days_lbl := Label.new()
-	days_lbl.text = "Days remaining: %d / %d" % [days_remaining, days_allowed]
+	days_lbl.text = "Days remaining: %d / %d" % [s1_days_remaining, S1_DAYS]
 	days_lbl.add_theme_font_size_override("font_size", 12)
 	days_lbl.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(days_lbl)
@@ -955,7 +963,7 @@ func _build_objectives_section() -> void:
 	fail_body.text = (
 		"  [ ] Identified as rumor source by Sergeant Bram — suspicion: LOW\n"
 		+ "  [ ] %d days elapsed without win condition  (days remaining: %d)"
-	) % [days_allowed, days_remaining]
+	) % [S1_DAYS, s1_days_remaining]
 	fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	fail_body.add_theme_font_size_override("font_size", 12)
 	fail_body.add_theme_color_override("font_color", C_BODY)
@@ -1011,7 +1019,7 @@ func _build_objectives_section() -> void:
 	s2_fail_body.text = (
 		"  [ ] Sister Maren contradicts illness rumors about Alys Herbwife\n"
 		+ "  [ ] %d days elapsed without win condition  (days remaining: %d)"
-	) % [days_allowed, days_remaining]
+	) % [S2_DAYS, s2_days_remaining]
 	s2_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s2_fail_body.add_theme_font_size_override("font_size", 12)
 	s2_fail_body.add_theme_color_override("font_color", C_BODY)
