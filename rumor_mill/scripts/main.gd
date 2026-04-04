@@ -152,6 +152,9 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_journal()
 	_wire_rumor_events()
 	_init_objective_hud()
+	_init_speed_hud()
+	_init_npc_conversation_overlay()
+	_init_scenario2_hud()
 	_init_scenario3_hud()
 	_init_scenario4_hud()
 	_init_tutorial_system()
@@ -297,6 +300,35 @@ func _init_objective_hud() -> void:
 	if objective_hud.has_method("setup"):
 		objective_hud.setup(sm, day_night, world.reputation_system)
 	print("Main: Objective HUD wired")
+
+
+func _init_speed_hud() -> void:
+	var hud := preload("res://scripts/speed_hud.gd").new()
+	hud.name = "SpeedHUD"
+	add_child(hud)
+	if hud.has_method("setup"):
+		hud.setup(day_night)
+	print("Main: Speed HUD wired (Space = pause, || / 1× / 3×)")
+
+
+func _init_npc_conversation_overlay() -> void:
+	var overlay := preload("res://scripts/npc_conversation_overlay.gd").new()
+	overlay.name = "NpcConversationOverlay"
+	add_child(overlay)
+	if overlay.has_method("setup"):
+		overlay.setup(world)
+	print("Main: NPC Conversation Overlay wired (proximity lines + transmission pulse)")
+
+
+func _init_scenario2_hud() -> void:
+	if world.active_scenario_id != "scenario_2":
+		return
+	var hud := preload("res://scripts/scenario2_hud.gd").new()
+	hud.name = "Scenario2HUD"
+	add_child(hud)
+	if hud.has_method("setup"):
+		hud.setup(world, day_night)
+	print("Main: Scenario 2 HUD wired")
 
 
 func _init_scenario3_hud() -> void:
