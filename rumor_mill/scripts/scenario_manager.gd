@@ -131,6 +131,10 @@ var scenario_4_state: ScenarioState = ScenarioState.ACTIVE
 ## Tracks which deadline thresholds have already fired (0.75, 0.90).
 var _deadline_warnings_fired: Dictionary = {}
 
+## Number of times this scenario has been retried by the player.
+## Set by main.gd at game-start from PlayerStats (SPA-335).
+var retry_count: int = 0
+
 ## Scenario 3 only: Calder's reputation score at the first evaluate() call.
 ## -1 means not yet recorded. Used by end_screen for the Calder Rep Delta stat.
 var calder_score_start: int = -1

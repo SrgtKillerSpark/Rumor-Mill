@@ -265,6 +265,12 @@ func mark_seen(tooltip_id: String) -> void:
 	_seen[tooltip_id] = true
 
 
+## Returns how many distinct tutorial steps have been seen this session.
+## Used by PlayerStats.record_tutorial_steps() at game end (SPA-335).
+func get_seen_count() -> int:
+	return _seen.size()
+
+
 ## Return the data dict for a tooltip, or an empty dict if not found.
 func get_tooltip(tooltip_id: String) -> Dictionary:
 	return TOOLTIP_DATA.get(tooltip_id, {})

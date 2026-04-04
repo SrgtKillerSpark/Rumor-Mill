@@ -94,6 +94,8 @@ func _ready() -> void:
 	var _pause_menu_script = preload("res://scripts/pause_menu.gd")
 	var _restart_id: String = _pause_menu_script._pending_restart_id
 	if _restart_id != "":
+		# SPA-335: record the retry before clearing the pending id.
+		PlayerStats.record_retry(_restart_id, GameState.selected_difficulty)
 		_pause_menu_script._pending_restart_id = ""
 		_on_begin_game.call_deferred(_restart_id)
 		return
@@ -175,6 +177,13 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_npc_tooltip()
 	day_night.day_changed.connect(_on_new_day_auto_save)
 	PlayerStats.start_session()  # SPA-273: begin timing this play session
+
+	# SPA-335: feed retry count into ScenarioManager so it knows how many times
+	# this scenario has been attempted before.
+	var _sm_ref: ScenarioManager = world.scenario_manager
+	if _sm_ref != null:
+		_sm_ref.retry_count = PlayerStats.get_scenario_stats(
+			scenario_id, GameState.selected_difficulty).get("retries", 0)
 
 	# Loading complete — dismiss the tip screen.
 	if _loading_tips != null:
@@ -740,6 +749,9 @@ func _init_pause_menu() -> void:
 	add_child(_pause_menu)
 	_pause_menu.setup(world.active_scenario_id)
 	_pause_menu.setup_save_load(world, day_night, journal)
+	# SPA-335: flush session time whenever the pause menu opens so partial
+	# play time is saved if the player quits from the pause menu.
+	_pause_menu.visibility_changed.connect(_on_pause_menu_visibility_changed_flush)
 	# S1: suppress banner while pause menu is open.
 	if world.active_scenario_id == "scenario_1" and _tutorial_banner != null:
 		_pause_menu.visibility_changed.connect(_on_pause_menu_visibility_changed_banner)
@@ -786,6 +798,8 @@ func _init_achievement_hooks() -> void:
 	var sm: ScenarioManager = world.scenario_manager
 	if sm != null:
 		sm.scenario_resolved.connect(_on_achievement_scenario_resolved)
+		# SPA-335: record tutorial step completion at scenario end.
+		sm.scenario_resolved.connect(_on_scenario_resolved_tutorial_steps)
 
 	# Exposure tracking — ghost achievement.
 	if _recon_ctrl_ref != null:
@@ -879,6 +893,37 @@ func _on_achievement_scenario_resolved(
 			and AchievementManager.is_unlocked("scenario_3_complete")
 			and AchievementManager.is_unlocked("scenario_4_complete")):
 		AchievementManager.unlock("mastermind")
+
+
+# ── SPA-335: Demo analytics helpers ──────────────────────────────────────────
+
+## Flush partial session time whenever the pause menu becomes visible.
+## Only flushes on show (visible == true) so we don't double-count on hide.
+func _on_pause_menu_visibility_changed_flush() -> void:
+	if _pause_menu != null and _pause_menu.visible:
+		PlayerStats.flush_session_time()
+
+
+## Record tutorial step completion when a scenario resolves (SPA-335).
+func _on_scenario_resolved_tutorial_steps(
+		scenario_id: int,
+		_state: ScenarioManager.ScenarioState
+) -> void:
+	if _tutorial_sys == null:
+		return
+	PlayerStats.record_tutorial_steps(
+		"scenario_%d" % scenario_id,
+		GameState.selected_difficulty,
+		_tutorial_sys.get_seen_count(),
+		TutorialSystem.TOOLTIP_ORDER.size(),
+	)
+
+
+## Flush session time on window close so play time is not lost.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		PlayerStats.flush_session_time()
+		get_tree().quit()
 
 
 # ── Game-feel polish ──────────────────────────────────────────────────────────

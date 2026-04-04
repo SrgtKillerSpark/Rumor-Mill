@@ -116,14 +116,57 @@ func get_scenario_stats(scenario_id: String, difficulty: String) -> Dictionary:
 	return _data.get("scenarios", {}).get(scenario_id, {}).get(difficulty, _blank_record())
 
 
+## Record tutorial step completion for a finished game. Saves immediately.
+## seen  — number of distinct tutorial tooltip IDs marked seen this session.
+## total — total number of available tutorial steps (TutorialSystem.TOOLTIP_ORDER.size()).
+func record_tutorial_steps(
+	scenario_id: String,
+	difficulty:  String,
+	seen:        int,
+	total:       int,
+) -> void:
+	if not _data.has("scenarios"):
+		_data["scenarios"] = {}
+	if not _data["scenarios"].has(scenario_id):
+		_data["scenarios"][scenario_id] = {}
+	if not _data["scenarios"][scenario_id].has(difficulty):
+		_data["scenarios"][scenario_id][difficulty] = _blank_record()
+	var rec: Dictionary = _data["scenarios"][scenario_id][difficulty]
+	rec["tutorial_steps_seen"]  = rec.get("tutorial_steps_seen",  0) + seen
+	rec["tutorial_steps_total"] = rec.get("tutorial_steps_total", 0) + total
+	_data["total_tutorial_steps_seen"]  = _data.get("total_tutorial_steps_seen",  0) + seen
+	_data["total_tutorial_steps_total"] = _data.get("total_tutorial_steps_total", 0) + total
+	_save()
+
+
+## Increment the retry counter for a scenario + difficulty. Saves immediately.
+## Call from main.gd when a player restarts the same scenario.
+func record_retry(scenario_id: String, difficulty: String) -> void:
+	if not _data.has("scenarios"):
+		_data["scenarios"] = {}
+	if not _data["scenarios"].has(scenario_id):
+		_data["scenarios"][scenario_id] = {}
+	if not _data["scenarios"][scenario_id].has(difficulty):
+		_data["scenarios"][scenario_id][difficulty] = _blank_record()
+	var rec: Dictionary = _data["scenarios"][scenario_id][difficulty]
+	rec["retries"] = rec.get("retries", 0) + 1
+	_data["total_retries"] = _data.get("total_retries", 0) + 1
+	_save()
+
+
 ## Returns the lifetime global totals dictionary.
-## Keys: total_play_time_sec, total_rumors_spread, total_npcs_convinced, total_bribes_paid.
+## Keys: total_play_time_sec, total_rumors_spread, total_npcs_convinced,
+##       total_bribes_paid, total_retries, total_tutorial_steps_seen,
+##       total_tutorial_steps_total.
 func get_totals() -> Dictionary:
 	return {
-		"total_play_time_sec":  _data.get("total_play_time_sec",  0),
-		"total_rumors_spread":  _data.get("total_rumors_spread",  0),
-		"total_npcs_convinced": _data.get("total_npcs_convinced", 0),
-		"total_bribes_paid":    _data.get("total_bribes_paid",    0),
+		"total_play_time_sec":         _data.get("total_play_time_sec",         0),
+		"total_rumors_spread":         _data.get("total_rumors_spread",         0),
+		"total_npcs_convinced":        _data.get("total_npcs_convinced",        0),
+		"total_bribes_paid":           _data.get("total_bribes_paid",           0),
+		"total_retries":               _data.get("total_retries",               0),
+		"total_tutorial_steps_seen":   _data.get("total_tutorial_steps_seen",   0),
+		"total_tutorial_steps_total":  _data.get("total_tutorial_steps_total",  0),
 	}
 
 
@@ -176,11 +219,14 @@ static func _compute_score(rumors_spread: int, npcs_reached: int, peak_belief: i
 
 static func _blank_record() -> Dictionary:
 	return {
-		"games_played":    0,
-		"wins":            0,
-		"losses":          0,
-		"best_score":      0,
-		"fastest_win_days": -1,
+		"games_played":           0,
+		"wins":                   0,
+		"losses":                 0,
+		"best_score":             0,
+		"fastest_win_days":       -1,
+		"retries":                0,
+		"tutorial_steps_seen":    0,
+		"tutorial_steps_total":   0,
 	}
 
 
