@@ -550,11 +550,13 @@ func _tick_evaluating(
 	if randf() < believe_chance:
 		slot.state = Rumor.RumorState.BELIEVE
 		slot.ticks_in_state = 0
+		_worst_state_dirty = true
 		_record_rumor_history(rumor, subject_id, "believed", tick)
 		_update_schedule_avoidance(rumor)
 	else:
 		slot.state = Rumor.RumorState.REJECT
 		slot.ticks_in_state = 0
+		_worst_state_dirty = true
 		# High-loyalty NPCs who reject a negative rumor about a close ally enter DEFENDING.
 		if _loyalty > 0.7 and not Rumor.is_positive_claim(rumor.claim_type) \
 				and not _is_defending:
@@ -580,6 +582,7 @@ func _tick_believe(
 		if randf() < gamma:
 			slot.state = Rumor.RumorState.REJECT
 			slot.ticks_in_state = 0
+			_worst_state_dirty = true
 			return
 
 	# ── ACT threshold ────────────────────────────────────────────────────────
@@ -587,6 +590,7 @@ func _tick_believe(
 	if slot.ticks_in_state >= act_threshold:
 		slot.state = Rumor.RumorState.ACT
 		slot.ticks_in_state = 0
+		_worst_state_dirty = true
 		_start_act_behavior(slot.rumor, tick)
 		_record_rumor_history(slot.rumor, slot.rumor.subject_npc_id, "act", tick)
 		_apply_credulity_modifier(_CREDULITY_ACT_GAIN)
@@ -596,6 +600,7 @@ func _tick_believe(
 	if _spread_to_neighbours(slot, faction, tick):
 		slot.state = Rumor.RumorState.SPREAD
 		slot.ticks_in_state = 0
+		_worst_state_dirty = true
 		_start_spread_clustering(slot.rumor)
 
 
@@ -924,6 +929,7 @@ func force_believe() -> String:
 		if slot.state == Rumor.RumorState.EVALUATING:
 			slot.state = Rumor.RumorState.BELIEVE
 			slot.ticks_in_state = 0
+			_worst_state_dirty = true
 			return rid
 	return ""
 
