@@ -27,6 +27,7 @@ const STATE_RING_COLOR := {
 	Rumor.RumorState.REJECT:        Color(0.90, 0.15, 0.15, 1.0),
 	Rumor.RumorState.SPREAD:        Color(1.00, 0.50, 0.00, 1.0),
 	Rumor.RumorState.ACT:           Color(0.75, 0.05, 1.00, 1.0),
+	Rumor.RumorState.DEFENDING:     Color(0.50, 0.80, 1.00, 1.0),   # sky blue — matches npc.gd STATE_TINT
 	Rumor.RumorState.CONTRADICTED:  Color(0.75, 0.55, 1.00, 1.0),   # muted purple — matches npc.gd STATE_TINT
 	Rumor.RumorState.EXPIRED:       Color(0.25, 0.25, 0.25, 0.6),
 }
@@ -305,8 +306,8 @@ func _build_legend() -> void:
 	_legend_panel.set_anchor_and_offset(SIDE_RIGHT,  1.0, -210.0)
 	_legend_panel.set_anchor_and_offset(SIDE_LEFT,   1.0, -210.0)
 	_legend_panel.set_anchor_and_offset(SIDE_TOP,    0.0,   10.0)
-	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  265.0)
-	_legend_panel.custom_minimum_size = Vector2(195, 250)
+	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  283.0)
+	_legend_panel.custom_minimum_size = Vector2(195, 268)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.05, 0.03, 0.92)
@@ -318,7 +319,7 @@ func _build_legend() -> void:
 	_legend_label = RichTextLabel.new()
 	_legend_label.bbcode_enabled = true
 	_legend_label.fit_content    = true
-	_legend_label.custom_minimum_size = Vector2(180, 235)
+	_legend_label.custom_minimum_size = Vector2(180, 253)
 
 	_legend_label.append_text("[b][color=white]Social Graph View[/color][/b]  [color=gray][G to hide][/color]\n\n")
 	_legend_label.append_text("[b]Factions[/b]\n")
@@ -331,6 +332,7 @@ func _build_legend() -> void:
 	_legend_label.append_text("[color=#e62626]■[/color] Reject\n")
 	_legend_label.append_text("[color=#ff8000]■[/color] Spread\n")
 	_legend_label.append_text("[color=#bf0dff]■[/color] Act\n")
+	_legend_label.append_text("[color=#80ccff]■[/color] Defending\n")
 	_legend_label.append_text("[color=#bf8cff]■[/color] Contradicted\n")
 	_legend_label.append_text("[color=#404040]■[/color] Expired\n\n")
 	_legend_label.append_text("[b]Edges[/b]\n")
