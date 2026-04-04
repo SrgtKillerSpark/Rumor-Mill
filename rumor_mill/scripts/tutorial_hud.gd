@@ -210,6 +210,13 @@ func _build_ui() -> void:
 	_dismiss_btn.add_theme_stylebox_override("hover",   btn_hover)
 	_dismiss_btn.add_theme_stylebox_override("pressed", btn_hover)
 
+	var btn_focus := StyleBoxFlat.new()
+	btn_focus.bg_color = Color(0, 0, 0, 0)
+	btn_focus.draw_center = false
+	btn_focus.set_border_width_all(2)
+	btn_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	_dismiss_btn.add_theme_stylebox_override("focus", btn_focus)
+
 	_dismiss_btn.add_theme_color_override("font_color",          C_BTN_TEXT)
 	_dismiss_btn.add_theme_color_override("font_hover_color",    C_BTN_TEXT)
 	_dismiss_btn.add_theme_color_override("font_pressed_color",  C_BTN_TEXT)
