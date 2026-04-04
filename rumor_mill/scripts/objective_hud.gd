@@ -37,6 +37,8 @@ var _lbl_believers: Label = null
 
 func _ready() -> void:
 	layer = 4
+	title_label.add_theme_font_size_override("font_size", 20)
+	objective_label.add_theme_font_size_override("font_size", 13)
 	_build_banner()
 	_build_metrics_row()
 
