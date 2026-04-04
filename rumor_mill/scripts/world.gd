@@ -504,13 +504,13 @@ func _apply_active_scenario() -> void:
 	if active_scenario_id == "scenario_3":
 		rival_agent.activate()
 
-	# 8. Inquisitor agent — only active in Scenario 4.
+	# 9. Inquisitor agent — only active in Scenario 4.
 	inquisitor_agent = InquisitorAgent.new()
 	inquisitor_agent.cooldown_offset = int(diff_mods.get("inquisitor_cooldown_offset", 0))
 	if active_scenario_id == "scenario_4":
 		inquisitor_agent.activate()
 
-	# 8. Faction event system — initialise after all subsystems are ready.
+	# 10. Faction event system — initialise after all subsystems are ready.
 	faction_event_system = FactionEventSystem.new()
 	faction_event_system.initialize(self)
 
