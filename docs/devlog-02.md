@@ -99,6 +99,24 @@ The correct play is interception. Let the Inquisitor's scandal claims land, then
 
 ---
 
+### Build Update
+
+Since devlog #1, a few systems shipped worth noting:
+
+**Save / Load** — three manual save slots plus auto-save. Full game state persists across sessions: active rumors, NPC belief states, reputation scores, and the inquisitor's investigation progress. You can walk away mid-scenario and return to an honest state.
+
+**Difficulty presets** — Apprentice, Master, and Spymaster. They adjust mutation rates, NPC credulity floors, and AI opponent aggression. Spymaster mode operates near the parameter edge where a single mistimed seed can collapse a campaign you've been running for ten days.
+
+**Spread Prediction Overlay** — before committing a seed, you can preview the probable propagation radius based on current network state. It is an estimate derived from current β values, not a guarantee. Mutations still fire randomly. Use it to discard obviously bad seeds, not to plan with confidence.
+
+**Post-Scenario Analytics** — after each scenario resolves (win or loss), a summary screen maps your seeding decisions against the full rumor chain and mutation history. The first time you see where a target-shift fired mid-chain and redirected your campaign against someone you didn't intend — displayed as a clean tree diagram — is clarifying.
+
+**Speed controls** — the simulation runs at 1×, 2×, or 4×. Useful late in a scenario once you have the picture and are waiting on propagation to finish. Early play benefits from slow observation.
+
+**Enhanced eavesdrop intelligence** — the eavesdrop system now surfaces more specific information per observed NPC: current belief state on active rumors, relationship edge weights to neighbors, faction standing flags. You are no longer guessing about whether someone is an Anchor before you seed through them.
+
+---
+
 ### Next
 
 Devlog #3 covers the town simulation — thirty NPCs, five factions, daily schedules, and the intel-gathering system. Not how rumors spread, but *who* they're spreading through.
