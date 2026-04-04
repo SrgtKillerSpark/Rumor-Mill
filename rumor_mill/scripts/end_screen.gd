@@ -1,14 +1,17 @@
 extends CanvasLayer
 
-## end_screen.gd — SPA-138 redesign.
+## end_screen.gd — SPA-138 redesign + SPA-212 analytics tab.
 ##
 ## 760x640 expanded panel with:
 ##   1. Win / Fail banner + scenario title
 ##   2. Italic summary narrative (SPA-128 copy)
-##   3. Two-column card row:
-##      Left  — _stats_container: Days, Rumors, NPCs Reached, Peak Belief + bonus
-##      Right — _npc_container:  3 key NPCs with final score and arrow
-##   4. Buttons: Play Again | Next Scenario (dimmed if not applicable) | Main Menu
+##   3. Tab bar: RESULTS | REPLAY (analytics)
+##   4a. Results tab (default):
+##       Left  — _stats_container: Days, Rumors, NPCs Reached, Peak Belief + bonus
+##       Right — _npc_container:  3 key NPCs with final score and arrow
+##   4b. Replay tab (SPA-212):
+##       Rumor timeline bar chart, top influencers, key moments log
+##   5. Buttons: Play Again | Next Scenario (dimmed if not applicable) | Main Menu
 ##
 ## Procedurally built CanvasLayer (layer 30 — above all other HUDs).
 ## Wire via setup(world, day_night) from main.gd.
@@ -190,9 +193,16 @@ var _btn_again:        Button         = null
 var _btn_next:         Button         = null
 var _btn_main_menu:    Button         = null
 
+# ── SPA-212: Analytics tab ───────────────────────────────────────────────────
+var _tab_results:      Button         = null
+var _tab_replay:       Button         = null
+var _results_container: Control       = null   # holds cards_row (existing content)
+var _replay_container:  VBoxContainer = null   # analytics content
+
 # ── Runtime refs ──────────────────────────────────────────────────────────────
 var _world_ref:     Node2D = null
 var _day_night_ref: Node   = null
+var _analytics_ref: ScenarioAnalytics = null
 
 # ── Active scenario id captured on resolve ────────────────────────────────────
 var _current_scenario_id: String = ""
@@ -208,10 +218,11 @@ func _ready() -> void:
 	visible = false
 
 
-## Wire to world and day_night; subscribe to scenario_resolved.
-func setup(world: Node2D, day_night: Node) -> void:
+## Wire to world, day_night, and analytics; subscribe to scenario_resolved.
+func setup(world: Node2D, day_night: Node, analytics: ScenarioAnalytics = null) -> void:
 	_world_ref     = world
 	_day_night_ref = day_night
+	_analytics_ref = analytics
 	if world != null and "scenario_manager" in world and world.scenario_manager != null:
 		world.scenario_manager.scenario_resolved.connect(_on_scenario_resolved)
 
@@ -244,6 +255,11 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	# ── NPC outcomes ──────────────────────────────────────────────────────────
 	_populate_npc_outcomes()
 
+	# ── Analytics (SPA-212) ───────────────────────────────────────────────────
+	if _analytics_ref != null:
+		_analytics_ref.finalize()
+		_populate_replay_tab()
+
 	# ── Next Scenario button ──────────────────────────────────────────────────
 	var next_id := _next_scenario_id(_current_scenario_id)
 	if won and not next_id.is_empty():
@@ -252,6 +268,9 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	else:
 		_btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		_btn_next.disabled = true
+
+	# Default to Results tab.
+	_show_tab_results()
 
 	visible = true
 
@@ -619,23 +638,36 @@ func _build_ui() -> void:
 
 	vbox.add_child(_make_separator())
 
-	# ── Two-column card row ───────────────────────────────────────────────────
-	var cards_row := HBoxContainer.new()
-	cards_row.add_theme_constant_override("separation", 12)
-	cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(cards_row)
+	# ── SPA-212: Tab bar (Results / Replay) ───────────────────────────────────
+	var tab_row := HBoxContainer.new()
+	tab_row.add_theme_constant_override("separation", 4)
+	vbox.add_child(tab_row)
+
+	_tab_results = _make_tab_button("RESULTS", true)
+	_tab_results.pressed.connect(_show_tab_results)
+	tab_row.add_child(_tab_results)
+
+	_tab_replay = _make_tab_button("REPLAY", false)
+	_tab_replay.pressed.connect(_show_tab_replay)
+	tab_row.add_child(_tab_replay)
+
+	# ── Results tab content (existing two-column card row) ────────────────────
+	_results_container = HBoxContainer.new()
+	_results_container.add_theme_constant_override("separation", 12)
+	_results_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(_results_container)
 
 	# Left card — RESULTS / stats
 	var left_card := _make_card()
 	left_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cards_row.add_child(left_card)
+	_results_container.add_child(left_card)
 
 	var left_vbox := VBoxContainer.new()
 	left_vbox.add_theme_constant_override("separation", 6)
 	left_card.add_child(left_vbox)
 
 	var stats_heading := Label.new()
-	stats_heading.text = "RESULTS"
+	stats_heading.text = "STATS"
 	stats_heading.add_theme_font_size_override("font_size", 13)
 	stats_heading.add_theme_color_override("font_color", C_HEADING)
 	left_vbox.add_child(stats_heading)
@@ -649,7 +681,7 @@ func _build_ui() -> void:
 	# Right card — KEY OUTCOMES / NPC rows
 	var right_card := _make_card()
 	right_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cards_row.add_child(right_card)
+	_results_container.add_child(right_card)
 
 	var right_vbox := VBoxContainer.new()
 	right_vbox.add_theme_constant_override("separation", 6)
@@ -666,6 +698,13 @@ func _build_ui() -> void:
 	_npc_container = VBoxContainer.new()
 	_npc_container.add_theme_constant_override("separation", 7)
 	right_vbox.add_child(_npc_container)
+
+	# ── Replay tab content (SPA-212 analytics) ───────────────────────────────
+	_replay_container = VBoxContainer.new()
+	_replay_container.add_theme_constant_override("separation", 8)
+	_replay_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_replay_container.visible = false
+	vbox.add_child(_replay_container)
 
 	vbox.add_child(_make_separator())
 
@@ -735,6 +774,266 @@ func _make_button(label: String, min_width: int) -> Button:
 	btn.add_theme_stylebox_override("hover",  hover)
 	btn.add_theme_color_override("font_color", C_BTN_TEXT)
 	return btn
+
+
+# ── SPA-212: Tab helpers ─────────────────────────────────────────────────────
+
+const C_TAB_ACTIVE   := Color(0.55, 0.38, 0.18, 1.0)
+const C_TAB_INACTIVE := Color(0.20, 0.14, 0.10, 1.0)
+const C_BAR_HIGH     := Color(0.92, 0.78, 0.12, 1.0)   # gold — matches C_WIN
+const C_BAR_MED      := Color(0.85, 0.65, 0.15, 1.0)   # amber
+const C_BAR_LOW      := Color(0.50, 0.45, 0.38, 1.0)   # muted
+const C_MOMENT_SEED  := Color(0.40, 0.75, 0.40, 1.0)   # green
+const C_MOMENT_PEAK  := Color(0.92, 0.78, 0.12, 1.0)   # gold
+const C_MOMENT_BAD   := Color(0.85, 0.18, 0.12, 1.0)   # crimson
+
+
+func _make_tab_button(label_text: String, active: bool) -> Button:
+	var btn := Button.new()
+	btn.text = label_text
+	btn.custom_minimum_size = Vector2(100, 28)
+	btn.add_theme_font_size_override("font_size", 12)
+	btn.add_theme_color_override("font_color", C_BTN_TEXT)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = C_TAB_ACTIVE if active else C_TAB_INACTIVE
+	style.set_border_width_all(1)
+	style.border_color = C_PANEL_BORDER
+	style.set_content_margin_all(4)
+	btn.add_theme_stylebox_override("normal", style)
+	btn.add_theme_stylebox_override("hover", style)
+	btn.add_theme_stylebox_override("pressed", style)
+	return btn
+
+
+func _set_tab_active(btn: Button, active: bool) -> void:
+	var style := btn.get_theme_stylebox("normal") as StyleBoxFlat
+	if style != null:
+		style.bg_color = C_TAB_ACTIVE if active else C_TAB_INACTIVE
+
+
+func _show_tab_results() -> void:
+	_set_tab_active(_tab_results, true)
+	_set_tab_active(_tab_replay, false)
+	if _results_container != null:
+		_results_container.visible = true
+	if _replay_container != null:
+		_replay_container.visible = false
+
+
+func _show_tab_replay() -> void:
+	_set_tab_active(_tab_results, false)
+	_set_tab_active(_tab_replay, true)
+	if _results_container != null:
+		_results_container.visible = false
+	if _replay_container != null:
+		_replay_container.visible = true
+
+
+## Populate the Replay tab with analytics data from ScenarioAnalytics.
+func _populate_replay_tab() -> void:
+	# Clear previous content.
+	for child in _replay_container.get_children():
+		child.queue_free()
+
+	if _analytics_ref == null:
+		return
+
+	# Use a scroll container for the replay content.
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_replay_container.add_child(scroll)
+
+	var replay_content := VBoxContainer.new()
+	replay_content.add_theme_constant_override("separation", 10)
+	replay_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(replay_content)
+
+	# ── Section 1: Rumor Timeline ─────────────────────────────────────────────
+	_build_timeline_section(replay_content)
+
+	_add_separator_to(replay_content)
+
+	# ── Section 2: Top Influencers ────────────────────────────────────────────
+	_build_influence_section(replay_content)
+
+	_add_separator_to(replay_content)
+
+	# ── Section 3: Key Moments ────────────────────────────────────────────────
+	_build_moments_section(replay_content)
+
+
+func _build_timeline_section(parent: VBoxContainer) -> void:
+	var heading := Label.new()
+	heading.text = "RUMOR TIMELINE"
+	heading.add_theme_font_size_override("font_size", 13)
+	heading.add_theme_color_override("font_color", C_HEADING)
+	parent.add_child(heading)
+
+	var data: Array = _analytics_ref.get_timeline_data()
+	if data.is_empty():
+		var empty_lbl := Label.new()
+		empty_lbl.text = "No rumor activity recorded."
+		empty_lbl.add_theme_color_override("font_color", C_MUTED)
+		parent.add_child(empty_lbl)
+		return
+
+	# Find max for scaling bars.
+	var max_count := 1
+	for entry in data:
+		var count: int = entry.get("believer_count", 0)
+		if count > max_count:
+			max_count = count
+		var live: int = entry.get("live_count", 0)
+		if live > max_count:
+			max_count = live
+
+	# Draw horizontal bar chart (one row per day).
+	for entry in data:
+		var day: int = entry.get("day", 0)
+		var live: int = entry.get("live_count", 0)
+		var believers: int = entry.get("believer_count", 0)
+
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+
+		# Day label.
+		var day_lbl := Label.new()
+		day_lbl.text = "Day %d" % day
+		day_lbl.custom_minimum_size = Vector2(50, 0)
+		day_lbl.add_theme_font_size_override("font_size", 11)
+		day_lbl.add_theme_color_override("font_color", C_STAT_LABEL)
+		row.add_child(day_lbl)
+
+		# Bar for believers (primary metric).
+		var bar_width: float = (float(believers) / float(max_count)) * 300.0
+		var bar := ColorRect.new()
+		bar.custom_minimum_size = Vector2(maxf(bar_width, 2.0), 12)
+		bar.color = _bar_color(believers, max_count)
+		row.add_child(bar)
+
+		# Count label.
+		var count_lbl := Label.new()
+		count_lbl.text = "%d believers / %d active" % [believers, live]
+		count_lbl.add_theme_font_size_override("font_size", 10)
+		count_lbl.add_theme_color_override("font_color", C_MUTED)
+		row.add_child(count_lbl)
+
+		parent.add_child(row)
+
+
+func _bar_color(value: int, max_val: int) -> Color:
+	var ratio := float(value) / float(max_val) if max_val > 0 else 0.0
+	if ratio > 0.6:
+		return C_BAR_HIGH
+	elif ratio > 0.3:
+		return C_BAR_MED
+	return C_BAR_LOW
+
+
+func _build_influence_section(parent: VBoxContainer) -> void:
+	var heading := Label.new()
+	heading.text = "TOP INFLUENCERS"
+	heading.add_theme_font_size_override("font_size", 13)
+	heading.add_theme_color_override("font_color", C_HEADING)
+	parent.add_child(heading)
+
+	var ranking: Array = _analytics_ref.get_influence_ranking(5)
+	if ranking.is_empty():
+		var empty_lbl := Label.new()
+		empty_lbl.text = "No rumor transmissions recorded."
+		empty_lbl.add_theme_color_override("font_color", C_MUTED)
+		parent.add_child(empty_lbl)
+		return
+
+	for i in range(ranking.size()):
+		var entry: Dictionary = ranking[i]
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+
+		# Rank number.
+		var rank_lbl := Label.new()
+		rank_lbl.text = "#%d" % (i + 1)
+		rank_lbl.custom_minimum_size = Vector2(28, 0)
+		rank_lbl.add_theme_font_size_override("font_size", 12)
+		rank_lbl.add_theme_color_override("font_color", C_SUBHEADING)
+		row.add_child(rank_lbl)
+
+		# NPC name.
+		var name_lbl := Label.new()
+		name_lbl.text = str(entry.get("name", "?"))
+		name_lbl.custom_minimum_size = Vector2(140, 0)
+		name_lbl.add_theme_font_size_override("font_size", 12)
+		name_lbl.add_theme_color_override("font_color", C_HEADING)
+		row.add_child(name_lbl)
+
+		# Spread / received stats.
+		var stats_lbl := Label.new()
+		stats_lbl.text = "%d spread, %d received" % [
+			entry.get("spread_count", 0),
+			entry.get("received_count", 0),
+		]
+		stats_lbl.add_theme_font_size_override("font_size", 11)
+		stats_lbl.add_theme_color_override("font_color", C_BODY)
+		row.add_child(stats_lbl)
+
+		parent.add_child(row)
+
+
+func _build_moments_section(parent: VBoxContainer) -> void:
+	var heading := Label.new()
+	heading.text = "KEY MOMENTS"
+	heading.add_theme_font_size_override("font_size", 13)
+	heading.add_theme_color_override("font_color", C_HEADING)
+	parent.add_child(heading)
+
+	var moments: Array = _analytics_ref.get_key_moments()
+	if moments.is_empty():
+		var empty_lbl := Label.new()
+		empty_lbl.text = "No notable moments detected."
+		empty_lbl.add_theme_color_override("font_color", C_MUTED)
+		parent.add_child(empty_lbl)
+		return
+
+	# Show up to 8 key moments.
+	var shown := 0
+	for moment in moments:
+		if shown >= 8:
+			break
+
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+
+		# Day marker.
+		var day_lbl := Label.new()
+		day_lbl.text = "Day %d" % moment.get("day", 0)
+		day_lbl.custom_minimum_size = Vector2(50, 0)
+		day_lbl.add_theme_font_size_override("font_size", 11)
+		day_lbl.add_theme_color_override("font_color", C_SUBHEADING)
+		row.add_child(day_lbl)
+
+		# Moment text.
+		var text_lbl := Label.new()
+		text_lbl.text = str(moment.get("text", ""))
+		text_lbl.add_theme_font_size_override("font_size", 11)
+		text_lbl.add_theme_color_override("font_color", _moment_color(str(moment.get("type", ""))))
+		text_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		text_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(text_lbl)
+
+		parent.add_child(row)
+		shown += 1
+
+
+func _moment_color(moment_type: String) -> Color:
+	match moment_type:
+		"seed":          return C_MOMENT_SEED
+		"peak":          return C_MOMENT_PEAK
+		"social_death":  return C_MOMENT_BAD
+		"contradiction": return C_MOMENT_BAD
+		"state_change":  return C_BAR_MED
+		_:               return C_BODY
 
 
 # ── Button handlers ───────────────────────────────────────────────────────────

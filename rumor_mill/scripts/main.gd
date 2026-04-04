@@ -38,6 +38,9 @@ var _tutorial_banner: CanvasLayer = null   # S1 only
 # ── Sprint 6: end screen (created programmatically) ───────────────────────────
 var _end_screen: CanvasLayer = null
 
+# ── SPA-212: Analytics data collector ─────────────────────────────────────────
+var _analytics: ScenarioAnalytics = null
+
 # Prevent duplicate tooltip triggers for observe / eavesdrop / npc_state_change.
 var _observe_tooltip_fired:          bool = false
 var _eavesdrop_tooltip_fired:        bool = false
@@ -658,11 +661,15 @@ func _on_journal_visibility_changed() -> void:
 # ── Sprint 6: End Screen ───────────────────────────────────────────────────────
 
 func _init_end_screen() -> void:
+	# SPA-212: Create analytics collector and wire to world signals.
+	_analytics = ScenarioAnalytics.new()
+	_analytics.setup(world, day_night)
+
 	_end_screen = preload("res://scripts/end_screen.gd").new()
 	_end_screen.name = "EndScreen"
 	add_child(_end_screen)
-	_end_screen.setup(world, day_night)
-	print("Main: End Screen wired")
+	_end_screen.setup(world, day_night, _analytics)
+	print("Main: End Screen + Analytics wired")
 
 
 # ── Sprint 7: Audio ────────────────────────────────────────────────────────────
