@@ -655,7 +655,7 @@ func _spread_to_neighbours(
 				_sociability, t_credulity, edge_w, spreader_faction, t_faction, heat_mod
 			)
 		else:
-			beta = _sociability * t_credulity * edge_w * 2.5
+			beta = _sociability * t_credulity * edge_w * 1.8
 
 		if randf() >= beta:
 			continue
