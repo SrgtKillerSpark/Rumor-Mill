@@ -87,6 +87,11 @@ func _open() -> void:
 	if _status_label != null:
 		_status_label.text = ""
 	_hide_slot_picker()
+	# Set keyboard focus on the first menu button.
+	if _main_container != null and _main_container.get_child_count() > 0:
+		var first := _main_container.get_child(0)
+		if first is Button:
+			first.call_deferred("grab_focus")
 
 
 func _close() -> void:

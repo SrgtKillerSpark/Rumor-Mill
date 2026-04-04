@@ -133,6 +133,58 @@ func _show_phase(p: Phase) -> void:
 	_panel_intro.visible    = (p == Phase.INTRO)
 	_panel_settings.visible = (p == Phase.SETTINGS)
 	_panel_credits.visible  = (p == Phase.CREDITS)
+	# Set initial keyboard focus for the active phase.
+	call_deferred("_set_phase_focus", p)
+
+
+## Assigns keyboard focus to the first interactive element in the active phase.
+func _set_phase_focus(p: Phase) -> void:
+	match p:
+		Phase.MAIN:
+			_grab_first_button(_panel_main)
+		Phase.SELECT:
+			_grab_first_button(_panel_select)
+		Phase.BRIEFING:
+			if _btn_begin != null:
+				_btn_begin.grab_focus()
+		Phase.INTRO:
+			_grab_first_button(_panel_intro)
+		Phase.SETTINGS:
+			_grab_first_button(_panel_settings)
+		Phase.CREDITS:
+			_grab_first_button(_panel_credits)
+
+
+## Finds and focuses the first Button descendant of the given node.
+func _grab_first_button(node: Node) -> void:
+	for child in node.get_children():
+		if child is Button:
+			child.grab_focus()
+			return
+		_grab_first_button(child)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE:
+			match _phase:
+				Phase.SELECT:
+					_on_select_back()
+					get_viewport().set_input_as_handled()
+				Phase.BRIEFING:
+					_on_briefing_back()
+					get_viewport().set_input_as_handled()
+				Phase.INTRO:
+					_on_intro_back()
+					get_viewport().set_input_as_handled()
+				Phase.SETTINGS:
+					_on_settings_back()
+					get_viewport().set_input_as_handled()
+				Phase.CREDITS:
+					_on_credits_back()
+					get_viewport().set_input_as_handled()
 
 
 # ── Backdrop ──────────────────────────────────────────────────────────────────

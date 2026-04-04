@@ -100,6 +100,18 @@ func toggle() -> void:
 		AudioManager.play_sfx("rumor_panel_open")
 		_open_panel(PANEL_SUBJECT)
 		panel.visible = true
+		# Set keyboard focus on the Back/Next nav buttons when panel opens.
+		if _btn_next != null:
+			_btn_next.call_deferred("grab_focus")
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not panel.visible:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE:
+			toggle()
+			get_viewport().set_input_as_handled()
 
 
 # ── Dynamic panel construction ────────────────────────────────────────────────

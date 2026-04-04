@@ -111,11 +111,15 @@ func _refresh_time() -> void:
 func _build_banner() -> void:
 	_banner_label = Label.new()
 	_banner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_banner_label.anchors_preset = Control.PRESET_TOP_WIDE
+	# Use proportional anchoring so the banner stays below the HUD panel on all resolutions.
+	_banner_label.anchor_left = 0.05
+	_banner_label.anchor_right = 0.95
+	_banner_label.anchor_top = 0.0
+	_banner_label.anchor_bottom = 0.0
 	_banner_label.offset_top = 110.0
 	_banner_label.offset_bottom = 180.0
-	_banner_label.offset_left = 40.0
-	_banner_label.offset_right = -40.0
+	_banner_label.offset_left = 0.0
+	_banner_label.offset_right = 0.0
 	_banner_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_banner_label.add_theme_font_size_override("font_size", 13)
 	_banner_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55, 1.0))

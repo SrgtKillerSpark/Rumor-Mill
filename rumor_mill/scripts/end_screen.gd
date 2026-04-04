@@ -274,6 +274,10 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 
 	visible = true
 
+	# Set keyboard focus on the first action button.
+	if _btn_play_again != null:
+		_btn_play_again.call_deferred("grab_focus")
+
 	# ── Count-up tween ────────────────────────────────────────────────────────
 	_start_count_up_tween()
 
@@ -770,8 +774,15 @@ func _make_button(label: String, min_width: int) -> Button:
 	hover.border_color = C_PANEL_BORDER
 	hover.set_content_margin_all(8)
 
+	var focus_style := StyleBoxFlat.new()
+	focus_style.bg_color = C_BTN_HOVER
+	focus_style.set_border_width_all(2)
+	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	focus_style.set_content_margin_all(8)
+
 	btn.add_theme_stylebox_override("normal", normal)
 	btn.add_theme_stylebox_override("hover",  hover)
+	btn.add_theme_stylebox_override("focus",  focus_style)
 	btn.add_theme_color_override("font_color", C_BTN_TEXT)
 	return btn
 
@@ -800,9 +811,23 @@ func _make_tab_button(label_text: String, active: bool) -> Button:
 	style.set_border_width_all(1)
 	style.border_color = C_PANEL_BORDER
 	style.set_content_margin_all(4)
+
+	var hover_style := StyleBoxFlat.new()
+	hover_style.bg_color = C_TAB_ACTIVE if active else Color(0.30, 0.22, 0.14, 1.0)
+	hover_style.set_border_width_all(1)
+	hover_style.border_color = C_PANEL_BORDER
+	hover_style.set_content_margin_all(4)
+
+	var focus_style := StyleBoxFlat.new()
+	focus_style.bg_color = C_TAB_ACTIVE if active else C_TAB_INACTIVE
+	focus_style.set_border_width_all(2)
+	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	focus_style.set_content_margin_all(4)
+
 	btn.add_theme_stylebox_override("normal", style)
-	btn.add_theme_stylebox_override("hover", style)
+	btn.add_theme_stylebox_override("hover", hover_style)
 	btn.add_theme_stylebox_override("pressed", style)
+	btn.add_theme_stylebox_override("focus", focus_style)
 	return btn
 
 
