@@ -371,9 +371,10 @@ func _record_player_stats(scenario_id: int, won: bool) -> void:
 			if snap != null:
 				peak_belief = snap.score
 
-	# Bribe charges start at 2 for scenario 2+ (not dawn-refreshed).
+	# Bribe charges start at 2 for scenarios where bribery is allowed (SPA-406).
 	var bribes_paid := 0
-	if scenario_id > 1 and _world_ref.intel_store != null:
+	var bribery_allowed := scenario_id > 1 and _current_scenario_id != "scenario_4"
+	if bribery_allowed and _world_ref.intel_store != null:
 		bribes_paid = max(0, 2 - _world_ref.intel_store.bribe_charges)
 
 	PlayerStats.record_game(
