@@ -92,6 +92,50 @@ func initialize(world: Node) -> void:
 	_schedule_events()
 
 
+## Restore serialised state after a save-game load.
+## Called by SaveManager.apply_pending_load() after initialize() has already run.
+## Replaces the freshly-scheduled events with the saved schedule and re-applies
+## any side-effects that were active at save time.
+func restore_from_data(d: Dictionary) -> void:
+	if d.is_empty():
+		return
+	_events.clear()
+	for ed in d.get("events", []):
+		var ev       := FactionEvent.new()
+		ev.event_type       = str(ed.get("event_type", ""))
+		ev.trigger_day      = int(ed.get("trigger_day", 0))
+		ev.duration_days    = int(ed.get("duration_days", 0))
+		ev.affected_npc_ids = ed.get("affected_npc_ids", []).duplicate()
+		ev.metadata         = ed.get("metadata", {}).duplicate(true)
+		ev.is_active        = bool(ed.get("is_active", false))
+		ev.is_expired       = bool(ed.get("is_expired", false))
+		_events.append(ev)
+	eavesdrop_hotspots = d.get("eavesdrop_hotspots", {}).duplicate()
+	# Re-apply side-effects for events that were active at save time.
+	for ev in _events:
+		if ev.is_active and not ev.is_expired:
+			_reapply_active_effects(ev)
+
+
+## Re-applies side-effects for an active event without re-running full activation.
+## Avoids re-mutating the social graph (already restored), re-emitting signals,
+## or duplicating NPC schedule overrides.
+func _reapply_active_effects(ev: FactionEvent) -> void:
+	match ev.event_type:
+		"guard_crackdown":
+			if _intel_store != null:
+				_intel_store.heat_decay_override = GUARD_CRACKDOWN_HEAT_DECAY
+		"religious_festival", "noble_feast":
+			var injected_map: Dictionary = ev.metadata.get("injected_overrides", {})
+			for npc_id in injected_map:
+				var npc: Node = _find_npc(npc_id)
+				if npc == null:
+					continue
+				for entry in injected_map[npc_id]:
+					if not npc.day_pattern_overrides.has(entry):
+						npc.day_pattern_overrides.append(entry)
+
+
 ## Randomly picks 1-2 distinct event types and assigns staggered trigger days.
 func _schedule_events() -> void:
 	var pool: Array = ALL_EVENT_TYPES.duplicate()

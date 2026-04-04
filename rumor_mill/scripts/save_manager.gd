@@ -88,10 +88,11 @@ static func save_game(
 		"intel_store":      _serialize_intel_store(world.intel_store),
 		"reputation":       _serialize_reputation(world.reputation_system),
 		"scenario":         _serialize_scenario_manager(world.scenario_manager),
-		"rival_agent":        _serialize_rival_agent(world.rival_agent),
-		"inquisitor_agent":   _serialize_inquisitor_agent(world.inquisitor_agent),
-		"socially_dead_ids":  world._socially_dead_ids.keys(),
-		"timeline":           timeline,
+		"rival_agent":          _serialize_rival_agent(world.rival_agent),
+		"inquisitor_agent":     _serialize_inquisitor_agent(world.inquisitor_agent),
+		"faction_event_system": _serialize_faction_event_system(world.faction_event_system),
+		"socially_dead_ids":    world._socially_dead_ids.keys(),
+		"timeline":             timeline,
 	}
 
 	var path := save_path(world.active_scenario_id, slot)
@@ -166,6 +167,7 @@ static func apply_pending_load(
 	_restore_scenario_manager(world.scenario_manager, data.get("scenario", {}))
 	_restore_rival_agent(world.rival_agent, data.get("rival_agent", {}))
 	_restore_inquisitor_agent(world.inquisitor_agent, data.get("inquisitor_agent", {}))
+	_restore_faction_event_system(world.faction_event_system, data.get("faction_event_system", {}))
 	world._socially_dead_ids.clear()
 	for npc_id in data.get("socially_dead_ids", []):
 		world._socially_dead_ids[npc_id] = true
@@ -482,3 +484,29 @@ static func _restore_inquisitor_agent(ia: InquisitorAgent, d: Dictionary) -> voi
 	ia._active        = bool(d.get("active", false))
 	ia._last_seed_day = int(d.get("last_seed_day", 0))
 	ia._target_index  = int(d.get("target_index", 0))
+
+
+static func _serialize_faction_event_system(fes: FactionEventSystem) -> Dictionary:
+	if fes == null:
+		return {}
+	var events: Array = []
+	for ev in fes._events:
+		events.append({
+			"event_type":       ev.event_type,
+			"trigger_day":      ev.trigger_day,
+			"duration_days":    ev.duration_days,
+			"affected_npc_ids": ev.affected_npc_ids.duplicate(),
+			"metadata":         ev.metadata.duplicate(true),
+			"is_active":        ev.is_active,
+			"is_expired":       ev.is_expired,
+		})
+	return {
+		"events":             events,
+		"eavesdrop_hotspots": fes.eavesdrop_hotspots.duplicate(),
+	}
+
+
+static func _restore_faction_event_system(fes: FactionEventSystem, d: Dictionary) -> void:
+	if fes == null or d.is_empty():
+		return
+	fes.restore_from_data(d)
