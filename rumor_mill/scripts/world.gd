@@ -680,7 +680,6 @@ func seed_rumor_from_player(
 		rumor.current_believability = minf(1.0, rumor.current_believability + evidence_item.believability_bonus)
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
 		rumor.bolstered_by_evidence = true
-			evidence_item.type, rumor_id, rumor.current_believability, rumor.mutability])
 
 	# Chain detection: check if this subject already has an active rumor that
 	# creates a same-type, escalation, or contradiction chain.
@@ -713,9 +712,6 @@ func seed_rumor_from_player(
 	if intel_store != null:
 		intel_store.add_heat(seed_target_npc_id, 12.0)
 
-		rumor_id, claim_id, intensity,
-		seed_target_npc.npc_data.get("name", "?"),
-		subject_npc.npc_data.get("name", "?")])
 	return rumor_id
 
 
@@ -846,8 +842,4 @@ func inject_rumor(
 
 	target_npc.hear_rumor(rumor, source_faction)
 
-		rumor_id, claim_type_str, intensity, lineage_parent_id,
-		target_npc.npc_data.get("name", "?"),
-		subject_id
-	])
 	return rumor_id
