@@ -11,6 +11,9 @@
 
 **Title:** Rumor Mill is out on Steam Early Access
 
+**Price:** [PRICE] / Early Access launch discount: [DISCOUNT PRICE] until [DATE]
+**Trailer:** [TRAILER LINK — add when available]
+
 ---
 
 Rumor Mill is live on Steam Early Access.
@@ -55,12 +58,28 @@ Thank you for the follows, wishlists, and questions about the SIR model.
 
 ## 2. Launch Week Social Posts
 
-*Five posts ready to publish. Use directly or adjust timing to fit actual launch date.*
+*Six posts covering day -1 through end-of-week. Use directly or adjust timing to fit actual launch date.*
 *See `docs/launch-week-campaign.md` for full 7-day posting schedule and platform-specific rules.*
 
 ---
 
-### Post 1 — Launch Day (Twitter/X, Mastodon)
+### Post 1 — Day -1: Teaser (Twitter/X, Mastodon)
+
+> Tomorrow.
+>
+> Rumor Mill — medieval social strategy — launches on Steam Early Access.
+>
+> No combat. 30 NPCs. One town. Your only weapon is information.
+>
+> Wishlist → [STEAM LINK] #indiedev #RumorMill #godotengine
+
+*One screenshot: Social Graph Overlay at full spread — amber threads across faction clusters, no UI labels. Let the network speak.*
+
+*Mastodon version — same copy, swap Steam link for itch.io link.*
+
+---
+
+### Post 2 — Launch Day (Twitter/X, Mastodon)
 
 > Rumor Mill is live on Steam Early Access.
 >
@@ -74,7 +93,37 @@ Thank you for the follows, wishlists, and questions about the SIR model.
 
 ---
 
-### Post 2 — Day 2: The Social Graph (Twitter/X)
+### Post 3 — Day +1: Review Highlights (Twitter/X)
+
+*Fill in from launch day comments and reviews before posting. Use Variant A if you have specific player observations worth engaging with; use Variant B as the fallback.*
+
+**Variant A (preferred):**
+
+> Day 1 of Rumor Mill on Steam Early Access.
+>
+> [Fill in the most interesting/recurring player observation from launch day — one specific thing, not a general summary.]
+>
+> [If it warrants a direct response or clarification, add one sentence here.]
+>
+> If you're just starting: G key opens the Social Graph Overlay. It changes how the game reads.
+>
+> [STEAM LINK] #indiedev #RumorMill
+
+**Variant B (fallback if reviews are thin):**
+
+> Early Access Day 1 is done.
+>
+> Thank you for the wishlists, plays, and first bug reports.
+>
+> One note for new players: the eavesdrop system (E key) shows you NPC belief states and relationship edge weights before you commit to a seed. Most players discover this by accident around turn 5. It's not an accident — use it earlier.
+>
+> [STEAM LINK] #indiedev #RumorMill
+
+*Do not fabricate player reactions or metrics. If nothing notable happened, Variant B is enough.*
+
+---
+
+### Post 4 — Day +2 (Mid-Week): The Social Graph (Twitter/X)
 
 > This is what a rumor looks like in transit.
 >
@@ -88,7 +137,7 @@ Thank you for the follows, wishlists, and questions about the SIR model.
 
 ---
 
-### Post 3 — Day 3: Behind the Mechanic (Twitter/X Thread — 3 tweets)
+### Post 5 — Day +3 (Mid-Week): Behind the Mechanic (Twitter/X Thread — 3 tweets)
 
 > How does gossip spread in Rumor Mill? Short version. 🧵 #indiedev #RumorMill
 
@@ -111,7 +160,7 @@ Thank you for the follows, wishlists, and questions about the SIR model.
 
 ---
 
-### Post 4 — Day 4: The Scenarios (Twitter/X)
+### Post 6 — Day +4: Feature Spotlight — The Scenarios (Twitter/X)
 
 > Rumor Mill has 4 scenarios. Each asks a different strategic question.
 >
@@ -126,7 +175,7 @@ Thank you for the follows, wishlists, and questions about the SIR model.
 
 ---
 
-### Post 5 — Day 5: #ScreenshotSaturday / Week Close (Twitter/X or Mastodon)
+### Post 7 — Day +5: End-of-Week Thank You / #ScreenshotSaturday (Twitter/X or Mastodon)
 
 > One week of Rumor Mill on Steam Early Access.
 >
@@ -235,9 +284,9 @@ Acknowledge briefly if it raises a specific point worth responding to. Skip gene
 
 ---
 
-## 4. Press Outreach Email
+## 4. Press Outreach Email — Journalists & Reviewers
 
-*For indie game journalists, reviewers, and YouTubers. Short, factual, no hyperbole.*
+*For indie game journalists and written reviewers. Short, factual, no hyperbole.*
 *Send to relevant contacts 1–3 days before or on launch day. Personalize [NAME] and [THEIR WORK] fields.*
 
 ---
@@ -272,6 +321,43 @@ Happy to provide a Steam key, answer questions about the systems, or send additi
 
 ---
 
-*Document version: 1.0 — 2026-04-04*
-*Task: [SPA-257](/SPA/issues/SPA-257)*
+## 5. Press/Influencer Outreach — YouTubers & Streamers
+
+*For gaming YouTubers and streamers covering strategy, simulation, or "games that make you think." More visual-forward and concise than the journalist pitch — their audience wants to watch the moment something interesting happens on screen.*
+*Send 1–3 days before or on launch day. Personalize [NAME] and [THEIR CHANNEL] fields.*
+
+---
+
+**Subject:** Rumor Mill — medieval gossip strategy, Steam Early Access — press key + screenshots available
+
+---
+
+Hi [NAME],
+
+I make a game called Rumor Mill and I think it might fit [THEIR CHANNEL].
+
+Short version: you're a hired agent in a medieval town of thirty NPCs. No combat. Your only tool is planting rumors and watching them spread through a live social network — mutating, stalling, and accelerating based on who picks them up and why.
+
+There's a real-time Social Graph Overlay showing every active rumor thread as amber lines crossing faction clusters. When you seed a story and watch it reach the wrong person mid-chain, detonate into something you didn't intend, or quietly die before it reaches your target — it reads on camera. The mechanics are visible.
+
+It launched on Steam Early Access today. Four handcrafted scenarios, including one where you're playing purely on defense — protecting three people from an inquisitor's propaganda campaign while he escalates pressure in three phases.
+
+**Steam:** [LINK]
+**itch.io (devlogs and full description):** [LINK]
+**Press kit (fact sheet, screenshots, positioning):** [LINK]
+
+Happy to send a key, answer questions about how the systems work, or pull specific screenshots for thumbnails. Reply here or at [EMAIL].
+
+— SrgtKillerSpark
+
+---
+
+*Personalization note: if they cover strategy games — reference the comparable titles (Crusader Kings, Disco Elysium). If they cover "weird indie games" or "games with interesting systems" — lead with the propagation model angle. The Social Graph Overlay screenshot is the single best hook asset for thumbnail use.*
+
+*Key difference from journalist pitch: streamers need a "will this look interesting on stream?" answer. The SIR model is interesting content. The social graph is visual. The target-shift mechanic creates unpredictable moments — mention it if they like chaos or emergent gameplay.*
+
+---
+
+*Document version: 1.1 — 2026-04-04*
+*Tasks: [SPA-257](/SPA/issues/SPA-257), [SPA-278](/SPA/issues/SPA-278)*
 *Builds on: `docs/launch-week-campaign.md` ([SPA-247](/SPA/issues/SPA-247)), `docs/press-kit.md`, `docs/steam-store-page-final.md`, `docs/narrative-identity.md`*
