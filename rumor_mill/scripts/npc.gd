@@ -5,9 +5,9 @@ extends Node2D
 ## Sprint 4: full SIR diffusion model.
 ##
 ## Spread uses the β formula via PropagationEngine:
-##   β = sociability_spreader × credulity_target × edge_weight × faction_mod × 2.5
+##   β = sociability_spreader × credulity_target × edge_weight × faction_mod × 1.8
 ## Recovery from BELIEVE uses the γ formula:
-##   γ = loyalty × (1 − temperament) × 0.35
+##   γ = loyalty × (1 − temperament) × 0.30
 ## Mutations use PropagationEngine.try_mutate() (4 independent types).
 ## Shelf-life expiry is detected via Rumor.is_expired() after PropagationEngine.tick_decay().
 ##

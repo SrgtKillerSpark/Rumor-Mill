@@ -474,12 +474,12 @@ func _apply_active_scenario() -> void:
 		propagation_engine.target_shift_excluded_ids.assign(excluded)
 		if not excluded.is_empty():
 
-	# 6. Heat + Bribery: disabled in Scenario 1 (tutorial), active from Scenario 2 onward.
+	# 6. Heat + Bribery: disabled in Scenario 1 (tutorial) and Scenario 4 (pure defense).
 	if intel_store != null:
 		var non_tutorial := (active_scenario_id != "scenario_1")
+		var bribery_allowed := non_tutorial and (active_scenario_id != "scenario_4")
 		intel_store.heat_enabled   = non_tutorial
-		intel_store.bribe_charges  = 2 if non_tutorial else 0
-			"enabled (2 favors)" if non_tutorial else "disabled", active_scenario_id])
+		intel_store.bribe_charges  = 2 if bribery_allowed else 0
 
 	# 7. Difficulty modifiers — adjust action budgets, heat decay, time limit, rival speed.
 	var diff_mods: Dictionary = GameState.get_difficulty_modifiers(GameState.selected_difficulty)

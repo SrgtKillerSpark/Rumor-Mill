@@ -175,7 +175,6 @@ func _check_deadline_warnings(current_tick: int) -> void:
 		if fraction >= threshold and not _deadline_warnings_fired.has(threshold):
 			_deadline_warnings_fired[threshold] = true
 			deadline_warning.emit(threshold, days_remaining)
-				threshold * 100.0, days_remaining])
 
 
 ## Called when the player is caught eavesdropping. Fails Scenario 1 if still active.
