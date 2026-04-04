@@ -658,6 +658,13 @@ func seed_rumor_from_player(
 		print("[World] Evidence '%s' applied to '%s' — believability=%.2f mutability=%.2f" % [
 			evidence_item.type, rumor_id, rumor.current_believability, rumor.mutability])
 
+	# Chain detection: check if this subject already has an active rumor that
+	# creates a same-type, escalation, or contradiction chain.
+	var chain_type: PropagationEngine.ChainType = PropagationEngine.ChainType.NONE
+	if propagation_engine != null:
+		var chain_info := propagation_engine.detect_chain(subject_npc_id, claim_type)
+		chain_type = propagation_engine.apply_chain_bonus(rumor, chain_info)
+
 	var source_faction: String = seed_target_npc.npc_data.get("faction", "")
 
 	# Register in the propagation engine before seeding so shelf-life decay starts.
@@ -665,6 +672,18 @@ func seed_rumor_from_player(
 		propagation_engine.register_rumor(rumor)
 
 	seed_target_npc.hear_rumor(rumor, source_faction)
+
+	# Contradiction chains accelerate the CONTRADICTED transition on NPCs that
+	# already hold the opposing rumor.  Force any NPC currently in SPREAD/ACT
+	# for the existing opposing rumor to transition to CONTRADICTED immediately.
+	if chain_type == PropagationEngine.ChainType.CONTRADICTION:
+		for npc in npcs:
+			for slot in npc.rumor_slots.values():
+				if slot.rumor.subject_npc_id == subject_npc_id \
+						and Rumor.is_positive_claim(slot.rumor.claim_type) != Rumor.is_positive_claim(claim_type) \
+						and slot.state in [Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+					slot.state = Rumor.RumorState.CONTRADICTED
+					slot.ticks_in_state = 0
 
 	# Heat: +12 to the seed NPC (player has used them as a known relay).
 	if intel_store != null:

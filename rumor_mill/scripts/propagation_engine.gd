@@ -31,6 +31,16 @@ const OPPOSING_PAIRS: Array = [
 	["noble", "clergy"],
 ]
 
+# ── Chain type constants ──────────────────────────────────────────────────────
+enum ChainType { NONE, SAME_TYPE, ESCALATION, CONTRADICTION }
+
+# Escalation pairs: seeding the value type when the key type is already active
+# on the same subject triggers an escalation chain.
+const ESCALATION_PAIRS: Dictionary = {
+	Rumor.ClaimType.SCANDAL:  Rumor.ClaimType.HERESY,
+	Rumor.ClaimType.ILLNESS:  Rumor.ClaimType.DEATH,
+}
+
 # ── Live rumor registry ───────────────────────────────────────────────────────
 # rumor_id → Rumor  (all active, non-expired rumors)
 var live_rumors: Dictionary = {}
@@ -266,6 +276,74 @@ func apply_relay_heat(npc_id: String, rumor_id: String) -> void:
 		if rid.begins_with("rp_"):
 			intel_store_ref.add_heat(npc_id, 2.0)
 			return
+
+
+# ── Rumor chain detection & bonuses ──────────────────────────────────────────
+
+## Detect whether seeding a new rumor of `new_claim_type` about `subject_npc_id`
+## would form a chain with an already-active rumor on the same subject.
+## Returns { "chain_type": ChainType, "existing_rumor": Rumor or null }.
+func detect_chain(subject_npc_id: String, new_claim_type: Rumor.ClaimType) -> Dictionary:
+	var result := { "chain_type": ChainType.NONE, "existing_rumor": null }
+
+	for rid in live_rumors:
+		var r: Rumor = live_rumors[rid]
+		if r.subject_npc_id != subject_npc_id:
+			continue
+
+		# Escalation: existing rumor is the "from" type and new claim is the "to" type.
+		if ESCALATION_PAIRS.has(r.claim_type) and ESCALATION_PAIRS[r.claim_type] == new_claim_type:
+			result.chain_type = ChainType.ESCALATION
+			result.existing_rumor = r
+			return result  # Escalation takes priority
+
+		# Contradiction: one positive, one negative about the same subject.
+		var existing_positive := Rumor.is_positive_claim(r.claim_type)
+		var new_positive      := Rumor.is_positive_claim(new_claim_type)
+		if existing_positive != new_positive:
+			if result.chain_type != ChainType.ESCALATION:
+				result.chain_type = ChainType.CONTRADICTION
+				result.existing_rumor = r
+				# Don't return — keep scanning for a possible escalation match.
+
+		# Same-type: identical claim type already active on same subject.
+		if r.claim_type == new_claim_type:
+			if result.chain_type == ChainType.NONE:
+				result.chain_type = ChainType.SAME_TYPE
+				result.existing_rumor = r
+
+	return result
+
+
+## Apply chain bonuses to a newly created rumor based on the detected chain.
+## Mutates `rumor` in place. Returns the ChainType applied.
+func apply_chain_bonus(rumor: Rumor, chain_info: Dictionary) -> ChainType:
+	var ct: ChainType = chain_info.get("chain_type", ChainType.NONE) as ChainType
+	match ct:
+		ChainType.SAME_TYPE:
+			rumor.current_believability = minf(1.0, rumor.current_believability + 0.15)
+			rumor.intensity = mini(rumor.intensity + 1, 5)
+			if OS.is_debug_build():
+				print("[PropagationEngine] Same-type chain on '%s': +0.15 believe, +1 intensity" % rumor.subject_npc_id)
+		ChainType.ESCALATION:
+			rumor.current_believability = minf(1.0, rumor.current_believability + 0.25)
+			rumor.mutability *= 0.5
+			if OS.is_debug_build():
+				print("[PropagationEngine] Escalation chain on '%s': +0.25 believe, -50%% mutation" % rumor.subject_npc_id)
+		ChainType.CONTRADICTION:
+			rumor.current_believability = maxf(0.0, rumor.current_believability - 0.10)
+			if OS.is_debug_build():
+				print("[PropagationEngine] Contradiction chain on '%s': -0.10 believe" % rumor.subject_npc_id)
+	return ct
+
+
+## Human-readable chain type name for UI display.
+static func chain_type_name(ct: ChainType) -> String:
+	match ct:
+		ChainType.SAME_TYPE:      return "Same-Type Chain"
+		ChainType.ESCALATION:     return "Escalation Chain"
+		ChainType.CONTRADICTION:  return "Contradiction Chain"
+		_:                        return ""
 
 
 # ── Internal helpers ─────────────────────────────────────────────────────────

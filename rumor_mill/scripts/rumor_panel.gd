@@ -460,6 +460,12 @@ func _rebuild_seed_list() -> void:
 		tokens, max_t
 	]
 
+	# Chain indicator — show when seeding would create a rumor chain.
+	var chain_info := _detect_current_chain()
+	var chain_type: PropagationEngine.ChainType = chain_info.get("chain_type", PropagationEngine.ChainType.NONE)
+	if chain_type != PropagationEngine.ChainType.NONE:
+		_add_chain_indicator(chain_type)
+
 	# Evidence attachment section — only shown when inventory is non-empty.
 	if _intel_store_ref != null and not _intel_store_ref.evidence_inventory.is_empty():
 		var claim_type_upper := _get_claim_type_upper(_selected_claim_id)
@@ -633,6 +639,54 @@ func _get_claim_type_upper(claim_id: String) -> String:
 		if c.get("id", "") == claim_id:
 			return c.get("type", "").to_upper()
 	return ""
+
+
+## Detect whether the current subject + claim selection would form a rumor chain.
+func _detect_current_chain() -> Dictionary:
+	if _world_ref == null or _world_ref.propagation_engine == null:
+		return { "chain_type": PropagationEngine.ChainType.NONE, "existing_rumor": null }
+	if _selected_subject.is_empty() or _selected_claim_id.is_empty():
+		return { "chain_type": PropagationEngine.ChainType.NONE, "existing_rumor": null }
+	var claim_type := Rumor.claim_type_from_string(_get_claim_type_upper(_selected_claim_id).to_lower())
+	return _world_ref.propagation_engine.detect_chain(_selected_subject, claim_type)
+
+
+## Builds the chain indicator banner at the top of Panel 3's seed list.
+func _add_chain_indicator(chain_type: PropagationEngine.ChainType) -> void:
+	var banner := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	match chain_type:
+		PropagationEngine.ChainType.SAME_TYPE:
+			style.bg_color = Color(0.20, 0.45, 0.70, 0.50)
+		PropagationEngine.ChainType.ESCALATION:
+			style.bg_color = Color(0.55, 0.20, 0.60, 0.50)
+		PropagationEngine.ChainType.CONTRADICTION:
+			style.bg_color = Color(0.70, 0.35, 0.15, 0.50)
+	style.set_corner_radius_all(4)
+	banner.add_theme_stylebox_override("panel", style)
+
+	var hbox := HBoxContainer.new()
+	banner.add_child(hbox)
+
+	var icon_lbl := Label.new()
+	icon_lbl.text = " [CHAIN] "
+	icon_lbl.add_theme_font_size_override("font_size", 13)
+	icon_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4, 1.0))
+	hbox.add_child(icon_lbl)
+
+	var desc_lbl := Label.new()
+	desc_lbl.add_theme_font_size_override("font_size", 11)
+	desc_lbl.add_theme_color_override("font_color", Color(0.95, 0.95, 0.85, 1.0))
+	match chain_type:
+		PropagationEngine.ChainType.SAME_TYPE:
+			desc_lbl.text = "Same-Type Chain: +15% believability, +1 intensity"
+		PropagationEngine.ChainType.ESCALATION:
+			desc_lbl.text = "Escalation Chain: +25% believability, -50% mutation"
+		PropagationEngine.ChainType.CONTRADICTION:
+			desc_lbl.text = "Contradiction Chain: faster CONTRADICTED, -10% believability"
+	hbox.add_child(desc_lbl)
+
+	_seed_list.add_child(banner)
 
 
 ## Builds and inserts the evidence attachment sub-section at the top of _seed_list.
