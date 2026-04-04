@@ -37,9 +37,9 @@ const STATE_LABEL := {
 	0: "Unaware",
 	1: "Evaluating",
 	2: "Believes",
-	3: "Spreading",
-	4: "Acting",
-	5: "Rejecting",
+	3: "Rejecting",
+	4: "Spreading",
+	5: "Acting",
 	6: "Contradicted",
 	7: "Expired",
 	8: "Defending",
@@ -48,9 +48,9 @@ const STATE_COLOR := {
 	0: Color(0.65, 0.65, 0.65, 1.0),
 	1: Color(1.00, 1.00, 0.45, 1.0),
 	2: Color(0.50, 1.00, 0.55, 1.0),
-	3: Color(1.00, 0.70, 0.30, 1.0),
-	4: Color(1.00, 0.45, 0.90, 1.0),
-	5: Color(0.70, 0.70, 0.85, 1.0),
+	3: Color(0.70, 0.70, 0.85, 1.0),
+	4: Color(1.00, 0.70, 0.30, 1.0),
+	5: Color(1.00, 0.45, 0.90, 1.0),
 	6: Color(0.80, 0.55, 1.00, 1.0),
 	7: Color(0.55, 0.55, 0.55, 1.0),
 	8: Color(0.45, 0.80, 1.00, 1.0),
@@ -60,9 +60,9 @@ const STATE_ICON := {
 	0: "○",   # Unaware       — empty circle
 	1: "◇",   # Evaluating    — diamond
 	2: "✓",   # Believes      — check
-	3: "▶",   # Spreading     — arrow/play
-	4: "★",   # Acting        — star
-	5: "✕",   # Rejecting     — cross
+	3: "✕",   # Rejecting     — cross
+	4: "▶",   # Spreading     — arrow/play
+	5: "★",   # Acting        — star
 	6: "⚡",  # Contradicted  — bolt
 	7: "—",   # Expired       — dash
 	8: "◆",   # Defending     — filled diamond

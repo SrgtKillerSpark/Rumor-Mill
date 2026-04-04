@@ -3,7 +3,7 @@ extends CanvasLayer
 ## scenario4_hud.gd — Persistent triple-track reputation defence display.
 ##
 ## Shows a thin header tracking the three protected NPCs' reputation scores
-## against the Scenario 4 fail threshold (30) and win floor (50).
+## against the Scenario 4 fail threshold (< 50) and 20-day survival win.
 ##
 ## Layout:
 ##   Scenario 4: The Holy Inquisition
@@ -140,7 +140,7 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "[safe] > 50  [risk] 30-50  [danger] < 30"
+	legend_lbl.text = "[safe] >= 50  [danger] < 50"
 	right_vbox.add_child(legend_lbl)
 
 	_inquisitor_lbl = Label.new()
