@@ -206,6 +206,8 @@ func _init_recon_system() -> void:
 	# ReconHUD: shows action counter + toasts; opens RumorPanel on R.
 	if recon_hud != null and recon_hud.has_method("setup"):
 		recon_hud.setup(intel_store, rumor_panel)
+	if recon_hud != null and recon_hud.has_method("setup_hints"):
+		recon_hud.setup_hints(world)
 
 	# RumorPanel: 3-panel crafting modal (Subject → Claim → Seed Target).
 	if rumor_panel != null and rumor_panel.has_method("setup"):

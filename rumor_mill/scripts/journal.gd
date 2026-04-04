@@ -49,6 +49,7 @@ var _current_section:   Section   = Section.RUMORS
 var _scroll_positions:  Dictionary = {}   # Section → int (v_scroll pixel)
 var _last_opened_tick:  int       = -1
 var _notification_pending: bool   = false
+var _panel_tween:          Tween  = null
 
 ## Per-rumor expand state: rumor_id → bool.
 var _expanded_rumors: Dictionary = {}
@@ -133,6 +134,18 @@ func _open() -> void:
 	_pause_game(true)
 	_rebuild_section(_current_section)
 	call_deferred("_restore_scroll")
+	# Animate open: fade bg + slide parchment from right.
+	_overlay_bg.modulate.a = 0.0
+	_parchment.modulate.a = 0.0
+	_parchment.position.x += 40.0
+	var _open_pos_x: float = _parchment.position.x - 40.0
+	if _panel_tween != null and _panel_tween.is_valid():
+		_panel_tween.kill()
+	_panel_tween = create_tween().set_parallel(true) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_panel_tween.tween_property(_overlay_bg, "modulate:a", 1.0, 0.18)
+	_panel_tween.tween_property(_parchment, "modulate:a", 1.0, 0.20)
+	_panel_tween.tween_property(_parchment, "position:x", _open_pos_x, 0.25)
 	# Grab focus on the first sidebar tab so keyboard navigation works immediately.
 	if _sidebar.get_child_count() > 0:
 		_sidebar.get_child(0).call_deferred("grab_focus")
@@ -142,8 +155,17 @@ func _close() -> void:
 	AudioManager.play_sfx("journal_close")
 	_save_scroll()
 	_is_open            = false
-	_overlay_bg.visible = false
-	_parchment.visible  = false
+	# Animate close: quick fade.
+	if _panel_tween != null and _panel_tween.is_valid():
+		_panel_tween.kill()
+	_panel_tween = create_tween().set_parallel(true) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	_panel_tween.tween_property(_overlay_bg, "modulate:a", 0.0, 0.12)
+	_panel_tween.tween_property(_parchment, "modulate:a", 0.0, 0.12)
+	_panel_tween.chain().tween_callback(func() -> void:
+		_overlay_bg.visible = false
+		_parchment.visible  = false
+	)
 	_pause_game(false)
 
 

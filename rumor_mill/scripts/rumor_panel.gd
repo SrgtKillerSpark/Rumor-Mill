@@ -59,6 +59,7 @@ var _selected_claim_id:    String = ""  # claims.json id
 var _selected_seed_npc:    String = ""  # npc_id
 var _confirm_pending:      bool   = false  # true after first "Confirm & Seed" press
 var _selected_evidence_item               = null  # PlayerIntelStore.EvidenceItem or null
+var _panel_tween:          Tween  = null  # open/close slide animation
 var _evidence_tutorial_fired: bool        = false
 var _panel_seed_shown_fired:  bool        = false  # guard for panel_seed_shown signal
 
@@ -92,14 +93,30 @@ func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
 
 
 func toggle() -> void:
+	if _panel_tween != null and _panel_tween.is_valid():
+		_panel_tween.kill()
 	if panel.visible:
 		AudioManager.play_sfx("rumor_panel_close")
-		panel.visible = false
 		_on_seed_hover_exit()
+		# Slide out to left.
+		_panel_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		_panel_tween.tween_property(panel, "modulate:a", 0.0, 0.12)
+		_panel_tween.parallel().tween_property(panel, "position:x", panel.position.x - 30.0, 0.15)
+		_panel_tween.tween_callback(func() -> void:
+			panel.visible = false
+			panel.position.x += 30.0  # restore position
+		)
 	else:
 		AudioManager.play_sfx("rumor_panel_open")
 		_open_panel(PANEL_SUBJECT)
 		panel.visible = true
+		# Slide in from left.
+		panel.modulate.a = 0.0
+		var target_x: float = panel.position.x
+		panel.position.x -= 30.0
+		_panel_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_panel_tween.tween_property(panel, "modulate:a", 1.0, 0.18)
+		_panel_tween.parallel().tween_property(panel, "position:x", target_x, 0.22)
 		# Set keyboard focus on the Back/Next nav buttons when panel opens.
 		if _btn_next != null:
 			_btn_next.call_deferred("grab_focus")

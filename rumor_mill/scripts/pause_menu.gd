@@ -42,6 +42,11 @@ var _slot_btn_1:      Button = null
 var _slot_btn_2:      Button = null
 var _slot_btn_3:      Button = null
 
+# ── Panel animation refs ──────────────────────────────────────────────────────
+var _bg_rect:         ColorRect = null
+var _center_panel:    Panel     = null
+var _open_tween:      Tween     = null
+
 
 func _ready() -> void:
 	layer        = 20
@@ -89,6 +94,22 @@ func _open() -> void:
 	if _status_label != null:
 		_status_label.text = ""
 	_hide_slot_picker()
+	# Animate open: fade bg + scale panel in.
+	if _open_tween != null and _open_tween.is_valid():
+		_open_tween.kill()
+	if _bg_rect != null:
+		_bg_rect.modulate.a = 0.0
+	if _center_panel != null:
+		_center_panel.scale = Vector2(0.92, 0.92)
+		_center_panel.modulate.a = 0.0
+	_open_tween = create_tween().set_parallel(true) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_open_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	if _bg_rect != null:
+		_open_tween.tween_property(_bg_rect, "modulate:a", 1.0, 0.18)
+	if _center_panel != null:
+		_open_tween.tween_property(_center_panel, "scale", Vector2.ONE, 0.22)
+		_open_tween.tween_property(_center_panel, "modulate:a", 1.0, 0.18)
 	# Set keyboard focus on the first menu button.
 	if _main_container != null and _main_container.get_child_count() > 0:
 		var first := _main_container.get_child(0)
@@ -98,23 +119,24 @@ func _open() -> void:
 
 func _close() -> void:
 	_is_open          = false
-	visible           = false
 	get_tree().paused = false
+	visible           = false
 
 
 func _build_ui() -> void:
 	# Full-screen dim overlay.
-	var bg := ColorRect.new()
-	bg.color = Color(0.0, 0.0, 0.0, 0.55)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(bg)
+	_bg_rect = ColorRect.new()
+	_bg_rect.color = Color(0.0, 0.0, 0.0, 0.55)
+	_bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_bg_rect.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_bg_rect)
 
 	# Centred panel — tall enough for buttons + slot picker + display/analytics rows + status line.
-	var panel := Panel.new()
-	panel.custom_minimum_size = Vector2(300, 560)
-	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	_center_panel = Panel.new()
+	_center_panel.custom_minimum_size = Vector2(300, 560)
+	_center_panel.set_anchors_preset(Control.PRESET_CENTER)
+	_center_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	_center_panel.pivot_offset = Vector2(150, 280)  # centre of 300x560
 	var style := StyleBoxFlat.new()
 	style.bg_color            = Color(0.10, 0.08, 0.06, 0.96)
 	style.border_width_left   = 2
@@ -126,15 +148,15 @@ func _build_ui() -> void:
 	style.corner_radius_top_right    = 6
 	style.corner_radius_bottom_left  = 6
 	style.corner_radius_bottom_right = 6
-	panel.add_theme_stylebox_override("panel", style)
-	add_child(panel)
+	_center_panel.add_theme_stylebox_override("panel", style)
+	add_child(_center_panel)
 
 	var outer_vbox := VBoxContainer.new()
 	outer_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	outer_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	outer_vbox.add_theme_constant_override("separation", 12)
 	outer_vbox.process_mode = Node.PROCESS_MODE_ALWAYS
-	panel.add_child(outer_vbox)
+	_center_panel.add_child(outer_vbox)
 
 	# Title.
 	var title := Label.new()
@@ -488,6 +510,20 @@ func _make_pause_btn(label_text: String, font_color: Color) -> Button:
 	btn.add_theme_stylebox_override("hover",   hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_stylebox_override("focus",   focus)
-	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))
-	btn.mouse_entered.connect(func() -> void: AudioManager.play_sfx_pitched("ui_click", 2.0))
+	btn.pivot_offset = btn.custom_minimum_size * 0.5
+	btn.pressed.connect(func() -> void:
+		AudioManager.play_sfx("ui_click")
+		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(btn, "scale", Vector2(0.95, 0.95), 0.06)
+		tw.tween_property(btn, "scale", Vector2.ONE, 0.10)
+	)
+	btn.mouse_entered.connect(func() -> void:
+		AudioManager.play_sfx_pitched("ui_click", 2.0)
+		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(btn, "scale", Vector2(1.04, 1.04), 0.12)
+	)
+	btn.mouse_exited.connect(func() -> void:
+		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(btn, "scale", Vector2.ONE, 0.10)
+	)
 	return btn

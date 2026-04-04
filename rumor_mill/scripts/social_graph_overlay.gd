@@ -54,6 +54,7 @@ const RING_THICKNESS  := 3.0
 var visible_overlay: bool = false
 var _world_ref: Node2D = null
 var _draw_node: Node2D = null
+var _fade_tween: Tween = null
 
 # Legend panel (built once in _ready).
 var _legend_panel:  PanelContainer = null
@@ -87,8 +88,21 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_G:
 			visible_overlay = not visible_overlay
-			visible = visible_overlay
-			_legend_panel.visible = visible_overlay
+			if _fade_tween != null and _fade_tween.is_valid():
+				_fade_tween.kill()
+			if visible_overlay:
+				visible = true
+				_legend_panel.visible = true
+				modulate.a = 0.0
+				_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+				_fade_tween.tween_property(self, "modulate:a", 1.0, 0.2)
+			else:
+				_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+				_fade_tween.tween_property(self, "modulate:a", 0.0, 0.15)
+				_fade_tween.tween_callback(func() -> void:
+					visible = false
+					_legend_panel.visible = false
+				)
 			_draw_node.queue_redraw()
 			get_viewport().set_input_as_handled()
 
