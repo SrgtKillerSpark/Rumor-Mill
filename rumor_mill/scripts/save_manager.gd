@@ -1,10 +1,12 @@
-## save_manager.gd — Mid-scenario save/load for Rumor Mill (SPA-177, SPA-220).
+## save_manager.gd — Mid-scenario save/load for Rumor Mill (SPA-177, SPA-220, SPA-227).
 ##
 ## Saves to user://saves/<scenario_id>_slotN.json  (manual slots 1–3)
 ##        or user://saves/<scenario_id>_auto.json   (auto-save, slot 0)
 ## Serializes: tick, day, social graph edges, live rumors with NPC belief slots,
-## player intel (recon budget, heat, evidence), scenario state, journal timeline,
-## rival agent state (S3), inquisitor agent state (S4).
+## NPC memory (credulity, rumor history, avoidance, defender state),
+## reputation overrides, player intel (recon budget, heat, evidence),
+## scenario state, journal timeline, rival agent state (S3),
+## inquisitor agent state (S4).
 ##
 ## Load flow:
 ##   1. prepare_load(scenario_id, slot) validates file and stores data in _pending_load_data.
@@ -82,6 +84,7 @@ static func save_game(
 		"propagation":      _serialize_propagation(world.propagation_engine),
 		"npc_slots":        _serialize_npc_slots(world.npcs),
 		"intel_store":      _serialize_intel_store(world.intel_store),
+		"reputation":       _serialize_reputation(world.reputation_system),
 		"scenario":         _serialize_scenario_manager(world.scenario_manager),
 		"rival_agent":        _serialize_rival_agent(world.rival_agent),
 		"inquisitor_agent":   _serialize_inquisitor_agent(world.inquisitor_agent),
@@ -157,6 +160,7 @@ static func apply_pending_load(
 	_restore_propagation(world.propagation_engine, data.get("propagation", {}))
 	_restore_npc_slots(world.npcs, world.propagation_engine, data.get("npc_slots", {}))
 	_restore_intel_store(world.intel_store, data.get("intel_store", {}))
+	_restore_reputation(world.reputation_system, data.get("reputation", {}))
 	_restore_scenario_manager(world.scenario_manager, data.get("scenario", {}))
 	_restore_rival_agent(world.rival_agent, data.get("rival_agent", {}))
 	_restore_inquisitor_agent(world.inquisitor_agent, data.get("inquisitor_agent", {}))
@@ -220,7 +224,17 @@ static func _serialize_npc_slots(npcs: Array) -> Dictionary:
 				"heard_from_count": slot.heard_from_count,
 				"source_faction":   slot.source_faction,
 			}
-		out[npc_id] = slots
+		out[npc_id] = {
+			"slots":                    slots,
+			"rumor_history":            npc.rumor_history.duplicate(),
+			"_credulity_modifier":      npc._credulity_modifier,
+			"_avoided_subject_ids":     npc._avoided_subject_ids.duplicate(),
+			"_is_defending":            npc._is_defending,
+			"_defender_target_npc_id":  npc._defender_target_npc_id,
+			"_defender_ticks_remaining": npc._defender_ticks_remaining,
+			"_defense_modifiers":       npc._defense_modifiers.duplicate(),
+			"_defense_modifier_ticks":  npc._defense_modifier_ticks.duplicate(),
+		}
 	return out
 
 
@@ -270,6 +284,15 @@ static func _serialize_intel_store(store: PlayerIntelStore) -> Dictionary:
 		"bribe_charges":            store.bribe_charges,
 		"evidence_inventory":       evidence,
 		"evidence_used_count":      store.evidence_used_count,
+	}
+
+
+static func _serialize_reputation(rs: ReputationSystem) -> Dictionary:
+	if rs == null:
+		return {}
+	return {
+		"base_overrides":            rs._base_overrides.duplicate(),
+		"faction_sentiment_bonuses": rs._faction_sentiment_bonuses.duplicate(),
 	}
 
 
@@ -356,18 +379,30 @@ static func _restore_npc_slots(
 		var npc_id: String = npc.npc_data.get("id", "")
 		if not d.has(npc_id):
 			continue
+		var npc_data: Dictionary = d[npc_id]
+		# Support new format (slots nested under "slots" key) and legacy flat format.
+		var slot_data: Dictionary = npc_data.get("slots", npc_data) as Dictionary
 		npc.rumor_slots.clear()
-		for rid in d[npc_id]:
-			# Skip slots whose rumor is no longer live (e.g. expired before save).
+		for rid in slot_data:
 			if not pe.live_rumors.has(rid):
 				continue
-			var sd: Dictionary = d[npc_id][rid]
+			var sd: Dictionary = slot_data[rid]
 			var r: Rumor       = pe.live_rumors[rid]
 			var slot           := Rumor.NpcRumorSlot.new(r, sd.get("source_faction", ""))
 			slot.state            = int(sd.get("state", Rumor.RumorState.EVALUATING)) as Rumor.RumorState
 			slot.ticks_in_state   = int(sd.get("ticks_in_state", 0))
 			slot.heard_from_count = int(sd.get("heard_from_count", 1))
 			npc.rumor_slots[rid]  = slot
+		# Restore NPC memory state (SPA-227).
+		if npc_data.has("rumor_history"):
+			npc.rumor_history             = npc_data["rumor_history"].duplicate()
+			npc._credulity_modifier       = float(npc_data.get("_credulity_modifier", 0.0))
+			npc._avoided_subject_ids.assign(npc_data.get("_avoided_subject_ids", []))
+			npc._is_defending             = bool(npc_data.get("_is_defending", false))
+			npc._defender_target_npc_id   = str(npc_data.get("_defender_target_npc_id", ""))
+			npc._defender_ticks_remaining = int(npc_data.get("_defender_ticks_remaining", 0))
+			npc._defense_modifiers        = npc_data.get("_defense_modifiers", {}).duplicate()
+			npc._defense_modifier_ticks   = npc_data.get("_defense_modifier_ticks", {}).duplicate()
 
 
 static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void:
@@ -411,6 +446,13 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 			int(ed.get("acquired_tick", 0))
 		)
 		store.evidence_inventory.append(item)
+
+
+static func _restore_reputation(rs: ReputationSystem, d: Dictionary) -> void:
+	if rs == null or d.is_empty():
+		return
+	rs._base_overrides            = d.get("base_overrides", {}).duplicate()
+	rs._faction_sentiment_bonuses = d.get("faction_sentiment_bonuses", {}).duplicate()
 
 
 static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> void:
