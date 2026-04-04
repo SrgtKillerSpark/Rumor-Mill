@@ -32,6 +32,7 @@ var _victory_text:     String = ""
 var _fail_texts:       Dictionary = {}
 var _days_allowed:     int = 30
 var _active_scenario:  int = 0  # 1, 2, 3, or 4 — set by load_scenario_data
+var _objective_card:   Dictionary = {}
 
 
 ## Load narrative fields from a scenario data dictionary (one entry from scenarios.json).
@@ -40,6 +41,7 @@ func load_scenario_data(data: Dictionary) -> void:
 	_starting_text  = data.get("startingText", "")
 	_victory_text   = data.get("victoryText", "")
 	_fail_texts     = data.get("failTexts", {})
+	_objective_card = data.get("objectiveCard", {})
 	_days_allowed   = int(data.get("daysAllowed", 30))
 	var sid: String = data.get("scenarioId", "")
 	var parts := sid.split("_")
@@ -70,6 +72,11 @@ func get_fail_text(reason: String) -> String:
 ## Returns the number of days the player has to complete this scenario.
 func get_days_allowed() -> int:
 	return _days_allowed
+
+
+## Returns the objective card dictionary with keys: mission, winCondition, timeLimit, danger, strategyHint.
+func get_objective_card() -> Dictionary:
+	return _objective_card
 
 
 ## Returns a compact win-condition target line for HUD display (second line under objective).

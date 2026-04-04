@@ -75,6 +75,7 @@ var _briefing_title:     Label      = null
 var _briefing_days:      Label      = null
 var _briefing_body:      RichTextLabel = null
 var _btn_begin:          Button     = null
+var _briefing_objective: RichTextLabel = null
 var _difficulty_buttons: Dictionary = {}   # preset_id → Button
 
 # Intro-phase refs
@@ -483,7 +484,7 @@ func _on_play_anyway_pressed(idx: int) -> void:
 # ── Phase 3: Briefing panel ───────────────────────────────────────────────────
 
 func _build_briefing_panel() -> void:
-	_panel_briefing = _make_panel(600, 400)
+	_panel_briefing = _make_panel(600, 540)
 	add_child(_panel_briefing)
 
 	var vbox := VBoxContainer.new()
@@ -510,13 +511,26 @@ func _build_briefing_panel() -> void:
 
 	# Briefing body
 	_briefing_body = RichTextLabel.new()
-	_briefing_body.custom_minimum_size = Vector2(0, 220)
+	_briefing_body.custom_minimum_size = Vector2(0, 140)
 	_briefing_body.fit_content = false
 	_briefing_body.scroll_active = true
 	_briefing_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_briefing_body.add_theme_font_size_override("normal_font_size", 13)
 	_briefing_body.add_theme_color_override("default_color", C_BODY)
 	vbox.add_child(_briefing_body)
+
+	vbox.add_child(_separator())
+
+	# Objective card
+	_briefing_objective = RichTextLabel.new()
+	_briefing_objective.custom_minimum_size = Vector2(0, 100)
+	_briefing_objective.fit_content = false
+	_briefing_objective.scroll_active = true
+	_briefing_objective.bbcode_enabled = true
+	_briefing_objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_briefing_objective.add_theme_font_size_override("normal_font_size", 12)
+	_briefing_objective.add_theme_color_override("default_color", C_HEADING)
+	vbox.add_child(_briefing_objective)
 
 	vbox.add_child(_separator())
 
@@ -563,6 +577,22 @@ func _populate_briefing() -> void:
 	_briefing_title.text = _selected_scenario.get("title", "")
 	_update_briefing_days()
 	_briefing_body.text = _selected_scenario.get("startingText", "")
+	_populate_objective_card()
+
+
+func _populate_objective_card() -> void:
+	if _briefing_objective == null:
+		return
+	var card: Dictionary = _selected_scenario.get("objectiveCard", {})
+	if card.is_empty():
+		_briefing_objective.text = ""
+		return
+	var bbcode: String = "[b][color=#ebc80c]YOUR MISSION:[/color][/b] %s\n" % card.get("mission", "")
+	bbcode += "[b]Goal:[/b] %s\n" % card.get("winCondition", "")
+	bbcode += "[b]Time:[/b] %s\n" % card.get("timeLimit", "")
+	bbcode += "[color=#d94030][b]DANGER:[/b] %s[/color]\n" % card.get("danger", "")
+	bbcode += "[color=#b5a664][b]Hint:[/b] %s[/color]" % card.get("strategyHint", "")
+	_briefing_objective.text = bbcode
 
 
 func _update_briefing_days() -> void:
