@@ -10,6 +10,7 @@ extends CanvasLayer
 
 @onready var title_label:     Label     = $Panel/VBox/TitleLabel
 @onready var objective_label: Label     = $Panel/VBox/ObjectiveLabel
+@onready var target_label:    Label     = $Panel/VBox/TargetLabel
 @onready var day_label:       Label     = $Panel/VBox/DayRow/DayLabel
 @onready var time_label:      Label     = $Panel/VBox/DayRow/TimeOfDayLabel
 @onready var progress_bar:    ColorRect = $Panel/VBox/DayProgressBG/DayProgressBar
@@ -73,6 +74,7 @@ func _refresh() -> void:
 
 	title_label.text = _scenario_manager.get_title()
 	objective_label.text = _scenario_manager.get_objective_one_liner()
+	target_label.text = _scenario_manager.get_win_condition_line()
 
 	_refresh_time()
 	_refresh_metrics()

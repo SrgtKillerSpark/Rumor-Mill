@@ -72,6 +72,16 @@ func get_days_allowed() -> int:
 	return _days_allowed
 
 
+## Returns a compact win-condition target line for HUD display (second line under objective).
+func get_win_condition_line() -> String:
+	match _active_scenario:
+		1: return "Target: Edric Fenn reputation below 30"
+		2: return "Target: 7+ NPCs believing illness rumors"
+		3: return "Target: Calder rep ≥ 75, Tomas rep ≤ 35"
+		4: return "Protect: Aldous, Vera, Finn — keep all above 50"
+	return ""
+
+
 ## Returns a short, actionable one-line objective for HUD display.
 ## More compact and player-facing than the narrative startingText.
 func get_objective_one_liner() -> String:
