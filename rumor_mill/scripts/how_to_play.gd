@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-## how_to_play.gd — Three-tab reference overlay (layer 21, above pause menu).
+## how_to_play.gd — Three-tab reference overlay (layer 51, above pause menu and main menu).
 ## Accessible from pause menu and main menu.
 ## Esc closes it; does NOT unpause the game tree.
 ## All nodes use PROCESS_MODE_ALWAYS so input is received while paused.
@@ -27,7 +27,7 @@ var _scroll:        ScrollContainer  = null
 
 
 func _ready() -> void:
-	layer        = 21
+	layer        = 51
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui()
 	visible = false
