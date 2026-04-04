@@ -305,7 +305,7 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	_start_count_up_tween()
 
 	# ── SPA-336: Show feedback prompt after a short delay ────────────────────
-	get_tree().create_timer(1.6).timeout.connect(_show_feedback_prompt)
+	get_tree().create_timer(5.0).timeout.connect(_show_feedback_prompt)
 
 
 ## Guess the fail reason for the fail-text lookup.
