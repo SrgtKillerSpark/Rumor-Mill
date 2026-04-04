@@ -864,8 +864,6 @@ func _apply_credulity_modifier(delta: float) -> void:
 		return
 	_credulity = clamp(_credulity + actual_delta, 0.0, 1.0)
 	npc_data["credulity"] = _credulity
-	if OS.is_debug_build():
-			npc_data.get("name", "?"), _credulity, _credulity_modifier])
 
 
 ## Record that this NPC should avoid the subject's work-location.
@@ -877,8 +875,6 @@ func _update_schedule_avoidance(rumor: Rumor) -> void:
 	if _avoided_subject_ids.has(subject_id):
 		return
 	_avoided_subject_ids.append(subject_id)
-	if OS.is_debug_build():
-			npc_data.get("name", "?"), subject_id])
 
 
 ## If location_code is the work-location of any avoided subject, return "home".
@@ -889,8 +885,6 @@ func _reroute_if_avoided(location_code: String) -> String:
 	for other in all_npcs_ref:
 		var tid: String = other.npc_data.get("id", "")
 		if _avoided_subject_ids.has(tid) and other.work_location == location_code:
-			if OS.is_debug_build():
-					npc_data.get("name", "?"), location_code, tid])
 			return "home"
 	return location_code
 
