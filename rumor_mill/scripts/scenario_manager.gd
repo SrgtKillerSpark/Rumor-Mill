@@ -1,4 +1,4 @@
-## scenario_manager.gd — Win/fail condition evaluator for Scenarios 1 and 3.
+## scenario_manager.gd — Win/fail condition evaluator for Scenarios 1–4.
 ##
 ## Plain class (no Node); owned by World.
 ## Reads the cached ReputationSystem snapshots each tick and emits
@@ -10,6 +10,10 @@
 ## Scenario 3 — The Succession:
 ##   WIN:  reputation(calder_fenn) >= 80  AND  reputation(tomas_reeve) <= 30
 ##   FAIL: reputation(calder_fenn) < 40
+##
+## Scenario 4 — The Holy Inquisition:
+##   WIN:  All 3 protected NPCs above reputation 50 when 20 days elapsed
+##   FAIL: Any protected NPC drops below reputation 30
 
 class_name ScenarioManager
 
@@ -22,7 +26,7 @@ var _starting_text:    String = ""
 var _victory_text:     String = ""
 var _fail_texts:       Dictionary = {}
 var _days_allowed:     int = 30
-var _active_scenario:  int = 0  # 1, 2, or 3 — set by load_scenario_data
+var _active_scenario:  int = 0  # 1, 2, 3, or 4 — set by load_scenario_data
 
 
 ## Load narrative fields from a scenario data dictionary (one entry from scenarios.json).
@@ -91,15 +95,23 @@ const S3_WIN_CALDER_MIN    := 75
 const S3_WIN_TOMAS_MAX     := 35
 const S3_FAIL_CALDER_BELOW := 40
 
+# Scenario 4 thresholds & NPC ids.
+# Protected NPCs must stay above S4_WIN_REP_MIN for the full duration.
+# If any drops below S4_FAIL_REP_BELOW, the scenario is lost immediately.
+const S4_PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
+const S4_WIN_REP_MIN       := 50
+const S4_FAIL_REP_BELOW    := 30
+
 enum ScenarioState { ACTIVE, WON, FAILED }
 
 ## Emitted the first time a scenario resolves.
-## scenario_id: 1, 2, or 3.  state: WON or FAILED.
+## scenario_id: 1, 2, 3, or 4.  state: WON or FAILED.
 signal scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioState)
 
 var scenario_1_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_2_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_3_state: ScenarioState = ScenarioState.ACTIVE
+var scenario_4_state: ScenarioState = ScenarioState.ACTIVE
 
 ## Scenario 3 only: Calder's reputation score at the first evaluate() call.
 ## -1 means not yet recorded. Used by end_screen for the Calder Rep Delta stat.
@@ -115,6 +127,7 @@ func evaluate(rep: ReputationSystem, current_tick: int) -> void:
 		1: _check_scenario_1(rep, current_tick)
 		2: _check_scenario_2(rep, current_tick)
 		3: _check_scenario_3(rep, current_tick)
+		4: _check_scenario_4(rep, current_tick)
 
 
 ## Called when the player is caught eavesdropping. Fails Scenario 1 if still active.
@@ -235,6 +248,40 @@ func get_scenario_1_progress(rep: ReputationSystem) -> Dictionary:
 	}
 
 
+func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
+	if scenario_4_state != ScenarioState.ACTIVE:
+		return
+	# Fail: any protected NPC drops below 30.
+	for npc_id in S4_PROTECTED_NPC_IDS:
+		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
+		if snap == null:
+			continue
+		if snap.score < S4_FAIL_REP_BELOW:
+			scenario_4_state = ScenarioState.FAILED
+			scenario_resolved.emit(4, ScenarioState.FAILED)
+			print("[ScenarioManager] Scenario 4 FAIL — %s reputation %d < %d" % [
+				npc_id, snap.score, S4_FAIL_REP_BELOW])
+			return
+	# Win: all 20 days survived AND all protected NPCs still above 50.
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	if current_day > _days_allowed:
+		var all_above: bool = true
+		for npc_id in S4_PROTECTED_NPC_IDS:
+			var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
+			if snap == null or snap.score < S4_WIN_REP_MIN:
+				all_above = false
+				break
+		if all_above:
+			scenario_4_state = ScenarioState.WON
+			scenario_resolved.emit(4, ScenarioState.WON)
+			print("[ScenarioManager] Scenario 4 WIN — all protected NPCs above %d after %d days" % [
+				S4_WIN_REP_MIN, _days_allowed])
+		else:
+			scenario_4_state = ScenarioState.FAILED
+			scenario_resolved.emit(4, ScenarioState.FAILED)
+			print("[ScenarioManager] Scenario 4 FAIL — timeout, not all protected NPCs above %d" % S4_WIN_REP_MIN)
+
+
 ## Returns the current Scenario 3 progress dict.
 func get_scenario_3_progress(rep: ReputationSystem) -> Dictionary:
 	var calder: ReputationSystem.ReputationSnapshot = rep.get_snapshot(CALDER_FENN_ID)
@@ -246,4 +293,23 @@ func get_scenario_3_progress(rep: ReputationSystem) -> Dictionary:
 		"tomas_win_target":   S3_WIN_TOMAS_MAX,
 		"calder_fail_below":  S3_FAIL_CALDER_BELOW,
 		"state":              scenario_3_state,
+	}
+
+
+## Returns the current Scenario 4 progress dict.
+func get_scenario_4_progress(rep: ReputationSystem) -> Dictionary:
+	var scores: Dictionary = {}
+	var min_score: int = 100
+	for npc_id in S4_PROTECTED_NPC_IDS:
+		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
+		var score: int = snap.score if snap != null else 50
+		scores[npc_id] = score
+		if score < min_score:
+			min_score = score
+	return {
+		"protected_scores":  scores,
+		"win_threshold":     S4_WIN_REP_MIN,
+		"fail_threshold":    S4_FAIL_REP_BELOW,
+		"min_score":         min_score,
+		"state":             scenario_4_state,
 	}

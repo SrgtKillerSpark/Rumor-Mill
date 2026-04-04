@@ -45,6 +45,7 @@ const PEAK_BELIEF_TARGET: Dictionary = {
 	1: { "id": "edric_fenn",    "name": "Edric Fenn" },
 	2: { "id": "alys_herbwife", "name": "Alys Herbwife" },
 	3: { "id": "calder_fenn",   "name": "Calder Fenn" },
+	4: { "id": "aldous_prior",  "name": "Aldous Prior" },
 }
 
 const NPC_OUTCOMES: Dictionary = {
@@ -62,6 +63,11 @@ const NPC_OUTCOMES: Dictionary = {
 		{ "id": "calder_fenn", "name": "Calder Fenn" },
 		{ "id": "tomas_reeve", "name": "Tomas Reeve" },
 		{ "id": "isolde_fenn", "name": "Lady Isolde" },
+	],
+	"scenario_4": [
+		{ "id": "aldous_prior", "name": "Prior Aldous" },
+		{ "id": "vera_midwife", "name": "Vera Midwife" },
+		{ "id": "finn_monk",    "name": "Brother Finn" },
 	],
 }
 
@@ -124,6 +130,25 @@ const SUMMARY_TEXT := {
 			+ " Calder Fenn's name earned the same polite acknowledgement as Tomas Reeve's — neither elevated,"
 			+ " neither ruined, neither story quite landing. Lady Isolde paid what was agreed and said nothing"
 			+ " beyond that. The ledger, at least, was square."
+		),
+	},
+	4: {
+		"win": (
+			"Brother Cornelius departed with an unsigned writ and the Bishop's clerk recorded the outcome as"
+			+ " 'insufficient evidence.' The three accused returned to their posts — Aldous to his sermons,"
+			+ " Vera to her patients, Finn to his prayers — as though the inquisitor had been a passing storm."
+			+ " The town chose its own, and the Church accepted the choice. This time."
+		),
+		"reputation_collapsed": (
+			"The stories took root faster than you could uproot them. By the time you understood the shape"
+			+ " of the inquisitor's campaign, the town had already chosen its side — and it was not yours."
+			+ " The writ was signed before the twentieth day. The accused were led away quietly,"
+			+ " and the town returned to its business with the relief of people who had found someone to blame."
+		),
+		"timeout": (
+			"Twenty days passed and the inquisitor's patience outlasted yours. The stories you countered"
+			+ " had not been silenced — only muffled. Brother Cornelius presented his findings with the quiet"
+			+ " confidence of a man whose work was already done. The formal verdict was a formality."
 		),
 	},
 }
@@ -528,6 +553,7 @@ static func _next_scenario_id(current: String) -> String:
 	match current:
 		"scenario_1": return "scenario_2"
 		"scenario_2": return "scenario_3"
+		"scenario_3": return "scenario_4"
 	return ""
 
 

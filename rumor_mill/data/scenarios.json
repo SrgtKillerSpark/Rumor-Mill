@@ -162,5 +162,61 @@
       "tomas_reeve": 52
     },
     "targetShiftExcluded": ["calder_fenn"]
+  },
+  {
+    "scenarioId": "scenario_4",
+    "title": "The Holy Inquisition",
+    "description": "An inquisitor has arrived with sealed orders and the weight of the Church behind him. Three townsfolk stand accused of heresy — and you owe each of them a debt that cannot be repaid in coin. Twenty days to keep their names clean, their reputations intact, and the inquisitor's stories from taking root.",
+    "daysAllowed": 20,
+    "introText": "Brother Cornelius arrived at vespers with three names on a writ and the Bishop's seal in red wax. By morning, the chapel steps were crowded with the fearful and the curious. Aldous Prior looked ill. Vera Midwife did not come to market. Finn Monk was seen packing a bag.\n\nYou know what happens when the Church names someone. The town does the rest.\n\nYou have twenty days. You have your wits. And you have a voice that can vouch for the innocent — if you spend it wisely.",
+    "startingText": "The Inquisitor arrived with vespers and a sealed writ.\n\nThree names: Aldous Prior, Vera Midwife, Finn Monk. The charges are vague — heresy, improper doctrine, unsanctioned healing. Vague enough to stick.\n\nYou owe these people. And in twenty days, the Inquisitor will present his findings to the Bishop.\n\nKeep their reputations above the mud. Vouch for them when the whispers get too loud. And pray the town listens to you more than it listens to him.",
+    "victoryText": "Brother Cornelius left at dawn on the twenty-first day, his writ unsigned.\n\nThe Bishop's clerk recorded the outcome as 'insufficient evidence.' But you knew the truth — there had been plenty of evidence. It simply hadn't been believed.\n\nAldous Prior resumed his sermons. Vera Midwife reopened her door. Finn Monk stopped packing.\n\nThe town had chosen its own.",
+    "failTexts": {
+      "reputation_collapsed": "The crowd gathered at the chapel steps before Brother Cornelius had even finished his morning prayers.\n\nThey came with stories — some true, most not, all believed. By evening, the writ was signed.\n\nYou watched from the edge of the square as the accused were led away. You had tried. The town had chosen differently.",
+      "timeout": "Twenty days passed. Brother Cornelius presented his findings to the Bishop's clerk with the quiet satisfaction of a man whose work was already done.\n\nThe stories had taken root. The names on the writ were already ruined in every way that mattered. The formal verdict was a formality."
+    },
+    "edgeOverrides": [
+      { "npcA": "aldous_prior",     "npcB": "maren_nun",        "weightAtoB": 0.85, "weightBtoA": 0.80 },
+      { "npcA": "aldous_prior",     "npcB": "finn_monk",        "weightAtoB": 0.65, "weightBtoA": 0.85 },
+      { "npcA": "aldous_prior",     "npcB": "old_piety",        "weightAtoB": 0.60, "weightBtoA": 0.75 },
+      { "npcA": "aldous_prior",     "npcB": "jude_bellringer",  "weightAtoB": 0.55, "weightBtoA": 0.50 },
+      { "npcA": "finn_monk",        "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.75 },
+      { "npcA": "finn_monk",        "npcB": "old_piety",        "weightAtoB": 0.65, "weightBtoA": 0.70 },
+      { "npcA": "finn_monk",        "npcB": "thomas_pilgrim",   "weightAtoB": 0.60, "weightBtoA": 0.55 },
+      { "npcA": "vera_midwife",     "npcB": "maren_nun",        "weightAtoB": 0.75, "weightBtoA": 0.70 },
+      { "npcA": "vera_midwife",     "npcB": "nell_picker",      "weightAtoB": 0.60, "weightBtoA": 0.65 },
+      { "npcA": "vera_midwife",     "npcB": "greta_flint",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
+      { "npcA": "vera_midwife",     "npcB": "alys_herbwife",    "weightAtoB": 0.50, "weightBtoA": 0.45 },
+      { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
+      { "npcA": "edric_fenn",       "npcB": "aldous_prior",     "weightAtoB": 0.45, "weightBtoA": 0.40 },
+      { "npcA": "sybil_oats",       "npcB": "nell_picker",      "weightAtoB": 0.80, "weightBtoA": 0.75 },
+      { "npcA": "sybil_oats",       "npcB": "cob_farrow",       "weightAtoB": 0.65, "weightBtoA": 0.70 },
+      { "npcA": "nell_picker",      "npcB": "greta_flint",      "weightAtoB": 0.75, "weightBtoA": 0.75 },
+      { "npcA": "greta_flint",      "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.70 },
+      { "npcA": "marta_coin",       "npcB": "sim_carter",       "weightAtoB": 0.55, "weightBtoA": 0.60 },
+      { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.75, "weightBtoA": 0.70 },
+      { "npcA": "aldric_vane",      "npcB": "rufus_bolt",       "weightAtoB": 0.65, "weightBtoA": 0.60 },
+      { "npcA": "edric_fenn",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.30 },
+      { "npcA": "bram_guard",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.40 },
+      { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
+      { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.40, "weightBtoA": 0.35 },
+      { "npcA": "maren_nun",        "npcB": "constance_widow",  "weightAtoB": 0.60, "weightBtoA": 0.55 },
+      { "npcA": "old_piety",        "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.65 }
+    ],
+    "personalityOverrides": [
+      { "npcId": "aldous_prior", "loyalty": 0.95, "credulity": 0.10 },
+      { "npcId": "finn_monk",    "loyalty": 0.30, "credulity": 0.90 },
+      { "npcId": "vera_midwife", "loyalty": 0.55, "credulity": 0.70 },
+      { "npcId": "sybil_oats",   "credulity": 0.60 },
+      { "npcId": "nell_picker",  "credulity": 0.85 },
+      { "npcId": "greta_flint",  "credulity": 0.90 }
+    ],
+    "startingReputations": {
+      "aldous_prior": 60,
+      "vera_midwife": 55,
+      "finn_monk": 50
+    },
+    "targetShiftExcluded": ["aldous_prior", "vera_midwife", "finn_monk"],
+    "protectedNpcIds": ["aldous_prior", "vera_midwife", "finn_monk"]
   }
 ]

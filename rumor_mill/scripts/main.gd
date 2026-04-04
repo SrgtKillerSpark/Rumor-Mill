@@ -153,6 +153,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_wire_rumor_events()
 	_init_objective_hud()
 	_init_scenario3_hud()
+	_init_scenario4_hud()
 	_init_tutorial_system()
 	_init_end_screen()
 	_init_audio()
@@ -308,6 +309,17 @@ func _init_scenario3_hud() -> void:
 	if hud.has_method("setup"):
 		hud.setup(world, day_night)
 	print("Main: Scenario 3 HUD wired")
+
+
+func _init_scenario4_hud() -> void:
+	if world.active_scenario_id != "scenario_4":
+		return
+	var hud := preload("res://scripts/scenario4_hud.gd").new()
+	hud.name = "Scenario4HUD"
+	add_child(hud)
+	if hud.has_method("setup"):
+		hud.setup(world, day_night)
+	print("Main: Scenario 4 HUD wired")
 
 
 # ── Sprint 7 / Sprint 10: Tutorial system ─────────────────────────────────────

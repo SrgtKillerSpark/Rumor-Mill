@@ -70,11 +70,14 @@ var propagation_engine: PropagationEngine = null
 ## Rival agent — only active in Scenario 3.
 var rival_agent: RivalAgent = null
 
+## Inquisitor agent — only active in Scenario 4.
+var inquisitor_agent: InquisitorAgent = null
+
 ## Faction event system — fires 1-2 random events per scenario run (SPA-199).
 var faction_event_system: FactionEventSystem = null
 
 ## Active scenario id — change before _ready() to load a different scenario.
-## Valid values: "scenario_1", "scenario_2", "scenario_3"
+## Valid values: "scenario_1", "scenario_2", "scenario_3", "scenario_4"
 var active_scenario_id: String = "scenario_1"
 
 # Building entry-point cells derived from grid data (populated in _load_grid).
@@ -400,6 +403,8 @@ func _on_day_changed(_day: int) -> void:
 		print("World: Recon actions replenished at dawn (day %d)" % _day)
 	if rival_agent != null and scenario_manager != null:
 		rival_agent.tick(_day, self, scenario_manager)
+	if inquisitor_agent != null and scenario_manager != null:
+		inquisitor_agent.tick(_day, self, scenario_manager)
 	if faction_event_system != null:
 		faction_event_system.on_day_changed(_day)
 
@@ -493,6 +498,14 @@ func _apply_active_scenario() -> void:
 		print("World: RivalAgent activated for 'scenario_3'")
 	else:
 		print("World: RivalAgent inactive for '%s'" % active_scenario_id)
+
+	# 8. Inquisitor agent — only active in Scenario 4.
+	inquisitor_agent = InquisitorAgent.new()
+	if active_scenario_id == "scenario_4":
+		inquisitor_agent.activate()
+		print("World: InquisitorAgent activated for 'scenario_4'")
+	else:
+		print("World: InquisitorAgent inactive for '%s'" % active_scenario_id)
 
 	# 8. Faction event system — initialise after all subsystems are ready.
 	faction_event_system = FactionEventSystem.new()
@@ -704,6 +717,46 @@ func seed_rumor_from_player(
 		seed_target_npc.npc_data.get("name", "?"),
 		subject_npc.npc_data.get("name", "?")])
 	return rumor_id
+
+
+# ── Public API: vouch_for_npc (Scenario 4 mechanic) ────────────────────────
+
+## Vouch action: spend 1 whisper to force a nearby NPC into DEFENDING state for
+## the specified subject.  Adds +12 heat to the vouching NPC.
+## Returns true on success.
+func vouch_for_npc(voucher_npc_id: String, subject_npc_id: String) -> bool:
+	if intel_store == null or not intel_store.try_spend_whisper():
+		push_warning("World.vouch_for_npc: no Whisper Tokens remaining")
+		return false
+
+	var voucher_npc: Node2D = null
+	for npc in npcs:
+		if npc.npc_data.get("id", "") == voucher_npc_id:
+			voucher_npc = npc
+			break
+
+	if voucher_npc == null:
+		push_warning("World.vouch_for_npc: NPC '%s' not found" % voucher_npc_id)
+		intel_store.whisper_tokens_remaining = mini(
+			intel_store.whisper_tokens_remaining + 1,
+			PlayerIntelStore.MAX_DAILY_WHISPERS)
+		return false
+
+	# Force the voucher NPC into DEFENDING state for the subject.
+	voucher_npc._is_defending = true
+	voucher_npc._defender_target_npc_id = subject_npc_id
+	voucher_npc._defender_ticks_remaining = voucher_npc._DEFENDER_DURATION
+
+	# Heat: +12 to the voucher NPC (player has used them publicly).
+	if intel_store != null:
+		intel_store.add_heat(voucher_npc_id, 12.0)
+
+	var voucher_name: String = voucher_npc.npc_data.get("name", voucher_npc_id)
+	print("[World] vouch_for_npc: %s now DEFENDING '%s' (heat +12)" % [voucher_name, subject_npc_id])
+	emit_signal("rumor_event",
+		"[VOUCH] %s is now defending %s against the inquisitor's claims." % [voucher_name, subject_npc_id],
+		day_night.current_tick if day_night != null else 0)
+	return true
 
 
 # ── NPC event → rumor_event aggregation ─────────────────────────────────────
