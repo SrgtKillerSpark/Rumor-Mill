@@ -306,7 +306,7 @@ func _compute_snapshot(
 			dominant_ct    = ct
 
 	var faction_direction := -1
-	if dominant_ct == Rumor.ClaimType.PRAISE:
+	if dominant_ct == Rumor.ClaimType.PRAISE or dominant_ct == Rumor.ClaimType.PROPHECY:
 		faction_direction = 1
 
 	var faction_sentiment := 0.0
