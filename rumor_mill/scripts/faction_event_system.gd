@@ -150,8 +150,6 @@ func _schedule_events() -> void:
 		used_days.append(ev.trigger_day)
 		_configure_event(ev)
 		_events.append(ev)
-		if OS.is_debug_build():
-				ev.event_type, ev.trigger_day])
 
 
 func _pick_unique_day(used: Array) -> int:
@@ -223,8 +221,6 @@ func _activate_event(ev: FactionEvent, day: int) -> void:
 		"guard_crackdown":    _activate_guard_crackdown(ev)
 	var lbl: String = _label(ev.event_type)
 	event_activated.emit(lbl, day)
-	if OS.is_debug_build():
-			ev.event_type, day, str(ev.affected_npc_ids)])
 
 
 ## Market Dispute: mutate 2-3 edges between disputing merchants and open a
@@ -304,8 +300,6 @@ func _activate_noble_feast(ev: FactionEvent, day: int) -> void:
 func _activate_guard_crackdown(ev: FactionEvent) -> void:
 	if _intel_store != null:
 		_intel_store.heat_decay_override = GUARD_CRACKDOWN_HEAT_DECAY
-	if OS.is_debug_build():
-			GUARD_CRACKDOWN_HEAT_DECAY)
 
 
 # ---------------------------------------------------------------------------

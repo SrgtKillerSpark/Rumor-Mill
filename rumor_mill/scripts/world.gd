@@ -454,7 +454,6 @@ func _apply_active_scenario() -> void:
 				npc._loyalty     = float(npc.npc_data.get("loyalty",      0.5))
 				npc._temperament = float(npc.npc_data.get("temperament",  0.5))
 				break
-	if not personality_overrides.is_empty():
 
 	# 3. Starting reputations (override base_score per NPC in reputation system).
 	var starting_reps: Dictionary = scenario_data.get("startingReputations", {})
@@ -462,7 +461,6 @@ func _apply_active_scenario() -> void:
 		reputation_system.clear_base_overrides()
 		for npc_id in starting_reps:
 			reputation_system.set_base_override(npc_id, int(starting_reps[npc_id]))
-		if not starting_reps.is_empty():
 
 	# 4. Narrative text into scenario manager.
 	if scenario_manager != null:
@@ -472,7 +470,6 @@ func _apply_active_scenario() -> void:
 	if propagation_engine != null:
 		var excluded: Array = scenario_data.get("targetShiftExcluded", [])
 		propagation_engine.target_shift_excluded_ids.assign(excluded)
-		if not excluded.is_empty():
 
 	# 6. Heat + Bribery: disabled in Scenario 1 (tutorial) and Scenario 4 (pure defense).
 	if intel_store != null:
@@ -495,29 +492,22 @@ func _apply_active_scenario() -> void:
 		# Heat decay override (skip for tutorial where heat is disabled).
 		if non_tutorial:
 			intel_store.heat_decay_override = float(diff_mods.get("heat_decay", 6.0))
-			GameState.selected_difficulty,
-			intel_store.max_daily_whispers,
-			intel_store.max_daily_actions,
-			intel_store.heat_decay_override if non_tutorial else 6.0])
 	if scenario_manager != null:
 		var days_bonus: int = int(diff_mods.get("days_bonus", 0))
 		if days_bonus != 0:
 			var adjusted: int = maxi(1, scenario_manager.get_days_allowed() + days_bonus)
 			scenario_manager.override_days_allowed(adjusted)
-				GameState.selected_difficulty, adjusted])
 
 	# 8. Rival agent — only active in Scenario 3.
 	rival_agent = RivalAgent.new()
 	rival_agent.cooldown_offset = int(diff_mods.get("rival_cooldown_offset", 0))
 	if active_scenario_id == "scenario_3":
 		rival_agent.activate()
-	else:
 
 	# 8. Inquisitor agent — only active in Scenario 4.
 	inquisitor_agent = InquisitorAgent.new()
 	if active_scenario_id == "scenario_4":
 		inquisitor_agent.activate()
-	else:
 
 	# 8. Faction event system — initialise after all subsystems are ready.
 	faction_event_system = FactionEventSystem.new()

@@ -8,12 +8,12 @@
 ##   WIN:  reputation(edric_fenn) < 30
 ##
 ## Scenario 3 — The Succession:
-##   WIN:  reputation(calder_fenn) >= 80  AND  reputation(tomas_reeve) <= 30
+##   WIN:  reputation(calder_fenn) >= 75  AND  reputation(tomas_reeve) <= 35
 ##   FAIL: reputation(calder_fenn) < 40
 ##
 ## Scenario 4 — The Holy Inquisition:
 ##   WIN:  All 3 protected NPCs above reputation 50 when 20 days elapsed
-##   FAIL: Any protected NPC drops below reputation 30
+##   FAIL: Any protected NPC drops below reputation 50
 
 class_name ScenarioManager
 
