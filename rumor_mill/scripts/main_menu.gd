@@ -345,6 +345,12 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	btn.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	btn.add_theme_stylebox_override("hover",  StyleBoxEmpty.new())
 	btn.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
+	var _card_focus_ring := StyleBoxFlat.new()
+	_card_focus_ring.bg_color     = Color(0, 0, 0, 0)                # transparent — card panel shows through
+	_card_focus_ring.draw_center  = false
+	_card_focus_ring.set_border_width_all(2)
+	_card_focus_ring.border_color = Color(1.00, 0.90, 0.40, 1.0)     # gold — matches SPA-169 focus ring
+	btn.add_theme_stylebox_override("focus", _card_focus_ring)
 	btn.pressed.connect(_on_card_pressed.bind(idx))
 	btn.mouse_entered.connect(_on_card_hover.bind(card, true))
 	btn.mouse_exited.connect(_on_card_hover.bind(card, false))
