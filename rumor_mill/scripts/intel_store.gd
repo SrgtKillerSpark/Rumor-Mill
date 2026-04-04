@@ -21,6 +21,9 @@ var relationship_intel: Dictionary = {}
 ## as a rumor source. Only active from Scenario 2 onward.
 var heat: Dictionary = {}
 var heat_enabled: bool = false
+## When >= 0, overrides the default 6.0/day decay (used by FactionEventSystem
+## guard_crackdown event). Reset to -1.0 to restore the default.
+var heat_decay_override: float = -1.0
 
 ## Bribe charges (2 per scenario, not dawn-refreshed). Active from Scenario 2+.
 ## 0 means bribery is disabled (Scenario 1 / tutorial).
@@ -140,8 +143,9 @@ func add_heat(npc_id: String, amount: float) -> void:
 func decay_heat() -> void:
 	if not heat_enabled:
 		return
+	var decay_amount: float = 6.0 if heat_decay_override < 0.0 else heat_decay_override
 	for npc_id in heat.keys():
-		heat[npc_id] = maxf(0.0, heat[npc_id] - 6.0)  # SPA-98: reduced from 8.0 so heat lingers ~2 days after a seed action
+		heat[npc_id] = maxf(0.0, heat[npc_id] - decay_amount)  # SPA-98: default 6.0; overrideable by guard_crackdown event
 
 
 # ---------------------------------------------------------------------------

@@ -68,6 +68,23 @@ func clear_base_overrides() -> void:
 
 
 # ---------------------------------------------------------------------------
+# Faction sentiment bonuses: npc_id → float bonus (set by FactionEventSystem).
+# Applied on top of the computed faction_sentiment in the final score.
+# ---------------------------------------------------------------------------
+var _faction_sentiment_bonuses: Dictionary = {}
+
+
+## Set a flat sentiment bonus for an NPC (e.g. +10 during religious festival).
+func set_faction_sentiment_bonus(npc_id: String, bonus: float) -> void:
+	_faction_sentiment_bonuses[npc_id] = bonus
+
+
+## Remove the sentiment bonus for an NPC when the event expires.
+func clear_faction_sentiment_bonus(npc_id: String) -> void:
+	_faction_sentiment_bonuses.erase(npc_id)
+
+
+# ---------------------------------------------------------------------------
 # Cache: npc_id → ReputationSnapshot (refreshed once per tick).
 # ---------------------------------------------------------------------------
 var _cache: Dictionary = {}
@@ -288,7 +305,8 @@ func _compute_snapshot(
 	snap.rumor_delta = clamp(total_delta, -40.0, 30.0)
 
 	# ── Final score ───────────────────────────────────────────────────────
-	var raw := snap.base_score + snap.faction_sentiment + snap.rumor_delta
+	var event_bonus: float = _faction_sentiment_bonuses.get(npc_id, 0.0)
+	var raw := snap.base_score + snap.faction_sentiment + snap.rumor_delta + event_bonus
 	snap.score = int(clamp(raw, 0.0, 100.0))
 
 	return snap

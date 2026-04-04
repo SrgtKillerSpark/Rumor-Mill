@@ -70,6 +70,9 @@ var propagation_engine: PropagationEngine = null
 ## Rival agent — only active in Scenario 3.
 var rival_agent: RivalAgent = null
 
+## Faction event system — fires 1-2 random events per scenario run (SPA-199).
+var faction_event_system: FactionEventSystem = null
+
 ## Active scenario id — change before _ready() to load a different scenario.
 ## Valid values: "scenario_1", "scenario_2", "scenario_3"
 var active_scenario_id: String = "scenario_1"
@@ -397,6 +400,8 @@ func _on_day_changed(_day: int) -> void:
 		print("World: Recon actions replenished at dawn (day %d)" % _day)
 	if rival_agent != null and scenario_manager != null:
 		rival_agent.tick(_day, self, scenario_manager)
+	if faction_event_system != null:
+		faction_event_system.on_day_changed(_day)
 
 
 # ── Scenario data loader ─────────────────────────────────────────────────────
@@ -488,6 +493,11 @@ func _apply_active_scenario() -> void:
 		print("World: RivalAgent activated for 'scenario_3'")
 	else:
 		print("World: RivalAgent inactive for '%s'" % active_scenario_id)
+
+	# 8. Faction event system — initialise after all subsystems are ready.
+	faction_event_system = FactionEventSystem.new()
+	faction_event_system.initialize(self)
+	print("World: FactionEventSystem initialised for '%s'" % active_scenario_id)
 
 	# Seed the reputation cache now that all overrides are in place.
 	reputation_system.recalculate_all(npcs, 0)
