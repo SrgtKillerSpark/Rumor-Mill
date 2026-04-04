@@ -214,7 +214,7 @@
     "startingReputations": {
       "aldous_prior": 60,
       "vera_midwife": 55,
-      "finn_monk": 50
+      "finn_monk": 55
     },
     "targetShiftExcluded": ["aldous_prior", "vera_midwife", "finn_monk"],
     "protectedNpcIds": ["aldous_prior", "vera_midwife", "finn_monk"]
