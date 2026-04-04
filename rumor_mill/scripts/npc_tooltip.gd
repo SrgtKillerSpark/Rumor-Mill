@@ -15,7 +15,7 @@ const C_BG      := Color(0.10, 0.07, 0.05, 0.93)
 const C_BORDER  := Color(0.55, 0.38, 0.18, 1.0)
 const C_TITLE   := Color(0.92, 0.78, 0.12, 1.0)
 const C_LABEL   := Color(0.82, 0.75, 0.60, 1.0)
-const C_MUTED   := Color(0.60, 0.52, 0.40, 1.0)
+const C_MUTED   := Color(0.60, 0.53, 0.42, 1.0)
 
 const FADE_IN_SEC  := 0.12
 const FADE_OUT_SEC := 0.10
