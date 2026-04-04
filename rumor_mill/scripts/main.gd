@@ -48,11 +48,14 @@ var _evidence_tooltip_fired:         bool = false
 var _recon_ctrl_ref: Node = null
 
 # ── Sprint 10: S1 banner hint gates ───────────────────────────────────────────
-var _banner_camera_gate:    bool = false  # set true after camera_moved fires
-var _banner_observe_gate:   bool = false  # set true after first successful Observe
-var _banner_eavesdrop_gate: bool = false  # set true after first successful Eavesdrop
-var _banner_seed_fired:     bool = false  # guard for hint_propagation 5 s delay
-var _banner_believe_fired:  bool = false  # guard for hint_objectives
+var _banner_camera_gate:       bool = false  # set true after camera_moved fires
+var _banner_observe_gate:      bool = false  # set true after first successful Observe
+var _banner_eavesdrop_gate:    bool = false  # set true after first successful Eavesdrop
+var _banner_seed_fired:        bool = false  # guard for hint_propagation 5 s delay
+var _banner_believe_fired:     bool = false  # guard for hint_objectives
+var _banner_journal_hint_fired: bool = false  # guard: journal hint shown (observe or eavesdrop)
+var _banner_social_graph_fired: bool = false  # guard: social graph hint shown
+var _banner_eavesdrop_count:    int  = 0      # counts eavesdrop actions for social graph trigger
 
 # Guards against double-initialisation if begin_game fires more than once.
 var _game_started: bool = false
@@ -350,6 +353,13 @@ func _init_tutorial_banner_s1() -> void:
 	# HINT-01: camera controls — fires immediately on game start.
 	_tutorial_banner.queue_hint("hint_camera")
 
+	# hint_target_npc: fires 10 s after game start to point player toward Edric Fenn.
+	var _target_hint_timer := get_tree().create_timer(10.0)
+	_target_hint_timer.timeout.connect(func() -> void:
+		if _tutorial_banner != null:
+			_tutorial_banner.queue_hint("hint_target_npc")
+	)
+
 	# Suppression: pause banner while Journal / Rumour Panel / Pause Menu are open.
 	if journal != null:
 		journal.visibility_changed.connect(_on_journal_visibility_changed_banner)
@@ -439,11 +449,22 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 	if _tutorial_banner != null:
 		if message.begins_with("Observed") and not _banner_observe_gate:
 			_banner_observe_gate = true
-			# Dismiss hint_observe if still showing.
-		if message.begins_with("Eavesdropped") and not _banner_eavesdrop_gate:
-			_banner_eavesdrop_gate = true
-			# HINT-05: open journal hint after first eavesdrop.
-			_tutorial_banner.queue_hint("hint_journal")
+			# Prompt Journal after first intel discovery (Observe counts as first discovery).
+			if not _banner_journal_hint_fired:
+				_banner_journal_hint_fired = true
+				_tutorial_banner.queue_hint("hint_journal")
+		if message.begins_with("Eavesdropped"):
+			if not _banner_eavesdrop_gate:
+				_banner_eavesdrop_gate = true
+				# Journal hint after first eavesdrop, if not already shown from Observe.
+				if not _banner_journal_hint_fired:
+					_banner_journal_hint_fired = true
+					_tutorial_banner.queue_hint("hint_journal")
+			_banner_eavesdrop_count += 1
+			# Introduce social graph when 2+ relationships are revealed.
+			if _banner_eavesdrop_count >= 2 and not _banner_social_graph_fired:
+				_banner_social_graph_fired = true
+				_tutorial_banner.queue_hint("hint_social_graph")
 
 
 # ── S1 banner signal handlers ─────────────────────────────────────────────────
@@ -477,10 +498,12 @@ func _on_s1_valid_eavesdrop_hovered() -> void:
 
 
 func _on_s1_game_tick(tick: int) -> void:
-	# HINT-06: fire at day 2 (tick 24) if tokens and recon exist and no rumour seeded yet.
+	# HINT-06: fire at day 2 (tick 24) if tokens exist, player has eavesdropped, and no rumour seeded.
+	# Gating on _banner_eavesdrop_gate ensures the player has gathered intel before being nudged
+	# toward the Rumour Panel — avoids an arbitrary first seed choice (SPA-170 recommendation).
 	if tick == 24 and _tutorial_banner != null and not _banner_seed_fired:
 		var intel: PlayerIntelStore = world.intel_store
-		if intel != null and intel.whisper_tokens_remaining >= 1:
+		if intel != null and intel.whisper_tokens_remaining >= 1 and _banner_eavesdrop_gate:
 			_tutorial_banner.queue_hint("hint_rumour_panel")
 
 

@@ -146,11 +146,21 @@ const HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 7,
 	},
+	"hint_target_npc": {
+		"title": "Find Your Target",
+		"body":  (
+			"Your target is [b]Lord Edric Fenn[/b].  Hover over townspeople to find him.  "
+			+ "[b]Right-click a building[/b] to Observe who is present, or "
+			+ "[b]right-click two NPCs in conversation[/b] to Eavesdrop on their relationship."
+		),
+		"auto_dismiss_secs": 9,
+	},
 	"hint_hover_npc": {
 		"title": "Inspect NPCs",
 		"body":  (
 			"[b]Hover[/b] over any townsperson to see their name and reputation.  "
-			+ "Their label colour shows how a rumour has affected them."
+			+ "Their label colour shows how a rumour has affected them.  "
+			+ "Find [b]Lord Edric Fenn[/b] — he is your primary target."
 		),
 		"auto_dismiss_secs": 7,
 	},
@@ -207,8 +217,8 @@ const HINT_DATA: Dictionary = {
 	"hint_objectives": {
 		"title": "Track Your Goal",
 		"body":  (
-			"Press [b]J[/b] and open the [b]Objectives[/b] tab to see Lord Fenn's current "
-			+ "reputation and how many petitioners you still need.  You have 30 days."
+			"Press [b]J[/b] and open the [b]Objectives[/b] tab to track Edric Fenn's "
+			+ "current reputation score.  You need to bring it below 30.  You have 30 days."
 		),
 		"auto_dismiss_secs": 7,
 	},
@@ -218,6 +228,15 @@ const HINT_DATA: Dictionary = {
 			"You found [b][evidence_name][/b].  "
 			+ "Attach it in the Rumour Panel (Step 2) to boost believability.  "
 			+ "Evidence is consumed on use — choose the right moment."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	"hint_social_graph": {
+		"title": "Social Graph",
+		"body":  (
+			"You have uncovered multiple relationships.  "
+			+ "Press [b]G[/b] to open the Social Graph — it maps every connection you have found.  "
+			+ "Use it to identify the strongest paths toward your target."
 		),
 		"auto_dismiss_secs": 9,
 	},

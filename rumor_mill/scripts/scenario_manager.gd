@@ -5,7 +5,7 @@
 ## scenario_resolved when a win or fail condition is first met.
 ##
 ## Scenario 1 — The Alderman's Ruin:
-##   WIN:  reputation(edric_fenn) < 25
+##   WIN:  reputation(edric_fenn) < 30
 ##
 ## Scenario 3 — The Succession:
 ##   WIN:  reputation(calder_fenn) >= 80  AND  reputation(tomas_reeve) <= 30
