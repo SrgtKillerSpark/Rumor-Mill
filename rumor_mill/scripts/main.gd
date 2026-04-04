@@ -162,6 +162,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_audio()
 	_init_pause_menu()
 	_init_npc_tooltip()
+	day_night.day_changed.connect(_on_new_day_auto_save)
 
 	# Loading complete — dismiss the tip screen.
 	if _loading_tips != null:
@@ -706,6 +707,15 @@ func _init_npc_tooltip() -> void:
 	add_child(bldg_tooltip)
 	bldg_tooltip.setup(world)
 	print("Main: Building hover tooltip wired")
+
+
+## Auto-save to slot 0 at the start of each new day (SPA-220).
+func _on_new_day_auto_save(day: int) -> void:
+	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT)
+	if err.is_empty():
+		print("[Main] Auto-save complete (Day %d)" % day)
+	else:
+		push_warning("[Main] Auto-save failed on day %d: %s" % [day, err])
 
 
 ## Relay scenario_resolved to AudioManager win/fail stings.

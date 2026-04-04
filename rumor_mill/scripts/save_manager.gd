@@ -1,11 +1,13 @@
-## save_manager.gd — Mid-scenario save/load for Rumor Mill (SPA-177).
+## save_manager.gd — Mid-scenario save/load for Rumor Mill (SPA-177, SPA-220).
 ##
-## Saves to user://saves/<scenario_id>.json.
+## Saves to user://saves/<scenario_id>_slotN.json  (manual slots 1–3)
+##        or user://saves/<scenario_id>_auto.json   (auto-save, slot 0)
 ## Serializes: tick, day, social graph edges, live rumors with NPC belief slots,
-## player intel (recon budget, heat, evidence), scenario state, journal timeline.
+## player intel (recon budget, heat, evidence), scenario state, journal timeline,
+## rival agent state (S3), inquisitor agent state (S4).
 ##
 ## Load flow:
-##   1. prepare_load(scenario_id) validates file and stores data in _pending_load_data.
+##   1. prepare_load(scenario_id, slot) validates file and stores data in _pending_load_data.
 ##   2. Caller sets PauseMenu._pending_restart_id and reloads the scene.
 ##   3. After all systems init, main.gd calls apply_pending_load() to restore state.
 ##
@@ -18,24 +20,49 @@ class_name SaveManager
 
 const SAVE_VERSION := 1
 const SAVE_DIR     := "user://saves/"
+const SLOT_COUNT   := 3   ## Manual save slots (1–3)
+const AUTO_SLOT    := 0   ## Slot 0 = auto-save (written at start of each new day)
 
 
-## Returns the save file path for a given scenario id.
-static func save_path(scenario_id: String) -> String:
-	return SAVE_DIR + scenario_id + ".json"
+## Returns the save file path for a given scenario id and slot.
+static func save_path(scenario_id: String, slot: int) -> String:
+	if slot == AUTO_SLOT:
+		return SAVE_DIR + scenario_id + "_auto.json"
+	return SAVE_DIR + scenario_id + "_slot%d.json" % slot
 
 
-## Returns true if a save exists for the given scenario_id.
-static func has_save(scenario_id: String) -> bool:
-	return FileAccess.file_exists(save_path(scenario_id))
+## Returns true if a save exists for the given scenario_id and slot.
+static func has_save(scenario_id: String, slot: int) -> bool:
+	return FileAccess.file_exists(save_path(scenario_id, slot))
+
+
+## Returns summary metadata for a slot, used in the pause menu slot picker.
+## Returns {} if no save exists; {"day": int, "tick": int} otherwise.
+static func get_save_info(scenario_id: String, slot: int) -> Dictionary:
+	if not has_save(scenario_id, slot):
+		return {}
+	var f := FileAccess.open(save_path(scenario_id, slot), FileAccess.READ)
+	if f == null:
+		return {}
+	var text := f.get_as_text()
+	f.close()
+	var parsed: Variant = JSON.parse_string(text)
+	if not (parsed is Dictionary):
+		return {}
+	return {
+		"day":  int(parsed.get("day",  1)),
+		"tick": int(parsed.get("tick", 0)),
+	}
 
 
 ## Save the current game state to disk.
+## slot: AUTO_SLOT (0) for auto-save, 1–3 for manual slots.
 ## Returns "" on success, or a human-readable error string on failure.
 static func save_game(
 		world:     Node2D,
 		day_night: Node,
-		journal:   CanvasLayer
+		journal:   CanvasLayer,
+		slot:      int = 1
 ) -> String:
 	# Ensure save directory exists.
 	var dir := DirAccess.open("user://")
@@ -47,19 +74,21 @@ static func save_game(
 	timeline.append_array(journal._pending_events)
 
 	var data := {
-		"version":      SAVE_VERSION,
-		"scenario_id":  world.active_scenario_id,
-		"tick":         day_night.current_tick,
-		"day":          day_night.current_day,
-		"social_graph": _serialize_social_graph(world.social_graph),
-		"propagation":  _serialize_propagation(world.propagation_engine),
-		"npc_slots":    _serialize_npc_slots(world.npcs),
-		"intel_store":  _serialize_intel_store(world.intel_store),
-		"scenario":     _serialize_scenario_manager(world.scenario_manager),
-		"timeline":     timeline,
+		"version":          SAVE_VERSION,
+		"scenario_id":      world.active_scenario_id,
+		"tick":             day_night.current_tick,
+		"day":              day_night.current_day,
+		"social_graph":     _serialize_social_graph(world.social_graph),
+		"propagation":      _serialize_propagation(world.propagation_engine),
+		"npc_slots":        _serialize_npc_slots(world.npcs),
+		"intel_store":      _serialize_intel_store(world.intel_store),
+		"scenario":         _serialize_scenario_manager(world.scenario_manager),
+		"rival_agent":      _serialize_rival_agent(world.rival_agent),
+		"inquisitor_agent": _serialize_inquisitor_agent(world.inquisitor_agent),
+		"timeline":         timeline,
 	}
 
-	var path := save_path(world.active_scenario_id)
+	var path := save_path(world.active_scenario_id, slot)
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
 		return "Failed to open '%s' for writing (error %d)." % [
@@ -77,11 +106,11 @@ static var _pending_load_data: Dictionary = {}
 
 ## Parse and validate a save file; store data as pending for apply_pending_load().
 ## Returns "" on success, or a human-readable error string on failure.
-static func prepare_load(scenario_id: String) -> String:
-	if not has_save(scenario_id):
+static func prepare_load(scenario_id: String, slot: int) -> String:
+	if not has_save(scenario_id, slot):
 		return "No save found for this scenario."
 
-	var f := FileAccess.open(save_path(scenario_id), FileAccess.READ)
+	var f := FileAccess.open(save_path(scenario_id, slot), FileAccess.READ)
 	if f == null:
 		return "Could not open save file."
 	var text := f.get_as_text()
@@ -128,6 +157,8 @@ static func apply_pending_load(
 	_restore_npc_slots(world.npcs, world.propagation_engine, data.get("npc_slots", {}))
 	_restore_intel_store(world.intel_store, data.get("intel_store", {}))
 	_restore_scenario_manager(world.scenario_manager, data.get("scenario", {}))
+	_restore_rival_agent(world.rival_agent, data.get("rival_agent", {}))
+	_restore_inquisitor_agent(world.inquisitor_agent, data.get("inquisitor_agent", {}))
 	if journal != null and journal.has_method("restore_timeline"):
 		journal.restore_timeline(data.get("timeline", []))
 	print("[SaveManager] Save data applied. Tick=%d Day=%d" % [
@@ -238,11 +269,32 @@ static func _serialize_intel_store(store: PlayerIntelStore) -> Dictionary:
 
 static func _serialize_scenario_manager(sm: ScenarioManager) -> Dictionary:
 	return {
-		"scenario_1_state": int(sm.scenario_1_state),
-		"scenario_2_state": int(sm.scenario_2_state),
-		"scenario_3_state": int(sm.scenario_3_state),
+		"scenario_1_state":   int(sm.scenario_1_state),
+		"scenario_2_state":   int(sm.scenario_2_state),
+		"scenario_3_state":   int(sm.scenario_3_state),
+		"scenario_4_state":   int(sm.scenario_4_state),
 		"calder_score_start": sm.calder_score_start,
 		"calder_score_final": sm.calder_score_final,
+	}
+
+
+static func _serialize_rival_agent(ra: RivalAgent) -> Dictionary:
+	if ra == null:
+		return {}
+	return {
+		"active":         ra._active,
+		"last_seed_day":  ra._last_seed_day,
+		"alternate_flag": ra._alternate_flag,
+	}
+
+
+static func _serialize_inquisitor_agent(ia: InquisitorAgent) -> Dictionary:
+	if ia == null:
+		return {}
+	return {
+		"active":        ia._active,
+		"last_seed_day": ia._last_seed_day,
+		"target_index":  ia._target_index,
 	}
 
 
@@ -359,5 +411,22 @@ static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> voi
 	sm.scenario_1_state   = int(d.get("scenario_1_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.scenario_2_state   = int(d.get("scenario_2_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.scenario_3_state   = int(d.get("scenario_3_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
+	sm.scenario_4_state   = int(d.get("scenario_4_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.calder_score_start = int(d.get("calder_score_start", -1))
 	sm.calder_score_final = int(d.get("calder_score_final", -1))
+
+
+static func _restore_rival_agent(ra: RivalAgent, d: Dictionary) -> void:
+	if ra == null or d.is_empty():
+		return
+	ra._active         = bool(d.get("active", false))
+	ra._last_seed_day  = int(d.get("last_seed_day", 0))
+	ra._alternate_flag = bool(d.get("alternate_flag", false))
+
+
+static func _restore_inquisitor_agent(ia: InquisitorAgent, d: Dictionary) -> void:
+	if ia == null or d.is_empty():
+		return
+	ia._active        = bool(d.get("active", false))
+	ia._last_seed_day = int(d.get("last_seed_day", 0))
+	ia._target_index  = int(d.get("target_index", 0))
