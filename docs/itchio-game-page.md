@@ -49,7 +49,7 @@ Plant the right story with the right person. Then step back and watch it travel.
 
 ### How It Works
 
-Open the **Rumor Crafting Panel** and build your whisper: choose a subject, pick your claim (an accusation of theft, a scandal, an illness scare, a dark prophecy), and decide who you tell first. Then let go.
+Open the **Rumor Crafting Panel** and build your whisper: choose a subject, pick your claim (an accusation of theft, a scandal, an illness scare, a dark prophecy, a blackmail threat, a secret alliance, a forbidden romance), and decide who you tell first. Then let go.
 
 The rumor moves through the social network on its own. NPCs pass it on based on their personality — some embellish, some downplay, some go quiet. The story **mutates in transit**. A petty accusation becomes a corruption scandal. A health concern becomes a plague scare. You cannot fully control the message once it's out.
 
@@ -79,12 +79,13 @@ Then adapt.
 - 30 NPCs with individual personalities, faction loyalties, and daily schedules
 - Real-time rumor propagation — stories mutate, stall, accelerate, and backfire
 - Full social graph visualization — watch your whisper move through the town
-- Multiple claim types: accusations, scandals, illness scares, prophecies
+- Multiple claim types: accusations, scandals, illness scares, prophecies, blackmail threats, secret alliances, forbidden romances
 - Intel system — eavesdrop, observe, build your picture before committing
 - Player Journal — track reputation scores, active rumors, and known relationships
 - Four handcrafted scenarios with distinct objectives and faction configurations
 - Full save/load — resume any scenario at any point
 - Day/night cycle — NPC schedules shift; timing your move matters
+- Post-scenario feedback prompt — rate your experience and surface replay data
 - Accessibility options: colorblind-safe icons, adjustable font sizes, keyboard navigation
 
 ---
@@ -207,7 +208,8 @@ Before publishing the itch.io page:
 
 ---
 
-*Document version: 1.2 — 2026-04-04*
+*Document version: 1.3 — 2026-04-04*
 *v1.0 ([SPA-183](/SPA/issues/SPA-183)): Initial itch.io page copy. Steam copy source: [SPA-168](/SPA/issues/SPA-168) | Devlog plan: [SPA-178](/SPA/issues/SPA-178)*
 *v1.1 ([SPA-267](/SPA/issues/SPA-267)): Added Scenario 4 "The Holy Inquisition"; updated scenario count to four.*
 *v1.2 ([SPA-294](/SPA/issues/SPA-294)): Finalized for Apr 11 demo launch — fixed "three→four" in demo section, added save/load to features, added roadmap link, explicit no-audio/Windows-only callout, social post added, devlog #4 title updated.*
+*v1.3 ([SPA-346](/SPA/issues/SPA-346)): Added BLACKMAIL, SECRET_ALLIANCE, FORBIDDEN_ROMANCE claim types to Rumor Crafting Panel description and features list; added post-scenario feedback prompt to features.*

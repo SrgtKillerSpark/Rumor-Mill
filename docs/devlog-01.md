@@ -61,7 +61,7 @@ Rumor Mill has no combat. No levels. No loot.
 
 You play as a hired agent in a medieval town of thirty people. Each NPC has a personality, a faction, a daily schedule, and a web of relationships. Your only tool is information.
 
-Open the **Rumor Crafting Panel**. Choose a subject — who the rumor is about. Choose a claim type: an accusation of theft, a scandal, an illness scare, a dark prophecy. Choose who you tell first. Then let go.
+Open the **Rumor Crafting Panel**. Choose a subject — who the rumor is about. Choose a claim type: an accusation of theft, a scandal, an illness scare, a dark prophecy, a blackmail threat, a secret alliance, a forbidden romance. Choose who you tell first. Then let go.
 
 The rumor moves through the social network on its own. Each NPC who carries it applies their personality — some embellish, some downplay, some go quiet. The story **mutates in transit**. A petty accusation becomes a corruption scandal. A health concern becomes a plague scare. You cannot fully control the message once it's out.
 
@@ -83,13 +83,15 @@ The Social Graph Overlay was one of the first things the engineering team built.
 
 ### What's Playable Right Now
 
-Three fully playable scenarios:
+Four fully playable scenarios:
 
 **The Alderman's Ruin** — Discredit a nine-year incumbent before the autumn tax rolls. Thirty days. One high-reputation target with a dense network of allies.
 
 **The Plague Scare** — Drive out a business rival using an illness rumor — but the Chapel is watching, and overreach costs everything.
 
 **The Succession** — Raise one reputation and ruin another simultaneously, while keeping your client's hands clean. Twenty-five days. Zero margin.
+
+**The Holy Inquisition** — Purely defensive. An inquisitor has three names. Keep their reputations intact for 20 days while he seeds scandal claims designed to prime for heresy escalation. You are not the aggressor here.
 
 The full 30-NPC simulation is running — faction loyalties, daily schedules, relationship weights. The rumor propagation engine, Social Graph Overlay, Rumor Crafting Panel, and Player Journal are all implemented.
 
@@ -105,7 +107,7 @@ Three more devlogs are planned:
 
 - **Devlog #2:** How gossip actually works — the mutation system, spread rates, NPC credibility dynamics, and what happens when a rumor backfires
 - **Devlog #3:** The town simulation — 30 characters, five factions, daily schedules, and the intel system (eavesdropping as information asymmetry management)
-- **Devlog #4:** Scenario design — why The Alderman's Ruin, The Plague Scare, and The Succession each require a completely different strategy
+- **Devlog #4:** Scenario design — why each of the four scenarios requires a completely different strategy
 
 ---
 
@@ -148,5 +150,6 @@ Use the 5-tweet thread structure from `docs/devlog-series-plan.md` (Part 4), ada
 
 ---
 
-*Document version: 1.0 — 2026-04-03*
-*Task: [SPA-190](/SPA/issues/SPA-190) | Series plan: [SPA-178](/SPA/issues/SPA-178) | Press kit: [SPA-168](/SPA/issues/SPA-168)*
+*Document version: 1.1 — 2026-04-04*
+*v1.0 ([SPA-190](/SPA/issues/SPA-190)): Initial draft. Series plan: [SPA-178](/SPA/issues/SPA-178) | Press kit: [SPA-168](/SPA/issues/SPA-168)*
+*v1.1 ([SPA-346](/SPA/issues/SPA-346)): Fixed three→four scenarios; added The Holy Inquisition; added BLACKMAIL, SECRET_ALLIANCE, FORBIDDEN_ROMANCE claim types; updated Devlog #4 description.*
