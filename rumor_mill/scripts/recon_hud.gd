@@ -135,12 +135,17 @@ func _refresh_pips() -> void:
 		_update_pips(whisper_pips_row, whispers, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 		_last_whisper_rem = whispers
 
+	# Update row tooltips so hovering the pip area explains the resource.
+	action_pips_row.get_parent().tooltip_text = "Recon Actions: %d / %d remaining (refresh at dawn)" % [remaining, max_val]
+	whisper_pips_row.get_parent().tooltip_text = "Whisper Tokens: %d / %d remaining (press R to craft a rumor)" % [whispers, max_w]
+
 	# Favors row.
 	var show_favors: bool = _intel_store_ref.heat_enabled or favors > 0
 	if favors_row != null:
 		favors_row.visible = show_favors
 		if show_favors:
 			favors_label.text = str(favors)
+			favors_row.tooltip_text = "Favors: %d available (bribe NPCs to reduce suspicion)" % favors
 
 
 ## Rebuild pip children entirely (when max changes).

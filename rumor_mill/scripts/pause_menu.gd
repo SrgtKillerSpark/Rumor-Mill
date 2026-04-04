@@ -278,14 +278,23 @@ func _show_slot_picker() -> void:
 	if _slot_mode_save:
 		_slot_label.text = "— Save to Slot —"
 		_slot_btn_auto.visible = false   # auto-save is not a manual save target
+		if _slot_btn_1 != null:
+			_slot_btn_1.call_deferred("grab_focus")
 	else:
 		_slot_label.text = "— Load from Slot —"
 		_slot_btn_auto.visible = true
+		if _slot_btn_auto != null:
+			_slot_btn_auto.call_deferred("grab_focus")
 
 
 func _hide_slot_picker() -> void:
 	_main_container.visible = true
 	_slot_container.visible = false
+	# Restore keyboard focus to the first main menu button.
+	if _main_container.get_child_count() > 0:
+		var first := _main_container.get_child(0)
+		if first is Button:
+			first.call_deferred("grab_focus")
 
 
 func _refresh_slot_buttons() -> void:

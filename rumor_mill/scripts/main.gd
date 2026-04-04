@@ -394,6 +394,13 @@ func _init_tutorial_banner_s1() -> void:
 			_tutorial_banner.queue_hint("hint_target_npc")
 	)
 
+	# hint_speed_controls: fires 20 s after game start to teach pause/speed controls.
+	var _speed_hint_timer := get_tree().create_timer(20.0)
+	_speed_hint_timer.timeout.connect(func() -> void:
+		if _tutorial_banner != null:
+			_tutorial_banner.queue_hint("hint_speed_controls")
+	)
+
 	# Suppression: pause banner while Journal / Rumour Panel / Pause Menu are open.
 	if journal != null:
 		journal.visibility_changed.connect(_on_journal_visibility_changed_banner)

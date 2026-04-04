@@ -84,6 +84,7 @@ var _visible_flag: bool = false
 var _fade_tween:   Tween = null
 var _flavor_text:  Dictionary = {}
 var _world_ref:    Node2D = null
+var _rep_lbl:      Label = null
 var _dead_lbl:     Label = null
 
 
@@ -213,6 +214,9 @@ func _build_panel() -> void:
 	_rumor_lbl = _make_label("", 12, C_MUTED)
 	vbox.add_child(_rumor_lbl)
 
+	_rep_lbl = _make_label("", 12, C_LABEL)
+	vbox.add_child(_rep_lbl)
+
 	_dead_lbl = _make_label("☠ SOCIALLY DEAD — reputation frozen", 12, Color(0.85, 0.15, 0.15, 1.0))
 	_dead_lbl.visible = false
 	vbox.add_child(_dead_lbl)
@@ -275,13 +279,34 @@ func _populate(npc: Node2D) -> void:
 	var rumor_count: int = npc.rumor_slots.size() if "rumor_slots" in npc else 0
 	_rumor_lbl.text = "%d active rumor%s" % [rumor_count, "s" if rumor_count != 1 else ""]
 
-	# SOCIALLY_DEAD badge — visible only when the reputation snapshot flags it.
+	# Reputation score + tier from the reputation system.
 	var is_dead := false
+	var has_rep := false
 	if _world_ref != null and "reputation_system" in _world_ref \
 			and _world_ref.reputation_system != null and not npc_id.is_empty():
 		var snap: ReputationSystem.ReputationSnapshot = \
 			_world_ref.reputation_system.get_snapshot(npc_id)
 		if snap != null:
 			is_dead = snap.is_socially_dead
+			has_rep = true
+			var score: int = snap.score
+			var tier: String
+			var tier_color: Color
+			if score >= 71:
+				tier = "Distinguished"
+				tier_color = Color(0.50, 1.00, 0.55, 1.0)
+			elif score >= 51:
+				tier = "Respected"
+				tier_color = Color(0.75, 0.85, 0.55, 1.0)
+			elif score >= 31:
+				tier = "Suspect"
+				tier_color = Color(1.00, 0.80, 0.30, 1.0)
+			else:
+				tier = "Disgraced"
+				tier_color = Color(0.95, 0.35, 0.25, 1.0)
+			_rep_lbl.text = "Rep: %d / 100 — %s" % [score, tier]
+			_rep_lbl.add_theme_color_override("font_color", tier_color)
+	if _rep_lbl != null:
+		_rep_lbl.visible = has_rep
 	if _dead_lbl != null:
 		_dead_lbl.visible = is_dead

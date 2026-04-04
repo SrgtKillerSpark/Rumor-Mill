@@ -80,6 +80,10 @@ func _build_ui() -> void:
 	_btn_normal = _make_btn("  1×  ")
 	_btn_fast   = _make_btn("  3×  ")
 
+	_btn_pause.tooltip_text  = "Pause  (Space)"
+	_btn_normal.tooltip_text = "Normal Speed  (1×)"
+	_btn_fast.tooltip_text   = "Fast Speed  (3×)"
+
 	_btn_pause.pressed.connect(func() -> void:  _set_speed(Speed.PAUSE))
 	_btn_normal.pressed.connect(func() -> void: _set_speed(Speed.NORMAL))
 	_btn_fast.pressed.connect(func() -> void:   _set_speed(Speed.FAST))
@@ -117,4 +121,11 @@ func _style_btn(btn: Button, active: bool) -> void:
 	btn.add_theme_stylebox_override("normal",  s)
 	btn.add_theme_stylebox_override("hover",   s)
 	btn.add_theme_stylebox_override("pressed", s)
-	btn.add_theme_stylebox_override("focus",   s)
+
+	var f := StyleBoxFlat.new()
+	f.bg_color = C_ACTIVE if active else C_NORMAL
+	f.set_border_width_all(2)
+	f.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	f.set_content_margin_all(4)
+	f.set_corner_radius_all(3)
+	btn.add_theme_stylebox_override("focus", f)

@@ -240,6 +240,15 @@ const HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 9,
 	},
+	"hint_speed_controls": {
+		"title": "Time Controls",
+		"body":  (
+			"Press [b]Space[/b] to pause the game.  "
+			+ "Use the [b]||  1×  3×[/b] buttons (top-right) to pause, run at normal speed, or fast-forward.  "
+			+ "Pause to plan your next move without wasting daylight."
+		),
+		"auto_dismiss_secs": 7,
+	},
 }
 
 ## Tracks which tooltip IDs have been seen this session.
