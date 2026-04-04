@@ -83,18 +83,23 @@ Then adapt.
 - Intel system — eavesdrop, observe, build your picture before committing
 - Player Journal — track reputation scores, active rumors, and known relationships
 - Four handcrafted scenarios with distinct objectives and faction configurations
+- Full save/load — resume any scenario at any point
 - Day/night cycle — NPC schedules shift; timing your move matters
 - Accessibility options: colorblind-safe icons, adjustable font sizes, keyboard navigation
 
 ---
 
-### This Is a Demo
+### This Is a Demo / Early Access Preview
 
-All three scenarios are fully playable. The simulation is running. This is a complete early build — not a vertical slice.
+All four scenarios are fully playable. The rumor engine runs, save/load is in, and the post-scenario analytics are live. This is a complete early build — not a vertical slice.
 
-Audio is still placeholder. Visual polish is ongoing. The systems are real.
+**What's not in yet:**
+- **Audio is placeholder.** The game launches silent. Music and sound effects are the top priority for the first update.
+- **Windows only.** Mac and Linux builds are planned but not yet tested.
 
 Built in **Godot 4.6**. Solo-developed with AI-assisted engineering (Claude Code). The design, direction, and judgment calls are mine.
+
+**[→ See the full Early Access roadmap](https://rumor-mill.itch.io/rumor-mill#roadmap)** — what's in now, what's coming, and what we're listening for.
 
 ---
 
@@ -166,7 +171,7 @@ medieval, strategy, simulation, social-simulation, gossip, narrative, puzzle, in
 | **Devlog #1** | What Is Rumor Mill? | Week 1 (launch day) | Game concept, AI-assisted dev story, core mechanic intro |
 | **Devlog #2** | How Gossip Works | Week 3 | Rumor propagation engine, mutation mechanics, spread rates |
 | **Devlog #3** | Meet the Town | Week 5 | 30-NPC simulation, factions, daily schedules, social graph |
-| **Devlog #4** | The Three Cases | Week 7 | Scenario design intent, strategic variety, roadmap tease |
+| **Devlog #4** | The Four Scenarios | Week 7 | Scenario design intent, strategic variety, roadmap tease |
 
 *Post on Tuesdays. Cross-post Reddit thread + Twitter/X summary same day. Full text is always on itch.io first.*
 
@@ -202,6 +207,7 @@ Before publishing the itch.io page:
 
 ---
 
-*Document version: 1.1 — 2026-04-04*
+*Document version: 1.2 — 2026-04-04*
 *v1.0 ([SPA-183](/SPA/issues/SPA-183)): Initial itch.io page copy. Steam copy source: [SPA-168](/SPA/issues/SPA-168) | Devlog plan: [SPA-178](/SPA/issues/SPA-178)*
 *v1.1 ([SPA-267](/SPA/issues/SPA-267)): Added Scenario 4 "The Holy Inquisition"; updated scenario count to four.*
+*v1.2 ([SPA-294](/SPA/issues/SPA-294)): Finalized for Apr 11 demo launch — fixed "three→four" in demo section, added save/load to features, added roadmap link, explicit no-audio/Windows-only callout, social post added, devlog #4 title updated.*

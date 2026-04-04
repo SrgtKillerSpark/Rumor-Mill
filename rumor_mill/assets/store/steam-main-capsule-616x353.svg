@@ -198,18 +198,18 @@
   <rect width="616" height="353" fill="url(#bottomVignette)"/>
 
   <!-- ── Logo: dark variant, upper-left ── -->
-  <!-- Dark plate -->
-  <rect x="18" y="16" width="205" height="60" rx="3" fill="url(#logoPlateBg)"/>
-  <rect x="18" y="16" width="205" height="60" rx="3" fill="none" stroke="#C8A96E" stroke-width="0.5" stroke-opacity="0.3"/>
+  <!-- Dark plate (widened for legibility at small display sizes) -->
+  <rect x="14" y="12" width="240" height="70" rx="3" fill="url(#logoPlateBg)"/>
+  <rect x="14" y="12" width="240" height="70" rx="3" fill="none" stroke="#C8A96E" stroke-width="0.5" stroke-opacity="0.3"/>
   <!-- Quill hint -->
-  <line x1="22" y1="68" x2="218" y2="22"
+  <line x1="18" y1="74" x2="248" y2="18"
         stroke="#C8A96E" stroke-opacity="0.18" stroke-width="1.5"/>
-  <text x="118" y="46"
+  <text x="134" y="50"
         font-family="Georgia, 'Palatino Linotype', 'Times New Roman', serif"
-        font-size="22" font-weight="bold" letter-spacing="4"
+        font-size="27" font-weight="bold" letter-spacing="4"
         text-anchor="middle" fill="#F2E8CE">RUMOR</text>
-  <text x="118" y="68"
+  <text x="134" y="74"
         font-family="Georgia, 'Palatino Linotype', 'Times New Roman', serif"
-        font-size="20" font-weight="bold" letter-spacing="8"
+        font-size="23" font-weight="bold" letter-spacing="9"
         text-anchor="middle" fill="#F2E8CE">MILL</text>
 </svg>
