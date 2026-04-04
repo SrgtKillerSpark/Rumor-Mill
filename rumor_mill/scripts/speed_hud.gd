@@ -80,9 +80,9 @@ func _build_ui() -> void:
 	var row := HBoxContainer.new()
 	row.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	row.offset_left   = -170.0
-	row.offset_top    =   8.0
+	row.offset_top    =  76.0
 	row.offset_right  =  -8.0
-	row.offset_bottom =  36.0
+	row.offset_bottom = 104.0
 	row.add_theme_constant_override("separation", 4)
 	add_child(row)
 
