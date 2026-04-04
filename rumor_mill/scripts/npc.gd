@@ -218,6 +218,14 @@ func _ready() -> void:
 		hover_area.mouse_exited.connect(_on_hover_exit)
 
 
+func _exit_tree() -> void:
+	if hover_area != null:
+		if hover_area.mouse_entered.is_connected(_on_hover_enter):
+			hover_area.mouse_entered.disconnect(_on_hover_enter)
+		if hover_area.mouse_exited.is_connected(_on_hover_exit):
+			hover_area.mouse_exited.disconnect(_on_hover_exit)
+
+
 func _on_hover_enter() -> void:
 	npc_hovered.emit(self)
 

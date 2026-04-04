@@ -118,6 +118,18 @@ func _ready() -> void:
 	_wire_debug_nodes()
 
 
+func _exit_tree() -> void:
+	for npc in npcs:
+		if npc.rumor_state_changed.is_connected(_on_npc_rumor_state_changed):
+			npc.rumor_state_changed.disconnect(_on_npc_rumor_state_changed)
+		if npc.rumor_transmitted.is_connected(_on_npc_rumor_transmitted):
+			npc.rumor_transmitted.disconnect(_on_npc_rumor_transmitted)
+		if npc.graph_edge_mutated.is_connected(_on_npc_graph_edge_mutated):
+			npc.graph_edge_mutated.disconnect(_on_npc_graph_edge_mutated)
+	if day_night != null and day_night.day_changed.is_connected(_on_day_changed):
+		day_night.day_changed.disconnect(_on_day_changed)
+
+
 # ── Grid loading ─────────────────────────────────────────────────────────────
 
 func _load_grid() -> void:
