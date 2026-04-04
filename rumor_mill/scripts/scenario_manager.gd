@@ -7,6 +7,11 @@
 ## Scenario 1 — The Alderman's Ruin:
 ##   WIN:  reputation(edric_fenn) < 30
 ##
+## Scenario 2 — The Plague Scare:
+##   WIN:  7+ NPCs in BELIEVE/SPREAD/ACT for illness rumors about alys_herbwife
+##   FAIL: maren_nun rejects illness rumors about alys_herbwife (contradicted)
+##         OR days elapsed > days_allowed (timeout)
+##
 ## Scenario 3 — The Succession:
 ##   WIN:  reputation(calder_fenn) >= 75  AND  reputation(tomas_reeve) <= 35
 ##   FAIL: reputation(calder_fenn) < 40

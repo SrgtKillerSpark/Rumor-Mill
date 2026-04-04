@@ -180,8 +180,6 @@ func _refresh() -> void:
 			_bars[npc_id].custom_minimum_size.x = BAR_WIDTH * ratio
 			if score >= win_thr:
 				_bars[npc_id].color = C_WIN
-			elif score >= fail_thr:
-				_bars[npc_id].color = C_NEUTRAL
 			else:
 				_bars[npc_id].color = C_FAIL
 
