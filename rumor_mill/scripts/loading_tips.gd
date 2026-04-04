@@ -9,7 +9,7 @@ extends CanvasLayer
 ##   # ... run init code ...
 ##   _loading_tips.end_transition()
 
-const MIN_DURATION_SEC := 0.5
+const MIN_DURATION_SEC := 2.0
 
 const TIPS: Array = [
 	"[b]Rumors travel through relationships.[/b]  Seed your story where the crowd gathers — the Tavern and Market Square carry whispers farthest and fastest.",
