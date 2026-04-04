@@ -48,6 +48,15 @@ func _ready() -> void:
 	visible = false
 
 
+func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE or event.keycode == KEY_ENTER:
+			_on_dismiss_pressed()
+			get_viewport().set_input_as_handled()
+
+
 ## Wire the TutorialSystem instance.  Must be called before queue_tooltip().
 func setup(tutorial_sys: TutorialSystem) -> void:
 	_tutorial_sys = tutorial_sys
@@ -88,6 +97,7 @@ func _show_next() -> void:
 	_title_label.text = data.get("title", "")
 	_body_label.text  = data.get("body", "")
 	visible = true
+	_dismiss_btn.call_deferred("grab_focus")
 
 
 func _on_dismiss_pressed() -> void:

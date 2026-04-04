@@ -133,6 +133,9 @@ func _open() -> void:
 	_pause_game(true)
 	_rebuild_section(_current_section)
 	call_deferred("_restore_scroll")
+	# Grab focus on the first sidebar tab so keyboard navigation works immediately.
+	if _sidebar.get_child_count() > 0:
+		_sidebar.get_child(0).call_deferred("grab_focus")
 
 
 func _close() -> void:
