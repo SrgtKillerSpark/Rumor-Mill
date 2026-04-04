@@ -55,6 +55,7 @@ var _panel_settings:     Control    = null
 
 # Credits-phase refs
 var _panel_credits:      Control    = null
+var _version_label:      Label      = null
 var _lbl_music_val:      Label      = null
 var _lbl_ambient_val:    Label      = null
 var _lbl_sfx_val:        Label      = null
@@ -82,6 +83,7 @@ func _ready() -> void:
 	_build_intro_panel()
 	_build_settings_panel()
 	_build_credits_panel()
+	_build_version_label()
 	_how_to_play = preload("res://scripts/how_to_play.gd").new()
 	_how_to_play.name = "HowToPlay"
 	add_child(_how_to_play)
@@ -722,7 +724,7 @@ func _on_game_speed_changed(value: float) -> void:
 # ── Phase 6: Credits panel ────────────────────────────────────────────────────
 
 func _build_credits_panel() -> void:
-	_panel_credits = _make_panel(480, 400)
+	_panel_credits = _make_panel(480, 480)
 	add_child(_panel_credits)
 
 	var vbox := VBoxContainer.new()
@@ -750,15 +752,21 @@ func _build_credits_panel() -> void:
 	credits_body.add_theme_font_size_override("normal_font_size", 14)
 	credits_body.add_theme_color_override("default_color", C_BODY)
 	var t := "[center]"
-	t += "[color=#ebe8b2][b]Design, Writing & Programming[/b][/color]\n"
-	t += "The Rumor Mill Team\n\n"
-	t += "[color=#ebe8b2][b]Engine[/b][/color]\n"
-	t += "Godot Engine 4  —  godotengine.org\n\n"
+	t += "[color=#ebe8b2][b]Development Team[/b][/color]\n"
+	t += "Lead Engineer\n"
+	t += "UI/UX Designer\n"
+	t += "Game Designer\n"
+	t += "Narrative Writer\n\n"
+	t += "[color=#ebe8b2][b]Studio[/b][/color]\n"
+	t += "Paperclip Studio\n\n"
+	t += "[color=#ebe8b2][b]Technology[/b][/color]\n"
+	t += "Godot Engine 4  —  godotengine.org\n"
+	t += "[color=#c8a84b]Built with AI agents powered by Paperclip[/color]\n\n"
 	t += "[color=#ebe8b2][b]Music & Sound[/b][/color]\n"
 	t += "Original Compositions\n\n"
 	t += "[color=#ebe8b2][b]Playtesting[/b][/color]\n"
 	t += "Early Access Community\n\n"
-	t += "[color=#8c7a5a]Version 0.1  —  All rights reserved.[/color]"
+	t += "[color=#8c7a5a]v0.1.0-demo  —  All rights reserved.[/color]"
 	t += "[/center]"
 	credits_body.text = t
 	vbox.add_child(credits_body)
@@ -775,6 +783,24 @@ func _build_credits_panel() -> void:
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	btn_row.add_child(btn_back)
 	vbox.add_child(btn_row)
+
+
+# ── Version corner label ──────────────────────────────────────────────────────
+
+func _build_version_label() -> void:
+	_version_label = Label.new()
+	_version_label.text = "v0.1.0-demo"
+	_version_label.add_theme_font_size_override("font_size", 12)
+	_version_label.add_theme_color_override("font_color", C_MUTED)
+	_version_label.set_anchor(SIDE_LEFT,   1.0)
+	_version_label.set_anchor(SIDE_RIGHT,  1.0)
+	_version_label.set_anchor(SIDE_TOP,    1.0)
+	_version_label.set_anchor(SIDE_BOTTOM, 1.0)
+	_version_label.set_offset(SIDE_LEFT,   -110)
+	_version_label.set_offset(SIDE_RIGHT,  -8)
+	_version_label.set_offset(SIDE_TOP,    -26)
+	_version_label.set_offset(SIDE_BOTTOM, -6)
+	add_child(_version_label)
 
 
 # ── UI helpers ────────────────────────────────────────────────────────────────
