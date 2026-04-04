@@ -897,10 +897,21 @@ func _build_objectives_section() -> void:
 	var edric_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("edric_fenn")  if rep != null else null
 	var calder_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("calder_fenn") if rep != null else null
 	var tomas_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("tomas_reeve") if rep != null else null
+	var aldous_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("aldous_prior") if rep != null else null
+	var vera_snap:   ReputationSystem.ReputationSnapshot = rep.get_snapshot("vera_midwife")  if rep != null else null
+	var finn_snap:   ReputationSystem.ReputationSnapshot = rep.get_snapshot("finn_monk")     if rep != null else null
+
+	var active_scenario_id: String = ""
+	if _world_ref != null and "active_scenario_id" in _world_ref:
+		active_scenario_id = _world_ref.active_scenario_id
 
 	var s1_state := ScenarioManager.ScenarioState.ACTIVE
 	if sm != null:
 		s1_state = sm.scenario_1_state
+
+	var s4_state := ScenarioManager.ScenarioState.ACTIVE
+	if sm != null:
+		s4_state = sm.scenario_4_state
 
 	# ── Scenario 1 ────────────────────────────────────────────────────────
 	var s1_lbl := Label.new()
@@ -1070,17 +1081,89 @@ func _build_objectives_section() -> void:
 	_content_vbox.add_child(HSeparator.new())
 
 	# ── Scenario 4 ────────────────────────────────────────────────────────
+	var s4_suffix := "  (upcoming)" if active_scenario_id != "scenario_4" else ""
 	var s4_lbl := Label.new()
-	s4_lbl.text = "Scenario 4: The Protector  (upcoming)"
+	s4_lbl.text = "Scenario 4: The Holy Inquisition%s" % s4_suffix
 	s4_lbl.add_theme_font_size_override("font_size", 14)
 	s4_lbl.add_theme_color_override("font_color", C_HEADING)
 	_content_vbox.add_child(s4_lbl)
+
+	var s4_win_status := "[ACTIVE]"
+	var s4_win_color  := C_BODY
+	match s4_state:
+		ScenarioManager.ScenarioState.WON:
+			s4_win_status = "[WON]"
+			s4_win_color  = C_SPREADING
+		ScenarioManager.ScenarioState.FAILED:
+			s4_win_status = "[FAILED]"
+			s4_win_color  = C_CONTRADICTED
 
 	var s4_days_lbl := Label.new()
 	s4_days_lbl.text = "Days remaining: %d / %d" % [s4_days_remaining, S4_DAYS]
 	s4_days_lbl.add_theme_font_size_override("font_size", 12)
 	s4_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(s4_days_lbl)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	var s4_win_hdr := Label.new()
+	s4_win_hdr.text = "WIN CONDITION"
+	s4_win_hdr.add_theme_font_size_override("font_size", 12)
+	s4_win_hdr.add_theme_color_override("font_color", C_SPREADING)
+	_content_vbox.add_child(s4_win_hdr)
+
+	var aldous_score_str := "50"
+	var aldous_band_str  := "Respected"
+	if aldous_snap != null:
+		aldous_score_str = str(aldous_snap.score)
+		aldous_band_str  = ReputationSystem.score_label(aldous_snap.score)
+
+	var vera_score_str := "50"
+	var vera_band_str  := "Respected"
+	if vera_snap != null:
+		vera_score_str = str(vera_snap.score)
+		vera_band_str  = ReputationSystem.score_label(vera_snap.score)
+
+	var finn_score_str := "50"
+	var finn_band_str  := "Respected"
+	if finn_snap != null:
+		finn_score_str = str(finn_snap.score)
+		finn_band_str  = ReputationSystem.score_label(finn_snap.score)
+
+	var s4_win_body := Label.new()
+	s4_win_body.text = (
+		"  All three accused survive %d days with reputation \u2265 %d.  %s\n\n"
+		+ "  Aldous Prior:  %s / 100  \u2014 %s\n"
+		+ "  Vera Midwife:  %s / 100  \u2014 %s\n"
+		+ "  Finn Monk:     %s / 100  \u2014 %s\n"
+		+ "  Floor: \u2265 %d  (all three must stay above this)"
+	) % [S4_DAYS, ScenarioManager.S4_WIN_REP_MIN, s4_win_status,
+		aldous_score_str, aldous_band_str,
+		vera_score_str, vera_band_str,
+		finn_score_str, finn_band_str,
+		ScenarioManager.S4_WIN_REP_MIN]
+	s4_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
+	s4_win_body.add_theme_font_size_override("font_size", 12)
+	s4_win_body.add_theme_color_override("font_color", s4_win_color)
+	_content_vbox.add_child(s4_win_body)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	var s4_fail_hdr := Label.new()
+	s4_fail_hdr.text = "FAIL CONDITIONS"
+	s4_fail_hdr.add_theme_font_size_override("font_size", 12)
+	s4_fail_hdr.add_theme_color_override("font_color", C_CONTRADICTED)
+	_content_vbox.add_child(s4_fail_hdr)
+
+	var s4_fail_body := Label.new()
+	s4_fail_body.text = (
+		"  [ ] Any accused NPC drops below %d reputation\n"
+		+ "  [ ] %d days elapsed without all three surviving  (days remaining: %d)"
+	) % [ScenarioManager.S4_FAIL_REP_BELOW, S4_DAYS, s4_days_remaining]
+	s4_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
+	s4_fail_body.add_theme_font_size_override("font_size", 12)
+	s4_fail_body.add_theme_color_override("font_color", C_BODY)
+	_content_vbox.add_child(s4_fail_body)
 
 
 # ── Notification dot ──────────────────────────────────────────────────────────
