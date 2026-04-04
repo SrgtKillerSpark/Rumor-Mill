@@ -76,7 +76,7 @@ theme_override_colors/separator_color = Color(0.55, 0.38, 0.18, 0.7)
 
 [node name="HintLabel" type="Label" parent="Panel/VBox"]
 text = "Right-click a building to Observe  |  Right-click an NPC to Eavesdrop  |  R to close"
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.52, 0.46, 0.35, 1.0)
 autowrap_mode = 3
 
