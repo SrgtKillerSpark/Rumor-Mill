@@ -104,7 +104,7 @@ func _build_ui() -> void:
 	_calder_score_lbl = Label.new()
 	_calder_score_lbl.add_theme_font_size_override("font_size", 12)
 	_calder_score_lbl.add_theme_color_override("font_color", C_BODY)
-	_calder_score_lbl.text = "Calder Fenn  Rep: 50 / 100  Target: 80+"
+	_calder_score_lbl.text = "Calder Fenn  Rep: 50 / 100  Target: 75+"
 	calder_vbox.add_child(_calder_score_lbl)
 
 	var calder_bar_hbox := HBoxContainer.new()
@@ -128,7 +128,7 @@ func _build_ui() -> void:
 	_tomas_score_lbl = Label.new()
 	_tomas_score_lbl.add_theme_font_size_override("font_size", 12)
 	_tomas_score_lbl.add_theme_color_override("font_color", C_BODY)
-	_tomas_score_lbl.text = "Tomas Reeve  Rep: 50 / 100  Target: ≤30"
+	_tomas_score_lbl.text = "Tomas Reeve  Rep: 50 / 100  Target: ≤35"
 	tomas_vbox.add_child(_tomas_score_lbl)
 
 	var tomas_bar_hbox := HBoxContainer.new()
@@ -229,13 +229,14 @@ func _refresh() -> void:
 
 
 func _bar_color_for_score(score: int, higher_is_better: bool, win_target: int) -> Color:
-	# Calder: higher is better — effective == score, green at win_target (80).
-	# Tomas:  lower is better — flip so effective == 100-score, green at 100-win_target (70).
+	# Calder: higher is better — effective == score, green at win_target (75).
+	# Tomas:  lower is better — flip so effective == 100-score, green at 100-win_target (65).
+	# Neutral/at-risk zone: below win_effective but above half of win_effective.
 	var effective     := score if higher_is_better else (100 - score)
 	var win_effective := win_target if higher_is_better else (100 - win_target)
-	if effective >= win_effective: return C_WIN
-	elif effective >= 40:          return C_NEUTRAL
-	else:                          return C_FAIL
+	if effective >= win_effective:          return C_WIN
+	elif effective >= win_effective / 2:    return C_NEUTRAL
+	else:                                   return C_FAIL
 
 
 # ── Rival activity ────────────────────────────────────────────────────────────
