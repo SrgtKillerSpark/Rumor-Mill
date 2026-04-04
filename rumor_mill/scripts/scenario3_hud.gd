@@ -210,7 +210,7 @@ func _refresh() -> void:
 	_calder_score_lbl.text = "Calder Fenn   Rep: %d / 100   Target: %d+" % [calder_score, calder_target]
 	_tomas_score_lbl.text  = "Tomas Reeve   Rep: %d / 100   Target: \u2264%d" % [tomas_score, tomas_target]
 
-	# Calder bar — grows toward target (80).
+	# Calder bar — grows toward target (75).
 	var calder_ratio: float = clamp(float(calder_score) / 100.0, 0.0, 1.0)
 	_calder_bar.custom_minimum_size.x = BAR_WIDTH * calder_ratio
 	_calder_bar.color = _bar_color_for_score(calder_score, true, calder_target)
