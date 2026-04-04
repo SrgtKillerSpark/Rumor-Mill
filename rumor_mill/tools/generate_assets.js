@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * generate_assets.js — Art Pass 3 pixel-art generator for Rumor Mill (SPA-99)
+ * generate_assets.js — Art Pass 4 pixel-art generator for Rumor Mill (SPA-410)
  *
  * Produces all textures needed:
  *   assets/textures/tiles_ground.png      (192×32 — 3 ground variants)
@@ -173,6 +173,8 @@ const P = {
   PARCH_M:      [200,178,128],
   PARCH_D:      [152,124, 78],
   INK:          [ 44, 34, 22],
+  SKIN_SH:      [196,156,122],   // skin shadow / nose tone
+  SKIN_HI:      [240,210,180],   // skin highlight (cheek/brow catch-light)
 };
 const c = P; // shorthand
 
@@ -342,12 +344,32 @@ function makeBuildingTiles() {
     rightFace(col, wH, 170,158,136);          // slightly darker right face
     roofFace (col, wH, ...c.ROOF_SLATE);
     outlineWalls(col, wH);
-    // arched window on left face
-    cv.fillRect(col*64+8, 32-wH+4, 6, 8, 80, 100, 140);
-    cv.line(col*64+8, 32-wH+4, col*64+13, 32-wH+4, ...c.OUTLINE);
+    const ox0=col*64;
+    // arched window on left face (larger, with shutters)
+    cv.fillRect(ox0+7, 32-wH+4, 7, 9, 80, 100, 140);
+    cv.sp(ox0+10, 32-wH+4, 80, 100, 140);                 // arch cap pixel
+    cv.line(ox0+7, 32-wH+4, ox0+13, 32-wH+4, ...c.MANOR_STONE);
+    cv.line(ox0+7, 32-wH+4, ox0+7,  32-wH+12,...c.MANOR_STONE);
+    cv.line(ox0+13,32-wH+4, ox0+13, 32-wH+12,...c.MANOR_STONE);
+    cv.line(ox0+7, 32-wH+12,ox0+13, 32-wH+12,...c.MANOR_STONE);
+    // shutter panels
+    cv.fillRect(ox0+5, 32-wH+4, 2, 8, ...c.WOOD_M);
+    cv.fillRect(ox0+15,32-wH+4, 2, 8, ...c.WOOD_M);
+    // second smaller window higher up
+    cv.fillRect(ox0+19, 32-wH+2, 5, 6, 80, 100, 140);
+    cv.line(ox0+19, 32-wH+2, ox0+23, 32-wH+2, ...c.MANOR_STONE);
+    // right face: arched entry door
+    cv.fillRect(ox0+40, 32-wH+10, 8, 12, 50, 44, 60);
+    cv.sp(ox0+44, 32-wH+10, 50, 44, 60);                  // arch cap
+    cv.line(ox0+40, 32-wH+10, ox0+47, 32-wH+10, ...c.STONE_D);
+    // ivy texture on left face lower section (scattered dark-green dots)
+    for (let iy=32-wH+14; iy<32; iy+=3)
+      for (let ix=ox0+2; ix<ox0+25; ix+=4)
+        cv.sp(ix, iy, ...c.GRASS_D, 120);
     // flag on right face
-    cv.line(col*64+56, 32-wH-12, col*64+56, 32-wH, ...c.WOOD_M);
-    cv.fillRect(col*64+50, 32-wH-12, 8, 5, ...c.FLAG_R);
+    cv.line(ox0+56, 32-wH-12, ox0+56, 32-wH, ...c.WOOD_M);
+    cv.fillRect(ox0+48, 32-wH-12, 9, 6, ...c.FLAG_R);
+    cv.line(ox0+48, 32-wH-12, ox0+56, 32-wH-12, ...c.OUTLINE);
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -359,18 +381,42 @@ function makeBuildingTiles() {
     leftFace (col, wH, ...c.PLASTER);
     rightFace(col, wH, 196,176,136);
     roofFace (col, wH, ...c.THATCH_L);
+    // thatch texture lines on roof face
+    const ox=col*64;
+    for (let ty=2; ty<=8; ty+=2)
+      cv.line(ox+32-2+ty, 32-wH-15+ty, ox+32+2+ty, 32-wH-13+ty, ...c.THATCH_D, 80);
     outlineWalls(col, wH);
     // timber beams on left face
-    const ox=col*64;
     cv.line(ox+1,  32-wH, ox+1,  32,   ...c.WOOD_D);
     cv.line(ox+10, 32-wH, ox+10, 32,   ...c.WOOD_D);
-    cv.line(ox+1,  32-wH+6, ox+10, 32-wH+6, ...c.WOOD_D);
-    // door
-    cv.fillRect(ox+4, 32-7, 5, 7, ...c.WOOD_D);
-    // lantern glow
-    cv.sp(ox+14, 32-wH+2, ...c.FORGE, 200);
-    cv.sp(ox+13, 32-wH+2, ...c.FORGE, 100);
-    cv.sp(ox+15, 32-wH+2, ...c.FORGE, 100);
+    cv.line(ox+20, 32-wH, ox+20, 32,   ...c.WOOD_D);
+    cv.line(ox+1,  32-wH+6, ox+20, 32-wH+6, ...c.WOOD_D);
+    cv.line(ox+1,  32-wH+13, ox+20, 32-wH+13, ...c.WOOD_D);
+    // window with shutter effect
+    cv.fillRect(ox+12, 32-wH+2, 6, 5, 80, 100, 130);     // window pane
+    cv.line(ox+12, 32-wH+2, ox+17, 32-wH+2, ...c.WOOD_D);
+    cv.line(ox+12, 32-wH+7, ox+17, 32-wH+7, ...c.WOOD_D);
+    cv.line(ox+12, 32-wH+2, ox+12, 32-wH+7, ...c.WOOD_D);
+    cv.line(ox+17, 32-wH+2, ox+17, 32-wH+7, ...c.WOOD_D);
+    cv.sp(ox+14, 32-wH+4, ...c.FORGE, 80);                // warm glow inside
+    // arched door
+    cv.fillRect(ox+4, 32-8, 6, 8, ...c.WOOD_D);
+    cv.sp(ox+7, 32-8, ...c.WOOD_D);                       // arch cap
+    // door handle
+    cv.sp(ox+8, 32-4, ...c.STONE_L);
+    // hanging tavern sign (bracket + board on right face)
+    cv.line(ox+48, 32-wH+2, ox+54, 32-wH+2, ...c.WOOD_D); // bracket
+    cv.line(ox+54, 32-wH+2, ox+54, 32-wH+8, ...c.WOOD_D); // chain
+    cv.fillRect(ox+48, 32-wH+8, 10, 5, ...c.WOOD_M);      // sign board
+    cv.sp(ox+50, 32-wH+10, ...c.MERCH_T, 160);            // mug icon on sign
+    cv.sp(ox+52, 32-wH+10, ...c.MERCH_T, 120);
+    cv.line(ox+48, 32-wH+8, ox+57, 32-wH+8, ...c.OUTLINE);
+    cv.line(ox+48, 32-wH+13,ox+57, 32-wH+13,...c.OUTLINE);
+    // lantern glow (brighter)
+    cv.sp(ox+22, 32-wH+2, ...c.FORGE, 220);
+    cv.sp(ox+21, 32-wH+2, ...c.FORGE, 130);
+    cv.sp(ox+23, 32-wH+2, ...c.FORGE, 130);
+    cv.sp(ox+22, 32-wH+1, 255,230,120, 100);
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -394,9 +440,21 @@ function makeBuildingTiles() {
     // cross on spire
     cv.line(ox+32, 32-wH-14, ox+32, 32-wH-8, ...c.CHAPEL_STONE);
     cv.line(ox+29, 32-wH-11, ox+35, 32-wH-11, ...c.CHAPEL_STONE);
-    // gothic window
-    cv.fillRect(ox+6, 32-wH+4, 5, 9, 80, 108, 160);
-    cv.sp(ox+8, 32-wH+4, 80, 108, 160);
+    // gothic window with stained glass color sections
+    cv.fillRect(ox+6, 32-wH+4, 5, 9, 80, 108, 160);      // base blue
+    cv.sp(ox+7, 32-wH+5, ...c.MERCH_T, 200);              // gold pane top
+    cv.sp(ox+8, 32-wH+7, ...c.FLAG_R, 160);               // red pane mid
+    cv.sp(ox+9, 32-wH+9, 80, 148, 100, 180);              // green pane bottom
+    cv.sp(ox+8, 32-wH+4, 80, 108, 160);                   // arch cap
+    // window outline
+    cv.line(ox+6, 32-wH+4, ox+10, 32-wH+4, ...c.STONE_D);
+    cv.line(ox+6, 32-wH+4, ox+6,  32-wH+12,...c.STONE_D);
+    cv.line(ox+10,32-wH+4, ox+10, 32-wH+12,...c.STONE_D);
+    cv.line(ox+6, 32-wH+12,ox+10, 32-wH+12,...c.STONE_D);
+    // right face: second narrow window
+    cv.fillRect(ox+44, 32-wH+3, 4, 8, 80, 108, 160);
+    cv.sp(ox+45, 32-wH+5, ...c.MERCH_T, 180);
+    cv.sp(ox+46, 32-wH+7, ...c.FLAG_R, 140);
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -595,16 +653,33 @@ function makeNPCSprites() {
   ];
 
   // Draw one NPC frame at pixel offset (ox, oy), 32×48 canvas region.
-  // dy = vertical body-bob offset, lx/rx = left/right foot offsets
-  const drawNPC = (ox, oy, fac, dy=0, lx=0, rx=0) => {
+  // dy  = vertical body-bob offset
+  // lx/rx = left/right foot X offsets (walk stride)
+  // laY/raY = left/right arm Y offsets (arm swing: negative = raised/forward)
+  const drawNPC = (ox, oy, fac, dy=0, lx=0, rx=0, laY=0, raY=0) => {
     const { body, trim, hat, hatrim } = fac;
 
     // ── head (8×8, centred at x=16) ──
     const hx = ox+12, hy = oy+2+dy;
     cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    // cheek highlight (top-left catch-light)
+    cv.sp(hx+1, hy+1, ...c.SKIN_HI);
+    // eyebrows
+    cv.sp(hx+2, hy+2, ...c.HAIR, 180);
+    cv.sp(hx+5, hy+2, ...c.HAIR, 180);
     // eyes
     cv.sp(hx+2, hy+3, ...c.HAIR);
     cv.sp(hx+5, hy+3, ...c.HAIR);
+    // eye whites (1px each side of iris gives depth)
+    cv.sp(hx+1, hy+3, ...c.SKIN_HI, 120);
+    cv.sp(hx+4, hy+3, ...c.SKIN_HI, 80);
+    // nose (subtle shadow at centre-lower face)
+    cv.sp(hx+3, hy+5, ...c.SKIN_SH);
+    // mouth (2-pixel line with slight curve)
+    cv.sp(hx+2, hy+6, ...c.SKIN_SH, 160);
+    cv.sp(hx+3, hy+7, ...c.OUTLINE, 100);
+    cv.sp(hx+4, hy+7, ...c.OUTLINE, 100);
+    cv.sp(hx+5, hy+6, ...c.SKIN_SH, 160);
     // outline
     cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
     cv.line(hx,   hy,   hx,   hy+7, ...c.OUTLINE);
@@ -631,12 +706,17 @@ function makeNPCSprites() {
     cv.line(bx+9,  by,    bx+9,  by+13, ...c.OUTLINE);
     cv.line(bx,    by+13, bx+9,  by+13, ...c.OUTLINE);
 
-    // ── arms ─────────────────────────────────────────────────────────────────
-    cv.fillRect(bx-2, by+1, 3, 10, ...body);
-    cv.fillRect(bx+9, by+1, 3, 10, ...body);
+    // ── arms (laY/raY: negative = arm raised forward, positive = arm back) ────
+    const laLen = 10 - Math.abs(laY);
+    const raLen = 10 - Math.abs(raY);
+    cv.fillRect(bx-2, by+1+laY, 3, laLen, ...body);
+    cv.fillRect(bx+9, by+1+raY, 3, raLen, ...body);
     // hands
-    cv.fillRect(bx-2, by+9, 3, 3, ...c.SKIN);
-    cv.fillRect(bx+9, by+9, 3, 3, ...c.SKIN);
+    cv.fillRect(bx-2, by+1+laY+laLen-2, 3, 3, ...c.SKIN);
+    cv.fillRect(bx+9, by+1+raY+raLen-2, 3, 3, ...c.SKIN);
+    // forward arm slightly lighter (closer to viewer)
+    if (laY < 0) cv.fillRect(bx-2, by+1+laY, 3, laLen, ...c.SKIN_HI, 40);
+    if (raY < 0) cv.fillRect(bx+9, by+1+raY, 3, raLen, ...c.SKIN_HI, 40);
 
     // ── legs (each 4×10) ─────────────────────────────────────────────────────
     const ly = by+13;
@@ -657,6 +737,26 @@ function makeNPCSprites() {
     cv.sp(bdx,   bdy+1, ...trim);
     cv.sp(bdx+2, bdy+1, ...trim);
     cv.sp(bdx+1, bdy+2, ...trim);
+
+    // faction-specific prop / accessory
+    const propFi = FACTIONS.indexOf(fac);
+    if (propFi === 0) {
+      // Merchant: coin pouch at left hip (below belt)
+      cv.fillRect(bx-1, by+10, 4, 4, ...c.WOOD_M);
+      cv.sp(bx,    by+11, ...c.MERCH_T, 180);
+      cv.line(bx-1, by+10, bx+2, by+10, ...c.OUTLINE);
+      cv.line(bx-1, by+10, bx-1, by+13, ...c.OUTLINE);
+      cv.line(bx+2, by+10, bx+2, by+13, ...c.OUTLINE);
+    } else if (propFi === 1) {
+      // Noble: sword hilt at right hip
+      cv.fillRect(bx+9, by+9, 2, 5, ...c.STONE_L);   // blade tip visible
+      cv.fillRect(bx+8, by+8, 4, 2, ...c.WOOD_M);    // crossguard
+      cv.line(bx+8, by+8, bx+11, by+8, ...c.OUTLINE);
+    } else if (propFi === 2) {
+      // Clergy: small cross on chest
+      cv.fillRect(bx+4, by+1, 2, 6, ...c.PARCH_M);
+      cv.fillRect(bx+2, by+3, 6, 2, ...c.PARCH_M);
+    }
   };
 
   for (let fi=0; fi<3; fi++) {
@@ -665,19 +765,19 @@ function makeNPCSprites() {
 
     // idle frame 0 — neutral
     drawNPC(0*32, oy, fac, 0, 0, 0);
-    // idle frame 1 — slight bob up
-    drawNPC(1*32, oy, fac, -1, 0, 0);
-    // idle frame 2 — back to neutral (slight head tilt by shifting eye)
-    drawNPC(2*32, oy, fac, 0, 0, 0);
+    // idle frame 1 — slight bob up, arms relaxed at sides
+    drawNPC(1*32, oy, fac, -1, 0, 0, 1, 1);
+    // idle frame 2 — slight look-away (same pose, slightly different arm rest)
+    drawNPC(2*32, oy, fac, 0, 0, 0, 0, 1);
 
-    // walk frame 0 — stride right
-    drawNPC(3*32, oy, fac, 0, -2, 2);
-    // walk frame 1 — mid-step (bob up)
-    drawNPC(4*32, oy, fac, -1, 0, 0);
-    // walk frame 2 — stride left
-    drawNPC(5*32, oy, fac, 0, 2, -2);
-    // walk frame 3 — mid-step (bob up, other phase)
-    drawNPC(6*32, oy, fac, -1, 0, 0);
+    // walk frame 0 — right foot fwd, left arm swings forward
+    drawNPC(3*32, oy, fac, 0, -2, 2, -2, 2);
+    // walk frame 1 — mid-step, arms centred (bob up)
+    drawNPC(4*32, oy, fac, -1, 0, 0, 0, 0);
+    // walk frame 2 — left foot fwd, right arm swings forward
+    drawNPC(5*32, oy, fac, 0, 2, -2, 2, -2);
+    // walk frame 3 — mid-step other phase (bob up)
+    drawNPC(6*32, oy, fac, -1, 0, 0, 0, 0);
   }
 
   // ── Row 3: GUARD archetype ─────────────────────────────────────────────────
@@ -686,6 +786,11 @@ function makeNPCSprites() {
     // head
     const hx = ox+12, hy = oy+2+dy;
     cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    // facial features (same improvements as drawNPC)
+    cv.sp(hx+1, hy+1, ...c.SKIN_HI);
+    cv.sp(hx+3, hy+5, ...c.SKIN_SH);
+    cv.sp(hx+3, hy+7, ...c.OUTLINE, 80);
+    cv.sp(hx+4, hy+7, ...c.OUTLINE, 80);
     cv.sp(hx+2, hy+3, ...c.HAIR);
     cv.sp(hx+5, hy+3, ...c.HAIR);
     cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
@@ -734,6 +839,16 @@ function makeNPCSprites() {
     cv.line(bx+4+lx, ly, bx+4+lx, ly+9, ...c.OUTLINE);
     cv.line(bx+6+rx, ly, bx+6+rx, ly+9, ...c.OUTLINE);
     cv.line(bx+9+rx, ly, bx+9+rx, ly+9, ...c.OUTLINE);
+
+    // spear (tall weapon on right side: shaft from ground to above head)
+    const sx = ox+27;
+    cv.line(sx, oy+2+dy-8, sx, oy+48, ...c.WOOD_M);        // shaft
+    cv.line(sx, oy+2+dy-8, sx, oy+48, ...c.OUTLINE, 60);   // shadow edge
+    // spearhead (small 3-pixel triangle)
+    cv.sp(sx-1, oy+2+dy-8,  ...c.STONE_L);
+    cv.sp(sx,   oy+2+dy-10, ...c.STONE_L);
+    cv.sp(sx+1, oy+2+dy-8,  ...c.STONE_L);
+    cv.line(sx-1, oy+2+dy-8, sx+1, oy+2+dy-8, ...c.OUTLINE);
   };
 
   {
@@ -741,6 +856,7 @@ function makeNPCSprites() {
     drawGuard(0*32, oy3, 0,  0,  0);
     drawGuard(1*32, oy3, -1, 0,  0);
     drawGuard(2*32, oy3, 0,  0,  0);
+    // walk frames with stride
     drawGuard(3*32, oy3, 0,  -2, 2);
     drawGuard(4*32, oy3, -1, 0,  0);
     drawGuard(5*32, oy3, 0,  2,  -2);
@@ -753,8 +869,15 @@ function makeNPCSprites() {
     // head
     const hx = ox+12, hy = oy+2+dy;
     cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    // facial features
+    cv.sp(hx+1, hy+1, ...c.SKIN_HI);
+    cv.sp(hx+2, hy+2, ...c.HAIR, 150);
+    cv.sp(hx+5, hy+2, ...c.HAIR, 150);
     cv.sp(hx+2, hy+3, ...c.HAIR);
     cv.sp(hx+5, hy+3, ...c.HAIR);
+    cv.sp(hx+3, hy+5, ...c.SKIN_SH);
+    cv.sp(hx+3, hy+7, ...c.OUTLINE, 90);
+    cv.sp(hx+4, hy+7, ...c.OUTLINE, 90);
     cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
     cv.line(hx,   hy,   hx,   hy+7, ...c.OUTLINE);
     cv.line(hx+7, hy,   hx+7, hy+7, ...c.OUTLINE);
@@ -817,8 +940,21 @@ function makeNPCSprites() {
     // head
     const hx = ox+12, hy = oy+2+dy;
     cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    // facial features (friendly expression with slight smile)
+    cv.sp(hx+1, hy+1, ...c.SKIN_HI);
+    cv.sp(hx+2, hy+2, ...c.HAIR, 150);
+    cv.sp(hx+5, hy+2, ...c.HAIR, 150);
     cv.sp(hx+2, hy+3, ...c.HAIR);
     cv.sp(hx+5, hy+3, ...c.HAIR);
+    cv.sp(hx+3, hy+5, ...c.SKIN_SH);
+    // slight smile
+    cv.sp(hx+2, hy+6, ...c.SKIN_SH, 120);
+    cv.sp(hx+3, hy+7, ...c.OUTLINE, 80);
+    cv.sp(hx+4, hy+7, ...c.OUTLINE, 80);
+    cv.sp(hx+5, hy+6, ...c.SKIN_SH, 120);
+    // rosy cheeks (tavern warmth)
+    cv.sp(hx+1, hy+5, 220, 160, 140, 80);
+    cv.sp(hx+6, hy+5, 220, 160, 140, 80);
     cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
     cv.line(hx,   hy,   hx,   hy+7, ...c.OUTLINE);
     cv.line(hx+7, hy,   hx+7, hy+7, ...c.OUTLINE);
@@ -1339,7 +1475,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 3 asset generation (SPA-99)\n');
+console.log('\nRumor Mill — Art Pass 4 asset generation (SPA-410)\n');
 
 write('assets/textures/tiles_ground.png',       makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',    makeRoadDirt());
