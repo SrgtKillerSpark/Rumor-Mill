@@ -61,6 +61,12 @@ var _banner_seed_fired:        bool = false  # guard for hint_propagation 5 s de
 var _banner_believe_fired:     bool = false  # guard for hint_objectives
 var _banner_journal_hint_fired: bool = false  # guard: journal hint shown (observe or eavesdrop)
 var _banner_social_graph_fired: bool = false  # guard: social graph hint shown
+# Cross-scenario contextual hint gates (S2/S3/S4).
+var _ctx_spread_fired:   bool = false
+var _ctx_act_fired:      bool = false
+var _ctx_reject_fired:   bool = false
+var _ctx_tokens_fired:   bool = false
+var _ctx_halfway_fired:  bool = false
 var _banner_eavesdrop_count:    int  = 0      # counts eavesdrop actions for social graph trigger
 
 # Guards against double-initialisation if begin_game fires more than once.
@@ -392,6 +398,30 @@ func _init_tutorial_system() -> void:
 		_init_tutorial_banner_s1()
 	else:
 		_init_tutorial_hud_s2s3s4()
+		_init_context_banner()
+
+
+## All scenarios except S1: non-blocking contextual hint banner for day-gated tips.
+## S1 already has its own banner — this adds the cross-scenario hints for S2/S3/S4.
+func _init_context_banner() -> void:
+	_tutorial_banner = preload("res://scripts/tutorial_banner.gd").new()
+	_tutorial_banner.name = "TutorialBanner"
+	add_child(_tutorial_banner)
+	_tutorial_banner.setup(_tutorial_sys)
+
+	# Day-gated hints: hook into day_changed signal.
+	if day_night != null and day_night.has_signal("day_changed"):
+		day_night.day_changed.connect(_on_ctx_day_changed)
+
+	# NPC state change hints: first SPREAD, ACT, or REJECT triggers.
+	for npc in world.npcs:
+		npc.rumor_state_changed.connect(_on_ctx_rumor_state_changed)
+
+	# Suppression: pause banner while Journal / Rumour Panel are open.
+	if journal != null:
+		journal.visibility_changed.connect(_on_journal_visibility_changed_banner)
+	if rumor_panel != null:
+		rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed_banner)
 
 
 ## S2 / S3 / S4: blocking modal tooltip overlay.
@@ -654,6 +684,39 @@ func _on_pause_menu_visibility_changed_banner() -> void:
 		_tutorial_banner.suppress()
 	else:
 		_tutorial_banner.unsuppress()
+
+
+# ── Cross-scenario contextual hint handlers ──────────────────────────────────
+
+func _on_ctx_day_changed(day: int) -> void:
+	if _tutorial_banner == null:
+		return
+	if day == 2:
+		_tutorial_banner.queue_hint("ctx_actions_refresh")
+	elif day == 3:
+		_tutorial_banner.queue_hint("ctx_check_journal")
+	# Halfway warning: check if past 50% of days and progress is slow.
+	if not _ctx_halfway_fired and scenario_manager != null:
+		var total: int = scenario_manager.get_days_allowed()
+		if day > total / 2:
+			_ctx_halfway_fired = true
+			_tutorial_banner.queue_hint("ctx_halfway_warning")
+
+
+func _on_ctx_rumor_state_changed(
+		_npc_name: String, new_state_name: String, _rumor_id: String
+) -> void:
+	if _tutorial_banner == null:
+		return
+	if new_state_name == "SPREAD" and not _ctx_spread_fired:
+		_ctx_spread_fired = true
+		_tutorial_banner.queue_hint("ctx_rumor_spreading")
+	elif new_state_name == "ACT" and not _ctx_act_fired:
+		_ctx_act_fired = true
+		_tutorial_banner.queue_hint("ctx_rumor_acted")
+	elif new_state_name == "REJECT" and not _ctx_reject_fired:
+		_ctx_reject_fired = true
+		_tutorial_banner.queue_hint("ctx_rumor_rejected")
 
 
 ## Evidence tutorial trigger — fires once when compatible evidence is first shown (S2/S3).

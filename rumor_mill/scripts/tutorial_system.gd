@@ -269,6 +269,71 @@ const HINT_DATA: Dictionary = {
 	},
 }
 
+## ── Cross-scenario contextual hint banner data ──────────────────────────────
+##
+## Day-gated and event-gated hints for all scenarios (not just S1).
+## Triggered by main.gd based on day number and game events.
+
+const CONTEXT_HINT_DATA: Dictionary = {
+	"ctx_actions_refresh": {
+		"title": "New Day, New Actions",
+		"body":  (
+			"Your [b]Recon Actions[/b] and [b]Whisper Tokens[/b] refresh at dawn.  "
+			+ "Plan today's moves carefully — each action counts."
+		),
+		"auto_dismiss_secs": 8,
+	},
+	"ctx_check_journal": {
+		"title": "Review Your Progress",
+		"body":  (
+			"Press [b]J[/b] to check your Journal.  "
+			+ "See how yesterday's rumours spread overnight and track reputation changes."
+		),
+		"auto_dismiss_secs": 8,
+	},
+	"ctx_rumor_spreading": {
+		"title": "Your Rumour is Spreading!",
+		"body":  (
+			"An NPC in [b]SPREAD[/b] state is actively telling others nearby.  "
+			+ "Well-connected spreaders will reach more of the town."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	"ctx_rumor_acted": {
+		"title": "Behaviour Changed",
+		"body":  (
+			"An NPC is [b]acting[/b] on the rumour — real behavioural change.  "
+			+ "Watch the reputation shift in the Objective HUD."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	"ctx_rumor_rejected": {
+		"title": "Rumour Rejected",
+		"body":  (
+			"A rumour was [b]rejected[/b].  That NPC will not believe it again easily.  "
+			+ "Try different claim types or target different NPCs."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	"ctx_out_of_tokens": {
+		"title": "Out of Whisper Tokens",
+		"body":  (
+			"No Whisper Tokens remaining today.  "
+			+ "Use your remaining [b]Recon Actions[/b] to scout targets for tomorrow."
+		),
+		"auto_dismiss_secs": 8,
+	},
+	"ctx_halfway_warning": {
+		"title": "Time is Running Out",
+		"body":  (
+			"You are past the halfway mark and progress is slow.  "
+			+ "Target [b]higher-sociability NPCs[/b] or use stronger claim types to accelerate."
+		),
+		"auto_dismiss_secs": 9,
+	},
+}
+
+
 ## Tracks which tooltip IDs have been seen this session.
 var _seen: Dictionary = {}
 
@@ -295,5 +360,9 @@ func get_tooltip(tooltip_id: String) -> Dictionary:
 
 
 ## Return the data dict for a hint banner entry, or empty if not found.
+## Checks both S1-specific HINT_DATA and cross-scenario CONTEXT_HINT_DATA.
 func get_hint(hint_id: String) -> Dictionary:
-	return HINT_DATA.get(hint_id, {})
+	var result: Dictionary = HINT_DATA.get(hint_id, {})
+	if result.is_empty():
+		result = CONTEXT_HINT_DATA.get(hint_id, {})
+	return result
