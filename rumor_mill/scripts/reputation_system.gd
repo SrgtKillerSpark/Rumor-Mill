@@ -323,7 +323,9 @@ func _compute_snapshot(
 		if slot == null:
 			continue
 		var believer_count: int    = believer_counts.get(rid, 0)
-		var believer_weight: float = min(float(believer_count) / 10.0, 3.0)
+		var believer_weight: float = 0.0
+		if believer_count > 0:
+			believer_weight = min(max(float(believer_count) / 10.0, 0.5), 3.0)
 		var direction: int         = CLAIM_DIRECTION.get(slot.rumor.claim_type, -1)
 		var delta_r: float         = direction * slot.rumor.intensity \
 			* slot.rumor.current_believability * believer_weight
