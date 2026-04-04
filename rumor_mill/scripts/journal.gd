@@ -185,9 +185,15 @@ func _apply_tab_style(btn: Button, active: bool) -> void:
 	style_hover.bg_color = Color(0.40, 0.28, 0.12, 1.0)
 	style_hover.set_border_width_all(0)
 	style_hover.set_content_margin_all(6)
+	var focus_ring := StyleBoxFlat.new()
+	focus_ring.bg_color = Color(0, 0, 0, 0)
+	focus_ring.draw_center = false
+	focus_ring.set_border_width_all(2)
+	focus_ring.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
 	btn.add_theme_stylebox_override("normal",  style_normal)
 	btn.add_theme_stylebox_override("hover",   style_hover)
 	btn.add_theme_stylebox_override("pressed", style_normal)
+	btn.add_theme_stylebox_override("focus",   focus_ring)
 
 
 func _on_tab_pressed(sec: Section) -> void:

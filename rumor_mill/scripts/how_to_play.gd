@@ -191,9 +191,15 @@ func _apply_tab_style(btn: Button, active: bool) -> void:
 	s.set_border_width_all(1)
 	s.border_color = C_BORDER
 	s.set_content_margin_all(6)
+	var focus_ring := StyleBoxFlat.new()
+	focus_ring.bg_color = Color(0, 0, 0, 0)
+	focus_ring.draw_center = false
+	focus_ring.set_border_width_all(2)
+	focus_ring.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
 	btn.add_theme_stylebox_override("normal",  s)
 	btn.add_theme_stylebox_override("hover",   s)
 	btn.add_theme_stylebox_override("pressed", s)
+	btn.add_theme_stylebox_override("focus",   focus_ring)
 	btn.add_theme_color_override("font_color", C_TAB_TEXT)
 	btn.add_theme_font_size_override("font_size", 13)
 
