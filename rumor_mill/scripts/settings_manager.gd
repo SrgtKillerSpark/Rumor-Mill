@@ -16,15 +16,17 @@ extends Node
 const SAVE_PATH := "user://user_settings.cfg"
 const SECTION   := "settings"
 
-const DEFAULT_MUSIC_VOL   := 80.0  ## Linear 0-100
-const DEFAULT_AMBIENT_VOL := 60.0
-const DEFAULT_SFX_VOL     := 80.0
-const DEFAULT_GAME_SPEED  := 1.0   ## tick_duration_seconds
+const DEFAULT_MUSIC_VOL          := 80.0   ## Linear 0-100
+const DEFAULT_AMBIENT_VOL        := 60.0
+const DEFAULT_SFX_VOL            := 80.0
+const DEFAULT_GAME_SPEED         := 1.0    ## tick_duration_seconds
+const DEFAULT_ANALYTICS_ENABLED  := true   ## Opt-in local analytics (SPA-244)
 
-var music_volume:   float = DEFAULT_MUSIC_VOL
-var ambient_volume: float = DEFAULT_AMBIENT_VOL
-var sfx_volume:     float = DEFAULT_SFX_VOL
-var game_speed:     float = DEFAULT_GAME_SPEED
+var music_volume:        float = DEFAULT_MUSIC_VOL
+var ambient_volume:      float = DEFAULT_AMBIENT_VOL
+var sfx_volume:          float = DEFAULT_SFX_VOL
+var game_speed:          float = DEFAULT_GAME_SPEED
+var analytics_enabled:   bool  = DEFAULT_ANALYTICS_ENABLED
 
 
 func _ready() -> void:
@@ -36,18 +38,20 @@ func load_settings() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(SAVE_PATH) != OK:
 		return  # File absent — use defaults
-	music_volume   = cfg.get_value(SECTION, "music_volume",   DEFAULT_MUSIC_VOL)
-	ambient_volume = cfg.get_value(SECTION, "ambient_volume", DEFAULT_AMBIENT_VOL)
-	sfx_volume     = cfg.get_value(SECTION, "sfx_volume",     DEFAULT_SFX_VOL)
-	game_speed     = cfg.get_value(SECTION, "game_speed",     DEFAULT_GAME_SPEED)
+	music_volume      = cfg.get_value(SECTION, "music_volume",      DEFAULT_MUSIC_VOL)
+	ambient_volume    = cfg.get_value(SECTION, "ambient_volume",    DEFAULT_AMBIENT_VOL)
+	sfx_volume        = cfg.get_value(SECTION, "sfx_volume",        DEFAULT_SFX_VOL)
+	game_speed        = cfg.get_value(SECTION, "game_speed",        DEFAULT_GAME_SPEED)
+	analytics_enabled = cfg.get_value(SECTION, "analytics_enabled", DEFAULT_ANALYTICS_ENABLED)
 
 
 func save_settings() -> void:
 	var cfg := ConfigFile.new()
-	cfg.set_value(SECTION, "music_volume",   music_volume)
-	cfg.set_value(SECTION, "ambient_volume", ambient_volume)
-	cfg.set_value(SECTION, "sfx_volume",     sfx_volume)
-	cfg.set_value(SECTION, "game_speed",     game_speed)
+	cfg.set_value(SECTION, "music_volume",      music_volume)
+	cfg.set_value(SECTION, "ambient_volume",    ambient_volume)
+	cfg.set_value(SECTION, "sfx_volume",        sfx_volume)
+	cfg.set_value(SECTION, "game_speed",        game_speed)
+	cfg.set_value(SECTION, "analytics_enabled", analytics_enabled)
 	cfg.save(SAVE_PATH)
 
 

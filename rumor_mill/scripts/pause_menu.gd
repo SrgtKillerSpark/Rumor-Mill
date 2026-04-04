@@ -103,9 +103,9 @@ func _build_ui() -> void:
 	bg.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(bg)
 
-	# Centred panel — tall enough for buttons + slot picker + status line.
+	# Centred panel — tall enough for buttons + slot picker + analytics row + status line.
 	var panel := Panel.new()
-	panel.custom_minimum_size = Vector2(300, 420)
+	panel.custom_minimum_size = Vector2(300, 460)
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	var style := StyleBoxFlat.new()
@@ -171,6 +171,33 @@ func _build_ui() -> void:
 	var btn_quit := _make_pause_btn("Quit to Menu", Color(1.0, 0.65, 0.55, 1.0))
 	btn_quit.pressed.connect(_on_quit_to_menu)
 	_main_container.add_child(btn_quit)
+
+	# ── Analytics opt-out toggle (SPA-244) ────────────────────────────────────
+	var analytics_sep := HSeparator.new()
+	analytics_sep.process_mode = Node.PROCESS_MODE_ALWAYS
+	_main_container.add_child(analytics_sep)
+
+	var analytics_row := HBoxContainer.new()
+	analytics_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	analytics_row.process_mode = Node.PROCESS_MODE_ALWAYS
+	analytics_row.add_theme_constant_override("separation", 8)
+	_main_container.add_child(analytics_row)
+
+	var analytics_label := Label.new()
+	analytics_label.text = "Local Analytics"
+	analytics_label.add_theme_font_size_override("font_size", 12)
+	analytics_label.add_theme_color_override("font_color", Color(0.75, 0.70, 0.55, 1.0))
+	analytics_label.process_mode = Node.PROCESS_MODE_ALWAYS
+	analytics_row.add_child(analytics_label)
+
+	var analytics_check := CheckButton.new()
+	analytics_check.process_mode = Node.PROCESS_MODE_ALWAYS
+	analytics_check.button_pressed = SettingsManager.analytics_enabled
+	analytics_check.toggled.connect(func(pressed: bool) -> void:
+		SettingsManager.analytics_enabled = pressed
+		SettingsManager.save_settings()
+	)
+	analytics_row.add_child(analytics_check)
 
 	# ── Slot picker container (hidden initially) ───────────────────────────────
 	_slot_container = VBoxContainer.new()

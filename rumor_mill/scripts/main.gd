@@ -41,6 +41,9 @@ var _end_screen: CanvasLayer = null
 # ── SPA-212: Analytics data collector ─────────────────────────────────────────
 var _analytics: ScenarioAnalytics = null
 
+# ── SPA-244: Local player behaviour event log ──────────────────────────────────
+var _analytics_logger: AnalyticsLogger = null
+
 # Prevent duplicate tooltip triggers for observe / eavesdrop / npc_state_change.
 var _observe_tooltip_fired:          bool = false
 var _eavesdrop_tooltip_fired:        bool = false
@@ -162,6 +165,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_tutorial_system()
 	_init_end_screen()
 	_init_audio()
+	_init_analytics_logger(scenario_id)
 	_init_pause_menu()
 	_init_npc_tooltip()
 	day_night.day_changed.connect(_on_new_day_auto_save)
@@ -663,6 +667,56 @@ func _init_audio() -> void:
 	if sm != null:
 		sm.scenario_resolved.connect(_on_scenario_resolved_audio)
 
+
+
+# ── SPA-244: Local analytics logger ──────────────────────────────────────────
+
+func _init_analytics_logger(scenario_id: String) -> void:
+	_analytics_logger = AnalyticsLogger.new()
+	_analytics_logger.start_session(scenario_id, GameState.selected_difficulty)
+
+	# Log each rumor seeded (claim_id for frequency analysis).
+	if rumor_panel != null:
+		rumor_panel.rumor_seeded.connect(_on_analytics_rumor_seeded)
+
+	# Log scenario outcome and session summary.
+	var sm: ScenarioManager = world.scenario_manager
+	if sm != null:
+		sm.scenario_resolved.connect(_on_analytics_scenario_resolved)
+
+	print("Main: Analytics logger started (scenario=%s difficulty=%s)" % [
+			scenario_id, GameState.selected_difficulty])
+
+
+func _on_analytics_rumor_seeded(
+		_rumor_id: String,
+		_subject_name: String,
+		claim_id: String,
+		_seed_target_name: String
+) -> void:
+	if _analytics_logger == null:
+		return
+	var day: int = day_night.current_day if day_night != null and "current_day" in day_night else 0
+	_analytics_logger.log_event("rumor_crafted", {
+		"claim_id": claim_id,
+		"day":      day,
+	})
+
+
+func _on_analytics_scenario_resolved(
+		scenario_id: int,
+		state: ScenarioManager.ScenarioState
+) -> void:
+	if _analytics_logger == null:
+		return
+	var day: int = day_night.current_day if day_night != null and "current_day" in day_night else 0
+	_analytics_logger.log_event("scenario_ended", {
+		"scenario_id":   "scenario_%d" % scenario_id,
+		"difficulty":    GameState.selected_difficulty,
+		"outcome":       "WON" if state == ScenarioManager.ScenarioState.WON else "FAILED",
+		"day_reached":   day,
+		"duration_sec":  _analytics_logger.get_session_duration_seconds(),
+	})
 
 
 # ── Pause Menu ────────────────────────────────────────────────────────────────
