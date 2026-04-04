@@ -1,6 +1,6 @@
 ## tutorial_system.gd — Tutorial tooltip data and first-encounter tracking.
 ##
-## Plain class (no Node).  Holds nine first-encounter tooltip definitions
+## Plain class (no Node).  Holds ten first-encounter tooltip definitions
 ## and tracks which ones the player has already seen this session.
 ##
 ## Tooltip IDs and their intended triggers (wired by main.gd):
@@ -13,6 +13,7 @@
 ##   "reputation"           — shown when the Player Journal first becomes visible
 ##   "evidence_items"       — shown on first evidence discovery
 ##   "rival_agent"          — shown on Scenario 3 rival agent introduction
+##   "inquisitor_agent"     — shown on Scenario 4 inquisitor introduction
 
 class_name TutorialSystem
 
@@ -27,6 +28,7 @@ const TOOLTIP_ORDER: Array = [
 	"reputation",
 	"evidence_items",
 	"rival_agent",
+	"inquisitor_agent",
 ]
 
 ## Tooltip content: title + BBCode body text.
@@ -131,6 +133,18 @@ const TOOLTIP_DATA: Dictionary = {
 			+ "Their activity escalates as the deadline approaches.\n"
 			+ "Counter with high-intensity claims and well-connected seed targets.\n"
 			+ "Their last known action is shown in the [b]Scenario 3 HUD[/b]."
+		),
+	},
+	"inquisitor_agent": {
+		"title": "The Inquisitor Approaches",
+		"body":  (
+			"This scenario is [b]purely defensive[/b]. An [b]Inquisitor[/b] is targeting\n"
+			+ "three people with scandal and heresy claims to destroy their reputations.\n"
+			+ "• [b]Your goal:[/b] keep all three targets above the reputation threshold.\n"
+			+ "• The Inquisitor seeds claims on a cooldown that [b]accelerates[/b] over time.\n"
+			+ "• Counter with [b]Praise[/b] rumours and well-connected seed targets.\n"
+			+ "• Watch for clergy NPCs losing reputation — that signals an Inquisitor move.\n"
+			+ "Track Inquisitor activity in the [b]Scenario 4 HUD[/b]."
 		),
 	},
 }

@@ -391,11 +391,11 @@ func _init_tutorial_system() -> void:
 	if world.active_scenario_id == "scenario_1":
 		_init_tutorial_banner_s1()
 	else:
-		_init_tutorial_hud_s2s3()
+		_init_tutorial_hud_s2s3s4()
 
 
-## S2 / S3: existing blocking modal tooltip overlay (unchanged).
-func _init_tutorial_hud_s2s3() -> void:
+## S2 / S3 / S4: blocking modal tooltip overlay.
+func _init_tutorial_hud_s2s3s4() -> void:
 	_tutorial_hud = preload("res://scripts/tutorial_hud.gd").new()
 	_tutorial_hud.name = "TutorialHUD"
 	add_child(_tutorial_hud)
@@ -405,6 +405,8 @@ func _init_tutorial_hud_s2s3() -> void:
 	_tutorial_hud.queue_tooltip("navigation_controls")
 	if world.active_scenario_id == "scenario_3":
 		_tutorial_hud.queue_tooltip("rival_agent")
+	if world.active_scenario_id == "scenario_4":
+		_tutorial_hud.queue_tooltip("inquisitor_agent")
 
 	if rumor_panel != null:
 		rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed)
