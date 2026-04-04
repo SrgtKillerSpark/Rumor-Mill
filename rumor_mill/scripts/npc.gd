@@ -133,6 +133,11 @@ const _CREDULITY_MODIFIER_FLOOR: float = -0.15   # rejection penalty cap
 const _CREDULITY_ACT_GAIN:       float =  0.10   # reward for acting on a rumor
 const _CREDULITY_REJECT_PENALTY: float = -0.05   # penalty per rejection
 
+# Minimum ticks an NPC must spend in EVALUATING before the believe/reject
+# roll fires.  Gives corroboration time to arrive and makes early rumor
+# seeding less coin-flippy.
+const _MIN_EVAL_TICKS: int = 3
+
 # Sprite modulate tints per worst rumor state — subtle colour shifts so the
 # player can read NPC state at a glance without squinting at the state badge.
 const STATE_TINT := {
@@ -495,6 +500,10 @@ func _tick_evaluating(
 		rid: String,
 		tick: int
 ) -> void:
+	# Minimum dwell time: let corroboration accumulate before rolling.
+	if slot.ticks_in_state < _MIN_EVAL_TICKS:
+		return
+
 	var rumor := slot.rumor
 	var effective_credulity := _credulity
 
