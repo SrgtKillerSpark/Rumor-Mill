@@ -44,8 +44,6 @@ var _analytics: ScenarioAnalytics = null
 # ── SPA-244: Local player behaviour event log ──────────────────────────────────
 var _analytics_logger: AnalyticsLogger = null
 
-# ── SPA-479: Milestone tracker ───────────────────────────────────────────────
-var _milestone_tracker: MilestoneTracker = null
 
 # Prevent duplicate tooltip triggers for observe / eavesdrop / npc_state_change.
 var _observe_tooltip_fired:          bool = false
