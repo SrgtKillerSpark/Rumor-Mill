@@ -69,6 +69,12 @@ var _intel_filter_text: String = ""
 ## Timeline-tab filter text (keyword search).
 var _timeline_filter_text: String = ""
 
+## Timeline-tab sort order: true = newest first, false = oldest first (default).
+var _timeline_sort_newest: bool = false
+
+## Timeline-tab "Today" filter: when true, only show events from the current day.
+var _timeline_today_filter: bool = false
+
 ## Hard cap on timeline log entries; oldest entries are trimmed when exceeded.
 const MAX_TIMELINE_ENTRIES := 200
 
@@ -971,8 +977,11 @@ func _build_timeline_section() -> void:
 					ri.npc_a_name, ri.npc_b_name, ri.affinity_label]
 			})
 
-	# Sort ascending.
-	events.sort_custom(func(a, b) -> bool: return a["tick"] < b["tick"])
+	# Sort by tick (direction determined by _timeline_sort_newest).
+	if _timeline_sort_newest:
+		events.sort_custom(func(a, b) -> bool: return a["tick"] > b["tick"])
+	else:
+		events.sort_custom(func(a, b) -> bool: return a["tick"] < b["tick"])
 
 	# ── Timeline filter bar ───────────────────────────────────────────────────
 	var tl_filter_row := HBoxContainer.new()
@@ -1007,6 +1016,33 @@ func _build_timeline_section() -> void:
 		_timeline_filter_text = ""
 		call_deferred("_rebuild_section", Section.TIMELINE)
 	)
+
+	# ── Sort toggle + Today filter ───────────────────────────────────────────
+	var tl_controls_row := HBoxContainer.new()
+	tl_controls_row.add_theme_constant_override("separation", 6)
+	_content_vbox.add_child(tl_controls_row)
+
+	var tl_sort_btn := Button.new()
+	tl_sort_btn.text = "↓ Newest" if _timeline_sort_newest else "↑ Oldest"
+	tl_sort_btn.add_theme_font_size_override("font_size", 12)
+	tl_sort_btn.add_theme_color_override("font_color", C_KEY)
+	tl_sort_btn.focus_mode = Control.FOCUS_ALL
+	tl_sort_btn.pressed.connect(func() -> void:
+		_timeline_sort_newest = not _timeline_sort_newest
+		call_deferred("_rebuild_section", Section.TIMELINE)
+	)
+	tl_controls_row.add_child(tl_sort_btn)
+
+	var tl_today_btn := Button.new()
+	tl_today_btn.text = "☀ Today" if not _timeline_today_filter else "☀ Today ✓"
+	tl_today_btn.add_theme_font_size_override("font_size", 12)
+	tl_today_btn.add_theme_color_override("font_color", Color(0.92, 0.78, 0.12, 1.0) if _timeline_today_filter else C_SUBKEY)
+	tl_today_btn.focus_mode = Control.FOCUS_ALL
+	tl_today_btn.pressed.connect(func() -> void:
+		_timeline_today_filter = not _timeline_today_filter
+		call_deferred("_rebuild_section", Section.TIMELINE)
+	)
+	tl_controls_row.add_child(tl_today_btn)
 	# ─────────────────────────────────────────────────────────────────────────
 
 	if events.size() <= 1:
@@ -1021,8 +1057,25 @@ func _build_timeline_section() -> void:
 			return ev["message"].to_lower().contains(tl_filter_lower)
 		)
 
+	# Apply "Today" filter — keep only events from the current in-game day.
+	if _timeline_today_filter:
+		var today_tpd: int = 24
+		if _day_night_ref != null and "ticks_per_day" in _day_night_ref:
+			today_tpd = _day_night_ref.ticks_per_day
+		var today_day: int = 1
+		if _day_night_ref != null and "current_day" in _day_night_ref:
+			today_day = _day_night_ref.current_day
+		filtered_events = filtered_events.filter(func(ev: Dictionary) -> bool:
+			return (ev["tick"] / today_tpd + 1) == today_day
+		)
+
 	if filtered_events.is_empty():
-		_add_body_label("No events match \"%s\"." % _timeline_filter_text)
+		if _timeline_today_filter and tl_filter_lower.is_empty():
+			_add_body_label("No events today yet.")
+		elif not tl_filter_lower.is_empty():
+			_add_body_label("No events match \"%s\"." % _timeline_filter_text)
+		else:
+			_add_body_label("No events recorded yet.")
 		return
 
 	# Render events with day-break sub-headers.
@@ -1406,6 +1459,22 @@ func push_timeline_event(tick: int, message: String) -> void:
 		_notification_pending = true
 		if _notif_dot != null:
 			_notif_dot.visible = true
+
+
+## Open the journal directly to the Timeline tab with optional pre-set filters.
+## If filter_text is non-empty, the keyword filter is pre-filled.
+## If today is true, the Today quick-filter is auto-activated and sort set to newest-first.
+func open_to_timeline(filter_text: String = "", today: bool = false) -> void:
+	_timeline_filter_text  = filter_text
+	_timeline_today_filter = today
+	if today:
+		_timeline_sort_newest = true
+	_current_section = Section.TIMELINE
+	if not _is_open:
+		_open()
+	else:
+		_refresh_sidebar_highlights()
+		_rebuild_section(Section.TIMELINE)
 
 
 ## Called by SaveManager after a load to restore the persisted timeline log.

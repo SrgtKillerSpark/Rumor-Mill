@@ -401,6 +401,8 @@ func _init_recon_system() -> void:
 		recon_hud.setup(intel_store, rumor_panel)
 	if recon_hud != null and recon_hud.has_method("setup_hints"):
 		recon_hud.setup_hints(world)
+	if recon_hud != null and recon_hud.has_method("setup_feed"):
+		recon_hud.setup_feed(journal, day_night)
 
 	# RumorPanel: 3-panel crafting modal (Subject → Claim → Seed Target).
 	if rumor_panel != null and rumor_panel.has_method("setup"):
@@ -438,9 +440,11 @@ func _init_recon_system() -> void:
 		interior.interior_closed.connect(AudioManager.clear_location_ambient)
 	recon_ctrl.set_interiors(_interiors)
 
-	# Pipe action results to the HUD toast.
+	# Pipe action results to the HUD toast and recent-actions feed.
 	if recon_hud != null and recon_hud.has_method("show_toast"):
 		recon_ctrl.action_performed.connect(recon_hud.show_toast)
+	if recon_hud != null and recon_hud.has_method("push_feed_entry"):
+		recon_ctrl.action_performed.connect(recon_hud.push_feed_entry)
 
 	# Pipe action results to the tutorial system (observe / eavesdrop tooltips).
 	recon_ctrl.action_performed.connect(_on_recon_action_for_tutorial)

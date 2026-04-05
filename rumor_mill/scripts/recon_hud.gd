@@ -43,6 +43,8 @@ const C_HEAT_BG     := Color(0.18, 0.12, 0.06, 1.0)
 var _intel_store_ref:  PlayerIntelStore = null
 var _rumor_panel_ref:  CanvasLayer      = null
 var _world_ref:        Node2D           = null
+var _journal_ref:      CanvasLayer      = null
+var _day_night_ref:    Node             = null
 var _hint_btn:         Button           = null
 var _hint_label:       Label            = null
 var _hint_tween:       Tween            = null
@@ -69,6 +71,18 @@ var _last_whisper_max:  int = -1
 var _last_action_rem:   int = -1
 var _last_whisper_rem:  int = -1
 
+# ── Recent Actions feed ──────────────────────────────────────────────────────
+const FEED_MAX_ENTRIES := 5
+
+## Each entry: {message: String, success: bool, tick: int}
+var _feed_entries: Array = []
+var _feed_panel:       Panel         = null
+var _feed_vbox:        VBoxContainer = null
+var _feed_toggle_btn:  Button        = null
+var _feed_collapsed:   bool          = false
+## Current day-night phase at last clear — feed clears on phase transition.
+var _feed_last_phase:  String        = ""
+
 
 func _ready() -> void:
 	layer = 5
@@ -83,6 +97,7 @@ func _ready() -> void:
 	_build_extra_key_hints()
 	_build_hint_button()
 	_build_flash_overlay()
+	_build_feed_panel()
 
 
 func setup(intel_store: PlayerIntelStore, rumor_panel: CanvasLayer) -> void:
@@ -94,6 +109,12 @@ func setup(intel_store: PlayerIntelStore, rumor_panel: CanvasLayer) -> void:
 ## Called by main.gd to provide world reference for contextual hint generation.
 func setup_hints(world: Node2D) -> void:
 	_world_ref = world
+
+
+## Called by main.gd to provide journal + day_night refs for feed→journal navigation.
+func setup_feed(journal: CanvasLayer, day_night: Node) -> void:
+	_journal_ref  = journal
+	_day_night_ref = day_night
 
 
 # ── Input ─────────────────────────────────────────────────────────────────────
@@ -368,6 +389,141 @@ func _add_key_hint(parent: HBoxContainer, key: String, label: String, accent: Co
 	tw.finished.connect(func() -> void:
 		hint.modulate = Color.WHITE
 	)
+
+
+# ── Recent Actions feed ──────────────────────────────────────────────────────
+
+func _build_feed_panel() -> void:
+	_feed_panel = Panel.new()
+	_feed_panel.anchor_left   = 1.0
+	_feed_panel.anchor_right  = 1.0
+	_feed_panel.anchor_top    = 1.0
+	_feed_panel.anchor_bottom = 1.0
+	_feed_panel.offset_left   = -320.0
+	_feed_panel.offset_top    = -160.0
+	_feed_panel.offset_right  = -6.0
+	_feed_panel.offset_bottom = -6.0
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.08, 0.05, 0.03, 0.92)
+	panel_style.set_border_width_all(1)
+	panel_style.border_color = Color(0.55, 0.38, 0.18, 0.7)
+	panel_style.set_corner_radius_all(4)
+	panel_style.set_content_margin_all(6)
+	_feed_panel.add_theme_stylebox_override("panel", panel_style)
+	add_child(_feed_panel)
+
+	var outer_vbox := VBoxContainer.new()
+	outer_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	outer_vbox.offset_left   = 6.0
+	outer_vbox.offset_top    = 4.0
+	outer_vbox.offset_right  = -6.0
+	outer_vbox.offset_bottom = -4.0
+	outer_vbox.add_theme_constant_override("separation", 2)
+	_feed_panel.add_child(outer_vbox)
+
+	# Header row with toggle button.
+	var header_row := HBoxContainer.new()
+	header_row.add_theme_constant_override("separation", 4)
+	outer_vbox.add_child(header_row)
+
+	var title_lbl := Label.new()
+	title_lbl.text = "Recent Actions"
+	title_lbl.add_theme_font_size_override("font_size", 12)
+	title_lbl.add_theme_color_override("font_color", Color(0.92, 0.78, 0.12, 1.0))
+	title_lbl.add_theme_constant_override("outline_size", 1)
+	title_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_row.add_child(title_lbl)
+
+	_feed_toggle_btn = Button.new()
+	_feed_toggle_btn.text = "▼"
+	_feed_toggle_btn.add_theme_font_size_override("font_size", 10)
+	_feed_toggle_btn.custom_minimum_size = Vector2(22, 18)
+	var toggle_style := StyleBoxFlat.new()
+	toggle_style.bg_color = Color(0.20, 0.14, 0.08, 0.8)
+	toggle_style.set_corner_radius_all(3)
+	toggle_style.set_content_margin_all(1)
+	_feed_toggle_btn.add_theme_stylebox_override("normal", toggle_style)
+	_feed_toggle_btn.pressed.connect(_on_feed_toggle)
+	header_row.add_child(_feed_toggle_btn)
+
+	_feed_vbox = VBoxContainer.new()
+	_feed_vbox.add_theme_constant_override("separation", 1)
+	outer_vbox.add_child(_feed_vbox)
+
+	_feed_panel.visible = false  # hidden until first action
+
+
+func _on_feed_toggle() -> void:
+	_feed_collapsed = not _feed_collapsed
+	_feed_toggle_btn.text = "▲" if _feed_collapsed else "▼"
+	_feed_vbox.visible = not _feed_collapsed
+
+
+## Push an action result into the feed. Called alongside show_toast.
+func push_feed_entry(message: String, success: bool) -> void:
+	var tick: int = 0
+	if _day_night_ref != null and "current_tick" in _day_night_ref:
+		tick = _day_night_ref.current_tick
+
+	# Clear feed on phase transition.
+	var current_phase: String = ""
+	if _day_night_ref != null and "current_phase" in _day_night_ref:
+		current_phase = str(_day_night_ref.current_phase)
+	if not current_phase.is_empty() and current_phase != _feed_last_phase and not _feed_last_phase.is_empty():
+		_feed_entries.clear()
+	_feed_last_phase = current_phase
+
+	_feed_entries.push_front({"message": message, "success": success, "tick": tick})
+	if _feed_entries.size() > FEED_MAX_ENTRIES:
+		_feed_entries.resize(FEED_MAX_ENTRIES)
+	_rebuild_feed()
+	_feed_panel.visible = true
+
+
+func _rebuild_feed() -> void:
+	for child in _feed_vbox.get_children():
+		child.queue_free()
+
+	for i in _feed_entries.size():
+		var entry: Dictionary = _feed_entries[i]
+		var btn := Button.new()
+		var icon := "✓" if entry["success"] else "✗"
+		btn.text = "%s %s" % [icon, entry["message"]]
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.add_theme_font_size_override("font_size", 11)
+		var text_color := Color(0.75, 0.85, 0.65, 1.0) if entry["success"] else Color(0.90, 0.55, 0.35, 1.0)
+		btn.add_theme_color_override("font_color", text_color)
+		btn.clip_text = true
+		btn.custom_minimum_size = Vector2(0, 20)
+		# Transparent flat style so it looks like a label but is clickable.
+		var btn_style := StyleBoxFlat.new()
+		btn_style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
+		btn_style.set_content_margin_all(1)
+		btn.add_theme_stylebox_override("normal", btn_style)
+		var hover_style := StyleBoxFlat.new()
+		hover_style.bg_color = Color(0.30, 0.22, 0.10, 0.5)
+		hover_style.set_corner_radius_all(2)
+		hover_style.set_content_margin_all(1)
+		btn.add_theme_stylebox_override("hover", hover_style)
+		var focus_style := StyleBoxFlat.new()
+		focus_style.bg_color = Color(0.30, 0.22, 0.10, 0.5)
+		focus_style.set_border_width_all(1)
+		focus_style.border_color = Color(1.0, 0.9, 0.4, 1.0)
+		focus_style.set_corner_radius_all(2)
+		focus_style.set_content_margin_all(1)
+		btn.add_theme_stylebox_override("focus", focus_style)
+		btn.tooltip_text = "Click to open Timeline filtered to this event"
+		var filter_text: String = entry["message"]
+		btn.pressed.connect(_on_feed_entry_clicked.bind(filter_text))
+		_feed_vbox.add_child(btn)
+
+
+func _on_feed_entry_clicked(filter_text: String) -> void:
+	if _journal_ref == null:
+		return
+	if _journal_ref.has_method("open_to_timeline"):
+		_journal_ref.open_to_timeline(filter_text, true)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
