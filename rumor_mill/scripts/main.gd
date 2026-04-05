@@ -232,6 +232,8 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_scenario2_hud()
 	_init_scenario3_hud()
 	_init_scenario4_hud()
+	_init_scenario5_hud()
+	_init_scenario6_hud()
 	_init_tutorial_system()
 	_init_end_screen()
 	_init_audio()
@@ -612,6 +614,26 @@ func _init_scenario4_hud() -> void:
 		return
 	var hud := preload("res://scripts/scenario4_hud.gd").new()
 	hud.name = "Scenario4HUD"
+	add_child(hud)
+	if hud.has_method("setup"):
+		hud.setup(world, day_night)
+
+
+func _init_scenario5_hud() -> void:
+	if world.active_scenario_id != "scenario_5":
+		return
+	var hud := preload("res://scripts/scenario5_hud.gd").new()
+	hud.name = "Scenario5HUD"
+	add_child(hud)
+	if hud.has_method("setup"):
+		hud.setup(world, day_night)
+
+
+func _init_scenario6_hud() -> void:
+	if world.active_scenario_id != "scenario_6":
+		return
+	var hud := preload("res://scripts/scenario6_hud.gd").new()
+	hud.name = "Scenario6HUD"
 	add_child(hud)
 	if hud.has_method("setup"):
 		hud.setup(world, day_night)
@@ -1454,11 +1476,13 @@ func _on_achievement_scenario_resolved(
 		if recipients >= 20:
 			AchievementManager.unlock("whisper_network")
 
-	# Mastermind: all four scenarios completed (checks persisted unlock state).
+	# Mastermind: all six scenarios completed (checks persisted unlock state).
 	if (AchievementManager.is_unlocked("scenario_1_complete")
 			and AchievementManager.is_unlocked("scenario_2_complete")
 			and AchievementManager.is_unlocked("scenario_3_complete")
-			and AchievementManager.is_unlocked("scenario_4_complete")):
+			and AchievementManager.is_unlocked("scenario_4_complete")
+			and AchievementManager.is_unlocked("scenario_5_complete")
+			and AchievementManager.is_unlocked("scenario_6_complete")):
 		AchievementManager.unlock("mastermind")
 
 
