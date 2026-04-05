@@ -56,8 +56,8 @@ const SCENARIO_ACCENT := {
 	"scenario_2": Color(0.85, 0.70, 0.20, 1.0),   # amber — moderate
 	"scenario_3": Color(0.85, 0.40, 0.15, 1.0),   # burnt orange — challenging
 	"scenario_4": Color(0.85, 0.18, 0.12, 1.0),   # crimson — expert
-	"scenario_5": Color(0.85, 0.40, 0.15, 1.0),   # burnt orange — challenging
-	"scenario_6": Color(0.85, 0.18, 0.12, 1.0),   # crimson — expert
+	"scenario_5": Color(0.70, 0.20, 0.50, 1.0),   # deep purple — advanced
+	"scenario_6": Color(0.55, 0.12, 0.55, 1.0),   # dark magenta — master
 }
 
 # SPA-589: Human-readable difficulty labels per scenario.
@@ -66,8 +66,8 @@ const SCENARIO_DIFFICULTY := {
 	"scenario_2": "Moderate",
 	"scenario_3": "Challenging",
 	"scenario_4": "Expert",
-	"scenario_5": "Challenging",
-	"scenario_6": "Expert",
+	"scenario_5": "Advanced",
+	"scenario_6": "Master",
 }
 
 enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS }
@@ -1510,6 +1510,8 @@ func _rebuild_stats_content() -> void:
 			"scenario_2": "2 — The Herb-Wife's Ruin",
 			"scenario_3": "3 — The Fenn Succession",
 			"scenario_4": "4 — The Holy Inquisition",
+			"scenario_5": "5 — The Election",
+			"scenario_6": "6 — The Merchant's Debt",
 		}
 		var diff_labels := { "apprentice": "Appr.", "master": "Master", "spymaster": "Spym." }
 
