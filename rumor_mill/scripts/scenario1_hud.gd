@@ -72,7 +72,7 @@ func _build_ui() -> void:
 
 	# Caution note.
 	_caution_lbl = Label.new()
-	_caution_lbl.add_theme_font_size_override("font_size", 11)
+	_caution_lbl.add_theme_font_size_override("font_size", 12)
 	_caution_lbl.add_theme_color_override("font_color", Color(0.75, 0.60, 0.35, 0.85))
 	_caution_lbl.text = "⚠ Avoid detection"
 	_caution_lbl.tooltip_text = "Getting caught eavesdropping fails the scenario immediately."
@@ -100,7 +100,7 @@ func _build_ui() -> void:
 	right_vbox.add_child(_result_lbl)
 
 	var legend_lbl := Label.new()
-	legend_lbl.add_theme_font_size_override("font_size", 11)
+	legend_lbl.add_theme_font_size_override("font_size", 12)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
 	legend_lbl.text = "Target: Edric Fenn Rep < 30"
 	legend_lbl.tooltip_text = "Ruin Edric Fenn's reputation below 30 to win the scenario."

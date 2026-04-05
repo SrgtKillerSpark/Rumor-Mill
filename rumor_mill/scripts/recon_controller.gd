@@ -126,7 +126,7 @@ func _create_hover_visuals() -> void:
 	_tooltip_label.offset_top    = 3.0
 	_tooltip_label.offset_right  = -6.0
 	_tooltip_label.offset_bottom = -3.0
-	_tooltip_label.add_theme_font_size_override("font_size", 11)
+	_tooltip_label.add_theme_font_size_override("font_size", 12)
 	_tooltip_label.add_theme_color_override("font_color", Color(0.82, 0.74, 0.55, 1.0))
 	_tooltip_panel.add_child(_tooltip_label)
 
@@ -748,7 +748,7 @@ func _show_action_popup(npc: Node2D, screen_pos: Vector2) -> void:
 
 	var btn_eavesdrop := Button.new()
 	btn_eavesdrop.text = "Eavesdrop"
-	btn_eavesdrop.add_theme_font_size_override("font_size", 11)
+	btn_eavesdrop.add_theme_font_size_override("font_size", 12)
 	btn_eavesdrop.add_theme_color_override("font_color", Color(0.90, 0.80, 0.55, 1.0))
 	btn_eavesdrop.pressed.connect(_on_popup_eavesdrop)
 	vbox.add_child(btn_eavesdrop)
@@ -756,7 +756,7 @@ func _show_action_popup(npc: Node2D, screen_pos: Vector2) -> void:
 	var can_bribe: bool = _intel_store.recon_actions_remaining > 0 \
 		and _intel_store.whisper_tokens_remaining > 0
 	var btn_bribe := Button.new()
-	btn_bribe.add_theme_font_size_override("font_size", 11)
+	btn_bribe.add_theme_font_size_override("font_size", 12)
 	if can_bribe:
 		btn_bribe.text = "Bribe  (1 Recon + 1 Token)"
 		btn_bribe.pressed.connect(_on_popup_bribe)

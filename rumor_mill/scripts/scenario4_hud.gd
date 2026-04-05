@@ -73,7 +73,7 @@ func _build_ui() -> void:
 		hbox.add_child(vbox)
 
 		var lbl := Label.new()
-		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", C_BODY)
 		lbl.text = "%s  Rep: 50 / 100  Floor: 45" % NPC_DISPLAY_NAMES.get(npc_id, npc_id)
 		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Below 40 = instant fail. Must be 45+ at deadline to win.")
@@ -109,7 +109,7 @@ func _build_ui() -> void:
 	right_vbox.add_child(_result_lbl)
 
 	var legend_lbl := Label.new()
-	legend_lbl.add_theme_font_size_override("font_size", 11)
+	legend_lbl.add_theme_font_size_override("font_size", 12)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
 	legend_lbl.text = "[safe] >= 45  [risk] 40-44  [fail] < 40"
 	right_vbox.add_child(legend_lbl)
@@ -123,7 +123,7 @@ func _build_ui() -> void:
 	right_vbox.add_child(_inquisitor_lbl)
 
 	_faction_shift_lbl = Label.new()
-	_faction_shift_lbl.add_theme_font_size_override("font_size", 11)
+	_faction_shift_lbl.add_theme_font_size_override("font_size", 12)
 	_faction_shift_lbl.add_theme_color_override("font_color", Color(0.55, 0.80, 0.70, 0.80))
 	_faction_shift_lbl.text = "Town: watching and waiting"
 	_faction_shift_lbl.tooltip_text = "Faction power shifts mid-game: merchants may rally for the accused, the Bishop can pressure the Inquisitor, and clergy may show solidarity."

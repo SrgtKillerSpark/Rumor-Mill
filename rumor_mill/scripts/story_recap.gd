@@ -118,7 +118,7 @@ func _build_ui() -> void:
 	_dismiss_hint = Label.new()
 	_dismiss_hint.text = "Press any key to continue..."
 	_dismiss_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_dismiss_hint.add_theme_font_size_override("font_size", 11)
+	_dismiss_hint.add_theme_font_size_override("font_size", 12)
 	_dismiss_hint.add_theme_color_override("font_color", C_MUTED)
 	vbox.add_child(_dismiss_hint)
 

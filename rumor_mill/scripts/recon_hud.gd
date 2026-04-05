@@ -205,8 +205,8 @@ func _build_count_labels() -> void:
 ## Only visible when all actions have been spent.
 func _build_dawn_label() -> void:
 	_dawn_label = Label.new()
-	_dawn_label.add_theme_font_size_override("font_size", 11)
-	_dawn_label.add_theme_color_override("font_color", Color(0.65, 0.55, 0.35, 0.85))
+	_dawn_label.add_theme_font_size_override("font_size", 12)
+	_dawn_label.add_theme_color_override("font_color", Color(0.75, 0.65, 0.40, 0.90))
 	_dawn_label.add_theme_constant_override("outline_size", 2)
 	_dawn_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 	_dawn_label.text = ""
@@ -252,7 +252,7 @@ func _build_heat_meter() -> void:
 	# Flame icon
 	var icon := Label.new()
 	icon.text = "🔥"
-	icon.add_theme_font_size_override("font_size", 11)
+	icon.add_theme_font_size_override("font_size", 12)
 	icon.add_theme_color_override("font_color", Color(0.85, 0.45, 0.15, 1.0))
 	_heat_row.add_child(icon)
 
@@ -260,8 +260,8 @@ func _build_heat_meter() -> void:
 	var title := Label.new()
 	title.text = "Heat"
 	title.custom_minimum_size = Vector2(54, 0)
-	title.add_theme_font_size_override("font_size", 11)
-	title.add_theme_color_override("font_color", Color(0.75, 0.68, 0.52, 1.0))
+	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_color_override("font_color", Color(0.80, 0.72, 0.55, 1.0))
 	_heat_row.add_child(title)
 
 	# Bar background
@@ -285,7 +285,7 @@ func _build_heat_meter() -> void:
 	# Numeric label
 	_heat_count_lbl = Label.new()
 	_heat_count_lbl.text = "0"
-	_heat_count_lbl.add_theme_font_size_override("font_size", 11)
+	_heat_count_lbl.add_theme_font_size_override("font_size", 12)
 	_heat_count_lbl.add_theme_color_override("font_color", C_HEAT_LOW)
 	_heat_row.add_child(_heat_count_lbl)
 
@@ -438,7 +438,7 @@ func _build_hint_button() -> void:
 	_hint_btn = Button.new()
 	_hint_btn.text = "? What next"
 	_hint_btn.custom_minimum_size = Vector2(90, 22)
-	_hint_btn.add_theme_font_size_override("font_size", 10)
+	_hint_btn.add_theme_font_size_override("font_size", 12)
 	_hint_btn.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55, 1.0))
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.25, 0.15, 0.06, 0.85)

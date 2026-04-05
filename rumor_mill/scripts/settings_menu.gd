@@ -12,7 +12,7 @@ const C_OVERLAY    := Color(0.0,  0.0,  0.0,  0.55)
 const C_PANEL_BG   := Color(0.12, 0.08, 0.05, 1.0)
 const C_BORDER     := Color(0.65, 0.55, 0.35, 1.0)
 const C_TITLE      := Color(0.92, 0.78, 0.12, 1.0)
-const C_LABEL      := Color(0.75, 0.70, 0.55, 1.0)
+const C_LABEL      := Color(0.80, 0.75, 0.60, 1.0)
 const C_VALUE      := Color(0.95, 0.91, 0.80, 1.0)
 const C_BTN_NORMAL := Color(0.30, 0.18, 0.07, 1.0)
 const C_BTN_HOVER  := Color(0.50, 0.30, 0.10, 1.0)
@@ -231,7 +231,7 @@ func _make_cycle_button(initial_text: String) -> Button:
 	btn.text = initial_text
 	btn.custom_minimum_size = Vector2(120, 28)
 	btn.process_mode = Node.PROCESS_MODE_ALWAYS
-	btn.add_theme_font_size_override("font_size", 12)
+	btn.add_theme_font_size_override("font_size", 13)
 	btn.add_theme_color_override("font_color", C_VALUE)
 
 	for state_name: String in ["normal", "hover", "pressed"]:

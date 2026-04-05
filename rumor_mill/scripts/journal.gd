@@ -346,7 +346,7 @@ func _build_rumors_section() -> void:
 	for si in range(status_options.size()):
 		var sbtn := Button.new()
 		sbtn.text = status_labels[si]
-		sbtn.add_theme_font_size_override("font_size", 11)
+		sbtn.add_theme_font_size_override("font_size", 12)
 		var is_active: bool = _rumor_status_filter == status_options[si]
 		var sbtn_style := StyleBoxFlat.new()
 		sbtn_style.set_content_margin_all(3)
@@ -369,7 +369,7 @@ func _build_rumors_section() -> void:
 	# ── Sort toggle ──────────────────────────────────────────────────────────
 	var sort_btn := Button.new()
 	sort_btn.text = "↓ Newest" if _rumor_sort_newest else "↑ Oldest"
-	sort_btn.add_theme_font_size_override("font_size", 11)
+	sort_btn.add_theme_font_size_override("font_size", 12)
 	sort_btn.add_theme_color_override("font_color", C_KEY)
 	sort_btn.focus_mode = Control.FOCUS_ALL
 	sort_btn.pressed.connect(func() -> void:
@@ -532,7 +532,7 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 		var path_lbl := Label.new()
 		path_lbl.text            = path_str
 		path_lbl.autowrap_mode   = TextServer.AUTOWRAP_WORD
-		path_lbl.add_theme_font_size_override("font_size", 10)
+		path_lbl.add_theme_font_size_override("font_size", 12)
 		path_lbl.add_theme_color_override("font_color", C_BODY)
 		detail.add_child(path_lbl)
 

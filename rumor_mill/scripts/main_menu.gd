@@ -417,7 +417,7 @@ func _build_main_panel() -> void:
 	var subtitle := Label.new()
 	subtitle.text = "A medieval rumor-spreading social simulation"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 11)
+	subtitle.add_theme_font_size_override("font_size", 12)
 	subtitle.add_theme_color_override("font_color", C_MUTED)
 	vbox.add_child(subtitle)
 
@@ -483,7 +483,7 @@ func _build_select_panel() -> void:
 	var sub := Label.new()
 	sub.text = "Each assignment tests a different facet of the whispersmith's art."
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.add_theme_font_size_override("font_size", 11)
+	sub.add_theme_font_size_override("font_size", 12)
 	sub.add_theme_color_override("font_color", C_MUTED)
 	vbox.add_child(sub)
 
@@ -573,7 +573,7 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	if diff_text != "":
 		var diff_badge := Label.new()
 		diff_badge.text = diff_text
-		diff_badge.add_theme_font_size_override("font_size", 11)
+		diff_badge.add_theme_font_size_override("font_size", 12)
 		diff_badge.add_theme_color_override("font_color", accent_color if not locked else C_MUTED)
 		title_row.add_child(diff_badge)
 
@@ -583,7 +583,7 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 		days_lbl.text = "Locked"
 	else:
 		days_lbl.text = "%d days" % int(sc.get("daysAllowed", 30))
-	days_lbl.add_theme_font_size_override("font_size", 11)
+	days_lbl.add_theme_font_size_override("font_size", 12)
 	days_lbl.add_theme_color_override("font_color", C_MUTED)
 	title_row.add_child(days_lbl)
 
@@ -616,14 +616,14 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 
 		var lock_msg := Label.new()
 		lock_msg.text = "Complete \"%s\" to unlock." % _unlock_requires_title(idx)
-		lock_msg.add_theme_font_size_override("font_size", 11)
+		lock_msg.add_theme_font_size_override("font_size", 12)
 		lock_msg.add_theme_color_override("font_color", C_MUTED)
 		lock_row.add_child(lock_msg)
 
 		var play_anyway := Button.new()
 		play_anyway.text = "Play anyway \u2192"
 		play_anyway.flat = true
-		play_anyway.add_theme_font_size_override("font_size", 11)
+		play_anyway.add_theme_font_size_override("font_size", 12)
 		play_anyway.add_theme_color_override("font_color", C_MUTED)
 		play_anyway.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 		play_anyway.add_theme_stylebox_override("hover",  StyleBoxEmpty.new())
@@ -1197,7 +1197,7 @@ func _add_slider_row(
 	if hint != "":
 		var hint_lbl := Label.new()
 		hint_lbl.text = hint
-		hint_lbl.add_theme_font_size_override("font_size", 11)
+		hint_lbl.add_theme_font_size_override("font_size", 12)
 		hint_lbl.add_theme_color_override("font_color", C_MUTED)
 		parent.add_child(hint_lbl)
 

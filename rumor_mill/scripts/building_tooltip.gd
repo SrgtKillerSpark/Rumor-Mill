@@ -23,10 +23,11 @@ const BUILDING_HIT_TILES := 2
 
 const C_HINT    := Color(0.90, 0.75, 0.40, 0.85)
 
-var _panel:       PanelContainer = null
-var _name_lbl:    Label          = null
-var _desc_lbl:    Label          = null
-var _hint_lbl:    Label          = null
+var _panel:          PanelContainer = null
+var _name_lbl:       Label          = null
+var _desc_lbl:       Label          = null
+var _npc_count_lbl:  Label          = null
+var _hint_lbl:       Label          = null
 
 var _world_ref:   Node2D   = null
 var _flavor_text: Dictionary = {}
@@ -173,6 +174,12 @@ func _build_panel() -> void:
 	_desc_lbl.custom_minimum_size = Vector2(PANEL_W - 20, 0)
 	vbox.add_child(_desc_lbl)
 
+	_npc_count_lbl = Label.new()
+	_npc_count_lbl.add_theme_font_size_override("font_size", 12)
+	_npc_count_lbl.add_theme_color_override("font_color", Color(0.82, 0.75, 0.55, 1.0))
+	_npc_count_lbl.visible = false
+	vbox.add_child(_npc_count_lbl)
+
 	_hint_lbl = Label.new()
 	_hint_lbl.text = "Right-click to Observe  (uses 1 Action)"
 	_hint_lbl.add_theme_font_size_override("font_size", 12)
@@ -193,3 +200,17 @@ func _populate(loc_name: String) -> void:
 	var descs: Dictionary = _flavor_text.get("location_descriptions", {})
 	_desc_lbl.text = descs.get(loc_name, "A location in this town.")
 	_desc_lbl.visible = true
+
+	# Show how many NPCs are currently at this building.
+	var npc_count: int = 0
+	if _world_ref != null:
+		var container: Node2D = _world_ref.get_node_or_null("NPCContainer")
+		if container != null:
+			for npc in container.get_children():
+				if "current_location_code" in npc and npc.current_location_code == loc_name:
+					npc_count += 1
+	if npc_count > 0:
+		_npc_count_lbl.text = "%d NPC%s present" % [npc_count, "s" if npc_count != 1 else ""]
+		_npc_count_lbl.visible = true
+	else:
+		_npc_count_lbl.visible = false

@@ -327,7 +327,7 @@ func _build_ui() -> void:
 	_dismiss_btn.text                = "✕"
 	_dismiss_btn.flat                = true
 	_dismiss_btn.custom_minimum_size = Vector2(22, 22)
-	_dismiss_btn.add_theme_font_size_override("font_size", 11)
+	_dismiss_btn.add_theme_font_size_override("font_size", 12)
 	_dismiss_btn.add_theme_color_override("font_color",         C_BTN_TEXT)
 	_dismiss_btn.add_theme_color_override("font_hover_color",   C_HEADING)
 	_dismiss_btn.add_theme_color_override("font_pressed_color", C_HEADING)
