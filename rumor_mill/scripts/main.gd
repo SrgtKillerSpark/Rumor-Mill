@@ -493,6 +493,12 @@ func _on_rumor_seeded(
 				claim_id, subject_name, seed_target_name
 			]
 		)
+	# Toast + feed entry confirming the plant-rumor action to the player.
+	var toast_msg := "Whispered to %s — [%s] about %s" % [seed_target_name, claim_id, subject_name]
+	if recon_hud != null and recon_hud.has_method("show_toast"):
+		recon_hud.show_toast(toast_msg, true)
+	if recon_hud != null and recon_hud.has_method("push_feed_entry"):
+		recon_hud.push_feed_entry(toast_msg, true)
 
 
 ## Called when the player bribes an NPC; logs the event to the journal timeline.
