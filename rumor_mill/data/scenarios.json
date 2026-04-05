@@ -118,6 +118,37 @@
             }
           }
         ]
+      },
+      {
+        "id": "s1_midnight_meeting",
+        "name": "The Midnight Meeting",
+        "dayWindowStart": 13,
+        "dayWindowEnd": 17,
+        "probability": 0.60,
+        "description": "A servant at the Manor has tipped you off: Edric Fenn is meeting a creditor from the capital tonight, behind closed doors. The meeting concerns debts he has kept hidden from the town council. You have a narrow window to act.",
+        "choices": [
+          {
+            "label": "Eavesdrop and spread what you overhear",
+            "outcomeText": "You press your ear to the wall of the lesser hall. The numbers are damning — Edric owes more than the town's annual tithe. By morning, two of his closest allies are having second thoughts. But the guard patrols have tightened around the Manor.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -4 }],
+              "personalityChanges": [
+                { "npcId": "annit_scribe", "trait": "loyalty", "delta": -0.10 },
+                { "npcId": "isolde_fenn", "trait": "loyalty", "delta": -0.10 }
+              ],
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 12.0 }]
+            }
+          },
+          {
+            "label": "Bribe the servant for details instead",
+            "outcomeText": "The servant's account is secondhand but safe — no risk of being caught at the Manor. The details are enough to seed a credible rumor, and the servant's trust opens a new line of intelligence.",
+            "effects": {
+              "bonusReconActions": 2,
+              "bonusReconDays": 2,
+              "injectRumor": { "claimType": "scandal", "subjectNpcId": "edric_fenn", "intensity": 2, "targetFaction": "merchant" }
+            }
+          }
+        ]
       }
     ],
     "difficultyModifiers": {
@@ -255,6 +286,36 @@
             }
           }
         ]
+      },
+      {
+        "id": "s2_chapel_vigil",
+        "name": "The Chapel Vigil",
+        "dayWindowStart": 18,
+        "dayWindowEnd": 22,
+        "probability": 0.55,
+        "description": "Sister Maren has called a chapel vigil to pray for the health of the town. The clergy gather at vespers and the pews are full. This is dangerous — Maren is paying close attention to every whisper. But the vigil has also drawn the devout away from the market, where your work is easier.",
+        "choices": [
+          {
+            "label": "Use the empty market — push illness rumors while Maren is occupied",
+            "outcomeText": "With the chapel full and the market quiet, the illness story spreads through the remaining stalls unchecked. Two more merchants decide they believe. But the vigil ends at dawn, and Maren will be watching more closely than ever.",
+            "effects": {
+              "instantBelievers": { "subjectNpcId": "alys_herbwife", "count": 2, "pool": "credulous_market" },
+              "personalityChanges": [{ "npcId": "maren_nun", "trait": "credulity", "delta": 0.05 }]
+            }
+          },
+          {
+            "label": "Attend the vigil and redirect the prayers toward Alys",
+            "outcomeText": "You kneel with the rest and, during the open intercession, you speak of 'the stranger's herbs' and 'the sick children at the well.' The congregation murmurs. Maren's eyes narrow — but she cannot silence a prayer. The clergy leave the vigil unsettled.",
+            "effects": {
+              "credulityChanges": [
+                { "npcId": "finn_monk", "delta": 0.10 },
+                { "npcId": "old_piety", "delta": 0.10 },
+                { "npcId": "jude_bellringer", "delta": 0.10 }
+              ],
+              "heatChanges": [{ "npcId": "maren_nun", "delta": 8.0 }]
+            }
+          }
+        ]
       }
     ],
     "difficultyModifiers": {
@@ -369,6 +430,36 @@
             "effects": {
               "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -3 }],
               "personalityChanges": [{ "npcId": "tomas_reeve", "trait": "loyalty", "delta": -0.15 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s3_merchant_pact",
+        "name": "The Merchant Pact",
+        "dayWindowStart": 10,
+        "dayWindowEnd": 14,
+        "probability": 0.60,
+        "description": "Aldric Vane has called a private meeting of the merchant guild at the Tavern. The question: should the guild publicly back Calder or Tomas? Aldric is undecided and open to persuasion. His choice will ripple through the entire merchant quarter.",
+        "choices": [
+          {
+            "label": "Convince Aldric that Calder is good for trade",
+            "outcomeText": "Over ale and ledger-talk, you make the case: a Fenn alderman means stable contracts, predictable tariffs, no sudden reforms. Aldric leans forward. By the end of the night, the guild's informal endorsement drifts Calder's way. Tomas's merchant friends are suddenly less sure of their man.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "calder_fenn", "delta": 4 }],
+              "personalityChanges": [
+                { "npcId": "aldric_vane", "trait": "loyalty", "delta": 0.10 },
+                { "npcId": "sybil_oats", "trait": "loyalty", "delta": 0.10 }
+              ]
+            }
+          },
+          {
+            "label": "Poison the well — make the guild distrust Tomas",
+            "outcomeText": "You arrive early and leave a rumor at each table: Tomas has been making promises to the capital's moneylenders that would undercut local traders. By the time the meeting starts, the mood has turned. Tomas's reputation takes a quiet hit, and the rival senses something has shifted.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -4 }],
+              "injectRumor": { "claimType": "scandal", "subjectNpcId": "tomas_reeve", "intensity": 2, "targetFaction": "merchant" },
+              "rivalIntensityBonus": { "delta": 1, "durationDays": 3 }
             }
           }
         ]
@@ -547,6 +638,34 @@
                 { "npcId": "__other_protected_1__", "delta": -2 },
                 { "npcId": "__other_protected_2__", "delta": -2 }
               ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s4_breaking_point",
+        "name": "The Breaking Point",
+        "dayWindowStart": 16,
+        "dayWindowEnd": 19,
+        "probability": 0.70,
+        "description": "The pressure has told. The most vulnerable of the accused has been seen weeping in the chapel at midnight, whispering about surrender. Brother Cornelius knows — he is circling, waiting for a public confession. If the accused breaks, the other two will follow. You must intervene now.",
+        "choices": [
+          {
+            "label": "Rally the accused — remind them what they are fighting for",
+            "outcomeText": "You find them in the chapel before dawn. Your words are quiet but firm: the town needs them, the evidence is fabricated, and three more days is all you need. They straighten. The confession does not come. But the Inquisitor, sensing his prey slipping away, redoubles his efforts against all three.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "__weakest_protected__", "delta": 5 }],
+              "personalityChanges": [{ "npcId": "__weakest_protected__", "trait": "loyalty", "delta": 0.15 }],
+              "inquisitorCooldownDelta": -1
+            }
+          },
+          {
+            "label": "Redirect the Inquisitor — give him a false lead",
+            "outcomeText": "You plant a rumor about a fourth name — someone unconnected, someone disposable. Brother Cornelius takes the bait and spends two days investigating a phantom. The accused have breathing room. But the weakest among them is still shaken, and the reprieve is temporary.",
+            "effects": {
+              "inquisitorCooldownDelta": 2,
+              "reputationChanges": [{ "npcId": "__weakest_protected__", "delta": 2 }],
+              "heatChanges": [{ "npcId": "aldous_prior", "delta": 8.0 }]
             }
           }
         ]
