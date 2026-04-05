@@ -176,5 +176,5 @@ func _build_panel() -> void:
 func _populate(loc_name: String) -> void:
 	_name_lbl.text = loc_name.replace("_", " ").capitalize()
 	var descs: Dictionary = _flavor_text.get("location_descriptions", {})
-	_desc_lbl.text = descs.get(loc_name, "")
-	_desc_lbl.visible = not _desc_lbl.text.is_empty()
+	_desc_lbl.text = descs.get(loc_name, "A location in this town.")
+	_desc_lbl.visible = true

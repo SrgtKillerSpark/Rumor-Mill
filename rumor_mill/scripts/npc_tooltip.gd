@@ -259,8 +259,8 @@ func _populate(npc: Node2D) -> void:
 
 	# Flavor text bio.
 	var bios: Dictionary = _flavor_text.get("npc_bios", {})
-	_bio_lbl.text = bios.get(npc_id, "")
-	_bio_lbl.visible = not _bio_lbl.text.is_empty()
+	_bio_lbl.text = bios.get(npc_id, "A resident of this town.")
+	_bio_lbl.visible = true
 
 	# Determine worst rumor state.
 	var worst_state_int: int = 0   # UNAWARE
