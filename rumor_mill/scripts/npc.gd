@@ -822,7 +822,8 @@ func _spread_to_neighbours(
 		# Skip if already in a non-receptive state.
 		var other_state: Rumor.RumorState = other.get_state_for_rumor(slot.rumor.id)
 		if other_state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD,
-						   Rumor.RumorState.ACT,    Rumor.RumorState.EXPIRED]:
+						   Rumor.RumorState.ACT,    Rumor.RumorState.EXPIRED,
+						   Rumor.RumorState.REJECT,  Rumor.RumorState.CONTRADICTED]:
 			continue
 
 		# Determine edge weight (0 fallback = no direct social connection).
