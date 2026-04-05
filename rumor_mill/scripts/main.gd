@@ -44,6 +44,9 @@ var _analytics: ScenarioAnalytics = null
 # ── SPA-244: Local player behaviour event log ──────────────────────────────────
 var _analytics_logger: AnalyticsLogger = null
 
+# ── SPA-479: Milestone tracker ───────────────────────────────────────────────
+var _milestone_tracker: MilestoneTracker = null
+
 # Prevent duplicate tooltip triggers for observe / eavesdrop / npc_state_change.
 var _observe_tooltip_fired:          bool = false
 var _eavesdrop_tooltip_fired:        bool = false
@@ -444,6 +447,20 @@ func _init_context_banner() -> void:
 	add_child(_tutorial_banner)
 	_tutorial_banner.setup(_tutorial_sys)
 
+	# SPA-479: scenario-specific opening hints — fire after blocking tooltips dismiss.
+	var _opening_hint_id: String = ""
+	match world.active_scenario_id:
+		"scenario_2": _opening_hint_id = "ctx_s2_opening"
+		"scenario_3": _opening_hint_id = "ctx_s3_opening"
+		"scenario_4": _opening_hint_id = "ctx_s4_opening"
+	if _opening_hint_id != "":
+		var _open_timer := get_tree().create_timer(8.0)  # delay for blocking tooltips
+		var _hint_id_copy: String = _opening_hint_id
+		_open_timer.timeout.connect(func() -> void:
+			if _tutorial_banner != null:
+				_tutorial_banner.queue_hint(_hint_id_copy)
+		)
+
 	# Day-gated hints: hook into day_changed signal.
 	if day_night != null and day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_ctx_day_changed)
@@ -493,11 +510,18 @@ func _init_tutorial_banner_s1() -> void:
 	add_child(_tutorial_banner)
 	_tutorial_banner.setup(_tutorial_sys)
 
-	# HINT-01: camera controls — fires immediately on game start.
+	# HINT-01: mission intro — fires immediately on game start (SPA-479 revised).
 	_tutorial_banner.queue_hint("hint_camera")
 
-	# hint_target_npc: fires 10 s after game start to point player toward Edric Fenn.
-	var _target_hint_timer := get_tree().create_timer(10.0)
+	# HINT-01b: guided first action — fires 6 s after game start.
+	var _first_action_timer := get_tree().create_timer(6.0)
+	_first_action_timer.timeout.connect(func() -> void:
+		if _tutorial_banner != null:
+			_tutorial_banner.queue_hint("hint_first_action")
+	)
+
+	# hint_target_npc: fires 14 s after game start to point player toward Edric Fenn.
+	var _target_hint_timer := get_tree().create_timer(14.0)
 	_target_hint_timer.timeout.connect(func() -> void:
 		if _tutorial_banner != null:
 			_tutorial_banner.queue_hint("hint_target_npc")

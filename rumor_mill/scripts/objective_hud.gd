@@ -176,38 +176,30 @@ func _refresh_win_progress() -> void:
 
 ## Compute a 0.0–1.0 win progress from scenario-specific progress data.
 func _compute_win_progress() -> float:
-	if _scenario_manager == null or _reputation_system == null:
+	if _scenario_manager == null or _reputation_system == null or _world_ref == null:
 		return 0.0
-	# S1: Edric's rep must drop below 30. Starting at ~50, progress = how far down.
-	if _scenario_manager.has_method("get_scenario_1_progress"):
-		var p: Dictionary = _scenario_manager.get_scenario_1_progress(_reputation_system)
-		if not p.is_empty():
+	var sid: String = _world_ref.active_scenario_id if "active_scenario_id" in _world_ref else ""
+	match sid:
+		"scenario_1":
+			var p: Dictionary = _scenario_manager.get_scenario_1_progress(_reputation_system)
 			var score: int = p.get("edric_score", 50)
 			var target: int = p.get("win_threshold", 30)
 			# From 50 → target: progress = (50 - score) / (50 - target)
 			return clampf(float(50 - score) / float(max(50 - target, 1)), 0.0, 1.0)
-	# S2: Need 6+ believers. Progress = believers / 6.
-	if _scenario_manager.has_method("get_scenario_2_progress"):
-		var p: Dictionary = _scenario_manager.get_scenario_2_progress(_reputation_system)
-		if not p.is_empty():
+		"scenario_2":
+			var p: Dictionary = _scenario_manager.get_scenario_2_progress(_reputation_system)
 			var count: int = p.get("illness_believer_count", 0)
 			var target: int = p.get("win_threshold", 6)
 			return clampf(float(count) / float(max(target, 1)), 0.0, 1.0)
-	# S3: Average of Calder progress and Tomas progress.
-	if _scenario_manager.has_method("get_scenario_3_progress"):
-		var p: Dictionary = _scenario_manager.get_scenario_3_progress(_reputation_system)
-		if not p.is_empty():
+		"scenario_3":
+			var p: Dictionary = _scenario_manager.get_scenario_3_progress(_reputation_system)
 			var calder: int = p.get("calder_score", 50)
 			var tomas: int = p.get("tomas_score", 50)
-			# Calder: from 50 → 75, progress = (score - 50) / (75 - 50)
 			var calder_prog: float = clampf(float(calder - 50) / 25.0, 0.0, 1.0)
-			# Tomas: from 50 → 35, progress = (50 - score) / (50 - 35)
 			var tomas_prog: float = clampf(float(50 - tomas) / 15.0, 0.0, 1.0)
 			return (calder_prog + tomas_prog) / 2.0
-	# S4: Survival scenario — progress = days survived / total days.
-	if _scenario_manager.has_method("get_scenario_4_progress"):
-		var p: Dictionary = _scenario_manager.get_scenario_4_progress(_reputation_system)
-		if not p.is_empty():
+		"scenario_4":
+			# Survival scenario — progress = days survived / total days.
 			var current_day: int = _day_night.current_day if _day_night != null else 1
 			return clampf(float(current_day) / float(max(_days_allowed, 1)), 0.0, 1.0)
 	return 0.0
