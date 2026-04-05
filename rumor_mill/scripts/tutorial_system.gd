@@ -379,6 +379,23 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 10,
 	},
+	"ctx_idle_no_action": {
+		"title": "Need a Nudge?",
+		"body":  (
+			"You haven't taken an action yet.  Try [b]right-clicking a building[/b] to Observe who is inside.  "
+			+ "The [b]Market Square[/b] is a good first stop — it is usually busy."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_idle_no_rumor": {
+		"title": "Ready to Spread a Rumour?",
+		"body":  (
+			"You have gathered intel but haven't crafted a rumour yet.  "
+			+ "Press [b]R[/b] to open the Rumour Panel.  Pick a subject, choose a claim, "
+			+ "then whisper it to a [b]well-connected NPC[/b] to start spreading."
+		),
+		"auto_dismiss_secs": 10,
+	},
 }
 
 

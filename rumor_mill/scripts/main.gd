@@ -72,6 +72,13 @@ var _ctx_tokens_fired:   bool = false
 var _ctx_halfway_fired:  bool = false
 var _banner_eavesdrop_count:    int  = 0      # counts eavesdrop actions for social graph trigger
 
+# ── SPA-487: Idle-detection hint system ───────────────────────────────────────
+var _idle_timer: Timer = null
+var _idle_hint_fired_no_action:  bool = false  # first idle nudge
+var _idle_hint_fired_no_rumor:   bool = false  # nudge to craft a rumor
+var _has_performed_any_action:   bool = false  # true after first recon action
+var _has_crafted_any_rumor:      bool = false  # true after first rumor seeded
+
 # Guards against double-initialisation if begin_game fires more than once.
 var _game_started: bool = false
 
@@ -257,6 +264,10 @@ func _init_recon_system() -> void:
 		interior.name = loc_id.capitalize() + "Interior"
 		add_child(interior)
 		_interiors[loc_id] = interior
+		# Location ambient: crossfade when interior opens/closes (SPA-491).
+		var _loc := loc_id  # capture loop variable for closure
+		interior.interior_opened.connect(func() -> void: AudioManager.set_location_ambient(_loc))
+		interior.interior_closed.connect(AudioManager.clear_location_ambient)
 	recon_ctrl.set_interiors(_interiors)
 
 	# Pipe action results to the HUD toast.
@@ -271,6 +282,9 @@ func _init_recon_system() -> void:
 
 	# Pipe action results to AudioManager (recon SFX).
 	recon_ctrl.action_performed.connect(AudioManager.on_recon_action)
+
+	# Pipe bribe events to AudioManager (coin SFX).
+	recon_ctrl.bribe_executed.connect(AudioManager.on_bribe_executed)
 
 	# Wire eavesdrop exposure → ScenarioManager fail trigger (Scenario 1).
 	recon_ctrl.player_exposed.connect(_on_player_exposed)
@@ -438,6 +452,8 @@ func _init_tutorial_system() -> void:
 		_init_tutorial_hud_s2s3s4()
 		_init_context_banner()
 
+	_init_idle_hints()
+
 
 ## All scenarios except S1: non-blocking contextual hint banner for day-gated tips.
 ## S1 already has its own banner — this adds the cross-scenario hints for S2/S3/S4.
@@ -487,8 +503,9 @@ func _init_tutorial_hud_s2s3s4() -> void:
 	add_child(_tutorial_hud)
 	_tutorial_hud.setup(_tutorial_sys)
 
-	_tutorial_hud.queue_tooltip("recon_actions")
+	_tutorial_hud.queue_tooltip("core_loop")
 	_tutorial_hud.queue_tooltip("navigation_controls")
+	_tutorial_hud.queue_tooltip("recon_actions")
 	if world.active_scenario_id == "scenario_3":
 		_tutorial_hud.queue_tooltip("rival_agent")
 	if world.active_scenario_id == "scenario_4":
@@ -788,6 +805,56 @@ func _on_ctx_tokens_exhausted() -> void:
 		return
 	_ctx_tokens_fired = true
 	_tutorial_banner.queue_hint("ctx_out_of_tokens")
+
+
+## ── SPA-487: Idle-detection hint system ──────────────────────────────────────
+## Fires contextual hints when the player hasn't taken actions for a while.
+
+func _init_idle_hints() -> void:
+	_idle_timer = Timer.new()
+	_idle_timer.name = "IdleHintTimer"
+	_idle_timer.wait_time = 30.0  # 30 seconds of inactivity
+	_idle_timer.one_shot = true
+	_idle_timer.timeout.connect(_on_idle_timeout)
+	add_child(_idle_timer)
+	_idle_timer.start()
+
+	# Reset idle timer when the player performs any recon action.
+	if _recon_ctrl_ref != null and _recon_ctrl_ref.has_signal("action_performed"):
+		_recon_ctrl_ref.action_performed.connect(_on_action_reset_idle)
+	# Track rumor seeding via the rumor_seeded signal on rumor_panel.
+	if rumor_panel != null and rumor_panel.has_signal("rumor_seeded"):
+		rumor_panel.rumor_seeded.connect(_on_rumor_seeded_idle)
+
+
+func _on_action_reset_idle(message: String, success: bool) -> void:
+	if success:
+		_has_performed_any_action = true
+	if _idle_timer != null:
+		_idle_timer.start()  # restart the idle countdown
+
+
+func _on_rumor_seeded_idle(_rid: String = "", _subj: String = "", _claim: String = "", _tgt: String = "") -> void:
+	_has_crafted_any_rumor = true
+	if _idle_timer != null:
+		_idle_timer.start()
+
+
+func _on_idle_timeout() -> void:
+	if _tutorial_banner == null:
+		return
+	# First nudge: player hasn't taken any action at all.
+	if not _has_performed_any_action and not _idle_hint_fired_no_action:
+		_idle_hint_fired_no_action = true
+		_tutorial_banner.queue_hint("ctx_idle_no_action")
+	# Second nudge: player has observed/eavesdropped but never crafted a rumor.
+	elif _has_performed_any_action and not _has_crafted_any_rumor and not _idle_hint_fired_no_rumor:
+		_idle_hint_fired_no_rumor = true
+		_tutorial_banner.queue_hint("ctx_idle_no_rumor")
+	# Restart the timer for future idle checks (60 s gap for subsequent nudges).
+	if _idle_timer != null:
+		_idle_timer.wait_time = 60.0
+		_idle_timer.start()
 
 
 ## Evidence tutorial trigger — fires once when compatible evidence is first shown (S2/S3).
