@@ -440,6 +440,24 @@ func _init_recon_system() -> void:
 		interior.interior_closed.connect(AudioManager.clear_location_ambient)
 	recon_ctrl.set_interiors(_interiors)
 
+	# SPA-683: NPC conversation dialogue panel — created programmatically so it
+	# sits above the hover tooltip layer but below the RumorPanel.
+	var npc_dialogue_panel: Node = preload("res://scripts/npc_dialogue_panel.gd").new()
+	npc_dialogue_panel.name = "NpcDialoguePanel"
+	add_child(npc_dialogue_panel)
+	npc_dialogue_panel.setup(world, intel_store, rumor_panel)
+	recon_ctrl.set_dialogue_panel(npc_dialogue_panel)
+	# "Seed Rumor" in the dialogue panel opens the rumor crafting panel (if not
+	# already open). The inner Panel node named "Panel" tracks open/close state.
+	npc_dialogue_panel.seed_rumor_requested.connect(
+		func() -> void:
+			if rumor_panel == null or not rumor_panel.has_method("toggle"):
+				return
+			var inner: Node = rumor_panel.get_node_or_null("Panel")
+			if inner == null or not inner.visible:
+				rumor_panel.toggle()
+	)
+
 	# Pipe action results to the HUD toast and recent-actions feed.
 	if recon_hud != null and recon_hud.has_method("show_toast"):
 		recon_ctrl.action_performed.connect(recon_hud.show_toast)

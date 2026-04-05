@@ -73,11 +73,25 @@ var _bldg_highlight: Polygon2D   = null
 var _popup_panel: Panel  = null
 var _popup_npc:   Node2D = null
 
+# ── NPC conversation dialogue panel (SPA-683) ─────────────────────────────────
+var _dialogue_panel = null   ## NpcDialoguePanel node; set via set_dialogue_panel()
+
 # ── Building interior panels (set via set_interiors()) ────────────────────────
 var _interiors: Dictionary = {}  ## location_id → BuildingInterior CanvasLayer node
 
 ## Sequence counter to safely cancel pending outdoor-ambient clear timers.
 var _ambient_clear_seq: int = 0
+
+
+## Register the NPC conversation dialogue panel (SPA-683).
+## Called from main.gd after the panel is created and added to the tree.
+func set_dialogue_panel(panel) -> void:
+	_dialogue_panel = panel
+	if _dialogue_panel == null:
+		return
+	_dialogue_panel.eavesdrop_requested.connect(_try_eavesdrop)
+	_dialogue_panel.bribe_requested.connect(_try_bribe)
+	_dialogue_panel.dismissed.connect(_on_dialogue_dismissed)
 
 
 ## Register interior panel nodes keyed by location id (e.g. "tavern", "manor", "chapel").
@@ -403,12 +417,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	# NPC hit-test takes priority over location hit-test.
 	var clicked_npc := _hit_test_npc(world_pos)
 	if clicked_npc != null:
-		# Show bribe popup when NPC is EVALUATING and bribe charges are available.
-		if _intel_store.bribe_charges > 0 \
-				and clicked_npc.get_worst_rumor_state() == Rumor.RumorState.EVALUATING:
-			_show_action_popup(clicked_npc, screen_pos)
+		# SPA-683: show the conversation dialogue panel instead of a direct action.
+		if _dialogue_panel != null:
+			_dialogue_panel.show_for_npc(clicked_npc, screen_pos)
 		else:
-			_try_eavesdrop(clicked_npc)
+			# Fallback (no dialogue panel wired): legacy direct-action behaviour.
+			if _intel_store.bribe_charges > 0 \
+					and clicked_npc.get_worst_rumor_state() == Rumor.RumorState.EVALUATING:
+				_show_action_popup(clicked_npc, screen_pos)
+			else:
+				_try_eavesdrop(clicked_npc)
 		get_viewport().set_input_as_handled()
 		return
 
@@ -775,6 +793,10 @@ func _show_action_popup(npc: Node2D, screen_pos: Vector2) -> void:
 	if pos.y + 56.0 > vp_size.y:
 		pos.y = screen_pos.y - 56.0 - 4.0
 	_popup_panel.position = pos
+
+
+func _on_dialogue_dismissed() -> void:
+	pass  # Reserved for future dismiss-side effects (e.g. analytics).
 
 
 func _dismiss_action_popup() -> void:
