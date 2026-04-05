@@ -120,7 +120,7 @@ func _load_scenarios() -> void:
 ## Lock rule: each scenario requires the previous one to be completed.
 ## scenario_1 (idx 0) is always unlocked.
 func _is_scenario_locked(idx: int) -> bool:
-	if idx <= 0:
+	if idx <= 0 or idx >= _scenarios.size():
 		return false
 	var prev_sc: Dictionary = _scenarios[idx - 1]
 	var prev_id: String = prev_sc.get("scenarioId", "")
@@ -129,7 +129,7 @@ func _is_scenario_locked(idx: int) -> bool:
 
 ## Returns the title of the scenario that must be completed to unlock idx.
 func _unlock_requires_title(idx: int) -> String:
-	if idx <= 0:
+	if idx <= 0 or idx >= _scenarios.size():
 		return ""
 	return _scenarios[idx - 1].get("title", "the previous scenario")
 
@@ -443,6 +443,8 @@ func _on_card_hover(card: PanelContainer, entering: bool) -> void:
 
 
 func _on_card_pressed(idx: int) -> void:
+	if idx < 0 or idx >= _scenario_cards.size() or idx >= _scenarios.size():
+		return
 	var card: PanelContainer = _scenario_cards[idx]
 	var locked: bool = card.get_meta("locked", false)
 
@@ -468,6 +470,8 @@ func _on_card_pressed(idx: int) -> void:
 
 ## Called when the player clicks "Play anyway →" on a locked scenario card.
 func _on_play_anyway_pressed(idx: int) -> void:
+	if idx < 0 or idx >= _scenario_cards.size() or idx >= _scenarios.size():
+		return
 	# Bypass the lock and treat the card as selected.
 	if _selected_card_idx >= 0 and _selected_card_idx < _scenario_cards.size():
 		var prev: PanelContainer = _scenario_cards[_selected_card_idx]
