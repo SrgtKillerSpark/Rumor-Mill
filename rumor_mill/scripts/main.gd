@@ -318,6 +318,48 @@ func _on_begin_game(scenario_id: String) -> void:
 		_show_strategic_overview()
 
 
+## SPA-720: Show the Strategic Overview screen (pre-game intelligence brief).
+## Finds the target NPC data from world.npcs and passes it to the overlay.
+func _show_strategic_overview() -> void:
+	var sm: ScenarioManager = world.scenario_manager if world != null else null
+	if sm == null:
+		_show_ready_overlay()
+		return
+	var brief: Dictionary = sm.get_strategic_brief()
+	if brief.is_empty():
+		_show_ready_overlay()
+		return
+	# Find the target NPC's raw data dict from the spawned NPC list.
+	var target_id: String = brief.get("targetNpcId", "")
+	var npc_data: Dictionary = {}
+	if target_id != "" and world != null:
+		for npc in world.npcs:
+			if npc.npc_data.get("id", "") == target_id:
+				npc_data = npc.npc_data
+				break
+	_strategic_overview = preload("res://scripts/strategic_overview.gd").new()
+	_strategic_overview.name = "StrategicOverview"
+	add_child(_strategic_overview)
+	_strategic_overview.setup(brief, npc_data)
+	_strategic_overview.dismissed.connect(_on_strategic_overview_dismissed)
+
+
+func _on_strategic_overview_dismissed() -> void:
+	_strategic_overview = null
+	_show_ready_overlay()
+
+
+## Shows the ReadyOverlay briefing card. Called after StrategicOverview dismisses.
+func _show_ready_overlay() -> void:
+	_ready_overlay = preload("res://scripts/ready_overlay.gd").new()
+	_ready_overlay.name = "ReadyOverlay"
+	add_child(_ready_overlay)
+	var _sm: ScenarioManager = world.scenario_manager if world != null else null
+	if _sm != null:
+		_ready_overlay.setup(_sm.get_objective_card(), _sm.get_title(), _sm.get_intro_text())
+	_ready_overlay.dismissed.connect(_on_ready_overlay_dismissed)
+
+
 func _on_ready_overlay_dismissed() -> void:
 	_ready_overlay = null
 	# Resume normal speed via SpeedHUD so button state stays in sync.
@@ -329,6 +371,14 @@ func _on_ready_overlay_dismissed() -> void:
 	# SPA-627: Flash a one-time hint so the player knows O recalls this overlay.
 	if objective_hud != null and objective_hud.has_method("show_o_hotkey_hint"):
 		objective_hud.show_o_hotkey_hint()
+
+	# SPA-720: Mark the primary target NPC with a crest icon for the first 60 seconds.
+	var _sm_brief: ScenarioManager = world.scenario_manager if world != null else null
+	if _sm_brief != null:
+		var brief: Dictionary = _sm_brief.get_strategic_brief()
+		var target_id: String = brief.get("targetNpcId", "")
+		if target_id != "":
+			_start_target_npc_marker(target_id)
 
 	# SPA-724: Auto-show contextual "What next" hint on game start so players
 	# aren't left guessing what to do in the first 60 seconds.
@@ -346,6 +396,45 @@ func _on_ready_overlay_dismissed() -> void:
 	# SPA-626: S1 first-time player flow — camera pan + Market highlight + gated banner.
 	if world.active_scenario_id == "scenario_1":
 		_init_s1_onboarding_flow()
+
+
+## SPA-720: Attach a subtle amber crest marker above the primary target NPC for 60 seconds.
+## Parented to the NPC node so it tracks position automatically.
+func _start_target_npc_marker(npc_id: String) -> void:
+	if world == null:
+		return
+	var target_npc: Node2D = null
+	for npc in world.npcs:
+		if npc.npc_data.get("id", "") == npc_id:
+			target_npc = npc
+			break
+	if target_npc == null:
+		return
+	# Diamond crest polygon rendered above the NPC sprite.
+	var crest := Polygon2D.new()
+	crest.name = "TargetCrestMarker"
+	crest.polygon = PackedVector2Array([
+		Vector2(0.0,  -12.0),
+		Vector2(9.0,   0.0),
+		Vector2(0.0,   12.0),
+		Vector2(-9.0,  0.0),
+	])
+	crest.color    = Color(0.957, 0.651, 0.227, 0.85)   # amber
+	crest.position = Vector2(0.0, -72.0)                  # above the 96 px sprite
+	crest.z_index  = 10
+	target_npc.add_child(crest)
+	# Slow pulse so the marker is visible but not distracting.
+	var tw := target_npc.create_tween().set_loops()
+	tw.tween_property(crest, "modulate:a", 0.3, 1.1) \
+		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(crest, "modulate:a", 1.0, 1.1) \
+		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	# Auto-remove after 60 seconds.
+	get_tree().create_timer(60.0).timeout.connect(func() -> void:
+		tw.kill()
+		if is_instance_valid(crest):
+			crest.queue_free()
+	)
 
 
 ## SPA-626: Camera auto-pan to Market, single-target highlight, and persistent gated banner.
@@ -1112,8 +1201,8 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 						if _tutorial_banner != null and not _banner_seed_fired:
 							_tutorial_banner.queue_hint("hint_rumour_panel")
 						# SPA-626: Auto-open Rumour Panel after first eavesdrop (4 s delay).
-						if rumor_panel != null and not rumor_panel.visible and not _banner_seed_fired:
-							rumor_panel.visible = true
+						if rumor_panel != null and not rumor_panel.panel.visible and not _banner_seed_fired:
+							rumor_panel.toggle()
 					)
 			_banner_eavesdrop_count += 1
 			# Introduce social graph when 2+ relationships are revealed.

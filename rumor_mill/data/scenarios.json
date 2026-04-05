@@ -52,6 +52,13 @@
       { "npcId": "bram_guard", "loyalty": 0.60 }
     ],
     "startingReputations": {},
+    "strategicBrief": {
+      "targetNpcId": "edric_fenn",
+      "repStart": 70,
+      "goalLabel": "Reputation below 30",
+      "primaryConstraint": "30-day window — the autumn tax vote seals the outcome",
+      "strategicHint": "Edric's shield is his loyal allies. Erode noble and merchant faction trust to isolate him."
+    },
     "objectiveCard": {
       "mission": "Your patron wants Alderman Fenn gone before the autumn tax vote. Destroy his reputation — make the town turn on him.",
       "winCondition": "His reputation must fall below 30.",
@@ -241,6 +248,13 @@
       { "npcId": "maren_nun", "credulity": 0.20 }
     ],
     "startingReputations": {},
+    "strategicBrief": {
+      "targetNpcId": "alys_herbwife",
+      "repStart": 65,
+      "goalLabel": "7 or more believers",
+      "primaryConstraint": "Maren Nun — one rejection triggers a 2-day grace window",
+      "strategicHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected."
+    },
     "objectiveCard": {
       "mission": "The herbwife Alys knows too much. Convince seven townspeople she carries plague — before the nun Maren sees through the lie.",
       "winCondition": "7 or more townspeople must believe the illness rumor about Alys.",
@@ -423,6 +437,13 @@
       "tomas_reeve": 48
     },
     "targetShiftExcluded": ["calder_fenn"],
+    "strategicBrief": {
+      "targetNpcId": "calder_fenn",
+      "repStart": 65,
+      "goalLabel": "Calder 75+, Tomas 35 or below",
+      "primaryConstraint": "A rival whisperer actively opposes you — Calder's allies can be turned",
+      "strategicHint": "Two-front war — boost Calder through noble allies while seeding scandal against Tomas through the merchant quarter."
+    },
     "objectiveCard": {
       "mission": "The old lord is dying. Put Calder on the seat by building his name and tearing down Tomas — but a rival whisperer works against you.",
       "winCondition": "Raise Calder's reputation to 75+ and drop Tomas's reputation to 35 or below.",
@@ -612,6 +633,13 @@
     },
     "targetShiftExcluded": ["aldous_prior", "vera_midwife", "finn_monk"],
     "protectedNpcIds": ["aldous_prior", "vera_midwife", "finn_monk"],
+    "strategicBrief": {
+      "targetNpcId": "finn_monk",
+      "repStart": 72,
+      "goalLabel": "Keep Finn, Vera, and Aldous above 45",
+      "primaryConstraint": "The Inquisitor accelerates — accusations come faster each day",
+      "strategicHint": "Prioritize Finn Monk — he absorbs slander most readily. Counter-spread positive character-witness rumors faster than the Inquisitor."
+    },
     "objectiveCard": {
       "mission": "The Inquisitor is coming for three innocent people. Defend their reputations against a tide of heresy accusations — if any one falls below 45, you have failed them.",
       "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk above 45 reputation at the deadline.",
@@ -811,6 +839,13 @@
     },
     "targetShiftExcluded": ["aldric_vane"],
     "electionCandidates": ["edric_fenn", "aldric_vane", "tomas_reeve"],
+    "strategicBrief": {
+      "targetNpcId": "aldric_vane",
+      "repStart": 48,
+      "goalLabel": "Aldric 65+ and leading both rivals",
+      "primaryConstraint": "Prior endorses the leader on day 15 — timing is critical",
+      "strategicHint": "Boost Aldric through the merchant chain while undermining both rivals — ensure he leads before day 15."
+    },
     "endorsement": {
       "endorserNpcId": "aldous_prior",
       "triggerDay": 15,
@@ -1015,6 +1050,13 @@
     },
     "targetShiftExcluded": ["marta_coin"],
     "protectedNpcIds": ["marta_coin"],
+    "strategicBrief": {
+      "targetNpcId": "aldric_vane",
+      "repStart": 55,
+      "goalLabel": "Aldric below 30, Marta above 60",
+      "primaryConstraint": "Heat ceiling 60 — guards are on Aldric's payroll",
+      "strategicHint": "Route accusations through clergy and commons — Aldric's merchant allies actively counter your market-quarter rumors."
+    },
     "exposedHeatOverride": 60.0,
     "guildDefenseActive": true,
     "guildDefenseConfig": {

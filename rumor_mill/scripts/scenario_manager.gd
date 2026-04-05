@@ -53,6 +53,7 @@ var _days_allowed:     int = 30
 var _active_scenario:  int = 0  # 1–6 — set by load_scenario_data
 var _objective_card:   Dictionary = {}
 var _milestone_toasts: Array = []
+var _strategic_brief:  Dictionary = {}
 
 
 ## Load narrative fields from a scenario data dictionary (one entry from scenarios.json).
@@ -65,6 +66,7 @@ func load_scenario_data(data: Dictionary) -> void:
 	_objective_card   = data.get("objectiveCard", {})
 	_days_allowed     = int(data.get("daysAllowed", 30))
 	_milestone_toasts = data.get("milestoneToasts", [])
+	_strategic_brief  = data.get("strategicBrief", {})
 	var sid: String   = data.get("scenarioId", "")
 	var parts := sid.split("_")
 	_active_scenario = int(parts[-1]) if parts.size() >= 2 else 0
@@ -119,6 +121,13 @@ func get_objective_card() -> Dictionary:
 ## Each entry is a Dictionary with keys "threshold" (float 0–1) and "message" (String).
 func get_milestone_toasts() -> Array:
 	return _milestone_toasts
+
+
+## Returns the strategic brief dictionary for the active scenario.
+## Keys: targetNpcId, repStart, goalLabel, primaryConstraint, strategicHint.
+## Used by StrategicOverview to display the pre-game intelligence summary.
+func get_strategic_brief() -> Dictionary:
+	return _strategic_brief
 
 
 ## Returns normalized 0.0–1.0 progress toward the active scenario's win condition.
