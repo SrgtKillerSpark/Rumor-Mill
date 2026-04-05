@@ -53,15 +53,15 @@ func _build_ui() -> void:
 	title_lbl.text = "Scenario 4:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
-	title_lbl.tooltip_text = "The Holy Inquisition — keep all three accused above 50 reputation for 20 days."
+	title_lbl.tooltip_text = "The Holy Inquisition — keep all three accused above 45 reputation for 20 days."
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
 
 	# NPC tracks.
 	const NPC_TOOLTIPS := {
-		"aldous_prior": "Aldous Prior's reputation. Keep above 50 or the scenario fails immediately.",
-		"vera_midwife": "Vera Midwife's reputation. Keep above 50 or the scenario fails immediately.",
-		"finn_monk":    "Finn Monk's reputation. Keep above 50 or the scenario fails immediately.",
+		"aldous_prior": "Aldous Prior's reputation. Keep above 45 or the scenario fails immediately.",
+		"vera_midwife": "Vera Midwife's reputation. Keep above 45 or the scenario fails immediately.",
+		"finn_monk":    "Finn Monk's reputation. Keep above 45 or the scenario fails immediately.",
 	}
 	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
 		var vbox := VBoxContainer.new()
@@ -71,14 +71,14 @@ func _build_ui() -> void:
 		var lbl := Label.new()
 		lbl.add_theme_font_size_override("font_size", 11)
 		lbl.add_theme_color_override("font_color", C_BODY)
-		lbl.text = "%s  Rep: 50 / 100  Floor: 50" % NPC_DISPLAY_NAMES.get(npc_id, npc_id)
-		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Keep this NPC's reputation above 50.")
+		lbl.text = "%s  Rep: 50 / 100  Floor: 45" % NPC_DISPLAY_NAMES.get(npc_id, npc_id)
+		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Keep this NPC's reputation above 45.")
 		lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 		vbox.add_child(lbl)
 		_score_labels[npc_id] = lbl
 
 		var bar_pair := _make_progress_bar(BAR_WIDTH, BAR_HEIGHT,
-			"Reputation bar — green means safe (>=50), red means failing (<50).")
+			"Reputation bar — green means safe (>=45), red means failing (<45).")
 		var bar_bg: ColorRect = bar_pair[0]
 		var bar:    ColorRect = bar_pair[1]
 		vbox.add_child(bar_bg)
@@ -107,7 +107,7 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "[safe] >= 50  [danger] < 50"
+	legend_lbl.text = "[safe] >= 45  [danger] < 45"
 	right_vbox.add_child(legend_lbl)
 
 	_inquisitor_lbl = Label.new()

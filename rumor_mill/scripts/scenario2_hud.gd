@@ -92,7 +92,7 @@ func _build_ui() -> void:
 	_days_lbl = Label.new()
 	_days_lbl.add_theme_font_size_override("font_size", 12)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
-	_days_lbl.text = "Days remaining: 30"
+	_days_lbl.text = "Days remaining: 20"
 	_days_lbl.tooltip_text = "Days remaining before the autumn market closes. Fail if you run out of time."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_days_lbl)
