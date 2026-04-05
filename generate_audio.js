@@ -385,6 +385,296 @@ function gen_ambient_night() {
   });
 }
 
+// ── Additional music generators ────────────────────────────────────────────────
+
+function gen_morning_calm() {
+  // G major pentatonic, bright arpeggios — hopeful morning feel
+  const dur = 30.0;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  const base_freq = 196.0; // G3
+  const arp_notes = [196.0, 220.0, 246.94, 293.66, 329.63]; // G3 A3 B3 D4 E4
+  const arp_rate = 0.6;
+  let prev = 0;
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    const drone = (
+      sine(base_freq * 2, t) * 0.15 +
+      sine(base_freq * 3, t) * 0.06 +
+      sine(base_freq * 4, t) * 0.04
+    ) * (0.5 + 0.1 * sine(0.15, t));
+    const arp_idx = Math.floor(t / arp_rate) % arp_notes.length;
+    const arp_f   = arp_notes[arp_idx];
+    const arp_t   = t % arp_rate;
+    const arp_env = Math.exp(-arp_t * 3.5) * (1 - Math.exp(-arp_t * 25));
+    const arp = sine(arp_f * 2, t) * arp_env * 0.35 +
+                sine(arp_f * 4, t) * arp_env * 0.08;
+    const raw = Math.random() * 2 - 1;
+    prev = lowpass(prev, raw, 0.04);
+    const wind = prev * 0.02;
+    const fade_in  = Math.min(1, t / 3.0);
+    const fade_out = Math.min(1, (dur - t) / 3.0);
+    return (drone + arp + wind) * fade_in * fade_out;
+  });
+}
+
+function gen_evening_tension() {
+  // D minor, slightly detuned harmonics — building tension as day ends
+  const dur = 30.0;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  const base_freq = 146.83; // D3
+  const arp_notes = [146.83, 174.61, 196.0, 220.0, 261.63]; // D F G A C
+  const arp_rate = 0.7;
+  let prevNoise = 0;
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    const drone = (
+      sine(base_freq, t) * 0.20 +
+      sine(base_freq * 1.498, t) * 0.10 +  // slightly flat fifth = unease
+      sine(base_freq * 2, t) * 0.07 +
+      sine(base_freq * 0.5, t) * 0.10
+    ) * (0.65 + 0.15 * sine(0.18, t));
+    const pulse_rate = 1.2;
+    const pulse_t = t % pulse_rate;
+    const pulse = sine(base_freq * 3, t) *
+                  Math.exp(-pulse_t * 4) * (1 - Math.exp(-pulse_t * 30)) * 0.15;
+    const arp_idx = Math.floor(t / arp_rate) % arp_notes.length;
+    const arp_f   = arp_notes[arp_idx];
+    const arp_t   = t % arp_rate;
+    const arp_env = Math.exp(-arp_t * 2.0) * (1 - Math.exp(-arp_t * 20));
+    const arp = sine(arp_f * 2, t) * arp_env * 0.20;
+    const raw = Math.random() * 2 - 1;
+    prevNoise = lowpass(prevNoise, raw, 0.04);
+    const wind = prevNoise * 0.025 * (0.7 + 0.3 * sine(0.08, t));
+    const fade_in  = Math.min(1, t / 3.0);
+    const fade_out = Math.min(1, (dur - t) / 3.0);
+    return (drone + pulse + arp + wind) * fade_in * fade_out;
+  });
+}
+
+function gen_night_suspense() {
+  // A minor / Phrygian — dark, brooding, slow heartbeat pulse
+  const dur = 30.0;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  const base_freq = 110.0; // A2
+  let prevNoise = 0;
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    const drone = (
+      sine(base_freq, t) * 0.28 +
+      sine(base_freq * 1.78, t) * 0.07 +   // minor seventh
+      sine(base_freq * 2.67, t) * 0.04 +   // tritone
+      sine(base_freq * 0.5, t) * 0.14
+    ) * (0.7 + 0.2 * sine(0.07, t));
+    const hb_rate = 1.5; // ~40 bpm
+    const hb_t  = t % hb_rate;
+    const hb_t2 = (t + 0.15) % hb_rate; // double-hit
+    const heartbeat = (
+      sine(base_freq * 0.5, t) * Math.exp(-hb_t  * 8) * 0.20 +
+      sine(base_freq * 0.5, t) * Math.exp(-hb_t2 * 12) * 0.10
+    );
+    const raw = Math.random() * 2 - 1;
+    prevNoise = lowpass(prevNoise, raw, 0.30);
+    const shimmer = prevNoise * 0.018 * (0.5 + 0.5 * sine(11, t));
+    const fade_in  = Math.min(1, t / 3.0);
+    const fade_out = Math.min(1, (dur - t) / 3.0);
+    return (drone + heartbeat + shimmer) * fade_in * fade_out;
+  });
+}
+
+function gen_ambient_tavern() {
+  // A pentatonic, warm pad + rhythm pulse + mid noise — lively tavern
+  const dur = 30.0;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  const chord_notes = [220.0, 261.63, 293.66, 329.63, 392.0]; // A C D E G
+  let prevNoise = 0;
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    let pad = 0;
+    for (let k = 0; k < chord_notes.length; k++) {
+      pad += sine(chord_notes[k], t + k * 0.37) * 0.06 *
+             (0.7 + 0.3 * sine(0.15 + k * 0.05, t));
+    }
+    const beat_rate = 0.5;
+    const beat_t = t % beat_rate;
+    const beat = sine(120, t) * Math.exp(-beat_t * 15) * (1 - Math.exp(-beat_t * 50)) * 0.15;
+    const raw = Math.random() * 2 - 1;
+    prevNoise = lowpass(prevNoise, raw, 0.12);
+    const chatter = prevNoise * 0.04 * (0.8 + 0.2 * sine(0.25, t));
+    const fade_in  = Math.min(1, t / 3.0);
+    const fade_out = Math.min(1, (dur - t) / 3.0);
+    return (pad + beat + chatter) * fade_in * fade_out;
+  });
+}
+
+function gen_ambient_chapel() {
+  // C major organ-like sustained chord — reverent, still
+  const dur = 30.0;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  const organ_freqs = [130.81, 196.0, 261.63, 329.63]; // C3 G3 C4 E4
+  const weights      = [0.20, 0.12, 0.10, 0.08];
+  let prev = 0;
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    let organ = 0;
+    for (let k = 0; k < organ_freqs.length; k++) {
+      const f = organ_freqs[k];
+      const w = weights[k];
+      organ += (
+        sine(f, t) * w +
+        sine(f * 2, t) * w * 0.3 +
+        sine(f * 3, t) * w * 0.1
+      ) * (0.8 + 0.05 * sine(0.1 + k * 0.03, t));
+    }
+    const raw = Math.random() * 2 - 1;
+    prev = lowpass(prev, raw, 0.03);
+    const breath = prev * 0.02;
+    const fade_in  = Math.min(1, t / 3.0);
+    const fade_out = Math.min(1, (dur - t) / 3.0);
+    return (organ + breath) * fade_in * fade_out;
+  });
+}
+
+function gen_ambient_market() {
+  // G pentatonic, fast arp + bustle — busy market square
+  const dur = 30.0;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  const base_freq = 392.0; // G4
+  const arp_notes = [392.0, 440.0, 493.88, 587.33, 659.26]; // G A B D E
+  const arp_rate = 0.35;
+  let prevNoise = 0;
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    const pad = (
+      sine(base_freq * 0.5, t) * 0.10 +
+      sine(base_freq, t) * 0.08 +
+      sine(base_freq * 1.5, t) * 0.05
+    ) * (0.6 + 0.15 * sine(0.2, t));
+    const arp_idx = Math.floor(t / arp_rate) % arp_notes.length;
+    const arp_f   = arp_notes[arp_idx];
+    const arp_t   = t % arp_rate;
+    const arp_env = Math.exp(-arp_t * 8) * (1 - Math.exp(-arp_t * 60));
+    const arp = sine(arp_f, t) * arp_env * 0.25;
+    const raw = Math.random() * 2 - 1;
+    prevNoise = lowpass(prevNoise, raw, 0.08);
+    const bustle = prevNoise * 0.03 * (0.7 + 0.3 * sine(0.3, t));
+    const fade_in  = Math.min(1, t / 3.0);
+    const fade_out = Math.min(1, (dur - t) / 3.0);
+    return (pad + arp + bustle) * fade_in * fade_out;
+  });
+}
+
+function gen_ambient_manor() {
+  // D major, measured arp — stately, noble manor hall
+  const dur = 30.0;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  const chord_freqs = [146.83, 185.0, 220.0, 293.66]; // D3 F#3 A3 D4
+  const arp_notes   = [293.66, 369.99, 440.0, 587.33]; // D4 F#4 A4 D5
+  const arp_rate = 1.0;
+  let prev = 0;
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    let pad = 0;
+    const pad_weights = [0.15, 0.10, 0.10, 0.08];
+    for (let k = 0; k < chord_freqs.length; k++) {
+      pad += sine(chord_freqs[k], t) * pad_weights[k] *
+             (0.8 + 0.05 * sine(0.08 + k * 0.02, t));
+    }
+    const arp_idx = Math.floor(t / arp_rate) % arp_notes.length;
+    const arp_f   = arp_notes[arp_idx];
+    const arp_t   = t % arp_rate;
+    const arp_env = Math.exp(-arp_t * 2.2) * (1 - Math.exp(-arp_t * 30));
+    const arp = sine(arp_f, t) * arp_env * 0.22 +
+                sine(arp_f * 2, t) * arp_env * 0.06;
+    const raw = Math.random() * 2 - 1;
+    prev = lowpass(prev, raw, 0.03);
+    const breath = prev * 0.015;
+    const fade_in  = Math.min(1, t / 3.0);
+    const fade_out = Math.min(1, (dur - t) / 3.0);
+    return (pad + arp + breath) * fade_in * fade_out;
+  });
+}
+
+// ── Additional SFX generators ──────────────────────────────────────────────────
+
+function gen_rumor_fail() {
+  // Descending sweep with tritone dissonance — rejected/wrong
+  const dur = 0.6;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    const env = Math.exp(-t * 5) * (1 - Math.exp(-t * 40));
+    const freq = 400 - t * 300;
+    return (
+      sine(freq, t) * 0.50 * env +
+      sine(freq * 1.41, t) * 0.20 * env +   // tritone = dissonance
+      noise() * 0.05 * env
+    );
+  });
+}
+
+function gen_reputation_up() {
+  // G4-B4-D5 ascending arpeggio — positive chime
+  const dur = 0.8;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  const notes = [392.0, 493.88, 587.33]; // G4 B4 D5
+  const stepDur = 0.15;
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    const step   = Math.min(notes.length - 1, Math.floor(t / stepDur));
+    const f      = notes[step];
+    const tStep  = t - step * stepDur;
+    const env    = Math.exp(-tStep * 4) * (1 - Math.exp(-tStep * 50));
+    const overall = Math.exp(-t * 1.5);
+    return (
+      sine(f, t) * 0.50 * env * overall +
+      sine(f * 2, t) * 0.15 * env * overall +
+      sine(f * 0.5, t) * 0.10 * env * overall
+    );
+  });
+}
+
+function gen_reputation_down() {
+  // D5-A4-F4 descending minor — negative tone
+  const dur = 0.9;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  const notes = [587.33, 440.0, 349.23]; // D5 A4 F4
+  const stepDur = 0.2;
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    const step   = Math.min(notes.length - 1, Math.floor(t / stepDur));
+    const f      = notes[step];
+    const tStep  = t - step * stepDur;
+    const env    = Math.exp(-tStep * 3.5) * (1 - Math.exp(-tStep * 40));
+    const overall = Math.exp(-t * 1.2);
+    return (
+      sine(f, t) * 0.45 * env * overall +
+      sine(f * 1.5, t) * 0.10 * env * overall +
+      sine(f * 0.5, t) * 0.12 * env * overall
+    );
+  });
+}
+
+function gen_bribe_coin() {
+  // High metallic tink x2 with shimmer tail — coin jingle
+  const dur = 0.55;
+  const n = Math.floor(dur * SAMPLE_RATE);
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / SAMPLE_RATE;
+    const coin1 = Math.exp(-t * 18) * (
+      sine(3500, t) * 0.40 +
+      sine(5200, t) * 0.20 +
+      sine(7100, t) * 0.10
+    );
+    const t2 = Math.max(0, t - 0.10);
+    const coin2 = (t > 0.10 ? 1 : 0) * Math.exp(-t2 * 22) * (
+      sine(4100, t) * 0.25 +
+      sine(6200, t) * 0.12
+    );
+    const shimmer = noise() * Math.exp(-t * 12) * 0.04;
+    return coin1 + coin2 + shimmer;
+  });
+}
+
 // ── Main ───────────────────────────────────────────────────────────────────────
 
 console.log('Generating Rumor Mill audio assets...\n');
@@ -405,12 +695,23 @@ const sfx = [
   ['new_day',           gen_new_day],
   ['win',               gen_win],
   ['fail',              gen_fail],
+  ['rumor_fail',        gen_rumor_fail],
+  ['reputation_up',     gen_reputation_up],
+  ['reputation_down',   gen_reputation_down],
+  ['bribe_coin',        gen_bribe_coin],
 ];
 
 const music = [
-  ['main_theme',    gen_main_theme],
-  ['ambient_day',   gen_ambient_day],
-  ['ambient_night', gen_ambient_night],
+  ['main_theme',       gen_main_theme],
+  ['ambient_day',      gen_ambient_day],
+  ['ambient_night',    gen_ambient_night],
+  ['morning_calm',     gen_morning_calm],
+  ['evening_tension',  gen_evening_tension],
+  ['night_suspense',   gen_night_suspense],
+  ['ambient_tavern',   gen_ambient_tavern],
+  ['ambient_chapel',   gen_ambient_chapel],
+  ['ambient_market',   gen_ambient_market],
+  ['ambient_manor',    gen_ambient_manor],
 ];
 
 console.log('SFX:');

@@ -38,6 +38,9 @@ var _tutorial_banner: CanvasLayer = null   # S1 only
 # ── Sprint 6: end screen (created programmatically) ───────────────────────────
 var _end_screen: CanvasLayer = null
 
+# ── SPA-519: Day 1 ready overlay ─────────────────────────────────────────────
+var _ready_overlay: CanvasLayer = null
+
 # ── SPA-212: Analytics data collector ─────────────────────────────────────────
 var _analytics: ScenarioAnalytics = null
 
@@ -217,9 +220,32 @@ func _on_begin_game(scenario_id: String) -> void:
 		_loading_tips.end_transition()
 
 	# Restore saved state if a load was triggered from the pause menu.
-	if SaveManager.has_pending_load():
+	var _was_save_load := SaveManager.has_pending_load()
+	if _was_save_load:
 		SaveManager.apply_pending_load(world, day_night, journal)
 
+	# SPA-519: Pause Day 1 on fresh game start so the player can orient.
+	# Skip if this is a save-load (player already knows the game).
+	if not _was_save_load and day_night.current_day == 1:
+		day_night.set_paused(true)
+		# Sync speed HUD to show paused state.
+		var speed_node := get_node_or_null("SpeedHUD")
+		if speed_node != null and speed_node.has_method("_set_speed"):
+			speed_node._set_speed(speed_node.Speed.PAUSE)
+		_ready_overlay = preload("res://scripts/ready_overlay.gd").new()
+		_ready_overlay.name = "ReadyOverlay"
+		add_child(_ready_overlay)
+		_ready_overlay.dismissed.connect(_on_ready_overlay_dismissed)
+
+
+func _on_ready_overlay_dismissed() -> void:
+	_ready_overlay = null
+	# Resume normal speed via SpeedHUD so button state stays in sync.
+	var speed_node := get_node_or_null("SpeedHUD")
+	if speed_node != null and speed_node.has_method("_set_speed"):
+		speed_node._set_speed(speed_node.Speed.NORMAL)
+	else:
+		day_night.set_paused(false)
 
 
 func _init_recon_system() -> void:
