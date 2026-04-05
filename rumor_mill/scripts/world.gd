@@ -45,7 +45,17 @@ const ATLAS_MILL        := Vector2i(6, 0)
 const ATLAS_STORAGE     := Vector2i(7, 0)
 const ATLAS_GUARDPOST   := Vector2i(8, 0)
 const ATLAS_TOWN_HALL   := Vector2i(9, 0)
-# Prop atlas coords — matches tiles_props.png tile order (SPA-434 / SPA-526)
+# Ground atlas coords — matches tiles_ground.png tile order (SPA-526 / SPA-551)
+const ATLAS_STONE_SMOOTH  := Vector2i(9, 0)   # SPA-551: smooth grey stone courtyard
+const ATLAS_STONE_CRACKED := Vector2i(10, 0)  # SPA-551: cracked/weathered stone
+const ATLAS_STONE_COBBLE  := Vector2i(11, 0)  # SPA-551: cobblestone pattern
+
+## Stone tile pool for random variant selection in stone-paved areas.
+const STONE_VARIANTS: Array[Vector2i] = [
+	ATLAS_STONE_SMOOTH, ATLAS_STONE_CRACKED, ATLAS_STONE_COBBLE
+]
+
+# Prop atlas coords — matches tiles_props.png tile order (SPA-434 / SPA-526 / SPA-551)
 const ATLAS_CRATE        := Vector2i(0, 0)
 const ATLAS_BARREL       := Vector2i(1, 0)
 const ATLAS_SIGN         := Vector2i(2, 0)
@@ -57,6 +67,9 @@ const ATLAS_WELL_BUCKET  := Vector2i(7, 0)
 const ATLAS_OAK_TREE     := Vector2i(8, 0)   # SPA-526
 const ATLAS_LANTERN_POST := Vector2i(9, 0)   # SPA-526
 const ATLAS_GARDEN_BED   := Vector2i(10, 0)  # SPA-526
+const ATLAS_MARKET_STALL := Vector2i(11, 0)  # SPA-551: market stall with awning
+const ATLAS_BENCH        := Vector2i(12, 0)  # SPA-551: wooden bench
+const ATLAS_WELL         := Vector2i(13, 0)  # SPA-551: stone well with crossbar
 
 ## Grass tile pool for random variant selection in _paint_terrain() (SPA-526).
 const GRASS_VARIANTS: Array[Vector2i] = [
