@@ -116,25 +116,26 @@ func _refresh() -> void:
 	var sm:  ScenarioManager  = _world_ref.scenario_manager
 	var progress: Dictionary  = sm.get_scenario_1_progress(rep)
 
-	var score: int = progress["edric_score"]
-	var state      = progress["state"]
+	var score: int     = progress["edric_score"]
+	var state          = progress["state"]
+	var threshold: int = progress.get("win_threshold", WIN_THRESHOLD)
 
-	_score_lbl.text = "Edric Fenn  Rep: %d / 100  Target: <%d" % [score, WIN_THRESHOLD]
+	_score_lbl.text = "Edric Fenn  Rep: %d / 100  Target: <%d" % [score, threshold]
 
-	if score < WIN_THRESHOLD:
+	if score < threshold:
 		_score_lbl.add_theme_color_override("font_color", C_WIN)
-	elif score < WIN_THRESHOLD + 15:
+	elif score < threshold + 15:
 		_score_lbl.add_theme_color_override("font_color", C_CAUTION)
 	else:
 		_score_lbl.add_theme_color_override("font_color", C_BODY)
 
 	var ratio: float = clamp(float(score) / 100.0, 0.0, 1.0)
 	_bar.custom_minimum_size.x = BAR_WIDTH * ratio
-	if score < WIN_THRESHOLD:
+	if score < threshold:
 		_bar.color = C_WIN
-	elif score < WIN_THRESHOLD + 15:
+	elif score < threshold + 15:
 		_bar.color = C_DANGER
-	elif score < WIN_THRESHOLD + 30:
+	elif score < threshold + 30:
 		_bar.color = C_CAUTION
 	else:
 		_bar.color = C_SAFE

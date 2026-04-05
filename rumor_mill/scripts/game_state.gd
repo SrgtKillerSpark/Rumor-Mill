@@ -23,28 +23,31 @@ static func get_difficulty_modifiers(preset: String) -> Dictionary:
 	match preset:
 		"apprentice":
 			return {
-				"whisper_bonus":             1,
-				"action_bonus":              1,
-				"heat_decay":                8.0,
-				"days_bonus":                5,
-				"rival_cooldown_offset":     1,
-				"inquisitor_cooldown_offset": 1,
+				"whisper_bonus":                1,
+				"action_bonus":                 1,
+				"heat_decay":                   8.0,
+				"days_bonus":                   5,
+				"rival_cooldown_offset":        1,
+				"inquisitor_cooldown_offset":   1,
+				"illness_escalation_offset":    1,
 			}
 		"spymaster":
 			return {
-				"whisper_bonus":             -1,
-				"action_bonus":              -1,
-				"heat_decay":                3.0,
-				"days_bonus":                -5,
-				"rival_cooldown_offset":     -1,
-				"inquisitor_cooldown_offset": -1,
+				"whisper_bonus":                -1,
+				"action_bonus":                 -1,
+				"heat_decay":                   3.0,
+				"days_bonus":                   -5,
+				"rival_cooldown_offset":        -1,
+				"inquisitor_cooldown_offset":   -1,
+				"illness_escalation_offset":    -1,
 			}
 		_:  # "master" — normal defaults
 			return {
-				"whisper_bonus":             0,
-				"action_bonus":              0,
-				"heat_decay":                6.0,
-				"days_bonus":                0,
-				"rival_cooldown_offset":     0,
-				"inquisitor_cooldown_offset": 0,
+				"whisper_bonus":                0,
+				"action_bonus":                 0,
+				"heat_decay":                   6.0,
+				"days_bonus":                   0,
+				"rival_cooldown_offset":        0,
+				"inquisitor_cooldown_offset":   0,
+				"illness_escalation_offset":    0,
 			}

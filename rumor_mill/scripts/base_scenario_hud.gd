@@ -27,11 +27,13 @@ var _world_ref:     Node2D = null
 var _day_night_ref: Node   = null
 var _result_lbl:    Label  = null
 var _days_lbl:      Label  = null
+var _diff_lbl:      Label  = null
 
 
 func _ready() -> void:
 	layer = 14   # Above journal (12), consistent across all scenario HUDs.
 	_build_ui()
+	_build_difficulty_badge()
 	visible = false   # Hidden until setup() is called.
 
 
@@ -166,6 +168,34 @@ func _flash_result_lbl() -> void:
 ## Convert a snake_case NPC id (e.g. "tomas_reeve") to "Title Case" display name.
 func _display_name(npc_id: String) -> String:
 	return npc_id.replace("_", " ").capitalize()
+
+
+## Build a small difficulty badge anchored to the top-right corner.
+## Displays the active difficulty preset so the player can see it during play.
+func _build_difficulty_badge() -> void:
+	var preset: String = GameState.selected_difficulty
+	var label_text: String = preset.capitalize()
+
+	_diff_lbl = Label.new()
+	_diff_lbl.text = label_text
+	_diff_lbl.add_theme_font_size_override("font_size", 11)
+	match preset:
+		"apprentice":
+			_diff_lbl.add_theme_color_override("font_color", Color(0.50, 0.85, 0.50, 0.80))
+		"spymaster":
+			_diff_lbl.add_theme_color_override("font_color", Color(0.90, 0.30, 0.20, 0.90))
+		_:
+			_diff_lbl.add_theme_color_override("font_color", Color(0.85, 0.75, 0.45, 0.75))
+	_diff_lbl.set_anchor(SIDE_RIGHT,  1.0)
+	_diff_lbl.set_anchor(SIDE_LEFT,   1.0)
+	_diff_lbl.set_anchor(SIDE_TOP,    0.0)
+	_diff_lbl.set_anchor(SIDE_BOTTOM, 0.0)
+	_diff_lbl.set_offset(SIDE_RIGHT, -8)
+	_diff_lbl.set_offset(SIDE_LEFT,  -80)
+	_diff_lbl.set_offset(SIDE_TOP,    8)
+	_diff_lbl.set_offset(SIDE_BOTTOM, 24)
+	_diff_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	add_child(_diff_lbl)
 
 
 # ── Signal handlers ──────────────────────────────────────────────────────────
