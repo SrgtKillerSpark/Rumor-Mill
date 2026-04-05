@@ -496,6 +496,7 @@ func _build_subject_entry(
 	btn.add_theme_font_size_override("font_size", 12)
 	var captured_id := npc_id
 	btn.pressed.connect(func():
+		AudioManager.play_sfx("ui_click")
 		_selected_subject = captured_id
 		_selected_claim_id = ""  # reset downstream selections
 		_selected_seed_npc = ""
@@ -609,6 +610,7 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 	btn.add_theme_font_size_override("font_size", 12)
 	var captured_id := claim_id
 	btn.pressed.connect(func():
+		AudioManager.play_sfx("ui_click")
 		_selected_claim_id = captured_id
 		_selected_seed_npc = ""
 		_selected_evidence_item = null  # new claim may change compatible evidence
@@ -1117,9 +1119,15 @@ func _make_nav_button(label_text: String) -> Button:
 	focus.border_color = C_FOCUS_RING
 	focus.set_border_width_all(2)
 	focus.set_content_margin_all(6)
-	btn.add_theme_stylebox_override("normal", normal)
-	btn.add_theme_stylebox_override("hover",  hover)
-	btn.add_theme_stylebox_override("focus",  focus)
+	var pressed_style := StyleBoxFlat.new()
+	pressed_style.bg_color     = Color(0.20, 0.12, 0.04, 1.0)
+	pressed_style.border_color = C_GOLD_BRIGHT
+	pressed_style.set_border_width_all(2)
+	pressed_style.set_content_margin_all(6)
+	btn.add_theme_stylebox_override("normal",  normal)
+	btn.add_theme_stylebox_override("hover",   hover)
+	btn.add_theme_stylebox_override("focus",   focus)
+	btn.add_theme_stylebox_override("pressed", pressed_style)
 	btn.add_theme_color_override("font_color", C_BTN_TEXT)
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))

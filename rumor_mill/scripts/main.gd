@@ -628,6 +628,7 @@ func _on_rumor_seeded(
 		seed_target_name: String
 ) -> void:
 	AudioManager.on_rumor_seeded(rumor_id, subject_name, claim_id, seed_target_name)
+	_camera_shake(5.0, 0.3)
 	if journal != null and journal.has_method("push_timeline_event"):
 		var _seed_tick: int = day_night.current_tick if day_night != null else 0
 		journal.push_timeline_event(

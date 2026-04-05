@@ -1319,6 +1319,11 @@ func _update_label() -> void:
 		emit_signal("rumor_state_changed", short_name, state_str, wrid)
 		# SPA-561: Show emote icon for the new state.
 		show_state_emote(state_str)
+		# SPA-751: Sprite scale bounce on high-impact belief transitions.
+		if (worst == Rumor.RumorState.BELIEVE or worst == Rumor.RumorState.ACT) and sprite != null:
+			var _sb := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_sb.tween_property(sprite, "scale", Vector2(1.18, 1.18), 0.12)
+			_sb.tween_property(sprite, "scale", Vector2.ONE, 0.22)
 		# Show a reaction speech bubble matching the new state.
 		var cat := _state_to_dialogue_category(worst)
 		if cat != "":
