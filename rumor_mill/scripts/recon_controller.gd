@@ -28,6 +28,16 @@ const NPC_NORMAL_MODULATE := Color(1.0, 1.0, 1.0, 1.0)
 const BLDG_HALF_W := 36.0
 const BLDG_HALF_H := 20.0
 
+## Overhear Snippet constants (SPA-761).
+const OVERHEAR_RADIUS_TILES     := 2   ## tile distance threshold for nearby NPCs
+const OVERHEAR_COOLDOWN_TICKS   := 8   ## ticks before same pair can show another snippet
+const OVERHEAR_MAX_PER_TICK     := 2   ## cap simultaneous snippets per tick
+const OVERHEAR_SNIPPETS: Array[String] = [
+	'"...did you hear?"', '"shh, not so loud..."', '"between us..."',
+	'"you didn\'t hear this..."', '"keep it quiet."', '"I know a secret."',
+	'"whisper..."', '"...apparently..."', '"so I heard..."',
+]
+
 ## Tooltip offset from the mouse cursor (screen-space pixels).
 const TOOLTIP_OFFSET := Vector2(14.0, -32.0)
 
@@ -82,6 +92,16 @@ var _interiors: Dictionary = {}  ## location_id → BuildingInterior CanvasLayer
 ## Sequence counter to safely cancel pending outdoor-ambient clear timers.
 var _ambient_clear_seq: int = 0
 
+# ── Follow NPC (SPA-761) ──────────────────────────────────────────────────────
+## NPC currently being camera-tracked; null when no follow active.
+var _follow_npc: Node2D = null
+## Ticks remaining before follow auto-clears.
+var _follow_ticks_remaining: int = 0
+
+# ── Overhear Snippet (SPA-761) ────────────────────────────────────────────────
+## pair_key (sorted npc ids joined by "|") → last tick a snippet was shown.
+var _overhear_cooldowns: Dictionary = {}
+
 
 ## Register the NPC conversation dialogue panel (SPA-683).
 ## Called from main.gd after the panel is created and added to the tree.
@@ -104,6 +124,9 @@ func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
 	_world_ref   = world
 	_intel_store = intel_store
 	_create_hover_visuals()
+	# SPA-761: hook into game tick for Follow NPC countdown and Overhear Snippet checks.
+	if _world_ref != null and _world_ref.day_night != null:
+		_world_ref.day_night.game_tick.connect(_on_game_tick)
 
 
 # ── Hover visual setup ────────────────────────────────────────────────────────
@@ -164,6 +187,15 @@ func _process(_delta: float) -> void:
 	if _world_ref == null or _intel_store == null:
 		return
 
+	# SPA-761: Follow NPC — smoothly pan camera toward the tracked NPC each frame.
+	if _follow_npc != null:
+		if is_instance_valid(_follow_npc):
+			var cam := get_viewport().get_camera_2d()
+			if cam != null:
+				cam.position = cam.position.lerp(_follow_npc.global_position, 0.12)
+		else:
+			_follow_npc = null
+
 	var viewport := get_viewport()
 	if viewport == null:
 		return
@@ -176,7 +208,9 @@ func _process(_delta: float) -> void:
 	if new_npc != null:
 		_set_hovered_npc(new_npc)
 		_set_hovered_location("")
-		_show_tooltip(screen_pos, _npc_tooltip_text(new_npc))
+		# SPA-761: hint left-click to follow if not already following this NPC.
+		var follow_hint: String = " [Left-click to follow]" if _follow_npc != new_npc else " [Left-click to unfollow]"
+		_show_tooltip(screen_pos, _npc_tooltip_text(new_npc) + follow_hint)
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
 		return
 
@@ -185,7 +219,7 @@ func _process(_delta: float) -> void:
 		_set_hovered_npc(null)
 		_set_hovered_location(new_loc)
 		var display := new_loc.replace("_", " ").capitalize()
-		_show_tooltip(screen_pos, "Right-click to Observe — %s" % display)
+		_show_tooltip(screen_pos, "Right-click to read the room — %s" % display)
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
 		return
 
@@ -417,6 +451,21 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 
+	# SPA-761: Left-click on NPC → Follow NPC (free, zero action cost).
+	if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		var lc_world_pos: Vector2 = viewport.get_canvas_transform().affine_inverse() * screen_pos
+		var lc_npc := _hit_test_npc(lc_world_pos)
+		if lc_npc != null:
+			if _follow_npc == lc_npc:
+				# Re-click same NPC clears follow.
+				_follow_npc = null
+				_follow_ticks_remaining = 0
+			else:
+				_follow_npc = lc_npc
+				_follow_ticks_remaining = 3
+			get_viewport().set_input_as_handled()
+			return
+
 	if event.button_index != MOUSE_BUTTON_RIGHT or not event.pressed:
 		return
 
@@ -445,7 +494,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	var clicked_location := _hit_test_location(world_pos)
 	if clicked_location != "":
-		_try_observe(clicked_location)
+		# SPA-761: Read the Room — free ambient tooltip listing occupants.
+		_show_read_the_room(clicked_location, screen_pos)
 		get_viewport().set_input_as_handled()
 
 
@@ -818,6 +868,164 @@ func _dismiss_action_popup() -> void:
 		_popup_panel.queue_free()
 		_popup_panel = null
 	_popup_npc = null
+
+
+# ── SPA-761: Free micro-interactions ─────────────────────────────────────────
+
+## Tick handler: decrement Follow NPC countdown and check Overhear Snippets.
+func _on_game_tick(tick: int) -> void:
+	if _follow_npc != null:
+		_follow_ticks_remaining -= 1
+		if _follow_ticks_remaining <= 0:
+			_follow_npc = null
+	_check_overhear_snippets(tick)
+
+
+## Read the Room — right-click building shows a free ambient occupant list.
+## No intel is logged, no action is consumed.
+func _show_read_the_room(location_id: String, screen_pos: Vector2) -> void:
+	_dismiss_action_popup()
+
+	# Find NPCs whose schedule location matches this building.
+	var inside: Array = []
+	for npc in _world_ref.npcs:
+		if npc.current_location_code == location_id:
+			inside.append(npc)
+
+	_popup_panel = Panel.new()
+	_popup_panel.name = "ReadTheRoomPopup"
+	_tooltip_canvas.add_child(_popup_panel)
+
+	var bg := ColorRect.new()
+	bg.color = C_PANEL_BG
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_popup_panel.add_child(bg)
+
+	var border_top := ColorRect.new()
+	border_top.color = C_PANEL_BORDER
+	border_top.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	border_top.anchor_bottom = 0.0
+	border_top.offset_bottom = 2.0
+	_popup_panel.add_child(border_top)
+
+	var vbox := VBoxContainer.new()
+	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left   = 6.0
+	vbox.offset_top    = 6.0
+	vbox.offset_right  = -6.0
+	vbox.offset_bottom = -6.0
+	vbox.add_theme_constant_override("separation", 2)
+	_popup_panel.add_child(vbox)
+
+	var title_lbl := Label.new()
+	var loc_display := location_id.replace("_", " ").capitalize()
+	title_lbl.text = loc_display
+	title_lbl.add_theme_font_size_override("font_size", 12)
+	title_lbl.add_theme_color_override("font_color", Color(0.94, 0.84, 0.58, 1.0))
+	vbox.add_child(title_lbl)
+
+	if inside.is_empty():
+		var none_lbl := Label.new()
+		none_lbl.text = "  — nobody here"
+		none_lbl.add_theme_font_size_override("font_size", 11)
+		none_lbl.add_theme_color_override("font_color", Color(0.58, 0.52, 0.38, 1.0))
+		vbox.add_child(none_lbl)
+	else:
+		for npc in inside:
+			var npc_lbl := Label.new()
+			var npc_name: String = npc.npc_data.get("name", "?")
+			var faction: String  = npc.npc_data.get("faction", "")
+			npc_lbl.text = "  • %s  [%s]" % [npc_name, faction] if not faction.is_empty() \
+				else "  • %s" % npc_name
+			npc_lbl.add_theme_font_size_override("font_size", 11)
+			npc_lbl.add_theme_color_override("font_color", Color(0.82, 0.74, 0.55, 1.0))
+			vbox.add_child(npc_lbl)
+
+	var btn_observe := Button.new()
+	var can_observe: bool = _intel_store.recon_actions_remaining > 0
+	btn_observe.add_theme_font_size_override("font_size", 11)
+	if can_observe:
+		btn_observe.text = "Observe  (1 Recon)"
+		btn_observe.add_theme_color_override("font_color", Color(0.90, 0.80, 0.55, 1.0))
+		var loc_id_capture := location_id
+		btn_observe.pressed.connect(func() -> void:
+			_dismiss_action_popup()
+			_try_observe(loc_id_capture)
+		)
+	else:
+		btn_observe.text = "Observe  — No Recon left"
+		btn_observe.disabled = true
+	vbox.add_child(btn_observe)
+
+	var panel_w: float = 170.0
+	var panel_h: float = 20.0 + 18.0 + maxi(inside.size(), 1) * 18.0 + 28.0 + 6.0
+	_popup_panel.size = Vector2(panel_w, panel_h)
+
+	var pos := screen_pos + Vector2(4.0, -panel_h - 4.0)
+	var vp_size := get_viewport().get_visible_rect().size
+	if pos.x + panel_w > vp_size.x:
+		pos.x = screen_pos.x - panel_w - 4.0
+	if pos.y < 0.0:
+		pos.y = screen_pos.y + 4.0
+	pos.x = maxf(pos.x, 2.0)
+	pos.y = minf(pos.y, vp_size.y - panel_h - 2.0)
+	_popup_panel.position = pos
+
+
+## Check all NPC pairs for proximity; emit Overhear Snippets where appropriate.
+## Called once per game tick.
+func _check_overhear_snippets(tick: int) -> void:
+	var shown_this_tick: int = 0
+	var shown_npcs: Dictionary = {}
+	var npcs: Array = _world_ref.npcs
+	for i in range(npcs.size()):
+		if shown_this_tick >= OVERHEAR_MAX_PER_TICK:
+			break
+		var npc_a = npcs[i]
+		if npc_a in shown_npcs:
+			continue
+		for j in range(i + 1, npcs.size()):
+			if shown_this_tick >= OVERHEAR_MAX_PER_TICK:
+				break
+			var npc_b = npcs[j]
+			if npc_b in shown_npcs:
+				continue
+			var dist: float = (npc_a.current_cell - npc_b.current_cell).length()
+			if dist > OVERHEAR_RADIUS_TILES:
+				continue
+			var id_a: String = npc_a.npc_data.get("id", "a%d" % i)
+			var id_b: String = npc_b.npc_data.get("id", "b%d" % j)
+			var pair_key: String = (id_a + "|" + id_b) if id_a < id_b else (id_b + "|" + id_a)
+			var last_tick: int = _overhear_cooldowns.get(pair_key, -999)
+			if tick - last_tick < OVERHEAR_COOLDOWN_TICKS:
+				continue
+			_overhear_cooldowns[pair_key] = tick
+			shown_npcs[npc_a] = true
+			shown_npcs[npc_b] = true
+			shown_this_tick += 1
+			_show_overhear_snippet(npc_a, npc_b)
+
+
+## Spawn floating flavor text above the midpoint of two nearby NPCs.
+func _show_overhear_snippet(npc_a: Node2D, npc_b: Node2D) -> void:
+	if not is_instance_valid(npc_a) or not is_instance_valid(npc_b):
+		return
+	var mid_pos := (npc_a.global_position + npc_b.global_position) * 0.5 + Vector2(0.0, -80.0)
+	var snippet: String = OVERHEAR_SNIPPETS[randi() % OVERHEAR_SNIPPETS.size()]
+	var lbl := Label.new()
+	lbl.text = snippet
+	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.add_theme_color_override("font_color", Color(0.82, 0.74, 0.55, 1.0))
+	lbl.add_theme_constant_override("outline_size", 1)
+	lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.70))
+	lbl.position = mid_pos
+	lbl.z_index = 4
+	_world_ref.add_child(lbl)
+	var tw := lbl.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", mid_pos + Vector2(0.0, -22.0), 2.2)
+	tw.tween_property(lbl, "modulate:a", 0.0, 2.2).set_delay(0.7)
+	tw.finished.connect(lbl.queue_free)
 
 
 func _on_popup_eavesdrop() -> void:
