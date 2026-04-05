@@ -198,15 +198,39 @@ All modal panels and HUD elements use the **parchment palette**:
 | 24px     | Noble    | Crown  |
 | 48px     | Clergy   | Cross  |
 
-**Claim type icons** (`ui_claim_icons.png`, 80×16, five 16×16 icons):
+**Claim type icons** (`ui_claim_icons.png`, 160×32, five 32×32 icons):
 
 | X offset | Claim type    |
 |----------|---------------|
 | 0px      | Assassination |
-| 16px     | Theft         |
-| 32px     | Slander       |
-| 48px     | Witness       |
-| 64px     | Alliance      |
+| 32px     | Theft         |
+| 64px     | Slander       |
+| 96px     | Witness       |
+| 128px    | Alliance      |
+
+**NPC portraits** (`ui_npc_portraits.png`, 320×240, five 64×80 cols × 3 rows):
+
+| Row | Y offset | Variants           |
+|-----|----------|--------------------|
+| 0   | 0px      | Male archetypes    |
+| 1   | 80px     | Female archetypes  |
+| 2   | 160px    | Elder / leaders    |
+
+Col order: merchant (0), noble (1), clergy (2), guard (3), commoner (4).
+
+**Rumor state icons** (`ui_state_icons.png`, 144×16, nine 16×16 icons):
+
+| Col | State        | Icon           |
+|-----|-------------|----------------|
+| 0   | Unaware     | Empty circle   |
+| 1   | Evaluating  | Hourglass      |
+| 2   | Believe     | Scroll + check |
+| 3   | Rejecting   | Bold X         |
+| 4   | Spread      | Speech bubble  |
+| 5   | Act         | Lightning bolt |
+| 6   | Contradicted| Crossed arrows |
+| 7   | Expired     | Circle + X     |
+| 8   | Defending   | Kite shield    |
 
 ---
 

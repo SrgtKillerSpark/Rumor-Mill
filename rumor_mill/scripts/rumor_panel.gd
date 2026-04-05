@@ -124,6 +124,28 @@ var _status_label: Label           = null   # inline feedback for panel 3
 var _world_ref:       Node2D           = null
 var _intel_store_ref: PlayerIntelStore = null
 
+# Texture atlases for icons and portraits.
+var _portrait_tex:    Texture2D = null  # ui_npc_portraits.png — 320×240 (5×64 cols × 3×80 rows)
+var _claim_icon_tex:  Texture2D = null  # ui_claim_icons.png  — atlas of claim-type icons
+
+# Portrait atlas layout: 5 cols × 3 rows of 64×80 cells.
+const PORTRAIT_W := 64
+const PORTRAIT_H := 80
+# Col order: merchant=0, noble=1, clergy=2, guard=3, commoner=4.
+const PORTRAIT_COL := {
+	"merchant": 0, "noble": 1, "clergy": 2, "guard": 3, "commoner": 4,
+}
+# Row 0=male, 1=female, 2=elder.
+
+# Claim icon atlas: 5 icons (0=dagger, 1=coin, 2=speech, 3=eye, 4=hands).
+# Map claim types → closest icon column.
+const CLAIM_ICON_INDEX := {
+	"accusation": 0, "death": 0,       # dagger
+	"scandal": 2,    "heresy": 2,      # speech bubble
+	"illness": 3,    "prophecy": 3,    # eye
+	"praise": 4,                        # clasped hands
+}
+
 # Crafting state.
 var _current_panel:        int    = PANEL_SUBJECT
 var _selected_subject:     String = ""  # npc_id
@@ -155,8 +177,14 @@ const HINTS := [
 func _ready() -> void:
 	layer = 15
 	panel.visible = false
+	_load_ui_textures()
 	_build_dynamic_panels()
 	_init_spread_overlay()
+
+
+func _load_ui_textures() -> void:
+	_portrait_tex   = load("res://assets/textures/ui_npc_portraits.png")
+	_claim_icon_tex = load("res://assets/textures/ui_claim_icons.png")
 
 
 func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
@@ -388,8 +416,17 @@ func _build_subject_entry(
 		style.bg_color = C_SELECTED_SUBJECT_BG
 		outer.add_theme_stylebox_override("panel", style)
 
+	var hbox_main := HBoxContainer.new()
+	hbox_main.add_theme_constant_override("separation", 8)
+	outer.add_child(hbox_main)
+
+	# Portrait (64×80 from atlas, displayed at 48×60 to fit panel).
+	var portrait_rect := _make_portrait_rect(faction)
+	hbox_main.add_child(portrait_rect)
+
 	var vbox := VBoxContainer.new()
-	outer.add_child(vbox)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox_main.add_child(vbox)
 
 	# Header row.
 	var header := HBoxContainer.new()
@@ -508,9 +545,14 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 	var vbox := VBoxContainer.new()
 	outer.add_child(vbox)
 
-	# Type badge + ID.
+	# Type badge + icon + ID.
 	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 6)
 	vbox.add_child(header)
+
+	var icon_rect := _make_claim_icon_rect(type_str)
+	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	header.add_child(icon_rect)
 
 	var type_lbl := Label.new()
 	type_lbl.text = "[%s]  %s" % [type_str.to_upper(), claim_id]
@@ -915,6 +957,45 @@ func _build_evidence_entry(item) -> Control:
 	vbox.add_child(btn)
 
 	return outer
+
+
+# ── Portrait & Icon helpers ──────────────────────────────────────────────────
+
+func _make_portrait_rect(faction: String) -> TextureRect:
+	var rect := TextureRect.new()
+	rect.custom_minimum_size = Vector2(48, 60)
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	if _portrait_tex != null:
+		var col: int = PORTRAIT_COL.get(faction, 4)
+		var row: int = 0  # male base row; future: vary by NPC gender/age
+		var atlas := AtlasTexture.new()
+		atlas.atlas = _portrait_tex
+		atlas.region = Rect2(col * PORTRAIT_W, row * PORTRAIT_H, PORTRAIT_W, PORTRAIT_H)
+		rect.texture = atlas
+	return rect
+
+
+func _make_claim_icon_rect(type_str: String) -> TextureRect:
+	var rect := TextureRect.new()
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	if _claim_icon_tex != null:
+		var idx: int = CLAIM_ICON_INDEX.get(type_str.to_lower(), -1)
+		if idx >= 0:
+			# Derive icon size from atlas: total width / 5 icons.
+			var icon_w: int = int(_claim_icon_tex.get_width()) / 5
+			var icon_h: int = int(_claim_icon_tex.get_height())
+			rect.custom_minimum_size = Vector2(icon_w, icon_h)
+			var atlas := AtlasTexture.new()
+			atlas.atlas = _claim_icon_tex
+			atlas.region = Rect2(idx * icon_w, 0, icon_w, icon_h)
+			rect.texture = atlas
+		else:
+			rect.custom_minimum_size = Vector2(16, 16)
+	else:
+		rect.custom_minimum_size = Vector2(16, 16)
+	return rect
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

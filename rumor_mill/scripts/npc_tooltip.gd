@@ -73,25 +73,30 @@ const OFFSET := Vector2(18, -140)  # screen offset from cursor
 const PANEL_W := 240
 const PANEL_H := 165
 
-var _panel:        PanelContainer = null
-var _name_lbl:     Label          = null
-var _faction_lbl:  Label          = null
-var _role_lbl:     Label          = null
-var _bio_lbl:      Label          = null
-var _state_lbl:    Label          = null
-var _rumor_lbl:    Label          = null
+var _panel:           PanelContainer = null
+var _name_lbl:        Label          = null
+var _faction_lbl:     Label          = null
+var _role_lbl:        Label          = null
+var _bio_lbl:         Label          = null
+var _state_lbl:       Label          = null
+var _state_icon_rect: TextureRect    = null
+var _rumor_lbl:       Label          = null
 
-var _visible_flag: bool = false
-var _fade_tween:   Tween = null
-var _flavor_text:  Dictionary = {}
-var _world_ref:    Node2D = null
-var _rep_lbl:      Label = null
-var _dead_lbl:     Label = null
-var _hint_lbl:     Label = null
+var _visible_flag:    bool = false
+var _fade_tween:      Tween = null
+var _flavor_text:     Dictionary = {}
+var _world_ref:       Node2D = null
+var _rep_lbl:         Label = null
+var _dead_lbl:        Label = null
+var _hint_lbl:        Label = null
+
+var _state_icon_tex:  Texture2D = null  # ui_state_icons.png atlas
+const STATE_ICON_COUNT := 9
 
 
 func _ready() -> void:
 	layer = 9   # above social graph (8), below journal (12)
+	_state_icon_tex = load("res://assets/textures/ui_state_icons.png")
 	_load_flavor_text()
 	_build_panel()
 
@@ -212,8 +217,19 @@ func _build_panel() -> void:
 	sep2.add_theme_stylebox_override("separator", sep2_style)
 	vbox.add_child(sep2)
 
+	var state_row := HBoxContainer.new()
+	state_row.add_theme_constant_override("separation", 4)
+	vbox.add_child(state_row)
+
+	_state_icon_rect = TextureRect.new()
+	_state_icon_rect.custom_minimum_size = Vector2(16, 16)
+	_state_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_state_icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_state_icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	state_row.add_child(_state_icon_rect)
+
 	_state_lbl = _make_label("", 12, C_LABEL)
-	vbox.add_child(_state_lbl)
+	state_row.add_child(_state_lbl)
 
 	_rumor_lbl = _make_label("", 12, C_MUTED)
 	vbox.add_child(_rumor_lbl)
@@ -284,6 +300,16 @@ func _populate(npc: Node2D) -> void:
 	var state_icon:  String = STATE_ICON.get(worst_state_int, "·")
 	_state_lbl.text = "State: " + state_icon + " " + state_name
 	_state_lbl.add_theme_color_override("font_color", state_color)
+
+	# Show texture state icon from atlas.
+	if _state_icon_tex != null and _state_icon_rect != null:
+		var icon_w: int = int(_state_icon_tex.get_width()) / STATE_ICON_COUNT
+		var icon_h: int = int(_state_icon_tex.get_height())
+		var atlas := AtlasTexture.new()
+		atlas.atlas = _state_icon_tex
+		atlas.region = Rect2(worst_state_int * icon_w, 0, icon_w, icon_h)
+		_state_icon_rect.texture = atlas
+		_state_icon_rect.modulate = state_color
 
 	var rumor_count: int = npc.rumor_slots.size() if "rumor_slots" in npc else 0
 	_rumor_lbl.text = "%d active rumor%s" % [rumor_count, "s" if rumor_count != 1 else ""]

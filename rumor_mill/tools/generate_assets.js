@@ -1771,18 +1771,17 @@ function makeClaimIcons() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// NPC PORTRAIT ATLAS  (ui_npc_portraits.png — 320×240, upscaled from 120×96 base)
-//   Five 64×80 cols × 3 rows (upscaled from 24×32 per cell)
+// NPC PORTRAIT ATLAS  (ui_npc_portraits.png — 320×240, five 64×80 cols × 3 rows)
 //   Row 0 (y=  0): male archetypes    — merchant, noble, clergy, guard, commoner
 //   Row 1 (y= 80): female archetypes  — same faction/role order
 //   Row 2 (y=160): elder/leader variants — cloak trim, rank accessory
 //
-// Portrait spec (24×32 px per cell):
-//   y  0‒ 3  hat / headwear
-//   y  4‒11  head (8×8, x 8‒15)
-//   y 12‒14  neck
-//   y 15‒29  upper torso / collar  (16 px wide, x 4‒19)
-//   y 30‒31  bottom border
+// Portrait spec (64×80 px per cell — native resolution, not upscaled):
+//   y  0‒ 9  hat / headwear zone
+//   y 10‒30  head (21×21, centred at x≈21)
+//   y 31‒37  neck
+//   y 38‒73  upper torso / collar (42 px wide)
+//   y 74‒79  bottom border
 //
 // Hat styles:  'wide'(merchant) | 'coronet'(noble) | 'hood'(clergy)
 //              | 'helm'(guard) | 'cap'(commoner)
@@ -1790,140 +1789,168 @@ function makeClaimIcons() {
 // Female row adds: flowing side-hair below head edges
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeNPCPortraits() {
-  const cv = createCanvas(120, 96);
+  const cv = createCanvas(320, 240);
 
   const drawPortrait = (ox, oy, opts) => {
     const { body, trim, hatStyle, hat, hatTrim, female = false, elder = false } = opts;
 
     // ── parchment background + ink border ────────────────────────────────────
-    cv.fillRect(ox, oy, 24, 32, ...c.PARCH_L);
-    cv.line(ox,    oy,    ox+23, oy,    ...c.INK);
-    cv.line(ox,    oy,    ox,    oy+31, ...c.INK);
-    cv.line(ox+23, oy,    ox+23, oy+31, ...c.INK);
-    cv.line(ox,    oy+31, ox+23, oy+31, ...c.INK);
+    cv.fillRect(ox, oy, 64, 80, ...c.PARCH_L);
+    // subtle vignette: darken edges
+    cv.fillRect(ox, oy, 64, 2, ...c.PARCH_D, 60);
+    cv.fillRect(ox, oy+78, 64, 2, ...c.PARCH_D, 60);
+    cv.fillRect(ox, oy, 2, 80, ...c.PARCH_D, 40);
+    cv.fillRect(ox+62, oy, 2, 80, ...c.PARCH_D, 40);
+    cv.line(ox,    oy,    ox+63, oy,    ...c.INK);
+    cv.line(ox,    oy,    ox,    oy+79, ...c.INK);
+    cv.line(ox+63, oy,    ox+63, oy+79, ...c.INK);
+    cv.line(ox,    oy+79, ox+63, oy+79, ...c.INK);
+    cv.line(ox+1,  oy+1,  ox+62, oy+1,  ...c.PARCH_M, 80);
+    cv.line(ox+1,  oy+1,  ox+1,  oy+78, ...c.PARCH_M, 80);
 
-    // ── head (8×8 at x=ox+8, y=oy+4) ────────────────────────────────────────
-    const hx = ox+8, hy = oy+4;
-    cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
-    // cheek highlight — top-left catch-light
-    cv.sp(hx+1, hy+1, ...c.SKIN_HI, 80);
-    // eyebrows — arched, 1px above eyes
-    cv.sp(hx+2, hy+2, ...c.HAIR, 160);
-    cv.sp(hx+3, hy+1, ...c.HAIR, 120);
-    cv.sp(hx+5, hy+2, ...c.HAIR, 160);
-    cv.sp(hx+6, hy+1, ...c.HAIR, 120);
-    // eyes with subtle whites
-    cv.sp(hx+2, hy+3, ...c.HAIR);
-    cv.sp(hx+5, hy+3, ...c.HAIR);
-    cv.sp(hx+1, hy+3, ...c.SKIN_HI, 90);   // left eye white
-    cv.sp(hx+4, hy+3, ...c.SKIN_HI, 60);   // right eye inner white
-    // nose shadow
-    cv.sp(hx+3, hy+5, ...c.SKIN_SH);
-    // mouth — slight curve for female, firm line for male
+    // ── head (21×21 at x=ox+21, y=oy+10) ────────────────────────────────────
+    const hx = ox+21, hy = oy+10;
+    cv.fillRect(hx, hy, 21, 21, ...c.SKIN);
+    cv.fillRect(hx, hy+18, 21, 3, ...c.SKIN_SH, 60);       // jawline
+    cv.fillRect(hx+2, hy+2, 4, 3, ...c.SKIN_HI, 60);       // cheek highlight
+    cv.fillRect(hx+3, hy+3, 2, 2, ...c.SKIN_HI, 90);
+    cv.fillRect(hx+16, hy+8, 4, 5, ...c.SKIN_SH, 40);      // right shadow
+
+    // eyebrows
+    cv.fillRect(hx+4, hy+5, 5, 2, ...c.HAIR, 180);
+    cv.sp(hx+3, hy+6, ...c.HAIR, 120);
+    cv.fillRect(hx+12, hy+5, 5, 2, ...c.HAIR, 180);
+    cv.sp(hx+17, hy+6, ...c.HAIR, 120);
+
+    // eyes — 3×3 with whites and pupils
+    cv.fillRect(hx+4, hy+8, 5, 3, ...c.SKIN_HI, 200);
+    cv.fillRect(hx+5, hy+8, 3, 3, ...c.HAIR);
+    cv.sp(hx+6, hy+9, ...c.OUTLINE);
+    cv.sp(hx+5, hy+8, ...c.SKIN_HI, 180);
+    cv.fillRect(hx+12, hy+8, 5, 3, ...c.SKIN_HI, 200);
+    cv.fillRect(hx+13, hy+8, 3, 3, ...c.HAIR);
+    cv.sp(hx+14, hy+9, ...c.OUTLINE);
+    cv.sp(hx+13, hy+8, ...c.SKIN_HI, 180);
+
+    // nose
+    cv.sp(hx+9, hy+12, ...c.SKIN_SH, 100);
+    cv.sp(hx+10, hy+12, ...c.SKIN_SH, 100);
+    cv.fillRect(hx+8, hy+13, 4, 2, ...c.SKIN_SH);
+    cv.sp(hx+8, hy+14, ...c.SKIN_SH, 180);
+    cv.sp(hx+11, hy+14, ...c.SKIN_SH, 180);
+
+    // mouth
     if (female) {
-      cv.sp(hx+2, hy+6, ...c.SKIN_SH, 120);
-      cv.sp(hx+3, hy+7, ...c.HAIR);
-      cv.sp(hx+4, hy+7, ...c.HAIR);
-      cv.sp(hx+5, hy+6, ...c.SKIN_SH, 120);
+      cv.fillRect(hx+7, hy+16, 7, 1, ...c.SKIN_SH, 140);
+      cv.fillRect(hx+8, hy+17, 5, 1, ...c.HAIR, 100);
+      cv.sp(hx+6, hy+16, ...c.SKIN_SH, 80);
+      cv.sp(hx+14, hy+16, ...c.SKIN_SH, 80);
     } else {
-      cv.sp(hx+2, hy+6, ...c.HAIR, 90);
-      cv.sp(hx+3, hy+6, ...c.OUTLINE, 70);
-      cv.sp(hx+4, hy+6, ...c.OUTLINE, 70);
-      cv.sp(hx+5, hy+6, ...c.HAIR, 90);
+      cv.fillRect(hx+7, hy+16, 7, 1, ...c.OUTLINE, 80);
+      cv.fillRect(hx+7, hy+17, 7, 1, ...c.SKIN_SH, 60);
     }
-    // elder: beard stubble below mouth
+
+    // elder: beard stubble + wrinkles
     if (elder && !female) {
-      cv.sp(hx+2, hy+7, ...c.HAIR, 100);
-      cv.sp(hx+3, hy+7, ...c.HAIR, 130);
-      cv.sp(hx+4, hy+7, ...c.HAIR, 130);
-      cv.sp(hx+5, hy+7, ...c.HAIR, 100);
-      cv.sp(hx+3, hy+6, ...c.HAIR, 60);
-      cv.sp(hx+4, hy+6, ...c.HAIR, 60);
-      // crow's-feet wrinkle at outer eye corner
-      cv.sp(hx+6, hy+4, ...c.SKIN_SH, 80);
-      cv.sp(hx+1, hy+4, ...c.SKIN_SH, 80);
+      cv.fillRect(hx+5, hy+18, 11, 3, ...c.HAIR, 80);
+      cv.fillRect(hx+7, hy+17, 7, 1, ...c.HAIR, 60);
+      cv.sp(hx+3, hy+10, ...c.SKIN_SH, 80);
+      cv.sp(hx+2, hy+9,  ...c.SKIN_SH, 60);
+      cv.sp(hx+17, hy+10, ...c.SKIN_SH, 80);
+      cv.sp(hx+18, hy+9,  ...c.SKIN_SH, 60);
+      cv.line(hx+5, hy+3, hx+16, hy+3, ...c.SKIN_SH, 50);
     }
-    // female: side-hair drapes below head on each edge
+    // female: side-hair drapes
     if (female) {
-      cv.fillRect(hx-1, hy+2, 2, 9, ...c.HAIR);
-      cv.fillRect(hx+7, hy+2, 2, 9, ...c.HAIR);
+      cv.fillRect(hx-3, hy+4, 4, 22, ...c.HAIR);
+      cv.fillRect(hx+20, hy+4, 4, 22, ...c.HAIR);
+      cv.fillRect(hx-2, hy+5, 1, 18, ...c.HAIR, 140);
+      cv.fillRect(hx+22, hy+5, 1, 18, ...c.HAIR, 140);
     }
     // head outline
-    cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
-    cv.line(hx,   hy,   hx,   hy+7, ...c.OUTLINE);
-    cv.line(hx+7, hy,   hx+7, hy+7, ...c.OUTLINE);
-    cv.line(hx,   hy+7, hx+7, hy+7, ...c.OUTLINE);
+    cv.line(hx,    hy,    hx+20, hy,    ...c.OUTLINE);
+    cv.line(hx,    hy,    hx,    hy+20, ...c.OUTLINE);
+    cv.line(hx+20, hy,    hx+20, hy+20, ...c.OUTLINE);
+    cv.line(hx,    hy+20, hx+20, hy+20, ...c.OUTLINE);
 
     // ── hat / headwear ────────────────────────────────────────────────────────
     if (hatStyle === 'wide') {
-      // merchant: wide-brim felt hat
-      cv.fillRect(hx-2, hy-1, 12, 2, ...hat);        // wide brim
-      cv.fillRect(hx+1, hy-5, 6,  5, ...hat);        // crown
-      cv.fillRect(hx+2, hy-6, 4,  2, ...hatTrim);    // trim band
-      cv.line(hx-2, hy-1, hx+9,  hy-1, ...c.OUTLINE);
-      cv.line(hx+1, hy-5, hx+6,  hy-5, ...c.OUTLINE);
+      cv.fillRect(hx-5, hy-2, 31, 4, ...hat);
+      cv.fillRect(hx+3, hy-12, 15, 12, ...hat);
+      cv.fillRect(hx+5, hy-14, 11, 4, ...hatTrim);
+      cv.fillRect(hx+13, hy-11, 4, 10, ...hat, 160);
+      cv.line(hx-5, hy-2, hx+25, hy-2, ...c.OUTLINE);
+      cv.line(hx+3, hy-12, hx+17, hy-12, ...c.OUTLINE);
+      cv.line(hx+3, hy-12, hx+3,  hy-2,  ...c.OUTLINE);
+      cv.line(hx+17,hy-12, hx+17, hy-2,  ...c.OUTLINE);
     } else if (hatStyle === 'coronet') {
-      // noble: open coronet with 3 points and gem accents
-      cv.fillRect(hx, hy-1, 8, 2, ...hat);           // base band
-      cv.sp(hx+1, hy-3, ...hat); cv.sp(hx+2, hy-4, ...hat); cv.sp(hx+3, hy-3, ...hat);
-      cv.sp(hx+4, hy-3, ...hat); cv.sp(hx+5, hy-4, ...hat); cv.sp(hx+6, hy-3, ...hat);
-      cv.sp(hx+7, hy-3, ...hat);
-      cv.sp(hx+2, hy-4, ...hatTrim);                 // gem left
-      cv.sp(hx+5, hy-4, ...hatTrim);                 // gem right
-      cv.line(hx, hy-1, hx+7, hy-1, ...c.OUTLINE);
+      cv.fillRect(hx, hy-3, 21, 4, ...hat);
+      cv.fillPoly([[hx+2,hy-3],[hx+5,hy-9],[hx+8,hy-3]], ...hat);
+      cv.fillPoly([[hx+8,hy-3],[hx+10,hy-10],[hx+13,hy-3]], ...hat);
+      cv.fillPoly([[hx+13,hy-3],[hx+16,hy-9],[hx+19,hy-3]], ...hat);
+      cv.fillRect(hx+4, hy-8, 2, 2, ...hatTrim);
+      cv.fillRect(hx+9, hy-9, 3, 2, ...hatTrim);
+      cv.fillRect(hx+15,hy-8, 2, 2, ...hatTrim);
+      cv.line(hx, hy-3, hx+20, hy-3, ...c.OUTLINE);
+      cv.line(hx+2,hy-3, hx+5,hy-9, ...c.OUTLINE);
+      cv.line(hx+5,hy-9, hx+8,hy-3, ...c.OUTLINE);
+      cv.line(hx+8,hy-3, hx+10,hy-10,...c.OUTLINE);
+      cv.line(hx+10,hy-10,hx+13,hy-3,...c.OUTLINE);
+      cv.line(hx+13,hy-3,hx+16,hy-9, ...c.OUTLINE);
+      cv.line(hx+16,hy-9,hx+19,hy-3, ...c.OUTLINE);
     } else if (hatStyle === 'hood') {
-      // clergy: plain draped hood, darker than robe
-      cv.fillRect(hx-1, hy-3, 10, 4, ...hat);        // hood top
-      cv.fillRect(hx-1, hy,    2, 6, ...hat);        // left drape
-      cv.fillRect(hx+7, hy,    2, 6, ...hat);        // right drape
-      cv.line(hx-1, hy-3, hx+8, hy-3, ...c.OUTLINE);
-      cv.line(hx-1, hy-3, hx-1, hy+5, ...c.OUTLINE);
-      cv.line(hx+8, hy-3, hx+8, hy+5, ...c.OUTLINE);
+      cv.fillRect(hx-3, hy-8, 27, 10, ...hat);
+      cv.fillRect(hx-3, hy,    4, 16, ...hat);
+      cv.fillRect(hx+20,hy,    4, 16, ...hat);
+      cv.fillRect(hx+18, hy-7, 5, 8, ...hat, 160);
+      cv.line(hx-3, hy-8, hx+23, hy-8, ...c.OUTLINE);
+      cv.line(hx-3, hy-8, hx-3,  hy+15,...c.OUTLINE);
+      cv.line(hx+23,hy-8, hx+23, hy+15,...c.OUTLINE);
     } else if (hatStyle === 'helm') {
-      // guard: nasal helmet
-      cv.fillRect(hx-1, hy-3, 10, 5, ...c.STONE_M);
-      cv.fillRect(hx-2, hy,   12, 2, ...c.STONE_D);  // brim
-      cv.line(hx+4, hy-3, hx+4, hy+4, ...c.STONE_D); // nasal guard
-      cv.line(hx-2, hy,    hx+9,  hy,    ...c.OUTLINE);
-      cv.line(hx-1, hy-3,  hx+8,  hy-3,  ...c.OUTLINE);
-      cv.line(hx-1, hy-3,  hx-2,  hy,    ...c.OUTLINE);
-      cv.line(hx+8, hy-3,  hx+9,  hy,    ...c.OUTLINE);
+      cv.fillRect(hx-3, hy-8, 27, 12, ...c.STONE_M);
+      cv.fillRect(hx-5, hy,   31, 4,  ...c.STONE_D);
+      cv.fillRect(hx+9, hy-8, 3, 16,  ...c.STONE_D);
+      cv.sp(hx+2, hy+1, ...c.STONE_L);
+      cv.sp(hx+18,hy+1, ...c.STONE_L);
+      cv.line(hx-5, hy,   hx+25, hy,   ...c.OUTLINE);
+      cv.line(hx-3, hy-8, hx+23, hy-8, ...c.OUTLINE);
+      cv.line(hx-3, hy-8, hx-5,  hy,   ...c.OUTLINE);
+      cv.line(hx+23,hy-8, hx+25, hy,   ...c.OUTLINE);
     } else if (hatStyle === 'cap') {
-      // commoner: soft cloth cap
-      cv.fillRect(hx,   hy-1, 8, 2, ...c.THATCH_D);
-      cv.fillRect(hx+1, hy-4, 6, 4, ...c.THATCH_D);
-      cv.fillRect(hx+2, hy-5, 4, 2, ...c.DIRT_D);
-      cv.line(hx,   hy-1, hx+7, hy-1, ...c.OUTLINE);
-      cv.line(hx+1, hy-4, hx+6, hy-4, ...c.OUTLINE);
+      cv.fillRect(hx,   hy-2, 21, 4, ...c.THATCH_D);
+      cv.fillRect(hx+3, hy-10,15, 10,...c.THATCH_D);
+      cv.fillRect(hx+5, hy-12,11, 4, ...c.DIRT_D);
+      cv.line(hx+5, hy-6, hx+16, hy-6, ...c.DIRT_D, 140);
+      cv.line(hx,   hy-2, hx+20, hy-2, ...c.OUTLINE);
+      cv.line(hx+3, hy-10,hx+17, hy-10,...c.OUTLINE);
     }
 
     // ── neck ──────────────────────────────────────────────────────────────────
-    cv.fillRect(ox+10, hy+8, 4, 4, ...c.SKIN);
+    cv.fillRect(ox+27, hy+21, 10, 8, ...c.SKIN);
+    cv.fillRect(ox+32, hy+22, 4, 6, ...c.SKIN_SH, 40);
 
-    // ── upper torso / collar (16×14 at x=ox+4, y=oy+15) ─────────────────────
-    const tx = ox+4, ty = oy+15;
-    cv.fillRect(tx, ty, 16, 14, ...body);
-    // collar V-notch
-    cv.fillPoly([[tx+6, ty], [tx+10, ty], [tx+8, ty+4]], ...c.PARCH_L);
-    // trim stripe along collar edge
-    cv.line(tx+6, ty, tx+8, ty+4, ...trim);
-    cv.line(tx+8, ty+4, tx+10, ty, ...trim);
-    // shoulder shading (right side darker)
-    cv.fillRect(tx+11, ty+1, 4, 12, ...body, 140);
-    // elder: cloak-trim stripe on shoulders + rank brooch
+    // ── upper torso / collar (42×34 at x=ox+11, y=oy+38) ────────────────────
+    const tx = ox+11, ty = oy+38;
+    cv.fillRect(tx, ty, 42, 34, ...body);
+    cv.fillRect(tx+30, ty+2, 11, 30, ...body, 160);
+    cv.fillPoly([[tx+15, ty], [tx+27, ty], [tx+21, ty+10]], ...c.PARCH_L);
+    cv.fillPoly([[tx+17, ty], [tx+25, ty], [tx+21, ty+6]], ...c.SKIN, 200);
+    cv.line(tx+15, ty, tx+21, ty+10, ...trim);
+    cv.line(tx+21, ty+10, tx+27, ty, ...trim);
+    cv.line(tx+8,  ty+8,  tx+10, ty+28, ...body, 140);
+    cv.line(tx+32, ty+8,  tx+30, ty+28, ...body, 140);
     if (elder) {
-      cv.fillRect(tx,    ty,    4, 14, ...c.PARCH_L, 160); // left cloak trim
-      cv.fillRect(tx+12, ty,    4, 14, ...c.PARCH_L, 160); // right cloak trim
-      // brooch: 3×3 diamond
-      cv.sp(ox+11, ty+6, ...trim);
-      cv.sp(ox+10, ty+7, ...trim); cv.sp(ox+11, ty+7, ...c.PARCH_L); cv.sp(ox+12, ty+7, ...trim);
-      cv.sp(ox+11, ty+8, ...trim);
+      cv.fillRect(tx,    ty,    8, 34, ...c.PARCH_L, 140);
+      cv.fillRect(tx+34, ty,    8, 34, ...c.PARCH_L, 140);
+      cv.line(tx+8,  ty, tx+8,  ty+33, ...trim, 100);
+      cv.line(tx+34, ty, tx+34, ty+33, ...trim, 100);
+      cv.fillPoly([[ox+32,ty+14],[ox+35,ty+17],[ox+32,ty+20],[ox+29,ty+17]], ...trim);
+      cv.sp(ox+32, ty+17, ...c.PARCH_L);
     }
-    // torso outline
-    cv.line(tx,    ty,    tx+15, ty,    ...c.OUTLINE);
-    cv.line(tx,    ty,    tx,    ty+13, ...c.OUTLINE);
-    cv.line(tx+15, ty,    tx+15, ty+13, ...c.OUTLINE);
-    cv.line(tx,    ty+13, tx+15, ty+13, ...c.OUTLINE);
+    cv.line(tx,    ty,    tx+41, ty,    ...c.OUTLINE);
+    cv.line(tx,    ty,    tx,    ty+33, ...c.OUTLINE);
+    cv.line(tx+41, ty,    tx+41, ty+33, ...c.OUTLINE);
+    cv.line(tx,    ty+33, tx+41, ty+33, ...c.OUTLINE);
   };
 
   // ── Portrait definitions (col order: merchant, noble, clergy, guard, commoner)
@@ -1935,25 +1962,23 @@ function makeNPCPortraits() {
     { body: c.DIRT_M,    trim: c.DIRT_D,   hatStyle: 'cap',     hat: c.THATCH_D,   hatTrim: c.DIRT_D   },
   ];
 
-  // Row 0: male base
+  // Row 0: male base — native 64×80
   for (let i = 0; i < 5; i++)
-    drawPortrait(i*24, 0, { ...ARCHETYPES[i] });
+    drawPortrait(i*64, 0, { ...ARCHETYPES[i] });
 
   // Row 1: female base
   for (let i = 0; i < 5; i++)
-    drawPortrait(i*24, 32, { ...ARCHETYPES[i], female: true });
+    drawPortrait(i*64, 80, { ...ARCHETYPES[i], female: true });
 
   // Row 2: elder / leader variants
   for (let i = 0; i < 5; i++)
-    drawPortrait(i*24, 64, { ...ARCHETYPES[i], elder: true });
+    drawPortrait(i*64, 160, { ...ARCHETYPES[i], elder: true });
 
-  // Upscale to 64×80 per cell (320×240 total) from 24×32 base (120×96)
-  const scaled = nearestNeighborScale(cv.data, 120, 96, 320, 240);
-  return makePNG(320, 240, scaled);
+  return cv.toPNG();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// RUMOR STATE ICONS  (ui_state_icons.png — 108×12, nine 12×12 icons)
+// RUMOR STATE ICONS  (ui_state_icons.png — 144×16, nine 16×16 icons)
 //   Matches RumorState enum order (states 0–8):
 //   col 0  UNAWARE      — empty circle (NPC hasn't heard it)
 //   col 1  EVALUATING   — hourglass (pondering / undecided)
@@ -1968,151 +1993,148 @@ function makeNPCPortraits() {
 // Palette-locked; no colours outside P.  Background transparent.
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeStateIcons() {
-  const cv = createCanvas(108, 12);
+  const cv = createCanvas(144, 16);
 
-  // ── 0: UNAWARE — empty circle (NPC is oblivious) ─────────────────────────
+  // ── 0: UNAWARE — empty circle ────────────────────────────────────────────
   {
     const ox = 0;
-    const pts = [[ox+5,1],[ox+8,2],[ox+10,5],[ox+10,7],[ox+8,10],[ox+5,10],[ox+2,8],[ox+1,5],[ox+2,3]];
-    cv.fillPoly(pts, ...c.STONE_M, 100);  // faint fill — not yet reached
+    const pts = [[ox+7,1],[ox+11,2],[ox+14,5],[ox+14,10],[ox+11,13],[ox+7,14],[ox+3,12],[ox+1,8],[ox+1,5],[ox+3,2]];
+    cv.fillPoly(pts, ...c.STONE_M, 100);
     for (let i=0; i<pts.length; i++)
       cv.line(...pts[i], ...pts[(i+1)%pts.length], ...c.STONE_D);
-    // center dot — awareness seed not yet planted
-    cv.sp(ox+5, 5, ...c.STONE_D);
-    cv.sp(ox+5, 6, ...c.STONE_D);
+    cv.sp(ox+7, 7, ...c.STONE_D);
+    cv.sp(ox+7, 8, ...c.STONE_D);
+    cv.sp(ox+8, 7, ...c.STONE_D);
   }
 
   // ── 1: EVALUATING — hourglass ─────────────────────────────────────────────
   {
-    const ox = 12;
-    cv.fillPoly([[ox+2,1],[ox+9,1],[ox+7,5],[ox+4,5]], ...c.THATCH_L);
-    cv.fillPoly([[ox+4,7],[ox+7,7],[ox+9,11],[ox+2,11]], ...c.THATCH_L);
-    cv.sp(ox+5, 5, ...c.MERCH_T);
-    cv.sp(ox+6, 5, ...c.MERCH_T);
-    cv.sp(ox+5, 6, ...c.MERCH_T);
-    cv.sp(ox+6, 6, ...c.MERCH_T);
-    cv.line(ox+2, 1, ox+9, 1,  ...c.OUTLINE);
-    cv.line(ox+9, 1, ox+7, 5,  ...c.OUTLINE);
-    cv.line(ox+7, 5, ox+9, 11, ...c.OUTLINE);
-    cv.line(ox+9, 11,ox+2, 11, ...c.OUTLINE);
-    cv.line(ox+2, 11,ox+4, 7,  ...c.OUTLINE);
-    cv.line(ox+4, 7, ox+4, 5,  ...c.OUTLINE);
-    cv.line(ox+4, 5, ox+2, 1,  ...c.OUTLINE);
+    const ox = 16;
+    cv.fillPoly([[ox+3,1],[ox+12,1],[ox+10,6],[ox+5,6]], ...c.THATCH_L);
+    cv.fillPoly([[ox+5,9],[ox+10,9],[ox+12,15],[ox+3,15]], ...c.THATCH_L);
+    cv.fillRect(ox+6, 6, 3, 4, ...c.MERCH_T);
+    cv.line(ox+3, 1, ox+12, 1,  ...c.OUTLINE);
+    cv.line(ox+12,1, ox+10, 6,  ...c.OUTLINE);
+    cv.line(ox+10,6, ox+12, 15, ...c.OUTLINE);
+    cv.line(ox+12,15,ox+3,  15, ...c.OUTLINE);
+    cv.line(ox+3, 15,ox+5,  9,  ...c.OUTLINE);
+    cv.line(ox+5, 9, ox+5,  6,  ...c.OUTLINE);
+    cv.line(ox+5, 6, ox+3,  1,  ...c.OUTLINE);
   }
 
-  // ── 2: BELIEVE — small scroll with check ─────────────────────────────────
+  // ── 2: BELIEVE — scroll with check ────────────────────────────────────────
   {
-    const ox = 24;
-    cv.fillRect(ox+1, 2, 9, 9, ...c.PARCH_M);
-    cv.fillRect(ox+1, 1, 9, 2, ...c.PARCH_D);
-    cv.fillRect(ox+1, 9, 9, 2, ...c.PARCH_D);
-    cv.line(ox+3, 4, ox+8, 4, ...c.INK, 180);
-    cv.line(ox+3, 6, ox+8, 6, ...c.INK, 140);
-    cv.line(ox+3, 8, ox+6, 8, ...c.INK, 120);
-    cv.sp(ox+7, 7, ...c.WOOD_D);
-    cv.sp(ox+8, 8, ...c.WOOD_D);
-    cv.sp(ox+9, 6, ...c.WOOD_D);
-    cv.line(ox+1, 1, ox+9, 1,  ...c.OUTLINE);
-    cv.line(ox+1, 1, ox+1, 10, ...c.OUTLINE);
-    cv.line(ox+9, 1, ox+9, 10, ...c.OUTLINE);
-    cv.line(ox+1,10, ox+9, 10, ...c.OUTLINE);
+    const ox = 32;
+    cv.fillRect(ox+1, 2, 13, 12, ...c.PARCH_M);
+    cv.fillRect(ox+1, 1, 13, 3, ...c.PARCH_D);
+    cv.fillRect(ox+1, 12, 13, 3, ...c.PARCH_D);
+    cv.line(ox+4, 5, ox+11, 5, ...c.INK, 180);
+    cv.line(ox+4, 7, ox+11, 7, ...c.INK, 140);
+    cv.line(ox+4, 9, ox+8,  9, ...c.INK, 120);
+    // check mark
+    cv.line(ox+9, 9, ox+10,11, ...c.WOOD_D);
+    cv.line(ox+10,11,ox+13, 7, ...c.WOOD_D);
+    cv.line(ox+1, 1, ox+13, 1,  ...c.OUTLINE);
+    cv.line(ox+1, 1, ox+1, 14,  ...c.OUTLINE);
+    cv.line(ox+13,1, ox+13,14,  ...c.OUTLINE);
+    cv.line(ox+1,14, ox+13,14,  ...c.OUTLINE);
   }
 
-  // ── 3: REJECTING — bold diagonal X ───────────────────────────────────────
+  // ── 3: REJECTING — bold X ────────────────────────────────────────────────
   {
-    const ox = 36;
-    // filled X shape — two thick diagonal strokes
-    cv.fillPoly([[ox+2,1],[ox+4,1],[ox+6,4],[ox+8,1],[ox+10,1],[ox+10,3],[ox+8,5],
-                 [ox+10,9],[ox+10,11],[ox+8,11],[ox+6,8],[ox+4,11],[ox+2,11],
-                 [ox+2,9],[ox+4,5],[ox+2,3]], ...c.NOBLE_B);
-    // bright center point
-    cv.sp(ox+5, 5, ...c.NOBLE_T);
-    cv.sp(ox+6, 6, ...c.NOBLE_T);
-    // outline
-    cv.line(ox+2, 1, ox+10, 9,  ...c.OUTLINE);
-    cv.line(ox+10,1, ox+2,  9,  ...c.OUTLINE);
+    const ox = 48;
+    cv.fillPoly([[ox+2,1],[ox+5,1],[ox+8,5],[ox+11,1],[ox+14,1],[ox+14,4],[ox+11,7],
+                 [ox+14,12],[ox+14,15],[ox+11,15],[ox+8,11],[ox+5,15],[ox+2,15],
+                 [ox+2,12],[ox+5,7],[ox+2,4]], ...c.NOBLE_B);
+    cv.sp(ox+7, 7, ...c.NOBLE_T);
+    cv.sp(ox+8, 8, ...c.NOBLE_T);
+    cv.line(ox+2, 1, ox+14, 13, ...c.OUTLINE);
+    cv.line(ox+14,1, ox+2,  13, ...c.OUTLINE);
   }
 
   // ── 4: SPREAD — speech bubble with ripple ────────────────────────────────
   {
-    const ox = 48;
-    cv.fillRect(ox+1, 1, 8, 6, ...c.PARCH_L);
-    cv.fillPoly([[ox+2,7],[ox+5,7],[ox+3,10]], ...c.PARCH_L);
-    cv.sp(ox+3, 3, ...c.CANVAS);
-    cv.sp(ox+5, 3, ...c.CANVAS);
-    cv.sp(ox+7, 3, ...c.CANVAS);
-    cv.sp(ox+10, 2, ...c.FORGE, 180);
-    cv.sp(ox+10, 4, ...c.FORGE, 200);
-    cv.sp(ox+10, 6, ...c.FORGE, 180);
-    cv.line(ox+1, 1, ox+8, 1,  ...c.OUTLINE);
-    cv.line(ox+1, 1, ox+1, 6,  ...c.OUTLINE);
-    cv.line(ox+1, 6, ox+8, 6,  ...c.OUTLINE);
-    cv.line(ox+8, 1, ox+8, 6,  ...c.OUTLINE);
-    cv.line(ox+2, 7, ox+3,10,  ...c.OUTLINE);
-    cv.line(ox+5, 7, ox+3,10,  ...c.OUTLINE);
+    const ox = 64;
+    cv.fillRect(ox+1, 1, 11, 8, ...c.PARCH_L);
+    cv.fillPoly([[ox+3,9],[ox+7,9],[ox+4,14]], ...c.PARCH_L);
+    cv.sp(ox+4, 4, ...c.CANVAS);
+    cv.sp(ox+7, 4, ...c.CANVAS);
+    cv.sp(ox+10,4, ...c.CANVAS);
+    // ripple arcs
+    cv.sp(ox+13, 3, ...c.FORGE, 180);
+    cv.sp(ox+13, 5, ...c.FORGE, 200);
+    cv.sp(ox+13, 7, ...c.FORGE, 180);
+    cv.sp(ox+14, 4, ...c.FORGE, 140);
+    cv.sp(ox+14, 6, ...c.FORGE, 140);
+    cv.line(ox+1, 1, ox+11, 1,  ...c.OUTLINE);
+    cv.line(ox+1, 1, ox+1,  8,  ...c.OUTLINE);
+    cv.line(ox+1, 8, ox+11, 8,  ...c.OUTLINE);
+    cv.line(ox+11,1, ox+11, 8,  ...c.OUTLINE);
+    cv.line(ox+3, 9, ox+4, 14,  ...c.OUTLINE);
+    cv.line(ox+7, 9, ox+4, 14,  ...c.OUTLINE);
   }
 
   // ── 5: ACT — lightning bolt ───────────────────────────────────────────────
   {
-    const ox = 60;
-    cv.fillPoly([[ox+6,1],[ox+3,6],[ox+6,6],[ox+4,11],[ox+9,5],[ox+6,5],[ox+8,1]], ...c.FLAG_R);
-    cv.line(ox+6, 1, ox+8, 1, ...c.ROOF_TILE, 200);
-    cv.line(ox+9, 5, ox+6, 5, ...c.ROOF_TILE, 160);
-    cv.line(ox+6, 1, ox+8, 1,  ...c.OUTLINE);
-    cv.line(ox+8, 1, ox+9, 5,  ...c.OUTLINE);
-    cv.line(ox+9, 5, ox+6, 5,  ...c.OUTLINE);
-    cv.line(ox+6, 5, ox+4,11,  ...c.OUTLINE);
-    cv.line(ox+4,11, ox+3, 6,  ...c.OUTLINE);
-    cv.line(ox+3, 6, ox+6, 6,  ...c.OUTLINE);
-    cv.line(ox+6, 6, ox+6, 1,  ...c.OUTLINE);
+    const ox = 80;
+    cv.fillPoly([[ox+8,1],[ox+4,7],[ox+7,7],[ox+5,15],[ox+12,6],[ox+8,6],[ox+11,1]], ...c.FLAG_R);
+    cv.line(ox+8,  1, ox+11, 1, ...c.ROOF_TILE, 200);
+    cv.line(ox+12, 6, ox+8,  6, ...c.ROOF_TILE, 160);
+    cv.line(ox+8, 1, ox+11, 1,  ...c.OUTLINE);
+    cv.line(ox+11,1, ox+12, 6,  ...c.OUTLINE);
+    cv.line(ox+12,6, ox+8,  6,  ...c.OUTLINE);
+    cv.line(ox+8, 6, ox+5, 15,  ...c.OUTLINE);
+    cv.line(ox+5,15, ox+4,  7,  ...c.OUTLINE);
+    cv.line(ox+4, 7, ox+7,  7,  ...c.OUTLINE);
+    cv.line(ox+7, 7, ox+8,  1,  ...c.OUTLINE);
   }
 
   // ── 6: CONTRADICTED — two arrows clashing ────────────────────────────────
   {
-    const ox = 72;
-    cv.line(ox+1, 4, ox+5, 4, ...c.MERCH_B);
-    cv.fillPoly([[ox+4,2],[ox+7,4],[ox+4,6]], ...c.MERCH_B);
-    cv.line(ox+10,8, ox+6, 8, ...c.NOBLE_B);
-    cv.fillPoly([[ox+7,6],[ox+4,8],[ox+7,10]], ...c.NOBLE_B);
-    cv.line(ox+4, 4, ox+8, 8,  ...c.OUTLINE);
-    cv.line(ox+8, 4, ox+4, 8,  ...c.OUTLINE);
-    cv.line(ox+1, 4, ox+4, 4,  ...c.OUTLINE);
-    cv.line(ox+10,8, ox+7, 8,  ...c.OUTLINE);
+    const ox = 96;
+    // right-pointing arrow (top)
+    cv.line(ox+1, 5, ox+7, 5, ...c.MERCH_B);
+    cv.fillPoly([[ox+6,3],[ox+9,5],[ox+6,7]], ...c.MERCH_B);
+    // left-pointing arrow (bottom)
+    cv.line(ox+14,10, ox+8, 10, ...c.NOBLE_B);
+    cv.fillPoly([[ox+9,8],[ox+6,10],[ox+9,12]], ...c.NOBLE_B);
+    // clash marks
+    cv.line(ox+6, 5, ox+10,10, ...c.OUTLINE);
+    cv.line(ox+10,5, ox+6, 10, ...c.OUTLINE);
+    cv.line(ox+1, 5, ox+6, 5,  ...c.OUTLINE);
+    cv.line(ox+14,10,ox+9, 10, ...c.OUTLINE);
   }
 
   // ── 7: EXPIRED — circle with X ───────────────────────────────────────────
   {
-    const ox = 84;
-    const pts = [[ox+5,1],[ox+8,2],[ox+10,5],[ox+10,7],[ox+8,10],[ox+5,10],[ox+2,8],[ox+1,5],[ox+2,3]];
+    const ox = 112;
+    const pts = [[ox+7,1],[ox+11,2],[ox+14,5],[ox+14,10],[ox+11,13],[ox+7,14],[ox+3,12],[ox+1,8],[ox+1,5],[ox+3,2]];
     cv.fillPoly(pts, ...c.STONE_M, 200);
-    cv.line(ox+3, 3, ox+8, 8, ...c.STONE_D);
-    cv.line(ox+8, 3, ox+3, 8, ...c.STONE_D);
+    cv.line(ox+4, 4, ox+11, 11, ...c.STONE_D);
+    cv.line(ox+11,4, ox+4,  11, ...c.STONE_D);
     for (let i=0; i<pts.length; i++)
       cv.line(...pts[i], ...pts[(i+1)%pts.length], ...c.OUTLINE);
   }
 
   // ── 8: DEFENDING — kite shield ───────────────────────────────────────────
   {
-    const ox = 96;
-    // kite shield silhouette: pointed bottom, rounded top
+    const ox = 128;
     cv.fillPoly([
-      [ox+3,1],[ox+8,1],[ox+10,3],[ox+10,7],[ox+6,11],[ox+2,7],[ox+2,3],
+      [ox+4,1],[ox+11,1],[ox+14,4],[ox+14,10],[ox+8,15],[ox+2,10],[ox+2,4],
     ], ...c.WATER_D);
-    // horizontal division bar (boss line)
-    cv.line(ox+2, 6, ox+10, 6, ...c.WATER_L, 180);
-    // center boss (small diamond)
-    cv.sp(ox+5, 5, ...c.WATER_L);
-    cv.sp(ox+6, 5, ...c.WATER_L);
-    cv.sp(ox+5, 6, ...c.WATER_L);
-    cv.sp(ox+6, 6, ...c.WATER_L);
+    // boss line + center diamond
+    cv.line(ox+2, 8, ox+14, 8, ...c.WATER_L, 180);
+    cv.fillRect(ox+6, 6, 4, 4, ...c.WATER_L, 160);
+    cv.sp(ox+7, 7, ...c.WATER_L);
+    cv.sp(ox+8, 8, ...c.WATER_L);
     // outline
-    cv.line(ox+3,1,  ox+8,1,  ...c.OUTLINE);
-    cv.line(ox+8,1,  ox+10,3, ...c.OUTLINE);
-    cv.line(ox+10,3, ox+10,7, ...c.OUTLINE);
-    cv.line(ox+10,7, ox+6,11, ...c.OUTLINE);
-    cv.line(ox+6,11, ox+2,7,  ...c.OUTLINE);
-    cv.line(ox+2,7,  ox+2,3,  ...c.OUTLINE);
-    cv.line(ox+2,3,  ox+3,1,  ...c.OUTLINE);
+    cv.line(ox+4, 1,  ox+11,1,  ...c.OUTLINE);
+    cv.line(ox+11,1,  ox+14,4,  ...c.OUTLINE);
+    cv.line(ox+14,4,  ox+14,10, ...c.OUTLINE);
+    cv.line(ox+14,10, ox+8, 15, ...c.OUTLINE);
+    cv.line(ox+8, 15, ox+2, 10, ...c.OUTLINE);
+    cv.line(ox+2, 10, ox+2, 4,  ...c.OUTLINE);
+    cv.line(ox+2, 4,  ox+4, 1,  ...c.OUTLINE);
   }
 
   return cv.toPNG();
