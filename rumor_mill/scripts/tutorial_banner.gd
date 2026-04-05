@@ -114,6 +114,21 @@ func unsuppress() -> void:
 		_show_next()
 
 
+## Replay the most recently shown hint (triggered by H hotkey).
+func replay_hint() -> void:
+	if _tutorial_sys == null:
+		return
+	# If a hint is already visible, ignore the replay request.
+	if _active_id != "":
+		return
+	var hint_id: String = _tutorial_sys.replay_current_hint()
+	if hint_id == "":
+		return
+	_queue.push_front({"id": hint_id, "body_override": ""})
+	if not _suppressed:
+		_show_next()
+
+
 # ── Per-frame auto-dismiss timer ──────────────────────────────────────────────
 
 func _process(delta: float) -> void:
@@ -147,6 +162,7 @@ func _show_next() -> void:
 		return
 
 	_active_id  = hint_id
+	_tutorial_sys.set_last_hint(hint_id)
 	_auto_secs  = float(data.get("auto_dismiss_secs", 7))
 	_timer      = _auto_secs
 

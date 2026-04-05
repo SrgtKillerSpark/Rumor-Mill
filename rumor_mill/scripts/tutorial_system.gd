@@ -54,7 +54,8 @@ const TOOLTIP_DATA: Dictionary = {
 			+ "• [b]Middle Mouse Drag[/b] — free pan\n\n"
 			+ "[b]Key Hotkeys:[/b]\n"
 			+ "  [b]R[/b] = Rumour Panel   [b]J[/b] = Journal\n"
-			+ "  [b]G[/b] = Social Graph   [b]Space[/b] = Pause"
+			+ "  [b]G[/b] = Social Graph   [b]Space[/b] = Pause\n"
+			+ "  [b]H[/b] = Replay last hint"
 		),
 	},
 	"recon_actions": {
@@ -404,6 +405,9 @@ const CONTEXT_HINT_DATA: Dictionary = {
 ## Tracks which tooltip IDs have been seen this session.
 var _seen: Dictionary = {}
 
+## The most recently shown hint/tooltip ID (for replay via H hotkey).
+var _last_hint_id: String = ""
+
 
 ## Returns true if the given tooltip has already been shown this session.
 func has_seen(tooltip_id: String) -> bool:
@@ -433,3 +437,17 @@ func get_hint(hint_id: String) -> Dictionary:
 	if result.is_empty():
 		result = CONTEXT_HINT_DATA.get(hint_id, {})
 	return result
+
+
+## Record the most recently displayed hint so H can replay it.
+func set_last_hint(hint_id: String) -> void:
+	_last_hint_id = hint_id
+
+
+## Replay the most recently shown hint by un-marking it as seen and returning
+## its ID.  Returns "" if no hint has been shown yet.
+func replay_current_hint() -> String:
+	if _last_hint_id == "":
+		return ""
+	_seen.erase(_last_hint_id)
+	return _last_hint_id

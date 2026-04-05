@@ -85,6 +85,9 @@ var _has_crafted_any_rumor:      bool = false  # true after first rumor seeded
 # Guards against double-initialisation if begin_game fires more than once.
 var _game_started: bool = false
 
+# ── SPA-518: Help hotkey reminder label ──────────────────────────────────────
+var _help_reminder: Label = null
+
 # ── SPA-272: Per-session achievement tracking ─────────────────────────────────
 var _ach_exposed:       bool = false   # true if player_exposed fired this game
 var _ach_actions_used:  Dictionary = {}  # action key → true (observe/eavesdrop/craft/bribe)
@@ -124,6 +127,16 @@ func _ready() -> void:
 	add_child(_main_menu)
 	_main_menu.begin_game.connect(_on_begin_game)
 
+
+## SPA-518: H hotkey replays the most recent tutorial hint banner.
+func _unhandled_input(event: InputEvent) -> void:
+	if not _game_started:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_H:
+			if _tutorial_banner != null and _tutorial_banner.has_method("replay_hint"):
+				_tutorial_banner.replay_hint()
+				get_viewport().set_input_as_handled()
 
 
 ## Called when the player clicks Begin on the scenario intro screen.
@@ -479,6 +492,7 @@ func _init_tutorial_system() -> void:
 		_init_context_banner()
 
 	_init_idle_hints()
+	_init_help_reminder()
 
 
 ## All scenarios except S1: non-blocking contextual hint banner for day-gated tips.
@@ -881,6 +895,38 @@ func _on_idle_timeout() -> void:
 	if _idle_timer != null:
 		_idle_timer.wait_time = 60.0
 		_idle_timer.start()
+
+
+## SPA-518: "Press H for help" reminder in bottom-right, visible for 60 s then fades out.
+func _init_help_reminder() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 18
+	layer.name = "HelpReminderLayer"
+	add_child(layer)
+
+	_help_reminder = Label.new()
+	_help_reminder.text = "Press H for help"
+	_help_reminder.add_theme_font_size_override("font_size", 12)
+	_help_reminder.add_theme_color_override("font_color", Color(0.80, 0.72, 0.55, 0.70))
+	_help_reminder.anchor_left   = 1.0
+	_help_reminder.anchor_top    = 1.0
+	_help_reminder.anchor_right  = 1.0
+	_help_reminder.anchor_bottom = 1.0
+	_help_reminder.offset_left   = -140
+	_help_reminder.offset_top    = -40
+	_help_reminder.offset_right  = -16
+	_help_reminder.offset_bottom = -16
+	_help_reminder.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	layer.add_child(_help_reminder)
+
+	# Fade out after 60 seconds.
+	var fade_timer := get_tree().create_timer(60.0)
+	fade_timer.timeout.connect(func() -> void:
+		if _help_reminder != null and is_instance_valid(_help_reminder):
+			var tw := create_tween()
+			tw.tween_property(_help_reminder, "modulate:a", 0.0, 1.0)
+			tw.tween_callback(_help_reminder.queue_free)
+	)
 
 
 ## Evidence tutorial trigger — fires once when compatible evidence is first shown (S2/S3).
