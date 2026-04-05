@@ -56,20 +56,22 @@ var _faction_panel: Panel = null
 var _faction_labels: Dictionary = {}  # faction_id → {mood: Label, bar: ColorRect}
 var _world_ref: Node2D = null
 
-# ── Context-sensitive "what to do next" nudge (SPA-520) ─────────────────────
+# ── Context-sensitive "what to do next" nudge (SPA-520 / SPA-537) ───────────
 var _nudge_label: Label = null
+var _nudge_pulse_tween: Tween = null
 ## Tracks which loop step the player has reached.  Once phase reaches 4 the
 ## nudge hides permanently for this session.
 ## 0 = observe, 1 = eavesdrop ×2, 2 = open Rumour Panel, 3 = watch spread, 4 = done
 var _nudge_phase: int = 0
+var _nudge_last_phase: int = -1  # tracks phase transitions for pulse effect
 
 const _NUDGE_TEXTS: PackedStringArray = PackedStringArray([
-	"Try observing a building",
-	"Try eavesdropping on two NPCs",
-	"Open the Rumour Panel (R)",
-	"Watch your rumour spread",
+	"NEXT: Right-click a building to Observe who is inside",
+	"NEXT: Right-click two NPCs in conversation to Eavesdrop",
+	"NEXT: Press R to craft your first Rumour",
+	"Watch your rumour spread — check the Journal (J) for details",
 ])
-const C_NUDGE := Color(0.75, 0.90, 0.65, 1.0)  # soft green hint colour
+const C_NUDGE := Color(0.40, 1.0, 0.50, 1.0)  # brighter green for visibility
 
 # ── Urgency colour palette for day counter ───────────────────────────────────
 const C_DAY_SAFE    := Color(0.30, 0.85, 0.35, 1.0)  # green
@@ -167,10 +169,10 @@ func _build_nudge_label() -> void:
 	_nudge_label = Label.new()
 	_nudge_label.text = ""
 	_nudge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_nudge_label.add_theme_font_size_override("font_size", 11)
+	_nudge_label.add_theme_font_size_override("font_size", 14)
 	_nudge_label.add_theme_color_override("font_color", C_NUDGE)
-	_nudge_label.add_theme_constant_override("outline_size", 2)
-	_nudge_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	_nudge_label.add_theme_constant_override("outline_size", 3)
+	_nudge_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
 	# Insert right after DayRow (index 0 in VBox).
 	vbox.add_child(_nudge_label)
 	vbox.move_child(_nudge_label, 1)
@@ -214,6 +216,33 @@ func _refresh_nudge() -> void:
 	else:
 		_nudge_label.text = "▸ " + _NUDGE_TEXTS[_nudge_phase]
 		_nudge_label.visible = true
+		# SPA-537: pulse the nudge label when the phase changes so it's unmissable.
+		if _nudge_phase != _nudge_last_phase:
+			_nudge_last_phase = _nudge_phase
+			_pulse_nudge()
+
+
+## SPA-537: Attention pulse when the nudge text changes — scales up then back,
+## and flashes a bright colour so the player cannot miss the new instruction.
+func _pulse_nudge() -> void:
+	if _nudge_label == null:
+		return
+	if _nudge_pulse_tween != null and _nudge_pulse_tween.is_valid():
+		_nudge_pulse_tween.kill()
+		_nudge_label.scale = Vector2.ONE
+		_nudge_label.add_theme_color_override("font_color", C_NUDGE)
+	_nudge_label.pivot_offset = _nudge_label.size / 2.0
+	_nudge_pulse_tween = create_tween()
+	# Flash bright white-green, then settle back to normal.
+	var flash_color := Color(0.90, 1.0, 0.70, 1.0)
+	_nudge_pulse_tween.tween_property(_nudge_label, "scale", Vector2(1.15, 1.15), 0.2) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_nudge_pulse_tween.parallel().tween_method(
+		func(c: Color) -> void: _nudge_label.add_theme_color_override("font_color", c),
+		flash_color, C_NUDGE, 0.6
+	)
+	_nudge_pulse_tween.tween_property(_nudge_label, "scale", Vector2(1.0, 1.0), 0.25) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 
 
 func _refresh_time() -> void:
@@ -375,9 +404,9 @@ func _build_metrics_row() -> void:
 func _make_metric_label(text: String) -> Label:
 	var lbl := Label.new()
 	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 13)
-	lbl.add_theme_constant_override("outline_size", 2)
-	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	lbl.add_theme_font_size_override("font_size", 15)
+	lbl.add_theme_constant_override("outline_size", 3)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
 	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	return lbl
 

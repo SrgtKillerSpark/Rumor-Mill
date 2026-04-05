@@ -41,6 +41,9 @@ var _end_screen: CanvasLayer = null
 # ── SPA-519: Day 1 ready overlay ─────────────────────────────────────────────
 var _ready_overlay: CanvasLayer = null
 
+# ── SPA-541: Persistent controls reference overlay ───────────────────────────
+var _controls_ref: CanvasLayer = null
+
 # ── SPA-212: Analytics data collector ─────────────────────────────────────────
 var _analytics: ScenarioAnalytics = null
 
@@ -514,6 +517,7 @@ func _init_tutorial_system() -> void:
 		_init_context_banner()
 
 	_init_idle_hints()
+	_init_controls_reference()
 	_init_help_reminder()
 
 
@@ -525,14 +529,15 @@ func _init_context_banner() -> void:
 	add_child(_tutorial_banner)
 	_tutorial_banner.setup(_tutorial_sys)
 
-	# SPA-479: scenario-specific opening hints — fire after blocking tooltips dismiss.
+	# SPA-537: "Your First Move" hints — tightened timing (mission briefing
+	# is now shown by the ready overlay before gameplay starts).
 	var _opening_hint_id: String = ""
 	match world.active_scenario_id:
 		"scenario_2": _opening_hint_id = "ctx_s2_opening"
 		"scenario_3": _opening_hint_id = "ctx_s3_opening"
 		"scenario_4": _opening_hint_id = "ctx_s4_opening"
 	if _opening_hint_id != "":
-		var _open_timer := get_tree().create_timer(8.0)  # delay for blocking tooltips
+		var _open_timer := get_tree().create_timer(4.0)  # tightened from 8 s
 		var _hint_id_copy: String = _opening_hint_id
 		_open_timer.timeout.connect(func() -> void:
 			if _tutorial_banner != null:
@@ -885,6 +890,13 @@ func _on_ctx_tokens_exhausted() -> void:
 
 ## ── SPA-487: Idle-detection hint system ──────────────────────────────────────
 ## Fires contextual hints when the player hasn't taken actions for a while.
+
+## SPA-541: Persistent controls reference overlay (F1 to toggle).
+func _init_controls_reference() -> void:
+	_controls_ref = preload("res://scripts/controls_reference.gd").new()
+	_controls_ref.name = "ControlsReference"
+	add_child(_controls_ref)
+
 
 func _init_idle_hints() -> void:
 	_idle_timer = Timer.new()

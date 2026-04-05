@@ -35,14 +35,14 @@ const TOOLTIP_ORDER: Array = [
 ## Tooltip content: title + BBCode body text.
 const TOOLTIP_DATA: Dictionary = {
 	"core_loop": {
-		"title": "How to Play — The Core Loop",
+		"title": "How to Play — Four Steps",
 		"body":  (
-			"Your goal is to manipulate the town through rumours. Here is the loop:\n\n"
+			"You manipulate the town through rumours. Every day, repeat this loop:\n\n"
 			+ "  1. [b]OBSERVE[/b] — Right-click a building to see who is inside.\n"
 			+ "  2. [b]EAVESDROP[/b] — Right-click two NPCs talking to learn their bond.\n"
-			+ "  3. [b]CRAFT A RUMOUR[/b] — Press [b]R[/b] to pick a subject, claim, and seed target.\n"
+			+ "  3. [b]CRAFT A RUMOUR[/b] — Press [b]R[/b], pick a subject + claim + seed target.\n"
 			+ "  4. [b]WATCH IT SPREAD[/b] — Believers tell others; reputations shift.\n\n"
-			+ "Repeat this loop each day. Check the [b]Objective HUD[/b] (top) to track progress."
+			+ "The [b]Objective HUD[/b] (top of screen) always shows your next step."
 		),
 	},
 	"navigation_controls": {
@@ -170,29 +170,29 @@ const TOOLTIP_DATA: Dictionary = {
 
 const HINT_DATA: Dictionary = {
 	"hint_camera": {
-		"title": "Your Mission Begins",
+		"title": "Your Mission",
 		"body":  (
-			"You are a [b]rumor-monger[/b] — hired to [b]destroy Lord Edric Fenn's reputation[/b] "
-			+ "before the tax rolls are signed.  Observe, eavesdrop, craft lies, and plant them.  "
-			+ "Use [b]WASD[/b] to look around.  [b]Scroll[/b] to zoom."
+			"[b]GOAL:[/b] Destroy [b]Lord Edric Fenn's[/b] reputation (below 30).  "
+			+ "[b]HOW:[/b] Observe → Eavesdrop → Craft Rumour → Watch it Spread.  "
+			+ "Use [b]WASD[/b] to pan, [b]Scroll[/b] to zoom, [b]Space[/b] to pause."
 		),
 		"auto_dismiss_secs": 9,
 	},
 	"hint_first_action": {
 		"title": "Step 1: Observe a Building",
 		"body":  (
-			"[b]Right-click a building[/b] to [b]Observe[/b] who is inside.  "
-			+ "Try the [b]Market Square[/b] — it's always busy.  "
-			+ "You have [b]3 actions[/b] per day. This is your first."
+			"[b]Right-click any building[/b] to see who is inside.  "
+			+ "Start with the [b]Market Square[/b] — it has the most NPCs.  "
+			+ "You get [b]3 actions per day[/b] (recon + eavesdrop share this pool)."
 		),
 		"auto_dismiss_secs": 9,
 	},
 	"hint_target_npc": {
-		"title": "Step 2: Eavesdrop on Conversations",
+		"title": "Step 2: Find Your Target",
 		"body":  (
-			"Your target is [b]Lord Edric Fenn[/b].  Hover over townspeople to find him.  "
-			+ "[b]Right-click two NPCs in conversation[/b] to Eavesdrop — you will learn who trusts whom.  "
-			+ "This intel is the raw material for your rumors."
+			"[b]Hover[/b] over townspeople to see their names.  Find [b]Lord Edric Fenn[/b].  "
+			+ "[b]Right-click two NPCs near each other[/b] to Eavesdrop on their relationship.  "
+			+ "Strong bonds = fast rumour spread."
 		),
 		"auto_dismiss_secs": 9,
 	},
@@ -233,34 +233,37 @@ const HINT_DATA: Dictionary = {
 	"hint_rumour_panel": {
 		"title": "Step 3: Craft Your First Rumour",
 		"body":  (
-			"Press [b]R[/b] to open the Rumour Panel.  "
-			+ "Pick a [b]subject[/b] (who the rumour is about), choose a [b]claim[/b] (scandal, illness, praise), "
-			+ "then pick a [b]seed target[/b] — the person you will whisper it to.  This is the core of the game."
+			"Press [b]R[/b] now to open the Rumour Panel.  Three steps:\n"
+			+ "  1. Pick a [b]subject[/b] — who the rumour targets\n"
+			+ "  2. Choose a [b]claim[/b] — Scandal works well against Edric\n"
+			+ "  3. Pick a [b]seed target[/b] — whisper it to a well-connected NPC"
 		),
-		"auto_dismiss_secs": 9,
+		"auto_dismiss_secs": 10,
 	},
 	"hint_seed_target": {
-		"title": "Choose Your Seed Target",
+		"title": "Pick a Well-Connected Seed Target",
 		"body":  (
-			"Pick someone [b]well-connected[/b] — high sociability spreads your rumour further.  "
-			+ "NPCs you have eavesdropped will show their estimated reach."
+			"Choose someone with [b]high sociability[/b] — they spread rumours faster.  "
+			+ "NPCs you eavesdropped show their [b]estimated reach[/b].  "
+			+ "Merchants in the Market are often well-connected."
 		),
 		"auto_dismiss_secs": 9,
 	},
 	"hint_propagation": {
-		"title": "Watch the Rumour Spread",
+		"title": "Step 4: Watch It Spread",
 		"body":  (
-			"The seed target is now [b]Evaluating[/b] your rumour.  "
-			+ "Once they [b]Believe[/b], they will tell others.  "
-			+ "Check [b]Journal → Rumours[/b] to follow every believer."
+			"Your rumour is planted! The seed target is [b]Evaluating[/b] it.  "
+			+ "If they [b]Believe[/b], they tell others → the rumour [b]Spreads[/b].  "
+			+ "Press [b]J[/b] to track believers. Press [b]G[/b] to see the social graph."
 		),
 		"auto_dismiss_secs": 9,
 	},
 	"hint_objectives": {
-		"title": "Track Your Goal",
+		"title": "Check Your Progress",
 		"body":  (
-			"Press [b]J[/b] and open the [b]Objectives[/b] tab to track Edric Fenn's "
-			+ "current reputation score.  You need to bring it below 30.  You have 30 days."
+			"The [b]Objective HUD[/b] at the top tracks Edric's reputation.  "
+			+ "Press [b]J → Objectives[/b] for the full breakdown.  "
+			+ "Target: below [b]30[/b]. You have [b]30 days[/b]. Keep seeding rumours!"
 		),
 		"auto_dismiss_secs": 7,
 	},
@@ -356,31 +359,32 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"auto_dismiss_secs": 9,
 	},
 	"ctx_s2_opening": {
-		"title": "The Plague Scare — First Move",
+		"title": "Your First Move",
 		"body":  (
-			"[b]Observe[/b] the [b]Apothecary[/b] or [b]Market[/b] to find NPCs connected to [b]Alys Herbwife[/b].  "
-			+ "Then craft an [b]Illness[/b] rumor — you need [b]6 believers[/b] to win.  "
-			+ "Watch out for [b]Sister Maren[/b] — if she rejects the rumor, you lose."
+			"[b]Right-click[/b] the [b]Market[/b] or [b]Apothecary[/b] to find NPCs near [b]Alys Herbwife[/b].  "
+			+ "Then press [b]R[/b] → pick Alys → choose [b]Illness[/b] → whisper to someone credulous like [b]Sybil Oats[/b].  "
+			+ "[b]AVOID Sister Maren[/b] — if she rejects ANY illness rumour, you lose instantly."
 		),
-		"auto_dismiss_secs": 10,
+		"auto_dismiss_secs": 12,
 	},
 	"ctx_s3_opening": {
-		"title": "The Succession — First Move",
+		"title": "Your First Move",
 		"body":  (
-			"You fight on [b]two fronts[/b]: raise [b]Calder Fenn[/b] with [b]Praise[/b] "
-			+ "and tear down [b]Tomas Reeve[/b] with [b]Scandal[/b].  "
-			+ "A [b]rival agent[/b] works against you — act fast!"
+			"Two targets, two actions:\n"
+			+ "  1. Press [b]R[/b] → [b]Praise Calder Fenn[/b] → whisper to his allies\n"
+			+ "  2. Press [b]R[/b] → [b]Scandal Tomas Reeve[/b] → whisper to the merchants\n"
+			+ "A [b]rival agent[/b] works against you — check the Scenario HUD for their moves."
 		),
-		"auto_dismiss_secs": 10,
+		"auto_dismiss_secs": 12,
 	},
 	"ctx_s4_opening": {
-		"title": "The Holy Inquisition — First Move",
+		"title": "Your First Move",
 		"body":  (
-			"This is a [b]defense mission[/b].  An Inquisitor will attack [b]Aldous[/b], [b]Vera[/b], and [b]Finn[/b].  "
-			+ "Use [b]Praise[/b] rumours to keep their reputations [b]above 45[/b].  "
-			+ "Watch the Inquisitor HUD for incoming attacks."
+			"This is [b]defense[/b]. Check the [b]Scenario HUD[/b] — see who is closest to the danger zone.  "
+			+ "Press [b]R[/b] → pick the most threatened NPC → choose [b]Praise[/b] → whisper to their strongest ally.  "
+			+ "[b]Finn Monk[/b] is the most vulnerable — prioritize him first."
 		),
-		"auto_dismiss_secs": 10,
+		"auto_dismiss_secs": 12,
 	},
 	"ctx_idle_no_action": {
 		"title": "Need a Nudge?",
