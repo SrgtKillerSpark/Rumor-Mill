@@ -583,11 +583,12 @@ func _apply_active_scenario() -> void:
 		var excluded: Array = scenario_data.get("targetShiftExcluded", [])
 		propagation_engine.target_shift_excluded_ids.assign(excluded)
 
-	# 6. Heat + Bribery: disabled in Scenario 1 (tutorial) and Scenario 4 (pure defense).
+	# 6. Heat + Bribery: heat disabled only in Scenario 4 (pure defense);
+	#    enabled in S1 so the exposed fail condition can fire (SPA-502).
 	if intel_store != null:
 		var non_tutorial := (active_scenario_id != "scenario_1")
 		var bribery_allowed := non_tutorial and (active_scenario_id != "scenario_4")
-		intel_store.heat_enabled   = non_tutorial
+		intel_store.heat_enabled   = (active_scenario_id != "scenario_4")
 		intel_store.bribe_charges  = 2 if bribery_allowed else 0
 
 	# 7. Difficulty modifiers — adjust action budgets, heat decay, time limit, rival speed.
@@ -601,10 +602,11 @@ func _apply_active_scenario() -> void:
 			PlayerIntelStore.MAX_DAILY_ACTIONS  + int(diff_mods.get("action_bonus",  0)))
 		intel_store.whisper_tokens_remaining = intel_store.max_daily_whispers
 		intel_store.recon_actions_remaining  = intel_store.max_daily_actions
-		# Heat decay override (skip for tutorial where heat is disabled).
-		if non_tutorial:
+		# Heat decay override (skip for S4 where heat is disabled).
+		if active_scenario_id != "scenario_4":
 			intel_store.heat_decay_override = float(diff_mods.get("heat_decay", 6.0))
 	if scenario_manager != null:
+		scenario_manager.set_intel_store(intel_store)
 		var days_bonus: int = int(diff_mods.get("days_bonus", 0))
 		if days_bonus != 0:
 			var adjusted: int = maxi(1, scenario_manager.get_days_allowed() + days_bonus)

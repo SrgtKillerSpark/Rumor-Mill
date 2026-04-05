@@ -6,6 +6,9 @@
 ##
 ## Scenario 1 — The Alderman's Ruin:
 ##   WIN:  reputation(edric_fenn) < 30
+##   FAIL: any NPC heat >= 80 (exposed / SPA-502)
+##         OR caught eavesdropping (instant exposed)
+##         OR days elapsed > days_allowed (timeout)
 ##
 ## Scenario 2 — The Plague Scare:
 ##   WIN:  6+ NPCs in BELIEVE/SPREAD/ACT for illness rumors about alys_herbwife
@@ -105,6 +108,11 @@ func override_days_allowed(new_days: int) -> void:
 	_days_allowed = new_days
 
 
+## Set the intel store reference (for heat-based exposure checks in S1).
+func set_intel_store(store: PlayerIntelStore) -> void:
+	_intel_store = store
+
+
 ## Returns the current in-game day (1-based) derived from the tick counter.
 ## All scenario resolution checks use this formula, so HUDs should too.
 func get_current_day(current_tick: int) -> int:
@@ -118,10 +126,13 @@ const MAREN_NUN_ID     := "maren_nun"
 const CALDER_FENN_ID   := "calder_fenn"
 const TOMAS_REEVE_ID   := "tomas_reeve"
 
-# Scenario 1 threshold.
+# Scenario 1 thresholds.
 # SPA-98: raised from 25 — Edric's credulity=0.05 and loyalty=0.80 override make
 # the original 26-point drop punishing for a tutorial scenario.
 const S1_WIN_EDRIC_BELOW   := 30
+# SPA-502: cumulative exposure threshold — when any NPC's heat reaches this value,
+# the Guard Captain connects the dots and the player is exposed.
+const S1_EXPOSED_HEAT      := 80.0
 
 # Scenario 2 thresholds.
 # Win when 6+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
@@ -155,6 +166,9 @@ signal scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioState)
 ## Emitted once when the scenario crosses a deadline threshold (0.75 or 0.90).
 ## threshold: 0.75 or 0.90.  days_remaining: int.
 signal deadline_warning(threshold: float, days_remaining: int)
+
+## Optional reference to the player intel store (for heat-based fail checks).
+var _intel_store: PlayerIntelStore = null
 
 var scenario_1_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_2_state: ScenarioState = ScenarioState.ACTIVE
@@ -231,6 +245,13 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 		scenario_1_state = ScenarioState.WON
 		scenario_resolved.emit(1, ScenarioState.WON)
 		return
+	# Exposed fail: any NPC's suspicion of the player exceeds threshold (SPA-502).
+	if _intel_store != null:
+		for npc_id in _intel_store.heat:
+			if _intel_store.heat[npc_id] >= S1_EXPOSED_HEAT:
+				scenario_1_state = ScenarioState.FAILED
+				scenario_resolved.emit(1, ScenarioState.FAILED)
+				return
 	# Timeout fail: days elapsed exceeds the scenario timer.
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
 	if current_day > _days_allowed:
