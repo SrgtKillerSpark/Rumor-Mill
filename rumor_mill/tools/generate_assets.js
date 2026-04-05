@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * generate_assets.js — Art Pass 4 pixel-art generator for Rumor Mill (SPA-410)
+ * generate_assets.js — Art Pass 9 pixel-art generator for Rumor Mill (SPA-507)
  *
  * Produces all textures needed:
  *   assets/textures/tiles_ground.png      (192×32 — 3 ground variants)
@@ -215,11 +215,22 @@ function makeGroundTiles() {
     fillIso(cv, ...c.GRASS_M, 255, cx, cy);
     cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_L, 10, 0.20);
     cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_D, 8,  0.12);
-    // subtle crosshatch-pattern (Pentiment look)
+    // additional fine-grain noise pass for depth
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_L, 5, 0.09);
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_M, 4, 0.07);
+    // primary crosshatch-pattern (Pentiment look, NW–SE diagonal)
     for (let y=2; y<30; y+=4) {
       for (let x=ox+2; x<ox+62; x+=4) {
         if (Math.abs(x-cx)/31 + Math.abs(y-cy)/15 < 0.90) {
           cv.sp(x, y, ...c.GRASS_D, 80);
+        }
+      }
+    }
+    // secondary perpendicular crosshatch (NE–SW, offset by half-step)
+    for (let y=4; y<30; y+=4) {
+      for (let x=ox+4; x<ox+62; x+=4) {
+        if (Math.abs(x-cx)/31 + Math.abs(y-cy)/15 < 0.86) {
+          cv.sp(x, y, ...c.GRASS_L, 45);
         }
       }
     }
@@ -266,6 +277,17 @@ function makeRoadStone() {
         cv.fillRect(jx, y, 7, 4, ...c.STONE_L);
         cv.line(jx, y, jx+6, y, ...c.STONE_D);
         cv.line(jx, y, jx, y+3, ...c.STONE_D);
+      }
+    }
+  }
+  // per-cobble subtle tint variation (natural aged stone look)
+  for (let y=2; y<30; y+=5) {
+    for (let x=2; x<62; x+=8) {
+      const jx = (y%10 < 5) ? x : x+4;
+      if (Math.abs(jx-32)/31 + Math.abs(y-16)/15 < 0.85) {
+        const v = ((jx*7 + y*13) % 3) - 1;
+        if (v > 0) cv.fillRect(jx+1, y+1, 5, 2, ...c.STONE_L, 28);
+        else if (v < 0) cv.fillRect(jx+1, y+1, 5, 2, ...c.STONE_D, 22);
       }
     }
   }
@@ -591,17 +613,39 @@ function makeBuildingTiles() {
     roofFace (col, wH, 58, 56, 60);
     outlineWalls(col, wH);
     const ox=col*64;
-    // forge glow opening
-    cv.fillRect(ox+4, 32-wH+6, 8, 8, 60, 36, 20);
+    // forge glow opening (deeper cavity)
+    cv.fillRect(ox+4, 32-wH+6, 8, 8, 40, 22, 10);
     cv.fillRect(ox+5, 32-wH+7, 6, 6, ...c.FORGE);
     cv.fillRect(ox+6, 32-wH+8, 4, 3, 255, 200, 80);
-    // glow halo
-    for (let dy=-2; dy<=2; dy++) for (let dx=-2; dx<=2; dx++)
-      if (dx*dx+dy*dy<=5)
-        cv.sp(ox+8+dx, 32-wH+10+dy, ...c.FORGE, 60);
-    // anvil silhouette on right face
-    cv.fillRect(ox+44, 32-6, 12, 4, ...c.STONE_D);
-    cv.fillRect(ox+46, 32-10, 8, 4, ...c.STONE_D);
+    cv.fillRect(ox+7, 32-wH+9, 2, 1, 255, 240, 160);  // hottest core pixel
+    // glow halo — wider radius for more dramatic warmth
+    for (let _dy=-3; _dy<=3; _dy++) for (let _dx=-3; _dx<=3; _dx++)
+      if (_dx*_dx+_dy*_dy<=9)
+        cv.sp(ox+8+_dx, 32-wH+10+_dy, ...c.FORGE, Math.max(0, 65 - (_dx*_dx+_dy*_dy)*8));
+    // forge spark particles (static — 5 random-ish bright dots above mouth)
+    cv.sp(ox+6,  32-wH+4, 255, 220, 80, 200);
+    cv.sp(ox+9,  32-wH+3, 255, 180, 60, 160);
+    cv.sp(ox+11, 32-wH+5, 255, 200, 80, 140);
+    cv.sp(ox+7,  32-wH+2, 255, 240, 120, 120);
+    cv.sp(ox+5,  32-wH+5, ...c.FORGE, 100);
+    // chimney stack on roof (smoke outlet above forge)
+    cv.fillRect(ox+5, 32-wH-7, 5, 7, ...c.STONE_D);
+    cv.line(ox+4,  32-wH-7, ox+10, 32-wH-7, ...c.OUTLINE);
+    cv.line(ox+4,  32-wH-7, ox+4,  32-wH,   ...c.OUTLINE);
+    cv.line(ox+10, 32-wH-7, ox+10, 32-wH,   ...c.OUTLINE);
+    // smoke wisps
+    cv.sp(ox+7,  32-wH-8,  ...c.STONE_M, 110);
+    cv.sp(ox+6,  32-wH-10, ...c.STONE_L, 70);
+    cv.sp(ox+8,  32-wH-11, ...c.STONE_L, 50);
+    // anvil on right face — improved silhouette
+    cv.fillRect(ox+44, 32-6,  12, 3, ...c.STONE_D);   // anvil body
+    cv.fillRect(ox+46, 32-9,   8, 3, ...c.STONE_M);   // anvil horn/face
+    cv.fillRect(ox+47, 32-10,  6, 2, ...c.STONE_L);   // top face highlight
+    cv.line(ox+44, 32-6, ox+55, 32-6, ...c.OUTLINE);
+    // hammer hanging on right wall
+    cv.fillRect(ox+57, 32-wH+3, 2, 7, ...c.WOOD_D);   // handle
+    cv.fillRect(ox+55, 32-wH+3, 4, 3, ...c.STONE_M);  // head
+    cv.line(ox+55, 32-wH+3, ox+58, 32-wH+3, ...c.OUTLINE);
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -647,6 +691,26 @@ function makeBuildingTiles() {
     cv.line(ox+12, 32-10, ox+12, 32, ...c.WOOD_L, 120);
     cv.sp(ox+11, 32-5, ...c.STONE_L);
     cv.sp(ox+13, 32-5, ...c.STONE_L);
+    // chain and padlock across door seam
+    cv.line(ox+9, 32-7, ox+15, 32-7, ...c.STONE_M);
+    cv.fillRect(ox+11, 32-8, 3, 3, ...c.STONE_D);       // padlock body
+    cv.sp(ox+12, 32-8, ...c.STONE_L);                   // keyhole highlight
+    cv.line(ox+11, 32-8, ox+13, 32-8, ...c.OUTLINE);
+    // barred window on left face (upper section)
+    cv.fillRect(ox+19, 32-wH+3, 7, 6, 40, 36, 44);     // dark interior
+    cv.line(ox+19, 32-wH+3, ox+25, 32-wH+3, ...c.WOOD_D);
+    cv.line(ox+19, 32-wH+8, ox+25, 32-wH+8, ...c.WOOD_D);
+    cv.line(ox+19, 32-wH+3, ox+19, 32-wH+8, ...c.WOOD_D);
+    cv.line(ox+25, 32-wH+3, ox+25, 32-wH+8, ...c.WOOD_D);
+    // vertical bars (iron grating)
+    cv.line(ox+21, 32-wH+3, ox+21, 32-wH+8, ...c.STONE_L, 160);
+    cv.line(ox+23, 32-wH+3, ox+23, 32-wH+8, ...c.STONE_L, 160);
+    // loading hook / pulley on right face roof edge (warehouse feel)
+    cv.line(ox+50, 32-wH-3, ox+50, 32-wH+2, ...c.STONE_M);  // mount post
+    cv.sp(ox+49, 32-wH-3, ...c.STONE_L);
+    cv.sp(ox+51, 32-wH-3, ...c.STONE_L);
+    cv.sp(ox+50, 32-wH-4, ...c.STONE_L);                     // pulley wheel
+    cv.line(ox+50, 32-wH-4, ox+57, 32-wH+1, ...c.WOOD_D, 120); // hanging rope
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -694,6 +758,16 @@ function makeBuildingTiles() {
     cv.line(ox+58, 32-wH-10, ox+58, 32-wH, ...c.WOOD_M);
     cv.fillRect(ox+50, 32-wH-10, 9, 6, ...c.FLAG_R);
     cv.line(ox+50, 32-wH-10, ox+58, 32-wH-10, ...c.OUTLINE);
+  }
+
+  // ── ambient-occlusion shadow: darkens ground face near all building bases ───
+  // Applied after all buildings so it composites over any coloured ground faces.
+  for (let _col = 0; _col < 10; _col++) {
+    const _cx = _col*64+32, _cy = 32, _hw = 31, _hh = 15;
+    cv.line(_cx-_hw+1, _cy+1, _cx,       _cy+_hh-1, ...c.OUTLINE, 38);
+    cv.line(_cx,       _cy+_hh-1, _cx+_hw-1, _cy+1, ...c.OUTLINE, 28);
+    cv.line(_cx-_hw+2, _cy+2, _cx,       _cy+_hh-2, ...c.OUTLINE, 18);
+    cv.line(_cx,       _cy+_hh-2, _cx+_hw-2, _cy+2, ...c.OUTLINE, 12);
   }
 
   return cv.toPNG();
@@ -807,6 +881,11 @@ function makeNPCSprites() {
     cv.fillRect(bx, by, 10, 14, ...body);
     // belt / trim stripe
     cv.fillRect(bx, by+6, 10, 2, ...trim);
+    // right-side body shadow (3D volume — receding face)
+    cv.fillRect(bx+8, by+1, 2, 12, ...c.OUTLINE, 55);
+    // left shoulder highlight (catch-light)
+    cv.sp(bx+1, by+1, 255, 255, 255, 18);
+    cv.sp(bx+1, by+2, 255, 255, 255, 10);
     // outline
     cv.line(bx,    by,    bx+9,  by,    ...c.OUTLINE);
     cv.line(bx,    by,    bx,    by+13, ...c.OUTLINE);
@@ -850,6 +929,13 @@ function makeNPCSprites() {
       cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
     }
 
+    // ground cast shadow (grounds the NPC visually)
+    {
+      const _sy = (hatStyle === 'hood') ? oy+47 : oy+37+dy;
+      for (let _sx = -6; _sx <= 6; _sx++) {
+        cv.sp(ox+16+_sx, _sy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      }
+    }
     // faction badge (tiny 3×3 diamond on belt)
     const bdx=bx+4, bdy=by+5;
     cv.sp(bdx+1, bdy,   ...trim);
@@ -940,6 +1026,8 @@ function makeNPCSprites() {
     cv.line(bx,    by,    bx,    by+13, ...c.OUTLINE);
     cv.line(bx+11, by,    bx+11, by+13, ...c.OUTLINE);
     cv.line(bx,    by+13, bx+11, by+13, ...c.OUTLINE);
+    // additional right-face shadow (armor depth)
+    cv.fillRect(bx+10, by+1, 2, 12, ...c.OUTLINE, 40);
 
     // armored pauldrons (slightly wider than faction arms)
     cv.fillRect(bx-2, by,    3, 11, ...c.STONE_M);
@@ -959,6 +1047,10 @@ function makeNPCSprites() {
     cv.line(bx+6+rx, ly, bx+6+rx, ly+9, ...c.OUTLINE);
     cv.line(bx+9+rx, ly, bx+9+rx, ly+9, ...c.OUTLINE);
 
+    // ground cast shadow
+    for (let _sx = -6; _sx <= 6; _sx++) {
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+    }
     // spear (tall weapon on right side: shaft from ground to above head)
     const sx = ox+27;
     cv.line(sx, oy+2+dy-8, sx, oy+48, ...c.WOOD_M);        // shaft
@@ -1021,6 +1113,8 @@ function makeNPCSprites() {
     cv.line(bx,    by,    bx,    by+13, ...c.OUTLINE);
     cv.line(bx+9,  by,    bx+9,  by+13, ...c.OUTLINE);
     cv.line(bx,    by+13, bx+9,  by+13, ...c.OUTLINE);
+    // right-side body shadow
+    cv.fillRect(bx+8, by+1, 2, 12, ...c.OUTLINE, 50);
 
     // arms in matching tunic cloth
     cv.fillRect(bx-2, by+1, 3, 10, ...c.DIRT_M);
@@ -1039,6 +1133,10 @@ function makeNPCSprites() {
     cv.line(bx+4+lx, ly, bx+4+lx, ly+9, ...c.OUTLINE);
     cv.line(bx+5+rx, ly, bx+5+rx, ly+9, ...c.OUTLINE);
     cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
+    // ground cast shadow
+    for (let _sx = -6; _sx <= 6; _sx++) {
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+    }
   };
 
   {
@@ -1107,6 +1205,8 @@ function makeNPCSprites() {
     cv.line(bx,    by,    bx,    by+13, ...c.OUTLINE);
     cv.line(bx+9,  by,    bx+9,  by+13, ...c.OUTLINE);
     cv.line(bx,    by+13, bx+9,  by+13, ...c.OUTLINE);
+    // right-side body shadow
+    cv.fillRect(bx+8, by+1, 2, 12, ...c.OUTLINE, 50);
 
     // arms: rolled-up sleeves — swing via laY/raY
     const laLen = 11 - Math.abs(laY);
@@ -1131,6 +1231,10 @@ function makeNPCSprites() {
     cv.line(bx+4+lx, ly, bx+4+lx, ly+9, ...c.OUTLINE);
     cv.line(bx+5+rx, ly, bx+5+rx, ly+9, ...c.OUTLINE);
     cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
+    // ground cast shadow
+    for (let _sx = -6; _sx <= 6; _sx++) {
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+    }
   };
 
   {
@@ -1179,6 +1283,8 @@ function makeNPCSprites() {
     cv.line(bx, by, bx, by+13, ...c.OUTLINE);
     cv.line(bx+9, by, bx+9, by+13, ...c.OUTLINE);
     cv.line(bx, by+13, bx+9, by+13, ...c.OUTLINE);
+    // right-side body shadow
+    cv.fillRect(bx+8, by+1, 2, 12, ...c.OUTLINE, 50);
     const laLen = 10 - Math.abs(laY);
     const raLen = 10 - Math.abs(raY);
     cv.fillRect(bx-2, by+1+laY, 3, laLen, ...c.MERCH_B);
@@ -1194,6 +1300,10 @@ function makeNPCSprites() {
     cv.line(bx-3, oy+46, bx+12, oy+46, ...c.OUTLINE);
     cv.fillRect(bx+1+lx, oy+44, 4, 2, ...c.STONE_D);
     cv.fillRect(bx+5+rx, oy+44, 4, 2, ...c.STONE_D);
+    // ground cast shadow (robe style)
+    for (let _sx = -6; _sx <= 6; _sx++) {
+      cv.sp(ox+16+_sx, oy+47, ...c.OUTLINE, Math.max(0, 18-Math.abs(_sx)*3));
+    }
     // parchment scroll in left hand
     const sx = bx-5, sy = by+4;
     cv.fillRect(sx, sy, 4, 7, ...c.PARCH_L);
@@ -1244,6 +1354,8 @@ function makeNPCSprites() {
     cv.line(bx, by, bx, by+12, ...c.OUTLINE);
     cv.line(bx+9, by, bx+9, by+12, ...c.OUTLINE);
     cv.line(bx, by+12, bx+9, by+12, ...c.OUTLINE);
+    // right-side body shadow
+    cv.fillRect(bx+8, by+1, 2, 11, ...c.OUTLINE, 45);
     cv.fillPoly([
       [bx-1, by+8], [bx+10, by+8],
       [bx+11, oy+45], [bx-2, oy+45],
@@ -1251,6 +1363,10 @@ function makeNPCSprites() {
     cv.line(bx-2, oy+45, bx+11, oy+45, ...c.OUTLINE);
     cv.fillRect(bx+1+lx, oy+43, 4, 2, ...c.WOOD_D);
     cv.fillRect(bx+5+rx, oy+43, 4, 2, ...c.WOOD_D);
+    // ground cast shadow
+    for (let _sx = -6; _sx <= 6; _sx++) {
+      cv.sp(ox+16+_sx, oy+46, ...c.OUTLINE, Math.max(0, 18-Math.abs(_sx)*3));
+    }
     cv.fillRect(bx-2, by+2, 3, 9, ...c.PLASTER);
     cv.fillRect(bx+9, by+2, 3, 9, ...c.PLASTER);
     cv.fillRect(bx-2, by+10, 3, 2, ...c.SKIN);
@@ -1300,6 +1416,8 @@ function makeNPCSprites() {
     cv.line(bx, by, bx, by+12, ...c.OUTLINE);
     cv.line(bx+7, by, bx+7, by+12, ...c.OUTLINE);
     cv.line(bx, by+12, bx+7, by+12, ...c.OUTLINE);
+    // right-side body shadow (subtle — dark cloak already shadowed)
+    cv.fillRect(bx+6, by+1, 2, 11, ...c.OUTLINE, 40);
     // wide cloak skirt (hides legs)
     cv.fillPoly([
       [bx-2, by+6], [bx+9, by+6],
@@ -1308,6 +1426,10 @@ function makeNPCSprites() {
     cv.line(bx-6, oy+47, bx+13, oy+47, ...c.OUTLINE);
     cv.fillRect(bx+lx, oy+44, 4, 3, ...c.INK);
     cv.fillRect(bx+4+rx, oy+44, 4, 3, ...c.INK);
+    // ground cast shadow
+    for (let _sx = -6; _sx <= 6; _sx++) {
+      cv.sp(ox+16+_sx, oy+47, ...c.OUTLINE, Math.max(0, 15-Math.abs(_sx)*2));
+    }
     // narrow dark sleeves
     cv.fillRect(bx-2, by+1, 3, 9, ...c.STONE_D);
     cv.fillRect(bx+7, by+1, 3, 9, ...c.STONE_D);
@@ -2072,6 +2194,20 @@ function makePropsAtlas() {
     cv.line(cx, cy-14, cx, cy-20, ...c.WOOD_D, 180);
   }
 
+  // ── ground shadow ellipses under all props ────────────────────────────────
+  // Small darkened oval at base gives each prop visual weight on the ground.
+  const propShadowCX = [32, 96, 160, 224, 288, 352, 416, 480];
+  const propShadowCY = [26, 26, 28,  27,  25,  25,  28,  27 ];
+  const propShadowHW = [13, 10,  4,  20,  16,  15,   7,   6 ];
+  for (let _p = 0; _p < 8; _p++) {
+    const _cx = propShadowCX[_p], _cy = propShadowCY[_p], _hw = propShadowHW[_p];
+    for (let _sx = -_hw; _sx <= _hw; _sx++) {
+      const _alpha = Math.max(0, 30 - Math.abs(_sx)*2);
+      cv.sp(_cx+_sx, _cy, ...c.OUTLINE, _alpha);
+      cv.sp(_cx+_sx, _cy+1, ...c.OUTLINE, _alpha >> 1);
+    }
+  }
+
   return cv.toPNG();
 }
 
@@ -2084,7 +2220,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 8: NPC variety, building polish, props detail (SPA-486)\n');
+console.log('\nRumor Mill — Art Pass 9: visual fidelity overhaul — NPC body shading, building AO, richer textures (SPA-507)\n');
 
 write('assets/textures/tiles_ground.png',       makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',    makeRoadDirt());
