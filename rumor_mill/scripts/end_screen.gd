@@ -166,6 +166,58 @@ const SUMMARY_TEXT := {
 			+ " confidence of a man whose work was already done. The formal verdict was a formality."
 		),
 	},
+	5: {
+		"win": (
+			"The votes were counted in the Town Hall with the doors open and the crowd pressing in."
+			+ " Aldric Vane's name was called three times for every one of Edric's. Tomas Reeve's supporters"
+			+ " had already left. The new alderman accepted the chain of office with a speech about honest"
+			+ " trade and fair governance. Your patron watched from the second row, expressionless."
+			+ " But when Vane finished, the old merchant raised his cup — just once, just slightly."
+			+ " You were already packed."
+		),
+		"aldric_destroyed": (
+			"The story had started as praise. Somewhere between the Tavern and the Market it curdled — too"
+			+ " much too fast, the name repeated until the repetition itself became suspicious."
+			+ " Aldric Vane withdrew his candidacy at noon without explanation. His supporters scattered"
+			+ " like starlings from a broken eave. Your patron's investment, and whatever goodwill"
+			+ " you had built in this town, went with them."
+		),
+		"timeout": (
+			"The votes were counted. Edric Fenn's name was called first, as it had been called for nine years."
+			+ " Aldric Vane came second — close enough to taste, far enough to know it was finished."
+			+ " Tomas Reeve's handful of supporters consoled themselves with ale and reform pamphlets"
+			+ " that no one would read. Your patron did not send for you again."
+		),
+	},
+	6: {
+		"win": (
+			"The guild audit was called on a Tuesday — at Marta Coin's request, seconded by the Prior."
+			+ " Aldric Vane did not attend. His seat in the Guild Hall was empty when the real ledger"
+			+ " was read aloud, and the silence that followed it was louder than any accusation"
+			+ " you had ever whispered. Marta Coin was elected interim Guild Master before the week was out."
+			+ " She did not mention your name. She didn't need to."
+		),
+		"marta_silenced": (
+			"The story changed overnight. Suddenly it was Marta who was the thief — Marta who had falsified"
+			+ " records, Marta whose name could not be trusted in any ledger or marketplace."
+			+ " Aldric's allies moved with the speed of people who had been waiting for exactly this opening."
+			+ " By the time you understood what had happened, Marta's stall was shuttered and her name"
+			+ " was poison in the market quarter. You had underestimated how quickly a guild can close ranks."
+		),
+		"exposed": (
+			"The Guard Captain found you at the well, just after dawn."
+			+ " 'Aldric Vane sends his regards,' he said — not a threat, a statement of fact."
+			+ " By noon, every merchant in the quarter knew your face and your purpose."
+			+ " Marta Coin denied ever meeting you. She had no choice, and you could not blame her for it."
+		),
+		"timeout": (
+			"Twenty days passed. The ledger sat in Marta's locked chest, still waiting for the right moment."
+			+ " The right moment never came. Aldric Vane's reputation was bruised but intact, and the guild"
+			+ " closed its books for the season with the quiet efficiency of an institution that had survived"
+			+ " worse than whispers. Marta Coin paid you the second half of your fee without a word."
+			+ " You both knew it had been wasted."
+		),
+	},
 }
 
 # Universal fallback summaries for conditions not defined per-scenario.
@@ -189,6 +241,18 @@ const SUMMARY_FALLBACK := {
 		"The narrative slipped control and landed on the wrong person. When the person you were protecting"
 		+ " becomes the subject of the story you were telling, the mission is over"
 		+ " — and the client is rarely forgiving about it."
+	),
+	"aldric_destroyed": (
+		"The person you were meant to elevate became the casualty of your own campaign."
+		+ " Praise turned to scrutiny, scrutiny to suspicion, and suspicion to collapse."
+		+ " The difference between making someone's name and ruining it is thinner than most people suppose,"
+		+ " and you found that line from the wrong side."
+	),
+	"marta_silenced": (
+		"The person you were meant to protect became the one they destroyed instead."
+		+ " When the opposition turns your patron into the villain of your own story,"
+		+ " the mission has already ended — you simply haven't admitted it yet."
+		+ " The client's name is now the story, and you are not in it."
 	),
 }
 
