@@ -339,7 +339,7 @@ func _refresh_heat() -> void:
 			_heat_count_lbl.add_theme_color_override("font_color", heat_color)
 
 
-
+func _build_extra_key_hints() -> void:
 	var key_hint_row: HBoxContainer = $CounterPanel/VBox/KeyHintRow
 	key_hint_row.add_theme_constant_override("separation", 6)
 	_add_key_hint(key_hint_row, "R", "Rumor", Color(0.92, 0.65, 0.12, 1.0))
@@ -351,7 +351,7 @@ func _refresh_heat() -> void:
 func _add_key_hint(parent: HBoxContainer, key: String, label: String, accent: Color) -> void:
 	var hint := Label.new()
 	hint.text = " %s: %s " % [key, label]
-	hint.add_theme_font_size_override("font_size", 11)
+	hint.add_theme_font_size_override("font_size", 12)
 	hint.add_theme_color_override("font_color", accent)
 	hint.add_theme_constant_override("outline_size", 1)
 	hint.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))

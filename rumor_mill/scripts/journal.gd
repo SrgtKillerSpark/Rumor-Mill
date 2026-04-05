@@ -92,7 +92,7 @@ func _ready() -> void:
 	_overlay_bg.visible = false
 	_parchment.visible  = false
 	_notif_dot.visible  = false
-	_content_vbox.add_theme_constant_override("separation", 4)
+	_content_vbox.add_theme_constant_override("separation", 5)
 	_build_sidebar()
 	_close_btn.pressed.connect(toggle)
 
@@ -609,10 +609,13 @@ func _build_intel_section() -> void:
 		var npc_name:    String = npc_names.get(npc_id, npc_id)
 		var npc_faction: String = npc_factions.get(npc_id, "unknown").capitalize()
 
-		# NPC card header.
+		# NPC card header — slightly larger with top margin for visual grouping.
+		var card_spacer := Control.new()
+		card_spacer.custom_minimum_size = Vector2(0, 4)
+		_content_vbox.add_child(card_spacer)
 		var hdr := Label.new()
 		hdr.text = "%s — %s" % [npc_name, npc_faction]
-		hdr.add_theme_font_size_override("font_size", 13)
+		hdr.add_theme_font_size_override("font_size", 14)
 		hdr.add_theme_color_override("font_color", C_HEADING)
 		_content_vbox.add_child(hdr)
 
@@ -1240,30 +1243,35 @@ func restore_timeline(entries: Array) -> void:
 
 func _add_section_header(title: String) -> void:
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0, 6)
+	spacer.custom_minimum_size = Vector2(0, 8)
 	_content_vbox.add_child(spacer)
 	var lbl := Label.new()
 	lbl.text = title
 	lbl.add_theme_font_size_override("font_size", 18)
 	lbl.add_theme_color_override("font_color", C_HEADING)
+	lbl.add_theme_constant_override("outline_size", 1)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.3))
 	_content_vbox.add_child(lbl)
-	_content_vbox.add_child(HSeparator.new())
+	var sep := HSeparator.new()
+	sep.add_theme_constant_override("separation", 6)
+	_content_vbox.add_child(sep)
 
 
 func _add_body_label(text: String) -> void:
 	var lbl := Label.new()
 	lbl.text          = text
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_font_size_override("font_size", 13)
 	lbl.add_theme_color_override("font_color", C_BODY)
+	lbl.add_theme_constant_override("line_spacing", 3)
 	_content_vbox.add_child(lbl)
 
 
 func _add_key_label(text: String) -> void:
 	var lbl := Label.new()
 	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 12)
-	lbl.add_theme_color_override("font_color", C_SUBKEY)
+	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_color_override("font_color", C_KEY)
 	_content_vbox.add_child(lbl)
 
 
@@ -1271,8 +1279,9 @@ func _add_detail_label(parent: Control, text: String, color: Color) -> void:
 	var lbl := Label.new()
 	lbl.text          = text
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_font_size_override("font_size", 13)
 	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_constant_override("line_spacing", 2)
 	parent.add_child(lbl)
 
 

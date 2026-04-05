@@ -162,9 +162,13 @@ func _update_result_label(
 		ScenarioManager.ScenarioState.WON:
 			_result_lbl.text = win_text
 			_result_lbl.add_theme_color_override("font_color", C_WIN)
+			_result_lbl.add_theme_constant_override("outline_size", 3)
+			_result_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
 		ScenarioManager.ScenarioState.FAILED:
 			_result_lbl.text = fail_text
 			_result_lbl.add_theme_color_override("font_color", C_FAIL)
+			_result_lbl.add_theme_constant_override("outline_size", 3)
+			_result_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
 		_:
 			_result_lbl.text = ""
 
@@ -191,7 +195,9 @@ func _build_difficulty_badge() -> void:
 
 	_diff_lbl = Label.new()
 	_diff_lbl.text = label_text
-	_diff_lbl.add_theme_font_size_override("font_size", 11)
+	_diff_lbl.add_theme_font_size_override("font_size", 12)
+	_diff_lbl.add_theme_constant_override("outline_size", 2)
+	_diff_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	match preset:
 		"apprentice":
 			_diff_lbl.add_theme_color_override("font_color", Color(0.50, 0.85, 0.50, 0.80))

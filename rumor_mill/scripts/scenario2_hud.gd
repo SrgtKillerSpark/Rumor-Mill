@@ -107,7 +107,7 @@ func _build_ui() -> void:
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
-	_result_lbl.add_theme_font_size_override("font_size", 14)
+	_result_lbl.add_theme_font_size_override("font_size", 16)
 	_result_lbl.add_theme_color_override("font_color", C_WIN)
 	_result_lbl.text = ""
 	right_vbox.add_child(_result_lbl)
