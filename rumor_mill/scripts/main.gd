@@ -297,7 +297,7 @@ func _on_begin_game(scenario_id: String) -> void:
 		# SPA-537: pass objectiveCard data so the overlay shows a full mission briefing.
 		var _sm: ScenarioManager = world.scenario_manager
 		if _sm != null:
-			_ready_overlay.setup(_sm.get_objective_card(), _sm.get_title())
+			_ready_overlay.setup(_sm.get_objective_card(), _sm.get_title(), _sm.get_intro_text())
 		_ready_overlay.dismissed.connect(_on_ready_overlay_dismissed)
 
 
@@ -331,7 +331,7 @@ func _show_objective_recall() -> void:
 	_ready_overlay = preload("res://scripts/ready_overlay.gd").new()
 	_ready_overlay.name = "ReadyOverlayRecall"
 	add_child(_ready_overlay)
-	_ready_overlay.setup_recall(sm.get_objective_card(), sm.get_title())
+	_ready_overlay.setup_recall(sm.get_objective_card(), sm.get_title(), sm.get_intro_text())
 	_ready_overlay.dismissed.connect(_on_recall_overlay_dismissed)
 
 

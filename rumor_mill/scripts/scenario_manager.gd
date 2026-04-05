@@ -45,6 +45,7 @@ class_name ScenarioManager
 # ---------------------------------------------------------------------------
 
 var _scenario_title:   String = ""
+var _intro_text:       String = ""
 var _starting_text:    String = ""
 var _victory_text:     String = ""
 var _fail_texts:       Dictionary = {}
@@ -56,6 +57,7 @@ var _objective_card:   Dictionary = {}
 ## Load narrative fields from a scenario data dictionary (one entry from scenarios.json).
 func load_scenario_data(data: Dictionary) -> void:
 	_scenario_title = data.get("title", "")
+	_intro_text     = data.get("introText", "")
 	_starting_text  = data.get("startingText", "")
 	_victory_text   = data.get("victoryText", "")
 	_fail_texts     = data.get("failTexts", {})
@@ -69,6 +71,11 @@ func load_scenario_data(data: Dictionary) -> void:
 ## Returns the scenario title string.
 func get_title() -> String:
 	return _scenario_title
+
+
+## Returns the narrative intro text (2-3 sentence hook from introText in scenarios.json).
+func get_intro_text() -> String:
+	return _intro_text
 
 
 ## Returns the premise / starting text shown at scenario start.
