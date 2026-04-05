@@ -162,6 +162,7 @@ static func save_game(
 		"timeline":             timeline,
 		"tutorial_progress":    _serialize_tutorial(tutorial_sys),
 		"milestone_fired":      world.milestone_tracker._fired.duplicate() if world.milestone_tracker != null else {},
+		"daily_planning":       _serialize_daily_planning(world),
 	}
 
 	var path := save_path(world.active_scenario_id, slot)
@@ -261,6 +262,7 @@ static func apply_pending_load(
 	_restore_tutorial(tutorial_sys, data.get("tutorial_progress", {}))
 	if world.milestone_tracker != null:
 		world.milestone_tracker._fired = data.get("milestone_fired", {}).duplicate()
+	_restore_daily_planning(world, data.get("daily_planning", {}))
 	# Rebuild reputation cache after all systems (including FactionEventSystem) are
 	# restored so that active event bonuses (e.g. religious_festival +10) are included.
 	world.reputation_system.recalculate_all(world.npcs, day_night.current_tick)
@@ -731,3 +733,28 @@ static func _restore_tutorial(ts: TutorialSystem, d: Dictionary) -> void:
 		return
 	ts._seen         = d.get("seen", {}).duplicate()
 	ts._last_hint_id = str(d.get("last_hint_id", ""))
+
+
+# ── SPA-708: Daily planning overlay state ─────────────────────────────────────
+
+static func _serialize_daily_planning(w: Node2D) -> Dictionary:
+	var planning: Node = w.get_node_or_null("../DailyPlanningOverlay")
+	if planning == null:
+		# Fallback: check parent tree (main.gd adds it as sibling of world).
+		var main_node: Node = w.get_parent()
+		if main_node != null:
+			planning = main_node.get_node_or_null("DailyPlanningOverlay")
+	if planning != null and planning.has_method("get_save_data"):
+		return planning.get_save_data()
+	return {}
+
+
+static func _restore_daily_planning(w: Node2D, d: Dictionary) -> void:
+	if d.is_empty():
+		return
+	var main_node: Node = w.get_parent()
+	if main_node == null:
+		return
+	var planning: Node = main_node.get_node_or_null("DailyPlanningOverlay")
+	if planning != null and planning.has_method("apply_load_data"):
+		planning.apply_load_data(d)

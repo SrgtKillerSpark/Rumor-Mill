@@ -53,6 +53,9 @@ var _visual_affordances: CanvasLayer = null
 # ── SPA-589: Story recap overlay (shown on save load) ─────────────────────────
 var _story_recap: CanvasLayer = null
 
+# ── SPA-708: Daily planning overlay (dawn priorities) ─────────────────────────
+var _daily_planning: CanvasLayer = null
+
 # ── SPA-212: Analytics data collector ─────────────────────────────────────────
 var _analytics: ScenarioAnalytics = null
 
@@ -236,6 +239,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_wire_rumor_events()
 	_init_event_choice_modal()
 	_init_objective_hud()
+	_init_daily_planning()
 	_init_speed_hud()
 	_init_zone_indicator()
 	_init_npc_conversation_overlay()
@@ -413,6 +417,9 @@ func _init_recon_system() -> void:
 	# Log each successfully seeded rumor to the journal timeline.
 	if rumor_panel != null and journal != null:
 		rumor_panel.rumor_seeded.connect(_on_rumor_seeded)
+	# SPA-708: Track rumor seeding for daily planning priority counters.
+	if rumor_panel != null:
+		rumor_panel.rumor_seeded.connect(_on_rumor_seeded_for_planning)
 	# Evidence tutorial — fires once when compatible evidence items first appear.
 	if rumor_panel != null:
 		rumor_panel.evidence_first_shown.connect(_on_evidence_first_shown)
@@ -476,6 +483,10 @@ func _init_recon_system() -> void:
 	# Pipe action results to AudioManager (recon SFX).
 	recon_ctrl.action_performed.connect(AudioManager.on_recon_action)
 
+	# SPA-708: Pipe action results to daily planning priority counters.
+	recon_ctrl.action_performed.connect(_on_recon_action_for_planning)
+	recon_ctrl.bribe_executed.connect(_on_bribe_for_planning)
+
 	# Pipe bribe events to AudioManager (coin SFX).
 	recon_ctrl.bribe_executed.connect(AudioManager.on_bribe_executed)
 
@@ -526,6 +537,35 @@ func _on_rumor_seeded(
 func _on_bribe_executed(npc_name: String, tick: int) -> void:
 	if journal != null and journal.has_method("push_timeline_event"):
 		journal.push_timeline_event(tick, "Bribed %s — forced to believe a rumor" % npc_name)
+
+
+# ── SPA-708: Daily planning priority counter handlers ─────────────────────────
+
+func _on_recon_action_for_planning(message: String, success: bool) -> void:
+	if _daily_planning == null or not success:
+		return
+	var lower := message.to_lower()
+	if lower.find("observe") >= 0:
+		_daily_planning.increment_counter("observe_count")
+	elif lower.find("eavesdrop") >= 0:
+		_daily_planning.increment_counter("eavesdrop_count")
+
+
+func _on_bribe_for_planning(_npc_name: String, _tick: int) -> void:
+	if _daily_planning != null:
+		_daily_planning.increment_counter("bribe_count")
+
+
+func _on_rumor_seeded_for_planning(
+		_rumor_id: String, _subject_name: String,
+		_claim_id: String, seed_target_name: String
+) -> void:
+	if _daily_planning == null:
+		return
+	_daily_planning.increment_counter("whisper_count")
+	# Check if target is clergy for the specific priority.
+	if seed_target_name.to_lower().find("clergy") >= 0 or seed_target_name.to_lower().find("priest") >= 0 or seed_target_name.to_lower().find("friar") >= 0:
+		_daily_planning.increment_counter("whisper_clergy")
 
 
 ## Connect world.rumor_event → journal timeline and social graph overlay.
@@ -651,6 +691,14 @@ func _init_objective_hud() -> void:
 		objective_hud.setup(sm, day_night, world.reputation_system, world.intel_store)
 	if objective_hud.has_method("setup_world"):
 		objective_hud.setup_world(world)
+
+
+func _init_daily_planning() -> void:
+	_daily_planning = preload("res://scenes/DailyPlanningOverlay.tscn").instantiate()
+	_daily_planning.name = "DailyPlanningOverlay"
+	add_child(_daily_planning)
+	if _daily_planning.has_method("setup"):
+		_daily_planning.setup(world, day_night, objective_hud)
 
 
 func _init_speed_hud() -> void:

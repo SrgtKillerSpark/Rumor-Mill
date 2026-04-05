@@ -1,6 +1,9 @@
-[gd_scene format=3 uid="uid://daily_planning_overlay"]
+[gd_scene load_steps=2 format=3 uid="uid://daily_planning_overlay"]
+
+[ext_resource type="Script" path="res://scripts/daily_planning_overlay.gd" id="1_dpo"]
 
 [node name="DailyPlanningOverlay" type="CanvasLayer"]
+script = ExtResource("1_dpo")
 layer = 10
 
 # ── Full-screen dim backdrop ──
