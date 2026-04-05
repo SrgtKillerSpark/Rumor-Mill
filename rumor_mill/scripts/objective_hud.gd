@@ -300,7 +300,7 @@ func _build_metrics_row() -> void:
 func _make_metric_label(text: String) -> Label:
 	var lbl := Label.new()
 	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_font_size_override("font_size", 13)
 	lbl.add_theme_constant_override("outline_size", 2)
 	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -519,7 +519,7 @@ func _build_faction_panel() -> void:
 		var name_lbl := Label.new()
 		name_lbl.text = info["name"]
 		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name_lbl.add_theme_font_size_override("font_size", 11)
+		name_lbl.add_theme_font_size_override("font_size", 12)
 		name_lbl.add_theme_color_override("font_color", info["color"])
 		name_lbl.add_theme_constant_override("outline_size", 2)
 		name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
@@ -529,7 +529,7 @@ func _build_faction_panel() -> void:
 		var mood_lbl := Label.new()
 		mood_lbl.text = "Calm"
 		mood_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		mood_lbl.add_theme_font_size_override("font_size", 11)
+		mood_lbl.add_theme_font_size_override("font_size", 12)
 		mood_lbl.add_theme_color_override("font_color", Color(0.70, 0.65, 0.50, 1.0))
 		mood_lbl.add_theme_constant_override("outline_size", 2)
 		mood_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
@@ -537,7 +537,7 @@ func _build_faction_panel() -> void:
 
 		# Influence bar background
 		var bar_bg := ColorRect.new()
-		bar_bg.custom_minimum_size = Vector2(0, 4)
+		bar_bg.custom_minimum_size = Vector2(0, 6)
 		bar_bg.color = Color(0.20, 0.15, 0.08, 1.0)
 		col.add_child(bar_bg)
 

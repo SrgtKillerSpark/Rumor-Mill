@@ -14,7 +14,7 @@ const C_TITLE  := Color(0.92, 0.78, 0.12, 1.0)
 const C_LABEL  := Color(0.82, 0.75, 0.60, 1.0)
 
 const OFFSET       := Vector2(18, -95)
-const PANEL_W      := 240
+const PANEL_W      := 270
 const FADE_IN_SEC  := 0.12
 const FADE_OUT_SEC := 0.10
 

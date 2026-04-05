@@ -69,8 +69,8 @@ const STATE_ICON := {
 	8: "◆",   # Defending     — filled diamond
 }
 
-const OFFSET := Vector2(18, -140)  # screen offset from cursor
-const PANEL_W := 240
+const OFFSET := Vector2(18, -160)  # screen offset from cursor
+const PANEL_W := 270
 const PANEL_H := 165
 
 var _panel:           PanelContainer = null
@@ -91,12 +91,22 @@ var _dead_lbl:        Label = null
 var _hint_lbl:        Label = null
 
 var _state_icon_tex:  Texture2D = null  # ui_state_icons.png atlas
+var _portrait_tex:    Texture2D = null  # ui_npc_portraits.png atlas
+var _portrait_rect:   TextureRect = null
 const STATE_ICON_COUNT := 9
+
+# Portrait atlas layout: 5 cols × 3 rows of 64×80 cells.
+const PORTRAIT_W := 64
+const PORTRAIT_H := 80
+const PORTRAIT_COL := {
+	"merchant": 0, "noble": 1, "clergy": 2, "guard": 3, "commoner": 4,
+}
 
 
 func _ready() -> void:
 	layer = 9   # above social graph (8), below journal (12)
 	_state_icon_tex = load("res://assets/textures/ui_state_icons.png")
+	_portrait_tex = load("res://assets/textures/ui_npc_portraits.png")
 	_load_flavor_text()
 	_build_panel()
 
@@ -191,20 +201,37 @@ func _build_panel() -> void:
 	vbox.add_theme_constant_override("separation", 3)
 	_panel.add_child(vbox)
 
-	_name_lbl = _make_label("", 14, C_TITLE)
-	vbox.add_child(_name_lbl)
+	# Header row: portrait + name/faction/role stacked vertically.
+	var header_row := HBoxContainer.new()
+	header_row.add_theme_constant_override("separation", 8)
+	vbox.add_child(header_row)
+
+	_portrait_rect = TextureRect.new()
+	_portrait_rect.custom_minimum_size = Vector2(48, 60)
+	_portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_portrait_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_portrait_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	header_row.add_child(_portrait_rect)
+
+	var header_col := VBoxContainer.new()
+	header_col.add_theme_constant_override("separation", 1)
+	header_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_row.add_child(header_col)
+
+	_name_lbl = _make_label("", 15, C_TITLE)
+	header_col.add_child(_name_lbl)
+
+	_faction_lbl = _make_label("", 12, C_LABEL)
+	header_col.add_child(_faction_lbl)
+
+	_role_lbl = _make_label("", 12, C_MUTED)
+	header_col.add_child(_role_lbl)
 
 	var sep := HSeparator.new()
 	var sep_style := StyleBoxFlat.new()
 	sep_style.bg_color = C_BORDER
 	sep.add_theme_stylebox_override("separator", sep_style)
 	vbox.add_child(sep)
-
-	_faction_lbl = _make_label("", 12, C_LABEL)
-	vbox.add_child(_faction_lbl)
-
-	_role_lbl = _make_label("", 12, C_MUTED)
-	vbox.add_child(_role_lbl)
 
 	_bio_lbl = _make_label("", 12, C_MUTED)
 	_bio_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -271,6 +298,16 @@ func _populate(npc: Node2D) -> void:
 	var npc_id:      String = data.get("id", "")
 
 	_name_lbl.text = npc_name
+
+	# Set portrait from atlas.
+	if _portrait_tex != null and _portrait_rect != null:
+		var col: int = PORTRAIT_COL.get(faction, 0)
+		var gender: String = data.get("gender", "male")
+		var row: int = 0 if gender == "male" else (1 if gender == "female" else 2)
+		var atlas := AtlasTexture.new()
+		atlas.atlas = _portrait_tex
+		atlas.region = Rect2(col * PORTRAIT_W, row * PORTRAIT_H, PORTRAIT_W, PORTRAIT_H)
+		_portrait_rect.texture = atlas
 
 	var fac_label: String = FACTION_LABEL.get(faction, faction.capitalize())
 	var fac_color: Color  = FACTION_COLOR.get(faction, C_LABEL)

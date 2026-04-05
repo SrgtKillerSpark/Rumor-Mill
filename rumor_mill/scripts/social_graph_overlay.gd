@@ -45,9 +45,9 @@ const LIVE_SPREAD_EDGE_WIDTH := 2.5
 # Only draw edges above this weight threshold to reduce visual noise.
 const EDGE_THRESHOLD := 0.30
 
-# Node drawing sizes.
-const NODE_RADIUS     := 9.0
-const RING_THICKNESS  := 3.0
+# Node drawing sizes (scaled to match 48×72 NPC sprites).
+const NODE_RADIUS     := 12.0
+const RING_THICKNESS  := 4.0
 
 # ── State ─────────────────────────────────────────────────────────────────────
 
@@ -286,7 +286,7 @@ func _draw_nodes(npcs: Array) -> void:
 
 		# Name label — drawn with a shadow pass for legibility over any background.
 		var npc_name: String = npc.npc_data.get("name", "?").split(" ")[0]  # first name only
-		var label_pos := screen_pos + Vector2(-NODE_RADIUS * 1.2, NODE_RADIUS + 10.0)
+		var label_pos := screen_pos + Vector2(-NODE_RADIUS * 1.2, NODE_RADIUS + 12.0)
 		# Shadow pass (offset 1 px down-right, dark semi-transparent).
 		_draw_node.draw_string(
 			ThemeDB.fallback_font,
@@ -294,7 +294,7 @@ func _draw_nodes(npcs: Array) -> void:
 			npc_name,
 			HORIZONTAL_ALIGNMENT_LEFT,
 			-1,
-			12,
+			13,
 			Color(0.0, 0.0, 0.0, 0.75)
 		)
 		# Main label.
@@ -304,7 +304,7 @@ func _draw_nodes(npcs: Array) -> void:
 			npc_name,
 			HORIZONTAL_ALIGNMENT_LEFT,
 			-1,
-			12,
+			13,
 			Color(0.95, 0.95, 0.85, 0.95)
 		)
 
