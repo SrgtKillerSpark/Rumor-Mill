@@ -39,6 +39,28 @@
       "Prices up, patience down. That's the market for you.",
       "You hear about the dispute at the east stall? Someone always does.",
       "I'd offer you a trade, but I suspect you're not in the market for goods."
+    ],
+    "spread": [
+      "A word in your ear — and keep it there.",
+      "I'm telling you this once, and only because it matters.",
+      "I don't share this lightly. Don't make me regret the exception.",
+      "The guild doesn't traffic in rumor — but this is too important to keep."
+    ],
+    "act": [
+      "Right. Time to put this to use.",
+      "I've heard enough. Now I act.",
+      "The guild's interests require a response. I'll see to it personally.",
+      "An opportunity like this does not stay open indefinitely."
+    ],
+    "observe_wary": [
+      "You've been noticed before. I'm beginning to keep count.",
+      "The guild watches its own interests. I watch its watchers.",
+      "You are welcome to look. I would prefer you do it elsewhere."
+    ],
+    "eavesdrop_wary": [
+      "I know this stall has ears. I'm aware of whose they are.",
+      "You heard something you should not have. Think carefully about what you do with it.",
+      "There are conversations not meant for every ear. You have tested that assumption today."
     ]
   },
   "sybil_oats": {
@@ -81,6 +103,28 @@
       "You're not the first person to stand in that spot looking like they know something.",
       "I'd pour you something but you look like you're about to leave.",
       "Is this a conversation or are we just sharing the same air?"
+    ],
+    "spread": [
+      "Between you and me, I heard something worth knowing...",
+      "Don't make me regret telling you this, but...",
+      "Lean in. Not everyone needs to hear this.",
+      "I've kept this one long enough. It needs to be said."
+    ],
+    "act": [
+      "Right. Someone ought to do something about this.",
+      "I've stayed quiet long enough.",
+      "My door hears everything. And now my door is done staying silent.",
+      "Enough sitting on it. This needs to move."
+    ],
+    "observe_wary": [
+      "You're back. I notice when someone keeps coming around.",
+      "Don't look at me like that. I see everything through that window.",
+      "My regulars are one thing. You're starting to be something else."
+    ],
+    "eavesdrop_wary": [
+      "I pick my words carefully when I know someone's listening.",
+      "You heard that? Good. Then you know what kind of house this is.",
+      "I have long ears and a long memory. So does everyone who drinks here."
     ]
   },
   "oswin_tanner": {
@@ -123,6 +167,28 @@
       "...",
       "Good enough.",
       "Work's work."
+    ],
+    "spread": [
+      "...You ought to know something.",
+      "I don't say much, but this needs saying.",
+      "Quiet about it. But you should hear this.",
+      "...Just listen."
+    ],
+    "act": [
+      "I'll not let it stand. Not this.",
+      "Quiet men can act too.",
+      "Enough. I've made up my mind.",
+      "I say little. This time I do something."
+    ],
+    "observe_wary": [
+      "...I see you.",
+      "Been watching long enough. I know what that looks like.",
+      "You want something from me, say so."
+    ],
+    "eavesdrop_wary": [
+      "...You heard that. Don't repeat it.",
+      "I notice ears. Same as I notice eyes.",
+      "That wasn't for you. You know that."
     ]
   },
   "marta_coin": {
@@ -165,6 +231,28 @@
       "You're hovering. Either buy something or tell me something.",
       "I was just saying the exact same thing to someone else. We must be thinking alike.",
       "Don't you find this part of the square always has the most interesting foot traffic?"
+    ],
+    "spread": [
+      "You'll never guess what I just heard...",
+      "I'm only telling you, mind — but listen.",
+      "Come closer. This is not for the whole square.",
+      "I have something that will make your afternoon considerably more interesting."
+    ],
+    "act": [
+      "Someone needs to do something with this information.",
+      "Right, I've thought on it long enough.",
+      "I know everyone on this square. Time to use that.",
+      "The market waits for no one. Neither do I."
+    ],
+    "observe_wary": [
+      "Oh, you're watching again. I've been counting the times.",
+      "I remember every face at this stall. Yours is getting familiar for the wrong reasons.",
+      "You want to watch, go ahead. But I'll be watching back, and I'm better at it."
+    ],
+    "eavesdrop_wary": [
+      "I noticed you earlier. I changed what I was saying accordingly.",
+      "The market has ears everywhere. So do I, and they face all directions.",
+      "You think you caught something useful. I think you caught what I wanted you to."
     ]
   },
   "rufus_bolt": {
@@ -207,6 +295,28 @@
       "You've been standing there long enough to get singed.",
       "I don't have time for small talk. Make it medium.",
       "Something on your mind or are you just enjoying the heat?"
+    ],
+    "spread": [
+      "You need to hear this, plain as I can say it.",
+      "I don't gossip. But this isn't gossip.",
+      "One thing. Pay attention.",
+      "Forget what you heard before. Hear this instead."
+    ],
+    "act": [
+      "Right. Enough. I'm done standing by.",
+      "Iron bends when force is applied. So does this.",
+      "I've waited long enough for someone else to move. My turn.",
+      "Talking is done. Time to work."
+    ],
+    "observe_wary": [
+      "I can see you, and I know what watching looks like.",
+      "You've been lurking. Do that near my forge again and we'll have words.",
+      "I work with my hands. I notice things with my eyes. Both are pointed at you."
+    ],
+    "eavesdrop_wary": [
+      "I saw you before you heard anything useful. Remember that.",
+      "Smiths talk plain. So do I, when I know someone's listening.",
+      "What I say at my forge is my business. You've made it yours. That's a problem."
     ]
   },
   "nell_picker": {
@@ -249,6 +359,28 @@
       "Oh! Perfect — I was just thinking about you!",
       "Do you ever have the feeling that everything's connected? Because right now it really is.",
       "Stay right there. I have something to tell you and I need a witness."
+    ],
+    "spread": [
+      "Between you and me — and keep it quiet — I heard...",
+      "You'll never guess — oh, come here!",
+      "No, seriously, you absolutely have to hear this right now.",
+      "I've been holding this for ten whole minutes. That is a record for me."
+    ],
+    "act": [
+      "I can't just do nothing now that I know!",
+      "Right, that's it — I'm doing something.",
+      "Someone has to, and if no one else will, it's going to be me.",
+      "I am very bad at sitting still when something like this is happening."
+    ],
+    "observe_wary": [
+      "Were you just — oh! I know that look. That's a spying look.",
+      "I don't mind really, but you should know I saw you ages ago.",
+      "Ha! You think I'm not watching too? I'm always watching."
+    ],
+    "eavesdrop_wary": [
+      "Wait, were you listening to that? Oh, this is complicated.",
+      "I need you to swear you'll only use that for good. I mean it.",
+      "If you heard what I think you heard, we need to talk. Urgently."
     ]
   },
   "cob_farrow": {
@@ -291,6 +423,28 @@
       "Tell me something worth knowing and I'll tell you something I heard on the road.",
       "I've got time while the cart's being loaded. What's happening in this town?",
       "Every town has one story running underneath the official one. What's yours?"
+    ],
+    "spread": [
+      "You'll want to know what I heard coming into town.",
+      "I trade in goods and tales — here's a free one.",
+      "This one I'm giving away. Consider it a sample.",
+      "The roads teach you when something's worth passing on. This is."
+    ],
+    "act": [
+      "Can't let opportunity pass when it knocks.",
+      "Right. Time to make this work for me.",
+      "I've moved goods and moved on. This time I'm moving on it.",
+      "A traveling man knows when to stay and when to act. Now's the time."
+    ],
+    "observe_wary": [
+      "I've been watched in a dozen towns. You're not subtle.",
+      "The road teaches you to notice who's watching. I noticed you.",
+      "Information's currency. Yours just cost you something."
+    ],
+    "eavesdrop_wary": [
+      "I travel. I know when I'm being listened to. Picked it up in my second town.",
+      "You think you heard something. You heard what I didn't mind you hearing.",
+      "Careful what you do with that. Roads have long memories."
     ]
   },
   "idris_kemp": {
@@ -333,6 +487,28 @@
       "The wheel turns the same whether I talk or not. But I'll talk.",
       "I'm between grinds. Say what you came to say.",
       "Not many people stop by the mill for conversation. What is it?"
+    ],
+    "spread": [
+      "Thought you ought to know something.",
+      "Not the sort of thing I usually pass on, but...",
+      "The mill turns slow. This one can't wait that long.",
+      "One thing, and then I'm back to work."
+    ],
+    "act": [
+      "Even a quiet man has to act sometimes.",
+      "The mill can wait. This can't.",
+      "I've let it sit long enough. Time to do something.",
+      "Steady work means knowing when the steady thing is to move."
+    ],
+    "observe_wary": [
+      "The wheel turns, and I notice things while it does. You, for instance.",
+      "You've been here before, standing just like that. I remember.",
+      "I've got nothing to hide, but I'm starting to wonder what you're looking for."
+    ],
+    "eavesdrop_wary": [
+      "I said what I said. If you heard it, then you heard it.",
+      "The mill's loud, but I still notice when someone's listening.",
+      "You heard something. Whether it means anything depends on what you do next."
     ]
   },
   "bess_wicker": {
@@ -375,6 +551,28 @@
       "State your purpose or I'll note your presence as unaccounted.",
       "I'm between entries. You have approximately two minutes.",
       "Something you need documented, or just company?"
+    ],
+    "spread": [
+      "I don't make a habit of this. But you need to know.",
+      "This is information, not gossip. There's a difference.",
+      "I have verified this. That is why I am telling you.",
+      "Once. I will say this once. Listen carefully."
+    ],
+    "act": [
+      "I've verified enough. Action is warranted.",
+      "Right. Precision, not passion.",
+      "The ledger is clear. My next step is clearer still.",
+      "I do not act without evidence. I now have evidence."
+    ],
+    "observe_wary": [
+      "I have noted your presence on three separate occasions. I keep records.",
+      "Document your purpose or stand clear. I will not ask again.",
+      "I know what surveillance looks like. It looks like this."
+    ],
+    "eavesdrop_wary": [
+      "You were listening. I adjusted my language accordingly.",
+      "What you heard was accurate. What you do with it will be in the record too.",
+      "I do not leave sensitive matters in earshot by accident. Think about why."
     ]
   },
   "sim_carter": {
@@ -417,6 +615,28 @@
       "I've got a few minutes while the horse rests. What's happening?",
       "Carters hear everything. Half of it's true. Tell me your version.",
       "You look like someone who knows something. That's my favorite kind of person."
+    ],
+    "spread": [
+      "You'll want to hear this — picked it up on the route.",
+      "Passing it on, same as I heard it.",
+      "Long road, good ears. Something came of it.",
+      "I'll tell you this once and then we're both just people who know."
+    ],
+    "act": [
+      "I know enough to do something with this.",
+      "Can't keep driving past this. Time to stop.",
+      "The route can wait half a day. This can't.",
+      "I've hauled heavier things than this decision. Time to put it down."
+    ],
+    "observe_wary": [
+      "I drive through this square every day. I know what normal looks like.",
+      "I've been watched before. Usually means someone wants something.",
+      "You've been at that corner since I started my second load. That's a long time to stand still."
+    ],
+    "eavesdrop_wary": [
+      "Carriers hear everything. We learn fast when to pretend otherwise.",
+      "You caught me mid-sentence. I'm going to finish it very differently now.",
+      "I don't know what you heard, but I know you heard something. Mind how you use it."
     ]
   },
   "greta_flint": {
@@ -459,6 +679,28 @@
       "Oh good, someone to talk to! I was about to resort to thinking.",
       "Come here, I have something and it cannot wait another minute.",
       "Do you know what I love about this square? Anything can happen. And usually does."
+    ],
+    "spread": [
+      "Come here. You should hear this.",
+      "I'll tell you once, and then it's yours to carry.",
+      "This isn't the kind of thing I enjoy passing on. But here we are.",
+      "I heard this and couldn't sit on it alone."
+    ],
+    "act": [
+      "Right. I know what I'm going to do.",
+      "I've waited for someone else to move. They haven't. So I will.",
+      "This is not a thing I can leave alone.",
+      "One way through it. I'm going."
+    ],
+    "observe_wary": [
+      "I see you. I've seen you before.",
+      "Watching someone doing their work is one thing. This is another.",
+      "You're not just passing through, are you."
+    ],
+    "eavesdrop_wary": [
+      "That wasn't meant for you. I imagine you know that.",
+      "I heard footsteps earlier. Should have lowered my voice. I didn't. Now here we are.",
+      "What you heard is only part of it. The part you don't know is the part that matters."
     ]
   },
   "edric_fenn": {
@@ -501,6 +743,28 @@
       "You find yourself in my presence again. I begin to wonder why.",
       "Speak plainly or not at all. I have limited patience for circumspection.",
       "I see you. I remember faces. All of them."
+    ],
+    "spread": [
+      "You should be aware of what I have learned.",
+      "I am not given to rumor — take this seriously.",
+      "I share this not lightly but because you require it to act correctly.",
+      "What I tell you now is not for circulation. It is for you to act upon."
+    ],
+    "act": [
+      "The situation demands a response. I will provide one.",
+      "Order must be maintained. I will see to it.",
+      "I have governed this place for thirty years. I know when to move.",
+      "The alderman's office does not wait for circumstances to improve on their own."
+    ],
+    "observe_wary": [
+      "My movements are documented. Your interest in them is not.",
+      "Scrutiny is expected of those who govern. What governs your scrutiny of me?",
+      "If you have a formal grievance, present it in the appropriate office. Otherwise, good day."
+    ],
+    "eavesdrop_wary": [
+      "This conversation was private. If you've heard any part of it, I expect your discretion.",
+      "I am aware that these grounds are not secure. That is why I did not say what I was thinking.",
+      "Whatever you overheard, I would remind you of the consequences of misuse. Formally."
     ]
   },
   "isolde_fenn": {
@@ -543,6 +807,28 @@
       "I notice you nearby. I notice everything.",
       "This is not a chance meeting for you. What do you actually want?",
       "Composure is information. Yours is telling."
+    ],
+    "spread": [
+      "There is something you ought to know, and I trust you with it.",
+      "I tell you this because I believe you can act wisely on it.",
+      "I don't say things carelessly. What I'm about to say is no exception.",
+      "You are in a position to do something useful with this."
+    ],
+    "act": [
+      "Patience served its purpose. Now is the time for something more.",
+      "I have let this develop long enough.",
+      "I have been watching and waiting. I'm done with both.",
+      "I act rarely. When I do, it counts."
+    ],
+    "observe_wary": [
+      "You are welcome to watch. I rarely do anything of interest in plain sight.",
+      "Yes. I noticed. I always notice. The question is why you're here.",
+      "Composure is not the same as ignorance. I see you quite clearly."
+    ],
+    "eavesdrop_wary": [
+      "I assumed we were being overheard. I chose my words accordingly.",
+      "If you've been near enough to hear, you've been near enough to be noticed.",
+      "I would consider very carefully what use you put that to. For your own sake."
     ]
   },
   "calder_fenn": {
@@ -585,6 +871,28 @@
       "Yeah, I see you. Don't worry about it. I'm used to being watched.",
       "Ask me directly. I'll give you a straight answer. Nobody does that with me anymore.",
       "I'm trying to figure something out. You look like you might know."
+    ],
+    "spread": [
+      "Listen — and this is serious — I heard something.",
+      "You have to know this. It's important.",
+      "I've been trying to figure out who to tell first. It's you.",
+      "Nobody's supposed to know this. Which is exactly why you should."
+    ],
+    "act": [
+      "Enough waiting. I'm going to do something about this.",
+      "I don't care what Father says. This can't stand.",
+      "I'm not sitting at that table pretending everything's fine anymore.",
+      "If no one else is going to do something, then fine. I will."
+    ],
+    "observe_wary": [
+      "Yeah, I see you. You've been here before. What do you want?",
+      "Everyone watches everyone in this town. You're just less subtle about it.",
+      "If you've got something to say, just say it. I'm not in the mood for games."
+    ],
+    "eavesdrop_wary": [
+      "I know you were listening. Honestly? I don't care. Let someone hear it for once.",
+      "You heard that? Good. Tell people. Somebody has to.",
+      "I've been kept in the dark my whole life. You can't say the same. Use it."
     ]
   },
   "bram_guard": {
@@ -627,6 +935,28 @@
       "Move along. This area is under observation.",
       "I've been watching you watching. Just so that's clear.",
       "You want something. State it or move on."
+    ],
+    "spread": [
+      "You need to know this. Don't share it further.",
+      "This goes no further than you. Understood?",
+      "Professional channel only. I'm telling you because you need to act on it.",
+      "Once. Eyes forward after this."
+    ],
+    "act": [
+      "Action required. No further deliberation.",
+      "I have what I need. Moving now.",
+      "The post doesn't wait. Neither do I.",
+      "Threat assessed. Response initiated."
+    ],
+    "observe_wary": [
+      "I've logged your presence three times this week. That's a pattern.",
+      "This area is watched. So are you. Adjust accordingly.",
+      "Move along. The next time I say it, it won't sound like a request."
+    ],
+    "eavesdrop_wary": [
+      "You were in earshot. That has been noted.",
+      "I don't say anything near a civilian I don't intend for a civilian to hear. Think about that.",
+      "Whatever you caught — keep it to yourself. The guard's business is not your business."
     ]
   },
   "wynn_gate": {
@@ -669,6 +999,28 @@
       "Right. Fine. I've been looked at before.",
       "I'm on post. Not much to see from here unless you know what to look for.",
       "Most people don't stop for conversation at a gate. You're not most people."
+    ],
+    "spread": [
+      "Mention this to no one — but you should know.",
+      "Between us. Don't make it more than it is.",
+      "I'm not one for talk but this one's worth passing on.",
+      "Just this once. Don't get used to it."
+    ],
+    "act": [
+      "Orders are orders. Time to carry them out.",
+      "Right. I know what I need to do.",
+      "Not my usual way of things, but circumstances.",
+      "Quiet and steady. That's how it gets done."
+    ],
+    "observe_wary": [
+      "I've been on this gate long enough to know who belongs here. You're pushing it.",
+      "Nothing unusual, same as yesterday. Except you. You're unusual.",
+      "I'd rather not write this in the log. So make it easy and move on."
+    ],
+    "eavesdrop_wary": [
+      "Gate guards hear things. That's just how it goes. But we remember too.",
+      "You think I didn't notice you over there? That's a generous assumption.",
+      "I'm not going to say anything about what you heard. You should do the same."
     ]
   },
   "pell_gate": {
@@ -711,6 +1063,28 @@
       "Oh, you're back. Fair enough. Not much else to look at from this post.",
       "I'm trying to look busy. Help me by standing here and pretending we're discussing something official.",
       "I wasn't doing anything interesting. Well — I was, but I'm done now."
+    ],
+    "spread": [
+      "So listen — you'll never guess what I heard on duty.",
+      "I shouldn't be telling you this, but what's the harm?",
+      "You want a story? I've got a story. Came off the watch this morning.",
+      "Right, don't tell Bram, but — okay, listen."
+    ],
+    "act": [
+      "Right, well, if there's advantage in it...",
+      "Might as well. Not like I had other plans.",
+      "I'm not usually the type for this, but honestly, why not?",
+      "Opportunity at the gate. First time for everything."
+    ],
+    "observe_wary": [
+      "Aye, I've clocked you. You're not as subtle as you think.",
+      "I'm bored on gate duty, not blind. There's a difference.",
+      "You've been watching since my last break. I know because I've been watching you watching me."
+    ],
+    "eavesdrop_wary": [
+      "Oh, you were there for that? Ha. Well. Awkward.",
+      "Look, I say things on this gate that aren't exactly official. Don't quote me.",
+      "I knew someone was nearby. I said it anyway. Guess we both know something now."
     ]
   },
   "annit_scribe": {
@@ -753,6 +1127,28 @@
       "Your presence is noted. Was there something requiring documentation?",
       "I work. You observe. We proceed.",
       "If you have something relevant to the record, state it. Otherwise, stand clear."
+    ],
+    "spread": [
+      "I don't make a habit of this. But you need to know.",
+      "This is information, not gossip. There is a distinction.",
+      "What I am about to tell you is documented. Take it seriously.",
+      "Once only. And I will deny having said it."
+    ],
+    "act": [
+      "I have verified enough. Action is warranted.",
+      "Precision, not passion. I move accordingly.",
+      "The record is clear. My response will be too.",
+      "A scribe acts quietly. But a scribe acts."
+    ],
+    "observe_wary": [
+      "I have recorded the number of times you have stood near this desk this week.",
+      "My work requires attention to detail. You have received more than your share of it.",
+      "State your business in writing or step back. I do not entertain informal surveillance."
+    ],
+    "eavesdrop_wary": [
+      "I was aware of your proximity when I spoke. The words were chosen accordingly.",
+      "A scribe learns early to assume all rooms have ears. Including this one.",
+      "You heard a partial transcript. I have the full version. It is more informative."
     ]
   },
   "tomas_reeve": {
@@ -795,6 +1191,28 @@
       "You've been standing here at consistent intervals. I find that numerically significant.",
       "Present your evidence or present yourself elsewhere.",
       "I track everything. You. Here. Now. It's in the ledger."
+    ],
+    "spread": [
+      "There is something you should know before the next session.",
+      "I'm choosing to tell you this because the alternative is worse for everyone.",
+      "I don't share lightly. But the time for sitting on this has passed.",
+      "Consider this intelligence from someone who knows the workings of this place."
+    ],
+    "act": [
+      "The reeve's office has been patient long enough.",
+      "I know every lever in this town. Time to use one.",
+      "Political capital has a shelf life. I'm spending some today.",
+      "I've been building to this. Now I'm at it."
+    ],
+    "observe_wary": [
+      "I have made note of your presence on several occasions. I make note of everything.",
+      "If you are here on official business, announce it. If not, I suggest you move along.",
+      "Observation is a tool. So is the awareness of being observed."
+    ],
+    "eavesdrop_wary": [
+      "I assumed I was overheard. I prepared for it. Consider yourself prepared as well.",
+      "What you caught is not the whole picture. Acting on a fragment can be dangerous.",
+      "I would caution you to think carefully about who else might have heard that, and when."
     ]
   },
   "old_hugh": {
@@ -837,6 +1255,28 @@
       "Sit down if you want to talk. I don't rush conversations anymore.",
       "Young people stand around when they've got something on their mind. You've got something on your mind.",
       "I'm here. I'm listening. Whatever it is you're working up to, go ahead."
+    ],
+    "spread": [
+      "Come here. Old Hugh has something to say.",
+      "Doesn't come natural to me, but you should know this.",
+      "I've been sitting on this long enough. Here.",
+      "Last time I say it. So listen proper."
+    ],
+    "act": [
+      "Old men move slow. But they move.",
+      "I've seen enough to know when to stir myself. This is it.",
+      "Spent forty years minding my own. Not today.",
+      "My legs aren't what they were. But they'll carry me this far."
+    ],
+    "observe_wary": [
+      "I've been sitting in this spot longer than most of these buildings. I notice things.",
+      "Young people think old ones don't see. We see everything.",
+      "You've been watching. I've been watching you watching. Old habit."
+    ],
+    "eavesdrop_wary": [
+      "I heard you there. These ears are old, not gone.",
+      "I said what I said out loud because I wanted certain ears to catch it. Might have been yours.",
+      "You're not the first to listen in on old Hugh. I adjust accordingly, these days."
     ]
   },
   "aldous_prior": {
@@ -879,6 +1319,28 @@
       "If you have come to speak with me, speak.",
       "Observation is the first step toward understanding. What are you seeking to understand?",
       "I am not unaware of your interest. Let us speak plainly."
+    ],
+    "spread": [
+      "There is something you should carry from this conversation.",
+      "I speak to you not as rumor, but as witness. Hear it as such.",
+      "What I share with you now, I share under the weight of conscience.",
+      "The truth has been waiting. I will release part of it to you now."
+    ],
+    "act": [
+      "The chapter has deliberated. Now we act.",
+      "Faith without action is incomplete. The time for action has arrived.",
+      "The Prior's office has been silent long enough. This changes today.",
+      "I have prayed on it. The answer is motion."
+    ],
+    "observe_wary": [
+      "I notice those who linger near the chapel grounds with uncommon interest.",
+      "The Prior's movements are not secret. The intent behind watching them may be.",
+      "Come in and pray, or move along. There is no pious third option."
+    ],
+    "eavesdrop_wary": [
+      "Walls of faith and stone both have ears. I have long spoken accordingly.",
+      "What you overheard was spoken in a house of God. Mind what you do with it.",
+      "I do not say anything within these walls that I am not willing to account for. Can you say the same?"
     ]
   },
   "maren_nun": {
@@ -921,6 +1383,28 @@
       "I'm between visits. I won't be here long.",
       "You look like you need something. Ask directly — I don't have time to guess.",
       "I notice you here often. Is there something I can help with?"
+    ],
+    "spread": [
+      "I don't often speak of such things. This time I must.",
+      "I will say this once, quietly, and ask that you guard it well.",
+      "In conscience, I cannot stay silent on this.",
+      "What I tell you now, I tell you as a matter of duty."
+    ],
+    "act": [
+      "Prayer has its place. Action has its moment. This is that moment.",
+      "I have been still long enough. Stillness has its limit.",
+      "The sisters act together when we must. The time has come.",
+      "I move quietly. But I move."
+    ],
+    "observe_wary": [
+      "I have been aware of your attention for some time.",
+      "Devotion can be watched without shame. Whatever you're watching, I hope the same is true.",
+      "I notice those who linger. I note those who return."
+    ],
+    "eavesdrop_wary": [
+      "This was not a conversation for outside ears. I trust in your discretion.",
+      "Within consecrated walls, speech should be measured. You heard this. I hope you understand why I said it.",
+      "Sister and God both heard that conversation. Now so did you. Consider that company."
     ]
   },
   "finn_monk": {
@@ -963,6 +1447,28 @@
       "Oh! Hello! I have things to say! Do you have time?",
       "I'm supposed to be somewhere else but this is more interesting and I'll do penance later.",
       "You are here at exactly the right moment. I don't know for what yet, but I can feel it."
+    ],
+    "spread": [
+      "I feel I ought to say something. So I will.",
+      "I don't enjoy carrying news like this, but here — you should know.",
+      "I've been wrestling with whether to tell anyone. I'm telling you.",
+      "Take this gently. It's not easy to pass on."
+    ],
+    "act": [
+      "I'm not the sort for confrontation. But here I am.",
+      "If not me, who? That's what I keep asking myself. So: me.",
+      "Quiet faith and quiet action. This is the action part.",
+      "Brother Finn is going to do something. That's not a sentence I say often."
+    ],
+    "observe_wary": [
+      "I've seen you near the chapel more than chance accounts for. I'm noticing.",
+      "You're welcome here always. I'd simply like to know why you keep coming back.",
+      "A monk learns to be gentle with suspicion. But suspicion I have."
+    ],
+    "eavesdrop_wary": [
+      "Oh. You were there. I should have been more careful, and I wasn't. I'm sorry — for us both.",
+      "What I said was between myself and God, and now also between us. Please treat it as such.",
+      "I trust easily and it sometimes costs me. Let's hope this is not one of those times."
     ]
   },
   "vera_midwife": {
@@ -1005,6 +1511,28 @@
       "You've been circling. What is it?",
       "I'm between calls. Say what you need to say.",
       "You want to know something. Ask it plain. I have a next visit."
+    ],
+    "spread": [
+      "I'll say this and then you're responsible for what you do with it.",
+      "I've seen enough to know this matters. Listen.",
+      "I don't pass things along lightly. This I pass along.",
+      "Between a healer and someone who needs to know: here."
+    ],
+    "act": [
+      "The needs of the sick come first. After that, this.",
+      "I've set a bone and talked a woman through worse than this. I can act.",
+      "Practical. That's how I do things. Here's the practical response.",
+      "Vera doesn't wait for permission. Especially not for this."
+    ],
+    "observe_wary": [
+      "I notice people's habits. It's my work. Yours have changed.",
+      "You've been here longer than a visit warrants. I'm noting it.",
+      "I don't ask questions I don't need to. But I'm getting close to needing to."
+    ],
+    "eavesdrop_wary": [
+      "A midwife learns to talk around the important things when rooms are full. I did that just now.",
+      "I know you were near. I've delivered babies in worse conditions. I stay alert.",
+      "What you heard is part of something larger. Don't treat it as the whole picture."
     ]
   },
   "old_piety": {
@@ -1047,6 +1575,28 @@
       "Yes. I see you there. God sees you further.",
       "At my age I don't waste words. Say what you mean.",
       "You remind me of someone. Who I knew when. Come, let me look at you."
+    ],
+    "spread": [
+      "Child, come close. The Lord moves me to speak.",
+      "I have kept this within my breast long enough. Here.",
+      "What I tell you is both warning and testimony.",
+      "Listen. This matters more than you may realize."
+    ],
+    "act": [
+      "The righteous do not stand idle in the face of wickedness.",
+      "I am old, not passive. There is a difference.",
+      "I have prayed for guidance. The guidance is: move.",
+      "God's work takes many forms. This is one of them."
+    ],
+    "observe_wary": [
+      "You have been watching the faithful. I have been watching you.",
+      "Scrutiny from the godless is expected. It does not go unnoticed.",
+      "I see you there. I have seen you there before. So has God."
+    ],
+    "eavesdrop_wary": [
+      "What passes between the faithful is meant for God's ears first. Then perhaps yours, in time.",
+      "I speak openly because I have nothing to hide. I wonder if you can say the same.",
+      "You heard a prayer and a confidence. I pray you know what to do with each."
     ]
   },
   "jude_bellringer": {
@@ -1089,6 +1639,28 @@
       "Not much to see up here unless you like bells and rooftops.",
       "I've got a few minutes before the next bell. What's happening down there?",
       "People tell the bellringer things. I think they forget I can hear."
+    ],
+    "spread": [
+      "I ring the bell and I hear things between the peals. Listen.",
+      "Up in the tower, you hear remarkable things. Here's one.",
+      "The bells carry sound in both directions, you know.",
+      "Most people tell me things they wouldn't tell anyone else. Here's what I heard."
+    ],
+    "act": [
+      "The bell rings, and then the bellringer moves. That's the sequence.",
+      "I've been up in that tower long enough. Time to come down for this.",
+      "You might not think it, but a bellringer has things to do in the world below.",
+      "The hour has struck. Time for action."
+    ],
+    "observe_wary": [
+      "You can see a long way from a bell tower. I see you long before you see me.",
+      "I know every face on this square by the sound of their footsteps. Yours are becoming familiar.",
+      "The bells give me a full view of the square at each ring. I've been watching."
+    ],
+    "eavesdrop_wary": [
+      "Sound carries differently in stone buildings. You might not have known how well.",
+      "I catch everything from up there. What you said down here — I heard it.",
+      "The tower hears everything. And the bellringer hears the tower."
     ]
   },
   "constance_widow": {
@@ -1131,6 +1703,28 @@
       "Oh! You're still here! Good. I have more to say.",
       "Don't run off — I feel like we're just getting to the interesting part.",
       "Sit with me a moment. I promise it will be worth your while."
+    ],
+    "spread": [
+      "I have kept this to myself long enough. You should know it.",
+      "A widow keeps her own counsel, but this is beyond that.",
+      "I've had time to think on it. Now I'm sharing it.",
+      "What I know, I know quietly. What I'm telling you now, I tell once."
+    ],
+    "act": [
+      "I have been still long enough. That is over.",
+      "A woman alone learns to act for herself. Today I act for more than that.",
+      "Grief teaches patience. Patience teaches timing. The timing is now.",
+      "I have waited. I am done waiting."
+    ],
+    "observe_wary": [
+      "I have been watching from this window for years. I know when I am being watched in return.",
+      "A widow's life is quiet. Quiet enough to notice things. Things like you.",
+      "You have been near this house more than once. I notice. I remember."
+    ],
+    "eavesdrop_wary": [
+      "I speak softly because I know walls hear. You have proven my caution warranted.",
+      "What you caught of that was not for you. I trust you understand the weight of that.",
+      "I have learned not to say important things near open doors. This time I forgot. Mind what you do with it."
     ]
   },
   "thomas_pilgrim": {
@@ -1173,6 +1767,28 @@
       "A stranger sees things differently. Would you like the view from the road?",
       "I'm here until tomorrow. What would you want a traveling witness to remember?",
       "I pass through. But I don't pass by."
+    ],
+    "spread": [
+      "On my journey I heard something I was not meant to. I pass it to you.",
+      "The road carries words as surely as it carries travelers. Here is one.",
+      "I share this not for worldly purpose, but because silence would be worse.",
+      "A pilgrim carries only what is needful. This is needful."
+    ],
+    "act": [
+      "Faith calls me to act. So I act.",
+      "The pilgrim's path has brought me here for a reason. I believe this is it.",
+      "I did not come this far to remain still at the moment that matters.",
+      "I move in good conscience and in God's name."
+    ],
+    "observe_wary": [
+      "A pilgrim is used to being watched with suspicion. You are not the first.",
+      "I travel with nothing to conceal. I wonder if you observe with the same purity of intent.",
+      "I notice those who watch. On the road, it can mean the difference between safety and otherwise."
+    ],
+    "eavesdrop_wary": [
+      "The road teaches you to speak as if the world is listening, because it often is.",
+      "What you heard was spoken in faith. I ask that you receive it with equal care.",
+      "I have no secrets that God does not already know. The question is what you will do with yours."
     ]
   },
   "alys_herbwife": {
@@ -1215,6 +1831,28 @@
       "Something you need or something you want to know?",
       "I don't lurk. If you have a question, I'm standing right here.",
       "The plants and I have a private arrangement. Everything else is negotiable."
+    ],
+    "spread": [
+      "I will tell you this, and then I need you to leave quickly.",
+      "There is something you should know. I don't know who else to trust with it.",
+      "I've kept this close. I can't anymore. Listen.",
+      "One thing. And then we never spoke."
+    ],
+    "act": [
+      "I didn't come here to be caught up in all this. But here I am.",
+      "I know what needs to be done. I've known for a while.",
+      "An herb-wife acts when the wound won't wait. This won't wait.",
+      "I've prepared for this longer than anyone knows."
+    ],
+    "observe_wary": [
+      "You're not here for herbs. You haven't been for some time now.",
+      "I've had people watching this stall before. I know the difference between a customer and a shadow.",
+      "I notice everyone who lingers. It is a habit that keeps me safe."
+    ],
+    "eavesdrop_wary": [
+      "I am careful about what I say and where I say it. I must not have been careful enough.",
+      "You heard something. Please understand that people's safety depends on your discretion.",
+      "I came to this town quietly. I intend to stay quietly. Whatever you heard — please."
     ]
   },
   "denny_gravedigger": {
@@ -1257,6 +1895,28 @@
       "You've been standing on consecrated ground for several minutes now. Was there something?",
       "I don't mind company. The dead don't provide much.",
       "Go ahead. I've heard stranger things while I work."
+    ],
+    "spread": [
+      "You want to know what the dead tell me? Here.",
+      "I've buried the evidence of worse than this. But this needs saying.",
+      "I don't share often. The dead are better company than most. But this one I'll tell.",
+      "Thirty years in this yard. What I know could fill a lot of the plots I've dug."
+    ],
+    "act": [
+      "The gravedigger acts last. I have been last long enough.",
+      "The dead are patient. I am less so, on this particular matter.",
+      "I've put the problem to rest in my mind long enough. Time to do something with it.",
+      "Final arrangements have a way of focusing the mind. This has focused mine."
+    ],
+    "observe_wary": [
+      "Graveyards get visitors who don't announce themselves. You're not the first. But I've noted you.",
+      "I work alone in this yard and I still feel watched sometimes. Right now I don't just feel it.",
+      "The dead don't watch the living. I do, on their behalf."
+    ],
+    "eavesdrop_wary": [
+      "I speak plainly because I have nothing to fear. You were listening. I hope you have the same advantage.",
+      "Sound carries well here. Something about the stone walls. I've made peace with that over the years.",
+      "What you heard was between me and the work. You've joined that conversation uninvited. Mind the company."
     ]
   }
 }

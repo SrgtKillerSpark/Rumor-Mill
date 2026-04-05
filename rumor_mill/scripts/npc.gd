@@ -1306,15 +1306,29 @@ func _process(delta: float) -> void:
 
 ## Show a dialogue bubble from the "observe" category when the player
 ## successfully observes the location this NPC is currently at.
+## Uses the "observe_wary" variant when this NPC's heat is >= 50, signalling
+## a noticeably colder/suspicious reaction.
 ## Called by recon_controller after a successful Observe action.
 func show_observed() -> void:
+	if _get_heat() >= 50.0:
+		var npc_lines: Dictionary = _dialogue_data.get(_npc_dialogue_key, {})
+		if not (npc_lines.get("observe_wary", []) as Array).is_empty():
+			_show_dialogue_bubble("observe_wary")
+			return
 	_show_dialogue_bubble("observe")
 
 
 ## Show a dialogue bubble from the "eavesdrop" category when the player
 ## successfully eavesdrops on this NPC.
+## Uses the "eavesdrop_wary" variant when this NPC's heat is >= 50, signalling
+## a more guarded or accusatory reaction.
 ## Called by recon_controller after a successful Eavesdrop action.
 func show_eavesdropped() -> void:
+	if _get_heat() >= 50.0:
+		var npc_lines: Dictionary = _dialogue_data.get(_npc_dialogue_key, {})
+		if not (npc_lines.get("eavesdrop_wary", []) as Array).is_empty():
+			_show_dialogue_bubble("eavesdrop_wary", true)
+			return
 	_show_dialogue_bubble("eavesdrop", true)
 
 
