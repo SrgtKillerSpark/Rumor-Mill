@@ -7,7 +7,7 @@
 ## reputation overrides, player intel (recon budget, heat, evidence),
 ## scenario state, journal timeline, rival agent state (S3),
 ## inquisitor agent state (S4), s4 faction shift agent state (S4),
-## illness escalation agent state (S2).
+## illness escalation agent state (S2), guild defense agent state (S6).
 ##
 ## Load flow:
 ##   1. prepare_load(scenario_id, slot) validates file and stores data in _pending_load_data.
@@ -155,6 +155,7 @@ static func save_game(
 		"s4_faction_shift_agent":    _serialize_s4_faction_shift_agent(world.s4_faction_shift_agent),
 		"illness_escalation_agent":  _serialize_illness_escalation_agent(world.illness_escalation_agent),
 		"mid_game_event_agent":      _serialize_mid_game_event_agent(world.mid_game_event_agent),
+		"guild_defense_agent":       _serialize_guild_defense_agent(world.guild_defense_agent),
 		"faction_event_system":      _serialize_faction_event_system(world.faction_event_system),
 		"socially_dead_ids":    world._socially_dead_ids.keys(),
 		"timeline":             timeline,
@@ -239,6 +240,7 @@ static func apply_pending_load(
 	_restore_s4_faction_shift_agent(world.s4_faction_shift_agent, data.get("s4_faction_shift_agent", {}))
 	_restore_illness_escalation_agent(world.illness_escalation_agent, data.get("illness_escalation_agent", {}))
 	_restore_mid_game_event_agent(world.mid_game_event_agent, data.get("mid_game_event_agent", {}))
+	_restore_guild_defense_agent(world.guild_defense_agent, data.get("guild_defense_agent", {}))
 	_restore_faction_event_system(world.faction_event_system, data.get("faction_event_system", {}))
 	world._socially_dead_ids.clear()
 	for npc_id in data.get("socially_dead_ids", []):
@@ -434,6 +436,16 @@ static func _serialize_s4_faction_shift_agent(agent: S4FactionShiftAgent) -> Dic
 		"phase_1_fired": agent._phase_1_fired,
 		"phase_2_fired": agent._phase_2_fired,
 		"phase_3_fired": agent._phase_3_fired,
+	}
+
+
+static func _serialize_guild_defense_agent(gda: GuildDefenseAgent) -> Dictionary:
+	if gda == null:
+		return {}
+	return {
+		"active":           gda._active,
+		"last_defense_day": gda._last_defense_day,
+		"cooldown_offset":  gda.cooldown_offset,
 	}
 
 
@@ -639,6 +651,14 @@ static func _restore_illness_escalation_agent(iea: IllnessEscalationAgent, d: Di
 	iea._active          = bool(d.get("active", false))
 	iea._last_seed_day   = int(d.get("last_seed_day", 0))
 	iea.cooldown_offset  = int(d.get("cooldown_offset", 0))
+
+
+static func _restore_guild_defense_agent(gda: GuildDefenseAgent, d: Dictionary) -> void:
+	if gda == null or d.is_empty():
+		return
+	gda._active           = bool(d.get("active", false))
+	gda._last_defense_day = int(d.get("last_defense_day", 0))
+	gda.cooldown_offset   = int(d.get("cooldown_offset", 0))
 
 
 static func _serialize_mid_game_event_agent(mgea: MidGameEventAgent) -> Dictionary:
