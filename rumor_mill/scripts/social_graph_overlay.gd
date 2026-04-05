@@ -220,6 +220,12 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				var h_color := Color(SPREAD_HIGHLIGHT_COLOR.r, SPREAD_HIGHLIGHT_COLOR.g,
 									 SPREAD_HIGHLIGHT_COLOR.b, h_alpha)
 				_draw_node.draw_line(from_screen, to_screen, h_color, h_width)
+				# Arrowhead at the receiver end to show rumor direction.
+				var arr_dir := (to_screen - from_screen).normalized()
+				var arr_perp := Vector2(-arr_dir.y, arr_dir.x)
+				var arr_tip := to_screen - arr_dir * (NODE_RADIUS + 4.0)
+				_draw_node.draw_line(arr_tip - arr_dir * 8.0 + arr_perp * 5.0, arr_tip, h_color, h_width * 0.8)
+				_draw_node.draw_line(arr_tip - arr_dir * 8.0 - arr_perp * 5.0, arr_tip, h_color, h_width * 0.8)
 			elif weight < EDGE_THRESHOLD:
 				continue
 			elif spreading_ids.has(nid) or spreading_ids.has(tid):
@@ -262,6 +268,12 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 		var h_color := Color(SPREAD_HIGHLIGHT_COLOR.r, SPREAD_HIGHLIGHT_COLOR.g,
 							 SPREAD_HIGHLIGHT_COLOR.b, h_alpha)
 		_draw_node.draw_line(from_screen, to_screen, h_color, h_width)
+		# Arrowhead at receiver end.
+		var arr_dir2 := (to_screen - from_screen).normalized()
+		var arr_perp2 := Vector2(-arr_dir2.y, arr_dir2.x)
+		var arr_tip2 := to_screen - arr_dir2 * (NODE_RADIUS + 4.0)
+		_draw_node.draw_line(arr_tip2 - arr_dir2 * 8.0 + arr_perp2 * 5.0, arr_tip2, h_color, h_width * 0.8)
+		_draw_node.draw_line(arr_tip2 - arr_dir2 * 8.0 - arr_perp2 * 5.0, arr_tip2, h_color, h_width * 0.8)
 
 
 func _draw_nodes(npcs: Array) -> void:
@@ -284,29 +296,51 @@ func _draw_nodes(npcs: Array) -> void:
 				0.0, TAU, 24, ring, RING_THICKNESS
 			)
 
-		# Name label — drawn with a shadow pass for legibility over any background.
+		# Name label — drawn with a dark background pill for legibility over any background.
 		var npc_name: String = npc.npc_data.get("name", "?").split(" ")[0]  # first name only
 		var label_pos := screen_pos + Vector2(-NODE_RADIUS * 1.2, NODE_RADIUS + 12.0)
-		# Shadow pass (offset 1 px down-right, dark semi-transparent).
-		_draw_node.draw_string(
-			ThemeDB.fallback_font,
-			label_pos + Vector2(1, 1),
-			npc_name,
-			HORIZONTAL_ALIGNMENT_LEFT,
-			-1,
-			13,
-			Color(0.0, 0.0, 0.0, 0.75)
+		# Background pill behind the label.
+		var font_size_px := 13
+		var text_w: float = ThemeDB.fallback_font.get_string_size(npc_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size_px).x
+		_draw_node.draw_rect(
+			Rect2(label_pos + Vector2(-3, -12), Vector2(text_w + 6, 16)),
+			Color(0.0, 0.0, 0.0, 0.65)
 		)
-		# Main label.
+		# Main label (no separate shadow pass needed — background handles contrast).
 		_draw_node.draw_string(
 			ThemeDB.fallback_font,
 			label_pos,
 			npc_name,
 			HORIZONTAL_ALIGNMENT_LEFT,
 			-1,
-			13,
+			font_size_px,
 			Color(0.95, 0.95, 0.85, 0.95)
 		)
+
+		# Reputation score sub-label — shown if reputation system is available.
+		var npc_id: String = npc.npc_data.get("id", "")
+		if not npc_id.is_empty() and _world_ref != null \
+				and "reputation_system" in _world_ref and _world_ref.reputation_system != null:
+			var snap: ReputationSystem.ReputationSnapshot = \
+				_world_ref.reputation_system.get_snapshot(npc_id)
+			if snap != null:
+				var rep_text := "%d" % snap.score
+				var rep_color: Color = ReputationSystem.score_color(snap.score)
+				var rep_pos := label_pos + Vector2(0.0, 14.0)
+				var rep_w: float = ThemeDB.fallback_font.get_string_size(rep_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
+				_draw_node.draw_rect(
+					Rect2(rep_pos + Vector2(-3, -10), Vector2(rep_w + 6, 13)),
+					Color(0.0, 0.0, 0.0, 0.55)
+				)
+				_draw_node.draw_string(
+					ThemeDB.fallback_font,
+					rep_pos,
+					rep_text,
+					HORIZONTAL_ALIGNMENT_LEFT,
+					-1,
+					11,
+					rep_color
+				)
 
 
 # ── Legend ─────────────────────────────────────────────────────────────────────
@@ -337,7 +371,7 @@ func _build_legend() -> void:
 	_legend_label.append_text("[b][color=white]Social Graph View[/color][/b]  [color=gray][G to hide][/color]\n\n")
 	_legend_label.append_text("[b]Factions[/b]\n")
 	_legend_label.append_text("[color=#d9a91a]■[/color] Merchant\n")
-	_legend_label.append_text("[color=#5980d9]■[/color] Noble\n")
+	_legend_label.append_text("[color=#6C162A]■[/color] Noble\n")
 	_legend_label.append_text("[color=#e0e0e0]■[/color] Clergy\n\n")
 	_legend_label.append_text("[b]Rumor State (ring)[/b]\n")
 	_legend_label.append_text("[color=#ffff00]■[/color] Evaluating\n")

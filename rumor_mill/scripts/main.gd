@@ -248,6 +248,10 @@ func _on_begin_game(scenario_id: String) -> void:
 		_ready_overlay = preload("res://scripts/ready_overlay.gd").new()
 		_ready_overlay.name = "ReadyOverlay"
 		add_child(_ready_overlay)
+		# SPA-537: pass objectiveCard data so the overlay shows a full mission briefing.
+		var _sm: ScenarioManager = world.scenario_manager
+		if _sm != null:
+			_ready_overlay.setup(_sm.get_objective_card(), _sm.get_title())
 		_ready_overlay.dismissed.connect(_on_ready_overlay_dismissed)
 
 
@@ -383,11 +387,29 @@ func _on_rumor_event(message: String, tick: int) -> void:
 		journal.push_timeline_event(tick, message)
 	if social_graph_overlay != null and social_graph_overlay.has_method("on_rumor_event"):
 		social_graph_overlay.on_rumor_event(message)
-	# Milestone visual feedback for key events.
+	# Toast notification when a rumor reaches a new NPC (named, not generic).
+	if recon_hud != null and message.contains("whispered to") and recon_hud.has_method("show_toast"):
+		# Format: "FromName whispered to ToName [id]"
+		var wt_parts := message.split(" whispered to ", false)
+		if wt_parts.size() >= 2:
+			var to_part := wt_parts[1].split(" [", false)
+			var to_name := to_part[0].strip_edges()
+			var to_role := ""
+			if world != null:
+				for npc in world.npcs:
+					if npc.npc_data.get("name", "") == to_name:
+						to_role = npc.npc_data.get("role", "")
+						break
+			var toast_msg: String
+			if to_role != "":
+				toast_msg = "Rumor reached %s the %s!" % [to_name.split(" ")[0], to_role]
+			else:
+				toast_msg = "Rumor reached %s!" % to_name.split(" ")[0]
+			recon_hud.show_toast(toast_msg, true)
+
+	# Milestone visual feedback for key state-change events.
 	if recon_hud != null and recon_hud.has_method("show_milestone"):
-		if message.contains("whispered to"):
-			recon_hud.show_milestone("Rumor spreading...", Color(1.00, 0.70, 0.30, 1.0))
-		elif message.contains("→ Believe"):
+		if message.contains("→ Believe"):
 			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
 			recon_hud.show_milestone("%s is convinced!" % npc_name, Color(0.50, 1.00, 0.55, 1.0))
 		elif message.contains("→ Spread"):
@@ -567,25 +589,31 @@ func _init_tutorial_banner_s1() -> void:
 	add_child(_tutorial_banner)
 	_tutorial_banner.setup(_tutorial_sys)
 
-	# HINT-01: mission intro — fires immediately on game start (SPA-479 revised).
-	_tutorial_banner.queue_hint("hint_camera")
+	# SPA-537: The ready overlay now shows the full mission briefing, so the
+	# first banner hint is the immediate first action — not the mission intro.
+	# Tightened timing: 2 s → first action, 8 s → target NPC, 14 s → controls.
+	# Creates a snappy "first 60 seconds" flow:
+	#   0 s: ReadyOverlay dismissed → game starts
+	#   2 s: "Step 1: Observe a Building" banner
+	#   8 s: "Step 2: Eavesdrop" banner (if player hasn't already)
+	#  14 s: "Time Controls" banner
 
-	# HINT-01b: guided first action — fires 6 s after game start.
-	var _first_action_timer := get_tree().create_timer(6.0)
+	# HINT-01: immediate first action — fires 2 s after game start.
+	var _first_action_timer := get_tree().create_timer(2.0)
 	_first_action_timer.timeout.connect(func() -> void:
 		if _tutorial_banner != null:
 			_tutorial_banner.queue_hint("hint_first_action")
 	)
 
-	# hint_target_npc: fires 14 s after game start to point player toward Edric Fenn.
-	var _target_hint_timer := get_tree().create_timer(14.0)
+	# HINT-02: point toward target NPC — fires 8 s after game start.
+	var _target_hint_timer := get_tree().create_timer(8.0)
 	_target_hint_timer.timeout.connect(func() -> void:
 		if _tutorial_banner != null:
 			_tutorial_banner.queue_hint("hint_target_npc")
 	)
 
-	# hint_speed_controls: fires 20 s after game start to teach pause/speed controls.
-	var _speed_hint_timer := get_tree().create_timer(20.0)
+	# hint_speed_controls: fires 14 s after game start.
+	var _speed_hint_timer := get_tree().create_timer(14.0)
 	_speed_hint_timer.timeout.connect(func() -> void:
 		if _tutorial_banner != null:
 			_tutorial_banner.queue_hint("hint_speed_controls")
@@ -690,6 +718,14 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 				if not _banner_journal_hint_fired:
 					_banner_journal_hint_fired = true
 					_tutorial_banner.queue_hint("hint_journal")
+				# SPA-537: Immediately nudge toward Rumour Panel after first eavesdrop
+				# (tighter flow — don't wait until Day 2).
+				if not _banner_seed_fired:
+					var _rumour_nudge_timer := get_tree().create_timer(4.0)
+					_rumour_nudge_timer.timeout.connect(func() -> void:
+						if _tutorial_banner != null and not _banner_seed_fired:
+							_tutorial_banner.queue_hint("hint_rumour_panel")
+					)
 			_banner_eavesdrop_count += 1
 			# Introduce social graph when 2+ relationships are revealed.
 			if _banner_eavesdrop_count >= 2 and not _banner_social_graph_fired:

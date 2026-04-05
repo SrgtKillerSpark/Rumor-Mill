@@ -167,26 +167,35 @@ func _on_draw() -> void:
 		_draw_node.draw_line(tip + perp * 4.0, to_s, col, 1.0)
 		_draw_node.draw_line(tip - perp * 4.0, to_s, col, 1.0)
 
-	# ── Pass 3: speech-bubble "..." above actively conversing NPCs ───────────────
+	# ── Pass 3: speech-bubble above actively conversing NPCs ────────────────────
 	for npc in npcs:
 		var nid: String = npc.npc_data.get("id", "")
 		if not _active_convos.has(nid):
 			continue
 		var t: float = _active_convos[nid] / PULSE_DURATION
 		var screen_pos := _world_to_screen(npc.global_position)
-		var bubble_pos := screen_pos + Vector2(12.0, -30.0)
+		# Bubble floats upward as it fades out.
+		var float_offset: float = lerpf(0.0, -8.0, 1.0 - t)
+		var bubble_pos := screen_pos + Vector2(12.0, -34.0 + float_offset)
 		var alpha: float = t * COL_BUBBLE.a
 
-		# Dark pill background — slightly larger for readability.
+		# Larger dark pill background for clear readability.
 		_draw_node.draw_rect(
-			Rect2(bubble_pos - Vector2(11, 8), Vector2(22, 16)),
-			Color(0.10, 0.08, 0.05, alpha * 0.90)
+			Rect2(bubble_pos - Vector2(13, 9), Vector2(30, 18)),
+			Color(0.08, 0.05, 0.02, alpha * 0.90)
 		)
-		# "..." text at 11px so it reads at normal zoom.
+		# Gold border ring for visual pop against any background.
+		_draw_node.draw_rect(
+			Rect2(bubble_pos - Vector2(13, 9), Vector2(30, 18)),
+			Color(COL_PULSE.r, COL_PULSE.g, COL_PULSE.b, alpha * 0.65),
+			false,
+			1.0
+		)
+		# Whisper icon "✦" — more distinctive than plain "...".
 		_draw_node.draw_string(
 			ThemeDB.fallback_font,
-			bubble_pos + Vector2(-7, 5),
-			"...",
+			bubble_pos + Vector2(-9, 6),
+			"✦ ·",
 			HORIZONTAL_ALIGNMENT_LEFT,
 			-1,
 			11,
