@@ -17,6 +17,7 @@ var _target_zoom: float = 1.5
 var _drag_origin: Vector2 = Vector2.ZERO
 var _is_dragging: bool = false
 var _shake_tween: Tween = null
+var _pan_tween: Tween = null
 var _camera_moved_emitted: bool = false
 
 
@@ -94,6 +95,17 @@ func _smooth_zoom(delta: float) -> void:
 	var current := zoom.x
 	var next: float = lerp(current, _target_zoom, minf(zoom_lerp_speed * delta, 1.0))
 	zoom = Vector2(next, next)
+
+
+## SPA-626: Smoothly pan the camera to a target world position.
+## Interrupts any in-progress auto-pan.  Player keyboard input can still override
+## during the tween because _handle_keyboard_pan runs every frame.
+func pan_to_target(target_pos: Vector2, duration: float = 2.0) -> void:
+	if _pan_tween != null:
+		_pan_tween.kill()
+	_pan_tween = create_tween()
+	_pan_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_pan_tween.tween_property(self, "position", target_pos, duration)
 
 
 ## Trigger a screen shake.  Safe to call mid-shake — restarts with new params.

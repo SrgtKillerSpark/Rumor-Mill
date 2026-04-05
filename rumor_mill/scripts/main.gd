@@ -84,6 +84,7 @@ var _banner_hint06_fired:      bool = false  # guard: rumour panel nudge at tick
 var _banner_believe_fired:     bool = false  # guard for hint_objectives
 var _banner_journal_hint_fired: bool = false  # guard: journal hint shown (observe or eavesdrop)
 var _banner_social_graph_fired: bool = false  # guard: social graph hint shown
+var _banner_s1_market_cleared: bool = false  # SPA-626: true after first recon clears Market highlight
 # Cross-scenario contextual hint gates (S2/S3/S4).
 var _ctx_spread_fired:   bool = false
 var _ctx_act_fired:      bool = false
@@ -312,6 +313,32 @@ func _on_ready_overlay_dismissed() -> void:
 	# SPA-627: Flash a one-time hint so the player knows O recalls this overlay.
 	if objective_hud != null and objective_hud.has_method("show_o_hotkey_hint"):
 		objective_hud.show_o_hotkey_hint()
+
+	# SPA-626: S1 first-time player flow — camera pan + Market highlight + gated banner.
+	if world.active_scenario_id == "scenario_1":
+		_init_s1_onboarding_flow()
+
+
+## SPA-626: Camera auto-pan to Market, single-target highlight, and persistent gated banner.
+## Called from _on_ready_overlay_dismissed() when scenario_1 is active.
+func _init_s1_onboarding_flow() -> void:
+	# Resolve Market building world-space position via the building entry cell.
+	var market_cell: Vector2i = world._building_entries.get("market", Vector2i(12, 30))
+	var market_world_pos: Vector2 = Vector2.ZERO
+	if _recon_ctrl_ref != null and _recon_ctrl_ref.has_method("_cell_to_world"):
+		market_world_pos = _recon_ctrl_ref._cell_to_world(market_cell)
+
+	# 1. Camera auto-pan to Market over 2 s.
+	if camera.has_method("pan_to_target"):
+		camera.pan_to_target(market_world_pos, 2.0)
+
+	# 2. Single-target pulse-glow on Market building.
+	if _visual_affordances != null and _visual_affordances.has_method("highlight_single_target"):
+		_visual_affordances.highlight_single_target(market_world_pos)
+
+	# 3. Persistent gated banner — stays until first Recon Action.
+	if _tutorial_banner != null:
+		_tutorial_banner.queue_hint("hint_s1_investigate_gate")
 
 
 ## SPA-627: Show the briefing card mid-game (read-only). Blocked during active dialogs.
@@ -938,6 +965,14 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 			_eavesdrop_tooltip_fired = true
 			_tutorial_hud.queue_tooltip("eavesdrop")
 
+	# SPA-626: Clear the Market highlight and dismiss the gated banner on first recon action.
+	if not _banner_s1_market_cleared:
+		_banner_s1_market_cleared = true
+		if _visual_affordances != null and _visual_affordances.has_method("clear_single_target"):
+			_visual_affordances.clear_single_target()
+		if _tutorial_banner != null and _tutorial_banner.has_method("dismiss_hint"):
+			_tutorial_banner.dismiss_hint("hint_s1_investigate_gate")
+
 	# S1 banner: open observe gate (HINT-04 unlocks) and eavesdrop gate (HINT-05).
 	if _tutorial_banner != null:
 		if message.begins_with("Observed") and not _banner_observe_gate:
@@ -960,6 +995,9 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 					_rumour_nudge_timer.timeout.connect(func() -> void:
 						if _tutorial_banner != null and not _banner_seed_fired:
 							_tutorial_banner.queue_hint("hint_rumour_panel")
+						# SPA-626: Auto-open Rumour Panel after first eavesdrop (4 s delay).
+						if rumor_panel != null and not rumor_panel.visible and not _banner_seed_fired:
+							rumor_panel.visible = true
 					)
 			_banner_eavesdrop_count += 1
 			# Introduce social graph when 2+ relationships are revealed.
@@ -1025,6 +1063,9 @@ func _on_s1_rumor_seeded(
 	if _banner_seed_fired or _tutorial_banner == null:
 		return
 	_banner_seed_fired = true
+	# SPA-626: Immediate toast — confirm the whisper is in motion.
+	if recon_hud != null and recon_hud.has_method("show_toast"):
+		recon_hud.show_toast("Rumours take time to spread. Watch the dawn bulletin tomorrow.", false)
 	var timer := get_tree().create_timer(5.0)
 	timer.timeout.connect(func() -> void:
 		if _tutorial_banner != null:

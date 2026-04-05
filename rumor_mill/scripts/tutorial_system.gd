@@ -169,6 +169,15 @@ const TOOLTIP_DATA: Dictionary = {
 ## body may contain "[evidence_name]" which TutorialBanner substitutes at queue time.
 
 const HINT_DATA: Dictionary = {
+	"hint_s1_investigate_gate": {
+		"title": "Gather Your First Intel",
+		"body":  (
+			"[b]Right-click the Market[/b] to see who is inside.  "
+			+ "Investigating a building costs one Recon Action.  "
+			+ "This banner clears once you take your first action."
+		),
+		"auto_dismiss_secs": 999,
+	},
 	"hint_camera": {
 		"title": "Your Mission",
 		"body":  (

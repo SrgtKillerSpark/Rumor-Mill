@@ -3,13 +3,13 @@ extends BaseScenarioHud
 ## scenario4_hud.gd — Persistent triple-track reputation defence display.
 ##
 ## Shows a thin header tracking the three protected NPCs' reputation scores
-## against the Scenario 4 fail threshold (< 50) and 20-day survival win.
+## against the Scenario 4 fail threshold (< 45) and 20-day survival win.
 ##
 ## Layout:
 ##   Scenario 4: The Holy Inquisition
-##   [Aldous Prior]   Rep: 60 / 100   Floor: 50  [bar]
-##   [Vera Midwife]   Rep: 55 / 100   Floor: 50  [bar]
-##   [Finn Monk]      Rep: 50 / 100   Floor: 50  [bar]
+##   [Aldous Prior]   Rep: 60 / 100   Floor: 45  [bar]
+##   [Vera Midwife]   Rep: 55 / 100   Floor: 45  [bar]
+##   [Finn Monk]      Rep: 50 / 100   Floor: 45  [bar]
 ##   Days remaining: 20       Inquisitor: no activity yet
 ##
 ## Wire via setup(world, day_night) from main.gd.

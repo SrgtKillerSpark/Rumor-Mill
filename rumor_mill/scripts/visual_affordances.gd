@@ -28,13 +28,14 @@ const FADE_OUT_ACTIONS := 5    # disable after this many successful actions
 const FADE_OUT_DAY     := 4    # disable after this day number
 
 # ── State ─────────────────────────────────────────────────────────────────────
-var _world_ref:       Node2D   = null
-var _day_night_ref:   Node     = null
-var _action_count:    int      = 0
-var _enabled:         bool     = true
-var _pulse_phase:     float    = 0.0
-var _npc_rings:       Dictionary = {}  # npc_id → Polygon2D (drawn in world space)
-var _fading_out:      bool     = false
+var _world_ref:          Node2D     = null
+var _day_night_ref:      Node       = null
+var _action_count:       int        = 0
+var _enabled:            bool       = true
+var _pulse_phase:        float      = 0.0
+var _npc_rings:          Dictionary = {}  # npc_id → Polygon2D (drawn in world space)
+var _fading_out:         bool       = false
+var _single_target_poly: Polygon2D  = null  # SPA-626: pulse-glow on a single building
 
 
 func _ready() -> void:
@@ -51,6 +52,35 @@ func setup(world: Node2D, day_night: Node) -> void:
 
 	# Build NPC glow rings.
 	_build_npc_rings()
+
+
+## SPA-626: Show a bright pulsing diamond highlight on one specific building.
+## world_pos should be the same coordinate used by recon_controller._cell_to_world().
+## Replaces any existing single-target highlight.
+func highlight_single_target(world_pos: Vector2) -> void:
+	if not _enabled or _world_ref == null:
+		return
+	clear_single_target()
+	var poly := Polygon2D.new()
+	poly.polygon = PackedVector2Array([
+		Vector2(0.0,   -28.0),
+		Vector2(44.0,   0.0),
+		Vector2(0.0,   28.0),
+		Vector2(-44.0,  0.0),
+	])
+	poly.color    = C_NEXT_STEP
+	poly.name     = "S1MarketHighlight"
+	poly.position = world_pos
+	poly.z_index  = 1
+	_world_ref.add_child(poly)
+	_single_target_poly = poly
+
+
+## SPA-626: Remove the single-target building highlight immediately.
+func clear_single_target() -> void:
+	if _single_target_poly != null and is_instance_valid(_single_target_poly):
+		_single_target_poly.queue_free()
+	_single_target_poly = null
 
 
 ## Called by main.gd when any recon action succeeds (Observe/Eavesdrop).
@@ -97,6 +127,10 @@ func _process(delta: float) -> void:
 			continue
 		ring.modulate.a = 0.5 + pulse * 0.5  # subtle brightness variation
 
+	# Pulse single-target building highlight (brighter, faster).
+	if _single_target_poly != null and is_instance_valid(_single_target_poly):
+		_single_target_poly.modulate.a = 0.55 + pulse * 0.45
+
 
 func _fade_out() -> void:
 	_fading_out = true
@@ -108,6 +142,9 @@ func _fade_out() -> void:
 		if not is_instance_valid(ring):
 			continue
 		tween.parallel().tween_property(ring, "modulate:a", 0.0, 1.5)
+	# Also fade the single-target highlight if still active.
+	if _single_target_poly != null and is_instance_valid(_single_target_poly):
+		tween.parallel().tween_property(_single_target_poly, "modulate:a", 0.0, 1.5)
 	tween.chain().tween_callback(_disable)
 
 
@@ -118,4 +155,5 @@ func _disable() -> void:
 		var ring: Polygon2D = _npc_rings[npc_id]
 		ring.queue_free()
 	_npc_rings.clear()
+	clear_single_target()
 	visible = false

@@ -114,6 +114,21 @@ func unsuppress() -> void:
 		_show_next()
 
 
+## SPA-626: Programmatically dismiss a specific hint by id.
+## If it is currently active, slides it out.  If it is queued, removes it.
+## Either way marks it seen so it will not re-show.
+func dismiss_hint(hint_id: String) -> void:
+	if _active_id == hint_id:
+		_slide_out_dismiss()
+		return
+	# Remove from queue.
+	for i in range(_queue.size() - 1, -1, -1):
+		if _queue[i]["id"] == hint_id:
+			_queue.remove_at(i)
+	if _tutorial_sys != null:
+		_tutorial_sys.mark_seen(hint_id)
+
+
 ## Replay the most recently shown hint (triggered by H hotkey).
 func replay_hint() -> void:
 	if _tutorial_sys == null:
