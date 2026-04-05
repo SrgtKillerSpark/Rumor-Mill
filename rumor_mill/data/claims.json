@@ -93,7 +93,7 @@
     "id": "PRA-01",
     "type": "praise",
     "templateText": "[subject] rescued [person_or_thing] from [danger] — a true hero of the town",
-    "intensity": 2,
+    "intensity": 3,
     "mutability": 2,
     "targetFactions": ["merchant", "noble", "clergy"],
     "unlockedByDefault": true
@@ -102,7 +102,7 @@
     "id": "PRA-02",
     "type": "praise",
     "templateText": "[subject] gave generously to [recipient] without any expectation of return",
-    "intensity": 1,
+    "intensity": 2,
     "mutability": 2,
     "targetFactions": ["clergy", "merchant"],
     "unlockedByDefault": true

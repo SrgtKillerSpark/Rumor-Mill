@@ -47,8 +47,8 @@
       { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.40, "weightBtoA": 0.35 }
     ],
     "personalityOverrides": [
-      { "npcId": "edric_fenn", "loyalty": 0.80 },
-      { "npcId": "bram_guard", "loyalty": 0.70 }
+      { "npcId": "edric_fenn", "loyalty": 0.70 },
+      { "npcId": "bram_guard", "loyalty": 0.60 }
     ],
     "startingReputations": {},
     "objectiveCard": {
@@ -56,7 +56,7 @@
       "winCondition": "Get his reputation score below 30 (out of 100).",
       "timeLimit": "You have 30 days.",
       "danger": "If you are caught eavesdropping, the town will know your face.",
-      "strategyHint": "Edric is too loyal to believe rumors about himself. Target the people around him — damage faction sentiment among merchants and nobles to erode his support."
+      "strategyHint": "Edric is too proud to believe rumors about himself. Target the people around him — damage faction sentiment among merchants and nobles to erode his support."
     }
   },
   {
@@ -108,14 +108,15 @@
       { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.40, "weightBtoA": 0.35 }
     ],
     "personalityOverrides": [
-      { "npcId": "alys_herbwife", "temperament": 0.65 }
+      { "npcId": "alys_herbwife", "temperament": 0.55 },
+      { "npcId": "maren_nun", "credulity": 0.30 }
     ],
     "startingReputations": {},
     "objectiveCard": {
       "mission": "Drive away the rival Herb-Wife Alys using illness rumors.",
       "winCondition": "Get 7 or more NPCs to believe/spread/act on illness rumors about Alys.",
       "timeLimit": "You have 20 days.",
-      "danger": "Sister Maren is watching. If she rejects ANY illness rumor about Alys, you instantly fail.",
+      "danger": "Sister Maren is skeptical but watchful. If she rejects ANY illness rumor about Alys, you instantly fail.",
       "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle."
     }
   },
@@ -170,18 +171,20 @@
       { "npcA": "tomas_reeve",      "npcB": "aldric_vane",      "weightAtoB": 0.30, "weightBtoA": 0.25 },
       { "npcA": "calder_fenn",      "npcB": "tomas_reeve",      "weightAtoB": 0.35, "weightBtoA": 0.40 }
     ],
-    "personalityOverrides": [],
+    "personalityOverrides": [
+      { "npcId": "tomas_reeve", "loyalty": 0.40 }
+    ],
     "startingReputations": {
-      "calder_fenn": 58,
+      "calder_fenn": 62,
       "tomas_reeve": 52
     },
     "targetShiftExcluded": ["calder_fenn"],
     "objectiveCard": {
       "mission": "Elevate Calder Fenn and ruin Tomas Reeve — simultaneously.",
-      "winCondition": "Raise Calder's reputation to 75+ (starts at 58) and drop Tomas's reputation to 35 or below (starts at 52).",
+      "winCondition": "Raise Calder's reputation to 75+ (starts at 62) and drop Tomas's reputation to 35 or below (starts at 52).",
       "timeLimit": "You have 25 days.",
       "danger": "If Calder's reputation drops below 40, instant fail. A rival agent is actively working against you.",
-      "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter."
+      "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter. Tomas has weak loyalties — rumors stick."
     }
   },
   {
@@ -226,16 +229,16 @@
     ],
     "personalityOverrides": [
       { "npcId": "aldous_prior", "loyalty": 0.95, "credulity": 0.10 },
-      { "npcId": "finn_monk",    "loyalty": 0.30, "credulity": 0.90 },
-      { "npcId": "vera_midwife", "loyalty": 0.55, "credulity": 0.70 },
+      { "npcId": "finn_monk",    "loyalty": 0.30, "credulity": 0.75 },
+      { "npcId": "vera_midwife", "loyalty": 0.65, "credulity": 0.70 },
       { "npcId": "sybil_oats",   "credulity": 0.60 },
       { "npcId": "nell_picker",  "credulity": 0.85 },
       { "npcId": "greta_flint",  "credulity": 0.90 }
     ],
     "startingReputations": {
       "aldous_prior": 60,
-      "vera_midwife": 55,
-      "finn_monk": 55
+      "vera_midwife": 60,
+      "finn_monk": 62
     },
     "targetShiftExcluded": ["aldous_prior", "vera_midwife", "finn_monk"],
     "protectedNpcIds": ["aldous_prior", "vera_midwife", "finn_monk"],
@@ -243,8 +246,8 @@
       "mission": "Defend three accused townsfolk from the Inquisitor's slander.",
       "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk's reputations above 50.",
       "timeLimit": "You have 20 days.",
-      "danger": "Finn starts at exactly 55 — protect him first. The Inquisitor is an AI opponent who actively spreads accusations.",
-      "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize Finn Monk."
+      "danger": "Finn is the most vulnerable — credulous and disloyal, he absorbs slander easily. The Inquisitor is an AI opponent who actively spreads accusations.",
+      "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera."
     }
   }
 ]
