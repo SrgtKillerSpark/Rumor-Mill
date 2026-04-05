@@ -841,9 +841,10 @@ func _spread_to_neighbours(
 		if other == self:
 			continue
 
-		# Proximity gate: compare squared lengths to avoid sqrt().
-		var dist_sq: int = (current_cell - (other.current_cell as Vector2i)).length_squared()
-		if dist_sq > SPREAD_RADIUS * SPREAD_RADIUS:
+		# Proximity gate: manhattan distance matches SPREAD_RADIUS tile documentation.
+		var delta: Vector2i = current_cell - (other.current_cell as Vector2i)
+		var dist_manhattan: int = absi(delta.x) + absi(delta.y)
+		if dist_manhattan > SPREAD_RADIUS:
 			continue
 
 		# Skip if already in a non-receptive state.
