@@ -51,6 +51,9 @@ var _avg_rep_flash_tween: Tween = null
 # ── Day counter pulse tween ──────────────────────────────────────────────────
 var _day_counter_tween: Tween = null
 
+# ── SPA-627: "Press O" hotkey reminder label ─────────────────────────────────
+var _o_hint_label: Label = null
+
 # ── Faction overview mini-panel ──────────────────────────────────────────────
 ## SPA-561: Pulsing win progress bar tween when near completion.
 var _win_pulse_tween: Tween = null
@@ -87,6 +90,7 @@ const C_DAY_CRITICAL := Color(0.95, 0.20, 0.10, 1.0) # red
 func _ready() -> void:
 	layer = 4
 	_build_nudge_label()
+	_build_o_hint_label()
 	_build_banner()
 	_build_metrics_row()
 
@@ -180,6 +184,25 @@ func _build_nudge_label() -> void:
 	# Insert right after DayRow (index 0 in VBox).
 	vbox.add_child(_nudge_label)
 	vbox.move_child(_nudge_label, 1)
+
+
+## SPA-627: Subtle "Press O to review mission" label beneath the objective line.
+func _build_o_hint_label() -> void:
+	var vbox: VBoxContainer = $Panel/VBox
+	_o_hint_label = Label.new()
+	_o_hint_label.text = "Press O to review mission"
+	_o_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_o_hint_label.add_theme_font_size_override("font_size", 8)
+	_o_hint_label.add_theme_color_override("font_color", Color(0.70, 0.65, 0.50, 0.40))
+	_o_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(_o_hint_label)
+	# Insert right after ObjectiveLabel.
+	vbox.move_child(_o_hint_label, objective_label.get_index() + 1)
+
+
+## SPA-627: One-time flash banner shown after the initial briefing overlay is dismissed.
+func show_o_hotkey_hint() -> void:
+	_show_banner("Press O anytime to review your mission", Color(0.70, 0.85, 0.55, 1.0), 5.0)
 
 
 func _refresh_nudge() -> void:

@@ -71,6 +71,10 @@ var _evidence_tooltip_fired:         bool = false
 # Cached ReconController reference for post-tutorial-init wiring.
 var _recon_ctrl_ref: Node = null
 
+# ── SPA-629: Rumor Panel first-time tooltip walkthrough ──────────────────────
+var _rumor_panel_tooltip: CanvasLayer = null
+var _rumor_panel_tooltip_wired: bool  = false  # guard: only trigger once per session
+
 # ── Sprint 10: S1 banner hint gates ───────────────────────────────────────────
 var _banner_camera_gate:       bool = false  # set true after camera_moved fires
 var _banner_observe_gate:      bool = false  # set true after first successful Observe
@@ -151,6 +155,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			if _tutorial_banner != null and _tutorial_banner.has_method("replay_hint"):
 				_tutorial_banner.replay_hint()
 				get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_O:
+			_show_objective_recall()
+			get_viewport().set_input_as_handled()
 
 
 ## Called when the player clicks Begin on the scenario intro screen.
@@ -297,6 +304,40 @@ func _on_begin_game(scenario_id: String) -> void:
 func _on_ready_overlay_dismissed() -> void:
 	_ready_overlay = null
 	# Resume normal speed via SpeedHUD so button state stays in sync.
+	var speed_node := get_node_or_null("SpeedHUD")
+	if speed_node != null and speed_node.has_method("_set_speed"):
+		speed_node._set_speed(speed_node.Speed.NORMAL)
+	else:
+		day_night.set_paused(false)
+	# SPA-627: Flash a one-time hint so the player knows O recalls this overlay.
+	if objective_hud != null and objective_hud.has_method("show_o_hotkey_hint"):
+		objective_hud.show_o_hotkey_hint()
+
+
+## SPA-627: Show the briefing card mid-game (read-only). Blocked during active dialogs.
+func _show_objective_recall() -> void:
+	if _ready_overlay != null:
+		return
+	if _event_choice_modal != null and _event_choice_modal.visible:
+		return
+	var sm: ScenarioManager = world.scenario_manager if world != null else null
+	if sm == null:
+		return
+	var speed_node := get_node_or_null("SpeedHUD")
+	if speed_node != null and speed_node.has_method("_set_speed"):
+		speed_node._set_speed(speed_node.Speed.PAUSE)
+	else:
+		day_night.set_paused(true)
+	_ready_overlay = preload("res://scripts/ready_overlay.gd").new()
+	_ready_overlay.name = "ReadyOverlayRecall"
+	add_child(_ready_overlay)
+	_ready_overlay.setup_recall(sm.get_objective_card(), sm.get_title())
+	_ready_overlay.dismissed.connect(_on_recall_overlay_dismissed)
+
+
+## SPA-627: Dismiss callback for player-triggered recall overlay.
+func _on_recall_overlay_dismissed() -> void:
+	_ready_overlay = null
 	var speed_node := get_node_or_null("SpeedHUD")
 	if speed_node != null and speed_node.has_method("_set_speed"):
 		speed_node._set_speed(speed_node.Speed.NORMAL)
@@ -837,6 +878,14 @@ func _init_tutorial_banner_s1() -> void:
 	# HINT-10: evidence acquired (reuses existing signal).
 	if rumor_panel != null:
 		rumor_panel.evidence_first_shown.connect(_on_s1_evidence_first_shown)
+
+	# SPA-629: Rumor Panel first-time tooltip walkthrough.
+	if rumor_panel != null:
+		_rumor_panel_tooltip = preload("res://scripts/rumor_panel_tooltip.gd").new()
+		_rumor_panel_tooltip.name = "RumorPanelTooltip"
+		add_child(_rumor_panel_tooltip)
+		_rumor_panel_tooltip.setup(rumor_panel)
+		rumor_panel.visibility_changed.connect(_on_rumor_panel_first_open_tooltip)
 
 	# Wire hover signals now that banner is ready (recon_ctrl was cached earlier).
 	if _recon_ctrl_ref != null:

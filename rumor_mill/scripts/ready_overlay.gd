@@ -34,6 +34,8 @@ var _pulse_tween:   Tween        = null
 
 var _objective_card: Dictionary   = {}
 var _scenario_title: String       = ""
+## SPA-627: When true this is a player-triggered recall, not the initial game-start briefing.
+var _recall_mode: bool = false
 
 
 func _ready() -> void:
@@ -43,6 +45,15 @@ func _ready() -> void:
 
 ## Call after adding to the tree. Provide the objectiveCard dict and scenario title.
 func setup(objective_card: Dictionary, scenario_title: String) -> void:
+	_objective_card = objective_card
+	_scenario_title = scenario_title
+	_build_ui()
+
+
+## SPA-627: Re-display the briefing card mid-game (read-only, no "begin" prompt).
+## Dismiss with SPACE, ENTER, or ESC — does not start/unpause the game.
+func setup_recall(objective_card: Dictionary, scenario_title: String) -> void:
+	_recall_mode = true
 	_objective_card = objective_card
 	_scenario_title = scenario_title
 	_build_ui()
@@ -150,9 +161,10 @@ func _build_ui() -> void:
 	bottom_spacer.custom_minimum_size = Vector2(0, 8)
 	vbox.add_child(bottom_spacer)
 
-	# "Press Space to begin" prompt — pulsing.
+	# Prompt — pulsing.  Text depends on recall vs. first-run mode.
 	_prompt_label = Label.new()
-	_prompt_label.text = "—  Press  SPACE  or  ENTER  to  begin  —"
+	_prompt_label.text = "—  Press  SPACE  or  ESC  to  close  —" if _recall_mode \
+		else "—  Press  SPACE  or  ENTER  to  begin  —"
 	_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_prompt_label.add_theme_font_size_override("font_size", 15)
 	_prompt_label.add_theme_color_override("font_color", C_PROMPT)
@@ -198,7 +210,9 @@ func _start_pulse() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
+		var dismiss_key: bool = event.keycode == KEY_SPACE or event.keycode == KEY_ENTER
+		var recall_dismiss: bool = _recall_mode and event.keycode == KEY_ESCAPE
+		if dismiss_key or recall_dismiss:
 			get_viewport().set_input_as_handled()
 			_dismiss()
 

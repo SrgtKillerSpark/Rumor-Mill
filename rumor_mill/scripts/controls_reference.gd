@@ -23,6 +23,7 @@ const BINDINGS := [
 	["Space", "Pause / Resume"],
 	["1", "Normal speed"],
 	["3", "Fast speed (3x)"],
+	["O", "Review mission briefing"],
 	["H", "Replay last hint"],
 	["F1", "Toggle this reference"],
 	["F11", "Toggle fullscreen"],
