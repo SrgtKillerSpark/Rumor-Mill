@@ -29,6 +29,10 @@ var _draw_node: Node2D = null
 ## npc_id → float seconds remaining for the transmission indicator.
 var _active_convos: Dictionary = {}
 
+## Array of { from_pos, to_pos, ttl } for directional whisper lines drawn on
+## transmission events where the two NPCs are beyond CONVO_RANGE_MANHATTAN.
+var _whisper_lines: Array = []
+
 
 func _ready() -> void:
 	layer = 3    # below ObjectiveHUD (4) and SocialGraphOverlay (8), above world
@@ -54,15 +58,41 @@ func _process(delta: float) -> void:
 				expired.append(nid)
 		for nid in expired:
 			_active_convos.erase(nid)
+	if not _whisper_lines.is_empty():
+		var keep: Array = []
+		for entry in _whisper_lines:
+			entry["ttl"] -= delta
+			if entry["ttl"] > 0.0:
+				keep.append(entry)
+		_whisper_lines = keep
 
 
 func _on_rumor_transmitted(from_name: String, to_name: String, _rumor_id: String) -> void:
 	if _world_ref == null:
 		return
+	var from_node = null
+	var to_node   = null
 	for npc in _world_ref.npcs:
 		var n: String = npc.npc_data.get("name", "")
-		if n == from_name or n == to_name:
+		if n == from_name:
 			_active_convos[npc.npc_data.get("id", "")] = PULSE_DURATION
+			from_node = npc
+		elif n == to_name:
+			_active_convos[npc.npc_data.get("id", "")] = PULSE_DURATION
+			to_node = npc
+
+	# For long-range transmissions (> CONVO_RANGE_MANHATTAN), draw a one-shot
+	# directional whisper line so the player can see the rumor leap across distance.
+	if from_node != null and to_node != null:
+		var cell_a: Vector2i = from_node.current_cell
+		var cell_b: Vector2i = to_node.current_cell
+		var manhattan: int = abs(cell_a.x - cell_b.x) + abs(cell_a.y - cell_b.y)
+		if manhattan > CONVO_RANGE_MANHATTAN:
+			_whisper_lines.append({
+				"from_pos": from_node.global_position,
+				"to_pos":   to_node.global_position,
+				"ttl":      PULSE_DURATION,
+			})
 
 
 func _on_draw() -> void:
@@ -121,7 +151,23 @@ func _on_draw() -> void:
 					col = COL_WEAK
 				_draw_node.draw_dashed_line(pos_a, pos_b, col, 1.0, 5.0)
 
-	# ── Pass 2: speech-bubble "..." above actively conversing NPCs ───────────────
+	# ── Pass 2: directional whisper lines for long-range transmissions ───────────
+	for entry in _whisper_lines:
+		var t: float = entry["ttl"] / PULSE_DURATION
+		var from_s := _world_to_screen(entry["from_pos"])
+		var to_s   := _world_to_screen(entry["to_pos"])
+		# Fade from vivid gold to transparent as ttl decreases.
+		var col := Color(1.00, 0.75, 0.20, t * 0.75)
+		_draw_node.draw_dashed_line(from_s, to_s, col, lerpf(1.0, 2.5, t), 8.0)
+		# Small arrowhead at the receiver end.
+		var dir := (to_s - from_s).normalized()
+		var perp := Vector2(-dir.y, dir.x)
+		var tip  := to_s - dir * 6.0
+		_draw_node.draw_line(tip, to_s, col, lerpf(1.0, 2.5, t))
+		_draw_node.draw_line(tip + perp * 4.0, to_s, col, 1.0)
+		_draw_node.draw_line(tip - perp * 4.0, to_s, col, 1.0)
+
+	# ── Pass 3: speech-bubble "..." above actively conversing NPCs ───────────────
 	for npc in npcs:
 		var nid: String = npc.npc_data.get("id", "")
 		if not _active_convos.has(nid):

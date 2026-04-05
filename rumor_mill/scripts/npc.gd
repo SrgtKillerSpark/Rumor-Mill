@@ -124,6 +124,8 @@ var _defender_ticks_remaining: int   = 0
 const _DEFENDER_PENALTY:      float  = 0.15
 const _DEFENDER_DURATION:     int    = 5
 const _DEFENSE_PENALTY_CAP:   float  = 0.30
+## Persistent shield icon shown above this NPC while it is in DEFENDING state.
+var _defending_icon: Label = null
 
 # subject_npc_id → float (accumulated penalty applied to this NPC's credulity)
 var _defense_modifiers: Dictionary = {}
@@ -457,6 +459,7 @@ func hear_rumor(rumor: Rumor, source_faction: String) -> void:
 	var slot := Rumor.NpcRumorSlot.new(rumor, source_faction)
 	rumor_slots[rid] = slot
 	_worst_state_dirty = true
+	_show_hear_reaction()
 	emit_signal("first_npc_became_evaluating")
 
 
@@ -572,6 +575,7 @@ func _tick_evaluating(
 			_worst_state_dirty = true
 			_defender_target_npc_id = subject_id
 			_defender_ticks_remaining = _DEFENDER_DURATION
+			_show_defending_icon()
 			emit_signal("rumor_state_changed", npc_name, "DEFENDING", rid)
 		_record_rumor_history(rumor, subject_id, "rejected", tick)
 		_apply_credulity_modifier(_CREDULITY_REJECT_PENALTY)
@@ -700,6 +704,7 @@ func _spread_to_neighbours(
 
 		# Visual: show a floating speech bubble from this NPC toward the target.
 		_show_spread_bubble(other)
+		other._show_whisper_received()
 		emit_signal("rumor_transmitted",
 			npc_data.get("name", "?"),
 			other.npc_data.get("name", "?"),
@@ -724,6 +729,52 @@ func _show_spread_bubble(_target_npc: Node2D) -> void:
 	tw.set_parallel(true)
 	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -24.0), 1.5)
 	tw.tween_property(lbl, "modulate:a", 0.0, 1.5)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
+## Creates a persistent shield label above this NPC for the duration of DEFENDING
+## state.  The icon is removed by _tick_defender() when the state expires.
+func _show_defending_icon() -> void:
+	if is_instance_valid(_defending_icon):
+		return  # already showing
+	var lbl := Label.new()
+	lbl.text = "🛡"
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.position = Vector2(-6.0, -88.0)
+	lbl.modulate = Color(0.55, 0.85, 1.0, 1.0)  # sky blue matching DEFENDING tint
+	add_child(lbl)
+	_defending_icon = lbl
+
+
+## Spawns a brief "?" icon above this NPC when they first hear a new rumor,
+## giving immediate visual feedback before the state machine processes the slot.
+func _show_hear_reaction() -> void:
+	var lbl := Label.new()
+	lbl.text = "?"
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.position = Vector2(-4.0, -72.0)
+	lbl.modulate = Color(1.0, 1.0, 0.5, 1.0)  # warm yellow
+	add_child(lbl)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -16.0), 1.0)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.0).set_delay(0.3)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
+## Spawns a brief ear-shaped icon above this NPC when they receive a whispered
+## rumor from another NPC, making the receiver's reaction visible to the player.
+func _show_whisper_received() -> void:
+	var lbl := Label.new()
+	lbl.text = "👂"
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.position = Vector2(4.0, -68.0)
+	lbl.modulate = Color(1.0, 0.90, 0.55, 1.0)  # soft gold
+	add_child(lbl)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -14.0), 1.2)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.2).set_delay(0.4)
 	tw.chain().tween_callback(lbl.queue_free)
 
 
@@ -840,6 +891,9 @@ func _tick_defender(tick: int) -> void:
 		_worst_state_dirty = true
 		_defender_target_npc_id = ""
 		_defender_ticks_remaining = 0
+		if is_instance_valid(_defending_icon):
+			_defending_icon.queue_free()
+		_defending_icon = null
 		return
 	_broadcast_defense(tick)
 
