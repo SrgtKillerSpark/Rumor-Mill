@@ -152,7 +152,7 @@ func _build_ui() -> void:
 
 	# "Press Space to begin" prompt — pulsing.
 	_prompt_label = Label.new()
-	_prompt_label.text = "—  Press  SPACE  to  begin  —"
+	_prompt_label.text = "—  Press  SPACE  or  ENTER  to  begin  —"
 	_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_prompt_label.add_theme_font_size_override("font_size", 15)
 	_prompt_label.add_theme_color_override("font_color", C_PROMPT)
@@ -198,7 +198,7 @@ func _start_pulse() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_SPACE:
+		if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
 			get_viewport().set_input_as_handled()
 			_dismiss()
 

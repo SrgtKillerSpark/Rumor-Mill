@@ -99,6 +99,12 @@ func present_event(event_data: Dictionary) -> void:
 	visible = true
 	get_tree().paused = true
 
+	# Keyboard focus: grab the first visible choice button.
+	if _choice_a_btn.visible:
+		_choice_a_btn.call_deferred("grab_focus")
+	elif _choice_b_btn.visible:
+		_choice_b_btn.call_deferred("grab_focus")
+
 
 ## Show the outcome text after a choice is made.
 func show_outcome(outcome_text: String) -> void:
@@ -193,6 +199,17 @@ func _build_ui() -> void:
 	_dismiss_btn.visible = false
 	btn_box.add_child(_dismiss_btn)
 
+	# Focus neighbors for keyboard navigation between choice buttons.
+	_choice_a_btn.focus_neighbor_bottom = _choice_b_btn.get_path()
+	_choice_a_btn.focus_next           = _choice_b_btn.get_path()
+	_choice_b_btn.focus_neighbor_top   = _choice_a_btn.get_path()
+	_choice_b_btn.focus_previous       = _choice_a_btn.get_path()
+	# Wrap around for circular navigation.
+	_choice_a_btn.focus_neighbor_top   = _choice_b_btn.get_path()
+	_choice_a_btn.focus_previous       = _choice_b_btn.get_path()
+	_choice_b_btn.focus_neighbor_bottom = _choice_a_btn.get_path()
+	_choice_b_btn.focus_next           = _choice_a_btn.get_path()
+
 
 func _make_choice_button(text: String) -> Button:
 	var btn := Button.new()
@@ -210,7 +227,12 @@ func _make_choice_button(text: String) -> Button:
 	var hover := normal.duplicate()
 	hover.bg_color = C_BTN_HOVER
 	btn.add_theme_stylebox_override("hover", hover)
-	btn.add_theme_stylebox_override("focus", hover)
+
+	var focus := normal.duplicate()
+	focus.bg_color = C_BTN_HOVER
+	focus.set_border_width_all(2)
+	focus.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	btn.add_theme_stylebox_override("focus", focus)
 
 	var pressed := normal.duplicate()
 	pressed.bg_color = C_BTN_HOVER

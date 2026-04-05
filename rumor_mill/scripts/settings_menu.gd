@@ -275,6 +275,16 @@ func _make_volume_slider() -> HSlider:
 	slider.custom_minimum_size = Vector2(120, 20)
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.process_mode = Node.PROCESS_MODE_ALWAYS
+
+	# Accessibility: add a visible gold focus ring so keyboard users see which
+	# slider is active (matches the button focus style elsewhere in this menu).
+	var grabber_area_focus := StyleBoxFlat.new()
+	grabber_area_focus.bg_color = Color(0.20, 0.14, 0.06, 1.0)
+	grabber_area_focus.set_border_width_all(2)
+	grabber_area_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold
+	grabber_area_focus.set_corner_radius_all(3)
+	slider.add_theme_stylebox_override("grabber_area_highlight", grabber_area_focus)
+
 	return slider
 
 

@@ -188,6 +188,19 @@ func _build_sidebar() -> void:
 		btn.pressed.connect(_on_tab_pressed.bind(sec))
 		_sidebar.add_child(btn)
 
+	# Wire focus neighbors so arrow/Tab keys cycle through the sidebar tabs.
+	var tab_buttons: Array[Button] = []
+	for child in _sidebar.get_children():
+		if child is Button:
+			tab_buttons.append(child)
+	for i in tab_buttons.size():
+		var prev_idx: int = (i - 1) % tab_buttons.size()
+		var next_idx: int = (i + 1) % tab_buttons.size()
+		tab_buttons[i].focus_neighbor_top    = tab_buttons[prev_idx].get_path()
+		tab_buttons[i].focus_neighbor_bottom = tab_buttons[next_idx].get_path()
+		tab_buttons[i].focus_next            = tab_buttons[next_idx].get_path()
+		tab_buttons[i].focus_previous        = tab_buttons[prev_idx].get_path()
+
 	# Push tabs to top.
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL

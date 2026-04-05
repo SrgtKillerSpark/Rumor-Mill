@@ -131,6 +131,16 @@ func replay_hint() -> void:
 
 # ── Per-frame auto-dismiss timer ──────────────────────────────────────────────
 
+func _unhandled_input(event: InputEvent) -> void:
+	if _active_id == "" or not visible:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		# Allow keyboard users to dismiss the banner with Enter or Escape.
+		if event.keycode == KEY_ENTER or event.keycode == KEY_ESCAPE:
+			get_viewport().set_input_as_handled()
+			_slide_out_dismiss()
+
+
 func _process(delta: float) -> void:
 	if _active_id == "" or _suppressed:
 		return
