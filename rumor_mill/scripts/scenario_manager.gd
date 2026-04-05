@@ -143,8 +143,8 @@ const S3_FAIL_CALDER_BELOW := 40
 # Protected NPCs must stay above S4_WIN_REP_MIN for the full duration.
 # Fail threshold matches win threshold — no silent dead zone.
 const S4_PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
-const S4_WIN_REP_MIN       := 50
-const S4_FAIL_REP_BELOW    := 50
+const S4_WIN_REP_MIN       := 45
+const S4_FAIL_REP_BELOW    := 45
 
 enum ScenarioState { ACTIVE, WON, FAILED }
 

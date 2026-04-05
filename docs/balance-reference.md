@@ -81,9 +81,9 @@ NPC selection: highest-sociability NPC at market/tavern with heat <= 50, not in 
 
 | Parameter | Value | Source |
 |-----------|-------|--------|
-| **Win condition** | All 3 protected NPCs above 50 after day 20 elapses | `scenario_manager.gd` S4_WIN_REP_MIN |
-| **Fail — reputation collapsed** | Any protected NPC drops below 50 at any time | S4_FAIL_REP_BELOW |
-| **Fail — timeout** | Day > 20 AND any protected below 50 | |
+| **Win condition** | All 3 protected NPCs above 45 after day 20 elapses | `scenario_manager.gd` S4_WIN_REP_MIN |
+| **Fail — reputation collapsed** | Any protected NPC drops below 45 at any time | S4_FAIL_REP_BELOW |
+| **Fail — timeout** | Day > 20 AND any protected below 45 | |
 | **Bribery** | Disabled | |
 | **Protected NPCs** | Aldous Prior (start=60), Vera Midwife (start=55), Finn Monk (start=50) | `scenarios.json` |
 | **Target-shift exclusion** | All 3 protected NPCs excluded from target-shift mutations | `scenarios.json` |
