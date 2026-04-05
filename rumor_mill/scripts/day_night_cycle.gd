@@ -137,8 +137,11 @@ func _play_day_transition_flash() -> void:
 
 func _apply_time_of_day(hour: int) -> void:
 	# Interpolate between the two nearest keyframe colours.
+	# When hour exceeds the last key (ticks_per_day > max key), wrap toward
+	# the first key of the next cycle to avoid a hard colour snap at midnight.
+	var last_key: int = _time_keys[_time_keys.size() - 1]
 	var prev_hour: int = _time_keys[0]
-	var next_hour: int = _time_keys[_time_keys.size() - 1]
+	var next_hour: int = last_key
 
 	for k in _time_keys:
 		if k <= hour:
@@ -148,6 +151,13 @@ func _apply_time_of_day(hour: int) -> void:
 			break
 
 	if prev_hour == next_hour:
+		# Past the last key: interpolate toward the first key of the next cycle.
+		if hour > last_key:
+			var wrap_span: int = ticks_per_day - last_key
+			if wrap_span > 0:
+				var t := float(hour - last_key) / float(wrap_span)
+				canvas_modulate.color = TIME_COLORS[last_key].lerp(TIME_COLORS[_time_keys[0]], t)
+				return
 		canvas_modulate.color = TIME_COLORS[prev_hour]
 		return
 

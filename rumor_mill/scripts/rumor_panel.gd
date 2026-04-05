@@ -615,7 +615,7 @@ func _rebuild_seed_list() -> void:
 
 	# Update Whisper Token bar — show cost prominently.
 	var tokens: int = _intel_store_ref.whisper_tokens_remaining
-	var max_t:  int = PlayerIntelStore.MAX_DAILY_WHISPERS
+	var max_t:  int = _intel_store_ref.max_daily_whispers
 	_whisper_bar.text = "Whisper Tokens: %d / %d remaining  |  Cost: 1 token per rumor  |  Replenishes at dawn" % [
 		tokens, max_t
 	]

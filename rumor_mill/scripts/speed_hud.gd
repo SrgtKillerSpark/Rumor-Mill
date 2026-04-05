@@ -94,9 +94,20 @@ func _build_ui() -> void:
 	_btn_normal.tooltip_text = "Normal Speed  (1)"
 	_btn_fast.tooltip_text   = "Fast Speed  (3)"
 
-	_btn_pause.pressed.connect(func() -> void:  _set_speed(Speed.PAUSE))
-	_btn_normal.pressed.connect(func() -> void: _set_speed(Speed.NORMAL))
-	_btn_fast.pressed.connect(func() -> void:   _set_speed(Speed.FAST))
+	# Guard: ignore button clicks while the pause menu has the tree paused,
+	# matching the keyboard-shortcut guard in _unhandled_input.
+	_btn_pause.pressed.connect(func() -> void:
+		if not get_tree().paused:
+			_set_speed(Speed.PAUSE)
+	)
+	_btn_normal.pressed.connect(func() -> void:
+		if not get_tree().paused:
+			_set_speed(Speed.NORMAL)
+	)
+	_btn_fast.pressed.connect(func() -> void:
+		if not get_tree().paused:
+			_set_speed(Speed.FAST)
+	)
 
 	row.add_child(_btn_pause)
 	row.add_child(_btn_normal)

@@ -256,10 +256,12 @@ func _make_cycle_button(initial_text: String) -> Button:
 	btn.mouse_entered.connect(func() -> void:
 		AudioManager.play_sfx_pitched("ui_click", 2.0)
 		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		tw.tween_property(btn, "scale", Vector2(1.04, 1.04), 0.12)
 	)
 	btn.mouse_exited.connect(func() -> void:
 		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		tw.tween_property(btn, "scale", Vector2.ONE, 0.10)
 	)
 	return btn
@@ -332,16 +334,19 @@ func _make_action_button(text: String) -> Button:
 	btn.pressed.connect(func() -> void:
 		AudioManager.play_sfx("ui_click")
 		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		tw.tween_property(btn, "scale", Vector2(0.95, 0.95), 0.06)
 		tw.tween_property(btn, "scale", Vector2.ONE, 0.10)
 	)
 	btn.mouse_entered.connect(func() -> void:
 		AudioManager.play_sfx_pitched("ui_click", 2.0)
 		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		tw.tween_property(btn, "scale", Vector2(1.04, 1.04), 0.12)
 	)
 	btn.mouse_exited.connect(func() -> void:
 		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		tw.tween_property(btn, "scale", Vector2.ONE, 0.10)
 	)
 	return btn

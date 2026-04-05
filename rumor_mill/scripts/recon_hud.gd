@@ -177,11 +177,10 @@ func show_milestone(text: String, color: Color) -> void:
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(lbl, "scale", Vector2(1.15, 1.15), 0.3)
 	tw.tween_property(lbl, "modulate:a", 1.0, 0.15)
-	var tw2 := create_tween()
-	tw2.tween_interval(1.5)
-	tw2.tween_property(lbl, "modulate:a", 0.0, 0.8).set_ease(Tween.EASE_IN)
-	tw2.tween_property(lbl, "position:y", lbl.position.y - 30.0, 0.8).set_ease(Tween.EASE_IN)
-	tw2.tween_callback(lbl.queue_free)
+	var tw2 := create_tween().set_parallel(true)
+	tw2.tween_property(lbl, "modulate:a", 0.0, 0.8).set_ease(Tween.EASE_IN).set_delay(1.5)
+	tw2.tween_property(lbl, "position:y", lbl.position.y - 30.0, 0.8).set_ease(Tween.EASE_IN).set_delay(1.5)
+	tw2.chain().tween_callback(lbl.queue_free)
 
 
 # ── Count labels & extra key hints ───────────────────────────────────────────

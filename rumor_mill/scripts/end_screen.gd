@@ -502,7 +502,6 @@ func _populate_stats(scenario_id: int, won: bool) -> void:
 	})
 
 	# ── Scenario-specific bonus stat ──────────────────────────────────────────
-	_add_separator_to(_stats_container)
 	_build_bonus_stat(scenario_id)
 
 
@@ -568,9 +567,19 @@ func _build_bonus_stat(scenario_id: int) -> void:
 					bonus_value_text = "—"
 			else:
 				bonus_value_text = "—"
+		4:
+			bonus_label_text = "Min Protected Rep"
+			if _world_ref != null and _world_ref.scenario_manager != null:
+				var progress := _world_ref.scenario_manager.get_scenario_4_progress(
+					_world_ref.reputation_system
+				)
+				bonus_value_text = "%d pts" % progress.get("min_score", 0)
+			else:
+				bonus_value_text = "—"
 		_:
 			return   # No bonus stat for unknown scenarios.
 
+	_add_separator_to(_stats_container)
 	var row := HBoxContainer.new()
 
 	var lbl := Label.new()

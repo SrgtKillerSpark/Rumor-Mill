@@ -92,7 +92,7 @@ func _emit_camera_moved() -> void:
 
 func _smooth_zoom(delta: float) -> void:
 	var current := zoom.x
-	var next: float = lerp(current, _target_zoom, zoom_lerp_speed * delta)
+	var next: float = lerp(current, _target_zoom, minf(zoom_lerp_speed * delta, 1.0))
 	zoom = Vector2(next, next)
 
 
