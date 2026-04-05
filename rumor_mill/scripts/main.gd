@@ -47,6 +47,12 @@ var _controls_ref: CanvasLayer = null
 # ── SPA-560: Mid-game narrative event choice modal ───────────────────────────
 var _event_choice_modal: CanvasLayer = null
 
+# ── SPA-589: Visual affordances for new players ──────────────────────────────
+var _visual_affordances: CanvasLayer = null
+
+# ── SPA-589: Story recap overlay (shown on save load) ─────────────────────────
+var _story_recap: CanvasLayer = null
+
 # ── SPA-212: Analytics data collector ─────────────────────────────────────────
 var _analytics: ScenarioAnalytics = null
 
@@ -231,6 +237,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_achievement_hooks()
 	_init_pause_menu()
 	_init_npc_tooltip()
+	_init_visual_affordances()
 	day_night.day_changed.connect(_on_new_day_auto_save)
 	PlayerStats.start_session()  # SPA-273: begin timing this play session
 
@@ -252,6 +259,18 @@ func _on_begin_game(scenario_id: String) -> void:
 	var _was_save_load := SaveManager.has_pending_load()
 	if _was_save_load:
 		SaveManager.apply_pending_load(world, day_night, journal, _tutorial_sys)
+
+	# SPA-589: Show "Story So Far" recap after loading a saved game.
+	if _was_save_load and world.scenario_manager != null:
+		day_night.set_paused(true)
+		var speed_node := get_node_or_null("SpeedHUD")
+		if speed_node != null and speed_node.has_method("_set_speed"):
+			speed_node._set_speed(speed_node.Speed.PAUSE)
+		_story_recap = preload("res://scripts/story_recap.gd").new()
+		_story_recap.name = "StoryRecap"
+		add_child(_story_recap)
+		_story_recap.setup(world.scenario_manager, day_night, world)
+		_story_recap.dismissed.connect(_on_story_recap_dismissed)
 
 	# SPA-519: Pause Day 1 on fresh game start so the player can orient.
 	# Skip if this is a save-load (player already knows the game).
@@ -279,6 +298,24 @@ func _on_ready_overlay_dismissed() -> void:
 		speed_node._set_speed(speed_node.Speed.NORMAL)
 	else:
 		day_night.set_paused(false)
+
+
+## SPA-589: Resume gameplay after story recap is dismissed.
+func _on_story_recap_dismissed() -> void:
+	_story_recap = null
+	var speed_node := get_node_or_null("SpeedHUD")
+	if speed_node != null and speed_node.has_method("_set_speed"):
+		speed_node._set_speed(speed_node.Speed.NORMAL)
+	else:
+		day_night.set_paused(false)
+
+
+## SPA-589: Visual affordances — NPC/building interactable highlights for new players.
+func _init_visual_affordances() -> void:
+	_visual_affordances = preload("res://scripts/visual_affordances.gd").new()
+	_visual_affordances.name = "VisualAffordances"
+	add_child(_visual_affordances)
+	_visual_affordances.setup(world, day_night)
 
 
 func _init_recon_system() -> void:
@@ -654,13 +691,29 @@ func _init_tutorial_hud_s2s3s4() -> void:
 	add_child(_tutorial_hud)
 	_tutorial_hud.setup(_tutorial_sys)
 
+	# SPA-589: Show only core_loop immediately; defer navigation and recon
+	# tooltips to contextual triggers so the player isn't overwhelmed.
 	_tutorial_hud.queue_tooltip("core_loop")
-	_tutorial_hud.queue_tooltip("navigation_controls")
-	_tutorial_hud.queue_tooltip("recon_actions")
 	if world.active_scenario_id == "scenario_3":
 		_tutorial_hud.queue_tooltip("rival_agent")
 	if world.active_scenario_id == "scenario_4":
 		_tutorial_hud.queue_tooltip("inquisitor_agent")
+
+	# SPA-589: Deferred navigation tooltip — show after 10 s if not yet seen.
+	var _nav_timer := get_tree().create_timer(10.0)
+	_nav_timer.timeout.connect(func() -> void:
+		if _tutorial_hud != null and _tutorial_sys != null:
+			if not _tutorial_sys.has_seen("navigation_controls"):
+				_tutorial_hud.queue_tooltip("navigation_controls")
+	)
+	# SPA-589: Deferred recon tooltip — show after first observe/eavesdrop attempt.
+	# Fallback: show after 20 s if player hasn't done anything.
+	var _recon_timer := get_tree().create_timer(20.0)
+	_recon_timer.timeout.connect(func() -> void:
+		if _tutorial_hud != null and _tutorial_sys != null:
+			if not _tutorial_sys.has_seen("recon_actions"):
+				_tutorial_hud.queue_tooltip("recon_actions")
+	)
 
 	if rumor_panel != null:
 		rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed)
@@ -783,6 +836,14 @@ func _on_player_exposed() -> void:
 func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 	if not success:
 		return
+	# SPA-589: Notify visual affordances so they fade after enough actions.
+	if _visual_affordances != null and _visual_affordances.has_method("on_action_performed"):
+		_visual_affordances.on_action_performed()
+	# SPA-589: Show recon_actions tooltip on first successful action if not yet seen.
+	if _tutorial_hud != null and _tutorial_sys != null:
+		if not _tutorial_sys.has_seen("recon_actions"):
+			_tutorial_hud.queue_tooltip("recon_actions")
+
 	# S2/S3 modal tooltips.
 	if _tutorial_hud != null:
 		if not _observe_tooltip_fired and message.begins_with("Observed"):

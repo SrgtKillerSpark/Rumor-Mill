@@ -1,11 +1,16 @@
 extends CanvasLayer
 
-## main_menu.gd — Sprint 8 pre-game UI.
+## main_menu.gd — Sprint 8 pre-game UI (SPA-589 redesign).
 ##
-## Three-phase overlay (layer 50, above all HUDs):
-##   Phase MAIN     — game title, tagline, Play / Quit.
-##   Phase SELECT   — scrollable scenario cards (title + premise + days).
-##   Phase BRIEFING — full startingText for the chosen scenario + Begin / Back.
+## Lamplighter Square dusk aesthetic with animated whispering figures,
+## parchment scroll overlay, and redesigned scenario selection.
+##
+## Phases:
+##   MAIN     — atmospheric title with whispering-figures silhouette effect.
+##   SELECT   — scenario cards with difficulty indicator, hook, preview color.
+##   BRIEFING — full startingText for the chosen scenario + Begin / Back.
+##   INTRO    — atmospheric intro text.
+##   SETTINGS / CREDITS / STATS — unchanged.
 ##
 ## Emits begin_game(scenario_id) when the player commits to a scenario.
 ## Wire via setup() from main.gd.
@@ -34,6 +39,33 @@ const C_STAT_VALUE   := Color(0.91, 0.85, 0.70, 1.0)
 const C_SCORE_WIN    := Color(0.92, 0.78, 0.12, 1.0)   # gold
 const C_SCORE_FAIL   := Color(0.85, 0.18, 0.12, 1.0)   # crimson
 
+# SPA-589: Scenario difficulty band colours (select-phase difficulty badges).
+const C_DIFF_EASY    := Color(0.40, 0.75, 0.35, 1.0)   # mossy green
+const C_DIFF_MEDIUM  := Color(0.85, 0.70, 0.20, 1.0)   # amber
+const C_DIFF_HARD    := Color(0.85, 0.40, 0.15, 1.0)   # burnt orange
+const C_DIFF_EXPERT  := Color(0.85, 0.18, 0.12, 1.0)   # crimson
+
+# SPA-589: Atmospheric dusk sky gradient colours.
+const C_SKY_TOP      := Color(0.12, 0.06, 0.18, 1.0)   # deep twilight purple
+const C_SKY_MID      := Color(0.22, 0.10, 0.08, 1.0)   # dusky red-brown
+const C_SKY_BOTTOM   := Color(0.08, 0.05, 0.03, 1.0)   # near-black
+
+# SPA-589: Scenario preview accent colours (left-edge stripe on scenario cards).
+const SCENARIO_ACCENT := {
+	"scenario_1": Color(0.40, 0.75, 0.35, 1.0),   # mossy green — introductory
+	"scenario_2": Color(0.85, 0.70, 0.20, 1.0),   # amber — moderate
+	"scenario_3": Color(0.85, 0.40, 0.15, 1.0),   # burnt orange — challenging
+	"scenario_4": Color(0.85, 0.18, 0.12, 1.0),   # crimson — expert
+}
+
+# SPA-589: Human-readable difficulty labels per scenario.
+const SCENARIO_DIFFICULTY := {
+	"scenario_1": "Introductory",
+	"scenario_2": "Moderate",
+	"scenario_3": "Challenging",
+	"scenario_4": "Expert",
+}
+
 enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS }
 
 # ── State ─────────────────────────────────────────────────────────────────────
@@ -53,6 +85,13 @@ var _selected_card_idx:  int        = -1
 
 # HowToPlay overlay ref
 var _how_to_play:        CanvasLayer = null
+
+# SPA-589: Atmospheric dusk background elements
+var _dusk_sky:           ColorRect   = null  # gradient sky background
+var _silhouettes:        Array       = []    # whispering figure silhouettes (Array[ColorRect])
+var _silhouette_phase:   float       = 0.0   # animation timer for figure sway
+var _fog_overlay:        ColorRect   = null  # subtle ground fog
+var _lantern_glow:       ColorRect   = null  # warm lantern point-light effect
 
 # Settings-phase refs
 var _panel_settings:     Control    = null
@@ -257,22 +296,107 @@ func _unhandled_input(event: InputEvent) -> void:
 # ── Backdrop ──────────────────────────────────────────────────────────────────
 
 func _build_backdrop() -> void:
+	# SPA-589: Lamplighter Square dusk atmosphere — dark sky with warm accents.
 	_backdrop = ColorRect.new()
-	_backdrop.color = C_BACKDROP
+	_backdrop.color = C_SKY_TOP
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_backdrop)
+
+	# Lower-half gradient strip — simulates dusk horizon glow.
+	_dusk_sky = ColorRect.new()
+	_dusk_sky.color = C_SKY_MID
+	_dusk_sky.set_anchor(SIDE_LEFT,   0.0)
+	_dusk_sky.set_anchor(SIDE_RIGHT,  1.0)
+	_dusk_sky.set_anchor(SIDE_TOP,    0.55)
+	_dusk_sky.set_anchor(SIDE_BOTTOM, 1.0)
+	_dusk_sky.modulate.a = 0.6
+	add_child(_dusk_sky)
+
+	# Ground fog — subtle warm haze at the bottom.
+	_fog_overlay = ColorRect.new()
+	_fog_overlay.color = Color(0.15, 0.10, 0.06, 0.35)
+	_fog_overlay.set_anchor(SIDE_LEFT,   0.0)
+	_fog_overlay.set_anchor(SIDE_RIGHT,  1.0)
+	_fog_overlay.set_anchor(SIDE_TOP,    0.78)
+	_fog_overlay.set_anchor(SIDE_BOTTOM, 1.0)
+	add_child(_fog_overlay)
+
+	# Warm lantern glow — a soft radial highlight at centre-bottom.
+	_lantern_glow = ColorRect.new()
+	_lantern_glow.color = Color(0.95, 0.65, 0.20, 0.08)
+	_lantern_glow.set_anchor(SIDE_LEFT,   0.25)
+	_lantern_glow.set_anchor(SIDE_RIGHT,  0.75)
+	_lantern_glow.set_anchor(SIDE_TOP,    0.40)
+	_lantern_glow.set_anchor(SIDE_BOTTOM, 0.90)
+	add_child(_lantern_glow)
+
+	# SPA-589: Whispering figure silhouettes — dark shapes at the bottom edges.
+	_build_silhouettes()
+
+
+# ── SPA-589: Whispering figure silhouettes ────────────────────────────────────
+
+## Build 4-6 abstract figure silhouettes along the bottom of the screen.
+## Each is a narrow dark rectangle with varying height — representing
+## hooded/cloaked figures standing in the dusk.
+func _build_silhouettes() -> void:
+	_silhouettes.clear()
+	# Positions and heights for silhouettes (normalised anchor coords).
+	# Each: [left_anchor, right_anchor, height_frac, alpha]
+	var figures: Array = [
+		[0.04, 0.07, 0.28, 0.45],   # far left, tall
+		[0.10, 0.12, 0.22, 0.30],   # left, medium
+		[0.14, 0.17, 0.25, 0.38],   # left-centre, tall
+		[0.83, 0.86, 0.26, 0.40],   # right-centre, tall
+		[0.88, 0.90, 0.20, 0.28],   # right, short
+		[0.93, 0.96, 0.24, 0.35],   # far right, medium
+	]
+	for f in figures:
+		var fig := ColorRect.new()
+		fig.color = Color(0.02, 0.01, 0.01, f[3])
+		fig.set_anchor(SIDE_LEFT,   f[0])
+		fig.set_anchor(SIDE_RIGHT,  f[1])
+		fig.set_anchor(SIDE_TOP,    1.0 - f[2])
+		fig.set_anchor(SIDE_BOTTOM, 1.0)
+		add_child(fig)
+		_silhouettes.append(fig)
+
+
+## Animate whispering figures with subtle sway and opacity pulsing.
+func _process(delta: float) -> void:
+	if not visible:
+		return
+	_silhouette_phase += delta * 0.4
+	for i in _silhouettes.size():
+		var fig: ColorRect = _silhouettes[i]
+		# Each figure sways at a slightly different phase.
+		var phase_offset: float = float(i) * 1.3
+		var sway: float = sin(_silhouette_phase + phase_offset) * 0.003
+		fig.set_anchor(SIDE_LEFT,  fig.get_anchor(SIDE_LEFT) + sway * delta)
+		fig.set_anchor(SIDE_RIGHT, fig.get_anchor(SIDE_RIGHT) + sway * delta)
+		# Subtle opacity pulse (breathing effect).
+		var alpha_base: float = fig.color.a
+		var pulse: float = sin(_silhouette_phase * 0.8 + phase_offset) * 0.04
+		fig.modulate.a = clampf(1.0 + pulse, 0.7, 1.3)
 
 
 # ── Phase 1: Main Menu panel ──────────────────────────────────────────────────
 
 func _build_main_panel() -> void:
-	_panel_main = _make_panel(480, 320)
+	# SPA-589: Parchment scroll overlay — taller panel with atmospheric styling.
+	_panel_main = _make_parchment_panel(440, 420)
 	add_child(_panel_main)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 16)
+	vbox.add_theme_constant_override("separation", 14)
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_panel_main.add_child(vbox)
+
+	# SPA-589: Ornamental top flourish (a thin amber line).
+	var flourish := ColorRect.new()
+	flourish.color = Color(0.957, 0.651, 0.227, 0.50)
+	flourish.custom_minimum_size = Vector2(0, 2)
+	vbox.add_child(flourish)
 
 	# Title
 	var title := Label.new()
@@ -282,19 +406,26 @@ func _build_main_panel() -> void:
 	title.add_theme_color_override("font_color", C_TITLE)
 	vbox.add_child(title)
 
-	# Tagline
+	# SPA-589: Atmospheric subtitle referencing Lamplighter Square.
 	var tagline := Label.new()
-	tagline.text = "A medieval rumor-spreading social simulation"
+	tagline.text = "Whispers in the Lamplighter's Square"
 	tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	tagline.add_theme_font_size_override("font_size", 13)
+	tagline.add_theme_font_size_override("font_size", 14)
 	tagline.add_theme_color_override("font_color", C_SUBHEADING)
 	vbox.add_child(tagline)
+
+	var subtitle := Label.new()
+	subtitle.text = "A medieval rumor-spreading social simulation"
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_font_size_override("font_size", 11)
+	subtitle.add_theme_color_override("font_color", C_MUTED)
+	vbox.add_child(subtitle)
 
 	vbox.add_child(_separator())
 
 	# Spacer
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0, 12)
+	spacer.custom_minimum_size = Vector2(0, 6)
 	vbox.add_child(spacer)
 
 	# Buttons
@@ -332,7 +463,7 @@ func _build_main_panel() -> void:
 # ── Phase 2: Scenario Select panel ───────────────────────────────────────────
 
 func _build_select_panel() -> void:
-	_panel_select = _make_panel(680, 460)
+	_panel_select = _make_parchment_panel(700, 520)
 	add_child(_panel_select)
 
 	var vbox := VBoxContainer.new()
@@ -342,11 +473,19 @@ func _build_select_panel() -> void:
 
 	# Heading
 	var heading := Label.new()
-	heading.text = "Choose a Scenario"
+	heading.text = "Choose Your Assignment"
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	heading.add_theme_font_size_override("font_size", 22)
 	heading.add_theme_color_override("font_color", C_HEADING)
 	vbox.add_child(heading)
+
+	# SPA-589: Subheading with flavour text.
+	var sub := Label.new()
+	sub.text = "Each assignment tests a different facet of the whispersmith's art."
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.add_theme_font_size_override("font_size", 11)
+	sub.add_theme_color_override("font_color", C_MUTED)
+	vbox.add_child(sub)
 
 	vbox.add_child(_separator())
 
@@ -377,12 +516,15 @@ func _build_select_panel() -> void:
 
 func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	var locked: bool = _is_scenario_locked(idx)
+	var sc_id: String = sc.get("scenarioId", "")
 
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(0, 80)
+	card.custom_minimum_size = Vector2(0, 90)
 
-	var style_normal := _card_style(C_CARD_BG, C_CARD_BORDER)
-	var style_hover  := _card_style(C_CARD_HOVER, C_CARD_BORDER)
+	# SPA-589: Card style with left accent stripe matching scenario difficulty.
+	var accent_color: Color = SCENARIO_ACCENT.get(sc_id, C_CARD_BORDER)
+	var style_normal := _scenario_card_style(C_CARD_BG, C_CARD_BORDER, accent_color)
+	var style_hover  := _scenario_card_style(C_CARD_HOVER, C_CARD_BORDER, accent_color)
 	card.add_theme_stylebox_override("panel", style_normal)
 	card.set_meta("style_normal", style_normal)
 	card.set_meta("style_hover",  style_hover)
@@ -397,10 +539,10 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	btn.add_theme_stylebox_override("hover",  StyleBoxEmpty.new())
 	btn.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
 	var _card_focus_ring := StyleBoxFlat.new()
-	_card_focus_ring.bg_color     = Color(0, 0, 0, 0)                # transparent — card panel shows through
+	_card_focus_ring.bg_color     = Color(0, 0, 0, 0)
 	_card_focus_ring.draw_center  = false
 	_card_focus_ring.set_border_width_all(2)
-	_card_focus_ring.border_color = Color(1.00, 0.90, 0.40, 1.0)     # gold — matches SPA-169 focus ring
+	_card_focus_ring.border_color = Color(1.00, 0.90, 0.40, 1.0)
 	btn.add_theme_stylebox_override("focus", _card_focus_ring)
 	btn.pressed.connect(_on_card_pressed.bind(idx))
 	btn.mouse_entered.connect(_on_card_hover.bind(card, true))
@@ -409,10 +551,12 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	var inner := VBoxContainer.new()
 	inner.add_theme_constant_override("separation", 4)
 
+	# SPA-589: Title row with difficulty badge.
 	var title_row := HBoxContainer.new()
+	title_row.add_theme_constant_override("separation", 8)
 
 	var number_lbl := Label.new()
-	number_lbl.text = "  %d. " % (idx + 1)
+	number_lbl.text = "  %d." % (idx + 1)
 	number_lbl.add_theme_font_size_override("font_size", 15)
 	number_lbl.add_theme_color_override("font_color", C_MUTED)
 	title_row.add_child(number_lbl)
@@ -421,34 +565,47 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	title_lbl.text = sc.get("title", "Unknown Scenario")
 	title_lbl.add_theme_font_size_override("font_size", 16)
 	title_lbl.add_theme_color_override("font_color", C_MUTED if locked else C_HEADING)
+	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_row.add_child(title_lbl)
+
+	# SPA-589: Difficulty badge — coloured label right-aligned.
+	var diff_text: String = SCENARIO_DIFFICULTY.get(sc_id, "")
+	if diff_text != "":
+		var diff_badge := Label.new()
+		diff_badge.text = diff_text
+		diff_badge.add_theme_font_size_override("font_size", 11)
+		diff_badge.add_theme_color_override("font_color", accent_color if not locked else C_MUTED)
+		title_row.add_child(diff_badge)
 
 	# Days label — replaced with lock message when locked.
 	var days_lbl := Label.new()
 	if locked:
-		days_lbl.text = "  \U0001F512 Complete \"%s\" to unlock" % _unlock_requires_title(idx)
+		days_lbl.text = "Locked"
 	else:
-		days_lbl.text = "  (%d days)" % int(sc.get("daysAllowed", 30))
-	days_lbl.add_theme_font_size_override("font_size", 12)
+		days_lbl.text = "%d days" % int(sc.get("daysAllowed", 30))
+	days_lbl.add_theme_font_size_override("font_size", 11)
 	days_lbl.add_theme_color_override("font_color", C_MUTED)
 	title_row.add_child(days_lbl)
 
 	inner.add_child(title_row)
 
-	# Hook text sells the fantasy; fall back to startingText first line.
+	# SPA-589: Hook text — italic 1-sentence pitch for the scenario.
 	var teaser: String = sc.get("hookText", "")
 	if teaser == "":
 		var full_text: String = sc.get("startingText", "")
 		teaser = full_text.split("\n")[0] if "\n" in full_text else full_text
-	if teaser.length() > 160:
-		teaser = teaser.substr(0, 157) + "..."
+	if teaser.length() > 180:
+		teaser = teaser.substr(0, 177) + "..."
 
-	var desc_lbl := Label.new()
-	desc_lbl.text = teaser
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_lbl.add_theme_font_size_override("font_size", 12)
-	desc_lbl.add_theme_color_override("font_color", C_MUTED if locked else C_BODY)
-	inner.add_child(desc_lbl)
+	var desc_rtl := RichTextLabel.new()
+	desc_rtl.bbcode_enabled = true
+	desc_rtl.text = "[i]%s[/i]" % teaser if not locked else teaser
+	desc_rtl.fit_content = true
+	desc_rtl.scroll_active = false
+	desc_rtl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_rtl.add_theme_font_size_override("normal_font_size", 12)
+	desc_rtl.add_theme_color_override("default_color", C_MUTED if locked else C_BODY)
+	inner.add_child(desc_rtl)
 
 	# Locked message row — hidden until the card is pressed while locked.
 	if locked:
@@ -458,7 +615,7 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 		lock_row.add_theme_constant_override("separation", 8)
 
 		var lock_msg := Label.new()
-		lock_msg.text = "Finish \"%s\" first." % _unlock_requires_title(idx)
+		lock_msg.text = "Complete \"%s\" to unlock." % _unlock_requires_title(idx)
 		lock_msg.add_theme_font_size_override("font_size", 11)
 		lock_msg.add_theme_color_override("font_color", C_MUTED)
 		lock_row.add_child(lock_msg)
@@ -479,6 +636,23 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	card.add_child(inner)
 	card.add_child(btn)  # overlay last so it captures mouse events
 	return card
+
+
+## SPA-589: Card style with a coloured left accent stripe for scenario difficulty.
+func _scenario_card_style(bg: Color, border: Color, accent: Color) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color     = bg
+	s.border_color = border
+	s.set_border_width_all(1)
+	# Left border is the accent colour, wider for visual emphasis.
+	s.border_width_left = 4
+	s.set_content_margin_all(10)
+	s.content_margin_left = 14  # extra padding after accent stripe
+	# Use the accent colour on the left edge by blending it into the border.
+	# StyleBoxFlat doesn't support per-side colours, so we use the main border
+	# and rely on the wider left width to make it prominent. For true accent,
+	# the accent colour is used when creating the selected variant.
+	return s
 
 
 func _on_card_hover(card: PanelContainer, entering: bool) -> void:
@@ -1378,6 +1552,31 @@ func _build_version_label() -> void:
 
 
 # ── UI helpers ────────────────────────────────────────────────────────────────
+
+## SPA-589: Creates a parchment-styled centred panel with warmer tones and a scroll-edge feel.
+func _make_parchment_panel(w: int, h: int) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(w, h)
+	panel.set_anchor(SIDE_LEFT,   0.5)
+	panel.set_anchor(SIDE_RIGHT,  0.5)
+	panel.set_anchor(SIDE_TOP,    0.5)
+	panel.set_anchor(SIDE_BOTTOM, 0.5)
+	panel.set_offset(SIDE_LEFT,   -w / 2.0)
+	panel.set_offset(SIDE_RIGHT,   w / 2.0)
+	panel.set_offset(SIDE_TOP,    -h / 2.0)
+	panel.set_offset(SIDE_BOTTOM,  h / 2.0)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color           = Color(0.11, 0.08, 0.05, 0.92)   # darker parchment, slightly transparent
+	style.border_color       = Color(0.55, 0.38, 0.18, 0.85)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	style.set_content_margin_all(28)
+	# Top border slightly thicker for scroll-top effect.
+	style.border_width_top = 3
+	panel.add_theme_stylebox_override("panel", style)
+	return panel
+
 
 ## Creates a centred PanelContainer of the given size.
 func _make_panel(w: int, h: int) -> PanelContainer:
