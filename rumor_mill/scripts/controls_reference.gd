@@ -25,6 +25,7 @@ const BINDINGS := [
 	["3", "Fast speed (3x)"],
 	["H", "Replay last hint"],
 	["F1", "Toggle this reference"],
+	["F11", "Toggle fullscreen"],
 	["Esc", "Close open panel"],
 ]
 
@@ -68,7 +69,7 @@ func _build_panel() -> void:
 	_panel.anchor_right = 0.0
 	_panel.anchor_bottom = 1.0
 	_panel.offset_left = 12.0
-	_panel.offset_top = -320.0
+	_panel.offset_top = -340.0
 	_panel.offset_right = 280.0
 	_panel.offset_bottom = -12.0
 

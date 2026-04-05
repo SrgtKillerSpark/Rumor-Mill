@@ -803,8 +803,14 @@ func _build_settings_panel() -> void:
 	res_hover.set_border_width_all(1)
 	res_hover.border_color = C_PANEL_BORDER
 	res_hover.set_content_margin_all(4)
+	var res_focus := StyleBoxFlat.new()
+	res_focus.bg_color = C_BTN_HOVER
+	res_focus.set_border_width_all(2)
+	res_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)
+	res_focus.set_content_margin_all(4)
 	_btn_resolution.add_theme_stylebox_override("normal", res_normal)
 	_btn_resolution.add_theme_stylebox_override("hover", res_hover)
+	_btn_resolution.add_theme_stylebox_override("focus", res_focus)
 	_btn_resolution.pressed.connect(_on_resolution_cycle)
 	res_row.add_child(_btn_resolution)
 
@@ -814,7 +820,7 @@ func _build_settings_panel() -> void:
 	vbox.add_child(fs_row)
 
 	var fs_name := Label.new()
-	fs_name.text = "Window:"
+	fs_name.text = "Window (F11):"
 	fs_name.custom_minimum_size = Vector2(80, 0)
 	fs_name.add_theme_font_size_override("font_size", 13)
 	fs_name.add_theme_color_override("font_color", C_BODY)
@@ -836,8 +842,14 @@ func _build_settings_panel() -> void:
 	wm_hover.set_border_width_all(1)
 	wm_hover.border_color = C_PANEL_BORDER
 	wm_hover.set_content_margin_all(4)
+	var wm_focus := StyleBoxFlat.new()
+	wm_focus.bg_color = C_BTN_HOVER
+	wm_focus.set_border_width_all(2)
+	wm_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)
+	wm_focus.set_content_margin_all(4)
 	_btn_window_mode.add_theme_stylebox_override("normal", wm_normal)
 	_btn_window_mode.add_theme_stylebox_override("hover", wm_hover)
+	_btn_window_mode.add_theme_stylebox_override("focus", wm_focus)
 	_btn_window_mode.pressed.connect(_on_window_mode_cycle)
 	fs_row.add_child(_btn_window_mode)
 
@@ -869,8 +881,14 @@ func _build_settings_panel() -> void:
 	sc_hover.set_border_width_all(1)
 	sc_hover.border_color = C_PANEL_BORDER
 	sc_hover.set_content_margin_all(4)
+	var sc_focus := StyleBoxFlat.new()
+	sc_focus.bg_color = C_BTN_HOVER
+	sc_focus.set_border_width_all(2)
+	sc_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)
+	sc_focus.set_content_margin_all(4)
 	_btn_ui_scale.add_theme_stylebox_override("normal", sc_normal)
 	_btn_ui_scale.add_theme_stylebox_override("hover", sc_hover)
+	_btn_ui_scale.add_theme_stylebox_override("focus", sc_focus)
 	_btn_ui_scale.pressed.connect(_on_ui_scale_cycle)
 	sc_row.add_child(_btn_ui_scale)
 

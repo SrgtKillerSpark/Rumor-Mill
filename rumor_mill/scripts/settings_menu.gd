@@ -48,6 +48,8 @@ func _input(event: InputEvent) -> void:
 func open() -> void:
 	_sync_from_settings()
 	visible = true
+	if _btn_resolution != null:
+		_btn_resolution.call_deferred("grab_focus")
 
 
 func _close() -> void:
@@ -121,7 +123,7 @@ func _build_ui() -> void:
 	vbox.add_child(res_row)
 
 	# Window mode row.
-	var wm_row := _make_setting_row("Window Mode")
+	var wm_row := _make_setting_row("Window  (F11)")
 	_btn_window_mode = _make_cycle_button(SettingsManager.get_window_mode_label())
 	_btn_window_mode.pressed.connect(_on_window_mode_cycle)
 	wm_row.add_child(_btn_window_mode)
@@ -173,6 +175,19 @@ func _build_ui() -> void:
 	var btn_back := _make_action_button("Back  (Esc)")
 	btn_back.pressed.connect(_close)
 	vbox.add_child(btn_back)
+
+	# ── Focus chain (Tab / Arrow navigation) ──────────────────────────────────
+	var focus_list: Array[Control] = [
+		_btn_resolution, _btn_window_mode, _btn_ui_scale,
+		_slider_music, _slider_ambient, _slider_sfx, btn_back,
+	]
+	for i in focus_list.size():
+		var prev_idx: int = (i - 1) % focus_list.size()
+		var next_idx: int = (i + 1) % focus_list.size()
+		focus_list[i].focus_neighbor_top    = focus_list[prev_idx].get_path()
+		focus_list[i].focus_neighbor_bottom = focus_list[next_idx].get_path()
+		focus_list[i].focus_next            = focus_list[next_idx].get_path()
+		focus_list[i].focus_previous        = focus_list[prev_idx].get_path()
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

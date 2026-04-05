@@ -171,6 +171,25 @@ func get_window_mode_label() -> String:
 		_: return "Windowed"
 
 
+## Toggle between windowed and the current fullscreen mode via F11.
+## If currently windowed, switches to borderless fullscreen.
+## If currently fullscreen (any mode), switches back to windowed.
+func toggle_fullscreen() -> void:
+	if window_mode == WINDOW_WINDOWED:
+		window_mode = WINDOW_BORDERLESS
+	else:
+		window_mode = WINDOW_WINDOWED
+	apply_display_settings()
+	save_settings()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F11:
+			toggle_fullscreen()
+			get_viewport().set_input_as_handled()
+
+
 ## Convert linear 0-100 to dB. Returns -80 for zero (silence).
 func _to_db(linear: float) -> float:
 	if linear <= 0.0:
