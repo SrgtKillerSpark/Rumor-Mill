@@ -368,6 +368,22 @@ func _infer_fail_reason(scenario_id: int) -> String:
 				var snap := rep.get_snapshot(npc_id)
 				if snap != null and snap.score < ScenarioManager.S4_FAIL_REP_BELOW:
 					return "reputation_collapsed"
+	if scenario_id == 5:
+		var rep: ReputationSystem = _world_ref.reputation_system
+		if rep != null:
+			var aldric := rep.get_snapshot(ScenarioManager.ALDRIC_VANE_ID)
+			if aldric != null and aldric.score < ScenarioManager.S5_FAIL_ALDRIC_BELOW:
+				return "aldric_destroyed"
+	if scenario_id == 6:
+		var rep: ReputationSystem = _world_ref.reputation_system
+		if rep != null:
+			var marta := rep.get_snapshot(ScenarioManager.MARTA_COIN_ID)
+			if marta != null and marta.score < ScenarioManager.S6_FAIL_MARTA_BELOW:
+				return "marta_silenced"
+		if _world_ref.intel_store != null:
+			for npc_id in _world_ref.intel_store.heat:
+				if _world_ref.intel_store.heat[npc_id] >= ScenarioManager.S6_EXPOSED_HEAT:
+					return "exposed"
 	# Check days elapsed vs allowed.
 	if _day_night_ref != null and sm.get_days_allowed() > 0:
 		var days_elapsed: int = _day_night_ref.current_day if "current_day" in _day_night_ref else 0
@@ -431,6 +447,12 @@ func _get_summary_text(scenario_id: int, won: bool, fail_reason: String) -> Stri
 	var scenario_table: Dictionary = SUMMARY_TEXT.get(scenario_id, {})
 	if scenario_table.has(key):
 		return scenario_table[key]
+	# Fall back to ScenarioManager (scenarios.json) for any key not in the hard-coded table.
+	if _world_ref != null and _world_ref.scenario_manager != null:
+		var sm: ScenarioManager = _world_ref.scenario_manager
+		var json_text := sm.get_victory_text() if won else sm.get_fail_text(key)
+		if not json_text.is_empty():
+			return json_text
 	if SUMMARY_FALLBACK.has(key):
 		return SUMMARY_FALLBACK[key]
 	return "Your scheme ran its course." if won else "Your scheme unravelled."
