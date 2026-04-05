@@ -98,6 +98,7 @@ static func save_game(
 		"inquisitor_agent":          _serialize_inquisitor_agent(world.inquisitor_agent),
 		"s4_faction_shift_agent":    _serialize_s4_faction_shift_agent(world.s4_faction_shift_agent),
 		"illness_escalation_agent":  _serialize_illness_escalation_agent(world.illness_escalation_agent),
+		"mid_game_event_agent":      _serialize_mid_game_event_agent(world.mid_game_event_agent),
 		"faction_event_system":      _serialize_faction_event_system(world.faction_event_system),
 		"socially_dead_ids":    world._socially_dead_ids.keys(),
 		"timeline":             timeline,
@@ -180,6 +181,7 @@ static func apply_pending_load(
 	_restore_inquisitor_agent(world.inquisitor_agent, data.get("inquisitor_agent", {}))
 	_restore_s4_faction_shift_agent(world.s4_faction_shift_agent, data.get("s4_faction_shift_agent", {}))
 	_restore_illness_escalation_agent(world.illness_escalation_agent, data.get("illness_escalation_agent", {}))
+	_restore_mid_game_event_agent(world.mid_game_event_agent, data.get("mid_game_event_agent", {}))
 	_restore_faction_event_system(world.faction_event_system, data.get("faction_event_system", {}))
 	world._socially_dead_ids.clear()
 	for npc_id in data.get("socially_dead_ids", []):
@@ -566,6 +568,18 @@ static func _restore_illness_escalation_agent(iea: IllnessEscalationAgent, d: Di
 	iea._active          = bool(d.get("active", false))
 	iea._last_seed_day   = int(d.get("last_seed_day", 0))
 	iea.cooldown_offset  = int(d.get("cooldown_offset", 0))
+
+
+static func _serialize_mid_game_event_agent(mgea: MidGameEventAgent) -> Dictionary:
+	if mgea == null:
+		return {}
+	return mgea.to_data()
+
+
+static func _restore_mid_game_event_agent(mgea: MidGameEventAgent, d: Dictionary) -> void:
+	if mgea == null or d.is_empty():
+		return
+	mgea.restore_from_data(d)
 
 
 static func _serialize_faction_event_system(fes: FactionEventSystem) -> Dictionary:
