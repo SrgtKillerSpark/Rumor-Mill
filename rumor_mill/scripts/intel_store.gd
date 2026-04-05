@@ -7,6 +7,11 @@ class_name PlayerIntelStore
 ## Emitted once per spend when whisper_tokens_remaining drops to 0.
 signal tokens_exhausted
 
+## Emitted once (S1 only) when any NPC's heat first crosses the warning
+## threshold (50), giving the tutorial banner a chance to warn the player
+## before the hard fail at 80.
+signal heat_warning
+
 const MAX_DAILY_ACTIONS  := 3
 const MAX_DAILY_WHISPERS := 2
 const MAX_EVIDENCE       := 3
@@ -29,6 +34,7 @@ var relationship_intel: Dictionary = {}
 ## as a rumor source. Only active from Scenario 2 onward.
 var heat: Dictionary = {}
 var heat_enabled: bool = false
+var _heat_warning_fired: bool = false  # guard: emit heat_warning signal only once
 ## When >= 0, overrides the default 6.0/day decay (used by FactionEventSystem
 ## guard_crackdown event). Reset to -1.0 to restore the default.
 var heat_decay_override: float = -1.0
@@ -155,6 +161,9 @@ func add_heat(npc_id: String, amount: float) -> void:
 	if not heat_enabled:
 		return
 	heat[npc_id] = clamp(heat.get(npc_id, 0.0) + amount, 0.0, 100.0)
+	if not _heat_warning_fired and heat[npc_id] >= 50.0:
+		_heat_warning_fired = true
+		heat_warning.emit()
 
 
 func decay_heat() -> void:

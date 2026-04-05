@@ -462,6 +462,16 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 9,
 	},
+	# ── Scenario 1: Heat / exposure warning ──────────────────────────────────
+	"ctx_heat_warning": {
+		"title": "You Are Drawing Attention",
+		"body":  (
+			"NPCs are growing [b]suspicious[/b] of you.  "
+			+ "If any NPC's suspicion reaches [b]80[/b], the Guard Captain will identify you and your mission will [b]fail instantly[/b].  "
+			+ "Vary your targets and [b]wait a day[/b] between actions on the same NPC — suspicion fades overnight."
+		),
+		"auto_dismiss_secs": 12,
+	},
 	# ── General idle hints ───────────────────────────────────────────────────
 	"ctx_idle_no_action": {
 		"title": "Need a Nudge?",

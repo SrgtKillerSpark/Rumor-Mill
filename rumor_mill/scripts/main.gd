@@ -85,6 +85,7 @@ var _ctx_spread_fired:   bool = false
 var _ctx_act_fired:      bool = false
 var _ctx_reject_fired:   bool = false
 var _ctx_tokens_fired:   bool = false
+var _ctx_heat_warn_fired: bool = false  # SPA-608: heat warning hint (S1 only)
 var _ctx_halfway_fired:  bool = false
 var _banner_eavesdrop_count:    int  = 0      # counts eavesdrop actions for social graph trigger
 
@@ -682,6 +683,10 @@ func _init_context_banner() -> void:
 	if world.intel_store != null:
 		world.intel_store.tokens_exhausted.connect(_on_ctx_tokens_exhausted)
 
+	# Heat warning hint (SPA-608): S1 only — fires once when heat first crosses 50.
+	if world.intel_store != null and world.active_scenario_id == "scenario_1":
+		world.intel_store.heat_warning.connect(_on_heat_warning)
+
 	# NPC state change hints: first SPREAD, ACT, or REJECT triggers.
 	for npc in world.npcs:
 		npc.rumor_state_changed.connect(_on_ctx_rumor_state_changed)
@@ -1041,6 +1046,15 @@ func _on_ctx_tokens_exhausted() -> void:
 		return
 	_ctx_tokens_fired = true
 	_tutorial_banner.queue_hint("ctx_out_of_tokens")
+
+
+## Fires once in S1 when any NPC's heat first crosses 50 (SPA-608).
+## Warns the player before the hard fail at 80.
+func _on_heat_warning() -> void:
+	if _ctx_heat_warn_fired or _tutorial_banner == null:
+		return
+	_ctx_heat_warn_fired = true
+	_tutorial_banner.queue_hint("ctx_heat_warning")
 
 
 ## ── SPA-487: Idle-detection hint system ──────────────────────────────────────
