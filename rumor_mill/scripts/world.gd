@@ -1007,7 +1007,7 @@ func inject_rumor(
 	if not subject_npc_id.is_empty():
 		subject_id = subject_npc_id
 	else:
-		var candidates := npcs.filter(func(n): return n != target_npc)
+		var candidates: Array = npcs.filter(func(n): return n != target_npc)
 		var subject_npc: Node2D = candidates[randi() % candidates.size()] if not candidates.is_empty() else null
 		subject_id = subject_npc.npc_data.get("id", "unknown") if subject_npc != null else "unknown"
 
