@@ -76,6 +76,9 @@ var _popup_npc:   Node2D = null
 # ── Building interior panels (set via set_interiors()) ────────────────────────
 var _interiors: Dictionary = {}  ## location_id → BuildingInterior CanvasLayer node
 
+## Sequence counter to safely cancel pending outdoor-ambient clear timers.
+var _ambient_clear_seq: int = 0
+
 
 ## Register interior panel nodes keyed by location id (e.g. "tavern", "manor", "chapel").
 ## Called from main.gd after the interior scenes are added to the tree.
@@ -495,9 +498,20 @@ func _try_observe(location_id: String) -> void:
 
 	emit_signal("action_performed", msg, true)
 	_show_observe_sparkle()
+	# Cancel any pending outdoor-ambient clear timer from a previous observe.
+	_ambient_clear_seq += 1
 	# Show the building interior panel (lore/flavour) if one is registered.
 	if _interiors.has(location_id):
 		_interiors[location_id].show_interior()
+	else:
+		# Outdoor locations (e.g. market): play location ambient, auto-clear after 10s.
+		AudioManager.set_location_ambient(location_id)
+		var seq := _ambient_clear_seq
+		get_tree().create_timer(10.0).timeout.connect(
+			func() -> void:
+				if _ambient_clear_seq == seq:
+					AudioManager.clear_location_ambient()
+		, CONNECT_ONE_SHOT)
 	# Trigger an "observe" dialogue bubble on each NPC present at the location.
 	for npc in _world_ref.npcs:
 		if (npc.current_cell - entry_cell).length() <= 4:
