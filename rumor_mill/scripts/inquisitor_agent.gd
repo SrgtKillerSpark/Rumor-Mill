@@ -44,7 +44,7 @@ func tick(current_day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
 func _get_cooldown(day: int) -> int:
 	var base: int
 	if day <= 5:
-		base = 3   # Slow start: seed every 3 days
+		base = 4   # Slow start: seed every 4 days
 	elif day <= 12:
 		base = 2   # Mid-game pressure: every 2 days
 	else:
