@@ -265,6 +265,121 @@ function makeGroundTiles() {
     outlineIso(cv, 28, 48, 18, cx, cy);
   }
 
+  // ── tile 3: grass_sparse (lighter, fewer noise dots, pale patches) ───────────
+  {
+    const ox = 192, cx = ox+32, cy = 16;
+    fillIso(cv, ...c.GRASS_L, 255, cx, cy);
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_M, 8, 0.10);
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_D, 6, 0.05);
+    for (let y=3; y<30; y+=6) {
+      for (let x=ox+3; x<ox+62; x+=6) {
+        if (Math.abs(x-cx)/31 + Math.abs(y-cy)/15 < 0.88) {
+          cv.sp(x, y, ...c.GRASS_M, 60);
+        }
+      }
+    }
+    outlineIso(cv, ...c.GRASS_M, cx, cy);
+  }
+
+  // ── tile 4: grass_dense (darker, denser crosshatch) ──────────────────────────
+  {
+    const ox = 256, cx = ox+32, cy = 16;
+    fillIso(cv, ...c.GRASS_D, 255, cx, cy);
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_M, 12, 0.28);
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_D, 10, 0.20);
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_L,  6, 0.08);
+    for (let y=2; y<30; y+=3) {
+      for (let x=ox+2; x<ox+62; x+=3) {
+        if (Math.abs(x-cx)/31 + Math.abs(y-cy)/15 < 0.90) {
+          cv.sp(x, y, ...c.GRASS_D, 90);
+        }
+      }
+    }
+    outlineIso(cv, 28, 48, 18, cx, cy);
+  }
+
+  // ── tile 5: grass_floral (GRASS_M base + tiny coloured flower specks) ────────
+  {
+    const ox = 320, cx = ox+32, cy = 16;
+    fillIso(cv, ...c.GRASS_M, 255, cx, cy);
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_L, 10, 0.18);
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_D,  8, 0.10);
+    const floralPositions = [
+      [cx-14, cy-1], [cx-8, cy+4], [cx+2, cy-5],
+      [cx+12, cy+1], [cx-2, cy+6], [cx+8, cy-3],
+      [cx-18, cy+2], [cx+16, cy-2],
+    ];
+    const floralColors = [
+      c.FLAG_R, c.CANVAS, c.FLAG_R, c.CANVAS,
+      [220,180,240], c.FLAG_R, c.CANVAS, [220,180,240],
+    ];
+    for (let fi=0; fi<floralPositions.length; fi++) {
+      const [fx, fy] = floralPositions[fi];
+      if (Math.abs(fx-cx)/31 + Math.abs(fy-cy)/15 > 0.88) continue;
+      cv.sp(fx,   fy, ...floralColors[fi], 220);
+      cv.sp(fx-1, fy, ...floralColors[fi], 130);
+      cv.sp(fx, fy-1, ...floralColors[fi], 130);
+    }
+    outlineIso(cv, ...c.GRASS_D, cx, cy);
+  }
+
+  // ── tile 6: dirt_muddy (DIRT_D base, puddle-like wet look) ───────────────────
+  {
+    const ox = 384, cx = ox+32, cy = 16;
+    fillIso(cv, ...c.DIRT_D, 255, cx, cy);
+    cv.isoNoise(cx, cy, 31, 15, ...c.DIRT_M, 10, 0.14);
+    const puddles = [[cx-10, cy-2, 8, 3], [cx+8, cy+3, 6, 2], [cx-2, cy+5, 5, 2]];
+    for (const [px, py, phw, phh] of puddles) {
+      for (let py2=py-phh; py2<=py+phh; py2++) {
+        for (let px2=px-phw; px2<=px+phw; px2++) {
+          if (Math.abs(px2-px)/phw + Math.abs(py2-py)/phh <= 1.0 &&
+              Math.abs(px2-cx)/31  + Math.abs(py2-cy)/15  <= 0.95) {
+            cv.sp(px2, py2, ...c.WATER_D, 160);
+          }
+        }
+      }
+      cv.sp(px, py-1, ...c.WATER_L, 100);
+    }
+    cv.line(cx-6, cy-6, cx-2, cy-3, ...c.DIRT_D, 180);
+    cv.line(cx+4, cy+1,  cx+8, cy+5, ...c.DIRT_D, 180);
+    outlineIso(cv, ...c.DIRT_D, cx, cy);
+  }
+
+  // ── tile 7: dirt_packed (DIRT_L base, smooth compressed texture) ─────────────
+  {
+    const ox = 448, cx = ox+32, cy = 16;
+    fillIso(cv, ...c.DIRT_L, 255, cx, cy);
+    cv.isoNoise(cx, cy, 31, 15, ...c.DIRT_M, 8, 0.07);
+    cv.isoNoise(cx, cy, 31, 15, ...c.DIRT_L, 5, 0.05);
+    for (let y=cy-10; y<=cy+10; y+=3) {
+      for (let x=cx-28; x<=cx+28; x++) {
+        if (Math.abs(x-cx)/31 + Math.abs(y-cy)/15 < 0.85) {
+          cv.sp(x, y, ...c.DIRT_M, 25);
+        }
+      }
+    }
+    outlineIso(cv, ...c.DIRT_M, cx, cy);
+  }
+
+  // ── tile 8: grass_dirt_blend (left-to-right gradient: grass to dirt) ─────────
+  {
+    const ox = 512, cx = ox+32, cy = 16;
+    for (let y=0; y<32; y++) {
+      for (let x=ox; x<ox+64; x++) {
+        const lx = x - cx, ly = y - cy;
+        if (Math.abs(lx)/31 + Math.abs(ly)/15 > 1.0) continue;
+        const t = (lx + 31) / 62;
+        const r = Math.round(c.GRASS_M[0] * (1-t) + c.DIRT_M[0] * t);
+        const g = Math.round(c.GRASS_M[1] * (1-t) + c.DIRT_M[1] * t);
+        const b = Math.round(c.GRASS_M[2] * (1-t) + c.DIRT_M[2] * t);
+        cv.sp(x, y, r, g, b);
+      }
+    }
+    cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_L, 10, 0.12);
+    cv.isoNoise(cx, cy, 31, 15, ...c.DIRT_L,  10, 0.10);
+    outlineIso(cv, ...c.GRASS_D, cx, cy);
+  }
+
   return cv.toPNG();
 }
 
@@ -2004,7 +2119,7 @@ function makeStateIcons() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PROPS ATLAS  (tiles_props.png — 512×32, eight 64×32 isometric prop tiles)
+// PROPS ATLAS  (tiles_props.png — 704×32, eleven 64×32 isometric prop tiles)
 //   col 0  CRATE        — wooden storage crate
 //   col 1  BARREL       — wooden barrel
 //   col 2  SIGN         — post-mounted wooden sign
@@ -2019,7 +2134,7 @@ function makeStateIcons() {
 // Palette-locked; all colours from P.  Background transparent.
 // ═══════════════════════════════════════════════════════════════════════════════
 function makePropsAtlas() {
-  const cv = createCanvas(512, 32);
+  const cv = createCanvas(704, 32);
 
   // ── shared: draw an isometric cuboid centred at (cx, cy) ──────────────────
   // hw/hh = iso half-width/height of top face; bh = box height in screen pixels

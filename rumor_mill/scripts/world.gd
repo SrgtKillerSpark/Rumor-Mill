@@ -102,6 +102,15 @@ var _vignette_layer: CanvasLayer = null
 var _vignette_rect:  ColorRect   = null
 var _vignette_tween: Tween       = null
 
+## VFX: atmospheric depth vignette — dark border frames the town (SPA-523).
+var _atmo_vignette_layer: CanvasLayer = null
+var _atmo_vignette_rect:  ColorRect   = null
+
+## Night buildings: texture swap for lit windows (SPA-523).
+var _building_day_tex:  Texture2D = null
+var _building_night_tex: Texture2D = null
+var _is_night: bool = false
+
 ## Active scenario id — change before _ready() to load a different scenario.
 ## Valid values: "scenario_1", "scenario_2", "scenario_3", "scenario_4"
 var active_scenario_id: String = "scenario_1"
@@ -144,6 +153,8 @@ func _ready() -> void:
 	_init_reputation_system()
 	_wire_debug_nodes()
 	_init_vignette_overlay()
+	_init_atmo_vignette()
+	_init_night_buildings()
 
 
 func _exit_tree() -> void:
@@ -686,6 +697,14 @@ func _recursive_find(node: Node, class_tag: String) -> Node:
 # ── Tick ─────────────────────────────────────────────────────────────────────
 
 func on_game_tick(tick: int) -> void:
+	# ── Lit windows: swap building texture between day and night variants. ──
+	var tpd: int = day_night.ticks_per_day if day_night != null else 24
+	var hour: int = tick % tpd
+	var night_now: bool = (hour >= 20 or hour < 6)
+	if night_now != _is_night:
+		_is_night = night_now
+		_update_building_night(_is_night)
+
 	# ── Reputation: recalculate all snapshots BEFORE state transitions fire. ──
 	if reputation_system != null:
 		reputation_system.recalculate_all(npcs, tick)
@@ -1018,3 +1037,52 @@ void fragment() {
 	mat.shader = shader
 	_vignette_rect.material = mat
 	_vignette_layer.add_child(_vignette_rect)
+
+
+# ── VFX: atmospheric depth vignette — permanent dark border (SPA-523) ────────
+
+## Builds a permanent screen-edge vignette that frames the town with depth.
+## Dark outer ring fades to transparent at centre.  Layer 1 keeps it below HUD.
+func _init_atmo_vignette() -> void:
+	_atmo_vignette_layer = CanvasLayer.new()
+	_atmo_vignette_layer.layer = 1
+	add_child(_atmo_vignette_layer)
+
+	_atmo_vignette_rect = ColorRect.new()
+	_atmo_vignette_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_atmo_vignette_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var shader := Shader.new()
+	shader.code = """
+shader_type canvas_item;
+void fragment() {
+	float dist = distance(UV, vec2(0.5, 0.5));
+	float vignette = smoothstep(0.30, 0.75, dist);
+	COLOR = vec4(0.0, 0.0, 0.0, vignette * 0.60);
+}
+"""
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	_atmo_vignette_rect.material = mat
+	_atmo_vignette_layer.add_child(_atmo_vignette_rect)
+
+
+# ── Night buildings: lit-window texture swap (SPA-523) ───────────────────────
+
+## Loads day and night building atlas textures.  Called once from _ready().
+func _init_night_buildings() -> void:
+	_building_day_tex   = load("res://assets/textures/tiles_buildings.png")
+	_building_night_tex = load("res://assets/textures/tiles_buildings_night.png")
+
+
+## Swaps the building TileSet atlas to the day or night texture variant.
+func _update_building_night(is_night: bool) -> void:
+	if _building_day_tex == null or _building_night_tex == null:
+		return
+	if building_layer == null or building_layer.tile_set == null:
+		return
+	var src := building_layer.tile_set.get_source(SRC_BUILDING) as TileSetAtlasSource
+	if src == null:
+		return
+	src.texture = _building_night_tex if is_night else _building_day_tex
+
