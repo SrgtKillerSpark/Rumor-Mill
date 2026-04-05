@@ -347,6 +347,17 @@ function makeGroundTiles() {
     }
     cv.line(cx-6, cy-6, cx-2, cy-3, ...c.DIRT_D, 180);
     cv.line(cx+4, cy+1,  cx+8, cy+5, ...c.DIRT_D, 180);
+    // hoof-print impressions near building entrances (SPA-595)
+    for (const [hx, hy] of [[cx-8, cy+3], [cx-3, cy-7], [cx+12, cy-2]]) {
+      if (Math.abs(hx-cx)/31 + Math.abs(hy-cy)/15 > 0.88) continue;
+      cv.sp(hx,   hy,   ...c.DIRT_D, 140);
+      cv.sp(hx+1, hy,   ...c.DIRT_D, 100);
+      cv.sp(hx,   hy+1, ...c.DIRT_D, 80);
+    }
+    // shimmer catch-lights on puddle surfaces
+    cv.sp(cx-10, cy-3, ...c.WATER_L, 130);
+    cv.sp(cx+7,  cy+2, ...c.WATER_L, 100);
+    cv.sp(cx-3,  cy+4, ...c.WATER_L, 80);
     outlineIso(cv, ...c.DIRT_D, cx, cy);
   }
 
@@ -363,6 +374,20 @@ function makeGroundTiles() {
         }
       }
     }
+    // worn path: parallel compression grooves along walking line (SPA-595)
+    cv.line(cx-20, cy-3, cx+18, cy+3, ...c.DIRT_M, 45);
+    cv.line(cx-20, cy+1, cx+18, cy+7, ...c.DIRT_M, 35);
+    // scattered pebbles kicked to path edges
+    for (const [px, py] of [[cx-14, cy-6], [cx+8, cy-8], [cx+18, cy+2], [cx-4, cy+7]]) {
+      if (Math.abs(px-cx)/31 + Math.abs(py-cy)/15 > 0.90) continue;
+      cv.sp(px, py, ...c.STONE_M, 170);
+      cv.sp(px+1, py+1, ...c.STONE_D, 70);
+    }
+    // foot-compression impressions (oval depressions)
+    cv.sp(cx+4, cy-4, ...c.DIRT_M, 110);
+    cv.sp(cx+5, cy-4, ...c.DIRT_M, 75);
+    cv.sp(cx-12, cy+4, ...c.DIRT_M, 90);
+    cv.sp(cx-11, cy+4, ...c.DIRT_M, 60);
     outlineIso(cv, ...c.DIRT_M, cx, cy);
   }
 
@@ -413,6 +438,14 @@ function makeGroundTiles() {
     }
     cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_L, 10, 0.12);
     cv.isoNoise(cx, cy, 31, 15, ...c.DIRT_L,  10, 0.10);
+    // micro grass tufts on grass side; erosion pits on dirt side (SPA-595)
+    for (const [tx, ty] of [[cx-22, cy-1], [cx-16, cy+4], [cx-9, cy-5]]) {
+      if (Math.abs(tx-cx)/31 + Math.abs(ty-cy)/15 > 0.88) continue;
+      cv.sp(tx,   ty-1, ...c.GRASS_L, 200);
+      cv.sp(tx-1, ty,   ...c.GRASS_D, 120);
+    }
+    cv.sp(cx+6,  cy-3, ...c.DIRT_D, 120);
+    cv.sp(cx+14, cy+2, ...c.DIRT_D, 90);
     outlineIso(cv, ...c.GRASS_D, cx, cy);
   }
 
@@ -431,6 +464,11 @@ function makeGroundTiles() {
     cv.sp(cx-14, cy-4, ...c.STONE_L, 70);
     cv.sp(cx+6,  cy-7, ...c.STONE_L, 60);
     cv.sp(cx+12, cy+2, ...c.STONE_L, 50);
+    // additional slab-edge catch-lights and polish glint (SPA-595)
+    cv.sp(cx+4,  cy-9, ...c.STONE_L, 80);
+    cv.sp(cx-16, cy-2, ...c.STONE_L, 60);
+    cv.sp(cx+18, cy+1, ...c.STONE_L, 55);
+    cv.line(cx-6, cy-8, cx+6, cy-2, ...c.STONE_L, 28);
     outlineIso(cv, ...c.STONE_D, cx, cy);
   }
 
@@ -451,6 +489,12 @@ function makeGroundTiles() {
     // weathering chips
     cv.sp(cx-5, cy-8, ...c.STONE_L, 130);
     cv.sp(cx+9, cy-4, ...c.STONE_D, 110);
+    // additional crack branches + spall chips (SPA-595)
+    cv.line(cx-2, cy-3,  cx-8, cy+1,  ...c.STONE_D, 155);
+    cv.line(cx+6, cy-3,  cx+10, cy+3, ...c.STONE_D, 125);
+    cv.sp(cx-10, cy+3, ...c.STONE_D, 150);
+    cv.sp(cx-7,  cy-4, ...c.STONE_D, 120);
+    cv.sp(cx+4,  cy+6, ...c.STONE_D, 110);
     outlineIso(cv, ...c.STONE_D, cx, cy);
   }
 
@@ -478,6 +522,15 @@ function makeGroundTiles() {
       cv.sp(ccx-4, ccy-1, ...c.STONE_L, 160);
       cv.sp(ccx-2, ccy-2, ...c.STONE_L, 100);
     }
+    // moss patches in mortar gaps — market cobblestone shows age (SPA-595)
+    for (const [mx, my] of [[cx-19, cy-1], [cx-14, cy+3], [cx+4, cy+1], [cx+16, cy-3]]) {
+      if (Math.abs(mx-cx)/31 + Math.abs(my-cy)/15 > 0.88) continue;
+      cv.sp(mx, my, 58, 78, 38, 110);  // desaturated moss green in mortar
+    }
+    // deeper mortar shadow at cobble bases
+    cv.sp(cx-6, cy-5, ...c.STONE_D, 175);
+    cv.sp(cx+8, cy+1, ...c.STONE_D, 155);
+    cv.sp(cx-2, cy+4, ...c.STONE_D, 140);
     outlineIso(cv, ...c.STONE_D, cx, cy);
   }
 
@@ -3518,10 +3571,11 @@ function makeStateIcons() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PROPS ATLAS  (tiles_props.png — 896×32, fourteen 64×32 isometric prop tiles)
+// PROPS ATLAS  (tiles_props.png — 960×32, fifteen 64×32 isometric prop tiles)
 //   0=crate  1=barrel  2=sign  3=fence  4=cart  5=hay_bale  6=flower_pot  7=well_bucket
 //   8=oak_tree  9=lantern_post  10=garden_bed  (SPA-526)
 //   11=market_stall  12=bench  13=stone_well   (SPA-551)
+//   14=chapel_candle                            (SPA-595)
 //   col 0  CRATE        — wooden storage crate
 //   col 1  BARREL       — wooden barrel
 //   col 2  SIGN         — post-mounted wooden sign
@@ -3536,7 +3590,7 @@ function makeStateIcons() {
 // Palette-locked; all colours from P.  Background transparent.
 // ═══════════════════════════════════════════════════════════════════════════════
 function makePropsAtlas() {
-  const cv = createCanvas(896, 32);  // SPA-551: expanded from 704 to 896 (props 11-13 added)
+  const cv = createCanvas(960, 32);  // SPA-595: expanded from 896 to 960 (prop 14 chapel_candle added)
 
   // ── shared: draw an isometric cuboid centred at (cx, cy) ──────────────────
   // hw/hh = iso half-width/height of top face; bh = box height in screen pixels
@@ -3940,12 +3994,58 @@ function makePropsAtlas() {
     cv.sp(cx-1, cy-16, ...c.STONE_D, 160);
   }
 
+  // ── 14: CHAPEL_CANDLE (SPA-595) — ivory pillar candle, FORGE flame, warm halo ──
+  {
+    const ox=896, cx=ox+32, cy=27;
+    // stone base plate (low iso diamond, STONE_M)
+    cv.fillPoly([[cx-6, cy], [cx, cy+3], [cx+6, cy], [cx, cy-3]], ...c.STONE_M);
+    cv.line(cx-6, cy,   cx,   cy-3, ...c.OUTLINE);
+    cv.line(cx,   cy-3, cx+6, cy,   ...c.OUTLINE);
+    // candle body (CHAPEL_STONE — ivory column, ~16px tall, slightly tapered)
+    cv.fillPoly([
+      [cx-3, cy-16], [cx+3, cy-16],
+      [cx+4, cy],    [cx-4, cy],
+    ], ...c.CHAPEL_STONE);
+    cv.line(cx-3, cy-16, cx+3, cy-16, ...c.OUTLINE);
+    cv.line(cx-4, cy,    cx+4, cy,    ...c.OUTLINE);
+    cv.line(cx-3, cy-16, cx-4, cy,    ...c.OUTLINE);
+    cv.line(cx+3, cy-16, cx+4, cy,    ...c.OUTLINE);
+    // shadow side of candle body (right face slightly darker)
+    cv.line(cx+3, cy-16, cx+4, cy, ...c.STONE_M, 80);
+    // melted wax drip on left side
+    cv.sp(cx-3, cy-10, ...c.CHAPEL_STONE, 200);
+    cv.sp(cx-4, cy-9,  ...c.CHAPEL_STONE, 180);
+    cv.sp(cx-4, cy-8,  ...c.CHAPEL_STONE, 130);
+    // melt pool at candle top (wider, PLASTER tint)
+    cv.line(cx-4, cy-16, cx+4, cy-16, ...c.PLASTER, 180);
+    // wick
+    cv.sp(cx, cy-17, ...c.INK, 220);
+    // flame — FORGE core with CANVAS tip and base glow
+    cv.sp(cx,   cy-22, ...c.CANVAS, 200);   // tip
+    cv.sp(cx,   cy-21, ...c.FORGE,  240);
+    cv.sp(cx-1, cy-20, ...c.FORGE,  220);
+    cv.sp(cx+1, cy-20, ...c.FORGE,  220);
+    cv.sp(cx,   cy-20, ...c.FORGE,  255);
+    cv.sp(cx-1, cy-19, ...c.FORGE,  190);
+    cv.sp(cx+1, cy-19, ...c.FORGE,  190);
+    cv.sp(cx,   cy-19, ...c.FORGE,  230);
+    cv.sp(cx,   cy-18, ...c.CANVAS, 170);   // base glow
+    // warm bloom halo around flame
+    for (let gly = -7; gly <= 1; gly++) {
+      for (let glx = -5; glx <= 5; glx++) {
+        const dist = Math.sqrt(glx*glx + gly*gly);
+        if (dist < 6 && dist > 2)
+          cv.sp(cx+glx, cy-20+gly, ...c.FORGE, Math.max(0, (6-dist)*9)|0);
+      }
+    }
+  }
+
   // ── ground shadow ellipses under all props ────────────────────────────────
   // Small darkened oval at base gives each prop visual weight on the ground.
-  const propShadowCX = [32, 96, 160, 224, 288, 352, 416, 480, 544, 608, 672, 736, 800, 864];
-  const propShadowCY = [26, 26,  28,  27,  25,  25,  28,  27,  27,  27,  26,  25,  27,  25];
-  const propShadowHW = [13, 10,   4,  20,  16,  15,   7,   6,  16,   4,  15,  17,  14,  10];
-  for (let _p = 0; _p < 14; _p++) {
+  const propShadowCX = [32, 96, 160, 224, 288, 352, 416, 480, 544, 608, 672, 736, 800, 864, 928];
+  const propShadowCY = [26, 26,  28,  27,  25,  25,  28,  27,  27,  27,  26,  25,  27,  25,  27];
+  const propShadowHW = [13, 10,   4,  20,  16,  15,   7,   6,  16,   4,  15,  17,  14,  10,   5];
+  for (let _p = 0; _p < 15; _p++) {
     const _cx = propShadowCX[_p], _cy = propShadowCY[_p], _hw = propShadowHW[_p];
     for (let _sx = -_hw; _sx <= _hw; _sx++) {
       const _alpha = Math.max(0, 30 - Math.abs(_sx)*2);
@@ -3966,7 +4066,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 12 (SPA-591): 30 individual NPC portraits (384×400, 6×5), new hat styles, expression variants\n');
+console.log('\nRumor Mill — Art Pass 13 (SPA-595): ground tile detail pass (cols 6–11), chapel candle prop (col 14), env detail review\n');
 
 write('assets/textures/tiles_ground.png',           makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',        makeRoadDirt());
