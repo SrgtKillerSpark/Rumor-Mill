@@ -54,6 +54,7 @@ var resolution_index:    int   = DEFAULT_RESOLUTION_INDEX
 var window_mode:         int   = DEFAULT_WINDOW_MODE
 var ui_scale:            float = DEFAULT_UI_SCALE
 var ui_scale_index:      int   = 2   ## index into UI_SCALE_PRESETS (default 1.0)
+var dismissed_tooltips:  Dictionary = {}  ## Persistent tooltip dismissal tracking (tooltip_id → true).
 
 
 func _ready() -> void:
@@ -94,6 +95,7 @@ func load_settings() -> void:
 	ui_scale_index = cfg.get_value(SECTION, "ui_scale_index", 2)
 	ui_scale_index = clampi(ui_scale_index, 0, UI_SCALE_PRESETS.size() - 1)
 	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
+	dismissed_tooltips = cfg.get_value(SECTION, "dismissed_tooltips", {})
 
 
 func save_settings() -> void:
@@ -106,6 +108,7 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "resolution_index",  resolution_index)
 	cfg.set_value(SECTION, "window_mode",       window_mode)
 	cfg.set_value(SECTION, "ui_scale_index",    ui_scale_index)
+	cfg.set_value(SECTION, "dismissed_tooltips", dismissed_tooltips)
 	cfg.save(SAVE_PATH)
 
 

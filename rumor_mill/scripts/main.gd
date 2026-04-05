@@ -1058,6 +1058,19 @@ func _on_journal_visibility_changed_banner() -> void:
 		_tutorial_banner.unsuppress()
 
 
+## SPA-629: Show first-time tooltip walkthrough when Rumor Panel opens in S1.
+func _on_rumor_panel_first_open_tooltip() -> void:
+	if _rumor_panel_tooltip_wired or _rumor_panel_tooltip == null or rumor_panel == null:
+		return
+	if not rumor_panel.visible:
+		return
+	_rumor_panel_tooltip_wired = true
+	_rumor_panel_tooltip.show_walkthrough()
+	# Disconnect after first trigger — the tooltip handles its own persistence.
+	if rumor_panel.visibility_changed.is_connected(_on_rumor_panel_first_open_tooltip):
+		rumor_panel.visibility_changed.disconnect(_on_rumor_panel_first_open_tooltip)
+
+
 ## S1 banner suppression: pause when Rumour Panel opens/closes.
 func _on_rumor_panel_visibility_changed_banner() -> void:
 	if _tutorial_banner == null or rumor_panel == null:
