@@ -41,6 +41,7 @@ func setup(
 func evaluate(current_tick: int) -> void:
 	if _rep_system == null or _scenario_mgr == null:
 		return
+	_eval_progress_toasts(current_tick)
 	match _scenario_id:
 		1: _eval_s1(current_tick)
 		2: _eval_s2(current_tick)
@@ -162,3 +163,23 @@ func _eval_s4(current_tick: int) -> void:
 		_fire("s4_close_call", "⚠ %s is dangerously close to the threshold!" % weakest_name, C_DANGER)
 	if min_score <= 48 and min_score > ScenarioManager.S4_FAIL_REP_BELOW:
 		_fire("s4_critical", "⚠ CRITICAL — %s is about to fall!" % weakest_name, C_DANGER)
+
+
+# ── Progress toasts (configurable per scenario via scenarios.json) ─────────
+
+## Fires toast notifications at 25%, 50%, and 75% progress toward the win condition.
+## Thresholds and messages are loaded from the milestoneToasts array in scenarios.json.
+## Each toast fires exactly once per session via the _fired guard.
+func _eval_progress_toasts(current_tick: int) -> void:
+	var toasts: Array = _scenario_mgr.get_milestone_toasts()
+	if toasts.is_empty():
+		return
+	var progress: float = _scenario_mgr.get_win_progress(_rep_system, current_tick)
+	for entry: Dictionary in toasts:
+		var threshold: float = float(entry.get("threshold", 1.0))
+		var message: String  = entry.get("message", "")
+		if message.is_empty():
+			continue
+		var fire_id: String = "progress_toast_%.0f" % (threshold * 100.0)
+		if progress >= threshold:
+			_fire(fire_id, message, C_PROGRESS)

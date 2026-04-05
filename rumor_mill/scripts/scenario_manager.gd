@@ -52,18 +52,20 @@ var _fail_texts:       Dictionary = {}
 var _days_allowed:     int = 30
 var _active_scenario:  int = 0  # 1, 2, 3, or 4 — set by load_scenario_data
 var _objective_card:   Dictionary = {}
+var _milestone_toasts: Array = []
 
 
 ## Load narrative fields from a scenario data dictionary (one entry from scenarios.json).
 func load_scenario_data(data: Dictionary) -> void:
-	_scenario_title = data.get("title", "")
-	_intro_text     = data.get("introText", "")
-	_starting_text  = data.get("startingText", "")
-	_victory_text   = data.get("victoryText", "")
-	_fail_texts     = data.get("failTexts", {})
-	_objective_card = data.get("objectiveCard", {})
-	_days_allowed   = int(data.get("daysAllowed", 30))
-	var sid: String = data.get("scenarioId", "")
+	_scenario_title   = data.get("title", "")
+	_intro_text       = data.get("introText", "")
+	_starting_text    = data.get("startingText", "")
+	_victory_text     = data.get("victoryText", "")
+	_fail_texts       = data.get("failTexts", {})
+	_objective_card   = data.get("objectiveCard", {})
+	_days_allowed     = int(data.get("daysAllowed", 30))
+	_milestone_toasts = data.get("milestoneToasts", [])
+	var sid: String   = data.get("scenarioId", "")
 	var parts := sid.split("_")
 	_active_scenario = int(parts[-1]) if parts.size() >= 2 else 0
 
@@ -102,6 +104,44 @@ func get_days_allowed() -> int:
 ## Returns the objective card dictionary with keys: mission, winCondition, timeLimit, danger, strategyHint.
 func get_objective_card() -> Dictionary:
 	return _objective_card
+
+
+## Returns the milestone toast config array loaded from scenarios.json.
+## Each entry is a Dictionary with keys "threshold" (float 0–1) and "message" (String).
+func get_milestone_toasts() -> Array:
+	return _milestone_toasts
+
+
+## Returns normalized 0.0–1.0 progress toward the active scenario's win condition.
+## Used by MilestoneTracker to fire progress toasts at configurable thresholds.
+func get_win_progress(rep: ReputationSystem, current_tick: int) -> float:
+	match _active_scenario:
+		1:
+			var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
+			if snap == null:
+				return 0.0
+			# Edric starts at 50, must drop below 30.  Progress = drop / range.
+			var range_pts: float = float(S1_EDRIC_START_SCORE - S1_WIN_EDRIC_BELOW)
+			return clampf(float(S1_EDRIC_START_SCORE - snap.score) / range_pts, 0.0, 1.0)
+		2:
+			var count: float = float(rep.get_illness_believer_count(ALYS_HERBWIFE_ID))
+			return clampf(count / float(s2_win_illness_min), 0.0, 1.0)
+		3:
+			var calder: ReputationSystem.ReputationSnapshot = rep.get_snapshot(CALDER_FENN_ID)
+			var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
+			if calder == null or tomas == null:
+				return 0.0
+			# Calder needs to reach 75 (assume start ≈ 50); Tomas needs to drop to 35 (assume start ≈ 50).
+			var calder_start: float = float(maxi(calder_score_start, 40))
+			var prog_calder: float = clampf(
+				(calder.score - calder_start) / (S3_WIN_CALDER_MIN - calder_start), 0.0, 1.0)
+			var prog_tomas: float = clampf(
+				(50.0 - tomas.score) / (50.0 - S3_WIN_TOMAS_MAX), 0.0, 1.0)
+			return minf(prog_calder, prog_tomas)
+		4:
+			# Defensive scenario: progress is surviving through time while keeping charges safe.
+			return get_time_fraction(current_tick)
+	return 0.0
 
 
 ## Returns a compact win-condition target line for HUD display (second line under objective).

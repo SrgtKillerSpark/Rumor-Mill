@@ -60,6 +60,11 @@
       "strategyHint": "Edric is too proud to believe rumors about himself. Target the people around him — damage faction sentiment among merchants and nobles to erode his support.",
       "firstAction": "Right-click a building (try the Market) to Observe who is inside. Then right-click two NPCs in conversation to Eavesdrop on their relationship. Use what you learn to craft your first Scandal rumor (press R)."
     },
+    "milestoneToasts": [
+      { "threshold": 0.25, "message": "The whispers are taking hold — Edric's name is tarnished." },
+      { "threshold": 0.50, "message": "His reputation is cracking. Keep pushing." },
+      { "threshold": 0.75, "message": "Almost there — one more push and Edric falls." }
+    ],
     "midGameEvents": [
       {
         "id": "s1_the_ledger",
@@ -237,6 +242,11 @@
       "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle.",
       "firstAction": "Observe the Market or Apothecary to find NPCs connected to Alys. Then press R, pick Alys as the subject, choose Illness as the claim, and whisper it to someone credulous like Sybil Oats."
     },
+    "milestoneToasts": [
+      { "threshold": 0.25, "message": "Fear spreads — the lie finds its first believers." },
+      { "threshold": 0.50, "message": "Halfway there. The plague scare is real to them." },
+      { "threshold": 0.75, "message": "Almost enough — one more voice and panic takes hold." }
+    ],
     "midGameEvents": [
       {
         "id": "s2_strangers_cough",
@@ -407,6 +417,11 @@
       "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter. Tomas has weak loyalties — rumors stick.",
       "firstAction": "Observe a building to find Calder's allies. Press R to craft a Praise rumor about Calder and whisper it to a well-connected NPC. Then craft a Scandal about Tomas and seed it through the merchants."
     },
+    "milestoneToasts": [
+      { "threshold": 0.25, "message": "The ground shifts — Calder rises as Tomas stumbles." },
+      { "threshold": 0.50, "message": "The scales are tipping. Stay the course." },
+      { "threshold": 0.75, "message": "Victory is close — finish what you started." }
+    ],
     "midGameEvents": [
       {
         "id": "s3_debt_letter",
@@ -584,6 +599,11 @@
       "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera.",
       "firstAction": "Check the Scenario HUD to see who is closest to 45. Press R, choose the most threatened NPC as the subject, select Praise as the claim, and whisper it to their strongest ally."
     },
+    "milestoneToasts": [
+      { "threshold": 0.25, "message": "A quarter done — your charges still stand. Hold the line." },
+      { "threshold": 0.50, "message": "Halfway through the fire. The Inquisitor hasn't broken through." },
+      { "threshold": 0.75, "message": "Three-quarters survived. Don't falter now." }
+    ],
     "midGameEvents": [
       {
         "id": "s4_noble_speaks",
