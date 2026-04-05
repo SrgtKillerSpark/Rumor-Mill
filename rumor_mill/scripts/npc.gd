@@ -157,6 +157,16 @@ var _faction: String = "merchant"
 # "south" | "north" | "east" | "west"
 var _facing_dir: String = "south"
 
+# ── SPA-695: Town mood + thought bubble state ────────────────────────────────
+## Speed multiplier applied by TownMoodController when guards are on high alert.
+var mood_speed_scale: float = 1.0
+## Thought bubble child node — created in init_from_data.
+var _thought_bubble: NpcThoughtBubble = null
+## Convenience property: returns the NPC's current worst rumor state.
+var visual_state: Rumor.RumorState:
+	get:
+		return get_worst_rumor_state()
+
 # ── Defender state (NPC-level, not per rumor slot) ───────────────────────────
 var _is_defending:            bool   = false
 var _defender_target_npc_id:  String = ""
@@ -403,6 +413,10 @@ func init_from_data(
 	_gossip_cooldown      = randi_range(60, 120)
 	_chatter_cooldown     = randi_range(20, 50)
 
+	# SPA-695: Thought bubble for rumor-state visual feedback.
+	_thought_bubble = NpcThoughtBubble.new()
+	add_child(_thought_bubble)
+
 
 # ── Per-tick entry point ─────────────────────────────────────────────────────
 
@@ -559,7 +573,8 @@ func _walk_to(cell: Vector2i) -> void:
 			"east":  sprite.flip_h = false; sprite.play("walk_east")
 			"west":  sprite.flip_h = true;  sprite.play("walk_east")
 	var world_pos := _cell_to_world(cell)
-	var duration  := maxf(position.distance_to(world_pos) / MOVE_SPEED, 0.05)
+	var effective_speed := MOVE_SPEED * maxf(mood_speed_scale, 0.1)
+	var duration  := maxf(position.distance_to(world_pos) / effective_speed, 0.05)
 	if _tween:
 		_tween.kill()
 	_tween = create_tween()
@@ -1269,6 +1284,10 @@ func _update_label() -> void:
 		var cat := _state_to_dialogue_category(worst)
 		if cat != "":
 			_show_dialogue_bubble(cat)
+
+	# SPA-695: Refresh thought bubble every tick (handles on-screen check too).
+	if _thought_bubble != null:
+		_thought_bubble.refresh(worst)
 
 
 # ── Hover highlight ──────────────────────────────────────────────────────────

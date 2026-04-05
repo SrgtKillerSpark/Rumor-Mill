@@ -137,6 +137,9 @@ var milestone_tracker: MilestoneTracker = null
 ## Faction event system — fires 1-2 random events per scenario run (SPA-199).
 var faction_event_system: FactionEventSystem = null
 
+## SPA-695: Environmental mood feedback — building dims, guard alerts, audio crossfades.
+var town_mood_controller: TownMoodController = null
+
 ## VFX: screen-edge vignette pulse for suspicion danger (SPA-495).
 var _vignette_layer: CanvasLayer = null
 var _vignette_rect:  ColorRect   = null
@@ -200,6 +203,7 @@ func _ready() -> void:
 	_init_propagation_engine()
 	_init_intel_store()
 	_init_reputation_system()
+	_init_town_mood_controller()
 	_wire_debug_nodes()
 	_init_vignette_overlay()
 	_init_atmo_vignette()
@@ -585,6 +589,17 @@ func _init_reputation_system() -> void:
 	# starting reputation overrides so that the initial cache reflects them.
 
 
+# ── Town mood controller ──────────────────────────────────────────────────────
+
+func _init_town_mood_controller() -> void:
+	town_mood_controller = TownMoodController.new()
+	# setup() needs all systems ready; called after _apply_active_scenario() wires
+	# scenario_manager.  Defer by one frame so buildings array is populated.
+	# Direct call is safe here because _init_reputation_system runs before this.
+	# Camera is provided later by main.gd via town_mood_controller.set_camera().
+	town_mood_controller.setup(self)
+
+
 func _on_day_changed(_day: int) -> void:
 	if intel_store != null:
 		intel_store.replenish()
@@ -923,6 +938,10 @@ func on_game_tick(tick: int) -> void:
 	for npc in npcs:
 		npc.update_tick_schedule(schedule_slot, current_day, _gathering_points)
 		npc.on_tick(tick)
+
+	# ── SPA-695: Town mood environmental effects. ──
+	if town_mood_controller != null:
+		town_mood_controller.on_game_tick(tick)
 
 
 # ── Claims data ─────────────────────────────────────────────────────────────

@@ -229,6 +229,9 @@ func _on_begin_game(scenario_id: String) -> void:
 			world.intel_store,
 			recon_hud.show_milestone
 		)
+	# SPA-695: Give TownMoodController the camera so it can shake on milestones.
+	if world.town_mood_controller != null and camera != null:
+		world.town_mood_controller.set_camera(camera)
 	_init_journal()
 	_wire_rumor_events()
 	_init_event_choice_modal()
