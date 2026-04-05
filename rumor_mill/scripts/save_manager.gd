@@ -402,7 +402,11 @@ static func _restore_npc_slots(
 			var sd: Dictionary = slot_data[rid]
 			var r: Rumor       = pe.live_rumors[rid]
 			var slot           := Rumor.NpcRumorSlot.new(r, sd.get("source_faction", ""))
-			slot.state            = int(sd.get("state", Rumor.RumorState.EVALUATING)) as Rumor.RumorState
+			var _state_raw: Variant = sd.get("state", Rumor.RumorState.EVALUATING)
+			if not (_state_raw is int or _state_raw is float):
+				push_warning("save_manager: slot state for rumor %s is non-numeric (%s) — using EVALUATING" % [rid, _state_raw])
+				_state_raw = Rumor.RumorState.EVALUATING
+			slot.state            = int(_state_raw) as Rumor.RumorState
 			slot.ticks_in_state   = int(sd.get("ticks_in_state", 0))
 			slot.heard_from_count = int(sd.get("heard_from_count", 1))
 			npc.rumor_slots[rid]  = slot
@@ -438,11 +442,15 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 
 	store.relationship_intel.clear()
 	for key in d.get("relationship_intel", {}):
-		var rd: Dictionary = d["relationship_intel"][key]
+		var rd: Variant = d["relationship_intel"][key]
+		if not rd is Dictionary:
+			push_error("save_manager: relationship_intel[%s] is not a Dictionary — skipped" % key)
+			continue
+		var _ew: Variant = rd.get("edge_weight", 0.5)
 		var ri := PlayerIntelStore.RelationshipIntel.new(
 			rd["npc_a_id"],       rd["npc_b_id"],
 			rd.get("npc_a_name", ""), rd.get("npc_b_name", ""),
-			float(rd.get("edge_weight", 0.5)),
+			float(_ew if _ew is float or _ew is int else 0.5),
 			int(rd.get("observed_at", 0))
 		)
 		ri.rich_context     = rd.get("rich_context", "")
@@ -480,7 +488,7 @@ static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> voi
 	var _raw_fired: Dictionary = d.get("deadline_warnings_fired", {})
 	var _fired: Dictionary = {}
 	for _k in _raw_fired:
-		_fired[float(_k)] = _raw_fired[_k]
+		_fired[int(float(_k))] = _raw_fired[_k]
 	sm._deadline_warnings_fired = _fired
 
 

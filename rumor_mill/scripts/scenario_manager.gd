@@ -204,9 +204,10 @@ func _check_deadline_warnings(current_tick: int) -> void:
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
 	var fraction := get_time_fraction(current_tick)
 	var days_remaining: int = maxi(_days_allowed - current_day, 0)
-	for threshold in [0.75, 0.90]:
-		if fraction >= threshold and not _deadline_warnings_fired.has(threshold):
-			_deadline_warnings_fired[threshold] = true
+	for threshold_pct: int in [75, 90]:
+		var threshold := threshold_pct / 100.0
+		if fraction >= threshold and not _deadline_warnings_fired.has(threshold_pct):
+			_deadline_warnings_fired[threshold_pct] = true
 			deadline_warning.emit(threshold, days_remaining)
 
 
