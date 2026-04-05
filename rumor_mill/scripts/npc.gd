@@ -1249,12 +1249,17 @@ func get_worst_rumor_state() -> Rumor.RumorState:
 	if not _worst_state_dirty:
 		return _worst_state_cache
 	# Priority order for display: ACT > DEFENDING > SPREAD > CONTRADICTED > BELIEVE > EVALUATING > REJECT > EXPIRED > UNAWARE
+	# Check ACT first (highest priority) before the _is_defending flag.
+	for rid in rumor_slots:
+		if rumor_slots[rid].state == Rumor.RumorState.ACT:
+			_worst_state_cache = Rumor.RumorState.ACT
+			_worst_state_dirty = false
+			return _worst_state_cache
 	if _is_defending:
 		_worst_state_cache = Rumor.RumorState.DEFENDING
 		_worst_state_dirty = false
 		return _worst_state_cache
 	var priority := [
-		Rumor.RumorState.ACT,
 		Rumor.RumorState.SPREAD,
 		Rumor.RumorState.CONTRADICTED,
 		Rumor.RumorState.BELIEVE,

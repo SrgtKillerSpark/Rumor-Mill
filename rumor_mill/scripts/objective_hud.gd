@@ -626,7 +626,8 @@ func _compute_win_progress() -> float:
 			var tomas5: int = p5.get("tomas_score", 45)
 			var pa: float = clampf((aldric5 - 48.0) / (65.0 - 48.0), 0.0, 1.0)
 			var pe: float = clampf((58.0 - edric5) / (58.0 - 45.0), 0.0, 1.0)
-			var pt: float = clampf((45.0 - tomas5) / maxf(45.0 - 45.0, 1.0), 0.0, 1.0)
+			var win_rivals_max: float = float(p5.get("win_rivals_max", 45))
+				var pt: float = clampf((45.0 - tomas5) / maxf(45.0 - win_rivals_max, 1.0), 0.0, 1.0)
 			return minf(pa, minf(pe, pt))
 		"scenario_6":
 			var p6: Dictionary = _scenario_manager.get_scenario_6_progress(_reputation_system)
