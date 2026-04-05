@@ -141,6 +141,35 @@ func get_win_progress(rep: ReputationSystem, current_tick: int) -> float:
 		4:
 			# Defensive scenario: progress is surviving through time while keeping charges safe.
 			return get_time_fraction(current_tick)
+		5:
+			# Three-way election: Aldric must reach 65+, rivals must drop below 45.
+			var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
+			if aldric == null:
+				return 0.0
+			var edric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
+			var tomas: ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
+			if edric == null or tomas == null:
+				return 0.0
+			# Aldric starts ~48, must reach 65.  Rivals start ~58/45, must drop below 45.
+			var prog_aldric: float = clampf(
+				(aldric.score - 48.0) / (S5_WIN_ALDRIC_MIN - 48.0), 0.0, 1.0)
+			var prog_edric: float = clampf(
+				(58.0 - edric.score) / (58.0 - S5_WIN_RIVALS_MAX), 0.0, 1.0)
+			var prog_tomas: float = clampf(
+				(45.0 - tomas.score) / maxf(45.0 - S5_WIN_RIVALS_MAX, 1.0), 0.0, 1.0)
+			return minf(prog_aldric, minf(prog_edric, prog_tomas))
+		6:
+			# Stealth exposure: Aldric must drop to 30, Marta must stay at 60+.
+			var s6_aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
+			var s6_marta:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(MARTA_COIN_ID)
+			if s6_aldric == null or s6_marta == null:
+				return 0.0
+			# Aldric starts at 55, must drop to 30.  Marta starts at 52, must reach 60.
+			var prog_aldric_down: float = clampf(
+				(55.0 - s6_aldric.score) / (55.0 - S6_WIN_ALDRIC_MAX), 0.0, 1.0)
+			var prog_marta_up: float = clampf(
+				(s6_marta.score - 52.0) / maxf(S6_WIN_MARTA_MIN - 52.0, 1.0), 0.0, 1.0)
+			return minf(prog_aldric_down, prog_marta_up)
 	return 0.0
 
 

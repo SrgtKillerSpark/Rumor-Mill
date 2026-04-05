@@ -47,6 +47,8 @@ func evaluate(current_tick: int) -> void:
 		2: _eval_s2(current_tick)
 		3: _eval_s3(current_tick)
 		4: _eval_s4(current_tick)
+		5: _eval_s5(current_tick)
+		6: _eval_s6(current_tick)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -163,6 +165,80 @@ func _eval_s4(current_tick: int) -> void:
 		_fire("s4_close_call", "⚠ %s is dangerously close to the threshold!" % weakest_name, C_DANGER)
 	if min_score <= 48 and min_score > ScenarioManager.S4_FAIL_REP_BELOW:
 		_fire("s4_critical", "⚠ CRITICAL — %s is about to fall!" % weakest_name, C_DANGER)
+
+
+# ── Scenario 5: The Election ────────────────────────────────────────────────
+
+func _eval_s5(current_tick: int) -> void:
+	var aldric: ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("aldric_vane")
+	var edric:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("edric_fenn")
+	var tomas:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("tomas_reeve")
+	if aldric == null or edric == null or tomas == null:
+		return
+
+	# Aldric rising.
+	if aldric.score >= 55:
+		_fire("s5_aldric_55", "Aldric gains momentum — the merchants are listening", C_PROGRESS)
+	if aldric.score >= 60:
+		_fire("s5_aldric_60", "Aldric Vane is within striking distance of victory", C_PROGRESS)
+
+	# Rival falling.
+	if edric.score <= 50:
+		_fire("s5_edric_50", "Edric Fenn's support is slipping", C_PROGRESS)
+	if tomas.score <= 40:
+		_fire("s5_tomas_40", "Tomas Reeve is fading from the race", C_PROGRESS)
+
+	# Endorsement timing.
+	var day: int = _scenario_mgr.get_current_day(current_tick)
+	if day >= 12 and day < ScenarioManager.S5_ENDORSEMENT_DAY:
+		_fire("s5_endorsement_soon", "The Prior's endorsement is days away — ensure Aldric leads!", C_WARNING)
+
+	# Aldric danger.
+	if aldric.score <= 35:
+		_fire("s5_aldric_danger", "⚠ Aldric's reputation is collapsing — act now!", C_DANGER)
+
+	# Both rivals still strong.
+	if edric.score >= 50 and tomas.score >= 45 and day >= 10:
+		_fire("s5_rivals_strong", "⚠ Both rivals are still in the race — step up the attacks", C_WARNING)
+
+
+# ── Scenario 6: The Merchant's Debt ────────────────────────────────────────
+
+func _eval_s6(_current_tick: int) -> void:
+	var aldric: ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("aldric_vane")
+	var marta:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("marta_coin")
+	if aldric == null or marta == null:
+		return
+
+	# Aldric falling.
+	if aldric.score <= 45:
+		_fire("s6_aldric_45", "Cracks appear in the Guild Master's reputation", C_PROGRESS)
+	if aldric.score <= 38:
+		_fire("s6_aldric_38", "Aldric is losing control — push to 30", C_PROGRESS)
+	if aldric.score <= 32:
+		_fire("s6_aldric_32", "Almost there — one more push to expose Aldric", C_WARNING)
+
+	# Marta rising.
+	if marta.score >= 58:
+		_fire("s6_marta_58", "Marta's standing is nearly secure", C_PROGRESS)
+	if marta.score >= 65:
+		_fire("s6_marta_65", "Marta Coin is untouchable — focus on Aldric", C_PROGRESS)
+
+	# Marta danger.
+	if marta.score <= 40:
+		_fire("s6_marta_danger", "⚠ Marta's reputation is in danger — defend her!", C_DANGER)
+	if marta.score <= 33:
+		_fire("s6_marta_critical", "⚠ CRITICAL — Marta is about to be silenced!", C_DANGER)
+
+	# Heat warning (lower ceiling in S6).
+	if _intel_store != null and _intel_store.heat_enabled:
+		var max_heat: float = 0.0
+		for npc_id: String in _intel_store.heat:
+			max_heat = maxf(max_heat, _intel_store.heat[npc_id])
+		if max_heat >= 40.0:
+			_fire("s6_heat_rising", "⚠ The guards are getting suspicious — watch your heat", C_WARNING)
+		if max_heat >= 52.0:
+			_fire("s6_heat_critical", "⚠ EXPOSED SOON — heat is near the 60 ceiling!", C_DANGER)
 
 
 # ── Progress toasts (configurable per scenario via scenarios.json) ─────────

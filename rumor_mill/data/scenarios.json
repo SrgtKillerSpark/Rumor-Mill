@@ -852,6 +852,36 @@
             }
           }
         ]
+      },
+      {
+        "id": "s5_the_final_rally",
+        "name": "The Final Rally",
+        "dayWindowStart": 22,
+        "dayWindowEnd": 24,
+        "probability": 0.70,
+        "description": "The election is days away. Tomas Reeve has called a gathering at the well — a last appeal to the common folk. Edric is countering with a feast at the Manor. Aldric has nothing planned. This is the moment to seize.",
+        "choices": [
+          {
+            "label": "Organise a merchant rally for Aldric at the Market Square",
+            "outcomeText": "Sybil and Nell spread the word. By evening, the Market Square is full of merchants calling Aldric's name. The display of support shakes Edric's remaining allies. But Tomas's common-folk gathering draws its own crowd — the race is not over.",
+            "effects": {
+              "reputationChanges": [
+                { "npcId": "aldric_vane", "delta": 5 },
+                { "npcId": "edric_fenn", "delta": -2 }
+              ],
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 6.0 }]
+            }
+          },
+          {
+            "label": "Sabotage Tomas's gathering with a planted heckler",
+            "outcomeText": "A well-timed question about Tomas's record on the bridge tolls derails his speech. The crowd disperses muttering. Tomas's support among the commons fractures. But Old Hugh saw who planted the heckler — and he is no friend of yours.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -5 }],
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 10.0 }],
+              "personalityChanges": [{ "npcId": "old_hugh", "trait": "credulity", "delta": -0.15 }]
+            }
+          }
+        ]
       }
     ],
     "difficultyModifiers": {
@@ -1020,6 +1050,38 @@
             "effects": {
               "reputationChanges": [{ "npcId": "aldric_vane", "delta": -7 }],
               "heatChanges": [{ "npcId": "bram_guard", "delta": 12.0 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s6_the_guild_vote",
+        "name": "The Guild Vote",
+        "dayWindowStart": 18,
+        "dayWindowEnd": 21,
+        "probability": 0.65,
+        "description": "Marta has enough support to force a confidence vote on the Guild Master's accounts. But Aldric's defenders are mobilising — Sybil and Rufus are calling in every favour they are owed. The vote could go either way.",
+        "choices": [
+          {
+            "label": "Rally Marta's supporters to attend the vote in force",
+            "outcomeText": "Sim Carter, Nell Picker, and Constance Widow arrive early and take prominent seats. Their presence emboldens the undecided — when the hands go up, Marta's motion passes by three votes. Aldric's face is stone. The audit will happen.",
+            "effects": {
+              "reputationChanges": [
+                { "npcId": "aldric_vane", "delta": -4 },
+                { "npcId": "marta_coin", "delta": 3 }
+              ]
+            }
+          },
+          {
+            "label": "Leak Annit Scribe's involvement to fracture Aldric's defence",
+            "outcomeText": "The whisper reaches Rufus Bolt first: Annit signed the false ledgers. Rufus confronts Annit privately. She breaks. By the time the vote is called, two of Aldric's four defenders have gone quiet. But Aldric knows someone is pulling strings.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "aldric_vane", "delta": -5 }],
+              "personalityChanges": [
+                { "npcId": "annit_scribe", "trait": "loyalty", "delta": -0.20 },
+                { "npcId": "rufus_bolt", "trait": "loyalty", "delta": -0.15 }
+              ],
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 8.0 }]
             }
           }
         ]
