@@ -1,6 +1,7 @@
 [
   {
     "scenarioId": "scenario_1",
+    "ticksPerDay": 16,
     "title": "The Alderman's Ruin",
     "hookText": "A corrupt alderman. A patron who wants him gone. You have thirty days, a sharp tongue, and the power of a well-placed lie. Welcome to the art of political destruction.",
     "description": "The alderman Edric Fenn controls the town through a web of loyal allies, informants, and fear. Your patron's candidate loses another term unless Fenn is discredited before the autumn tax rolls are signed. You have thirty days to plant the right story and make sure it reaches the right ears.",

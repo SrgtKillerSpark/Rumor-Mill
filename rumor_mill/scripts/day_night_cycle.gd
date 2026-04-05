@@ -234,6 +234,28 @@ func set_paused(paused: bool) -> void:
 		tick_timer.start()
 
 
+## SPA-757: Skip remaining ticks in the current day and advance to the next dawn.
+## Emits day_changed / day_transition_started as if the day had ended normally,
+## then fires game_tick for each skipped tick so listeners stay in sync.
+signal day_skipped(new_day: int)
+
+func skip_to_next_day() -> void:
+	var hour_of_day: int = current_tick % ticks_per_day
+	if hour_of_day == 0:
+		return  # already at dawn — nothing to skip
+	var ticks_remaining: int = ticks_per_day - hour_of_day
+	current_tick += ticks_remaining
+	current_day += 1
+	emit_signal("day_transition_started", current_day)
+	emit_signal("day_changed", current_day)
+	_play_day_transition_flash()
+	emit_signal("game_tick", current_tick)
+	_apply_time_of_day(0)
+	_update_shadow_direction(0)
+	_update_time_label()
+	day_skipped.emit(current_day)
+
+
 # ── Directional shadow overlay (SPA-586) ──────────────────────────────────────
 
 func _build_shadow_overlay() -> void:

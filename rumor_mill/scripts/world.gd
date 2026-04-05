@@ -688,6 +688,10 @@ func _apply_active_scenario() -> void:
 			day_night.objective_text_provider = func() -> String:
 				return scenario_manager.get_objective_one_liner()
 
+	# 4b. SPA-757: Per-scenario tick compression (e.g. 16 ticks/day for S1).
+	if day_night != null and scenario_data.has("ticksPerDay"):
+		day_night.ticks_per_day = int(scenario_data["ticksPerDay"])
+
 	# 5. Propagation engine mutation filters.
 	if propagation_engine != null:
 		var excluded: Array = scenario_data.get("targetShiftExcluded", [])

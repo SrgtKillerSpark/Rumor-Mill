@@ -15,12 +15,14 @@ const C_TEXT   := Color(0.95, 0.91, 0.80, 1.0)
 enum Speed { PAUSE, NORMAL, FAST }
 const TICK_DURATION: Dictionary = { Speed.NORMAL: 1.0, Speed.FAST: 0.333 }
 
-var _day_night: Node  = null
-var _speed:     Speed = Speed.NORMAL
+var _day_night:    Node              = null
+var _intel_store:  PlayerIntelStore  = null
+var _speed:        Speed             = Speed.NORMAL
 
-var _btn_pause:  Button = null
-var _btn_normal: Button = null
-var _btn_fast:   Button = null
+var _btn_pause:    Button = null
+var _btn_normal:   Button = null
+var _btn_fast:     Button = null
+var _btn_end_day:  Button = null
 
 
 func _ready() -> void:
@@ -29,9 +31,11 @@ func _ready() -> void:
 	_build_ui()
 
 
-func setup(day_night: Node) -> void:
+func setup(day_night: Node, intel_store: PlayerIntelStore = null) -> void:
 	_day_night = day_night
+	_intel_store = intel_store
 	_apply_speed()
+	_refresh_end_day_visibility()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -49,6 +53,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_3:
 				_set_speed(Speed.FAST)
 				get_viewport().set_input_as_handled()
+			KEY_E:
+				if _btn_end_day != null and _btn_end_day.visible and _day_night != null:
+					_day_night.skip_to_next_day()
+					_refresh_end_day_visibility()
+					get_viewport().set_input_as_handled()
 
 
 func _set_speed(s: Speed) -> void:
@@ -113,10 +122,23 @@ func _build_ui() -> void:
 	row.add_child(_btn_normal)
 	row.add_child(_btn_fast)
 
+	# SPA-757: End Day Early button — shown when all actions + whispers are spent.
+	_btn_end_day = _make_btn(" End Day ")
+	_btn_end_day.tooltip_text = "Skip to next dawn  (E)"
+	_btn_end_day.custom_minimum_size = Vector2(72, 28)
+	_btn_end_day.pressed.connect(func() -> void:
+		if not get_tree().paused and _day_night != null:
+			_day_night.skip_to_next_day()
+			_refresh_end_day_visibility()
+	)
+	row.add_child(_btn_end_day)
+	_btn_end_day.visible = false
+
 	# Normal is the default active speed.
 	_style_btn(_btn_pause,  false)
 	_style_btn(_btn_normal, true)
 	_style_btn(_btn_fast,   false)
+	_style_btn(_btn_end_day, true)
 
 
 func _make_btn(label_text: String) -> Button:
@@ -151,3 +173,20 @@ func _style_btn(btn: Button, active: bool) -> void:
 	f.set_content_margin_all(4)
 	f.set_corner_radius_all(3)
 	btn.add_theme_stylebox_override("focus", f)
+
+
+# ── SPA-757: End Day Early visibility ─────────────────────────────────────────
+
+func _refresh_end_day_visibility() -> void:
+	if _btn_end_day == null:
+		return
+	if _intel_store == null:
+		_btn_end_day.visible = false
+		return
+	var actions_spent := _intel_store.recon_actions_remaining <= 0
+	var whispers_spent := _intel_store.whisper_tokens_remaining <= 0
+	_btn_end_day.visible = actions_spent and whispers_spent
+
+
+func on_game_tick(_tick: int) -> void:
+	_refresh_end_day_visibility()

@@ -819,7 +819,10 @@ func _init_speed_hud() -> void:
 	hud.name = "SpeedHUD"
 	add_child(hud)
 	if hud.has_method("setup"):
-		hud.setup(day_night)
+		hud.setup(day_night, world.intel_store if world != null else null)
+	# SPA-757: Refresh End Day button visibility each tick.
+	if day_night != null and hud.has_method("on_game_tick"):
+		day_night.game_tick.connect(hud.on_game_tick)
 
 
 func _init_zone_indicator() -> void:
