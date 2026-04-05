@@ -32,6 +32,8 @@ var _bars:              Dictionary = {}  # npc_id -> ColorRect (fill)
 var _bar_bgs:           Dictionary = {}  # npc_id -> ColorRect (background)
 var _inquisitor_lbl:    Label      = null
 var _faction_shift_lbl: Label      = null
+var _inquisitor_tween:  Tween      = null
+var _faction_shift_tween: Tween    = null
 
 
 func _scenario_number() -> int:
@@ -175,9 +177,11 @@ func notify_inquisitor_acted(day: int, claim_type: String, subject_id: String) -
 	var subject_display := NPC_DISPLAY_NAMES.get(subject_id, _display_name(subject_id))
 	_inquisitor_lbl.text = "Inquisitor: Day %d — %s on %s" % [day, claim_type.capitalize(), subject_display]
 	_inquisitor_lbl.add_theme_color_override("font_color", Color(1.0, 0.30, 0.15, 1.0))
-	var tween := create_tween()
-	tween.tween_property(_inquisitor_lbl, "modulate:a", 0.25, 0.12)
-	tween.tween_property(_inquisitor_lbl, "modulate:a", 1.0, 0.30)
+	if _inquisitor_tween != null and _inquisitor_tween.is_valid():
+		_inquisitor_tween.kill()
+	_inquisitor_tween = create_tween()
+	_inquisitor_tween.tween_property(_inquisitor_lbl, "modulate:a", 0.25, 0.12)
+	_inquisitor_tween.tween_property(_inquisitor_lbl, "modulate:a", 1.0, 0.30)
 
 
 # ── Faction shift activity ────────────────────────────────────────────────────
@@ -188,6 +192,8 @@ func notify_faction_shift(day: int, _event_type: String, description: String) ->
 		return
 	_faction_shift_lbl.text = "Town: Day %d — %s" % [day, description]
 	_faction_shift_lbl.add_theme_color_override("font_color", Color(0.30, 0.90, 0.70, 1.0))
-	var tween := create_tween()
-	tween.tween_property(_faction_shift_lbl, "modulate:a", 0.25, 0.12)
-	tween.tween_property(_faction_shift_lbl, "modulate:a", 1.0, 0.30)
+	if _faction_shift_tween != null and _faction_shift_tween.is_valid():
+		_faction_shift_tween.kill()
+	_faction_shift_tween = create_tween()
+	_faction_shift_tween.tween_property(_faction_shift_lbl, "modulate:a", 0.25, 0.12)
+	_faction_shift_tween.tween_property(_faction_shift_lbl, "modulate:a", 1.0, 0.30)
