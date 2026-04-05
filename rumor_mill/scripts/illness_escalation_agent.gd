@@ -47,7 +47,7 @@ func _get_cooldown(day: int) -> int:
 	# Slow start (town rumors trickle in), escalating pace mid-game.
 	var base: int
 	if day <= 6:
-		base = 5   # Early: seed every 5 days
+		base = 6   # Early: seed every 6 days — gives player agency before auto-spread (balance pass SPA-550)
 	elif day <= 13:
 		base = 3   # Mid:   seed every 3 days
 	else:

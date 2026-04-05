@@ -60,8 +60,8 @@ func _get_cooldown(day: int) -> int:
 	var base: int
 	if day <= 7:
 		base = 4
-	elif day <= 15:
-		base = 2
+	elif day <= 17:
+		base = 2   # SPA-550: extended mid-phase from day 15→17 — daily seeding was overwhelming
 	else:
 		base = 1
 	# cooldown_offset > 0 slows the rival (easier); < 0 speeds it up (harder).
@@ -99,8 +99,8 @@ func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -
 		# Days 1–7: always PRAISE Tomas, intensity 2
 		claim_type_str = "praise"
 		subject_id     = TOMAS_REEVE_ID
-	elif day <= 15:
-		# Days 8–15: alternate PRAISE/Tomas and SCANDAL/Calder, intensity 3
+	elif day <= 17:
+		# Days 8–17: alternate PRAISE/Tomas and SCANDAL/Calder, intensity 3
 		if _alternate_flag:
 			claim_type_str = "scandal"
 			subject_id     = CALDER_FENN_ID
@@ -109,7 +109,7 @@ func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -
 			subject_id     = TOMAS_REEVE_ID
 		_alternate_flag = not _alternate_flag
 	else:
-		# Days 16+: metric-driven target — prioritise whichever metric the
+		# Days 18+: metric-driven target — prioritise whichever metric the
 		# player is closest to failing on.
 		var rep: ReputationSystem = world.reputation_system
 		if rep == null:

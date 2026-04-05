@@ -17,12 +17,12 @@
 ##
 ## Scenario 3 — The Succession:
 ##   WIN:  reputation(calder_fenn) >= 75  AND  reputation(tomas_reeve) <= 35
-##   FAIL: reputation(calder_fenn) < 40
+##   FAIL: reputation(calder_fenn) < 35
 ##         OR days elapsed >= days_allowed (timeout)
 ##
 ## Scenario 4 — The Holy Inquisition:
 ##   WIN:  All 3 protected NPCs above reputation 45 when days elapsed >= days_allowed
-##   FAIL: Any protected NPC drops below reputation 45
+##   FAIL: Any protected NPC drops below reputation 40 (instant)
 ##         OR days elapsed >= days_allowed with any NPC below 45
 
 class_name ScenarioManager
@@ -148,17 +148,25 @@ const TICKS_PER_DAY        := 24
 # Scenario 3 thresholds.
 # SPA-98: eased from (Calder>=80, Tomas<=30) to (Calder>=75, Tomas<=35).
 # SPA-530: Calder starting rep raised to 65 (was 58), days_allowed raised to 27 (was 25).
-# Required gains now: +10 (Calder) / -17 (Tomas) with the rival seeding every day from day 16.
+# SPA-550: Calder fail floor lowered 40→35 — the rival's scandal attacks on Calder felt
+# like random frustration near 40; wider buffer rewards strategy over luck.
+# Tomas start lowered 52→48 in scenarios.json; rival daily phase pushed from day 16→18.
+# Required gains now: +10 (Calder) / -13 (Tomas) with the rival seeding every day from day 18.
 const S3_WIN_CALDER_MIN    := 75
 const S3_WIN_TOMAS_MAX     := 35
-const S3_FAIL_CALDER_BELOW := 40
+const S3_FAIL_CALDER_BELOW := 35
 
 # Scenario 4 thresholds & NPC ids.
-# Protected NPCs must stay above S4_WIN_REP_MIN for the full duration.
-# Fail threshold matches win threshold — no silent dead zone.
+# Protected NPCs must be >= S4_WIN_REP_MIN at deadline to win.
+# SPA-550: separated fail from win threshold (was both 45). Fail at 40 = instant loss,
+# but NPCs between 40-44 are in a "danger zone" — not yet fatal, but will lose at
+# deadline unless recovered to 45+. This allows comeback plays instead of instant death
+# and makes the defensive challenge about sustained play, not knife-edge precision.
+# Starting reps raised in scenarios.json (Aldous 65→70, Vera 65→68, Finn 70→72).
+# Inquisitor daily phase pushed from day 13→15; late intensity reduced 4→3.
 const S4_PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
 const S4_WIN_REP_MIN       := 45
-const S4_FAIL_REP_BELOW    := 45
+const S4_FAIL_REP_BELOW    := 40
 
 enum ScenarioState { ACTIVE, WON, FAILED }
 
@@ -342,7 +350,7 @@ func get_scenario_1_progress(rep: ReputationSystem) -> Dictionary:
 func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_4_state != ScenarioState.ACTIVE:
 		return
-	# Fail: any protected NPC drops below 45.
+	# Fail: any protected NPC drops below 40 (instant fail).
 	for npc_id in S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 		if snap == null:

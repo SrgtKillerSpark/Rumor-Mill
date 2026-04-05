@@ -45,17 +45,18 @@ func _get_cooldown(day: int) -> int:
 	var base: int
 	if day <= 5:
 		base = 4   # Slow start: seed every 4 days
-	elif day <= 12:
-		base = 2   # Mid-game pressure: every 2 days
+	elif day <= 14:
+		base = 2   # Mid-game pressure: every 2 days (SPA-550: extended from day 12→14)
 	else:
-		base = 1   # Endgame: every day
+		base = 1   # Endgame: every day (SPA-550: starts day 15 instead of 13)
 	return maxi(1, base + cooldown_offset)
 
 
 func _seed_heresy_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
 	var intensity: int
+	# SPA-550: reduced late intensity 4→3 — daily seeding + intensity 4 was double-punishment
 	if day >= 15:
-		intensity = 4
+		intensity = 3
 	elif day >= 8:
 		intensity = 3
 	else:
