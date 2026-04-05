@@ -797,6 +797,11 @@
       "strategyHint": "Three-front war. Boost Aldric through the merchant chain (Sybil, Nell, Greta). Undermine Edric through his weaker noble ties (Annit, Old Hugh). Undermine Tomas through his common-folk connections (Sim, Constance). Time everything around the day-15 endorsement.",
       "firstAction": "Observe the Market to find Aldric's merchant allies. Press R to craft a Praise rumor about Aldric and whisper it to Sybil Oats — she is the most connected merchant. Then start seeding Scandal rumors against whichever rival is currently leading."
     },
+    "milestoneToasts": [
+      { "threshold": 0.25, "message": "The campaign is gaining traction — Aldric's name is on every tongue." },
+      { "threshold": 0.50, "message": "Aldric is making his move — keep the pressure on both rivals." },
+      { "threshold": 0.75, "message": "Victory is within reach — close out the election." }
+    ],
     "midGameEvents": [
       {
         "id": "s5_the_debate",
@@ -993,6 +998,11 @@
       "strategyHint": "The merchant quarter is Aldric's stronghold — his allies will actively counter your rumors there. Route accusations through the clergy chain (Aldous → Maren → Vera → Constance) and the commons (Nell, Greta, Old Hugh). Boost Marta through her connections to Sim Carter and Nell Picker.",
       "firstAction": "Observe the Chapel to find clergy NPCs disconnected from Aldric. Press R to craft an Accusation about Aldric (embezzlement) and whisper it to Finn Monk or Constance Widow — they have low loyalty and high connections outside the merchant quarter."
     },
+    "milestoneToasts": [
+      { "threshold": 0.25, "message": "The first cracks appear — whispers of missing silver spread." },
+      { "threshold": 0.50, "message": "Halfway there. Aldric's allies are starting to doubt him." },
+      { "threshold": 0.75, "message": "The guild is turning — one final push and the truth wins." }
+    ],
     "midGameEvents": [
       {
         "id": "s6_the_real_ledger",
