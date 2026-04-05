@@ -191,6 +191,8 @@ static func apply_pending_load(
 	if journal != null and journal.has_method("restore_timeline") and _timeline_data is Array:
 		journal.restore_timeline(_timeline_data)
 	_restore_tutorial(tutorial_sys, data.get("tutorial_progress", {}))
+	if world.milestone_tracker != null:
+		world.milestone_tracker._fired = data.get("milestone_fired", {}).duplicate()
 	# Rebuild reputation cache after all systems (including FactionEventSystem) are
 	# restored so that active event bonuses (e.g. religious_festival +10) are included.
 	world.reputation_system.recalculate_all(world.npcs, day_night.current_tick)
