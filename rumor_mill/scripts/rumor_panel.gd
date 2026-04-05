@@ -591,7 +591,7 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 	var base_belief: int = roundi(float(intensity) / 5.0 * 100.0)
 	var belief_hint := Label.new()
 	belief_hint.text = "   Base Belief: %d%%" % base_belief
-	belief_hint.add_theme_font_size_override("font_size", 11)
+	belief_hint.add_theme_font_size_override("font_size", 12)
 	var bhint_color: Color
 	if base_belief >= 60:
 		bhint_color = Color(0.40, 0.90, 0.45, 1.0)
@@ -766,6 +766,16 @@ func _build_seed_entry(
 	hint_lbl.add_theme_color_override("font_color", hint_color)
 	spread_row.add_child(hint_lbl)
 
+	# Heat warning indicator: shown when the NPC's heat is suppressing the estimate.
+	if _intel_store_ref != null and _intel_store_ref.heat_enabled:
+		var heat_val: float = _intel_store_ref.get_heat(npc_id)
+		if heat_val >= 50.0:
+			var heat_warn := Label.new()
+			heat_warn.text = "  ⚠ Suspicious — estimate reduced"
+			heat_warn.add_theme_font_size_override("font_size", 11)
+			heat_warn.add_theme_color_override("font_color", C_STATUS_WARN)
+			vbox.add_child(heat_warn)
+
 	vbox.add_child(HSeparator.new())
 
 	var btn := Button.new()
@@ -849,7 +859,9 @@ func _estimate_spread(seed_npc: Node2D) -> float:
 	return count
 
 
-## Believability estimate: claim base + same-faction bonus if subject faction == seed faction.
+## Believability estimate: claim base + same-faction bonus, adjusted for heat modifier.
+## Mirrors the heat_modifier path in propagation_engine.calc_beta so the displayed
+## percentage matches actual adoption probability (fixes SPA-594).
 func _estimate_believability(seed_npc_id: String) -> float:
 	var claim_intensity: int = 3
 	if _world_ref != null:
@@ -865,6 +877,16 @@ func _estimate_believability(seed_npc_id: String) -> float:
 	var seed_faction: String = _get_npc_faction(seed_npc_id)
 	if not subj_faction.is_empty() and subj_faction == seed_faction:
 		base += 0.15
+
+	# Heat modifier mirrors propagation_engine.calc_beta:
+	#   heat >= 75 → effective credulity -0.30
+	#   heat >= 50 → effective credulity -0.15
+	if _intel_store_ref != null and _intel_store_ref.heat_enabled:
+		var heat_val: float = _intel_store_ref.get_heat(seed_npc_id)
+		if heat_val >= 75.0:
+			base -= 0.30
+		elif heat_val >= 50.0:
+			base -= 0.15
 
 	return clampf(base, 0.0, 1.0)
 
@@ -915,7 +937,7 @@ func _add_chain_indicator(chain_type: PropagationEngine.ChainType) -> void:
 	hbox.add_child(icon_lbl)
 
 	var desc_lbl := Label.new()
-	desc_lbl.add_theme_font_size_override("font_size", 11)
+	desc_lbl.add_theme_font_size_override("font_size", 12)
 	desc_lbl.add_theme_color_override("font_color", C_CHAIN_DESC)
 	match chain_type:
 		PropagationEngine.ChainType.SAME_TYPE:
