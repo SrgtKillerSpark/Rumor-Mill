@@ -835,7 +835,7 @@ func seed_rumor_from_player(
 		evidence_item                = null
 ) -> String:
 	if intel_store == null or not intel_store.try_spend_whisper():
-		push_warning("World.seed_rumor_from_player: no Whisper Tokens remaining")
+		push_error("World.seed_rumor_from_player: no Whisper Tokens remaining")
 		return ""
 
 	# Resolve NPCs.
@@ -849,7 +849,7 @@ func seed_rumor_from_player(
 			seed_target_npc = npc
 
 	if subject_npc == null or seed_target_npc == null:
-		push_warning("World.seed_rumor_from_player: NPC not found (subject=%s seed=%s)" % [
+		push_error("World.seed_rumor_from_player: NPC not found (subject=%s seed=%s)" % [
 			subject_npc_id, seed_target_npc_id])
 		# Refund token if we can't proceed.
 		intel_store.whisper_tokens_remaining = mini(
@@ -865,7 +865,7 @@ func seed_rumor_from_player(
 			break
 
 	if claim_template.is_empty():
-		push_warning("World.seed_rumor_from_player: claim '%s' not found" % claim_id)
+		push_error("World.seed_rumor_from_player: claim '%s' not found" % claim_id)
 		intel_store.whisper_tokens_remaining = mini(
 			intel_store.whisper_tokens_remaining + 1,
 			intel_store.max_daily_whispers)
@@ -929,7 +929,7 @@ func seed_rumor_from_player(
 ## Returns true on success.
 func vouch_for_npc(voucher_npc_id: String, subject_npc_id: String) -> bool:
 	if intel_store == null or not intel_store.try_spend_whisper():
-		push_warning("World.vouch_for_npc: no Whisper Tokens remaining")
+		push_error("World.vouch_for_npc: no Whisper Tokens remaining")
 		return false
 
 	var voucher_npc: Node2D = null
@@ -939,7 +939,7 @@ func vouch_for_npc(voucher_npc_id: String, subject_npc_id: String) -> bool:
 			break
 
 	if voucher_npc == null:
-		push_warning("World.vouch_for_npc: NPC '%s' not found" % voucher_npc_id)
+		push_error("World.vouch_for_npc: NPC '%s' not found" % voucher_npc_id)
 		intel_store.whisper_tokens_remaining = mini(
 			intel_store.whisper_tokens_remaining + 1,
 			intel_store.max_daily_whispers)
