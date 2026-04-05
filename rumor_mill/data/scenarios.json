@@ -119,7 +119,30 @@
           }
         ]
       }
-    ]
+    ],
+    "difficultyModifiers": {
+      "easy": {
+        "daysAllowedOverride": 36,
+        "credulityDelta": 0.10,
+        "heatRateMultiplier": 0.75,
+        "exposedHeatOverride": 95.0,
+        "designNote": "More time, more gullible NPCs, and a higher heat ceiling give new players room to experiment with the rumor system."
+      },
+      "normal": {
+        "designNote": "Base values as balanced. No overrides applied."
+      },
+      "hard": {
+        "daysAllowedOverride": 25,
+        "credulityDelta": -0.10,
+        "heatRateMultiplier": 1.30,
+        "exposedHeatOverride": 65.0,
+        "personalityOverrides": [
+          { "npcId": "edric_fenn", "loyalty": 0.85 },
+          { "npcId": "bram_guard", "loyalty": 0.75 }
+        ],
+        "designNote": "Fewer days, skeptical NPCs, faster heat. Edric and Bram are harder to crack — requires precise rumor routing through low-loyalty intermediaries."
+      }
+    }
   },
   {
     "scenarioId": "scenario_2",
@@ -233,7 +256,27 @@
           }
         ]
       }
-    ]
+    ],
+    "difficultyModifiers": {
+      "easy": {
+        "daysAllowedOverride": 29,
+        "credulityDelta": 0.10,
+        "winBelieversOverride": 5,
+        "designNote": "More days, more credulous NPCs, and only 5 believers needed. Maren's rejection is still instant-fail — teaches the avoidance mechanic with a wider margin."
+      },
+      "normal": {
+        "designNote": "Base values as balanced. No overrides applied."
+      },
+      "hard": {
+        "daysAllowedOverride": 20,
+        "credulityDelta": -0.10,
+        "winBelieversOverride": 9,
+        "personalityOverrides": [
+          { "npcId": "maren_nun", "credulity": 0.30 }
+        ],
+        "designNote": "Fewer days, 9 believers needed, and Maren is slightly more curious (higher credulity = she encounters more rumors, increasing rejection risk). Requires routing through 3+ independent clusters."
+      }
+    }
   },
   {
     "scenarioId": "scenario_3",
@@ -355,7 +398,36 @@
           }
         ]
       }
-    ]
+    ],
+    "difficultyModifiers": {
+      "easy": {
+        "daysAllowedOverride": 32,
+        "credulityDelta": 0.10,
+        "rivalIntensityDelta": -1,
+        "rivalStartDay": 22,
+        "winCalderMin": 70,
+        "winTomasMax": 40,
+        "failCalderBelow": 30,
+        "designNote": "Wider thresholds, later/weaker rival, more days. The two-front war is still present but the margins are forgiving."
+      },
+      "normal": {
+        "designNote": "Base values as balanced. No overrides applied."
+      },
+      "hard": {
+        "daysAllowedOverride": 23,
+        "credulityDelta": -0.10,
+        "rivalIntensityDelta": 1,
+        "rivalStartDay": 14,
+        "winCalderMin": 80,
+        "winTomasMax": 30,
+        "failCalderBelow": 40,
+        "startingReputationOverrides": {
+          "calder_fenn": 60,
+          "tomas_reeve": 52
+        },
+        "designNote": "Tighter win thresholds, earlier/stronger rival, Calder starts lower and Tomas starts higher. Requires near-perfect rumor routing on both fronts simultaneously."
+      }
+    }
   },
   {
     "scenarioId": "scenario_4",
@@ -479,6 +551,376 @@
           }
         ]
       }
-    ]
+    ],
+    "difficultyModifiers": {
+      "easy": {
+        "daysAllowedOverride": 24,
+        "credulityDelta": 0.10,
+        "inquisitorCooldownDelta": 2,
+        "inquisitorIntensityDelta": -1,
+        "winRepMin": 40,
+        "failRepBelow": 35,
+        "startingReputationOverrides": {
+          "aldous_prior": 75,
+          "vera_midwife": 73,
+          "finn_monk": 77
+        },
+        "designNote": "Higher starting reps, lower thresholds, slower/weaker inquisitor, more days. Defensive play is still required but the buffer is much wider."
+      },
+      "normal": {
+        "designNote": "Base values as balanced. No overrides applied."
+      },
+      "hard": {
+        "daysAllowedOverride": 17,
+        "credulityDelta": -0.10,
+        "inquisitorCooldownDelta": -2,
+        "inquisitorIntensityDelta": 1,
+        "winRepMin": 50,
+        "failRepBelow": 45,
+        "startingReputationOverrides": {
+          "aldous_prior": 65,
+          "vera_midwife": 63,
+          "finn_monk": 67
+        },
+        "designNote": "Lower starting reps, higher thresholds, faster/stronger inquisitor, fewer days. One missed defensive cycle can cascade into an instant fail. Requires triage."
+      }
+    }
+  },
+  {
+    "scenarioId": "scenario_5",
+    "title": "The Election",
+    "hookText": "Three names on the ballot. One patron's gold in your pocket. The autumn vote is twenty-five days away — and the whole town is watching. Make sure they see what you want them to see.",
+    "description": "The autumn alderman election pits three candidates against each other: Lord Edric Fenn (the entrenched incumbent), Aldric Vane (the merchant guild's ambitious challenger), and Tomas Reeve (the civic reformer with common-folk appeal). Your patron has bet everything on Aldric Vane — and you have twenty-five days to make the town agree. Boost Aldric, undermine both rivals, and time your moves around the Prior's endorsement.",
+    "daysAllowed": 25,
+    "introText": "The election notices went up at dawn — three names nailed to the chapel door, the market board, and the town hall gate. Lord Edric Fenn's name was first, as always. Aldric Vane's was second, in fresh ink. Tomas Reeve's was last, written in a hand that shook slightly.\n\nYour patron met you behind the Guild Hall with a purse and a warning: 'Vane must win. Not by a hair — by a margin no one can contest. And if the Prior endorses someone else, we are finished.'",
+    "startingText": "YOUR GOAL: Get Aldric Vane elected alderman.\n\nHOW: Aldric must have the highest reputation among the three candidates AND reach 65+. Both Edric Fenn and Tomas Reeve must be below 45. Use Praise rumors for Aldric and Scandal/Accusation rumors against the rivals. Press R to craft rumors.\n\nWATCH OUT: On day 15, Prior Aldous will publicly endorse the candidate with the highest reputation — that endorsement grants a +8 reputation boost. If Aldric isn't leading by then, you may lose the election. If Aldric drops below 30, instant fail. You have 25 days.\n\nThree candidates. One election. Twenty-five days to make the town choose your patron's man.",
+    "victoryText": "The votes were counted in the Town Hall with the doors open and the crowd pressing in.\n\nAldric Vane's name was called three times for every one of Edric's. Tomas Reeve's supporters had already left.\n\nThe new alderman accepted the chain of office with a speech about honest trade and fair governance. Your patron watched from the second row, expressionless. But when Vane finished, the old merchant raised his cup — just once, just slightly.\n\nYou were already packed.",
+    "failTexts": {
+      "aldric_destroyed": "The story had started as praise. Somewhere between the Tavern and the Market, it curdled.\n\nAldric Vane withdrew his candidacy at noon. His supporters scattered like starlings. Your patron's investment — and your reputation — went with them.",
+      "timeout": "The votes were counted. Edric Fenn's name was called first, as always.\n\nAldric Vane came second — close enough to taste it, far enough to know it was over. Tomas Reeve's supporters consoled themselves with ale.\n\nYour patron did not send for you again."
+    },
+    "edgeOverrides": [
+      { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.80, "weightBtoA": 0.75 },
+      { "npcA": "aldric_vane",      "npcB": "rufus_bolt",       "weightAtoB": 0.70, "weightBtoA": 0.65 },
+      { "npcA": "aldric_vane",      "npcB": "bess_wicker",      "weightAtoB": 0.65, "weightBtoA": 0.70 },
+      { "npcA": "aldric_vane",      "npcB": "marta_coin",       "weightAtoB": 0.60, "weightBtoA": 0.55 },
+      { "npcA": "aldric_vane",      "npcB": "greta_flint",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
+      { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
+      { "npcA": "edric_fenn",       "npcB": "calder_fenn",      "weightAtoB": 0.70, "weightBtoA": 0.80 },
+      { "npcA": "edric_fenn",       "npcB": "isolde_fenn",      "weightAtoB": 0.75, "weightBtoA": 0.80 },
+      { "npcA": "edric_fenn",       "npcB": "annit_scribe",     "weightAtoB": 0.65, "weightBtoA": 0.60 },
+      { "npcA": "edric_fenn",       "npcB": "aldous_prior",     "weightAtoB": 0.55, "weightBtoA": 0.50 },
+      { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.50, "weightBtoA": 0.45 },
+      { "npcA": "tomas_reeve",      "npcB": "sim_carter",       "weightAtoB": 0.60, "weightBtoA": 0.55 },
+      { "npcA": "tomas_reeve",      "npcB": "nell_picker",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
+      { "npcA": "tomas_reeve",      "npcB": "constance_widow",  "weightAtoB": 0.50, "weightBtoA": 0.55 },
+      { "npcA": "tomas_reeve",      "npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
+      { "npcA": "bram_guard",       "npcB": "wynn_gate",        "weightAtoB": 0.70, "weightBtoA": 0.60 },
+      { "npcA": "bram_guard",       "npcB": "pell_gate",        "weightAtoB": 0.55, "weightBtoA": 0.35 },
+      { "npcA": "sybil_oats",       "npcB": "nell_picker",      "weightAtoB": 0.80, "weightBtoA": 0.75 },
+      { "npcA": "sybil_oats",       "npcB": "cob_farrow",       "weightAtoB": 0.60, "weightBtoA": 0.70 },
+      { "npcA": "nell_picker",      "npcB": "greta_flint",      "weightAtoB": 0.75, "weightBtoA": 0.75 },
+      { "npcA": "greta_flint",      "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.70 },
+      { "npcA": "aldous_prior",     "npcB": "maren_nun",        "weightAtoB": 0.80, "weightBtoA": 0.75 },
+      { "npcA": "aldous_prior",     "npcB": "finn_monk",        "weightAtoB": 0.60, "weightBtoA": 0.80 },
+      { "npcA": "maren_nun",        "npcB": "vera_midwife",     "weightAtoB": 0.70, "weightBtoA": 0.65 },
+      { "npcA": "finn_monk",        "npcB": "constance_widow",  "weightAtoB": 0.65, "weightBtoA": 0.70 },
+      { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
+      { "npcA": "idris_kemp",       "npcB": "bess_wicker",      "weightAtoB": 0.50, "weightBtoA": 0.50 },
+      { "npcA": "marta_coin",       "npcB": "sim_carter",       "weightAtoB": 0.55, "weightBtoA": 0.60 },
+      { "npcA": "edric_fenn",       "npcB": "aldric_vane",      "weightAtoB": 0.20, "weightBtoA": 0.15 },
+      { "npcA": "edric_fenn",       "npcB": "tomas_reeve",      "weightAtoB": 0.25, "weightBtoA": 0.20 },
+      { "npcA": "aldric_vane",      "npcB": "tomas_reeve",      "weightAtoB": 0.30, "weightBtoA": 0.25 }
+    ],
+    "personalityOverrides": [
+      { "npcId": "edric_fenn", "loyalty": 0.80 },
+      { "npcId": "aldric_vane", "loyalty": 0.70 },
+      { "npcId": "tomas_reeve", "loyalty": 0.35 }
+    ],
+    "startingReputations": {
+      "edric_fenn": 58,
+      "aldric_vane": 48,
+      "tomas_reeve": 45
+    },
+    "targetShiftExcluded": ["aldric_vane"],
+    "electionCandidates": ["edric_fenn", "aldric_vane", "tomas_reeve"],
+    "endorsement": {
+      "endorserNpcId": "aldous_prior",
+      "triggerDay": 15,
+      "reputationBonus": 8,
+      "designNote": "On day 15, Aldous Prior publicly endorses the candidate with the highest reputation. The endorsement grants +8 rep. This creates a critical timing gate — the player must ensure Aldric leads by day 15 or risk the endorsement going to a rival."
+    },
+    "objectiveCard": {
+      "mission": "Get Aldric Vane elected alderman in a three-way race.",
+      "winCondition": "Aldric Vane reputation ≥ 65 AND highest of the three candidates. Edric Fenn AND Tomas Reeve both below 45.",
+      "timeLimit": "You have 25 days. The Prior's endorsement happens on day 15.",
+      "danger": "If Aldric drops below 30, instant fail. The Prior endorses whoever leads on day 15 — a +8 boost that could decide the race.",
+      "strategyHint": "Three-front war. Boost Aldric through the merchant chain (Sybil, Nell, Greta). Undermine Edric through his weaker noble ties (Annit, Old Hugh). Undermine Tomas through his common-folk connections (Sim, Constance). Time everything around the day-15 endorsement.",
+      "firstAction": "Observe the Market to find Aldric's merchant allies. Press R to craft a Praise rumor about Aldric and whisper it to Sybil Oats — she is the most connected merchant. Then start seeding Scandal rumors against whichever rival is currently leading."
+    },
+    "midGameEvents": [
+      {
+        "id": "s5_the_debate",
+        "name": "The Market Debate",
+        "dayWindowStart": 10,
+        "dayWindowEnd": 13,
+        "probability": 0.75,
+        "description": "The three candidates will speak in the Market Square at noon. The crowd is large and restless. You can influence how this goes — but so can the rivals' supporters.",
+        "choices": [
+          {
+            "label": "Plant cheering supporters for Aldric in the crowd",
+            "outcomeText": "Aldric's speech lands well — partly because of the words, partly because of the enthusiastic applause that drowns out the hecklers. The crowd leaves talking about Aldric's vision. But Edric's allies noticed the planted supporters.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "aldric_vane", "delta": 4 }],
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 8.0 }]
+            }
+          },
+          {
+            "label": "Heckle the rivals during their speeches",
+            "outcomeText": "Edric stumbles over a question about the treasury. Tomas loses his thread when the crowd turns hostile. Neither recovers well. But the tactic is transparent, and some in the crowd wonder who organised it.",
+            "effects": {
+              "reputationChanges": [
+                { "npcId": "edric_fenn", "delta": -3 },
+                { "npcId": "tomas_reeve", "delta": -3 }
+              ],
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 5.0 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s5_bribery_scandal",
+        "name": "The Bribery Scandal",
+        "dayWindowStart": 18,
+        "dayWindowEnd": 21,
+        "probability": 0.65,
+        "description": "A sealed letter has surfaced — purportedly showing Edric Fenn paying the Guard Captain for 'services rendered' beyond his official duties. It could be the killing blow. Or it could backfire if it looks like a forgery.",
+        "choices": [
+          {
+            "label": "Release the letter through the merchant quarter",
+            "outcomeText": "The letter passes through the market like fire through dry straw. Edric's support among the merchants collapses overnight. But the Guard Captain is furious — and he is looking for whoever leaked the document.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -6 }],
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 15.0 }]
+            }
+          },
+          {
+            "label": "Show it privately to Aldous Prior before the endorsement",
+            "outcomeText": "The Prior reads the letter in silence. He says nothing. But when the endorsement comes, his words carry a weight that suggests he knows more than he is saying. The letter stays between you.",
+            "effects": {
+              "personalityChanges": [{ "npcId": "aldous_prior", "trait": "loyalty", "delta": -0.20 }],
+              "credulityChanges": [{ "npcId": "aldous_prior", "delta": 0.15 }]
+            }
+          }
+        ]
+      }
+    ],
+    "difficultyModifiers": {
+      "easy": {
+        "daysAllowedOverride": 30,
+        "credulityDelta": 0.10,
+        "heatRateMultiplier": 0.75,
+        "winAldricMin": 60,
+        "winRivalsMax": 50,
+        "failAldricBelow": 25,
+        "endorsementBonusOverride": 10,
+        "designNote": "More days, easier thresholds, bigger endorsement bonus, slower heat. The three-front challenge is preserved but the margins allow recovery from mistakes."
+      },
+      "normal": {
+        "designNote": "Base values as balanced. No overrides applied."
+      },
+      "hard": {
+        "daysAllowedOverride": 21,
+        "credulityDelta": -0.10,
+        "heatRateMultiplier": 1.30,
+        "winAldricMin": 70,
+        "winRivalsMax": 40,
+        "failAldricBelow": 35,
+        "endorsementBonusOverride": 6,
+        "startingReputationOverrides": {
+          "edric_fenn": 62,
+          "aldric_vane": 42,
+          "tomas_reeve": 48
+        },
+        "designNote": "Edric starts stronger, Aldric weaker, Tomas higher. Fewer days, tighter thresholds, smaller endorsement bonus. Requires surgical precision across all three fronts and perfect timing around the endorsement."
+      }
+    }
+  },
+  {
+    "scenarioId": "scenario_6",
+    "title": "The Merchant's Debt",
+    "hookText": "The Guild Master has been cooking the books. You have the proof. But his allies run every stall in the market — and if they find you before the truth finds them, you'll be the one who disappears.",
+    "description": "Marta Coin has discovered that Guild Master Aldric Vane has been embezzling from the merchant guild's common fund for years. The missing silver has been covered with false ledgers signed by Annit Scribe. Marta has hired you to expose Aldric — but quietly. If Aldric's merchant allies discover your hand before the evidence takes root, they will close ranks and silence Marta instead. Ruin Aldric's reputation. Protect Marta's. And keep your heat low — in this scenario, the guards are on Aldric's payroll.",
+    "daysAllowed": 22,
+    "introText": "Marta Coin's hands were steady when she showed you the ledger — a real one, not the copy Annit files at the Town Hall. The numbers told a story that Aldric Vane had spent years hiding: two hundred silver marks, skimmed from guild dues, laundered through the blacksmith's accounts.\n\n'I need him gone,' she said. 'But I need to still be standing when the dust settles. If his people find out I'm behind this, they'll ruin me before he ever sees a courtroom.'\n\nShe's right. Aldric's merchant network is tight. The Guard Captain takes his coin. You'll need to work through the cracks — the clergy, the commons, the NPCs who owe Aldric nothing.",
+    "startingText": "YOUR GOAL: Expose Guild Master Aldric Vane's embezzlement and protect your patron Marta Coin.\n\nHOW: Get Aldric Vane's reputation to 30 or below while keeping Marta Coin's reputation at 60 or above. Use Accusation and Scandal rumors against Aldric, and Praise rumors for Marta. Press R to craft rumors.\n\nWATCH OUT: Heat ceiling is lower in this scenario — Bram Guard exposes you at 60 heat (not 80). Aldric's merchant allies will actively defend him. If Marta's reputation drops below 30, instant fail (she's been silenced). You have 22 days.\n\nThe merchant guild is Aldric's territory. Route your rumors through the clergy and commons — they owe him nothing.",
+    "victoryText": "The guild audit was called on a Tuesday — at Marta Coin's request, seconded by the Prior.\n\nAldric Vane did not attend. His seat in the Guild Hall was empty when the real ledger was read aloud. The silence that followed was louder than any accusation you had ever whispered.\n\nMarta Coin was elected interim Guild Master before the week was out. She did not mention your name. She didn't need to.",
+    "failTexts": {
+      "marta_silenced": "The story changed overnight. Suddenly it was Marta who was the thief — Marta who had falsified records, Marta who could not be trusted.\n\nAldric's allies moved fast. By the time you understood what had happened, Marta's stall was shuttered and her name was poison in the market quarter.\n\nYou had underestimated how quickly a guild can close ranks.",
+      "exposed": "The Guard Captain found you at the well, just after dawn.\n\n'Aldric Vane sends his regards,' he said. Not a threat — a statement of fact. By noon, every merchant in the quarter knew your face and your purpose.\n\nMarta Coin denied ever meeting you. She had no choice.",
+      "timeout": "Twenty-two days passed. The ledger sat in Marta's locked chest, still waiting for the right moment.\n\nThe right moment never came. Aldric Vane's reputation was bruised but intact. The guild closed its books for the season, and with them, the window for an audit.\n\nMarta Coin paid you the second half of your fee without a word. You both knew it had been wasted."
+    },
+    "edgeOverrides": [
+      { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.80, "weightBtoA": 0.75 },
+      { "npcA": "aldric_vane",      "npcB": "rufus_bolt",       "weightAtoB": 0.70, "weightBtoA": 0.65 },
+      { "npcA": "aldric_vane",      "npcB": "bess_wicker",      "weightAtoB": 0.65, "weightBtoA": 0.70 },
+      { "npcA": "aldric_vane",      "npcB": "idris_kemp",       "weightAtoB": 0.55, "weightBtoA": 0.50 },
+      { "npcA": "aldric_vane",      "npcB": "greta_flint",      "weightAtoB": 0.60, "weightBtoA": 0.65 },
+      { "npcA": "aldric_vane",      "npcB": "bram_guard",       "weightAtoB": 0.50, "weightBtoA": 0.45 },
+      { "npcA": "marta_coin",       "npcB": "sim_carter",       "weightAtoB": 0.60, "weightBtoA": 0.65 },
+      { "npcA": "marta_coin",       "npcB": "nell_picker",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
+      { "npcA": "marta_coin",       "npcB": "constance_widow",  "weightAtoB": 0.50, "weightBtoA": 0.55 },
+      { "npcA": "marta_coin",       "npcB": "vera_midwife",     "weightAtoB": 0.45, "weightBtoA": 0.50 },
+      { "npcA": "sybil_oats",       "npcB": "nell_picker",      "weightAtoB": 0.80, "weightBtoA": 0.75 },
+      { "npcA": "sybil_oats",       "npcB": "cob_farrow",       "weightAtoB": 0.60, "weightBtoA": 0.70 },
+      { "npcA": "nell_picker",      "npcB": "greta_flint",      "weightAtoB": 0.75, "weightBtoA": 0.75 },
+      { "npcA": "greta_flint",      "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.70 },
+      { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
+      { "npcA": "edric_fenn",       "npcB": "aldric_vane",      "weightAtoB": 0.40, "weightBtoA": 0.35 },
+      { "npcA": "edric_fenn",       "npcB": "annit_scribe",     "weightAtoB": 0.65, "weightBtoA": 0.60 },
+      { "npcA": "annit_scribe",     "npcB": "aldric_vane",      "weightAtoB": 0.70, "weightBtoA": 0.60 },
+      { "npcA": "aldous_prior",     "npcB": "maren_nun",        "weightAtoB": 0.80, "weightBtoA": 0.75 },
+      { "npcA": "aldous_prior",     "npcB": "finn_monk",        "weightAtoB": 0.60, "weightBtoA": 0.80 },
+      { "npcA": "maren_nun",        "npcB": "vera_midwife",     "weightAtoB": 0.70, "weightBtoA": 0.65 },
+      { "npcA": "finn_monk",        "npcB": "constance_widow",  "weightAtoB": 0.65, "weightBtoA": 0.70 },
+      { "npcA": "finn_monk",        "npcB": "old_piety",        "weightAtoB": 0.60, "weightBtoA": 0.65 },
+      { "npcA": "bram_guard",       "npcB": "wynn_gate",        "weightAtoB": 0.70, "weightBtoA": 0.60 },
+      { "npcA": "bram_guard",       "npcB": "pell_gate",        "weightAtoB": 0.55, "weightBtoA": 0.35 },
+      { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.45, "weightBtoA": 0.40 },
+      { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
+      { "npcA": "old_hugh",         "npcB": "edric_fenn",       "weightAtoB": 0.40, "weightBtoA": 0.30 },
+      { "npcA": "jude_bellringer",  "npcB": "aldous_prior",     "weightAtoB": 0.50, "weightBtoA": 0.40 },
+      { "npcA": "thomas_pilgrim",   "npcB": "finn_monk",        "weightAtoB": 0.55, "weightBtoA": 0.60 },
+      { "npcA": "alys_herbwife",    "npcB": "maren_nun",        "weightAtoB": 0.60, "weightBtoA": 0.55 }
+    ],
+    "personalityOverrides": [
+      { "npcId": "aldric_vane", "loyalty": 0.90 },
+      { "npcId": "annit_scribe", "loyalty": 0.70 },
+      { "npcId": "marta_coin", "loyalty": 0.60, "credulity": 0.35 },
+      { "npcId": "sybil_oats", "loyalty": 0.65 },
+      { "npcId": "rufus_bolt", "loyalty": 0.60 }
+    ],
+    "startingReputations": {
+      "aldric_vane": 55,
+      "marta_coin": 52
+    },
+    "targetShiftExcluded": ["marta_coin"],
+    "protectedNpcIds": ["marta_coin"],
+    "exposedHeatOverride": 60.0,
+    "guildDefenseActive": true,
+    "guildDefenseConfig": {
+      "defenderNpcIds": ["sybil_oats", "rufus_bolt", "bess_wicker", "idris_kemp"],
+      "defenseTarget": "aldric_vane",
+      "praiseIntensity": 2,
+      "cooldownDays": 3,
+      "startDay": 5,
+      "designNote": "Aldric's merchant allies actively spread praise rumors about him every 3 days starting day 5. This creates a defensive wall the player must outpace. Routing accusations through non-merchant channels (clergy, commons) bypasses the defense."
+    },
+    "objectiveCard": {
+      "mission": "Expose Guild Master Aldric Vane's embezzlement while protecting your patron Marta Coin.",
+      "winCondition": "Get Aldric Vane's reputation to 30 or below. Keep Marta Coin's reputation at 60 or above.",
+      "timeLimit": "You have 22 days.",
+      "danger": "Heat ceiling is 60 (not 80) — the guards are on Aldric's payroll. If Marta's reputation drops below 30, instant fail. Aldric's merchant allies actively defend him with praise rumors every 3 days.",
+      "strategyHint": "The merchant quarter is Aldric's stronghold — his allies will actively counter your rumors there. Route accusations through the clergy chain (Aldous → Maren → Vera → Constance) and the commons (Nell, Greta, Old Hugh). Boost Marta through her connections to Sim Carter and Nell Picker.",
+      "firstAction": "Observe the Chapel to find clergy NPCs disconnected from Aldric. Press R to craft an Accusation about Aldric (embezzlement) and whisper it to Finn Monk or Constance Widow — they have low loyalty and high connections outside the merchant quarter."
+    },
+    "midGameEvents": [
+      {
+        "id": "s6_the_real_ledger",
+        "name": "The Real Ledger",
+        "dayWindowStart": 6,
+        "dayWindowEnd": 9,
+        "probability": 0.70,
+        "description": "Marta has given you the real ledger — the one that shows every missing silver mark, every falsified entry. Hard proof. But using it will put Marta's name on the evidence trail.",
+        "choices": [
+          {
+            "label": "Copy the key pages and leak them anonymously",
+            "outcomeText": "The copied pages appear on the chapel notice board overnight. No name attached. By morning, Aldous Prior is reading them with a furrowed brow. Aldric's merchant allies scramble to call them forgeries — but the numbers are too precise to dismiss.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "aldric_vane", "delta": -5 }],
+              "credulityChanges": [
+                { "npcId": "aldous_prior", "delta": 0.15 },
+                { "npcId": "maren_nun", "delta": 0.10 }
+              ]
+            }
+          },
+          {
+            "label": "Hold the ledger — use it to turn Annit Scribe",
+            "outcomeText": "You show Annit the real ledger. Her face goes pale. She signed those false entries — she knows what that means. She won't speak against Aldric publicly. Not yet. But her loyalty wavers, and she stops defending him.",
+            "effects": {
+              "personalityChanges": [
+                { "npcId": "annit_scribe", "trait": "loyalty", "delta": -0.30 }
+              ],
+              "bonusReconActions": 2,
+              "bonusReconDays": 3
+            }
+          }
+        ]
+      },
+      {
+        "id": "s6_aldrics_counterstrike",
+        "name": "Aldric's Counterstrike",
+        "dayWindowStart": 14,
+        "dayWindowEnd": 17,
+        "probability": 0.65,
+        "description": "Aldric has heard the whispers. He has called a guild meeting at the Town Hall — and he intends to accuse Marta of jealousy, slander, and mismanaging her own accounts. If he succeeds, Marta's reputation will take a devastating blow.",
+        "choices": [
+          {
+            "label": "Intercept with character witnesses for Marta",
+            "outcomeText": "You've spent the last days building Marta's reputation. Now it pays off. When Aldric makes his accusations, Sim Carter stands and speaks for Marta. Then Nell Picker. Then Constance Widow. Aldric's attack falters against a wall of testimony.",
+            "effects": {
+              "reputationChanges": [
+                { "npcId": "marta_coin", "delta": 4 },
+                { "npcId": "aldric_vane", "delta": -2 }
+              ]
+            }
+          },
+          {
+            "label": "Let Aldric speak — then present counter-evidence publicly",
+            "outcomeText": "You wait. Aldric makes his case — convincing, polished, full of righteous anger. And then you step forward with the copied ledger pages. The silence that follows is devastating. But Aldric's allies now know exactly who to blame.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "aldric_vane", "delta": -7 }],
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 12.0 }]
+            }
+          }
+        ]
+      }
+    ],
+    "difficultyModifiers": {
+      "easy": {
+        "daysAllowedOverride": 27,
+        "credulityDelta": 0.10,
+        "heatRateMultiplier": 0.75,
+        "exposedHeatOverride": 75.0,
+        "winAldricMax": 35,
+        "winMartaMin": 55,
+        "failMartaBelow": 25,
+        "guildDefenseCooldownOverride": 5,
+        "designNote": "Higher heat ceiling, easier thresholds, slower guild defense. The stealth challenge is present but forgiving. More time to build Marta's reputation before Aldric's counterstrike."
+      },
+      "normal": {
+        "designNote": "Base values as balanced. No overrides applied."
+      },
+      "hard": {
+        "daysAllowedOverride": 18,
+        "credulityDelta": -0.10,
+        "heatRateMultiplier": 1.30,
+        "exposedHeatOverride": 50.0,
+        "winAldricMax": 25,
+        "winMartaMin": 65,
+        "failMartaBelow": 35,
+        "guildDefenseCooldownOverride": 2,
+        "startingReputationOverrides": {
+          "aldric_vane": 60,
+          "marta_coin": 48
+        },
+        "personalityOverrides": [
+          { "npcId": "aldric_vane", "loyalty": 0.95 },
+          { "npcId": "sybil_oats", "loyalty": 0.80 },
+          { "npcId": "rufus_bolt", "loyalty": 0.75 }
+        ],
+        "designNote": "Aldric starts stronger and better defended. Marta starts weaker. Tighter heat ceiling (50), faster guild defense (every 2 days), and 18-day deadline. Requires near-perfect routing through non-merchant channels and constant Marta-boosting."
+      }
+    }
   }
 ]
