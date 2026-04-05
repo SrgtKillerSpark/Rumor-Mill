@@ -936,7 +936,7 @@ function makeNPCSprites() {
   // ── Row 5: TAVERN STAFF archetype ─────────────────────────────────────────
   // Cream apron over rustic brown tunic, parchment head-kerchief, sleeves
   // rolled up — clearly working hospitality, distinct from commoner/merchant.
-  const drawTavernStaff = (ox, oy, dy=0, lx=0, rx=0) => {
+  const drawTavernStaff = (ox, oy, dy=0, lx=0, rx=0, laY=0, raY=0) => {
     // head
     const hx = ox+12, hy = oy+2+dy;
     cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
@@ -989,14 +989,18 @@ function makeNPCSprites() {
     cv.line(bx+9,  by,    bx+9,  by+13, ...c.OUTLINE);
     cv.line(bx,    by+13, bx+9,  by+13, ...c.OUTLINE);
 
-    // arms: rolled-up sleeves (brown upper, bare skin forearm)
-    cv.fillRect(bx-2, by+1, 3, 7, ...c.WOOD_L);
-    cv.fillRect(bx+9, by+1, 3, 7, ...c.WOOD_L);
-    cv.fillRect(bx-2, by+8, 3, 4, ...c.SKIN);   // bare forearm L
-    cv.fillRect(bx+9, by+8, 3, 4, ...c.SKIN);   // bare forearm R
-    // rolled cuff marks
-    cv.line(bx-2, by+8, bx, by+8, ...c.WOOD_M);
-    cv.line(bx+9, by+8, bx+11, by+8, ...c.WOOD_M);
+    // arms: rolled-up sleeves — swing via laY/raY
+    const laLen = 11 - Math.abs(laY);
+    const raLen = 11 - Math.abs(raY);
+    const laSkin = Math.max(4 - Math.abs(laY), 2);  // bare forearm shrinks when swung
+    const raSkin = Math.max(4 - Math.abs(raY), 2);
+    cv.fillRect(bx-2, by+1+laY, 3, laLen - laSkin, ...c.WOOD_L);  // sleeve
+    cv.fillRect(bx+9, by+1+raY, 3, raLen - raSkin, ...c.WOOD_L);
+    cv.fillRect(bx-2, by+1+laY+(laLen-laSkin), 3, laSkin, ...c.SKIN);  // bare forearm L
+    cv.fillRect(bx+9, by+1+raY+(raLen-raSkin), 3, raSkin, ...c.SKIN);  // bare forearm R
+    // rolled cuff marks at sleeve-to-skin transition
+    cv.line(bx-2, by+1+laY+(laLen-laSkin), bx, by+1+laY+(laLen-laSkin), ...c.WOOD_M);
+    cv.line(bx+9, by+1+raY+(raLen-raSkin), bx+11, by+1+raY+(raLen-raSkin), ...c.WOOD_M);
 
     // legs: dark hose + sturdy boots
     const ly = by+13;
@@ -1012,13 +1016,15 @@ function makeNPCSprites() {
 
   {
     const oy5 = 5*48;
-    drawTavernStaff(0*32, oy5, 0,  0,  0);
-    drawTavernStaff(1*32, oy5, -1, 0,  0);
-    drawTavernStaff(2*32, oy5, 0,  0,  0);
-    drawTavernStaff(3*32, oy5, 0,  -2, 2);
-    drawTavernStaff(4*32, oy5, -1, 0,  0);
-    drawTavernStaff(5*32, oy5, 0,  2,  -2);
-    drawTavernStaff(6*32, oy5, -1, 0,  0);
+    // idle: frame 2 uses right arm slightly raised (as if carrying a tray)
+    drawTavernStaff(0*32, oy5, 0,  0,  0,  0,  0);
+    drawTavernStaff(1*32, oy5, -1, 0,  0,  1,  1);
+    drawTavernStaff(2*32, oy5, 0,  0,  0,  0, -2);
+    // walk: arm opposes leg
+    drawTavernStaff(3*32, oy5, 0,  -2, 2,  -2, 2);
+    drawTavernStaff(4*32, oy5, -1, 0,  0,   0, 0);
+    drawTavernStaff(5*32, oy5, 0,  2,  -2,  2, -2);
+    drawTavernStaff(6*32, oy5, -1, 0,  0,   0, 0);
   }
 
   return cv.toPNG();
@@ -1211,20 +1217,45 @@ function makeNPCPortraits() {
     // ── head (8×8 at x=ox+8, y=oy+4) ────────────────────────────────────────
     const hx = ox+8, hy = oy+4;
     cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
-    // eyes
+    // cheek highlight — top-left catch-light
+    cv.sp(hx+1, hy+1, ...c.SKIN_HI, 80);
+    // eyebrows — arched, 1px above eyes
+    cv.sp(hx+2, hy+2, ...c.HAIR, 160);
+    cv.sp(hx+3, hy+1, ...c.HAIR, 120);
+    cv.sp(hx+5, hy+2, ...c.HAIR, 160);
+    cv.sp(hx+6, hy+1, ...c.HAIR, 120);
+    // eyes with subtle whites
     cv.sp(hx+2, hy+3, ...c.HAIR);
     cv.sp(hx+5, hy+3, ...c.HAIR);
-    // mouth — slight curve for female, flat line for male
+    cv.sp(hx+1, hy+3, ...c.SKIN_HI, 90);   // left eye white
+    cv.sp(hx+4, hy+3, ...c.SKIN_HI, 60);   // right eye inner white
+    // nose shadow
+    cv.sp(hx+3, hy+5, ...c.SKIN_SH);
+    // mouth — slight curve for female, firm line for male
     if (female) {
-      cv.sp(hx+2, hy+6, ...c.HAIR, 100);
+      cv.sp(hx+2, hy+6, ...c.SKIN_SH, 120);
       cv.sp(hx+3, hy+7, ...c.HAIR);
       cv.sp(hx+4, hy+7, ...c.HAIR);
-      cv.sp(hx+5, hy+6, ...c.HAIR, 100);
+      cv.sp(hx+5, hy+6, ...c.SKIN_SH, 120);
     } else {
-      cv.sp(hx+2, hy+6, ...c.HAIR, 80);
-      cv.sp(hx+5, hy+6, ...c.HAIR, 80);
+      cv.sp(hx+2, hy+6, ...c.HAIR, 90);
+      cv.sp(hx+3, hy+6, ...c.OUTLINE, 70);
+      cv.sp(hx+4, hy+6, ...c.OUTLINE, 70);
+      cv.sp(hx+5, hy+6, ...c.HAIR, 90);
     }
-    // female: side-hair drapes 3px below head on each edge
+    // elder: beard stubble below mouth
+    if (elder && !female) {
+      cv.sp(hx+2, hy+7, ...c.HAIR, 100);
+      cv.sp(hx+3, hy+7, ...c.HAIR, 130);
+      cv.sp(hx+4, hy+7, ...c.HAIR, 130);
+      cv.sp(hx+5, hy+7, ...c.HAIR, 100);
+      cv.sp(hx+3, hy+6, ...c.HAIR, 60);
+      cv.sp(hx+4, hy+6, ...c.HAIR, 60);
+      // crow's-feet wrinkle at outer eye corner
+      cv.sp(hx+6, hy+4, ...c.SKIN_SH, 80);
+      cv.sp(hx+1, hy+4, ...c.SKIN_SH, 80);
+    }
+    // female: side-hair drapes below head on each edge
     if (female) {
       cv.fillRect(hx-1, hy+2, 2, 9, ...c.HAIR);
       cv.fillRect(hx+7, hy+2, 2, 9, ...c.HAIR);
@@ -1332,33 +1363,44 @@ function makeNPCPortraits() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// RUMOR STATE ICONS  (ui_state_icons.png — 72×12, six 12×12 icons)
-//   col 0  EVALUATING  — hourglass (pondering / undecided)
-//   col 1  BELIEVE     — open scroll (accepted rumor)
-//   col 2  SPREAD      — speech bubble with ripple (actively spreading)
-//   col 3  ACT         — lightning bolt (acting on belief)
-//   col 4  CONTRADICTED— crossed arrows (conflicting rumors)
-//   col 5  EXPIRED     — broken circle X (rumor died out)
+// RUMOR STATE ICONS  (ui_state_icons.png — 108×12, nine 12×12 icons)
+//   Matches RumorState enum order (states 0–8):
+//   col 0  UNAWARE      — empty circle (NPC hasn't heard it)
+//   col 1  EVALUATING   — hourglass (pondering / undecided)
+//   col 2  BELIEVE      — open scroll with check (accepted)
+//   col 3  REJECTING    — bold X mark (actively dismissing)
+//   col 4  SPREAD       — speech bubble with ripple (actively spreading)
+//   col 5  ACT          — lightning bolt (acting on belief)
+//   col 6  CONTRADICTED — crossed arrows (conflicting rumors)
+//   col 7  EXPIRED      — broken circle X (rumor died out)
+//   col 8  DEFENDING    — kite shield (protecting a subject)
 //
 // Palette-locked; no colours outside P.  Background transparent.
-// Used by: social_graph_overlay, HUD state badges, journal rumor rows.
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeStateIcons() {
-  const cv = createCanvas(72, 12);
+  const cv = createCanvas(108, 12);
 
-  // ── 0: EVALUATING — hourglass ─────────────────────────────────────────────
+  // ── 0: UNAWARE — empty circle (NPC is oblivious) ─────────────────────────
   {
     const ox = 0;
-    // top half (sand reservoir)
+    const pts = [[ox+5,1],[ox+8,2],[ox+10,5],[ox+10,7],[ox+8,10],[ox+5,10],[ox+2,8],[ox+1,5],[ox+2,3]];
+    cv.fillPoly(pts, ...c.STONE_M, 100);  // faint fill — not yet reached
+    for (let i=0; i<pts.length; i++)
+      cv.line(...pts[i], ...pts[(i+1)%pts.length], ...c.STONE_D);
+    // center dot — awareness seed not yet planted
+    cv.sp(ox+5, 5, ...c.STONE_D);
+    cv.sp(ox+5, 6, ...c.STONE_D);
+  }
+
+  // ── 1: EVALUATING — hourglass ─────────────────────────────────────────────
+  {
+    const ox = 12;
     cv.fillPoly([[ox+2,1],[ox+9,1],[ox+7,5],[ox+4,5]], ...c.THATCH_L);
-    // bottom half (fallen sand)
     cv.fillPoly([[ox+4,7],[ox+7,7],[ox+9,11],[ox+2,11]], ...c.THATCH_L);
-    // sand trickle at middle
     cv.sp(ox+5, 5, ...c.MERCH_T);
     cv.sp(ox+6, 5, ...c.MERCH_T);
     cv.sp(ox+5, 6, ...c.MERCH_T);
     cv.sp(ox+6, 6, ...c.MERCH_T);
-    // outline
     cv.line(ox+2, 1, ox+9, 1,  ...c.OUTLINE);
     cv.line(ox+9, 1, ox+7, 5,  ...c.OUTLINE);
     cv.line(ox+7, 5, ox+9, 11, ...c.OUTLINE);
@@ -1368,45 +1410,50 @@ function makeStateIcons() {
     cv.line(ox+4, 5, ox+2, 1,  ...c.OUTLINE);
   }
 
-  // ── 1: BELIEVE — small scroll with text lines ─────────────────────────────
+  // ── 2: BELIEVE — small scroll with check ─────────────────────────────────
   {
-    const ox = 12;
-    // scroll body
+    const ox = 24;
     cv.fillRect(ox+1, 2, 9, 9, ...c.PARCH_M);
-    // rolled ends
     cv.fillRect(ox+1, 1, 9, 2, ...c.PARCH_D);
     cv.fillRect(ox+1, 9, 9, 2, ...c.PARCH_D);
-    // text lines
     cv.line(ox+3, 4, ox+8, 4, ...c.INK, 180);
     cv.line(ox+3, 6, ox+8, 6, ...c.INK, 140);
     cv.line(ox+3, 8, ox+6, 8, ...c.INK, 120);
-    // check mark (belief confirmed)
     cv.sp(ox+7, 7, ...c.WOOD_D);
     cv.sp(ox+8, 8, ...c.WOOD_D);
     cv.sp(ox+9, 6, ...c.WOOD_D);
-    // outline
     cv.line(ox+1, 1, ox+9, 1,  ...c.OUTLINE);
     cv.line(ox+1, 1, ox+1, 10, ...c.OUTLINE);
     cv.line(ox+9, 1, ox+9, 10, ...c.OUTLINE);
     cv.line(ox+1,10, ox+9, 10, ...c.OUTLINE);
   }
 
-  // ── 2: SPREAD — speech bubble with outward ripple ────────────────────────
+  // ── 3: REJECTING — bold diagonal X ───────────────────────────────────────
   {
-    const ox = 24;
-    // bubble body
+    const ox = 36;
+    // filled X shape — two thick diagonal strokes
+    cv.fillPoly([[ox+2,1],[ox+4,1],[ox+6,4],[ox+8,1],[ox+10,1],[ox+10,3],[ox+8,5],
+                 [ox+10,9],[ox+10,11],[ox+8,11],[ox+6,8],[ox+4,11],[ox+2,11],
+                 [ox+2,9],[ox+4,5],[ox+2,3]], ...c.NOBLE_B);
+    // bright center point
+    cv.sp(ox+5, 5, ...c.NOBLE_T);
+    cv.sp(ox+6, 6, ...c.NOBLE_T);
+    // outline
+    cv.line(ox+2, 1, ox+10, 9,  ...c.OUTLINE);
+    cv.line(ox+10,1, ox+2,  9,  ...c.OUTLINE);
+  }
+
+  // ── 4: SPREAD — speech bubble with ripple ────────────────────────────────
+  {
+    const ox = 48;
     cv.fillRect(ox+1, 1, 8, 6, ...c.PARCH_L);
-    // tail
     cv.fillPoly([[ox+2,7],[ox+5,7],[ox+3,10]], ...c.PARCH_L);
-    // dot contents (whisper dots)
     cv.sp(ox+3, 3, ...c.CANVAS);
     cv.sp(ox+5, 3, ...c.CANVAS);
     cv.sp(ox+7, 3, ...c.CANVAS);
-    // ripple arc right
     cv.sp(ox+10, 2, ...c.FORGE, 180);
     cv.sp(ox+10, 4, ...c.FORGE, 200);
     cv.sp(ox+10, 6, ...c.FORGE, 180);
-    // outline
     cv.line(ox+1, 1, ox+8, 1,  ...c.OUTLINE);
     cv.line(ox+1, 1, ox+1, 6,  ...c.OUTLINE);
     cv.line(ox+1, 6, ox+8, 6,  ...c.OUTLINE);
@@ -1415,14 +1462,12 @@ function makeStateIcons() {
     cv.line(ox+5, 7, ox+3,10,  ...c.OUTLINE);
   }
 
-  // ── 3: ACT — lightning bolt ───────────────────────────────────────────────
+  // ── 5: ACT — lightning bolt ───────────────────────────────────────────────
   {
-    const ox = 36;
+    const ox = 60;
     cv.fillPoly([[ox+6,1],[ox+3,6],[ox+6,6],[ox+4,11],[ox+9,5],[ox+6,5],[ox+8,1]], ...c.FLAG_R);
-    // bright highlight on leading edge
     cv.line(ox+6, 1, ox+8, 1, ...c.ROOF_TILE, 200);
     cv.line(ox+9, 5, ox+6, 5, ...c.ROOF_TILE, 160);
-    // outline
     cv.line(ox+6, 1, ox+8, 1,  ...c.OUTLINE);
     cv.line(ox+8, 1, ox+9, 5,  ...c.OUTLINE);
     cv.line(ox+9, 5, ox+6, 5,  ...c.OUTLINE);
@@ -1432,35 +1477,52 @@ function makeStateIcons() {
     cv.line(ox+6, 6, ox+6, 1,  ...c.OUTLINE);
   }
 
-  // ── 4: CONTRADICTED — two arrows clashing ────────────────────────────────
+  // ── 6: CONTRADICTED — two arrows clashing ────────────────────────────────
   {
-    const ox = 48;
-    // left-to-right arrow (belief rumor)
+    const ox = 72;
     cv.line(ox+1, 4, ox+5, 4, ...c.MERCH_B);
     cv.fillPoly([[ox+4,2],[ox+7,4],[ox+4,6]], ...c.MERCH_B);
-    // right-to-left arrow (contradicting rumor)
     cv.line(ox+10,8, ox+6, 8, ...c.NOBLE_B);
     cv.fillPoly([[ox+7,6],[ox+4,8],[ox+7,10]], ...c.NOBLE_B);
-    // clash X at center
     cv.line(ox+4, 4, ox+8, 8,  ...c.OUTLINE);
     cv.line(ox+8, 4, ox+4, 8,  ...c.OUTLINE);
-    // arrow outlines
     cv.line(ox+1, 4, ox+4, 4,  ...c.OUTLINE);
     cv.line(ox+10,8, ox+7, 8,  ...c.OUTLINE);
   }
 
-  // ── 5: EXPIRED — circle with X ───────────────────────────────────────────
+  // ── 7: EXPIRED — circle with X ───────────────────────────────────────────
   {
-    const ox = 60;
-    // circle (octagonal approx)
+    const ox = 84;
     const pts = [[ox+5,1],[ox+8,2],[ox+10,5],[ox+10,7],[ox+8,10],[ox+5,10],[ox+2,8],[ox+1,5],[ox+2,3]];
     cv.fillPoly(pts, ...c.STONE_M, 200);
-    // X cross
     cv.line(ox+3, 3, ox+8, 8, ...c.STONE_D);
     cv.line(ox+8, 3, ox+3, 8, ...c.STONE_D);
-    // outline circle
     for (let i=0; i<pts.length; i++)
       cv.line(...pts[i], ...pts[(i+1)%pts.length], ...c.OUTLINE);
+  }
+
+  // ── 8: DEFENDING — kite shield ───────────────────────────────────────────
+  {
+    const ox = 96;
+    // kite shield silhouette: pointed bottom, rounded top
+    cv.fillPoly([
+      [ox+3,1],[ox+8,1],[ox+10,3],[ox+10,7],[ox+6,11],[ox+2,7],[ox+2,3],
+    ], ...c.WATER_D);
+    // horizontal division bar (boss line)
+    cv.line(ox+2, 6, ox+10, 6, ...c.WATER_L, 180);
+    // center boss (small diamond)
+    cv.sp(ox+5, 5, ...c.WATER_L);
+    cv.sp(ox+6, 5, ...c.WATER_L);
+    cv.sp(ox+5, 6, ...c.WATER_L);
+    cv.sp(ox+6, 6, ...c.WATER_L);
+    // outline
+    cv.line(ox+3,1,  ox+8,1,  ...c.OUTLINE);
+    cv.line(ox+8,1,  ox+10,3, ...c.OUTLINE);
+    cv.line(ox+10,3, ox+10,7, ...c.OUTLINE);
+    cv.line(ox+10,7, ox+6,11, ...c.OUTLINE);
+    cv.line(ox+6,11, ox+2,7,  ...c.OUTLINE);
+    cv.line(ox+2,7,  ox+2,3,  ...c.OUTLINE);
+    cv.line(ox+2,3,  ox+3,1,  ...c.OUTLINE);
   }
 
   return cv.toPNG();
@@ -1475,7 +1537,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 4 asset generation (SPA-410)\n');
+console.log('\nRumor Mill — Art Pass 6: sprites, portraits, visual identity polish (SPA-455)\n');
 
 write('assets/textures/tiles_ground.png',       makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',    makeRoadDirt());

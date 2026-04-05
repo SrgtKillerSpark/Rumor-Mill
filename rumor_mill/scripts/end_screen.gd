@@ -252,6 +252,11 @@ func setup(world: Node2D, day_night: Node, analytics: ScenarioAnalytics = null) 
 func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioState) -> void:
 	if _world_ref == null:
 		return
+
+	# Freeze the game world so NPCs stop moving behind the end-screen overlay.
+	if _day_night_ref != null and _day_night_ref.has_method("set_paused"):
+		_day_night_ref.set_paused(true)
+
 	var won: bool = (state == ScenarioManager.ScenarioState.WON)
 	var sm: ScenarioManager = _world_ref.scenario_manager
 
@@ -297,14 +302,28 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	# Default to Results tab.
 	_show_tab_results()
 
+	# ── Entrance animation: fade in backdrop + scale panel ────────────────────
+	if _backdrop != null:
+		_backdrop.modulate.a = 0.0
+	if _panel != null:
+		_panel.modulate.a = 0.0
+		_panel.scale = Vector2(0.92, 0.92)
+		_panel.pivot_offset = Vector2(PANEL_W / 2.0, PANEL_H / 2.0)
 	visible = true
+	var _enter_tw := create_tween().set_parallel(true) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	if _backdrop != null:
+		_enter_tw.tween_property(_backdrop, "modulate:a", 1.0, 0.35)
+	if _panel != null:
+		_enter_tw.tween_property(_panel, "modulate:a", 1.0, 0.4)
+		_enter_tw.tween_property(_panel, "scale", Vector2.ONE, 0.4)
 
 	# Set keyboard focus on the first action button.
 	if _btn_again != null:
 		_btn_again.call_deferred("grab_focus")
 
-	# ── Count-up tween ────────────────────────────────────────────────────────
-	_start_count_up_tween()
+	# ── Count-up tween (start after entrance completes) ───────────────────────
+	get_tree().create_timer(0.45).timeout.connect(_start_count_up_tween)
 
 	# ── SPA-336: Show feedback prompt after a short delay ────────────────────
 	get_tree().create_timer(5.0).timeout.connect(_show_feedback_prompt)
