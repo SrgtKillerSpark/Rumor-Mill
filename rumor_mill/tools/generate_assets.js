@@ -3018,70 +3018,99 @@ function makeNPCSprites() {
 // ═══════════════════════════════════════════════════════════════════════════════
 // UI PARCHMENT TILE (ui_parchment.png — 48×48, 9-slice compatible)
 // Center 16×16 = fill; 16px border on each side with parchment texture
+// Art Pass 13 / SPA-703: illuminated manuscript border upgrade
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeParchment() {
   const cv = createCanvas(48, 48);
 
-  // fill everything with parchment base
+  // ── base fill: warm parchment with subtle radial vignette ────────────────
   cv.fillRect(0, 0, 48, 48, ...c.PARCH_M);
+  // center area slightly lighter (reading zone)
+  cv.fillRect(4, 4, 40, 40, ...c.PARCH_L, 30);
+  // edges darker (aged periphery)
+  cv.fillRect(0, 0, 48, 3,  ...c.PARCH_D, 55);
+  cv.fillRect(0, 45, 48, 3, ...c.PARCH_D, 55);
+  cv.fillRect(0, 0, 3, 48,  ...c.PARCH_D, 55);
+  cv.fillRect(45, 0, 3, 48, ...c.PARCH_D, 55);
 
-  // dither texture
-  for (let y=0; y<48; y++) for (let x=0; x<48; x++) {
-    if ((x+y)%3===0 && Math.random()<0.3) cv.sp(x, y, ...c.PARCH_L, 140);
-    if ((x+y)%5===0 && Math.random()<0.15) cv.sp(x, y, ...c.PARCH_D, 80);
-  }
-
-  // horizontal fiber lines — simulate paper/vellum grain
-  for (let y=5; y<44; y+=3) {
-    for (let x=4; x<44; x++) {
-      if (Math.random() < 0.25) cv.sp(x, y, ...c.PARCH_L, 55);
-      if (Math.random() < 0.10) cv.sp(x, y, ...c.PARCH_D, 35);
+  // ── vellum grain: horizontal fiber streaks ───────────────────────────────
+  for (let y = 3; y < 45; y += 2) {
+    let xoff = 0;
+    for (let x = 3; x < 45; x++) {
+      // undulating fibre line — broken, like real vellum
+      if (Math.random() < 0.22) cv.sp(x, y + (xoff % 2), ...c.PARCH_L, 50);
+      if (Math.random() < 0.08) cv.sp(x, y,               ...c.PARCH_D, 28);
+      xoff++;
     }
   }
-
-  // aged ink blot (small dark smudge, hand-crafted feel)
-  const blotX = 34, blotY = 11;
-  cv.sp(blotX, blotY, ...c.INK, 160);
-  cv.sp(blotX+1, blotY, ...c.INK, 120);
-  cv.sp(blotX, blotY+1, ...c.INK, 100);
-  cv.sp(blotX-1, blotY, ...c.INK, 70);
-  cv.sp(blotX, blotY-1, ...c.INK, 60);
-  cv.sp(blotX+1, blotY+1, ...c.INK, 45);
-
-  // edge vignette — subtle darkening 1-2px inward from border
-  for (let i=0; i<48; i++) {
-    cv.sp(0, i, ...c.PARCH_D, 80);
-    cv.sp(47, i, ...c.PARCH_D, 80);
-    cv.sp(i, 0, ...c.PARCH_D, 80);
-    cv.sp(i, 47, ...c.PARCH_D, 80);
-    cv.sp(1, i, ...c.PARCH_D, 40);
-    cv.sp(46, i, ...c.PARCH_D, 40);
-    cv.sp(i, 1, ...c.PARCH_D, 40);
-    cv.sp(i, 46, ...c.PARCH_D, 40);
+  // scattered dither noise for tooth
+  for (let y = 0; y < 48; y++) for (let x = 0; x < 48; x++) {
+    if ((x*3+y*7)%11===0 && Math.random()<0.2) cv.sp(x, y, ...c.PARCH_L, 60);
+    if ((x*5+y*3)%13===0 && Math.random()<0.1) cv.sp(x, y, ...c.PARCH_D, 35);
   }
 
-  // corner decorations (ink scrollwork — more elaborate)
-  const scroll = (sx, sy, fx, fy) => {
-    cv.line(sx, sy, sx+fx*4, sy+fy*4, ...c.INK, 180);
-    cv.line(sx+fx*1, sy, sx+fx*1, sy+fy*3, ...c.INK, 130);
-    cv.line(sx, sy+fy*1, sx+fx*3, sy+fy*1, ...c.INK, 130);
-    cv.sp(sx+fx*2, sy+fy*2, ...c.INK, 180);  // centre knot
-  };
-  scroll(2,2, 1,1);    // top-left
-  scroll(45,2, -1,1);  // top-right
-  scroll(2,45, 1,-1);  // bot-left
-  scroll(45,45,-1,-1); // bot-right
+  // ── aged ink blots (hand-crafted marks) ─────────────────────────────────
+  [[34,11],[12,37],[39,38]].forEach(([bx,by]) => {
+    cv.sp(bx,   by,   ...c.INK, 120);
+    cv.sp(bx+1, by,   ...c.INK,  90);
+    cv.sp(bx,   by+1, ...c.INK,  75);
+    cv.sp(bx-1, by,   ...c.INK,  50);
+    cv.sp(bx+1, by+1, ...c.INK,  35);
+  });
 
-  // border outline
-  cv.line(0, 0, 47, 0, ...c.PARCH_D);
-  cv.line(0, 47, 47, 47, ...c.PARCH_D);
-  cv.line(0, 0, 0, 47, ...c.PARCH_D);
-  cv.line(47, 0, 47, 47, ...c.PARCH_D);
-  // inner border
-  cv.line(3, 3, 44, 3, ...c.INK, 100);
-  cv.line(3, 44, 44, 44, ...c.INK, 100);
-  cv.line(3, 3, 3, 44, ...c.INK, 100);
-  cv.line(44, 3, 44, 44, ...c.INK, 100);
+  // ── outer border: heavy ink rule with fine inner rule ───────────────────
+  cv.line(0, 0, 47, 0, ...c.INK, 220);
+  cv.line(0, 47, 47, 47, ...c.INK, 220);
+  cv.line(0, 0, 0, 47, ...c.INK, 220);
+  cv.line(47, 0, 47, 47, ...c.INK, 220);
+  // secondary inner rule (double-line border — illuminated manuscript)
+  cv.line(2, 2, 45, 2, ...c.INK, 120);
+  cv.line(2, 45, 45, 45, ...c.INK, 120);
+  cv.line(2, 2, 2, 45, ...c.INK, 120);
+  cv.line(45, 2, 45, 45, ...c.INK, 120);
+  // tertiary faint rule inset (triple-line at corners meets here)
+  cv.line(4, 4, 43, 4, ...c.PARCH_D, 80);
+  cv.line(4, 43, 43, 43, ...c.PARCH_D, 80);
+  cv.line(4, 4, 4, 43, ...c.PARCH_D, 80);
+  cv.line(43, 4, 43, 43, ...c.PARCH_D, 80);
+
+  // ── corner medallion: cross-and-bead (illuminated book corner) ──────────
+  const corner = (cx, cy) => {
+    // filled diamond centre
+    cv.fillPoly([[cx,cy-2],[cx+2,cy],[cx,cy+2],[cx-2,cy]], ...c.INK, 220);
+    cv.sp(cx, cy, ...c.PARCH_L, 180);          // centre highlight
+    // four arms radiating outward (to touch border lines)
+    cv.sp(cx+3, cy, ...c.INK, 160);            // right arm
+    cv.sp(cx-3, cy, ...c.INK, 160);            // left arm
+    cv.sp(cx, cy+3, ...c.INK, 160);            // down arm
+    cv.sp(cx, cy-3, ...c.INK, 160);            // up arm
+    cv.sp(cx+4, cy, ...c.INK, 100);
+    cv.sp(cx-4, cy, ...c.INK, 100);
+    cv.sp(cx, cy+4, ...c.INK, 100);
+    cv.sp(cx, cy-4, ...c.INK, 100);
+    // small bead at arm tips
+    cv.sp(cx+5, cy, ...c.PARCH_D, 180);
+    cv.sp(cx-5, cy, ...c.PARCH_D, 180);
+    cv.sp(cx, cy+5, ...c.PARCH_D, 180);
+    cv.sp(cx, cy-5, ...c.PARCH_D, 180);
+    // diagonal tracery dots
+    cv.sp(cx+2, cy+2, ...c.INK, 90);
+    cv.sp(cx-2, cy+2, ...c.INK, 90);
+    cv.sp(cx+2, cy-2, ...c.INK, 90);
+    cv.sp(cx-2, cy-2, ...c.INK, 90);
+  };
+  corner(7,  7);   // top-left
+  corner(40, 7);   // top-right
+  corner(7,  40);  // bot-left
+  corner(40, 40);  // bot-right
+
+  // ── mid-edge vine beads (between corners on each border side) ────────────
+  [15,23,32].forEach(t => {
+    cv.sp(t,  1, ...c.INK, 130);  cv.sp(t,  2, ...c.PARCH_D, 100);  // top
+    cv.sp(t, 46, ...c.INK, 130);  cv.sp(t, 45, ...c.PARCH_D, 100);  // bottom
+    cv.sp(1,  t, ...c.INK, 130);  cv.sp(2,  t, ...c.PARCH_D, 100);  // left
+    cv.sp(46, t, ...c.INK, 130);  cv.sp(45, t, ...c.PARCH_D, 100);  // right
+  });
 
   return cv.toPNG();
 }
@@ -3134,65 +3163,146 @@ function makeFactionBadges() {
 // ═══════════════════════════════════════════════════════════════════════════════
 // CLAIM TYPE ICONS (ui_claim_icons.png — 160×32, five 32×32 icons)  ← SPA-523
 //   0=assassination  1=theft  2=slander  3=witness  4=alliance
+// Art Pass 13 / SPA-703: upgraded icon readability and detail
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeClaimIcons() {
   const cv = createCanvas(160, 32);
 
-  // 0: assassination — dagger (32×32)
+  // 0: assassination — hooded skull / dagger-through-shadow (32×32)
   {
     const ox=0;
-    cv.fillRect(ox+14, 2,  6, 18, ...c.STONE_L);
-    cv.fillPoly([[ox+14,20],[ox+20,20],[ox+16,28]], ...c.STONE_D);
-    cv.fillRect(ox+10, 10, 14, 4, ...c.WOOD_M);
-    cv.line(ox+16, 2, ox+16, 26, ...c.OUTLINE);
+    // dagger blade — tapered, shining
+    cv.fillPoly([[ox+15,2],[ox+18,2],[ox+17,20],[ox+14,20]], ...c.STONE_L);
+    cv.fillPoly([[ox+15,2],[ox+16,2],[ox+15,14]], ...c.PARCH_L, 160);  // blade shine
+    // guard (crossguard)
+    cv.fillRect(ox+10, 18, 12, 3, ...c.STONE_D);
+    cv.line(ox+10, 18, ox+21, 18, ...c.OUTLINE);
+    cv.line(ox+10, 20, ox+21, 20, ...c.OUTLINE);
+    cv.sp(ox+9, 19, ...c.STONE_L, 180);   // guard end bead left
+    cv.sp(ox+22, 19, ...c.STONE_L, 180);  // guard end bead right
+    // grip / handle — wrapped leather
+    cv.fillRect(ox+14, 21, 4, 8, ...c.WOOD_M);
+    cv.line(ox+14, 23, ox+17, 23, ...c.WOOD_D, 140);
+    cv.line(ox+14, 25, ox+17, 25, ...c.WOOD_D, 140);
+    cv.line(ox+14, 27, ox+17, 27, ...c.WOOD_D, 140);
+    // pommel
+    cv.fillPoly([[ox+13,29],[ox+18,29],[ox+17,31],[ox+14,31]], ...c.STONE_M);
+    // outlines
+    cv.line(ox+15, 2, ox+18, 2,  ...c.OUTLINE);
+    cv.line(ox+15, 2, ox+14, 20, ...c.OUTLINE);
+    cv.line(ox+18, 2, ox+17, 20, ...c.OUTLINE);
+    // subtle shadow behind blade
+    cv.line(ox+13, 4, ox+13, 18, ...c.STONE_D, 60);
+    cv.line(ox+20, 4, ox+20, 18, ...c.STONE_D, 40);
   }
-  // 1: theft — bag with coin (32×32)
+
+  // 1: theft — coin purse with spilled coins (32×32)
   {
     const ox=32;
-    cv.fillPoly([[ox+10,10],[ox+22,10],[ox+26,20],[ox+6,20]], ...c.WOOD_L);
-    cv.fillRect(ox+10, 20, 12, 8, ...c.WOOD_L);
-    cv.line(ox+10, 10, ox+22, 10, ...c.OUTLINE);
-    cv.line(ox+6,  20, ox+26, 20, ...c.OUTLINE);
-    cv.line(ox+10, 28, ox+22, 28, ...c.OUTLINE);
-    cv.sp(ox+14, 6, ...c.MERCH_T);  // string
-    cv.sp(ox+16, 6, ...c.MERCH_T);
+    // purse body — rounded bag shape
+    cv.fillPoly([[ox+8,12],[ox+24,12],[ox+26,22],[ox+16,29],[ox+6,22]], ...c.WOOD_L);
+    cv.fillRect(ox+9, 13, 14, 14, ...c.WOOD_M, 60);  // inner depth shadow
+    // drawstring neck
+    cv.fillRect(ox+12, 8, 8, 5, ...c.DIRT_M);
+    cv.line(ox+12, 8, ox+19, 8, ...c.OUTLINE);
+    cv.line(ox+12, 8, ox+12, 12, ...c.OUTLINE);
+    cv.line(ox+19, 8, ox+19, 12, ...c.OUTLINE);
+    // tie knot
+    cv.fillRect(ox+14, 6, 4, 3, ...c.WOOD_D);
+    cv.line(ox+14, 6, ox+17, 6, ...c.OUTLINE);
+    // spilled gold coins
+    cv.fillRect(ox+5, 25, 5, 3, ...c.MERCH_T);
+    cv.line(ox+5, 25, ox+9, 25, ...c.OUTLINE);
+    cv.line(ox+5, 27, ox+9, 27, ...c.OUTLINE);
+    cv.sp(ox+7, 26, ...c.PARCH_L, 200);   // coin glint
+    cv.fillRect(ox+21, 26, 5, 3, ...c.MERCH_T);
+    cv.line(ox+21, 26, ox+25, 26, ...c.OUTLINE);
+    cv.line(ox+21, 28, ox+25, 28, ...c.OUTLINE);
+    cv.sp(ox+23, 27, ...c.PARCH_L, 200);
+    // purse outlines
+    cv.line(ox+8, 12, ox+24, 12, ...c.OUTLINE);
+    cv.line(ox+8, 12, ox+6,  22, ...c.OUTLINE);
+    cv.line(ox+24,12, ox+26, 22, ...c.OUTLINE);
+    cv.line(ox+6, 22, ox+16, 29, ...c.OUTLINE);
+    cv.line(ox+16,29, ox+26, 22, ...c.OUTLINE);
   }
-  // 2: slander — speech bubble (32×32)
+
+  // 2: slander — speech bubble with forked tongue (32×32)
   {
     const ox=64;
-    cv.fillRect(ox+4,  4, 24, 16, ...c.PARCH_L);
-    cv.fillPoly([[ox+8,20],[ox+16,20],[ox+10,28]], ...c.PARCH_L);
-    cv.line(ox+4,  4, ox+26,  4, ...c.OUTLINE);
-    cv.line(ox+4,  4, ox+4,  18, ...c.OUTLINE);
-    cv.line(ox+4,  18, ox+26, 18, ...c.OUTLINE);
-    cv.line(ox+26, 4, ox+26,  18, ...c.OUTLINE);
-    // text lines
-    cv.line(ox+8,  10, ox+22, 10, ...c.INK, 160);
-    cv.line(ox+8,  14, ox+18, 14, ...c.INK, 120);
+    // bubble body (parchment fill)
+    cv.fillRect(ox+3,  3, 22, 15, ...c.PARCH_L);
+    // tail — forked (slander = snake tongue)
+    cv.fillPoly([[ox+6,18],[ox+11,18],[ox+8,26]], ...c.PARCH_L);
+    cv.fillPoly([[ox+8,22],[ox+12,18],[ox+10,26]], ...c.FLAG_R, 120);  // red fork
+    // outer outline
+    cv.line(ox+3,  3, ox+24,  3, ...c.OUTLINE);
+    cv.line(ox+3,  3, ox+3,  17, ...c.OUTLINE);
+    cv.line(ox+3,  17, ox+24, 17, ...c.OUTLINE);
+    cv.line(ox+24, 3, ox+24,  17, ...c.OUTLINE);
+    // inner text lines (gossip text)
+    cv.line(ox+7, 8,  ox+20, 8,  ...c.INK, 180);
+    cv.line(ox+7, 11, ox+18, 11, ...c.INK, 140);
+    cv.line(ox+7, 14, ox+14, 14, ...c.INK, 100);
+    // red accent dots at start of "text" (ink emphasis — poisoned words)
+    cv.sp(ox+5, 8, ...c.FLAG_R, 180);
+    cv.sp(ox+5, 11, ...c.FLAG_R, 120);
   }
-  // 3: witness — eye (32×32)
+
+  // 3: witness — open eye with iris detail (32×32)
   {
     const ox=96;
-    cv.fillPoly([[ox+4,16],[ox+16,8],[ox+28,16],[ox+16,24]], ...c.PARCH_L);
-    cv.fillRect(ox+12, 12, 10, 10, ...c.MERCH_B);
-    cv.sp(ox+14, 14, ...c.WATER_L);
-    cv.sp(ox+16, 16, 40, 60, 100);
-    cv.line(ox+4,  16, ox+16,  8, ...c.OUTLINE);
-    cv.line(ox+16,  8, ox+28, 16, ...c.OUTLINE);
-    cv.line(ox+28, 16, ox+16, 24, ...c.OUTLINE);
-    cv.line(ox+16, 24, ox+4,  16, ...c.OUTLINE);
+    // eye white — almond shape
+    cv.fillPoly([[ox+3,16],[ox+16,7],[ox+29,16],[ox+16,25]], ...c.PARCH_L);
+    // shadow inside lower lid
+    cv.fillPoly([[ox+8,19],[ox+16,23],[ox+24,19],[ox+16,20]], ...c.SKIN_SH, 80);
+    // iris — deep blue
+    cv.fillRect(ox+12, 12, 8, 9, ...c.MERCH_B);
+    cv.fillRect(ox+13, 13, 6, 7, ...c.MERCH_B);
+    // iris highlight ring
+    cv.line(ox+12,12,ox+19,12, ...c.WATER_L, 100);
+    cv.line(ox+12,12,ox+12,20, ...c.WATER_L, 80);
+    // pupil
+    cv.fillRect(ox+14, 14, 4, 5, ...c.INK, 230);
+    // catch-light
+    cv.sp(ox+14, 14, ...c.PARCH_L, 200);
+    cv.sp(ox+15, 14, ...c.PARCH_L, 130);
+    // upper lid crease
+    cv.line(ox+6, 13, ox+16, 8, ...c.OUTLINE, 160);
+    cv.line(ox+16,8, ox+26, 13, ...c.OUTLINE, 160);
+    // lower lid
+    cv.line(ox+6, 19, ox+16, 24, ...c.OUTLINE, 140);
+    cv.line(ox+16,24, ox+26, 19, ...c.OUTLINE, 140);
   }
-  // 4: alliance — clasped hands (32×32)
+
+  // 4: alliance — two hands clasped in oath (32×32)
   {
     const ox=128;
-    cv.fillRect(ox+4,  8, 10, 16, ...c.SKIN);
-    cv.fillRect(ox+18, 8, 10, 16, ...c.SKIN);
-    cv.fillRect(ox+10, 12, 12, 8, ...c.SKIN);
-    cv.line(ox+4,  8, ox+12,  8, ...c.OUTLINE);
-    cv.line(ox+18, 8, ox+26,  8, ...c.OUTLINE);
-    cv.line(ox+4,  24, ox+26, 24, ...c.OUTLINE);
-    cv.line(ox+4,  8,  ox+4,  24, ...c.OUTLINE);
-    cv.line(ox+26, 8,  ox+26, 24, ...c.OUTLINE);
+    // left hand (palm facing right)
+    cv.fillRect(ox+3,  10, 8, 12, ...c.SKIN);
+    cv.fillRect(ox+3,  10, 2,  5, ...c.SKIN_SH, 60);   // left edge shadow
+    cv.fillRect(ox+3,  8,  4,  3, ...c.SKIN);   // thumb
+    // right hand
+    cv.fillRect(ox+21, 10, 8, 12, ...c.SKIN);
+    cv.fillRect(ox+27, 10, 2,  5, ...c.SKIN_SH, 60);
+    cv.fillRect(ox+25, 8,  4,  3, ...c.SKIN);   // thumb
+    // clasped center (overlap zone)
+    cv.fillRect(ox+10, 11, 12, 10, ...c.SKIN);
+    // knuckle lines on both hands
+    cv.line(ox+4,  13, ox+9,  13, ...c.SKIN_SH, 80);
+    cv.line(ox+4,  16, ox+9,  16, ...c.SKIN_SH, 80);
+    cv.line(ox+23, 13, ox+28, 13, ...c.SKIN_SH, 80);
+    cv.line(ox+23, 16, ox+28, 16, ...c.SKIN_SH, 80);
+    // gold ring on one finger (alliance = vow)
+    cv.sp(ox+5, 19, ...c.MERCH_T, 200);
+    cv.sp(ox+6, 19, ...c.MERCH_T, 160);
+    // outlines
+    cv.line(ox+3,  10, ox+10, 10, ...c.OUTLINE);
+    cv.line(ox+22, 10, ox+29, 10, ...c.OUTLINE);
+    cv.line(ox+3,  22, ox+10, 22, ...c.OUTLINE);
+    cv.line(ox+22, 22, ox+29, 22, ...c.OUTLINE);
+    cv.line(ox+3,  10, ox+3,  22, ...c.OUTLINE);
+    cv.line(ox+29, 10, ox+29, 22, ...c.OUTLINE);
   }
 
   return cv.toPNG();
@@ -3226,30 +3336,77 @@ function makeNPCPortraits() {
     } = opts;
     const skinBase = skinTone || c.SKIN;
 
-    // ── parchment background + ink border ────────────────────────────────────
-    cv.fillRect(ox, oy, 64, 80, ...c.PARCH_L);
-    // warm gradient: slightly darker at bottom
-    cv.fillRect(ox, oy+60, 64, 20, ...c.PARCH_M, 40);
-    // subtle vignette: darken edges
-    cv.fillRect(ox, oy, 64, 2, ...c.PARCH_D, 60);
-    cv.fillRect(ox, oy+78, 64, 2, ...c.PARCH_D, 60);
-    cv.fillRect(ox, oy, 2, 80, ...c.PARCH_D, 40);
-    cv.fillRect(ox+62, oy, 2, 80, ...c.PARCH_D, 40);
-    // decorative corner flourishes (ink dot cluster)
-    cv.sp(ox+2, oy+2, ...c.INK, 100); cv.sp(ox+3, oy+2, ...c.INK, 60);
-    cv.sp(ox+2, oy+3, ...c.INK, 60);
-    cv.sp(ox+61, oy+2, ...c.INK, 100); cv.sp(ox+60, oy+2, ...c.INK, 60);
-    cv.sp(ox+61, oy+3, ...c.INK, 60);
-    cv.sp(ox+2, oy+77, ...c.INK, 100); cv.sp(ox+3, oy+77, ...c.INK, 60);
-    cv.sp(ox+2, oy+76, ...c.INK, 60);
-    cv.sp(ox+61, oy+77, ...c.INK, 100); cv.sp(ox+60, oy+77, ...c.INK, 60);
-    cv.sp(ox+61, oy+76, ...c.INK, 60);
+    // ── parchment background — SPA-703 illuminated manuscript upgrade ────────
+    // Faction-tinted background: subtle coloured velvet/cloth feel for body area
+    const factionBg = archetype === 'merchant' ? [34, 56, 100] :
+                      archetype === 'noble'    ? [70, 14, 32]  :
+                      archetype === 'clergy'   ? [195, 188, 172] :
+                      archetype === 'guard' || archetype === 'captain' ? [62, 58, 48] :
+                                                 [130, 108, 72];
+    cv.fillRect(ox, oy, 64, 80, ...c.PARCH_M);
+    // Faction-tinted drape in the lower body area (behind figure)
+    for (let dy = 0; dy < 80; dy++) {
+      const alpha = dy < 28 ? 0 : Math.min(50, (dy-28)*2);
+      cv.fillRect(ox+1, oy+dy, 62, 1, ...factionBg, alpha);
+    }
+    // Vellum grain on parchment top (face area stays neutral)
+    for (let gy = oy+1; gy < oy+28; gy += 2)
+      for (let gx = ox+2; gx < ox+62; gx++)
+        if (Math.random() < 0.12) cv.sp(gx, gy, ...c.PARCH_L, 45);
+    // Bottom gradient darkening
+    cv.fillRect(ox, oy+68, 64, 12, ...c.PARCH_D, 30);
+
+    // ── outer ink border (heavy) ───────────────────────────────────────────
     cv.line(ox,    oy,    ox+63, oy,    ...c.INK);
     cv.line(ox,    oy,    ox,    oy+79, ...c.INK);
     cv.line(ox+63, oy,    ox+63, oy+79, ...c.INK);
     cv.line(ox,    oy+79, ox+63, oy+79, ...c.INK);
-    cv.line(ox+1,  oy+1,  ox+62, oy+1,  ...c.PARCH_M, 80);
-    cv.line(ox+1,  oy+1,  ox+1,  oy+78, ...c.PARCH_M, 80);
+    // ── inner border (finer rule — double-line frame) ──────────────────────
+    cv.line(ox+2,  oy+2,  ox+61, oy+2,  ...c.INK, 120);
+    cv.line(ox+2,  oy+2,  ox+2,  oy+77, ...c.INK, 120);
+    cv.line(ox+61, oy+2,  ox+61, oy+77, ...c.INK, 120);
+    cv.line(ox+2,  oy+77, ox+61, oy+77, ...c.INK, 120);
+    // ── tertiary faint rule (triple-line — Pentiment feel) ─────────────────
+    cv.line(ox+4,  oy+4,  ox+59, oy+4,  ...c.PARCH_D, 80);
+    cv.line(ox+4,  oy+4,  ox+4,  oy+75, ...c.PARCH_D, 80);
+    cv.line(ox+59, oy+4,  ox+59, oy+75, ...c.PARCH_D, 80);
+    cv.line(ox+4,  oy+75, ox+59, oy+75, ...c.PARCH_D, 80);
+
+    // ── corner medallions (illuminated manuscript cross-and-bead) ─────────
+    const portCorner = (cx, cy) => {
+      cv.fillPoly([[cx,cy-2],[cx+2,cy],[cx,cy+2],[cx-2,cy]], ...c.INK, 210);
+      cv.sp(cx, cy, ...c.PARCH_L, 170);       // centre highlight
+      // arms
+      [[3,0],[-3,0],[0,3],[0,-3]].forEach(([dx,dy]) => {
+        cv.sp(cx+dx, cy+dy, ...c.INK, 150);
+        cv.sp(cx+dx*2, cy+dy*2, ...c.INK, 90);
+      });
+      // diagonal dots
+      [[2,2],[-2,2],[2,-2],[-2,-2]].forEach(([dx,dy]) =>
+        cv.sp(cx+dx, cy+dy, ...c.INK, 80));
+    };
+    portCorner(ox+8,  oy+8);   // top-left
+    portCorner(ox+55, oy+8);   // top-right
+    portCorner(ox+8,  oy+71);  // bot-left
+    portCorner(ox+55, oy+71);  // bot-right
+
+    // ── faction stripe: top accent band ───────────────────────────────────
+    const factionStripe = archetype === 'merchant' ? c.MERCH_B :
+                          archetype === 'noble'    ? c.NOBLE_B :
+                          archetype === 'clergy'   ? c.CLERGY_T :
+                          archetype === 'guard' || archetype === 'captain' ? c.STONE_D :
+                                                     c.DIRT_D;
+    cv.fillRect(ox+3, oy+1, 58, 1, ...factionStripe, 90);
+
+    // ── mid-border vine beads (between corners on each edge) ──────────────
+    [18, 32, 46].forEach(t => {
+      cv.sp(ox+t, oy+1,  ...c.INK, 100);
+      cv.sp(ox+t, oy+78, ...c.INK, 100);
+    });
+    [20, 35, 55].forEach(t => {
+      cv.sp(ox+1,  oy+t, ...c.INK, 100);
+      cv.sp(ox+62, oy+t, ...c.INK, 100);
+    });
 
     // ── head — organic shape (21×22 core with rounded corners & jaw taper) ───
     const hx = ox+21, hy = oy+10;

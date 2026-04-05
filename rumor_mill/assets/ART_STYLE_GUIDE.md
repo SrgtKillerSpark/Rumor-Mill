@@ -1,8 +1,16 @@
-# Rumor Mill — Art Style Guide (Art Pass 12 / SPA-591)
+# Rumor Mill — Art Style Guide (Art Pass 13 / SPA-703)
 
-**Visual target:** Pentiment × Dwarf Fortress.
+**Visual target:** Pentiment × Dwarf Fortress × illuminated manuscript.
 Desaturated naturals, ink-line silhouettes, warm parchment UI.
 No gradients. No glows (except forge). Limited palette per zone.
+
+### Art Pass 13 changes (SPA-703)
+
+- **Portrait frames** upgraded to triple-line illuminated manuscript border (outer ink rule + inner ink rule + tertiary parchment rule). Corner medallions (cross-and-bead) replace simple dot flourishes.
+- **Faction tinting** applied to portrait body area: Merchant = deep blue drape, Noble = dark crimson, Clergy = warm cream, Guard = slate. Faction stripe accent on top border edge.
+- **Mid-border vine beads** added to portrait edges (authentic manuscript detail).
+- **Parchment 9-slice** border replaced: triple-line frame, cross-and-bead corner medallions, mid-edge beads on all four sides. Aged ink blots increased (3 placements). Vellum grain improved.
+- **Claim icons** fully redrawn: dagger with crossguard + wrapped grip, coin purse with spilled gold coins, speech bubble with forked (red) tongue, detailed iris eye with catch-light, clasped hands with oath ring.
 
 ---
 
@@ -208,6 +216,24 @@ All modal panels and HUD elements use the **parchment palette**:
 - Title text: warm dark brown `#501808` (R80 G24 B8)
 - Hint text: `PARCH_D`
 - Separator lines: `PARCH_D` at 80%
+
+**Parchment 9-slice border design (Art Pass 13):**
+- Outer rule: `INK` at 100% (heavy border)
+- Middle rule: `INK` at 120/255 (secondary frame, 2px inset)
+- Inner rule: `PARCH_D` at 80% (tertiary rule, 4px inset)
+- Corner medallions: cross-and-bead (diamond filled `INK` + `PARCH_L` center highlight, four arms with bead tips, diagonal tracery dots)
+- Mid-edge beads: 3 per side at positions 15/23/32px along each border
+
+**NPC portrait frame design (Art Pass 13):**
+- Same triple-line frame as parchment 9-slice
+- Faction stripe: 1px `faction_color` at 90% on top border interior
+- Corner medallions at px offsets (8, 8), (55, 8), (8, 71), (55, 71) within each 64×80 cell
+- Mid-border beads: 3 per horizontal edge, 3 per vertical edge
+- Body background: faction-tinted drape (alpha 0→50 from face to bottom)
+  - Merchant: deep blue `[34, 56, 100]`
+  - Noble: dark crimson `[70, 14, 32]`
+  - Clergy: warm cream `[195, 188, 172]`
+  - Guard/Captain: slate `[62, 58, 48]`
 
 **Faction badge icons** (`ui_faction_badges.png`, 72×24, three 24×24 shields):
 
