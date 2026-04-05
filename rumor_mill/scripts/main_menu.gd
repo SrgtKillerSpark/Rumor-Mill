@@ -56,6 +56,8 @@ const SCENARIO_ACCENT := {
 	"scenario_2": Color(0.85, 0.70, 0.20, 1.0),   # amber — moderate
 	"scenario_3": Color(0.85, 0.40, 0.15, 1.0),   # burnt orange — challenging
 	"scenario_4": Color(0.85, 0.18, 0.12, 1.0),   # crimson — expert
+	"scenario_5": Color(0.85, 0.40, 0.15, 1.0),   # burnt orange — challenging
+	"scenario_6": Color(0.85, 0.18, 0.12, 1.0),   # crimson — expert
 }
 
 # SPA-589: Human-readable difficulty labels per scenario.
@@ -64,6 +66,8 @@ const SCENARIO_DIFFICULTY := {
 	"scenario_2": "Moderate",
 	"scenario_3": "Challenging",
 	"scenario_4": "Expert",
+	"scenario_5": "Challenging",
+	"scenario_6": "Expert",
 }
 
 enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS }
@@ -85,6 +89,9 @@ var _selected_card_idx:  int        = -1
 
 # HowToPlay overlay ref
 var _how_to_play:        CanvasLayer = null
+
+# Continue button (disabled when no saves exist)
+var _btn_continue:       Button      = null
 
 # SPA-589: Atmospheric dusk background elements
 var _dusk_sky:           ColorRect   = null  # gradient sky background
@@ -383,32 +390,43 @@ func _process(delta: float) -> void:
 # ── Phase 1: Main Menu panel ──────────────────────────────────────────────────
 
 func _build_main_panel() -> void:
-	# SPA-589: Parchment scroll overlay — taller panel with atmospheric styling.
-	_panel_main = _make_parchment_panel(440, 420)
+	# SPA-685: Redesigned parchment scroll with medieval manuscript title.
+	_panel_main = _make_parchment_panel(440, 520)
 	add_child(_panel_main)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 14)
+	vbox.add_theme_constant_override("separation", 8)
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_panel_main.add_child(vbox)
 
-	# SPA-589: Ornamental top flourish (a thin amber line).
-	var flourish := ColorRect.new()
-	flourish.color = Color(0.957, 0.651, 0.227, 0.50)
-	flourish.custom_minimum_size = Vector2(0, 2)
-	vbox.add_child(flourish)
+	# SPA-685: Top decorative flourish — ornamental manuscript border.
+	var top_flourish := _make_manuscript_flourish()
+	vbox.add_child(top_flourish)
 
-	# Title
+	# Spacer above title
+	var spacer_top := Control.new()
+	spacer_top.custom_minimum_size = Vector2(0, 6)
+	vbox.add_child(spacer_top)
+
+	# SPA-685: Medieval manuscript title — larger, with decorative framing.
 	var title := Label.new()
 	title.text = "RUMOR MILL"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 48)
+	title.add_theme_font_size_override("font_size", 52)
 	title.add_theme_color_override("font_color", C_TITLE)
 	vbox.add_child(title)
 
-	# SPA-589: Atmospheric subtitle referencing Lamplighter Square.
+	# SPA-685: Decorative dash separator below title (manuscript style).
+	var title_sep := Label.new()
+	title_sep.text = "\u2014  \u273D  \u2014"
+	title_sep.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_sep.add_theme_font_size_override("font_size", 14)
+	title_sep.add_theme_color_override("font_color", Color(0.75, 0.55, 0.20, 0.70))
+	vbox.add_child(title_sep)
+
+	# SPA-685: Atmospheric subtitle referencing Lamplighter Square.
 	var tagline := Label.new()
-	tagline.text = "Whispers in the Lamplighter's Square"
+	tagline.text = "Whispers in the Lamplighter\u2019s Square"
 	tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	tagline.add_theme_font_size_override("font_size", 14)
 	tagline.add_theme_color_override("font_color", C_SUBHEADING)
@@ -421,22 +439,30 @@ func _build_main_panel() -> void:
 	subtitle.add_theme_color_override("font_color", C_MUTED)
 	vbox.add_child(subtitle)
 
-	vbox.add_child(_separator())
+	# SPA-685: Bottom decorative flourish.
+	var bot_flourish := _make_manuscript_flourish()
+	vbox.add_child(bot_flourish)
 
 	# Spacer
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0, 6)
+	spacer.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(spacer)
 
-	# Buttons
+	# SPA-685: Buttons — New Game / Continue / How to Play / Settings / Credits / Statistics / Quit
 	var btn_row := VBoxContainer.new()
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	btn_row.add_theme_constant_override("separation", 10)
 	vbox.add_child(btn_row)
 
-	var btn_play := _make_button("Play", 200)
-	btn_play.pressed.connect(_on_play_pressed)
-	btn_row.add_child(btn_play)
+	var btn_new_game := _make_button("New Game", 200)
+	btn_new_game.pressed.connect(_on_play_pressed)
+	btn_row.add_child(btn_new_game)
+
+	# SPA-685: Continue — loads the most recent save across all scenarios.
+	_btn_continue = _make_button("Continue", 200)
+	_btn_continue.pressed.connect(_on_continue_pressed)
+	btn_row.add_child(_btn_continue)
+	_refresh_continue_button()
 
 	var btn_howto := _make_button("How to Play", 200)
 	btn_howto.pressed.connect(_on_how_to_play_pressed)
@@ -863,6 +889,61 @@ func _make_selected_stylebox() -> StyleBoxFlat:
 
 
 # ── Button / event handlers ───────────────────────────────────────────────────
+
+## SPA-685: Builds a decorative manuscript-style flourish (amber line with centre ornament).
+func _make_manuscript_flourish() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 0)
+
+	var left_line := ColorRect.new()
+	left_line.color = Color(0.75, 0.55, 0.20, 0.45)
+	left_line.custom_minimum_size = Vector2(100, 1)
+	row.add_child(left_line)
+
+	var diamond := Label.new()
+	diamond.text = " \u25C6 "
+	diamond.add_theme_font_size_override("font_size", 10)
+	diamond.add_theme_color_override("font_color", Color(0.75, 0.55, 0.20, 0.60))
+	row.add_child(diamond)
+
+	var right_line := ColorRect.new()
+	right_line.color = Color(0.75, 0.55, 0.20, 0.45)
+	right_line.custom_minimum_size = Vector2(100, 1)
+	row.add_child(right_line)
+	return row
+
+
+## SPA-685: Refresh Continue button — enable only when saves exist.
+func _refresh_continue_button() -> void:
+	if _btn_continue == null:
+		return
+	var recent := SaveManager.get_most_recent_save(_scenarios)
+	if recent.is_empty():
+		_btn_continue.disabled = true
+		_btn_continue.tooltip_text = "No saved games found."
+	else:
+		_btn_continue.disabled = false
+		var title_str: String = recent.get("scenario_title", recent.get("scenario_id", ""))
+		_btn_continue.tooltip_text = "%s — Day %d" % [title_str, recent.get("day", 1)]
+
+
+## SPA-685: Continue — load the most recent save.
+## Calls prepare_load() so has_pending_load() returns true, then emits
+## begin_game.  main.gd's _on_begin_game will initialise the world
+## and apply_pending_load() restores saved state.
+func _on_continue_pressed() -> void:
+	var recent := SaveManager.get_most_recent_save(_scenarios)
+	if recent.is_empty():
+		return
+	var scenario_id: String = recent["scenario_id"]
+	var slot: int = recent["slot"]
+	var err: String = SaveManager.prepare_load(scenario_id, slot)
+	if not err.is_empty():
+		push_warning("MainMenu: continue failed — " + err)
+		return
+	begin_game.emit(scenario_id)
+
 
 func _on_play_pressed() -> void:
 	_selected_card_idx = -1

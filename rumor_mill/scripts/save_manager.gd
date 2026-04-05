@@ -58,6 +58,62 @@ static func get_save_info(scenario_id: String, slot: int) -> Dictionary:
 	}
 
 
+## Returns true if any save file exists across all scenarios and slots.
+static func has_any_save() -> bool:
+	var dir := DirAccess.open("user://saves")
+	if dir == null:
+		return false
+	dir.list_dir_begin()
+	var found := false
+	var fname := dir.get_next()
+	while fname != "":
+		if fname.ends_with(".json"):
+			found = true
+			break
+		fname = dir.get_next()
+	dir.list_dir_end()
+	return found
+
+
+## Returns the most recent save across all scenarios and slots.
+## Returns {} if no saves exist.
+## Returns {"scenario_id": String, "slot": int, "day": int, "tick": int,
+##          "scenario_title": String} for the newest save (by file modification time).
+static func get_most_recent_save(scenario_list: Array = []) -> Dictionary:
+	var best: Dictionary = {}
+	var best_time: int = -1
+	# Build scenario id list — use provided list or scan save dir for ids.
+	var ids: Array = []
+	if scenario_list.size() > 0:
+		for sc in scenario_list:
+			ids.append(sc.get("scenarioId", ""))
+	else:
+		for i in range(1, 7):
+			ids.append("scenario_%d" % i)
+	for sid in ids:
+		for slot in range(0, SLOT_COUNT + 1):
+			var path := save_path(sid, slot)
+			if not FileAccess.file_exists(path):
+				continue
+			var mod_time: int = FileAccess.get_modified_time(path)
+			if mod_time > best_time:
+				best_time = mod_time
+				var info := get_save_info(sid, slot)
+				best = {
+					"scenario_id": sid,
+					"slot": slot,
+					"day": info.get("day", 1),
+					"tick": info.get("tick", 0),
+				}
+	# Attach scenario title from the list if available.
+	if not best.is_empty() and scenario_list.size() > 0:
+		for sc in scenario_list:
+			if sc.get("scenarioId", "") == best["scenario_id"]:
+				best["scenario_title"] = sc.get("title", best["scenario_id"])
+				break
+	return best
+
+
 ## Save the current game state to disk.
 ## slot: AUTO_SLOT (0) for auto-save, 1–3 for manual slots.
 ## tutorial_sys: optional TutorialSystem reference; when provided, seen-tooltip
