@@ -1,10 +1,12 @@
 extends Node
 
-## audio_manager.gd — Sprint 7: centralised audio singleton (autoload).
+## audio_manager.gd — Sprint 7 + SPA-491 audio polish.
 ##
 ## Manages three audio layers:
-##   1. Music      — main_theme (looping), crossfades with ambient tracks.
-##   2. Ambient    — ambient_day / ambient_night crossfade on DayNightCycle ticks.
+##   1. Music      — phase-aware music (morning_calm / evening_tension / night_suspense),
+##                   crossfades between phases on game-tick transitions.
+##   2. Ambient    — day/night ambient crossfade OR location-specific ambient (tavern /
+##                   chapel / market / manor) while a building interior is open.
 ##   3. SFX        — polyphonic pool, one-shot sound effects.
 ##
 ## Audio files are loaded from res://assets/audio/.
@@ -12,7 +14,9 @@ extends Node
 ##
 ## Usage (from any script):
 ##   AudioManager.play_sfx("recon_observe")
-##   AudioManager.play_music("main_theme")
+##   AudioManager.play_music("morning_calm", true)   # crossfade
+##   AudioManager.set_location_ambient("tavern")
+##   AudioManager.clear_location_ambient()
 ##   AudioManager.set_sfx_volume_db(-6.0)
 ##
 ## Called by main.gd:
@@ -20,6 +24,7 @@ extends Node
 ##   AudioManager.on_rumor_seeded(...)
 ##   AudioManager.on_rumor_fail()
 ##   AudioManager.on_recon_action(message, success)
+##   AudioManager.on_bribe_executed(npc_name, tick)
 ##   AudioManager.on_win()
 ##   AudioManager.on_fail()
 ##   AudioManager.on_socially_dead(npc_id, npc_name, tick)
@@ -33,13 +38,22 @@ const AUDIO_BASE := "res://assets/audio"
 const DAY_START_HOUR  := 6
 const DAY_END_HOUR    := 20
 
+## Day-phase boundaries (hours, inclusive start).
+## morning = 6-15, evening = 16-19, night = 20-5.
+const MORNING_START := 6
+const EVENING_START := 16
+const NIGHT_START   := 20
+
 ## Crossfade duration in seconds.
 const CROSSFADE_TIME  := 2.0
 
+## Short fade duration for win/fail music fade-out before stinger.
+const STINGER_FADE_TIME := 0.6
+
 ## Default volumes (dB).
-const DEFAULT_MUSIC_DB := -12.0
+const DEFAULT_MUSIC_DB   := -12.0
 const DEFAULT_AMBIENT_DB := -18.0
-const DEFAULT_SFX_DB   := 0.0
+const DEFAULT_SFX_DB     := 0.0
 
 ## Maximum simultaneous SFX voices in the polyphonic pool.
 const SFX_POOL_SIZE := 8
@@ -47,12 +61,22 @@ const SFX_POOL_SIZE := 8
 # ── Audio file map ─────────────────────────────────────────────────────────────
 ## Maps logical name → relative path under AUDIO_BASE.
 ## Artists/designers place .ogg or .wav files at these paths.
-## Sprint 7: using .wav placeholders so audio works without a production encoder.
 ## Swap to .ogg when final royalty-free tracks are ready (replace files + update here).
 const MUSIC_FILES: Dictionary = {
-	"main_theme":    "music/main_theme.wav",
-	"ambient_day":   "music/ambient_day.wav",
-	"ambient_night": "music/ambient_night.wav",
+	# Main gameplay phases — crossfade as the in-game clock advances.
+	"morning_calm":     "music/morning_calm.wav",
+	"evening_tension":  "music/evening_tension.wav",
+	"night_suspense":   "music/night_suspense.wav",
+	# Legacy / menu music.
+	"main_theme":       "music/main_theme.wav",
+	# Day/night ambient layer.
+	"ambient_day":      "music/ambient_day.wav",
+	"ambient_night":    "music/ambient_night.wav",
+	# Location-specific ambient (shown while a building interior is open).
+	"ambient_tavern":   "music/ambient_tavern.wav",
+	"ambient_chapel":   "music/ambient_chapel.wav",
+	"ambient_market":   "music/ambient_market.wav",
+	"ambient_manor":    "music/ambient_manor.wav",
 }
 
 const SFX_FILES: Dictionary = {
@@ -71,6 +95,7 @@ const SFX_FILES: Dictionary = {
 	"new_day":            "sfx/new_day.wav",
 	"reputation_up":      "sfx/reputation_up.wav",
 	"reputation_down":    "sfx/reputation_down.wav",
+	"bribe_coin":         "sfx/bribe_coin.wav",
 }
 
 # ── State ──────────────────────────────────────────────────────────────────────
@@ -78,8 +103,15 @@ const SFX_FILES: Dictionary = {
 ## Currently playing music track name.
 var _current_music: String = ""
 
+## Current day phase ("morning" / "evening" / "night").
+## Set to "" before connect_to_day_night so the first tick always triggers a transition.
+var _current_phase: String = ""
+
 ## True if ambient is currently in "day" mode.
 var _ambient_is_day: bool = true
+
+## Non-empty when a location interior is open and overrides the ambient layer.
+var _location_ambient: String = ""
 
 ## Preloaded stream cache: name → AudioStream (or null if file absent).
 var _music_cache: Dictionary = {}
@@ -190,8 +222,21 @@ func play_music(track_name: String, crossfade: bool = false) -> void:
 		prev_player.stop()
 
 
-## Stop all music.
-func stop_music() -> void:
+## Stop all music, optionally with a short fade-out.
+func stop_music(fade_time: float = 0.0) -> void:
+	if fade_time > 0.0:
+		if _music_tween != null:
+			_music_tween.kill()
+		_music_tween = create_tween()
+		_music_tween.set_parallel(true)
+		_music_tween.tween_property(_music_player_a, "volume_db", -80.0, fade_time)
+		_music_tween.tween_property(_music_player_b, "volume_db", -80.0, fade_time)
+		_music_tween.chain().tween_callback(_stop_music_players)
+	else:
+		_stop_music_players()
+
+
+func _stop_music_players() -> void:
 	_music_player_a.stop()
 	_music_player_b.stop()
 	_current_music = ""
@@ -200,12 +245,45 @@ func stop_music() -> void:
 # ── Public API — Ambient ───────────────────────────────────────────────────────
 
 ## Crossfade ambient layer to day or night track.
+## Skipped when a location ambient is currently active.
 func set_ambient(is_day: bool) -> void:
 	if is_day == _ambient_is_day:
 		return
 	_ambient_is_day = is_day
-
+	if not _location_ambient.is_empty():
+		# Location ambient overrides — remember the day/night state but don't switch.
+		return
 	var track_name: String = "ambient_day" if is_day else "ambient_night"
+	_crossfade_ambient(track_name)
+
+
+## Switch the ambient layer to a location-specific loop while an interior is open.
+## location_id: one of "tavern", "chapel", "market", "manor".
+func set_location_ambient(location_id: String) -> void:
+	var track_map: Dictionary = {
+		"tavern": "ambient_tavern",
+		"chapel": "ambient_chapel",
+		"market": "ambient_market",
+		"manor":  "ambient_manor",
+	}
+	var track: String = track_map.get(location_id, "")
+	if track.is_empty():
+		return
+	_location_ambient = location_id
+	_crossfade_ambient(track)
+
+
+## Restore ambient to the current day/night track after closing a location interior.
+func clear_location_ambient() -> void:
+	if _location_ambient.is_empty():
+		return
+	_location_ambient = ""
+	var track: String = "ambient_day" if _ambient_is_day else "ambient_night"
+	_crossfade_ambient(track)
+
+
+## Internal: crossfade the ambient layer to the given named track.
+func _crossfade_ambient(track_name: String) -> void:
 	var stream: AudioStream = _music_cache.get(track_name, null)
 
 	var next_player  := _ambient_player_b if _ambient_active_a else _ambient_player_a
@@ -253,13 +331,32 @@ func play_sfx_pitched(sfx_name: String, pitch_scale: float) -> void:
 
 func set_music_volume_db(db: float) -> void:
 	_music_volume_db = db
-	_music_player_a.volume_db = db
-	_music_player_b.volume_db = db
+	# If a crossfade tween is running, kill it first to avoid conflicting targets.
+	if _music_tween != null and _music_tween.is_running():
+		_music_tween.kill()
+		_music_tween = null
+		# Snap the currently active player to the new volume and stop the fading one.
+		var active   := _music_player_a if _music_active_a else _music_player_b
+		var inactive := _music_player_b if _music_active_a else _music_player_a
+		active.volume_db = db
+		inactive.stop()
+	else:
+		_music_player_a.volume_db = db
+		_music_player_b.volume_db = db
 
 func set_ambient_volume_db(db: float) -> void:
 	_ambient_volume_db = db
-	_ambient_player_a.volume_db = db
-	_ambient_player_b.volume_db = db
+	# Same crossfade-safe pattern as set_music_volume_db.
+	if _ambient_tween != null and _ambient_tween.is_running():
+		_ambient_tween.kill()
+		_ambient_tween = null
+		var active   := _ambient_player_a if _ambient_active_a else _ambient_player_b
+		var inactive := _ambient_player_b if _ambient_active_a else _ambient_player_a
+		active.volume_db = db
+		inactive.stop()
+	else:
+		_ambient_player_a.volume_db = db
+		_ambient_player_b.volume_db = db
 
 func set_sfx_volume_db(db: float) -> void:
 	_sfx_player.volume_db = db
@@ -268,7 +365,7 @@ func set_sfx_volume_db(db: float) -> void:
 # ── Game-event hooks (called by main.gd) ──────────────────────────────────────
 
 ## Call once after the scene tree is ready, passing the DayNightCycle node.
-## Hooks ambient crossfade and new_day SFX to the cycle's signals.
+## Hooks ambient crossfade, new_day SFX, and phase-music transitions to the cycle.
 func connect_to_day_night(day_night: Node) -> void:
 	if day_night == null:
 		return
@@ -276,7 +373,7 @@ func connect_to_day_night(day_night: Node) -> void:
 		day_night.game_tick.connect(_on_game_tick)
 	if day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_day_changed)
-	# Determine initial ambient state from current tick.
+	# Determine initial ambient and music state from current tick.
 	var initial_hour: int = day_night.current_tick % day_night.ticks_per_day
 	_ambient_is_day = (initial_hour >= DAY_START_HOUR and initial_hour < DAY_END_HOUR)
 	var initial_track := "ambient_day" if _ambient_is_day else "ambient_night"
@@ -286,6 +383,9 @@ func connect_to_day_night(day_night: Node) -> void:
 	if stream != null:
 		ap.volume_db = _ambient_volume_db
 		ap.play()
+	# Kick off phase music immediately.
+	_current_phase = ""
+	_apply_phase_music(initial_hour)
 
 
 ## Called when the player successfully seeds a rumor.
@@ -303,25 +403,56 @@ func on_recon_action(message: String, success: bool) -> void:
 		play_sfx("recon_eavesdrop")
 
 
+## Called when the player successfully bribes an NPC.
+func on_bribe_executed(_npc_name: String, _tick: int) -> void:
+	play_sfx("bribe_coin")
+
+
 ## Called when win condition is reached.
+## Fades out current music, then plays the win stinger.
 func on_win() -> void:
-	play_sfx("win")
-	stop_music()
+	stop_music(STINGER_FADE_TIME)
+	get_tree().create_timer(STINGER_FADE_TIME).timeout.connect(
+		func() -> void: play_sfx("win"), CONNECT_ONE_SHOT)
 
 
 ## Called when fail condition is reached.
+## Fades out current music, then plays the fail stinger.
 func on_fail() -> void:
-	play_sfx("fail")
-	stop_music()
+	stop_music(STINGER_FADE_TIME)
+	get_tree().create_timer(STINGER_FADE_TIME).timeout.connect(
+		func() -> void: play_sfx("fail"), CONNECT_ONE_SHOT)
 
 
 # ── DayNightCycle signal handlers ─────────────────────────────────────────────
 
 func _on_game_tick(tick: int) -> void:
 	var hour: int = tick % 24   # ticks_per_day assumed 24; safe fallback
+	# Ambient day/night crossfade.
 	var should_be_day: bool = (hour >= DAY_START_HOUR and hour < DAY_END_HOUR)
 	if should_be_day != _ambient_is_day:
 		set_ambient(should_be_day)
+	# Music phase transition.
+	_apply_phase_music(hour)
+
+
+func _apply_phase_music(hour: int) -> void:
+	var new_phase: String
+	if hour >= MORNING_START and hour < EVENING_START:
+		new_phase = "morning"
+	elif hour >= EVENING_START and hour < NIGHT_START:
+		new_phase = "evening"
+	else:
+		new_phase = "night"
+	if new_phase == _current_phase:
+		return
+	_current_phase = new_phase
+	var phase_tracks: Dictionary = {
+		"morning": "morning_calm",
+		"evening": "evening_tension",
+		"night":   "night_suspense",
+	}
+	play_music(phase_tracks[new_phase], true)
 
 
 func _on_day_changed(_day: int) -> void:

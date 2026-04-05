@@ -12,6 +12,7 @@ extends CanvasLayer
 ## Intended to be instanced into Main.tscn and toggled by world.gd or the
 ## recon controller when the player interacts with a building.
 
+signal interior_opened
 signal interior_closed
 
 @onready var _overlay:    ColorRect = $Overlay
@@ -39,6 +40,7 @@ func show_interior() -> void:
 	_overlay.visible = true
 	_panel.visible   = true
 	_open = true
+	emit_signal("interior_opened")
 	if _close_btn != null:
 		_close_btn.call_deferred("grab_focus")
 
