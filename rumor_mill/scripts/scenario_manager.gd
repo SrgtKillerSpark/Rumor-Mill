@@ -101,6 +101,15 @@ func get_days_allowed() -> int:
 	return _days_allowed
 
 
+## Returns the NPC heat level that triggers an exposure fail for the active scenario.
+## Returns -1.0 for scenarios where heat does not cause a direct failure (S2, S3, S4, S5).
+func get_heat_ceiling() -> float:
+	match _active_scenario:
+		1: return S1_EXPOSED_HEAT
+		6: return S6_EXPOSED_HEAT
+		_: return -1.0
+
+
 ## Returns the objective card dictionary with keys: mission, winCondition, timeLimit, danger, strategyHint.
 func get_objective_card() -> Dictionary:
 	return _objective_card

@@ -423,6 +423,12 @@ func _refresh_heat() -> void:
 		if h > max_heat:
 			max_heat = h
 
+	# Resolve failure ceiling from the active scenario (if any).
+	var ceiling: float = -1.0
+	var sm = _world_ref.get("scenario_manager") if _world_ref != null else null
+	if sm != null and sm.has_method("get_heat_ceiling"):
+		ceiling = sm.get_heat_ceiling()
+
 	var fraction: float = clampf(max_heat / 100.0, 0.0, 1.0)
 	if _heat_bar_fill != null:
 		_heat_bar_fill.anchor_right = fraction
@@ -440,6 +446,19 @@ func _refresh_heat() -> void:
 		if _heat_count_lbl != null:
 			_heat_count_lbl.text = "%d" % int(max_heat)
 			_heat_count_lbl.add_theme_color_override("font_color", heat_color)
+
+	# Update tooltip to reflect the current failure ceiling.
+	if _heat_row != null:
+		if ceiling > 0.0:
+			_heat_row.tooltip_text = (
+				"Suspicion: highest NPC heat (0-100). Reaches %d → exposed, scenario fails!\n"
+				+ "High heat also makes NPCs reject your rumors (−15%% at 50, −30%% at 75)."
+			) % int(ceiling)
+		else:
+			_heat_row.tooltip_text = (
+				"Suspicion: highest NPC heat (0-100). "
+				+ "High heat makes NPCs reject your rumors (−15%% at 50, −30%% at 75)."
+			)
 
 
 func _build_extra_key_hints() -> void:

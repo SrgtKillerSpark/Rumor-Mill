@@ -279,13 +279,26 @@ func _npc_tooltip_text(npc: Node2D) -> String:
 	if snap == null:
 		return base
 	var result: String = "%s\nRep: %d — %s" % [base, snap.score, ReputationSystem.score_label(snap.score)]
-	# Heat tier label (diegetic — no numeric value shown to player).
+	# Heat: show numeric value, failure ceiling (if any), and conviction penalty tier.
 	if _intel_store != null and _intel_store.heat_enabled:
 		var h := _intel_store.get_heat(npc_id)
+		var ceiling: float = -1.0
+		var sm = _world_ref.get("scenario_manager") if _world_ref != null else null
+		if sm != null and sm.has_method("get_heat_ceiling"):
+			ceiling = sm.get_heat_ceiling()
+		var heat_str: String
+		if ceiling > 0.0:
+			heat_str = "Heat: %d / %d" % [int(h), int(ceiling)]
+		else:
+			heat_str = "Heat: %d" % int(h)
 		if h >= 75.0:
-			result += "\nSuspicious — hard to convince (−30%)"
+			if ceiling > 0.0:
+				heat_str += " — DANGER (failure at %d!)" % int(ceiling)
+			result += "\n" + heat_str + "\nSuspicious — hard to convince (−30%)"
 		elif h >= 50.0:
-			result += "\nWary — harder to convince (−15%)"
+			result += "\n" + heat_str + "\nWary — harder to convince (−15%)"
+		elif h > 0.0:
+			result += "\n" + heat_str
 	# DEFENDING state: explain who this NPC is shielding.
 	if npc._is_defending:
 		var def_name := _resolve_npc_name(npc._defender_target_npc_id)
