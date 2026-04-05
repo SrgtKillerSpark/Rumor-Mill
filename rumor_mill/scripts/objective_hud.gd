@@ -1,25 +1,28 @@
 extends CanvasLayer
 
-## objective_hud.gd — Persistent HUD showing scenario objective and day counter.
+## objective_hud.gd — Persistent 3-tier objective tracker.
 ##
-## Redesigned: top-centre of the screen.
-##   - Large day counter with urgency colouring (green → yellow → red)
-##   - Context-sensitive "what to do next" nudge below day counter
-##   - Plain-language objective line
-##   - Day timeline progress bar (colour matches day counter urgency)
-##   - Win-condition progress bar (green, driven by scenario manager)
-##   - Metrics row: Avg Rep, Believers, Pariahs
-##   - Faction influence mini-panel (merchant / noble / clergy)
+## Tier 1 (always visible): Goal verb headline, win progress bar + milestone
+##   label, day counter with tempo indicator (green/yellow/red based on
+##   progress% vs time%).
+## Tier 2 (placeholder): Reserved for daily planning system.
+## Tier 3 (placeholder): Context-aware suggestion engine slot.
+##
+## Also includes: metrics row, faction influence mini-panel, tutorial nudge,
+## mid-game nudge, dawn bulletin, deadline warnings.
 
-@onready var day_label:        Label     = $Panel/VBox/DayRow/DayLabel
-@onready var day_max_label:    Label     = $Panel/VBox/DayRow/DayMaxLabel
-@onready var time_label:       Label     = $Panel/VBox/DayRow/TimeOfDayLabel
-@onready var objective_label:  Label     = $Panel/VBox/ObjectiveLabel
-@onready var target_label:     Label     = $Panel/VBox/TargetLabel
-@onready var progress_bar:     ColorRect = $Panel/VBox/DayProgressBG/DayProgressBar
-@onready var progress_bg:      ColorRect = $Panel/VBox/DayProgressBG
-@onready var win_progress_bar: ColorRect = $Panel/VBox/WinProgressBG/WinProgressBar
-@onready var win_progress_lbl: Label     = $Panel/VBox/WinProgressBG/WinProgressLabel
+@onready var day_label:          Label          = $Panel/VBox/DayRow/DayLabel
+@onready var day_max_label:      Label          = $Panel/VBox/DayRow/DayMaxLabel
+@onready var days_remaining_lbl: Label          = $Panel/VBox/DayRow/DaysRemaining
+@onready var time_label:         Label          = $Panel/VBox/DayRow/TimeOfDayLabel
+@onready var goal_label:         Label          = $Panel/VBox/GoalLabel
+@onready var progress_bar:       ColorRect      = $Panel/VBox/DayProgressBG/DayProgressBar
+@onready var progress_bg:        ColorRect      = $Panel/VBox/DayProgressBG
+@onready var win_progress_bar:   ColorRect      = $Panel/VBox/WinProgressBG/WinProgressBar
+@onready var win_progress_lbl:   Label          = $Panel/VBox/WinProgressBG/WinProgressLabel
+@onready var milestone_label:    Label          = $Panel/VBox/MilestoneLabel
+@onready var tier2_container:    VBoxContainer  = $Panel/VBox/Tier2Container
+@onready var tier3_container:    VBoxContainer  = $Panel/VBox/Tier3Container
 
 var _scenario_manager: ScenarioManager = null
 var _day_night:        Node            = null
@@ -93,11 +96,32 @@ var _NUDGE_TEXTS: PackedStringArray = PackedStringArray([
 ])
 const C_NUDGE := Color(0.40, 1.0, 0.50, 1.0)  # brighter green for visibility
 
+# ── Tempo indicator colours (progress% vs time%) ────────────────────────────
+const C_TEMPO_AHEAD  := Color(0.30, 0.85, 0.35, 1.0)  # green — ahead of schedule
+const C_TEMPO_ON_PACE := Color(0.95, 0.85, 0.15, 1.0) # yellow — on pace
+const C_TEMPO_BEHIND := Color(0.95, 0.20, 0.10, 1.0)  # red — behind schedule
+
 # ── Urgency colour palette for day counter ───────────────────────────────────
 const C_DAY_SAFE    := Color(0.30, 0.85, 0.35, 1.0)  # green
 const C_DAY_CAUTION := Color(0.95, 0.85, 0.15, 1.0)  # yellow
 const C_DAY_URGENT  := Color(0.95, 0.55, 0.10, 1.0)  # orange
 const C_DAY_CRITICAL := Color(0.95, 0.20, 0.10, 1.0) # red
+
+# ── Milestone tracking ──────────────────────────────────────────────────────
+## The current milestone label being displayed (e.g. "Cracks appearing").
+var _current_milestone_text: String = ""
+## Cached progressMilestones dict from objectiveCard.
+var _progress_milestones: Dictionary = {}
+## Cached goalVerb and goalTarget from objectiveCard.
+var _goal_verb: String = ""
+var _goal_target: String = ""
+
+# ── Tier 3: Suggestion engine ───────────────────────────────────────────────
+var _suggestion_engine: SuggestionEngine = null
+var _tier3_label: Label = null
+var _tier3_tween: Tween = null
+## Last suggestion text — avoid re-animating the same text.
+var _last_suggestion: String = ""
 
 
 func _ready() -> void:
@@ -108,6 +132,7 @@ func _ready() -> void:
 	_build_metrics_row()
 	_build_midgame_nudge()
 	_build_mini_progress()
+	_build_tier3_suggestion()
 
 
 func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: ReputationSystem = null, intel_store: PlayerIntelStore = null) -> void:
@@ -117,6 +142,11 @@ func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: Reput
 	_reputation_system = rep_system
 	_intel_store       = intel_store
 	day_max_label.text = "%d" % _days_allowed
+	# Load Tier 1 objective card data.
+	var card: Dictionary = scenario_manager.get_objective_card()
+	_goal_verb = card.get("goalVerb", "")
+	_goal_target = card.get("goalTarget", "")
+	_progress_milestones = card.get("progressMilestones", {})
 	_refresh()
 	if day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_day_changed)
@@ -134,6 +164,11 @@ func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: Reput
 func setup_world(world: Node2D) -> void:
 	_world_ref = world
 	_build_faction_panel()
+	# Initialize suggestion engine for Tier 3.
+	if _scenario_manager != null and _intel_store != null and _reputation_system != null:
+		_suggestion_engine = SuggestionEngine.new()
+		_suggestion_engine.setup(world, _intel_store, _reputation_system,
+			_scenario_manager, _day_night)
 
 
 func _on_day_changed(_day: int) -> void:
@@ -165,25 +200,31 @@ func _on_tick(_tick: int) -> void:
 	_refresh_nudge()
 	_refresh_midgame_nudge()
 	_refresh_mini_progress()
+	_refresh_tier3_suggestion()
 
 
 func _refresh() -> void:
 	if _scenario_manager == null:
 		return
 
-	# Build a concise objective: "Discredit Edric Fenn — 12 days remaining"
-	var one_liner: String = _scenario_manager.get_objective_one_liner()
+	# Tier 1: Goal verb headline — e.g. "DESTROY Edric Fenn's reputation"
+	if _goal_verb.is_empty():
+		# Fallback to legacy one-liner if no goalVerb set.
+		goal_label.text = _scenario_manager.get_objective_one_liner()
+	else:
+		goal_label.text = "%s %s" % [_goal_verb, _goal_target]
+
+	# Days remaining with tempo colour in DayRow.
 	var current_day: int = _day_night.current_day if _day_night != null else 1
 	var remaining: int = max(_days_allowed - current_day + 1, 0)
-	objective_label.text = "%s — %d day%s remaining" % [
-		one_liner, remaining, "" if remaining == 1 else "s"]
-
-	target_label.text = _scenario_manager.get_win_condition_line()
+	days_remaining_lbl.text = "— %d day%s remain" % [remaining, "" if remaining == 1 else "s"]
 
 	_refresh_time()
 	_refresh_nudge()
 	_refresh_metrics()
 	_refresh_win_progress()
+	_refresh_milestone_label()
+	_refresh_tempo_indicator()
 	_refresh_faction_panel()
 	_refresh_mini_progress()
 
@@ -215,7 +256,7 @@ func _build_o_hint_label() -> void:
 	_o_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(_o_hint_label)
 	# Insert right after ObjectiveLabel.
-	vbox.move_child(_o_hint_label, objective_label.get_index() + 1)
+	vbox.move_child(_o_hint_label, goal_label.get_index() + 1)
 
 
 ## SPA-627: One-time flash banner shown after the initial briefing overlay is dismissed.
@@ -382,6 +423,48 @@ func _start_win_pulse() -> void:
 		Color.WHITE, 0.5)
 
 
+# ── Milestone label (persistent, updates at 25/50/75%) ─────────────────────
+
+func _refresh_milestone_label() -> void:
+	if milestone_label == null or _progress_milestones.is_empty():
+		return
+	var prog: float = _compute_win_progress()
+	var best_text: String = ""
+	var best_threshold: float = 0.0
+	for key in _progress_milestones:
+		var threshold: float = float(key)
+		if prog >= threshold and threshold > best_threshold:
+			best_threshold = threshold
+			best_text = _progress_milestones[key]
+	if best_text != _current_milestone_text:
+		_current_milestone_text = best_text
+		milestone_label.text = best_text
+		if not best_text.is_empty():
+			milestone_label.visible = true
+		else:
+			milestone_label.visible = false
+
+
+# ── Tempo indicator (colour days-remaining based on progress vs time) ──────
+
+func _refresh_tempo_indicator() -> void:
+	if days_remaining_lbl == null:
+		return
+	var prog: float = _compute_win_progress()
+	var time_frac: float = 0.0
+	if _day_night != null and _days_allowed > 1:
+		var current_day: int = _day_night.current_day
+		time_frac = clampf(float(current_day - 1) / float(_days_allowed - 1), 0.0, 1.0)
+	var tempo_color: Color
+	if prog > time_frac + 0.10:
+		tempo_color = C_TEMPO_AHEAD
+	elif prog >= time_frac - 0.10:
+		tempo_color = C_TEMPO_ON_PACE
+	else:
+		tempo_color = C_TEMPO_BEHIND
+	days_remaining_lbl.add_theme_color_override("font_color", tempo_color)
+
+
 ## Returns a plain-English "How am I doing?" assessment based on progress vs time.
 func _get_progress_assessment(prog: float) -> String:
 	var time_frac: float = 0.0
@@ -433,6 +516,22 @@ func _compute_win_progress() -> float:
 			# Survival scenario — progress = days survived / total days.
 			var current_day: int = _day_night.current_day if _day_night != null else 1
 			return clampf(float(current_day) / float(max(_days_allowed, 1)), 0.0, 1.0)
+		"scenario_5":
+			var p5: Dictionary = _scenario_manager.get_scenario_5_progress(_reputation_system)
+			var aldric5: int = p5.get("aldric_score", 48)
+			var edric5: int = p5.get("edric_score", 58)
+			var tomas5: int = p5.get("tomas_score", 45)
+			var pa: float = clampf((aldric5 - 48.0) / (65.0 - 48.0), 0.0, 1.0)
+			var pe: float = clampf((58.0 - edric5) / (58.0 - 45.0), 0.0, 1.0)
+			var pt: float = clampf((45.0 - tomas5) / maxf(45.0 - 45.0, 1.0), 0.0, 1.0)
+			return minf(pa, minf(pe, pt))
+		"scenario_6":
+			var p6: Dictionary = _scenario_manager.get_scenario_6_progress(_reputation_system)
+			var aldric6: int = p6.get("aldric_score", 55)
+			var marta6: int = p6.get("marta_score", 52)
+			var pad: float = clampf((55.0 - aldric6) / (55.0 - 30.0), 0.0, 1.0)
+			var pmu: float = clampf((marta6 - 52.0) / maxf(60.0 - 52.0, 1.0), 0.0, 1.0)
+			return minf(pad, pmu)
 	return 0.0
 
 
@@ -1101,3 +1200,63 @@ func _refresh_mini_progress() -> void:
 		_mini_progress_label.add_theme_color_override("font_color", Color(0.85, 0.70, 0.20, 1.0))
 	else:
 		_mini_progress_label.add_theme_color_override("font_color", Color(0.60, 0.55, 0.45, 0.6))
+
+
+# ── Tier 3: Suggestion engine HUD slot ─────────────────────────────────────
+
+const C_SUGGESTION := Color(0.80, 0.90, 0.65, 1.0)
+
+func _build_tier3_suggestion() -> void:
+	if tier3_container == null:
+		return
+	_tier3_label = Label.new()
+	_tier3_label.text = ""
+	_tier3_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tier3_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tier3_label.add_theme_font_size_override("font_size", 12)
+	_tier3_label.add_theme_color_override("font_color", C_SUGGESTION)
+	_tier3_label.add_theme_constant_override("outline_size", 2)
+	_tier3_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_tier3_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tier3_label.visible = false
+	tier3_container.add_child(_tier3_label)
+
+
+func _refresh_tier3_suggestion() -> void:
+	# Only activate after tutorial nudges complete (phase >= 4).
+	if _nudge_phase < 4:
+		return
+	if _suggestion_engine == null or _tier3_label == null:
+		return
+
+	_suggestion_engine.refresh()
+	var text: String = _suggestion_engine.get_suggestion()
+
+	if text == _last_suggestion:
+		return
+	_last_suggestion = text
+
+	if text.is_empty():
+		_fade_tier3(false)
+		return
+
+	_tier3_label.text = "→ " + text
+	_fade_tier3(true)
+
+
+func _fade_tier3(show: bool) -> void:
+	if _tier3_label == null:
+		return
+	if _tier3_tween != null and _tier3_tween.is_valid():
+		_tier3_tween.kill()
+	if show:
+		_tier3_label.visible = true
+		_tier3_label.modulate.a = 0.0
+		_tier3_tween = create_tween()
+		_tier3_tween.tween_property(_tier3_label, "modulate:a", 1.0, 0.3) \
+			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	else:
+		_tier3_tween = create_tween()
+		_tier3_tween.tween_property(_tier3_label, "modulate:a", 0.0, 0.3) \
+			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+		_tier3_tween.tween_callback(func() -> void: _tier3_label.visible = false)

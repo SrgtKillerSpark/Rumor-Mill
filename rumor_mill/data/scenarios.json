@@ -58,7 +58,14 @@
       "timeLimit": "You have 30 days.",
       "danger": "If you are caught eavesdropping, the town will know your face.",
       "strategyHint": "Edric is too proud to believe rumors about himself. Target the people around him — damage faction sentiment among merchants and nobles to erode his support.",
-      "firstAction": "Right-click a building (try the Market) to Observe who is inside. Then right-click two NPCs in conversation to Eavesdrop on their relationship. Use what you learn to craft your first Scandal rumor (press R)."
+      "firstAction": "Right-click a building (try the Market) to Observe who is inside. Then right-click two NPCs in conversation to Eavesdrop on their relationship. Use what you learn to craft your first Scandal rumor (press R).",
+      "goalVerb": "DESTROY",
+      "goalTarget": "Edric Fenn's reputation",
+      "progressMilestones": {
+        "0.25": "Cracks appearing",
+        "0.50": "Reputation damaged",
+        "0.75": "Near collapse"
+      }
     },
     "milestoneToasts": [
       { "threshold": 0.25, "message": "The whispers are taking hold — Edric's name is tarnished." },
@@ -240,7 +247,14 @@
       "timeLimit": "You have 24 days.",
       "danger": "Sister Maren is skeptical and watchful. If Maren rejects ANY illness rumor about Alys, a 2-day grace window begins — fail to recover and you lose.",
       "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle.",
-      "firstAction": "Observe the Market or Apothecary to find NPCs connected to Alys. Then press R, pick Alys as the subject, choose Illness as the claim, and whisper it to someone credulous like Sybil Oats."
+      "firstAction": "Observe the Market or Apothecary to find NPCs connected to Alys. Then press R, pick Alys as the subject, choose Illness as the claim, and whisper it to someone credulous like Sybil Oats.",
+      "goalVerb": "SPREAD",
+      "goalTarget": "illness panic about the Herbwife",
+      "progressMilestones": {
+        "0.25": "Seeds planted",
+        "0.50": "Panic growing",
+        "0.75": "Town gripped by fear"
+      }
     },
     "milestoneToasts": [
       { "threshold": 0.25, "message": "Fear spreads — the lie finds its first believers." },
@@ -415,7 +429,14 @@
       "timeLimit": "You have 27 days.",
       "danger": "If Calder's reputation drops below 35, instant fail. A rival agent is actively working against you.",
       "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter. Tomas has weak loyalties — rumors stick.",
-      "firstAction": "Observe a building to find Calder's allies. Press R to craft a Praise rumor about Calder and whisper it to a well-connected NPC. Then craft a Scandal about Tomas and seed it through the merchants."
+      "firstAction": "Observe a building to find Calder's allies. Press R to craft a Praise rumor about Calder and whisper it to a well-connected NPC. Then craft a Scandal about Tomas and seed it through the merchants.",
+      "goalVerb": "ELEVATE",
+      "goalTarget": "Calder above Tomas",
+      "progressMilestones": {
+        "0.25": "Calder gaining ground",
+        "0.50": "Power shifting",
+        "0.75": "Succession within reach"
+      }
     },
     "milestoneToasts": [
       { "threshold": 0.25, "message": "The ground shifts — Calder rises as Tomas stumbles." },
@@ -597,7 +618,14 @@
       "timeLimit": "You have 20 days.",
       "danger": "Finn is the most vulnerable — impressionable and wavering in loyalty, he absorbs slander more readily than the others. The Inquisitor is a relentless opponent who actively spreads accusations on a cooldown that accelerates over time.",
       "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera.",
-      "firstAction": "Check the Scenario HUD to see who is closest to 45. Press R, choose the most threatened NPC as the subject, select Praise as the claim, and whisper it to their strongest ally."
+      "firstAction": "Check the Scenario HUD to see who is closest to 45. Press R, choose the most threatened NPC as the subject, select Praise as the claim, and whisper it to their strongest ally.",
+      "goalVerb": "PROTECT",
+      "goalTarget": "the accused from the Inquisitor",
+      "progressMilestones": {
+        "0.25": "Shields holding",
+        "0.50": "Defenses tested",
+        "0.75": "Safety almost secured"
+      }
     },
     "milestoneToasts": [
       { "threshold": 0.25, "message": "A quarter done — your charges still stand. Hold the line." },
@@ -795,7 +823,14 @@
       "timeLimit": "You have 25 days. The Prior's endorsement happens on day 15.",
       "danger": "If Aldric drops below 30, instant fail. The Prior endorses whoever leads on day 15 — a +8 boost that could decide the race.",
       "strategyHint": "Three-front war. Boost Aldric through the merchant chain (Sybil, Nell, Greta). Undermine Edric through his weaker noble ties (Annit, Old Hugh). Undermine Tomas through his common-folk connections (Sim, Constance). Time everything around the day-15 endorsement.",
-      "firstAction": "Observe the Market to find Aldric's merchant allies. Press R to craft a Praise rumor about Aldric and whisper it to Sybil Oats — she is the most connected merchant. Then start seeding Scandal rumors against whichever rival is currently leading."
+      "firstAction": "Observe the Market to find Aldric's merchant allies. Press R to craft a Praise rumor about Aldric and whisper it to Sybil Oats — she is the most connected merchant. Then start seeding Scandal rumors against whichever rival is currently leading.",
+      "goalVerb": "ELECT",
+      "goalTarget": "Aldric as the new Alderman",
+      "progressMilestones": {
+        "0.25": "Campaign begun",
+        "0.50": "Momentum building",
+        "0.75": "Victory in sight"
+      }
     },
     "milestoneToasts": [
       { "threshold": 0.25, "message": "The campaign is gaining traction — Aldric's name is on every tongue." },
@@ -996,7 +1031,14 @@
       "timeLimit": "You have 22 days.",
       "danger": "Heat ceiling is 60 (not 80) — the guards are on Aldric's payroll. If Marta's reputation drops below 30, instant fail. Aldric's merchant allies actively defend him with praise rumors every 3 days.",
       "strategyHint": "The merchant quarter is Aldric's stronghold — his allies will actively counter your rumors there. Route accusations through the clergy chain (Aldous → Maren → Vera → Constance) and the commons (Nell, Greta, Old Hugh). Boost Marta through her connections to Sim Carter and Nell Picker.",
-      "firstAction": "Observe the Chapel to find clergy NPCs disconnected from Aldric. Press R to craft an Accusation about Aldric (embezzlement) and whisper it to Finn Monk or Constance Widow — they have low loyalty and high connections outside the merchant quarter."
+      "firstAction": "Observe the Chapel to find clergy NPCs disconnected from Aldric. Press R to craft an Accusation about Aldric (embezzlement) and whisper it to Finn Monk or Constance Widow — they have low loyalty and high connections outside the merchant quarter.",
+      "goalVerb": "RUIN",
+      "goalTarget": "the Merchant and elevate Marta",
+      "progressMilestones": {
+        "0.25": "Foundations shaking",
+        "0.50": "Balance tipping",
+        "0.75": "Reversal nearly complete"
+      }
     },
     "milestoneToasts": [
       { "threshold": 0.25, "message": "The first cracks appear — whispers of missing silver spread." },
