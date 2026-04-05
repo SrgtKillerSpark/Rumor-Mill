@@ -1,0 +1,272 @@
+[gd_scene format=3 uid="uid://daily_planning_overlay"]
+
+[node name="DailyPlanningOverlay" type="CanvasLayer"]
+layer = 10
+
+# ── Full-screen dim backdrop ──
+[node name="DimBG" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.03, 0.02, 0.01, 0.70)
+
+# ── Main panel: bottom-anchored, full-width, 40% screen height ──
+[node name="PlanningPanel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.6
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+
+[node name="PanelBG" type="ColorRect" parent="PlanningPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.09, 0.06, 0.04, 0.96)
+
+[node name="TopBorder" type="ColorRect" parent="PlanningPanel"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 3.0
+color = Color(0.55, 0.38, 0.18, 1.0)
+
+# ── Content margin ──
+[node name="ContentMargin" type="MarginContainer" parent="PlanningPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 6.0
+offset_bottom = -6.0
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_bottom = 4
+
+# ── Top-level horizontal split: Left (bulletin) | Right (priorities + actions) ──
+[node name="MainHBox" type="HBoxContainer" parent="PlanningPanel/ContentMargin"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+# ════════════════════════════════════════
+#   LEFT COLUMN — Dawn Bulletin
+# ════════════════════════════════════════
+[node name="LeftColumn" type="VBoxContainer" parent="PlanningPanel/ContentMargin/MainHBox"]
+custom_minimum_size = Vector2(320, 0)
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.45
+theme_override_constants/separation = 6
+
+# ── Dawn header ──
+[node name="DawnHeader" type="Label" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn"]
+text = "DAWN — DAY 1"
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.92, 0.78, 0.12, 1.0)
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
+
+[node name="HeaderSep" type="HSeparator" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn"]
+theme_override_colors/separator_color = Color(0.55, 0.38, 0.18, 0.6)
+
+# ── Overnight label ──
+[node name="OvernightTitle" type="Label" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn"]
+text = "OVERNIGHT:"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.65, 0.55, 0.35, 1.0)
+
+# ── Bulletin scroll area ──
+[node name="BulletinScroll" type="ScrollContainer" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn"]
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="BulletinVBox" type="VBoxContainer" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn/BulletinScroll"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="BulletinLine1" type="Label" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn/BulletinScroll/BulletinVBox"]
+text = "- No events overnight"
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.80, 0.72, 0.56, 1.0)
+
+# ── Available actions summary ──
+[node name="ActionsSep" type="HSeparator" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn"]
+theme_override_colors/separator_color = Color(0.55, 0.38, 0.18, 0.4)
+
+[node name="ActionsRow" type="HBoxContainer" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn"]
+theme_override_constants/separation = 16
+
+[node name="ObservationsLabel" type="Label" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn/ActionsRow"]
+text = "3 Observations"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.30, 0.85, 0.35, 1.0)
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
+
+[node name="WhispersLabel" type="Label" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn/ActionsRow"]
+text = "2 Whispers"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.55, 0.80, 0.90, 1.0)
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
+
+[node name="BribesLabel" type="Label" parent="PlanningPanel/ContentMargin/MainHBox/LeftColumn/ActionsRow"]
+text = "1 Bribe"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.92, 0.78, 0.12, 1.0)
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
+
+# ── Vertical separator between columns ──
+[node name="ColumnSep" type="VSeparator" parent="PlanningPanel/ContentMargin/MainHBox"]
+theme_override_colors/separator_color = Color(0.55, 0.38, 0.18, 0.5)
+
+# ════════════════════════════════════════
+#   RIGHT COLUMN — Priority Selection
+# ════════════════════════════════════════
+[node name="RightColumn" type="VBoxContainer" parent="PlanningPanel/ContentMargin/MainHBox"]
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.55
+theme_override_constants/separation = 6
+
+# ── Plan header row ──
+[node name="PlanHeaderRow" type="HBoxContainer" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn"]
+theme_override_constants/separation = 8
+
+[node name="PlanTitle" type="Label" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/PlanHeaderRow"]
+text = "PLAN YOUR DAY"
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.95, 0.90, 0.72, 1.0)
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
+
+[node name="SelectionHint" type="Label" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/PlanHeaderRow"]
+text = "Choose up to 3"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.55, 0.48, 0.35, 0.8)
+
+[node name="PlanSep" type="HSeparator" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn"]
+theme_override_colors/separator_color = Color(0.55, 0.38, 0.18, 0.6)
+
+# ── Priority options list (ScrollContainer for overflow) ──
+[node name="PriorityScroll" type="ScrollContainer" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn"]
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="PriorityList" type="VBoxContainer" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/PriorityScroll"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+# ── Priority option 1 ──
+[node name="Option1" type="CheckBox" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/PriorityScroll/PriorityList"]
+text = "Gather intel at the Market"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.80, 0.72, 0.56, 1.0)
+theme_override_colors/font_pressed_color = Color(0.30, 0.85, 0.35, 1.0)
+
+# ── Priority option 2 ──
+[node name="Option2" type="CheckBox" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/PriorityScroll/PriorityList"]
+text = "Seed rumor to a clergy member"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.80, 0.72, 0.56, 1.0)
+theme_override_colors/font_pressed_color = Color(0.30, 0.85, 0.35, 1.0)
+
+# ── Priority option 3 ──
+[node name="Option3" type="CheckBox" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/PriorityScroll/PriorityList"]
+text = "Check on rumor spread (Journal)"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.80, 0.72, 0.56, 1.0)
+theme_override_colors/font_pressed_color = Color(0.30, 0.85, 0.35, 1.0)
+
+# ── Priority option 4 ──
+[node name="Option4" type="CheckBox" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/PriorityScroll/PriorityList"]
+text = "Eavesdrop at the Chapel"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.80, 0.72, 0.56, 1.0)
+theme_override_colors/font_pressed_color = Color(0.30, 0.85, 0.35, 1.0)
+
+# ── Priority option 5 ──
+[node name="Option5" type="CheckBox" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/PriorityScroll/PriorityList"]
+text = "Bribe a suspicious NPC"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.80, 0.72, 0.56, 1.0)
+theme_override_colors/font_pressed_color = Color(0.30, 0.85, 0.35, 1.0)
+
+# ── Priority option 6 ──
+[node name="Option6" type="CheckBox" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/PriorityScroll/PriorityList"]
+text = "Wait and observe"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.80, 0.72, 0.56, 1.0)
+theme_override_colors/font_pressed_color = Color(0.30, 0.85, 0.35, 1.0)
+
+# ── Button row at the bottom ──
+[node name="ButtonSep" type="HSeparator" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn"]
+theme_override_colors/separator_color = Color(0.55, 0.38, 0.18, 0.4)
+
+[node name="ButtonRow" type="HBoxContainer" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn"]
+custom_minimum_size = Vector2(0, 36)
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="SkipLabel" type="Label" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/ButtonRow"]
+text = "Space: Skip Planning"
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.50, 0.44, 0.32, 0.7)
+
+[node name="Spacer" type="Control" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/ButtonRow"]
+size_flags_horizontal = 3
+
+[node name="BeginDayButton" type="Button" parent="PlanningPanel/ContentMargin/MainHBox/RightColumn/ButtonRow"]
+custom_minimum_size = Vector2(160, 32)
+text = "BEGIN DAY"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.95, 0.90, 0.72, 1.0)
+theme_override_colors/font_hover_color = Color(0.30, 0.85, 0.35, 1.0)
+
+# ════════════════════════════════════════
+#   S1 TUTORIAL HINT — shown only during Scenario 1
+# ════════════════════════════════════════
+[node name="TutorialHint" type="Panel" parent="PlanningPanel"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = 24.0
+offset_top = -44.0
+offset_right = -24.0
+offset_bottom = -6.0
+visible = false
+
+[node name="TutorialBG" type="ColorRect" parent="PlanningPanel/TutorialHint"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.12, 0.08, 0.04, 0.94)
+
+[node name="TutorialBorder" type="ColorRect" parent="PlanningPanel/TutorialHint"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 2.0
+color = Color(0.30, 0.85, 0.35, 0.7)
+
+[node name="TutorialLabel" type="Label" parent="PlanningPanel/TutorialHint"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_right = -12.0
+text = "TIP: Pick priorities that match your objective. Completed priorities give bonus insight."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.30, 0.85, 0.35, 0.9)
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
