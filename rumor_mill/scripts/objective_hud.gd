@@ -59,6 +59,19 @@ var _o_hint_label: Label = null
 var _win_pulse_tween: Tween = null
 var _win_pulse_active: bool = false
 
+# ── SPA-648: Mid-game guidance nudge system ─────────────────────────────────
+## Slide-in contextual nudge label (bottom-right, below toast area).
+var _midgame_nudge_label: Label = null
+var _midgame_nudge_bg: ColorRect = null
+var _midgame_nudge_tween: Tween = null
+## Throttle: only one mid-game nudge per day-phase (tick / ticks_per_day combo).
+var _midgame_nudge_last_phase_key: String = ""
+## Track journal "unseen" state transitions for the journal-check nudge.
+var _midgame_last_seen_rumor_states: Dictionary = {}  # rumor_id → state string
+
+# ── SPA-648: Mini objective progress indicator (near day counter) ───────────
+var _mini_progress_label: Label = null
+
 var _faction_panel: Panel = null
 var _faction_labels: Dictionary = {}  # faction_id → {mood: Label, bar: ColorRect}
 var _world_ref: Node2D = null
@@ -93,6 +106,8 @@ func _ready() -> void:
 	_build_o_hint_label()
 	_build_banner()
 	_build_metrics_row()
+	_build_midgame_nudge()
+	_build_mini_progress()
 
 
 func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: ReputationSystem = null, intel_store: PlayerIntelStore = null) -> void:
@@ -148,6 +163,8 @@ func _pulse_day_counter() -> void:
 func _on_tick(_tick: int) -> void:
 	_refresh_time()
 	_refresh_nudge()
+	_refresh_midgame_nudge()
+	_refresh_mini_progress()
 
 
 func _refresh() -> void:
@@ -168,6 +185,7 @@ func _refresh() -> void:
 	_refresh_metrics()
 	_refresh_win_progress()
 	_refresh_faction_panel()
+	_refresh_mini_progress()
 
 
 # ── Context-sensitive nudge (SPA-520) ───────────────────────────────────────
@@ -826,9 +844,15 @@ func _show_dawn_bulletin() -> void:
 		var arrow: String = "+" if delta > 0 else ""
 		var npc_name: String = npc_id.replace("_", " ").capitalize()
 		lines.append("%s %s%d (%d)" % [npc_name, arrow, delta, snap.score])
-	if lines.is_empty():
+	# SPA-648: Prepend strategic summary line (active rumors, believers, expirations).
+	var summary_line: String = _build_dawn_summary_text()
+	if lines.is_empty() and summary_line.is_empty():
 		return
-	var bulletin: String = "Dawn Report\n" + "\n".join(lines)
+	var bulletin: String = "Dawn Report"
+	if not summary_line.is_empty():
+		bulletin += "\n" + summary_line
+	if not lines.is_empty():
+		bulletin += "\n" + "\n".join(lines)
 	_show_banner(bulletin, Color(0.85, 0.78, 0.55, 1.0), 8.0)
 
 
@@ -845,3 +869,235 @@ func _on_deadline_warning(threshold: float, days_remaining: int) -> void:
 	var text: String = "%s - %d day%s remaining!" % [
 		urgency, days_remaining, "" if days_remaining == 1 else "s"]
 	_show_banner(text, color, 5.0)
+
+
+# ── SPA-648: Mid-game guidance nudge (slide-in from bottom-right) ───────────
+
+const C_MIDGAME_NUDGE := Color(0.80, 0.90, 0.65, 1.0)
+const C_MIDGAME_NUDGE_BG := Color(0.08, 0.06, 0.04, 0.85)
+
+func _build_midgame_nudge() -> void:
+	_midgame_nudge_bg = ColorRect.new()
+	_midgame_nudge_bg.color = C_MIDGAME_NUDGE_BG
+	_midgame_nudge_bg.anchor_left = 1.0
+	_midgame_nudge_bg.anchor_right = 1.0
+	_midgame_nudge_bg.anchor_top = 1.0
+	_midgame_nudge_bg.anchor_bottom = 1.0
+	_midgame_nudge_bg.offset_left = -340.0
+	_midgame_nudge_bg.offset_right = -8.0
+	_midgame_nudge_bg.offset_top = -60.0
+	_midgame_nudge_bg.offset_bottom = -8.0
+	_midgame_nudge_bg.modulate.a = 0.0
+	_midgame_nudge_bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	_midgame_nudge_bg.gui_input.connect(_on_midgame_nudge_clicked)
+	add_child(_midgame_nudge_bg)
+
+	_midgame_nudge_label = Label.new()
+	_midgame_nudge_label.text = ""
+	_midgame_nudge_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_midgame_nudge_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_midgame_nudge_label.offset_left = 8.0
+	_midgame_nudge_label.offset_top = 6.0
+	_midgame_nudge_label.offset_right = -8.0
+	_midgame_nudge_label.offset_bottom = -6.0
+	_midgame_nudge_label.add_theme_font_size_override("font_size", 12)
+	_midgame_nudge_label.add_theme_color_override("font_color", C_MIDGAME_NUDGE)
+	_midgame_nudge_label.add_theme_constant_override("outline_size", 2)
+	_midgame_nudge_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_midgame_nudge_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_midgame_nudge_bg.add_child(_midgame_nudge_label)
+
+
+func _on_midgame_nudge_clicked(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		_dismiss_midgame_nudge()
+
+
+func _dismiss_midgame_nudge() -> void:
+	if _midgame_nudge_bg == null:
+		return
+	if _midgame_nudge_tween != null and _midgame_nudge_tween.is_valid():
+		_midgame_nudge_tween.kill()
+	_midgame_nudge_tween = create_tween()
+	_midgame_nudge_tween.tween_property(_midgame_nudge_bg, "modulate:a", 0.0, 0.3) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+
+
+func _show_midgame_nudge(text: String) -> void:
+	if _midgame_nudge_label == null or _midgame_nudge_bg == null:
+		return
+	if _midgame_nudge_tween != null and _midgame_nudge_tween.is_valid():
+		_midgame_nudge_tween.kill()
+	_midgame_nudge_label.text = text
+	_midgame_nudge_bg.modulate.a = 0.0
+	# Slide in: start offscreen to the right, animate to final position.
+	var final_left: float = -340.0
+	_midgame_nudge_bg.offset_left = -8.0  # start collapsed at right edge
+	_midgame_nudge_bg.offset_right = -8.0
+	_midgame_nudge_tween = create_tween()
+	_midgame_nudge_tween.tween_property(_midgame_nudge_bg, "modulate:a", 1.0, 0.4) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	_midgame_nudge_tween.parallel().tween_property(_midgame_nudge_bg, "offset_left", final_left, 0.4) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	# Auto-dismiss after 6 seconds.
+	_midgame_nudge_tween.tween_interval(6.0)
+	_midgame_nudge_tween.tween_property(_midgame_nudge_bg, "modulate:a", 0.0, 0.8) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+
+
+func _refresh_midgame_nudge() -> void:
+	# Only fire after tutorial nudges are done (phase >= 4) and after day 2.
+	if _nudge_phase < 4:
+		return
+	if _day_night == null or _day_night.current_day < 3:
+		return
+
+	# Throttle: max 1 nudge per day-phase (morning/afternoon/evening/night).
+	var tick: int = _day_night.current_tick if "current_tick" in _day_night else 0
+	var tpd: int = _day_night.ticks_per_day if "ticks_per_day" in _day_night else 24
+	var hour: int = tick % tpd
+	var phase_key: String
+	if hour < 6:
+		phase_key = "%d_dawn" % _day_night.current_day
+	elif hour < 12:
+		phase_key = "%d_morning" % _day_night.current_day
+	elif hour < 18:
+		phase_key = "%d_afternoon" % _day_night.current_day
+	else:
+		phase_key = "%d_evening" % _day_night.current_day
+
+	if phase_key == _midgame_nudge_last_phase_key:
+		return
+
+	var nudge_text: String = _pick_midgame_nudge(hour)
+	if nudge_text.is_empty():
+		return
+
+	_midgame_nudge_last_phase_key = phase_key
+	_show_midgame_nudge(nudge_text)
+
+
+func _pick_midgame_nudge(hour_of_day: int) -> String:
+	if _world_ref == null or not "npcs" in _world_ref:
+		return ""
+
+	# Priority 1: A rumor is CONTRADICTED — alert player.
+	for npc in _world_ref.npcs:
+		for rid in npc.rumor_slots:
+			var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+			if slot.state == Rumor.RumorState.CONTRADICTED:
+				return "A rumour was contradicted — consider crafting a new claim to regain momentum."
+
+	# Priority 2: A rumor is STALLING and player has whisper tokens.
+	var stalling_count: int = 0
+	for npc in _world_ref.npcs:
+		for rid in npc.rumor_slots:
+			var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+			if slot.state == Rumor.RumorState.BELIEVE:
+				# BELIEVE but not SPREAD = stalling
+				stalling_count += 1
+	var whispers: int = _intel_store.whisper_tokens_remaining if _intel_store != null else 0
+	if stalling_count > 0 and whispers > 0:
+		return "A rumour is stalling — seed it to a new NPC or bolster with evidence."
+
+	# Priority 3: Unused recon actions past morning.
+	if _intel_store != null and hour_of_day >= 6:
+		var actions: int = _intel_store.recon_actions_remaining
+		var max_actions: int = _intel_store.max_daily_actions
+		if actions == max_actions and max_actions > 0:
+			return "You have unused Recon actions — Observe or Eavesdrop to gather intel."
+
+	# Priority 4: Journal has unseen rumor state changes.
+	var unseen_changes: bool = false
+	for npc in _world_ref.npcs:
+		for rid in npc.rumor_slots:
+			var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+			var state_key: String = "%s_%s" % [rid, str(slot.state)]
+			var prev: String = _midgame_last_seen_rumor_states.get(rid, "")
+			if not prev.is_empty() and prev != state_key:
+				unseen_changes = true
+			_midgame_last_seen_rumor_states[rid] = state_key
+
+	if unseen_changes:
+		return "Check the Journal (J) — rumours have changed since you last looked."
+
+	return ""
+
+
+# ── SPA-648: Enhanced dawn strategic summary ─────────────────────────────────
+
+func _build_dawn_summary_text() -> String:
+	if _reputation_system == null or _world_ref == null or not "npcs" in _world_ref:
+		return ""
+	# Count active rumors.
+	var active_rumors: int = 0
+	var expired_count: int = 0
+	var seen_rids: Dictionary = {}
+	for npc in _world_ref.npcs:
+		for rid in npc.rumor_slots:
+			if seen_rids.has(rid):
+				continue
+			seen_rids[rid] = true
+			var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+			if slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD,
+							   Rumor.RumorState.EVALUATING, Rumor.RumorState.ACT]:
+				active_rumors += 1
+			elif slot.state == Rumor.RumorState.EXPIRED:
+				expired_count += 1
+
+	# Believers delta.
+	var believers: int = _reputation_system.get_global_believer_count()
+
+	var parts: Array[String] = []
+	if active_rumors > 0:
+		parts.append("%d active rumour%s" % [active_rumors, "" if active_rumors == 1 else "s"])
+	if believers > 0:
+		parts.append("%d believer%s" % [believers, "" if believers == 1 else "s"])
+	if expired_count > 0:
+		parts.append("%d expired" % expired_count)
+	if parts.is_empty():
+		return ""
+	return "Dawn — " + ", ".join(parts)
+
+
+# ── SPA-648: Mini objective progress indicator ──────────────────────────────
+
+func _build_mini_progress() -> void:
+	var day_row: HBoxContainer = $Panel/VBox/DayRow
+	_mini_progress_label = Label.new()
+	_mini_progress_label.text = ""
+	_mini_progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_mini_progress_label.add_theme_font_size_override("font_size", 13)
+	_mini_progress_label.add_theme_constant_override("outline_size", 2)
+	_mini_progress_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_mini_progress_label.add_theme_color_override("font_color", Color(0.50, 0.80, 0.35, 1.0))
+	_mini_progress_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	_mini_progress_label.tooltip_text = "Win progress — click to open Journal Objectives"
+	_mini_progress_label.gui_input.connect(_on_mini_progress_clicked)
+	day_row.add_child(_mini_progress_label)
+
+
+func _on_mini_progress_clicked(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		# Simulate pressing J to open the journal (objectives tab).
+		var j_event := InputEventAction.new()
+		j_event.action = "toggle_journal"
+		j_event.pressed = true
+		Input.parse_input_event(j_event)
+
+
+func _refresh_mini_progress() -> void:
+	if _mini_progress_label == null or _scenario_manager == null:
+		return
+	var prog: float = _compute_win_progress()
+	var pct: int = int(prog * 100.0)
+	_mini_progress_label.text = "🏆 %d%%" % pct
+	# Color: shifts with progress.
+	if prog >= 0.80:
+		_mini_progress_label.add_theme_color_override("font_color", Color(0.10, 0.90, 0.30, 1.0))
+	elif prog >= 0.50:
+		_mini_progress_label.add_theme_color_override("font_color", Color(0.50, 0.80, 0.25, 1.0))
+	elif prog > 0.0:
+		_mini_progress_label.add_theme_color_override("font_color", Color(0.85, 0.70, 0.20, 1.0))
+	else:
+		_mini_progress_label.add_theme_color_override("font_color", Color(0.60, 0.55, 0.45, 0.6))
