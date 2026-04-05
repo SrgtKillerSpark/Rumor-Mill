@@ -44,6 +44,18 @@ const LIVE_SPREAD_EDGE_COLOR   := Color(0.10, 0.85, 0.55, 0.65)
 const LIVE_SPREAD_EDGE_WIDTH   := 2.5
 const EDGE_THRESHOLD           := 0.30
 
+# ── Faction Influence Heatmap ─────────────────────────────────────────────────
+const HEATMAP_LOCATIONS: Array[String] = ["market", "tavern", "chapel", "manor"]
+const LOCATION_DISPLAY_NAMES: Dictionary = {
+	"market": "Market", "tavern": "Tavern", "chapel": "Chapel", "manor": "Manor",
+}
+const ZONE_RADIUS        := 68.0
+const HEATMAP_LERP_SPEED := 3.0
+# Isometric cell → world (matches npc.gd / recon_controller.gd):
+# world_x = (col - row) * 32,  world_y = (col + row) * 16
+const HM_TILE_W := 64
+const HM_TILE_H := 32
+
 # Node drawing sizes.
 const NODE_RADIUS    := 12.0
 const RING_THICKNESS :=  4.0
@@ -65,6 +77,15 @@ var _legend_panel: PanelContainer = null
 const SPREAD_HIGHLIGHT_DURATION := 3.0
 const SPREAD_HIGHLIGHT_COLOR    := Color(1.0, 0.6, 0.0, 0.9)
 var _active_spread_edges: Dictionary = {}   # "from_id|to_id" → seconds remaining
+
+# ── Heatmap mode ──────────────────────────────────────────────────────────────
+var _heatmap_mode: bool = false
+var _heatmap_influence: Dictionary = {}   # loc → { faction → float 0..1 }
+var _mode_btn_social:  Button = null
+var _mode_btn_heatmap: Button = null
+var _sg_legend_box:    VBoxContainer = null
+var _hm_legend_box:    VBoxContainer = null
+var _hm_legend_label:  RichTextLabel = null
 
 # ── Zoom / pan ────────────────────────────────────────────────────────────────
 
@@ -114,6 +135,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_G:
 				_toggle_overlay()
 				get_viewport().set_input_as_handled()
+			KEY_TAB:
+				if visible_overlay:
+					_toggle_heatmap_mode()
+					get_viewport().set_input_as_handled()
 			KEY_ESCAPE:
 				if visible_overlay:
 					if not _search_text.is_empty():
@@ -180,6 +205,7 @@ func _toggle_overlay() -> void:
 
 
 func _close_overlay() -> void:
+	_set_heatmap_mode(false)
 	visible_overlay = false
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
@@ -285,6 +311,10 @@ func _process(delta: float) -> void:
 	if visible_overlay:
 		_draw_node.queue_redraw()
 
+		_tick_heatmap_influence(delta)
+		if _heatmap_mode and _hm_legend_label != null:
+			_update_heatmap_legend_label()
+
 		if not _active_spread_edges.is_empty():
 			var expired: Array = []
 			for key in _active_spread_edges:
@@ -323,6 +353,9 @@ func on_rumor_event(message: String) -> void:
 
 func _on_draw() -> void:
 	if not visible_overlay or _world_ref == null:
+		return
+	if _heatmap_mode:
+		_draw_heatmap()
 		return
 	var npcs: Array = _world_ref.npcs
 	if npcs.is_empty():
@@ -617,11 +650,12 @@ func _count_active_rumor_slots(npc: Node2D) -> int:
 func _build_legend() -> void:
 	_legend_panel = PanelContainer.new()
 	_legend_panel.name = "SGLegend"
-	_legend_panel.set_anchor_and_offset(SIDE_RIGHT,  1.0, -218.0)
-	_legend_panel.set_anchor_and_offset(SIDE_LEFT,   1.0, -218.0)
-	_legend_panel.set_anchor_and_offset(SIDE_TOP,    0.0,   10.0)
-	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  530.0)
-	_legend_panel.custom_minimum_size = Vector2(203, 515)
+	# Positioned below milestone notification area to avoid overlap (SPA-713).
+	_legend_panel.set_anchor_and_offset(SIDE_RIGHT,  1.0, -10.0)
+	_legend_panel.set_anchor_and_offset(SIDE_LEFT,   1.0, -220.0)
+	_legend_panel.set_anchor_and_offset(SIDE_TOP,    0.0,  100.0)
+	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  620.0)
+	_legend_panel.custom_minimum_size = Vector2(210, 515)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color     = Color(0.08, 0.05, 0.03, 0.92)
@@ -640,7 +674,34 @@ func _build_legend() -> void:
 	vbox.add_theme_constant_override("separation", 2)
 	scroll.add_child(vbox)
 
-	# ── Title + controls hint ────────────────────────────────────────────────
+	# ── Mode toggle row ──────────────────────────────────────────────────────
+	var mode_row := HBoxContainer.new()
+	mode_row.add_theme_constant_override("separation", 4)
+
+	_mode_btn_social = Button.new()
+	_mode_btn_social.text = "Social Graph"
+	_mode_btn_social.flat = false
+	_mode_btn_social.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_mode_btn_social.add_theme_font_size_override("font_size", 11)
+	_mode_btn_social.pressed.connect(func() -> void: _set_heatmap_mode(false))
+	mode_row.add_child(_mode_btn_social)
+
+	_mode_btn_heatmap = Button.new()
+	_mode_btn_heatmap.text = "Heatmap"
+	_mode_btn_heatmap.flat = true
+	_mode_btn_heatmap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_mode_btn_heatmap.add_theme_font_size_override("font_size", 11)
+	_mode_btn_heatmap.pressed.connect(func() -> void: _set_heatmap_mode(true))
+	mode_row.add_child(_mode_btn_heatmap)
+
+	vbox.add_child(mode_row)
+	_legend_sep(vbox)
+
+	# ── Social Graph legend section ──────────────────────────────────────────
+	_sg_legend_box = VBoxContainer.new()
+	_sg_legend_box.add_theme_constant_override("separation", 2)
+	vbox.add_child(_sg_legend_box)
+
 	var title := RichTextLabel.new()
 	title.bbcode_enabled = true
 	title.fit_content    = true
@@ -648,30 +709,27 @@ func _build_legend() -> void:
 		"[b][color=white]Social Graph[/color][/b]  [color=gray][G to hide][/color]\n" +
 		"[color=gray]Scroll: zoom  Drag: pan  Home: reset[/color]"
 	)
-	vbox.add_child(title)
-	_legend_sep(vbox)
+	_sg_legend_box.add_child(title)
+	_legend_sep(_sg_legend_box)
 
-	# ── Factions (click to hide) ─────────────────────────────────────────────
-	_legend_header(vbox, "Factions  [color=gray](click to hide)[/color]")
-	_faction_btn(vbox, "merchant", Color(0.85, 0.65, 0.10), "Merchant")
-	_faction_btn(vbox, "noble",    Color(0.424, 0.086, 0.165), "Noble")
-	_faction_btn(vbox, "clergy",   Color(0.88, 0.88, 0.88), "Clergy")
-	_legend_sep(vbox)
+	_legend_header(_sg_legend_box, "Factions  [color=gray](click to hide)[/color]")
+	_faction_btn(_sg_legend_box, "merchant", Color(0.85, 0.65, 0.10), "Merchant")
+	_faction_btn(_sg_legend_box, "noble",    Color(0.424, 0.086, 0.165), "Noble")
+	_faction_btn(_sg_legend_box, "clergy",   Color(0.88, 0.88, 0.88), "Clergy")
+	_legend_sep(_sg_legend_box)
 
-	# ── Rumor states (click to highlight) ────────────────────────────────────
-	_legend_header(vbox, "Rumor State  [color=gray](click to highlight)[/color]")
-	_state_btn(vbox, Rumor.RumorState.EVALUATING,   Color(1.00, 1.00, 0.00), "Evaluating")
-	_state_btn(vbox, Rumor.RumorState.BELIEVE,      Color(0.10, 0.90, 0.20), "Believe")
-	_state_btn(vbox, Rumor.RumorState.REJECT,       Color(0.90, 0.15, 0.15), "Reject")
-	_state_btn(vbox, Rumor.RumorState.SPREAD,       Color(1.00, 0.50, 0.00), "Spread")
-	_state_btn(vbox, Rumor.RumorState.ACT,          Color(0.75, 0.05, 1.00), "Act")
-	_state_btn(vbox, Rumor.RumorState.DEFENDING,    Color(0.50, 0.80, 1.00), "Defending")
-	_state_btn(vbox, Rumor.RumorState.CONTRADICTED, Color(0.75, 0.55, 1.00), "Contradicted")
-	_state_btn(vbox, Rumor.RumorState.EXPIRED,      Color(0.40, 0.40, 0.40), "Expired")
-	_legend_sep(vbox)
+	_legend_header(_sg_legend_box, "Rumor State  [color=gray](click to highlight)[/color]")
+	_state_btn(_sg_legend_box, Rumor.RumorState.EVALUATING,   Color(1.00, 1.00, 0.00), "Evaluating")
+	_state_btn(_sg_legend_box, Rumor.RumorState.BELIEVE,      Color(0.10, 0.90, 0.20), "Believe")
+	_state_btn(_sg_legend_box, Rumor.RumorState.REJECT,       Color(0.90, 0.15, 0.15), "Reject")
+	_state_btn(_sg_legend_box, Rumor.RumorState.SPREAD,       Color(1.00, 0.50, 0.00), "Spread")
+	_state_btn(_sg_legend_box, Rumor.RumorState.ACT,          Color(0.75, 0.05, 1.00), "Act")
+	_state_btn(_sg_legend_box, Rumor.RumorState.DEFENDING,    Color(0.50, 0.80, 1.00), "Defending")
+	_state_btn(_sg_legend_box, Rumor.RumorState.CONTRADICTED, Color(0.75, 0.55, 1.00), "Contradicted")
+	_state_btn(_sg_legend_box, Rumor.RumorState.EXPIRED,      Color(0.40, 0.40, 0.40), "Expired")
+	_legend_sep(_sg_legend_box)
 
-	# ── Edges (static) ───────────────────────────────────────────────────────
-	_legend_header(vbox, "Edges")
+	_legend_header(_sg_legend_box, "Edges")
 	var edge_lbl := RichTextLabel.new()
 	edge_lbl.bbcode_enabled = true
 	edge_lbl.fit_content    = true
@@ -682,11 +740,10 @@ func _build_legend() -> void:
 		"[color=#4d8ce6]—[/color] Trust rose\n" +
 		"[color=#667388]—[/color] Weak  [color=#80bfe6]—[/color] Moderate  [color=#33ffb3]—[/color] Strong\n"
 	)
-	vbox.add_child(edge_lbl)
-	_legend_sep(vbox)
+	_sg_legend_box.add_child(edge_lbl)
+	_legend_sep(_sg_legend_box)
 
-	# ── Other ─────────────────────────────────────────────────────────────────
-	_legend_header(vbox, "Other")
+	_legend_header(_sg_legend_box, "Other")
 	var other_lbl := RichTextLabel.new()
 	other_lbl.bbcode_enabled = true
 	other_lbl.fit_content    = true
@@ -696,7 +753,42 @@ func _build_legend() -> void:
 		"[color=#ffa31a]⬤[/color] Rumor slot count badge\n" +
 		"[color=#ffd700]72[/color] Rep score (zoom > 1.2×)\n"
 	)
-	vbox.add_child(other_lbl)
+	_sg_legend_box.add_child(other_lbl)
+
+	# ── Faction Heatmap legend section ───────────────────────────────────────
+	_hm_legend_box = VBoxContainer.new()
+	_hm_legend_box.add_theme_constant_override("separation", 2)
+	_hm_legend_box.visible = false
+	vbox.add_child(_hm_legend_box)
+
+	var hm_title := RichTextLabel.new()
+	hm_title.bbcode_enabled = true
+	hm_title.fit_content    = true
+	hm_title.append_text(
+		"[b][color=white]Faction Influence[/color][/b]  [color=gray][G/Tab][/color]\n" +
+		"[color=gray]Zones show faction presence per location[/color]"
+	)
+	_hm_legend_box.add_child(hm_title)
+	_legend_sep(_hm_legend_box)
+
+	_legend_header(_hm_legend_box, "Faction Colours")
+	var fac_clr_lbl := RichTextLabel.new()
+	fac_clr_lbl.bbcode_enabled = true
+	fac_clr_lbl.fit_content    = true
+	fac_clr_lbl.append_text(
+		"[color=#d9a61a]■[/color] Merchant\n" +
+		"[color=#6C162A]■[/color] Noble\n" +
+		"[color=#e0e0e0]■[/color] Clergy\n"
+	)
+	_hm_legend_box.add_child(fac_clr_lbl)
+	_legend_sep(_hm_legend_box)
+
+	_legend_header(_hm_legend_box, "Overall Influence")
+	_hm_legend_label = RichTextLabel.new()
+	_hm_legend_label.bbcode_enabled = true
+	_hm_legend_label.fit_content    = true
+	_hm_legend_label.append_text("[color=gray]—[/color]")
+	_hm_legend_box.add_child(_hm_legend_label)
 
 	add_child(_legend_panel)
 	_legend_panel.visible = false
@@ -723,7 +815,8 @@ func _faction_btn(vbox: VBoxContainer, faction_key: String,
 	btn.toggle_mode  = true
 	btn.flat         = true
 	btn.alignment    = HORIZONTAL_ALIGNMENT_LEFT
-	btn.add_theme_font_size_override("font_size", 12)
+	btn.custom_minimum_size.y = 36  # Touch-friendly sizing (SPA-713).
+	btn.add_theme_font_size_override("font_size", 14)
 	btn.add_theme_color_override("font_color",         color)
 	btn.add_theme_color_override("font_hover_color",   color.lightened(0.2))
 	# Pressed appearance: dimmed to signal "hidden".
@@ -734,7 +827,8 @@ func _faction_btn(vbox: VBoxContainer, faction_key: String,
 			_factions_hidden[faction_key] = true
 		else:
 			_factions_hidden.erase(faction_key)
-		_draw_node.queue_redraw()
+		# Smooth crossfade redraw (SPA-713).
+		_crossfade_redraw()
 	)
 	vbox.add_child(btn)
 
@@ -746,7 +840,8 @@ func _state_btn(vbox: VBoxContainer, state: Rumor.RumorState,
 	btn.toggle_mode = true
 	btn.flat        = true
 	btn.alignment   = HORIZONTAL_ALIGNMENT_LEFT
-	btn.add_theme_font_size_override("font_size", 12)
+	btn.custom_minimum_size.y = 36  # Touch-friendly sizing (SPA-713).
+	btn.add_theme_font_size_override("font_size", 14)
 	btn.add_theme_color_override("font_color",         color)
 	btn.add_theme_color_override("font_hover_color",   color.lightened(0.15))
 	# Pressed appearance: brightened to signal "highlighted".
@@ -756,9 +851,28 @@ func _state_btn(vbox: VBoxContainer, state: Rumor.RumorState,
 			_states_highlighted[int(state)] = true
 		else:
 			_states_highlighted.erase(int(state))
-		_draw_node.queue_redraw()
+		# Smooth crossfade redraw (SPA-713).
+		_crossfade_redraw()
 	)
 	vbox.add_child(btn)
+
+
+# ── Crossfade redraw (SPA-713) ────────────────────────────────────────────────
+## Smooth visual transition when toggling faction/state filters.  Fades the
+## draw layer to 60% and back while triggering a redraw, giving the impression
+## of a crossfade rather than an abrupt flicker.
+
+var _crossfade_tween: Tween = null
+
+func _crossfade_redraw() -> void:
+	if _draw_node == null:
+		return
+	if _crossfade_tween != null and _crossfade_tween.is_valid():
+		_crossfade_tween.kill()
+	_draw_node.modulate.a = 0.6
+	_draw_node.queue_redraw()
+	_crossfade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_crossfade_tween.tween_property(_draw_node, "modulate:a", 1.0, 0.2)
 
 
 # ── Utilities ──────────────────────────────────────────────────────────────────
@@ -777,3 +891,175 @@ func _find_npc_by_id(npcs: Array, npc_id: String) -> Node2D:
 		if npc.npc_data.get("id", "") == npc_id:
 			return npc
 	return null
+
+
+# ── Faction Influence Heatmap ─────────────────────────────────────────────────
+
+func _toggle_heatmap_mode() -> void:
+	_set_heatmap_mode(not _heatmap_mode)
+
+
+func _set_heatmap_mode(enabled: bool) -> void:
+	_heatmap_mode = enabled
+	if _sg_legend_box != null:
+		_sg_legend_box.visible = not enabled
+	if _hm_legend_box != null:
+		_hm_legend_box.visible = enabled
+	if _mode_btn_social != null:
+		_mode_btn_social.flat = enabled        # flat = inactive look
+	if _mode_btn_heatmap != null:
+		_mode_btn_heatmap.flat = not enabled
+	_draw_node.queue_redraw()
+
+
+func _tick_heatmap_influence(delta: float) -> void:
+	if _world_ref == null:
+		return
+	var targets := _compute_heatmap_targets()
+	var lerp_t: float = clamp(delta * HEATMAP_LERP_SPEED, 0.0, 1.0)
+	for loc in HEATMAP_LOCATIONS:
+		if not _heatmap_influence.has(loc):
+			_heatmap_influence[loc] = {}
+		var target: Dictionary = targets.get(loc, {})
+		var current: Dictionary = _heatmap_influence[loc]
+		for f in ["merchant", "noble", "clergy"]:
+			current[f] = lerpf(current.get(f, 0.0), target.get(f, 0.0), lerp_t)
+		_heatmap_influence[loc] = current
+
+
+func _compute_heatmap_targets() -> Dictionary:
+	var result: Dictionary = {}
+	for loc in HEATMAP_LOCATIONS:
+		var counts: Dictionary = {}
+		for npc in _world_ref.npcs:
+			if npc.current_location_code == loc:
+				var f: String = npc.npc_data.get("faction", "merchant")
+				counts[f] = counts.get(f, 0) + 1
+		var total: int = 0
+		for f in counts:
+			total += counts[f]
+		var influence: Dictionary = {}
+		if total > 0:
+			for f in counts:
+				influence[f] = float(counts[f]) / float(total)
+		result[loc] = influence
+	return result
+
+
+func _update_heatmap_legend_label() -> void:
+	var totals: Dictionary = {"merchant": 0.0, "noble": 0.0, "clergy": 0.0}
+	var loc_count := 0
+	for loc in HEATMAP_LOCATIONS:
+		var inf: Dictionary = _heatmap_influence.get(loc, {})
+		var has_anyone := false
+		for f in ["merchant", "noble", "clergy"]:
+			if inf.get(f, 0.0) > 0.01:
+				has_anyone = true
+				break
+		if has_anyone:
+			for f in totals:
+				totals[f] += inf.get(f, 0.0)
+			loc_count += 1
+	var text := ""
+	if loc_count > 0:
+		for f in ["merchant", "noble", "clergy"]:
+			var avg_pct: float = (totals[f] / float(loc_count)) * 100.0
+			var hex: String
+			match f:
+				"merchant": hex = "#d9a61a"
+				"noble":    hex = "#6C162A"
+				_:          hex = "#e0e0e0"
+			text += "[color=%s]■ %s[/color]  %d%%\n" % [hex, f.capitalize(), roundi(avg_pct)]
+	else:
+		text = "[color=gray]No NPCs at tracked locations[/color]"
+	_hm_legend_label.clear()
+	_hm_legend_label.append_text(text)
+
+
+func _draw_heatmap() -> void:
+	if not "_gathering_points" in _world_ref:
+		return
+	var gp: Dictionary = _world_ref._gathering_points
+	for loc in HEATMAP_LOCATIONS:
+		if not gp.has(loc):
+			continue
+		var cell: Vector2i = gp[loc]
+		var world_pos := Vector2(
+			float(cell.x - cell.y) * (HM_TILE_W * 0.5),
+			float(cell.x + cell.y) * (HM_TILE_H * 0.5)
+		)
+		var screen_pos := _world_to_screen(world_pos)
+		var influence: Dictionary = _heatmap_influence.get(loc, {})
+
+		# Background dim circle.
+		_draw_node.draw_circle(screen_pos, ZONE_RADIUS, Color(0.04, 0.02, 0.01, 0.50))
+
+		# Faction pie slices.
+		var total_inf: float = 0.0
+		for f in ["merchant", "noble", "clergy"]:
+			total_inf += influence.get(f, 0.0)
+
+		if total_inf > 0.01:
+			var start_angle := -PI * 0.5
+			for f in ["merchant", "noble", "clergy"]:
+				var fval: float = influence.get(f, 0.0)
+				if fval < 0.005:
+					start_angle += TAU * fval
+					continue
+				var arc_angle := TAU * fval
+				var fc: Color = FACTION_FILL.get(f, Color.GRAY)
+				var fill_alpha := clamp(0.25 + fval * 0.55, 0.0, 0.85)
+				var slice_pts := _pie_slice_points(
+					screen_pos, ZONE_RADIUS * 0.82, start_angle, start_angle + arc_angle)
+				_draw_node.draw_polygon(slice_pts,
+					PackedColorArray([Color(fc.r, fc.g, fc.b, fill_alpha)]))
+				start_angle += arc_angle
+
+		# Zone border ring.
+		_draw_node.draw_arc(screen_pos, ZONE_RADIUS, 0.0, TAU, 48,
+			Color(0.55, 0.38, 0.18, 0.55), 1.5)
+
+		# Location name above zone.
+		var loc_name: String = LOCATION_DISPLAY_NAMES.get(loc, loc)
+		var name_sz: Vector2 = ThemeDB.fallback_font.get_string_size(
+			loc_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 14)
+		var name_pos := screen_pos + Vector2(-name_sz.x * 0.5, -ZONE_RADIUS - 6.0)
+		_draw_node.draw_rect(
+			Rect2(name_pos + Vector2(-3, -13), Vector2(name_sz.x + 6, 17)),
+			Color(0.0, 0.0, 0.0, 0.65))
+		_draw_node.draw_string(ThemeDB.fallback_font, name_pos, loc_name,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.95, 0.90, 0.70, 0.95))
+
+		# Faction percentages below zone.
+		var pct_y := screen_pos.y + ZONE_RADIUS + 8.0
+		var line_h := 13.0
+		var line_idx := 0
+		for f in ["merchant", "noble", "clergy"]:
+			var fval: float = influence.get(f, 0.0)
+			if fval < 0.005:
+				continue
+			var fc: Color = FACTION_FILL.get(f, Color.GRAY)
+			var pct_str: String = "%s %d%%" % [f.substr(0, 3).to_upper(), roundi(fval * 100.0)]
+			var str_w: float = ThemeDB.fallback_font.get_string_size(
+				pct_str, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
+			var px := screen_pos.x - str_w * 0.5
+			_draw_node.draw_rect(
+				Rect2(Vector2(px - 2, pct_y + line_idx * line_h - 10),
+					  Vector2(str_w + 4, 13)),
+				Color(0.0, 0.0, 0.0, 0.60))
+			_draw_node.draw_string(ThemeDB.fallback_font,
+				Vector2(px, pct_y + line_idx * line_h),
+				pct_str, HORIZONTAL_ALIGNMENT_LEFT, -1, 11,
+				Color(fc.r, fc.g, fc.b, 0.92))
+			line_idx += 1
+
+
+func _pie_slice_points(center: Vector2, radius: float,
+		start_angle: float, end_angle: float, segments: int = 24) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	pts.push_back(center)
+	var step: float = (end_angle - start_angle) / float(segments)
+	for i in range(segments + 1):
+		var a: float = start_angle + step * float(i)
+		pts.push_back(center + Vector2(cos(a), sin(a)) * radius)
+	return pts

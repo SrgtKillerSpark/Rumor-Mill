@@ -61,6 +61,14 @@ var _toast_slide_tween: Tween = null
 var _flash_rect:        ColorRect = null
 var _flash_tween:       Tween = null
 
+# ── Milestone queue (SPA-713) ───────────────────────────────────────────────
+var _milestone_queue: Array = []  # [{text: String, color: Color}]
+var _milestone_showing: bool = false
+var _milestone_current_lbl: Label = null
+var _milestone_dismiss_tween: Tween = null
+const MILESTONE_DISPLAY_SEC := 3.5
+const MILESTONE_QUEUE_GAP_SEC := 1.0
+
 # Toast panel resting offsets — saved in _ready() for slide animation reference.
 var _toast_normal_offset_top:    float = 0.0
 var _toast_normal_offset_bottom: float = 0.0
@@ -169,10 +177,26 @@ func show_toast(message: String, success: bool) -> void:
 	_toast_tween.tween_callback(func() -> void: toast_panel.visible = false)
 
 
-## Show a prominent floating milestone label for major game events.
-## The label appears centred, scales up, and fades out over ~2 seconds.
+## Show a prominent milestone notification with queueing support (SPA-713).
+## Notifications slide in from the right to upper-right, auto-dismiss after
+## ~3.5 seconds, and can be clicked to dismiss early.  When multiple milestones
+## fire in rapid succession they are queued with a 1-second gap.
 func show_milestone(text: String, color: Color) -> void:
-	# Strong screen flash.
+	_milestone_queue.append({"text": text, "color": color})
+	if not _milestone_showing:
+		_show_next_milestone()
+
+
+func _show_next_milestone() -> void:
+	if _milestone_queue.is_empty():
+		_milestone_showing = false
+		return
+	_milestone_showing = true
+	var entry: Dictionary = _milestone_queue.pop_front()
+	var text: String = entry["text"]
+	var color: Color = entry["color"]
+
+	# Screen flash (subtle vignette).
 	if _flash_rect != null:
 		if _flash_tween != null and _flash_tween.is_valid():
 			_flash_tween.kill()
@@ -181,27 +205,82 @@ func show_milestone(text: String, color: Color) -> void:
 		_flash_tween.tween_property(_flash_rect, "color:a", 0.0, 0.6) \
 			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
 
-	# Floating label.
+	# Build floating label — positioned upper-right so gameplay is not blocked.
 	var lbl := Label.new()
 	lbl.text = text
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	lbl.add_theme_font_size_override("font_size", 22)
 	lbl.add_theme_color_override("font_color", color)
 	lbl.add_theme_constant_override("outline_size", 3)
 	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	lbl.set_anchors_preset(Control.PRESET_CENTER)
-	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	lbl.pivot_offset = Vector2(150, 12)  # approximate centre
-	lbl.scale = Vector2(0.7, 0.7)
+	# Upper-right positioning.
+	lbl.anchor_left = 0.55
+	lbl.anchor_right = 1.0
+	lbl.anchor_top = 0.0
+	lbl.anchor_bottom = 0.0
+	lbl.offset_top = 60.0
+	lbl.offset_right = -20.0
+	lbl.offset_left = 0.0
+	lbl.mouse_filter = Control.MOUSE_FILTER_STOP  # clickable to dismiss
+	lbl.pivot_offset = Vector2(200, 14)
+	lbl.modulate.a = 0.0
 	add_child(lbl)
+	_milestone_current_lbl = lbl
 
+	# Click-to-dismiss.
+	lbl.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed:
+			_dismiss_milestone(lbl)
+	)
+
+	# Slide in from right with scale bounce.
+	lbl.offset_right = 200.0  # start off-screen right
+	lbl.scale = Vector2(0.8, 0.8)
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(lbl, "scale", Vector2(1.15, 1.15), 0.3)
+	tw.tween_property(lbl, "offset_right", -20.0, 0.35)
+	tw.tween_property(lbl, "scale", Vector2(1.05, 1.05), 0.3)
 	tw.tween_property(lbl, "modulate:a", 1.0, 0.15)
-	var tw2 := create_tween().set_parallel(true)
-	tw2.tween_property(lbl, "modulate:a", 0.0, 0.8).set_ease(Tween.EASE_IN).set_delay(1.5)
-	tw2.tween_property(lbl, "position:y", lbl.position.y - 30.0, 0.8).set_ease(Tween.EASE_IN).set_delay(1.5)
-	tw2.chain().tween_callback(lbl.queue_free)
+
+	# Settle scale.
+	var tw_settle := create_tween()
+	tw_settle.tween_interval(0.3)
+	tw_settle.tween_property(lbl, "scale", Vector2(1.0, 1.0), 0.15)
+
+	# Auto-dismiss after display duration.
+	if _milestone_dismiss_tween != null and _milestone_dismiss_tween.is_valid():
+		_milestone_dismiss_tween.kill()
+	_milestone_dismiss_tween = create_tween()
+	_milestone_dismiss_tween.tween_interval(MILESTONE_DISPLAY_SEC)
+	_milestone_dismiss_tween.tween_callback(func() -> void:
+		_dismiss_milestone(lbl)
+	)
+
+
+func _dismiss_milestone(lbl: Label) -> void:
+	if lbl == null or not is_instance_valid(lbl):
+		_advance_milestone_queue()
+		return
+	if _milestone_dismiss_tween != null and _milestone_dismiss_tween.is_valid():
+		_milestone_dismiss_tween.kill()
+	# Fade out and drift upward.
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.4).set_ease(Tween.EASE_IN)
+	tw.tween_property(lbl, "offset_top", lbl.offset_top - 20.0, 0.4).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(func() -> void:
+		lbl.queue_free()
+		_advance_milestone_queue()
+	)
+
+
+func _advance_milestone_queue() -> void:
+	_milestone_current_lbl = null
+	if _milestone_queue.is_empty():
+		_milestone_showing = false
+		return
+	# Gap between queued milestones.
+	var gap_tw := create_tween()
+	gap_tw.tween_interval(MILESTONE_QUEUE_GAP_SEC)
+	gap_tw.tween_callback(_show_next_milestone)
 
 
 # ── Count labels & extra key hints ───────────────────────────────────────────
