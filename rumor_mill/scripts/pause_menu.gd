@@ -506,10 +506,19 @@ func _make_pause_btn(label_text: String, font_color: Color) -> Button:
 	focus.set_content_margin_all(8)
 	focus.set_corner_radius_all(3)
 
-	btn.add_theme_stylebox_override("normal",  normal)
-	btn.add_theme_stylebox_override("hover",   hover)
-	btn.add_theme_stylebox_override("pressed", pressed)
-	btn.add_theme_stylebox_override("focus",   focus)
+	var disabled := StyleBoxFlat.new()
+	disabled.bg_color = Color(0.18, 0.12, 0.08, 0.6)
+	disabled.set_border_width_all(1)
+	disabled.border_color = Color(C_BTN_BORDER.r, C_BTN_BORDER.g, C_BTN_BORDER.b, 0.35)
+	disabled.set_content_margin_all(8)
+	disabled.set_corner_radius_all(3)
+
+	btn.add_theme_stylebox_override("normal",   normal)
+	btn.add_theme_stylebox_override("hover",    hover)
+	btn.add_theme_stylebox_override("pressed",  pressed)
+	btn.add_theme_stylebox_override("focus",    focus)
+	btn.add_theme_stylebox_override("disabled", disabled)
+	btn.add_theme_color_override("font_disabled_color", Color(0.55, 0.50, 0.40, 0.5))
 	btn.pivot_offset = btn.custom_minimum_size * 0.5
 	btn.pressed.connect(func() -> void:
 		AudioManager.play_sfx("ui_click")
