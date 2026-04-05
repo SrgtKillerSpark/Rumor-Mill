@@ -544,6 +544,25 @@ func _init_context_banner() -> void:
 				_tutorial_banner.queue_hint(_hint_id_copy)
 		)
 
+	# SPA-549: Scenario-specific onboarding banners — queued after the opening hint.
+	# Opening hint fires at 4 s (12 s auto-dismiss), so queue these at 10 s and 16 s.
+	var _s_hints: Array = []
+	match world.active_scenario_id:
+		"scenario_2":
+			_s_hints = ["ctx_s2_illness_mechanic", "ctx_s2_maren_warning", "ctx_s2_believer_check"]
+		"scenario_3":
+			_s_hints = ["ctx_s3_dual_targets", "ctx_s3_rival_intro", "ctx_s3_disrupt_tip"]
+		"scenario_4":
+			_s_hints = ["ctx_s4_defense_goal", "ctx_s4_inquisitor_info", "ctx_s4_prioritize_finn"]
+	var _delays: Array = [10.0, 16.0, 22.0]
+	for i in range(_s_hints.size()):
+		var _hint_id: String = _s_hints[i]
+		var _timer := get_tree().create_timer(_delays[i])
+		_timer.timeout.connect(func() -> void:
+			if _tutorial_banner != null:
+				_tutorial_banner.queue_hint(_hint_id)
+		)
+
 	# Day-gated hints: hook into day_changed signal.
 	if day_night != null and day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_ctx_day_changed)

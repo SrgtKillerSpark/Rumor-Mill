@@ -386,6 +386,83 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 12,
 	},
+	# ── Scenario 2: Plague Scare onboarding banners ─────────────────────────────
+	"ctx_s2_illness_mechanic": {
+		"title": "Illness Rumours",
+		"body":  (
+			"In this scenario, NPCs transition through [b]BELIEVE → SPREAD → ACT[/b].  "
+			+ "Once [b]7 NPCs[/b] reach BELIEVE or beyond, the plague scare takes hold and you win."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s2_maren_warning": {
+		"title": "Avoid Sister Maren",
+		"body":  (
+			"[b]Sister Maren[/b] is immune to illness rumours.  "
+			+ "If she [b]rejects[/b] any illness claim about Alys, you lose instantly.  "
+			+ "Keep the rumour away from clergy circles."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s2_believer_check": {
+		"title": "Track Your Believers",
+		"body":  (
+			"The [b]Scenario HUD[/b] (top-left) shows your believer count.  "
+			+ "You need [b]7[/b] — seed to credulous NPCs like merchants for faster uptake."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	# ── Scenario 3: Succession onboarding banners ────────────────────────────
+	"ctx_s3_dual_targets": {
+		"title": "Two-Front War",
+		"body":  (
+			"You must [b]raise Calder Fenn[/b] to 75+ reputation AND [b]drop Tomas Reeve[/b] to 35 or below.  "
+			+ "Balance both — if Calder drops below 40, you fail instantly."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s3_rival_intro": {
+		"title": "The Rival Agent",
+		"body":  (
+			"A [b]rival agent[/b] is working against you — praising Tomas and scandalising Calder.  "
+			+ "Check the [b]Scenario HUD[/b] to see their latest move and counter it."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s3_disrupt_tip": {
+		"title": "Disrupt the Rival",
+		"body":  (
+			"Press the [b]Disrupt[/b] button in the Scenario HUD to spend 1 recon action "
+			+ "and slow the rival for 3 days. Time it when their activity spikes."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	# ── Scenario 4: Holy Inquisition onboarding banners ──────────────────────
+	"ctx_s4_defense_goal": {
+		"title": "Defend the Accused",
+		"body":  (
+			"Keep [b]Aldous Prior[/b], [b]Vera Midwife[/b], and [b]Finn Monk[/b] above [b]45 reputation[/b].  "
+			+ "This scenario is purely [b]defensive[/b] — counter slander with Praise rumours."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s4_inquisitor_info": {
+		"title": "The Inquisitor",
+		"body":  (
+			"The [b]Inquisitor[/b] seeds accusations on a cooldown that [b]accelerates[/b] over time.  "
+			+ "Watch the Scenario HUD for his targets and counter quickly with Praise."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s4_prioritize_finn": {
+		"title": "Protect Finn First",
+		"body":  (
+			"[b]Finn Monk[/b] is the most vulnerable — he absorbs slander faster than the others.  "
+			+ "Prioritize his reputation when multiple targets are threatened."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	# ── General idle hints ───────────────────────────────────────────────────
 	"ctx_idle_no_action": {
 		"title": "Need a Nudge?",
 		"body":  (
