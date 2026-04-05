@@ -92,14 +92,21 @@ func start_transition() -> void:
 
 
 ## Call when the transition finishes. Hides immediately if it was faster than
-## MIN_DURATION_SEC (tip was never meaningfully visible); otherwise stays until
-## force_hide() is called by the caller.
+## MIN_DURATION_SEC (tip was never meaningfully visible); otherwise fades out
+## smoothly over 0.4 s.
 func end_transition() -> void:
 	if not _active:
 		return
+	_active = false
 	var elapsed := Time.get_ticks_msec() / 1000.0 - _start_time
 	if elapsed < MIN_DURATION_SEC:
 		force_hide()
+	else:
+		if _fade_tween:
+			_fade_tween.kill()
+		_fade_tween = create_tween()
+		_fade_tween.tween_property(_wrapper, "modulate:a", 0.0, 0.4)
+		_fade_tween.tween_callback(func(): visible = false)
 
 
 ## Always hide, regardless of elapsed time.

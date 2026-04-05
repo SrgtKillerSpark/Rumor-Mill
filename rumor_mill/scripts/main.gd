@@ -195,7 +195,6 @@ func _on_begin_game(scenario_id: String) -> void:
 	# Loading complete — dismiss the tip screen.
 	if _loading_tips != null:
 		_loading_tips.end_transition()
-		_loading_tips.force_hide()
 
 	# Restore saved state if a load was triggered from the pause menu.
 	if SaveManager.has_pending_load():

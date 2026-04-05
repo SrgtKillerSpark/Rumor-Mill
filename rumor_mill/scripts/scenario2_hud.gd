@@ -8,7 +8,7 @@ extends BaseScenarioHud
 ##
 ## Layout:
 ##   Scenario 2: The Plague Scare
-##   Believers: 3 / 7+   [progress bar]   Days remaining: 18
+##   Believers: 3 / 6+   [progress bar]   Days remaining: 18
 ##   ✓ Tomas, Calder, Finn   ✗ Sister Maren
 ##
 ## Wire via setup(world, day_night) from main.gd.
@@ -52,8 +52,8 @@ func _build_ui() -> void:
 	_count_lbl = Label.new()
 	_count_lbl.add_theme_font_size_override("font_size", 12)
 	_count_lbl.add_theme_color_override("font_color", C_BODY)
-	_count_lbl.text = "Believers: 0 / 7+"
-	_count_lbl.tooltip_text = "Number of townspeople who believe the illness rumor about Alys Herbwife. Win when 7 or more believe it."
+	_count_lbl.text = "Believers: 0 / 6+"
+	_count_lbl.tooltip_text = "Number of townspeople who believe the illness rumor about Alys Herbwife. Win when 6 or more believe it."
 	_count_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	count_vbox.add_child(_count_lbl)
 
@@ -61,7 +61,7 @@ func _build_ui() -> void:
 	count_vbox.add_child(bar_hbox)
 
 	var bar_pair := _make_progress_bar(BAR_WIDTH, BAR_HEIGHT,
-		"Progress toward 7 believers. Green = win threshold reached; amber = halfway; sickly green = early stage.")
+		"Progress toward 6 believers. Green = win threshold reached; amber = halfway; sickly green = early stage.")
 	_bar_bg = bar_pair[0]
 	_bar    = bar_pair[1]
 	bar_hbox.add_child(_bar_bg)
@@ -106,7 +106,7 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "Target: 7+ believers"
+	legend_lbl.text = "Target: 6+ believers"
 	right_vbox.add_child(legend_lbl)
 
 
