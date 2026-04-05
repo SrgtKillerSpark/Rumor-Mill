@@ -3165,8 +3165,8 @@ function makeNPCPortraits() {
       // Simple headscarf wrapped over crown, loose tail left side
       cv.fillRect(hx-1, hy-5, 23, 7, ...hat, 200);
       cv.fillRect(hx-2, hy+2,  3, 18, ...hat, 160);
-      cv.sp(hx+20, hy-1, ...hat[0], hat[1], hat[2], 200);
-      cv.sp(hx+21, hy,   ...hat[0], hat[1], hat[2], 180);
+      cv.sp(hx+20, hy-1, hat[0], hat[1], hat[2], 200);
+      cv.sp(hx+21, hy,   hat[0], hat[1], hat[2], 180);
       cv.line(hx-1, hy-5, hx+21, hy-5, ...c.OUTLINE);
       cv.line(hx-1, hy-5, hx-2,  hy+19,...c.OUTLINE);
     } else if (hatStyle === 'coif') {
@@ -3308,26 +3308,48 @@ function makeNPCPortraits() {
     cv.line(tx,    ty+33, tx+41, ty+33, ...c.OUTLINE);
   };
 
-  // ── Portrait definitions (col order: merchant, noble, clergy, guard, commoner)
-  const ARCHETYPES = [
-    { body: c.MERCH_B,   trim: c.MERCH_T,  hatStyle: 'wide',    hat: c.WOOD_M,     hatTrim: c.MERCH_T,  archetype: 'merchant' },
-    { body: c.NOBLE_B,   trim: c.NOBLE_T,  hatStyle: 'coronet', hat: c.NOBLE_T,    hatTrim: c.PARCH_L,  archetype: 'noble'    },
-    { body: c.CLERGY_B,  trim: c.CLERGY_T, hatStyle: 'hood',    hat: c.STONE_M,    hatTrim: c.PARCH_D,  archetype: 'clergy'   },
-    { body: c.STONE_M,   trim: c.STONE_L,  hatStyle: 'helm',    hat: c.STONE_M,    hatTrim: c.STONE_L,  archetype: 'guard'    },
-    { body: c.DIRT_M,    trim: c.DIRT_D,   hatStyle: 'cap',     hat: c.THATCH_D,   hatTrim: c.DIRT_D,   archetype: 'commoner' },
+  // ── 30 individual NPC portrait configs (portrait_id 0–29, matching npcs.json order) ──
+  // body/trim = faction palette; hat/hatTrim = headwear palette
+  const NPC_PORTRAIT_CONFIGS = [
+    // ─── Merchant faction (0–10) ────────────────────────────────────────────
+    { body: c.MERCH_B,  trim: c.MERCH_T,  hatStyle: 'wide',        hat: c.WOOD_D,   hatTrim: c.MERCH_T,  archetype: 'merchant',  expression: 'smirk'  }, // 0  Aldric Vane — Guild Master
+    { body: c.WOOD_M,   trim: c.PLASTER,  hatStyle: 'scarf',       hat: c.PLASTER,  hatTrim: c.DIRT_M,   archetype: 'tavern',    female: true          }, // 1  Sybil Oats  — Tavern Keeper
+    { body: c.DIRT_M,   trim: c.DIRT_D,   hatStyle: 'cap',         hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'craftsman'                        }, // 2  Oswin Tanner — Craftsman
+    { body: c.MERCH_B,  trim: c.MERCH_T,  hatStyle: 'scarf',       hat: c.MERCH_T,  hatTrim: c.MERCH_B,  archetype: 'merchant',  female: true          }, // 3  Marta Coin  — Market Trader
+    { body: c.STONE_D,  trim: c.STONE_M,  hatStyle: 'bare',        hat: c.HAIR,     hatTrim: c.STONE_M,  archetype: 'craftsman', expression: 'stern'   }, // 4  Rufus Bolt  — Blacksmith
+    { body: c.WOOD_M,   trim: c.PLASTER,  hatStyle: 'scarf',       hat: c.PLASTER,  hatTrim: c.WOOD_D,   archetype: 'tavern',    female: true, expression: 'smirk' }, // 5  Nell Picker — Tavern Barmaid
+    { body: c.DIRT_M,   trim: c.DIRT_D,   hatStyle: 'pilgrim_hat', hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'commoner'                         }, // 6  Cob Farrow  — Traveling Merchant
+    { body: c.WOOD_M,   trim: c.DIRT_M,   hatStyle: 'cap',         hat: c.PLASTER,  hatTrim: c.DIRT_M,   archetype: 'craftsman'                        }, // 7  Idris Kemp  — Mill Operator
+    { body: c.STONE_M,  trim: c.STONE_D,  hatStyle: 'coif',        hat: c.PARCH_L,  hatTrim: c.STONE_M,  archetype: 'commoner',  female: true, expression: 'stern' }, // 8  Bess Wicker — Storage Keeper
+    { body: c.DIRT_M,   trim: c.THATCH_D, hatStyle: 'cap',         hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'commoner'                         }, // 9  Sim Carter  — Transport Worker
+    { body: c.MERCH_B,  trim: c.MERCH_T,  hatStyle: 'veil',        hat: c.PARCH_L,  hatTrim: c.MERCH_T,  archetype: 'merchant',  female: true          }, // 10 Greta Flint — Merchant's Wife
+    // ─── Noble faction (11–19) ──────────────────────────────────────────────
+    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'coronet',       hat: c.NOBLE_T,  hatTrim: c.PARCH_L,  archetype: 'noble',   elder: true           }, // 11 Edric Fenn   — Alderman
+    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'veil',          hat: c.PARCH_L,  hatTrim: c.NOBLE_T,  archetype: 'noble',   female: true          }, // 12 Isolde Fenn  — Alderman's Wife
+    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'feathered_cap', hat: c.NOBLE_B,  hatTrim: c.NOBLE_T,  archetype: 'noble',   expression: 'smirk'   }, // 13 Calder Fenn  — Alderman's Son
+    { body: c.STONE_M,  trim: c.STONE_L,  hatStyle: 'helm',          hat: c.STONE_M,  hatTrim: c.STONE_L,  archetype: 'captain', expression: 'stern'   }, // 14 Bram Guard   — Guard Captain
+    { body: c.STONE_M,  trim: c.STONE_D,  hatStyle: 'helm',          hat: c.STONE_M,  hatTrim: c.STONE_D,  archetype: 'guard'                          }, // 15 Wynn Gate    — Town Guard
+    { body: c.STONE_D,  trim: c.STONE_M,  hatStyle: 'helm',          hat: c.STONE_D,  hatTrim: c.STONE_M,  archetype: 'guard',   expression: 'worried' }, // 16 Pell Gate    — Town Guard
+    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'coif',          hat: c.PARCH_L,  hatTrim: c.NOBLE_T,  archetype: 'scholar', female: true          }, // 17 Annit Scribe — Clerk
+    { body: c.NOBLE_B,  trim: c.STONE_M,  hatStyle: 'cap',           hat: c.STONE_D,  hatTrim: c.NOBLE_T,  archetype: 'noble',   expression: 'stern'   }, // 18 Tomas Reeve  — Tax Collector
+    { body: c.NOBLE_B,  trim: c.STONE_M,  hatStyle: 'hood',          hat: c.STONE_M,  hatTrim: c.PARCH_D,  archetype: 'noble',   elder: true           }, // 19 Old Hugh     — Retired Steward
+    // ─── Clergy faction (20–29) ─────────────────────────────────────────────
+    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'mitre',         hat: c.PARCH_L,  hatTrim: c.MERCH_T,  archetype: 'clergy',  elder: true           }, // 20 Aldous Prior    — Head Priest
+    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'wimple',        hat: c.PARCH_L,  hatTrim: c.CLERGY_T, archetype: 'clergy',  female: true          }, // 21 Maren Nun       — Nun/Healer
+    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'bare',          hat: c.HAIR,     hatTrim: c.CLERGY_T, archetype: 'clergy',  expression: 'worried' }, // 22 Finn Monk       — Young Monk
+    { body: c.PLASTER,  trim: c.DIRT_M,   hatStyle: 'scarf',         hat: c.DIRT_M,   hatTrim: c.PLASTER,  archetype: 'commoner',female: true          }, // 23 Vera Midwife    — Folk Healer
+    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'wimple',        hat: c.PARCH_L,  hatTrim: c.STONE_M,  archetype: 'clergy',  elder: true, female: true, expression: 'devout' }, // 24 Old Piety  — Devout Elder
+    { body: c.STONE_M,  trim: c.CLERGY_B, hatStyle: 'hood',          hat: c.STONE_D,  hatTrim: c.CLERGY_T, archetype: 'clergy'                         }, // 25 Jude Bellringer — Chapel Worker
+    { body: c.STONE_D,  trim: c.CLERGY_T, hatStyle: 'veil',          hat: c.INK,      hatTrim: c.STONE_D,  archetype: 'commoner',female: true, expression: 'worried' }, // 26 Constance Widow
+    { body: c.DIRT_M,   trim: c.DIRT_D,   hatStyle: 'pilgrim_hat',   hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'commoner'                       }, // 27 Thomas Pilgrim  — Traveler
+    { body: c.GRASS_D,  trim: c.GRASS_M,  hatStyle: 'bare',          hat: c.GRASS_M,  hatTrim: c.DIRT_M,   archetype: 'commoner',female: true          }, // 28 Alys Herbwife   — Herbalist
+    { body: c.STONE_D,  trim: c.STONE_M,  hatStyle: 'bare',          hat: c.HAIR,     hatTrim: c.STONE_D,  archetype: 'craftsman',expression: 'stern', skinTone: c.SKIN_SH }, // 29 Denny Gravedigger
   ];
 
-  // Row 0: male base — native 64×80
-  for (let i = 0; i < 5; i++)
-    drawPortrait(i*64, 0, { ...ARCHETYPES[i] });
-
-  // Row 1: female base
-  for (let i = 0; i < 5; i++)
-    drawPortrait(i*64, 80, { ...ARCHETYPES[i], female: true });
-
-  // Row 2: elder / leader variants
-  for (let i = 0; i < 5; i++)
-    drawPortrait(i*64, 160, { ...ARCHETYPES[i], elder: true });
+  // Draw all 30 portraits in a 6-column × 5-row grid
+  for (let i = 0; i < NPC_PORTRAIT_CONFIGS.length; i++) {
+    drawPortrait((i % 6) * 64, Math.floor(i / 6) * 80, NPC_PORTRAIT_CONFIGS[i]);
+  }
 
   return cv.toPNG();
 }
@@ -3944,7 +3966,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 11 (SPA-585): NPC sprite upgrade — 4-dir facing, 64×96 frames, 15-col layout\n');
+console.log('\nRumor Mill — Art Pass 12 (SPA-591): 30 individual NPC portraits (384×400, 6×5), new hat styles, expression variants\n');
 
 write('assets/textures/tiles_ground.png',           makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',        makeRoadDirt());

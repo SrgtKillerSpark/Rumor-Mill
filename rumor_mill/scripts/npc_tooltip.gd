@@ -95,12 +95,12 @@ var _portrait_tex:    Texture2D = null  # ui_npc_portraits.png atlas
 var _portrait_rect:   TextureRect = null
 const STATE_ICON_COUNT := 9
 
-# Portrait atlas layout: 5 cols × 3 rows of 64×80 cells.
+# Portrait atlas layout: 6 cols × 5 rows of 64×80 cells (SPA-591 Art Pass 12).
+# Each NPC has a unique portrait_id (0–29) in npcs.json.
+# col = portrait_id % 6,  row = portrait_id / 6
 const PORTRAIT_W := 64
 const PORTRAIT_H := 80
-const PORTRAIT_COL := {
-	"merchant": 0, "noble": 1, "clergy": 2, "guard": 3, "commoner": 4,
-}
+const PORTRAIT_COLS := 6
 
 
 func _ready() -> void:
@@ -299,11 +299,11 @@ func _populate(npc: Node2D) -> void:
 
 	_name_lbl.text = npc_name
 
-	# Set portrait from atlas.
+	# Set portrait from atlas — look up by portrait_id (unique per NPC, SPA-591).
 	if _portrait_tex != null and _portrait_rect != null:
-		var col: int = PORTRAIT_COL.get(faction, 0)
-		var gender: String = data.get("gender", "male")
-		var row: int = 0 if gender == "male" else (1 if gender == "female" else 2)
+		var pid: int = data.get("portrait_id", 0)
+		var col: int = pid % PORTRAIT_COLS
+		var row: int = pid / PORTRAIT_COLS
 		var atlas := AtlasTexture.new()
 		atlas.atlas = _portrait_tex
 		atlas.region = Rect2(col * PORTRAIT_W, row * PORTRAIT_H, PORTRAIT_W, PORTRAIT_H)

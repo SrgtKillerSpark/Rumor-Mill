@@ -128,14 +128,12 @@ var _intel_store_ref: PlayerIntelStore = null
 var _portrait_tex:    Texture2D = null  # ui_npc_portraits.png — 320×240 (5×64 cols × 3×80 rows)
 var _claim_icon_tex:  Texture2D = null  # ui_claim_icons.png  — atlas of claim-type icons
 
-# Portrait atlas layout: 5 cols × 3 rows of 64×80 cells.
+# Portrait atlas layout: 6 cols × 5 rows of 64×80 cells (SPA-591 Art Pass 12).
+# Each NPC has a unique portrait_id (0–29) in npcs.json.
+# col = portrait_id % 6,  row = portrait_id / 6
 const PORTRAIT_W := 64
 const PORTRAIT_H := 80
-# Col order: merchant=0, noble=1, clergy=2, guard=3, commoner=4.
-const PORTRAIT_COL := {
-	"merchant": 0, "noble": 1, "clergy": 2, "guard": 3, "commoner": 4,
-}
-# Row 0=male, 1=female, 2=elder.
+const PORTRAIT_COLS := 6
 
 # Claim icon atlas: 5 icons (0=dagger, 1=coin, 2=speech, 3=eye, 4=hands).
 # Map claim types → closest icon column.
@@ -393,20 +391,22 @@ func _rebuild_subject_list() -> void:
 		return
 
 	for npc in _world_ref.npcs:
-		var npc_id:   String = npc.npc_data.get("id",      "")
-		var npc_name: String = npc.npc_data.get("name",    "")
-		var faction:  String = npc.npc_data.get("faction", "")
+		var npc_id:      String = npc.npc_data.get("id",           "")
+		var npc_name:    String = npc.npc_data.get("name",         "")
+		var faction:     String = npc.npc_data.get("faction",      "")
+		var portrait_id: int    = npc.npc_data.get("portrait_id",  0)
 		var rels: Array = _intel_store_ref.get_relationships_for_npc(npc_id)
 
-		var entry := _build_subject_entry(npc_id, npc_name, faction, rels)
+		var entry := _build_subject_entry(npc_id, npc_name, faction, portrait_id, rels)
 		_npc_list.add_child(entry)
 
 
 func _build_subject_entry(
-		npc_id:   String,
-		npc_name: String,
-		faction:  String,
-		rels:     Array
+		npc_id:      String,
+		npc_name:    String,
+		faction:     String,
+		portrait_id: int,
+		rels:        Array
 ) -> Control:
 	var outer := PanelContainer.new()
 
@@ -421,7 +421,7 @@ func _build_subject_entry(
 	outer.add_child(hbox_main)
 
 	# Portrait (64×80 from atlas, displayed at 48×60 to fit panel).
-	var portrait_rect := _make_portrait_rect(faction)
+	var portrait_rect := _make_portrait_rect(portrait_id)
 	hbox_main.add_child(portrait_rect)
 
 	var vbox := VBoxContainer.new()
@@ -979,14 +979,14 @@ func _build_evidence_entry(item) -> Control:
 
 # ── Portrait & Icon helpers ──────────────────────────────────────────────────
 
-func _make_portrait_rect(faction: String) -> TextureRect:
+func _make_portrait_rect(portrait_id: int) -> TextureRect:
 	var rect := TextureRect.new()
 	rect.custom_minimum_size = Vector2(48, 60)
 	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	if _portrait_tex != null:
-		var col: int = PORTRAIT_COL.get(faction, 4)
-		var row: int = 0  # male base row; future: vary by NPC gender/age
+		var col: int = portrait_id % PORTRAIT_COLS
+		var row: int = portrait_id / PORTRAIT_COLS
 		var atlas := AtlasTexture.new()
 		atlas.atlas = _portrait_tex
 		atlas.region = Rect2(col * PORTRAIT_W, row * PORTRAIT_H, PORTRAIT_W, PORTRAIT_H)

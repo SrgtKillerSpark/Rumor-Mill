@@ -1,4 +1,4 @@
-# Rumor Mill — Art Style Guide (Art Pass 10 / SPA-542)
+# Rumor Mill — Art Style Guide (Art Pass 12 / SPA-591)
 
 **Visual target:** Pentiment × Dwarf Fortress.
 Desaturated naturals, ink-line silhouettes, warm parchment UI.
@@ -223,15 +223,43 @@ All modal panels and HUD elements use the **parchment palette**:
 | 96px     | Witness       |
 | 128px    | Alliance      |
 
-**NPC portraits** (`ui_npc_portraits.png`, 320×240, five 64×80 cols × 3 rows):
+**NPC portraits** (`ui_npc_portraits.png`, 384×400, six 64×80 cols × 5 rows — Art Pass 12 / SPA-591):
 
-| Row | Y offset | Variants           |
-|-----|----------|--------------------|
-| 0   | 0px      | Male archetypes    |
-| 1   | 80px     | Female archetypes  |
-| 2   | 160px    | Elder / leaders    |
+30 individual portraits, one per NPC. Lookup: `portrait_id` field in `npcs.json`.
+`col = portrait_id % 6`, `row = portrait_id / 6`.
 
-Col order: merchant (0), noble (1), clergy (2), guard (3), commoner (4).
+| portrait_id | NPC | Faction | Hat Style | Expression |
+|-------------|-----|---------|-----------|------------|
+| 0  | Aldric Vane       | Merchant | wide          | smirk   |
+| 1  | Sybil Oats        | Merchant | scarf         | neutral (F) |
+| 2  | Oswin Tanner      | Merchant | cap           | neutral |
+| 3  | Marta Coin        | Merchant | scarf         | neutral (F) |
+| 4  | Rufus Bolt        | Merchant | bare          | stern   |
+| 5  | Nell Picker       | Merchant | scarf         | smirk (F) |
+| 6  | Cob Farrow        | Merchant | pilgrim_hat   | neutral |
+| 7  | Idris Kemp        | Merchant | cap           | neutral |
+| 8  | Bess Wicker       | Merchant | coif          | stern (F) |
+| 9  | Sim Carter        | Merchant | cap           | neutral |
+| 10 | Greta Flint       | Merchant | veil          | neutral (F) |
+| 11 | Edric Fenn        | Noble    | coronet       | neutral (elder) |
+| 12 | Isolde Fenn       | Noble    | veil          | neutral (F) |
+| 13 | Calder Fenn       | Noble    | feathered_cap | smirk   |
+| 14 | Bram Guard        | Noble    | helm          | stern (captain) |
+| 15 | Wynn Gate         | Noble    | helm          | neutral |
+| 16 | Pell Gate         | Noble    | helm          | worried |
+| 17 | Annit Scribe      | Noble    | coif          | neutral (F scholar) |
+| 18 | Tomas Reeve       | Noble    | cap           | stern   |
+| 19 | Old Hugh          | Noble    | hood          | neutral (elder) |
+| 20 | Aldous Prior      | Clergy   | mitre         | neutral (elder) |
+| 21 | Maren Nun         | Clergy   | wimple        | neutral (F) |
+| 22 | Finn Monk         | Clergy   | bare          | worried |
+| 23 | Vera Midwife      | Clergy   | scarf         | neutral (F) |
+| 24 | Old Piety         | Clergy   | wimple        | devout (F elder) |
+| 25 | Jude Bellringer   | Clergy   | hood          | neutral |
+| 26 | Constance Widow   | Clergy   | veil          | worried (F) |
+| 27 | Thomas Pilgrim    | Clergy   | pilgrim_hat   | neutral |
+| 28 | Alys Herbwife     | Clergy   | bare          | neutral (F) |
+| 29 | Denny Gravedigger | Clergy   | bare          | stern   |
 
 **Rumor state icons** (`ui_state_icons.png`, 144×16, nine 16×16 icons):
 
@@ -246,6 +274,26 @@ Col order: merchant (0), noble (1), clergy (2), guard (3), commoner (4).
 | 6   | Contradicted| Crossed arrows |
 | 7   | Expired     | Circle + X     |
 | 8   | Defending   | Kite shield    |
+
+---
+
+## Time-of-Day Mood Boards (Art Pass 12 / SPA-591)
+
+These are design targets for post-processing colour modulation applied at runtime. All sprites remain palette-locked; these values are applied as `CanvasLayer` modulate or `WorldEnvironment` adjustments, never baked into textures.
+
+| Time of Day | Name         | Sky Tone        | Ambient Modulate  | Shadow Emphasis | Notes                                          |
+|-------------|--------------|-----------------|-------------------|-----------------|------------------------------------------------|
+| 0 (00:00)   | Night        | `#0C1428`       | `Color(0.55, 0.60, 0.80)` | deep, long | Existing `tiles_buildings_night.png` reference |
+| 1 (04:00)   | Dawn         | `#C88040`       | `Color(1.05, 0.90, 0.75)` | long, warm gold | GRASS_L brightened; STONE_M warmed |
+| 2 (08:00)   | Morning      | `#88C0D0`       | `Color(1.00, 1.00, 0.98)` | medium, crisp   | Near-neutral; baseline art-pass reference |
+| 3 (12:00)   | Midday       | `#D8EAF0`       | `Color(1.02, 1.02, 1.00)` | short, bleached | STONE_L highlights dominant |
+| 4 (16:00)   | Afternoon    | `#E0A060`       | `Color(1.02, 0.95, 0.85)` | medium, amber   | WOOD_M warms; GRASS_D cools |
+| 5 (20:00)   | Evening      | `#602818`       | `Color(0.80, 0.65, 0.55)` | long, deep red  | FORGE glow visible; lanterns lit |
+
+**Design rules:**
+- Never saturate past `Color(1.1, 1.1, 1.1)` — palette desaturation is a core aesthetic.
+- Night uses `tiles_buildings_night.png` (pre-darkened), daytime uses `tiles_buildings.png`.
+- VFX (`HEAT_WARN`, `HEAT_ALARM`) are unaffected by modulate; they fire on top.
 
 ---
 
