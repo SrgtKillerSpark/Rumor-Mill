@@ -50,6 +50,9 @@ var _event_choice_modal: CanvasLayer = null
 # ── SPA-589: Visual affordances for new players ──────────────────────────────
 var _visual_affordances: CanvasLayer = null
 
+# ── SPA-709: Milestone reward notification popup ──────────────────────────────
+var _milestone_notifier: CanvasLayer = null
+
 # ── SPA-589: Story recap overlay (shown on save load) ─────────────────────────
 var _story_recap: CanvasLayer = null
 
@@ -222,20 +225,26 @@ func _on_begin_game(scenario_id: String) -> void:
 			debug_console.set_overlay(debug_overlay)
 
 	_init_recon_system()
-	# Wire milestone tracker callback now that recon_hud is set up.
-	if world.milestone_tracker != null and recon_hud != null and recon_hud.has_method("show_milestone"):
+	# SPA-695: Give TownMoodController the camera so it can shake on milestones.
+	if world.town_mood_controller != null and camera != null:
+		world.town_mood_controller.set_camera(camera)
+	_init_journal()
+	# SPA-709: Milestone notifier — must be created after journal is ready.
+	_milestone_notifier = preload("res://scripts/milestone_notifier.gd").new()
+	_milestone_notifier.name = "MilestoneNotifier"
+	add_child(_milestone_notifier)
+	if _milestone_notifier.has_method("setup"):
+		_milestone_notifier.setup(journal, world.intel_store)
+	# Wire milestone tracker callback to the new notifier.
+	if world.milestone_tracker != null and _milestone_notifier != null:
 		var _sid: int = int(scenario_id.trim_prefix("scenario_"))
 		world.milestone_tracker.setup(
 			_sid,
 			world.reputation_system,
 			world.scenario_manager,
 			world.intel_store,
-			recon_hud.show_milestone
+			_milestone_notifier.show_milestone
 		)
-	# SPA-695: Give TownMoodController the camera so it can shake on milestones.
-	if world.town_mood_controller != null and camera != null:
-		world.town_mood_controller.set_camera(camera)
-	_init_journal()
 	_wire_rumor_events()
 	_init_event_choice_modal()
 	_init_objective_hud()

@@ -160,6 +160,7 @@ static func save_game(
 		"faction_event_system":      _serialize_faction_event_system(world.faction_event_system),
 		"socially_dead_ids":    world._socially_dead_ids.keys(),
 		"timeline":             timeline,
+		"milestone_log":        journal.get_milestone_log() if journal != null and journal.has_method("get_milestone_log") else [],
 		"tutorial_progress":    _serialize_tutorial(tutorial_sys),
 		"milestone_fired":      world.milestone_tracker._fired.duplicate() if world.milestone_tracker != null else {},
 		"daily_planning":       _serialize_daily_planning(world),
@@ -259,6 +260,9 @@ static func apply_pending_load(
 	var _timeline_data: Variant = data.get("timeline", [])
 	if journal != null and journal.has_method("restore_timeline") and _timeline_data is Array:
 		journal.restore_timeline(_timeline_data)
+	var _milestone_data: Variant = data.get("milestone_log", [])
+	if journal != null and journal.has_method("restore_milestones") and _milestone_data is Array:
+		journal.restore_milestones(_milestone_data)
 	_restore_tutorial(tutorial_sys, data.get("tutorial_progress", {}))
 	if world.milestone_tracker != null:
 		world.milestone_tracker._fired = data.get("milestone_fired", {}).duplicate()

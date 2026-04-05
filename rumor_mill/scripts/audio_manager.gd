@@ -96,6 +96,7 @@ const SFX_FILES: Dictionary = {
 	"reputation_up":      "sfx/reputation_up.wav",
 	"reputation_down":    "sfx/reputation_down.wav",
 	"bribe_coin":         "sfx/bribe_coin.wav",
+	"milestone_chime":    "sfx/reputation_up.wav",  ## distinct key — swap wav once asset exists
 }
 
 # ── State ──────────────────────────────────────────────────────────────────────

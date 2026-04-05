@@ -33,8 +33,8 @@ const C_EXPIRED       := Color(0.455, 0.431, 0.376, 1.0) # STONE_M (#746E60) —
 
 # ── Section enum ──────────────────────────────────────────────────────────────
 
-enum Section { RUMORS, INTELLIGENCE, FACTIONS, TIMELINE, OBJECTIVES }
-const SECTION_LABELS: Array = ["Rumors", "Intelligence", "Factions", "Timeline", "Objectives"]
+enum Section { RUMORS, INTELLIGENCE, FACTIONS, TIMELINE, OBJECTIVES, MILESTONES }
+const SECTION_LABELS: Array = ["Rumors", "Intelligence", "Factions", "Timeline", "Objectives", "Milestones"]
 
 # ── References ────────────────────────────────────────────────────────────────
 
@@ -96,6 +96,13 @@ var _timeline_log: Array = []
 
 ## Events buffered during the current tick, flushed into _timeline_log at tick-end.
 var _pending_events: Array = []
+
+## Hard cap on milestone log entries.
+const MAX_MILESTONE_ENTRIES := 100
+
+## Milestone log: Array of {text: String, color_packed: int, reward_text: String}.
+## Populated via push_milestone_event() called by MilestoneNotifier.
+var _milestone_log: Array = []
 
 # ── Node refs ─────────────────────────────────────────────────────────────────
 
@@ -305,6 +312,7 @@ func _rebuild_section(sec: Section) -> void:
 		Section.FACTIONS:      _build_factions_section()
 		Section.TIMELINE:      _build_timeline_section()
 		Section.OBJECTIVES:    _build_objectives_section()
+		Section.MILESTONES:    _build_milestones_section()
 
 
 # ── Section 1: Rumors ─────────────────────────────────────────────────────────
@@ -1920,6 +1928,88 @@ func open_to_timeline(filter_text: String = "", today: bool = false) -> void:
 func restore_timeline(entries: Array) -> void:
 	_timeline_log   = entries.duplicate(true)
 	_pending_events.clear()
+
+
+## Record a narrative milestone in the Milestones journal tab.
+## Called by MilestoneNotifier when a milestone popup is shown.
+## reward_text is the human-readable reward string (e.g. "+1 bribe charge"), or "".
+func push_milestone_event(text: String, color: Color, reward_text: String = "") -> void:
+	_milestone_log.append({
+		"text":        text,
+		"color_packed": color.to_html(false),
+		"reward_text": reward_text,
+	})
+	if _milestone_log.size() > MAX_MILESTONE_ENTRIES:
+		_milestone_log = _milestone_log.slice(_milestone_log.size() - MAX_MILESTONE_ENTRIES)
+	if not _is_open:
+		_notification_pending = true
+		_show_notification_dot()
+
+
+## Returns the milestone log for serialisation by SaveManager.
+func get_milestone_log() -> Array:
+	return _milestone_log.duplicate(true)
+
+
+## Called by SaveManager after a load to restore the persisted milestone log.
+func restore_milestones(entries: Array) -> void:
+	_milestone_log = entries.duplicate(true)
+
+
+# ── Section 6: Milestones ─────────────────────────────────────────────────────
+
+func _build_milestones_section() -> void:
+	_add_section_header("Milestones")
+
+	if _milestone_log.is_empty():
+		_add_body_label("No milestones reached yet — keep spreading those rumors.")
+		return
+
+	# Show newest first.
+	var entries: Array = _milestone_log.duplicate()
+	entries.reverse()
+
+	for entry: Dictionary in entries:
+		var text:        String = str(entry.get("text",        ""))
+		var color_html:  String = str(entry.get("color_packed", ""))
+		var reward_text: String = str(entry.get("reward_text", ""))
+
+		var text_color := Color(0.85, 0.78, 0.55, 1.0)   # parchment fallback
+		if not color_html.is_empty():
+			text_color = Color.html(color_html)
+
+		var row_panel := PanelContainer.new()
+		var row_style := StyleBoxFlat.new()
+		row_style.bg_color = Color(0.10, 0.07, 0.04, 0.92)
+		row_style.border_color = Color(text_color.r, text_color.g, text_color.b, 0.30)
+		row_style.set_border_width_all(1)
+		row_style.set_corner_radius_all(2)
+		row_style.set_content_margin_all(7)
+		row_panel.add_theme_stylebox_override("panel", row_style)
+		row_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_content_vbox.add_child(row_panel)
+
+		var row_vbox := VBoxContainer.new()
+		row_vbox.add_theme_constant_override("separation", 3)
+		row_panel.add_child(row_vbox)
+
+		var text_lbl := Label.new()
+		text_lbl.text          = text
+		text_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		text_lbl.add_theme_font_size_override("font_size", 14)
+		text_lbl.add_theme_color_override("font_color", text_color)
+		row_vbox.add_child(text_lbl)
+
+		if not reward_text.is_empty():
+			var reward_lbl := Label.new()
+			reward_lbl.text = reward_text
+			reward_lbl.add_theme_font_size_override("font_size", 12)
+			reward_lbl.add_theme_color_override("font_color", Color(0.68, 0.92, 0.40, 1.0))
+			row_vbox.add_child(reward_lbl)
+
+		var sep := Control.new()
+		sep.custom_minimum_size = Vector2(0, 3)
+		_content_vbox.add_child(sep)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

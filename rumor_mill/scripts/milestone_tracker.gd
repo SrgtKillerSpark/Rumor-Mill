@@ -10,7 +10,7 @@
 class_name MilestoneTracker
 
 
-## Callback signature: func(text: String, color: Color) -> void
+## Callback signature: func(text: String, color: Color, milestone_id: String) -> void
 var _show_milestone: Callable = Callable()
 
 ## Tracks which milestone IDs have already fired this session.
@@ -58,7 +58,7 @@ func _fire(id: String, text: String, color: Color) -> void:
 		return
 	_fired[id] = true
 	if _show_milestone.is_valid():
-		_show_milestone.call(text, color)
+		_show_milestone.call(text, color, id)
 
 
 const C_PROGRESS := Color(0.50, 1.00, 0.55, 1.0)   # green — good progress
