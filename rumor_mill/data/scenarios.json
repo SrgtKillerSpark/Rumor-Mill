@@ -53,8 +53,8 @@
     ],
     "startingReputations": {},
     "objectiveCard": {
-      "mission": "Destroy Lord Edric Fenn's reputation.",
-      "winCondition": "Get his reputation score to 29 or lower (out of 100).",
+      "mission": "Your patron wants Alderman Fenn gone before the autumn tax vote. Destroy his reputation — make the town turn on him.",
+      "winCondition": "His reputation must fall below 30.",
       "timeLimit": "You have 30 days.",
       "danger": "If you are caught eavesdropping, the town will know your face.",
       "strategyHint": "Edric is too proud to believe rumors about himself. Target the people around him — damage faction sentiment among merchants and nobles to erode his support.",
@@ -230,8 +230,8 @@
     ],
     "startingReputations": {},
     "objectiveCard": {
-      "mission": "Drive away the rival Herb-Wife Alys using illness rumors.",
-      "winCondition": "Convince 7 or more townspeople that Alys is spreading illness. Check the Scenario HUD to track believers.",
+      "mission": "The herbwife Alys knows too much. Convince seven townspeople she carries plague — before the nun Maren sees through the lie.",
+      "winCondition": "7 or more townspeople must believe the illness rumor about Alys.",
       "timeLimit": "You have 24 days.",
       "danger": "Sister Maren is skeptical and watchful. If Maren rejects ANY illness rumor about Alys, you instantly fail.",
       "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle.",
@@ -400,8 +400,8 @@
     },
     "targetShiftExcluded": ["calder_fenn"],
     "objectiveCard": {
-      "mission": "Elevate Calder Fenn and ruin Tomas Reeve — simultaneously.",
-      "winCondition": "Raise Calder's reputation to 75+ (starts at 65) and drop Tomas's reputation to 35 or below (starts at 48).",
+      "mission": "The old lord is dying. Put Calder on the seat by building his name and tearing down Tomas — but a rival whisperer works against you.",
+      "winCondition": "Raise Calder's reputation to 75+ and drop Tomas's reputation to 35 or below.",
       "timeLimit": "You have 27 days.",
       "danger": "If Calder's reputation drops below 35, instant fail. A rival agent is actively working against you.",
       "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter. Tomas has weak loyalties — rumors stick.",
@@ -577,8 +577,8 @@
     "targetShiftExcluded": ["aldous_prior", "vera_midwife", "finn_monk"],
     "protectedNpcIds": ["aldous_prior", "vera_midwife", "finn_monk"],
     "objectiveCard": {
-      "mission": "Defend three accused townsfolk from the Inquisitor's slander.",
-      "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk's reputations above 45 at the deadline. Below 40 at any time = instant fail.",
+      "mission": "The Inquisitor is coming for three innocent people. Defend their reputations against a tide of heresy accusations — if any one falls below 45, you have failed them.",
+      "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk above 45 reputation at the deadline.",
       "timeLimit": "You have 20 days.",
       "danger": "Finn is the most vulnerable — impressionable and wavering in loyalty, he absorbs slander more readily than the others. The Inquisitor is a relentless opponent who actively spreads accusations on a cooldown that accelerates over time.",
       "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera.",

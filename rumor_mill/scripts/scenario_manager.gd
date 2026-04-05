@@ -113,10 +113,10 @@ func get_win_condition_line() -> String:
 ## More compact and player-facing than the narrative startingText.
 func get_objective_one_liner() -> String:
 	match _active_scenario:
-		1: return "Ruin Lord Edric Fenn's reputation — bring it below 30 before the tax rolls are signed."
-		2: return "Spread the illness rumor to 7+ townspeople. Avoid Sister Maren rejecting it."
-		3: return "Raise Calder Fenn to 75+ reputation and drag Tomas Reeve to 35 or lower."
-		4: return "Keep Aldous Prior, Vera Midwife, and Finn Monk above 45 reputation for 20 days."
+		1: return "Ruin Edric Fenn — make the town turn on him"
+		2: return "Spread the plague lie — 7 believers needed"
+		3: return "Crown Calder, ruin Tomas — before the rival beats you"
+		4: return "Defend three innocents from the Inquisitor"
 		5: return "Get Aldric Vane elected — boost him to 65+ and undermine both rivals below 45."
 		6: return "Expose Aldric Vane's embezzlement (rep ≤ 30) while protecting Marta Coin (rep ≥ 60)."
 	return _starting_text.substr(0, mini(_starting_text.find(".") + 1, 80))
@@ -162,7 +162,8 @@ const S1_EXPOSED_HEAT      := 80.0
 # SPA-98: raised from 5; SPA-530: raised from 6 — 6 believers was too easily reachable
 # in the first 3–4 days given the high-credulity merchant chain. 7 requires deliberate
 # routing through 2+ independent clusters and keeps tension alive into mid-game.
-const S2_WIN_ILLNESS_MIN   := 7
+const S2_WIN_ILLNESS_MIN_DEFAULT := 7
+var s2_win_illness_min: int = S2_WIN_ILLNESS_MIN_DEFAULT
 # SPA-592: days of grace after Maren first rejects before triggering the instant fail.
 # Prevents silent propagation chains from ending the scenario without player agency.
 const S2_MAREN_GRACE_DAYS  := 2
@@ -341,7 +342,7 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_2_state != ScenarioState.ACTIVE:
 		return
 	var illness_count: int = rep.get_illness_believer_count(ALYS_HERBWIFE_ID)
-	if illness_count >= S2_WIN_ILLNESS_MIN:
+	if illness_count >= s2_win_illness_min:
 		scenario_2_state = ScenarioState.WON
 		scenario_resolved.emit(2, ScenarioState.WON)
 		return
@@ -406,7 +407,7 @@ func get_scenario_2_progress(rep: ReputationSystem) -> Dictionary:
 		"illness_believer_count": rep.get_illness_believer_count(ALYS_HERBWIFE_ID),
 		"illness_believer_ids":   rep.get_illness_believer_ids(ALYS_HERBWIFE_ID),
 		"illness_rejecter_ids":   rep.get_illness_rejecter_ids(ALYS_HERBWIFE_ID),
-		"win_threshold":          S2_WIN_ILLNESS_MIN,
+		"win_threshold":          s2_win_illness_min,
 		"state":                  scenario_2_state,
 	}
 
