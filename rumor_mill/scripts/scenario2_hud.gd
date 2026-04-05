@@ -167,9 +167,12 @@ func _refresh() -> void:
 
 	if rejecters.size() > 0:
 		var names: Array = []
-		for npc_id in rejecters:
+		for npc_id in rejecters.slice(0, MAX_NAMES_SHOWN):
 			names.append(_display_name(npc_id))
-		_rejecters_lbl.text = "Reject: " + ", ".join(names)
+		var suffix := ""
+		if rejecters.size() > MAX_NAMES_SHOWN:
+			suffix = " +%d more" % (rejecters.size() - MAX_NAMES_SHOWN)
+		_rejecters_lbl.text = "Reject: " + ", ".join(names) + suffix
 		_rejecters_lbl.visible = true
 	else:
 		_rejecters_lbl.visible = false
