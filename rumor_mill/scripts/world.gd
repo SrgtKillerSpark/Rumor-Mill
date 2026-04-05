@@ -931,12 +931,12 @@ func on_game_tick(tick: int) -> void:
 		# ── Reputation change indicator — show floating +/- for significant shifts. ──
 		for npc in npcs:
 			var npc_id: String = npc.npc_data.get("id", "")
-			if npc_id.is_empty() or _socially_dead_ids.has(npc_id):
+			if npc_id.is_empty():
 				continue
 			var snap: ReputationSystem.ReputationSnapshot = reputation_system.get_snapshot(npc_id)
 			if snap == null:
 				continue
-			if snap.is_socially_dead:
+			if snap.is_socially_dead and not _socially_dead_ids.has(npc_id):
 				_socially_dead_ids[npc_id] = true
 				var npc_name: String = npc.npc_data.get("name", npc_id)
 				emit_signal("socially_dead_triggered", npc_id, npc_name, tick)
@@ -945,6 +945,7 @@ func on_game_tick(tick: int) -> void:
 					tick)
 			# Floating +/- indicator: compare against last emitted score (not raw pre_scores)
 			# to avoid showing the same delta every tick during stable believers.
+			# Runs for all NPCs including socially-dead ones so the player keeps feedback.
 			var prev_emitted: int = _prev_rep_scores.get(npc_id, -1)
 			if prev_emitted < 0:
 				_prev_rep_scores[npc_id] = snap.score

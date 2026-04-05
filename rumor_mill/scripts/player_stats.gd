@@ -134,8 +134,8 @@ func record_tutorial_steps(
 	if not _data["scenarios"][scenario_id].has(difficulty):
 		_data["scenarios"][scenario_id][difficulty] = _blank_record()
 	var rec: Dictionary = _data["scenarios"][scenario_id][difficulty]
-	rec["tutorial_steps_seen"]  = rec.get("tutorial_steps_seen",  0) + seen
-	rec["tutorial_steps_total"] = rec.get("tutorial_steps_total", 0) + total
+	rec["tutorial_steps_seen"]  = max(rec.get("tutorial_steps_seen",  0), seen)
+	rec["tutorial_steps_total"] = max(rec.get("tutorial_steps_total", 0), total)
 	_data["total_tutorial_steps_seen"]  = _data.get("total_tutorial_steps_seen",  0) + seen
 	_data["total_tutorial_steps_total"] = _data.get("total_tutorial_steps_total", 0) + total
 	_save()

@@ -1801,9 +1801,9 @@ func _on_achievement_scenario_resolved(
 	elif diff == "spymaster":
 		AchievementManager.unlock("spymaster_victory")
 
-	# Speed run: win in under 10 days.
+	# Speed run: win within 10 days (inclusive).
 	var current_day: int = day_night.current_day if day_night != null and "current_day" in day_night else 99
-	if current_day < 10:
+	if current_day <= 10:
 		AchievementManager.unlock("speedrunner")
 
 	# Ghost: won without any detection event.

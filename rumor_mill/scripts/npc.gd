@@ -82,7 +82,7 @@ var _temperament: float = 0.5
 # ── State ────────────────────────────────────────────────────────────────────
 var current_cell: Vector2i = Vector2i.ZERO
 var _path: Array[Vector2i] = []
-var _waypoint_index: int = 0
+var _waypoint_index: int = -1  # -1 so first _advance_waypoint() lands on index 0
 var _is_moving: bool = false
 var _tween: Tween = null
 var _micro_wander_cooldown: int = 0

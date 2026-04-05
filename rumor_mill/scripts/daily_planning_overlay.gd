@@ -545,11 +545,23 @@ func _build_checkbox_sfx() -> void:
 	_sfx_checkbox.volume_db = -12.0
 	_sfx_checkbox.bus = &"SFX" if AudioServer.get_bus_index("SFX") >= 0 else &"Master"
 	add_child(_sfx_checkbox)
-	# Generate a short click waveform (no external file needed).
-	var gen := AudioStreamGenerator.new()
-	gen.mix_rate = 22050.0
-	gen.buffer_length = 0.03
-	_sfx_checkbox.stream = gen
+	# Generate a short click waveform via AudioStreamWAV (no external file needed).
+	# AudioStreamGenerator was silent because its playback buffer was never filled.
+	var wav := AudioStreamWAV.new()
+	wav.mix_rate = 22050
+	wav.stereo = false
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	const NUM_SAMPLES: int = 512  # ~23 ms at 22050 Hz
+	var pcm := PackedByteArray()
+	pcm.resize(NUM_SAMPLES * 2)
+	for i: int in range(NUM_SAMPLES):
+		var env: float = 1.0 - float(i) / NUM_SAMPLES
+		var v: int = int(sin(TAU * 1200.0 * float(i) / 22050.0) * env * 16000.0)
+		v = clampi(v, -32768, 32767)
+		pcm[i * 2]     = v & 0xFF
+		pcm[i * 2 + 1] = (v >> 8) & 0xFF
+	wav.data = pcm
+	_sfx_checkbox.stream = wav
 
 
 # ── Save / load integration ──────────────────────────────────────────────────
