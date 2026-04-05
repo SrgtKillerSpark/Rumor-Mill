@@ -57,6 +57,9 @@ var _day_counter_tween: Tween = null
 # ── SPA-627: "Press O" hotkey reminder label ─────────────────────────────────
 var _o_hint_label: Label = null
 
+# ── SPA-719: Win condition target line (live metrics below objective) ────────
+var _win_target_label: Label = null
+
 # ── Faction overview mini-panel ──────────────────────────────────────────────
 ## SPA-561: Pulsing win progress bar tween when near completion.
 var _win_pulse_tween: Tween = null
@@ -128,6 +131,7 @@ func _ready() -> void:
 	layer = 4
 	_build_nudge_label()
 	_build_o_hint_label()
+	_build_win_target_label()
 	_build_banner()
 	_build_metrics_row()
 	_build_midgame_nudge()
@@ -198,6 +202,7 @@ func _pulse_day_counter() -> void:
 func _on_tick(_tick: int) -> void:
 	_refresh_time()
 	_refresh_nudge()
+	_refresh_win_target()
 	_refresh_midgame_nudge()
 	_refresh_mini_progress()
 	_refresh_tier3_suggestion()
@@ -221,6 +226,7 @@ func _refresh() -> void:
 
 	_refresh_time()
 	_refresh_nudge()
+	_refresh_win_target()
 	_refresh_metrics()
 	_refresh_win_progress()
 	_refresh_milestone_label()
@@ -276,6 +282,82 @@ func _build_o_hint_label() -> void:
 ## SPA-627: One-time flash banner shown after the initial briefing overlay is dismissed.
 func show_o_hotkey_hint() -> void:
 	_show_banner("Press O anytime to review your mission", Color(0.70, 0.85, 0.55, 1.0), 5.0)
+
+
+# ── SPA-719: Win condition target line ───────────��──────────────────────────
+
+## Build a persistent label below the objective text showing live win metrics.
+func _build_win_target_label() -> void:
+	var vbox: VBoxContainer = $Panel/VBox
+	_win_target_label = Label.new()
+	_win_target_label.text = ""
+	_win_target_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_win_target_label.add_theme_font_size_override("font_size", 13)
+	_win_target_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55, 1.0))
+	_win_target_label.add_theme_constant_override("outline_size", 3)
+	_win_target_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	_win_target_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(_win_target_label)
+	# Insert right after GoalLabel (and after the O-hint if present).
+	var insert_idx: int = goal_label.get_index() + 1
+	if _o_hint_label != null:
+		insert_idx = _o_hint_label.get_index() + 1
+	vbox.move_child(_win_target_label, insert_idx)
+
+
+## Refresh the win condition target line with live scenario-specific data.
+func _refresh_win_target() -> void:
+	if _win_target_label == null or _scenario_manager == null or _reputation_system == null:
+		return
+	if _world_ref == null:
+		return
+	var sid: String = _world_ref.active_scenario_id if "active_scenario_id" in _world_ref else ""
+	var text: String = ""
+	match sid:
+		"scenario_1":
+			var p: Dictionary = _scenario_manager.get_scenario_1_progress(_reputation_system)
+			var score: int = p.get("edric_score", 50)
+			var threshold: int = p.get("win_threshold", 30)
+			text = "Edric Fenn: %d/100 — need < %d" % [score, threshold]
+		"scenario_2":
+			var p: Dictionary = _scenario_manager.get_scenario_2_progress(_reputation_system)
+			var count: int = p.get("illness_believer_count", 0)
+			var target: int = p.get("win_threshold", 7)
+			var rejecters: Array = p.get("illness_rejecter_ids", [])
+			var maren_status: String = "Safe"
+			if ScenarioManager.MAREN_NUN_ID in rejecters:
+				maren_status = "REJECTED"
+			text = "Believers: %d/%d — Maren: %s" % [count, target, maren_status]
+		"scenario_3":
+			var p: Dictionary = _scenario_manager.get_scenario_3_progress(_reputation_system)
+			var calder: int = p.get("calder_score", 50)
+			var tomas: int = p.get("tomas_score", 50)
+			var calder_target: int = p.get("calder_win_target", 75)
+			var tomas_target: int = p.get("tomas_win_target", 35)
+			text = "Calder: %d/%d | Tomas: %d/%d" % [calder, calder_target, tomas, tomas_target]
+		"scenario_4":
+			var p: Dictionary = _scenario_manager.get_scenario_4_progress(_reputation_system)
+			var scores: Dictionary = p.get("protected_scores", {})
+			var threshold: int = p.get("win_threshold", 45)
+			var parts: PackedStringArray = PackedStringArray()
+			for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+				var npc_score: int = scores.get(npc_id, 50)
+				var display_name: String = npc_id.split("_")[0].capitalize()
+				parts.append("%s: %d" % [display_name, npc_score])
+			text = "%s — all need > %d" % [" | ".join(parts), threshold]
+		"scenario_5":
+			var p: Dictionary = _scenario_manager.get_scenario_5_progress(_reputation_system)
+			var aldric: int = p.get("aldric_score", 48)
+			var edric: int = p.get("edric_score", 58)
+			var tomas: int = p.get("tomas_score", 45)
+			text = "Aldric: %d | Edric: %d | Tomas: %d — need 65+ & rivals < 45" % [aldric, edric, tomas]
+		"scenario_6":
+			var p: Dictionary = _scenario_manager.get_scenario_6_progress(_reputation_system)
+			var aldric: int = p.get("aldric_score", 55)
+			var marta: int = p.get("marta_score", 52)
+			text = "Aldric: %d | Marta: %d — need ≤ 30 & ≥ 60" % [aldric, marta]
+	_win_target_label.text = text
+	_win_target_label.visible = not text.is_empty()
 
 
 func _refresh_nudge() -> void:
