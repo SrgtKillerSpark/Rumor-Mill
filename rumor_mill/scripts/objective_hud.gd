@@ -282,6 +282,13 @@ func _refresh_nudge() -> void:
 	if _nudge_label == null or _nudge_phase >= _NUDGE_TEXTS.size():
 		return
 
+	# SPA-675: nudge text is S1-only onboarding; hide it on all other scenarios.
+	if _scenario_manager != null and _scenario_manager._active_scenario != 1:
+		_nudge_label.text = ""
+		_nudge_label.visible = false
+		_nudge_phase = _NUDGE_TEXTS.size()  # mark done so midgame/tier3 can activate
+		return
+
 	# Phase 0 → 1: player has observed at least one building.
 	if _nudge_phase == 0 and _intel_store != null:
 		if not _intel_store.location_intel.is_empty():
