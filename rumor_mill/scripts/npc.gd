@@ -1,6 +1,6 @@
 extends Node2D
 
-## npc.gd — Art Pass 11 (SPA-585): 4-directional sprites, 64×96 frames, 2-frame idle.
+## npc.gd — Art Pass 15 (SPA-686): body_type (0=standard/1=slim/2=stocky) + clothing_var rows.
 ## Sprint 5: AnimatedSprite2D, faction sprites, heat/bribery visual polish.
 ## Sprint 4: full SIR diffusion model.
 ##
@@ -11,15 +11,14 @@ extends Node2D
 ## Mutations use PropagationEngine.try_mutate() (4 independent types).
 ## Shelf-life expiry is detected via Rumor.is_expired() after PropagationEngine.tick_decay().
 ##
-## Sprite sheet layout (assets/textures/npc_sprites.png, 960×864, 15 cols × 9 rows, 64×96/frame):
-##   Row 0 = merchant (deep blue/gold)   Row 1 = noble (burgundy/silver)
-##   Row 2 = clergy (cream/black)
-##   Row 3 = guard   (stone tabard/helmet — archetype "guard_civic")
-##   Row 4 = commoner (drab linen — craftsmen, laborers, etc.)
-##   Row 5 = tavern_staff (apron, warm amber — archetype "tavern_staff")
-##   Row 6 = scholar  (ink-blue robe, scroll — archetype "scholar")
-##   Row 7 = elder    (grey robe, walking staff — archetype "elder")
-##   Row 8 = spy      (dark hooded cloak, dagger — archetype "spy")
+## Sprite sheet layout (assets/textures/npc_sprites.png, 960×3456, 15 cols × 36 rows, 64×96/frame):
+##   Body block 0 (standard, rows  0- 8): merchant noble clergy guard commoner tavern scholar elder spy
+##   Body block 1 (slim,     rows  9-17): same archetypes, narrower silhouette
+##   Body block 2 (stocky,   rows 18-26): same archetypes, wider silhouette
+##   Clothing variants (rows 27-35):
+##     27=merchant-rustic  28=merchant-neutral  29=merchant-guild-red
+##     30=noble-pragmatic  31=noble-navy        32=noble-russet
+##     33=clergy-greyfriar 34=clergy-augustine  35=clergy-blackrobe
 ##   Cols  0-1  = idle_south (2 frames)   Cols  2-4  = walk_south (3 frames)
 ##   Cols  5-6  = idle_north (2 frames)   Cols  7-9  = walk_north (3 frames)
 ##   Cols 10-11 = idle_east  (2 frames)   Cols 12-14 = walk_east  (3 frames)
@@ -109,13 +108,13 @@ var _ripple_tween: Tween = null
 var _emote_tween: Tween = null
 
 # ── Visuals ──────────────────────────────────────────────────────────────────
-# Faction row index in npc_sprites.png (rows 0-2)
+# Faction row index in npc_sprites.png (rows 0-2, standard body block)
 const FACTION_ROW := {
 	"merchant": 0,
 	"noble":    1,
 	"clergy":   2,
 }
-# Archetype overrides — these rows take priority over faction (rows 3-8)
+# Archetype overrides — these rows take priority over faction (rows 3-8, standard body block)
 const ARCHETYPE_ROW := {
 	"guard_civic":  3,
 	"tavern_staff": 5,
@@ -128,7 +127,15 @@ const COMMONER_ROLES := [
 	"Craftsman", "Mill Operator", "Storage Keeper", "Transport Worker",
 	"Merchant's Wife", "Traveling Merchant",
 ]
-# Sprite frame dimensions (SPA-585: upgraded to 64×96, 2× upscale from 32×48 base)
+# Body-type row offset: rows 9-17 = slim, rows 18-26 = stocky (SPA-686)
+const BODY_TYPE_ROW_OFFSET := 9
+# Clothing variant base rows for faction archetypes (rows 27-35, standard body proportions)
+const CLOTHING_VAR_BASE := {
+	"merchant": 27,
+	"noble":    30,
+	"clergy":   33,
+}
+# Sprite frame dimensions (SPA-585: 64×96 per frame, 2× upscale from 32×48 base)
 const SPRITE_W := 64
 const SPRITE_H := 96
 # Column positions within each row (see header comment for full layout)
@@ -300,16 +307,24 @@ func _setup_sprite(faction: String) -> void:
 		push_warning("NPC: npc_sprites.png not found; falling back to placeholder")
 		return
 
-	# Archetype overrides faction: guards use row 3, commoners row 4.
+	# Determine sprite sheet row from archetype, role, faction, body_type, clothing_var.
 	var npc_archetype: String = npc_data.get("archetype", "")
 	var npc_role: String = npc_data.get("role", "")
+	var body_type: int = clampi(npc_data.get("body_type", 0), 0, 2)
+	var clothing_var: int = clampi(npc_data.get("clothing_var", 0), 0, 3)
 	var row: int
 	if ARCHETYPE_ROW.has(npc_archetype):
-		row = ARCHETYPE_ROW[npc_archetype]
+		# Specialty archetypes (guard/tavern/scholar/elder/spy) support body_type only.
+		row = ARCHETYPE_ROW[npc_archetype] + body_type * BODY_TYPE_ROW_OFFSET
 	elif npc_role in COMMONER_ROLES:
-		row = 4
+		# Commoner row supports body_type only.
+		row = 4 + body_type * BODY_TYPE_ROW_OFFSET
+	elif clothing_var > 0 and CLOTHING_VAR_BASE.has(faction):
+		# Clothing variant rows 27-35 (standard body proportions, alternative palette).
+		row = CLOTHING_VAR_BASE[faction] + (clothing_var - 1)
 	else:
-		row = FACTION_ROW.get(faction, 0)
+		# Faction rows 0-2 with body_type block offset.
+		row = FACTION_ROW.get(faction, 0) + body_type * BODY_TYPE_ROW_OFFSET
 	var frames := SpriteFrames.new()
 
 	# Helper to add an animation with frames from consecutive columns

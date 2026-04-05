@@ -4,14 +4,14 @@
     "credulity": 0.15, "sociability": 0.45, "loyalty": 0.85, "temperament": 0.4,
     "archetype": "merchant_worker", "work_location": "trader_stall",
     "tick_overrides": {"3": "town_hall"}, "day_pattern_overrides": [],
-    "portrait_id": 0
+    "portrait_id": 0, "body_type": 2, "clothing_var": 0
   },
   {
     "id": "sybil_oats",       "name": "Sybil Oats",       "faction": "merchant", "role": "Tavern Keeper",
     "credulity": 0.5,  "sociability": 0.9,  "loyalty": 0.6,  "temperament": 0.5,
     "archetype": "tavern_staff", "work_location": "",
     "tick_overrides": {}, "day_pattern_overrides": [],
-    "portrait_id": 1
+    "portrait_id": 1, "body_type": 2, "clothing_var": 0
   },
   {
     "id": "oswin_tanner",     "name": "Oswin Tanner",     "faction": "merchant", "role": "Craftsman",
@@ -19,7 +19,7 @@
     "archetype": "merchant_worker", "work_location": "tanner",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day_mod": 7, "tick": 2, "location": "chapel"}],
-    "portrait_id": 2
+    "portrait_id": 2, "body_type": 0, "clothing_var": 0
   },
   {
     "id": "marta_coin",       "name": "Marta Coin",       "faction": "merchant", "role": "Market Trader",
@@ -27,7 +27,7 @@
     "archetype": "merchant_worker", "work_location": "trader_stall",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day_mod": 3, "tick": 4, "location": "tavern"}],
-    "portrait_id": 3
+    "portrait_id": 3, "body_type": 1, "clothing_var": 1
   },
   {
     "id": "rufus_bolt",       "name": "Rufus Bolt",       "faction": "merchant", "role": "Blacksmith",
@@ -35,21 +35,21 @@
     "archetype": "merchant_worker", "work_location": "blacksmith",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day_mod": 4, "tick": 5, "location": "tavern"}],
-    "portrait_id": 4
+    "portrait_id": 4, "body_type": 2, "clothing_var": 2
   },
   {
     "id": "nell_picker",      "name": "Nell Picker",      "faction": "merchant", "role": "Tavern Barmaid",
     "credulity": 0.8,  "sociability": 0.9,  "loyalty": 0.5,  "temperament": 0.55,
     "archetype": "tavern_staff", "work_location": "",
     "tick_overrides": {}, "day_pattern_overrides": [],
-    "portrait_id": 5
+    "portrait_id": 5, "body_type": 1, "clothing_var": 0
   },
   {
     "id": "cob_farrow",       "name": "Cob Farrow",       "faction": "merchant", "role": "Traveling Merchant",
     "credulity": 0.85, "sociability": 0.5,  "loyalty": 0.2,  "temperament": 0.5,
     "archetype": "independent", "work_location": "",
     "tick_overrides": {}, "day_pattern_overrides": [],
-    "portrait_id": 6
+    "portrait_id": 6, "body_type": 0, "clothing_var": 0
   },
   {
     "id": "idris_kemp",       "name": "Idris Kemp",       "faction": "merchant", "role": "Mill Operator",
@@ -57,7 +57,7 @@
     "archetype": "merchant_worker", "work_location": "mill",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day_mod": 5, "tick": 2, "location": "chapel"}],
-    "portrait_id": 7
+    "portrait_id": 7, "body_type": 1, "clothing_var": 0
   },
   {
     "id": "bess_wicker",      "name": "Bess Wicker",      "faction": "merchant", "role": "Storage Keeper",
@@ -65,21 +65,21 @@
     "archetype": "merchant_worker", "work_location": "storage",
     "tick_overrides": {"2": "well"},
     "day_pattern_overrides": [],
-    "portrait_id": 8
+    "portrait_id": 8, "body_type": 2, "clothing_var": 0
   },
   {
     "id": "sim_carter",       "name": "Sim Carter",       "faction": "merchant", "role": "Transport Worker",
     "credulity": 0.8,  "sociability": 0.55, "loyalty": 0.5,  "temperament": 0.5,
     "archetype": "merchant_worker", "work_location": "storage",
     "tick_overrides": {"3": "market"}, "day_pattern_overrides": [],
-    "portrait_id": 9
+    "portrait_id": 9, "body_type": 0, "clothing_var": 0
   },
   {
     "id": "greta_flint",      "name": "Greta Flint",      "faction": "merchant", "role": "Merchant's Wife",
     "credulity": 0.85, "sociability": 0.85, "loyalty": 0.55, "temperament": 0.5,
     "archetype": "independent", "work_location": "",
     "tick_overrides": {}, "day_pattern_overrides": [],
-    "portrait_id": 10
+    "portrait_id": 10, "body_type": 1, "clothing_var": 0
   },
   {
     "id": "edric_fenn",       "name": "Edric Fenn",       "faction": "noble",    "role": "Alderman",
@@ -87,21 +87,21 @@
     "archetype": "noble_household", "work_location": "",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day_mod": 7, "tick": 2, "location": "chapel"}],
-    "portrait_id": 11
+    "portrait_id": 11, "body_type": 2, "clothing_var": 0
   },
   {
     "id": "isolde_fenn",      "name": "Isolde Fenn",      "faction": "noble",    "role": "Alderman's Wife",
     "credulity": 0.5,  "sociability": 0.7,  "loyalty": 0.7,  "temperament": 0.5,
     "archetype": "noble_household", "work_location": "",
     "tick_overrides": {"3": "market"}, "day_pattern_overrides": [],
-    "portrait_id": 12
+    "portrait_id": 12, "body_type": 1, "clothing_var": 1
   },
   {
     "id": "calder_fenn",      "name": "Calder Fenn",      "faction": "noble",    "role": "Alderman's Son",
     "credulity": 0.8,  "sociability": 0.55, "loyalty": 0.6,  "temperament": 0.85,
     "archetype": "noble_household", "work_location": "",
     "tick_overrides": {"5": "tavern"}, "day_pattern_overrides": [],
-    "portrait_id": 13
+    "portrait_id": 13, "body_type": 1, "clothing_var": 0
   },
   {
     "id": "bram_guard",       "name": "Bram Guard",       "faction": "noble",    "role": "Guard Captain",
@@ -109,7 +109,7 @@
     "archetype": "guard_civic", "work_location": "",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day_mod": 7, "tick": 2, "location": "chapel"}],
-    "portrait_id": 14
+    "portrait_id": 14, "body_type": 2, "clothing_var": 0
   },
   {
     "id": "wynn_gate",        "name": "Wynn Gate",        "faction": "noble",    "role": "Town Guard",
@@ -117,14 +117,14 @@
     "archetype": "guard_civic", "work_location": "",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day_mod": 3, "tick": 5, "location": "tavern"}],
-    "portrait_id": 15
+    "portrait_id": 15, "body_type": 0, "clothing_var": 0
   },
   {
     "id": "pell_gate",        "name": "Pell Gate",        "faction": "noble",    "role": "Town Guard",
     "credulity": 0.8,  "sociability": 0.5,  "loyalty": 0.2,  "temperament": 0.5,
     "archetype": "guard_civic", "work_location": "",
     "tick_overrides": {"5": "tavern"}, "day_pattern_overrides": [],
-    "portrait_id": 16
+    "portrait_id": 16, "body_type": 1, "clothing_var": 0
   },
   {
     "id": "annit_scribe",     "name": "Annit Scribe",     "faction": "noble",    "role": "Clerk",
@@ -132,7 +132,7 @@
     "archetype": "noble_household", "work_location": "",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day_mod": 5, "tick": 3, "location": "market"}],
-    "portrait_id": 17
+    "portrait_id": 17, "body_type": 0, "clothing_var": 2
   },
   {
     "id": "tomas_reeve",      "name": "Tomas Reeve",      "faction": "noble",    "role": "Tax Collector",
@@ -140,14 +140,14 @@
     "archetype": "guard_civic", "work_location": "",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day_mod": 3, "tick": 3, "location": "market"}],
-    "portrait_id": 18
+    "portrait_id": 18, "body_type": 0, "clothing_var": 0
   },
   {
     "id": "old_hugh",         "name": "Old Hugh",         "faction": "noble",    "role": "Retired Steward",
     "credulity": 0.85, "sociability": 0.45, "loyalty": 0.4,  "temperament": 0.15,
     "archetype": "independent", "work_location": "",
     "tick_overrides": {"3": "home", "4": "home"}, "day_pattern_overrides": [],
-    "portrait_id": 19
+    "portrait_id": 19, "body_type": 2, "clothing_var": 3
   },
   {
     "id": "aldous_prior",     "name": "Aldous Prior",     "faction": "clergy",   "role": "Head Priest",
@@ -155,14 +155,14 @@
     "archetype": "clergy", "work_location": "",
     "tick_overrides": {},
     "day_pattern_overrides": [{"day": 1, "tick": 3, "location": "town_hall"}],
-    "portrait_id": 20
+    "portrait_id": 20, "body_type": 2, "clothing_var": 0
   },
   {
     "id": "maren_nun",        "name": "Maren Nun",        "faction": "clergy",   "role": "Nun/Healer",
     "credulity": 0.5,  "sociability": 0.5,  "loyalty": 0.9,  "temperament": 0.4,
     "archetype": "clergy", "work_location": "",
     "tick_overrides": {"0": "home"}, "day_pattern_overrides": [],
-    "portrait_id": 21
+    "portrait_id": 21, "body_type": 1, "clothing_var": 1
   },
   {
     "id": "finn_monk",        "name": "Finn Monk",        "faction": "clergy",   "role": "Young Monk",
@@ -170,21 +170,21 @@
     "archetype": "clergy", "work_location": "",
     "tick_overrides": {"5": "tavern"},
     "day_pattern_overrides": [{"day_mod": 4, "tick": 2, "location": "market"}],
-    "portrait_id": 22
+    "portrait_id": 22, "body_type": 1, "clothing_var": 3
   },
   {
     "id": "vera_midwife",     "name": "Vera Midwife",     "faction": "clergy",   "role": "Folk Healer",
     "credulity": 0.75, "sociability": 0.5,  "loyalty": 0.5,  "temperament": 0.5,
     "archetype": "independent", "work_location": "",
     "tick_overrides": {"3": "chapel"}, "day_pattern_overrides": [],
-    "portrait_id": 23
+    "portrait_id": 23, "body_type": 0, "clothing_var": 2
   },
   {
     "id": "old_piety",        "name": "Old Piety",        "faction": "clergy",   "role": "Devout Elder",
     "credulity": 0.9,  "sociability": 0.5,  "loyalty": 0.8,  "temperament": 0.15,
     "archetype": "clergy", "work_location": "",
     "tick_overrides": {"0": "home", "1": "home"}, "day_pattern_overrides": [],
-    "portrait_id": 24
+    "portrait_id": 24, "body_type": 2, "clothing_var": 0
   },
   {
     "id": "jude_bellringer",  "name": "Jude Bellringer",  "faction": "clergy",   "role": "Chapel Worker",
@@ -192,34 +192,34 @@
     "archetype": "clergy", "work_location": "",
     "tick_overrides": {"3": "well"},
     "day_pattern_overrides": [{"day_mod": 6, "tick": 3, "location": "market"}],
-    "portrait_id": 25
+    "portrait_id": 25, "body_type": 0, "clothing_var": 1
   },
   {
     "id": "constance_widow",  "name": "Constance Widow",  "faction": "clergy",   "role": "Congregation",
     "credulity": 0.85, "sociability": 0.85, "loyalty": 0.55, "temperament": 0.5,
     "archetype": "clergy", "work_location": "",
     "tick_overrides": {"2": "market", "3": "market"}, "day_pattern_overrides": [],
-    "portrait_id": 26
+    "portrait_id": 26, "body_type": 1, "clothing_var": 2
   },
   {
     "id": "thomas_pilgrim",   "name": "Thomas Pilgrim",   "faction": "clergy",   "role": "Traveler",
     "credulity": 0.8,  "sociability": 0.5,  "loyalty": 0.2,  "temperament": 0.5,
     "archetype": "independent", "work_location": "",
     "tick_overrides": {}, "day_pattern_overrides": [],
-    "portrait_id": 27
+    "portrait_id": 27, "body_type": 0, "clothing_var": 3
   },
   {
     "id": "alys_herbwife",    "name": "Alys Herbwife",    "faction": "clergy",   "role": "Herbalist",
     "credulity": 0.5,  "sociability": 0.2,  "loyalty": 0.3,  "temperament": 0.5,
     "archetype": "independent", "work_location": "",
     "tick_overrides": {"3": "chapel"}, "day_pattern_overrides": [],
-    "portrait_id": 28
+    "portrait_id": 28, "body_type": 2, "clothing_var": 1
   },
   {
     "id": "denny_gravedigger","name": "Denny Gravedigger","faction": "clergy",   "role": "Cemetery Worker",
     "credulity": 0.2,  "sociability": 0.4,  "loyalty": 0.5,  "temperament": 0.85,
     "archetype": "clergy", "work_location": "",
     "tick_overrides": {"2": "graveyard", "3": "graveyard", "4": "graveyard"}, "day_pattern_overrides": [],
-    "portrait_id": 29
+    "portrait_id": 29, "body_type": 2, "clothing_var": 3
   }
 ]

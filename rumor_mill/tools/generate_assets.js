@@ -7,15 +7,16 @@
  *   assets/textures/tiles_road_dirt.png   (64×32)
  *   assets/textures/tiles_road_stone.png  (64×32)
  *   assets/textures/tiles_buildings.png   (640×64 — 10 building types)
- *   assets/textures/npc_sprites.png       (960×864 — 15 frames × 9 archetypes, 64×96 per frame)  SPA-585
- *                                           row 0 = merchant, 1 = noble, 2 = clergy
- *                                           row 3 = guard,    4 = commoner
- *                                           row 5 = tavern_staff (apron/kerchief)
- *                                           row 6 = scholar     (ink-blue robe/scroll)
- *                                           row 7 = elder       (grey robe/staff)
- *                                           row 8 = spy         (dark hooded cloak)
- *                                           cols 0-1=idle_S, 2-4=walk_S, 5-6=idle_N, 7-9=walk_N,
- *                                           10-11=idle_E, 12-14=walk_E  (W=flip_h of E)
+ *   assets/textures/npc_sprites.png       (960×3456 — 15 frames × 36 rows, 64×96 per frame)  SPA-686
+ *     Body-type block 0 (standard, rows  0- 8): merchant noble clergy guard commoner tavern scholar elder spy
+ *     Body-type block 1 (slim,     rows  9-17): same archetypes, horizontally squished 80%
+ *     Body-type block 2 (stocky,   rows 18-26): same archetypes, horizontally expanded 125%
+ *     Clothing variants  (rows 27-35):
+ *       27=merchant-rustic  28=merchant-neutral  29=merchant-guild-red
+ *       30=noble-pragmatic  31=noble-navy        32=noble-russet
+ *       33=clergy-greyfriar 34=clergy-augustine  35=clergy-blackrobe
+ *     cols 0-1=idle_S, 2-4=walk_S, 5-6=idle_N, 7-9=walk_N,
+ *     10-11=idle_E, 12-14=walk_E  (W=flip_h of E)
  *   assets/textures/ui_parchment.png      (48×48 — 9-slice parchment border tile)
  *   assets/textures/ui_faction_badges.png (72×24 — 3 × 24px faction badges)
  *   assets/textures/ui_claim_icons.png    (160×32 — 5 × 32px claim-type icons)  ← SPA-523
@@ -1094,6 +1095,16 @@ function makeBuildingTiles(nightMode = false) {
     cv.fillRect(ox+57, 32-wH+3, 2, 7, ...c.WOOD_D);   // handle
     cv.fillRect(ox+55, 32-wH+3, 4, 3, ...c.STONE_M);  // head
     cv.line(ox+55, 32-wH+3, ox+58, 32-wH+3, ...c.OUTLINE);
+    // hanging blacksmith sign (bracket from left face — anvil silhouette icon)
+    cv.line(ox+16, 32-wH+2, ox+23, 32-wH+2, ...c.WOOD_D);  // bracket arm
+    cv.line(ox+23, 32-wH+2, ox+23, 32-wH+9, ...c.WOOD_D);  // chain
+    cv.fillRect(ox+16, 32-wH+9, 10, 5, ...c.STONE_D);       // sign board (dark iron)
+    // anvil silhouette on sign: body + horn
+    cv.fillRect(ox+18, 32-wH+11, 6, 2, ...c.STONE_L);       // anvil body
+    cv.fillRect(ox+18, 32-wH+10, 4, 1, ...c.STONE_L);       // anvil face top
+    cv.sp(ox+22, 32-wH+10, ...c.STONE_M);                   // horn tip
+    cv.line(ox+16, 32-wH+9,  ox+25, 32-wH+9,  ...c.OUTLINE);
+    cv.line(ox+16, 32-wH+13, ox+25, 32-wH+13, ...c.OUTLINE);
     // night: enhanced forge glow halo + wall darkening
     if (nightMode) {
       for (let ny = 32-wH+1; ny < 32; ny++)
@@ -1626,10 +1637,45 @@ function makeBuildingTiles(nightMode = false) {
 //   west = flip_h of east (handled in code)
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeNPCSprites() {
-  // 9 archetype rows × 48px = 432px height; 15 cols × 32px = 480px wide (SPA-585)
-  // row 0=merchant, 1=noble, 2=clergy, 3=guard, 4=commoner, 5=tavern_staff
-  // row 6=scholar,  7=elder, 8=spy
-  const cv = createCanvas(480, 432);
+  // 36 rows × 48px = 1728px height; 15 cols × 32px = 480px wide (SPA-686)
+  // Body type blocks (9 archetypes each):
+  //   Block 0 (standard, rows  0- 8): merchant noble clergy guard commoner tavern scholar elder spy
+  //   Block 1 (slim,     rows  9-17): pixel-squished 80% width from block 0
+  //   Block 2 (stocky,   rows 18-26): pixel-expanded 125% width from block 0
+  // Clothing variant rows (rows 27-35):
+  //   27=merchant-rustic  28=merchant-neutral  29=merchant-guild-red
+  //   30=noble-pragmatic  31=noble-navy        32=noble-russet
+  //   33=clergy-greyfriar 34=clergy-augustine  35=clergy-blackrobe
+  const cv = createCanvas(480, 1728);
+
+  // ── Helper: scale row srcRow horizontally by sx and write to dstRow ──────────
+  // sx < 1.0 = squish (slim); sx > 1.0 = expand (stocky, clips to frame width)
+  const scaleRowHoriz = (srcRow, dstRow, sx) => {
+    const frameW = 32, frameH = 48, cols = 15;
+    for (let col = 0; col < cols; col++) {
+      const newW = Math.round(frameW * sx);
+      const xOff = Math.floor((frameW - newW) / 2);  // center squished sprite in frame
+      for (let dy = 0; dy < frameH; dy++) {
+        for (let dx = 0; dx < newW; dx++) {
+          const destX = col * frameW + xOff + dx;
+          if (destX < col * frameW || destX >= (col + 1) * frameW) continue;
+          const srcPixX = Math.floor(dx / sx);
+          const srcX = col * frameW + srcPixX;
+          const srcY = srcRow * frameH + dy;
+          const dstX = destX;
+          const dstY = dstRow * frameH + dy;
+          if (srcX < 0 || srcX >= cv.w || srcY < 0 || srcY >= cv.h) continue;
+          if (dstX < 0 || dstX >= cv.w || dstY < 0 || dstY >= cv.h) continue;
+          const si = (srcY * cv.w + srcX) * 4;
+          const di = (dstY * cv.w + dstX) * 4;
+          cv.data[di]   = cv.data[si];
+          cv.data[di+1] = cv.data[si+1];
+          cv.data[di+2] = cv.data[si+2];
+          cv.data[di+3] = cv.data[si+3];
+        }
+      }
+    }
+  };
 
   const FACTIONS = [
     { body: c.MERCH_B,  trim: c.MERCH_T,  hat: c.MERCH_B,  hatrim: c.MERCH_T,  hatStyle: 'wide'    },
@@ -2887,9 +2933,86 @@ function makeNPCSprites() {
     drawSpy_east(14*32, oy8, 0,  3);
   }
 
-  // Upscale 2× (32×48 → 64×96 per frame, 480×432 → 960×864 total)  SPA-585
-  const scaled = nearestNeighborScale(cv.data, 480, 432, 960, 864);
-  return makePNG(960, 864, scaled);
+  // ── Body-type blocks 1 and 2: pixel-scale rows 0-8 into rows 9-17 / 18-26 ────
+  // slim  (bt=1): 80% width → narrower silhouette, empty columns flanking the sprite
+  // stocky (bt=2): 130% width → wider silhouette, clipped to frame edges
+  for (let r = 0; r < 9; r++) {
+    scaleRowHoriz(r, r + 9,  0.80);   // slim
+    scaleRowHoriz(r, r + 18, 1.30);   // stocky
+  }
+
+  // ── Clothing variant rows 27-35 ───────────────────────────────────────────────
+  // Draw the three faction archetypes with alternative palette-legal color schemes.
+  // These rows use standard body proportions.  propFi lookup returns -1 (no prop)
+  // for these custom fac objects, which is acceptable — the faction badge is enough.
+
+  // Merchant variants
+  const MERCH_VARS = [
+    { body: c.WOOD_D,    trim: c.CANVAS,   hat: c.WOOD_D,    hatrim: c.MERCH_T,  hatStyle: 'wide' },  // rustic
+    { body: c.STONE_M,   trim: c.PARCH_L,  hat: c.STONE_M,   hatrim: c.STONE_L,  hatStyle: 'wide' },  // neutral
+    { body: c.FLAG_R,    trim: c.PARCH_D,  hat: c.FLAG_R,    hatrim: c.NOBLE_T,  hatStyle: 'wide' },  // guild-red
+  ];
+  // Noble variants
+  const NOBLE_VARS = [
+    { body: c.STONE_M,   trim: c.MERCH_T,  hat: c.STONE_D,   hatrim: c.MERCH_T,  hatStyle: 'coronet' }, // pragmatic
+    { body: c.ROOF_SLATE,trim: c.CHAPEL_STONE, hat: c.ROOF_SLATE, hatrim: c.STONE_L, hatStyle: 'coronet' }, // navy
+    { body: c.ROOF_TILE, trim: c.NOBLE_T,  hat: c.ROOF_TILE, hatrim: c.NOBLE_T,  hatStyle: 'coronet' }, // russet
+  ];
+  // Clergy variants
+  const CLERGY_VARS = [
+    { body: c.STONE_M,   trim: c.PARCH_L,  hat: c.STONE_M,   hatrim: c.PARCH_L,  hatStyle: 'hood' },  // grey friar
+    { body: c.PLASTER,   trim: c.STONE_D,  hat: c.PLASTER,   hatrim: c.STONE_D,  hatStyle: 'hood' },  // augustinian
+    { body: c.INK,       trim: c.CHAPEL_STONE, hat: c.INK,   hatrim: c.CHAPEL_STONE, hatStyle: 'hood' }, // black robe
+  ];
+
+  for (let vi = 0; vi < 3; vi++) {
+    // merchant variant rows 27-29
+    {
+      const oy = (27 + vi) * 48;
+      const fac = MERCH_VARS[vi];
+      drawNPC(0*32, oy, fac, 0, 0, 0); drawNPC(1*32, oy, fac, -1, 0, 0, 1, 1);
+      drawNPC(2*32, oy, fac, 0, -2, 2, -2, 2); drawNPC(3*32, oy, fac, -1, 0, 0);
+      drawNPC(4*32, oy, fac, 0, 2, -2, 2, -2);
+      drawNPC_north(5*32, oy, fac, 0, 0, 0); drawNPC_north(6*32, oy, fac, -1, 0, 0);
+      drawNPC_north(7*32, oy, fac, 0, 2, -2); drawNPC_north(8*32, oy, fac, -1, 0, 0);
+      drawNPC_north(9*32, oy, fac, 0, -2, 2);
+      drawNPC_east(10*32, oy, fac, 0, 0); drawNPC_east(11*32, oy, fac, -1, 0);
+      drawNPC_east(12*32, oy, fac, 0, -3); drawNPC_east(13*32, oy, fac, -1, 0);
+      drawNPC_east(14*32, oy, fac, 0, 3);
+    }
+    // noble variant rows 30-32
+    {
+      const oy = (30 + vi) * 48;
+      const fac = NOBLE_VARS[vi];
+      drawNPC(0*32, oy, fac, 0, 0, 0); drawNPC(1*32, oy, fac, -1, 0, 0, 1, 1);
+      drawNPC(2*32, oy, fac, 0, -2, 2, -2, 2); drawNPC(3*32, oy, fac, -1, 0, 0);
+      drawNPC(4*32, oy, fac, 0, 2, -2, 2, -2);
+      drawNPC_north(5*32, oy, fac, 0, 0, 0); drawNPC_north(6*32, oy, fac, -1, 0, 0);
+      drawNPC_north(7*32, oy, fac, 0, 2, -2); drawNPC_north(8*32, oy, fac, -1, 0, 0);
+      drawNPC_north(9*32, oy, fac, 0, -2, 2);
+      drawNPC_east(10*32, oy, fac, 0, 0); drawNPC_east(11*32, oy, fac, -1, 0);
+      drawNPC_east(12*32, oy, fac, 0, -3); drawNPC_east(13*32, oy, fac, -1, 0);
+      drawNPC_east(14*32, oy, fac, 0, 3);
+    }
+    // clergy variant rows 33-35
+    {
+      const oy = (33 + vi) * 48;
+      const fac = CLERGY_VARS[vi];
+      drawNPC(0*32, oy, fac, 0, 0, 0); drawNPC(1*32, oy, fac, -1, 0, 0, 1, 1);
+      drawNPC(2*32, oy, fac, 0, -2, 2, -2, 2); drawNPC(3*32, oy, fac, -1, 0, 0);
+      drawNPC(4*32, oy, fac, 0, 2, -2, 2, -2);
+      drawNPC_north(5*32, oy, fac, 0, 0, 0); drawNPC_north(6*32, oy, fac, -1, 0, 0);
+      drawNPC_north(7*32, oy, fac, 0, 2, -2); drawNPC_north(8*32, oy, fac, -1, 0, 0);
+      drawNPC_north(9*32, oy, fac, 0, -2, 2);
+      drawNPC_east(10*32, oy, fac, 0, 0); drawNPC_east(11*32, oy, fac, -1, 0);
+      drawNPC_east(12*32, oy, fac, 0, -3); drawNPC_east(13*32, oy, fac, -1, 0);
+      drawNPC_east(14*32, oy, fac, 0, 3);
+    }
+  }
+
+  // Upscale 2× (32×48 → 64×96 per frame, 480×1728 → 960×3456 total)  SPA-686
+  const scaled = nearestNeighborScale(cv.data, 480, 1728, 960, 3456);
+  return makePNG(960, 3456, scaled);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -4377,7 +4500,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 14 (SPA-602): night tile glow enhancement, 3 new props (woodpile, notice_board, iron_torch), interior polish\n');
+console.log('\nRumor Mill — Art Pass 15 (SPA-686): NPC body types (slim/stocky), 9 clothing variant rows, blacksmith sign\n');
 
 write('assets/textures/tiles_ground.png',           makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',        makeRoadDirt());

@@ -206,6 +206,7 @@ func _ready() -> void:
 	_init_night_buildings()
 	_init_ambient_particles()
 	_init_weather_system()
+	_init_chimney_smoke()
 
 
 func _exit_tree() -> void:
@@ -1304,3 +1305,56 @@ func _on_weather_changed(type: String) -> void:
 	# Audio hook: forward to AudioManager when rain SFX track is available.
 	# AudioManager.set_weather_ambient(type)  ← uncomment once track is added.
 	pass
+
+
+# ── Visual polish: chimney smoke (SPA-686) ───────────────────────────────────
+# Spawns a CPUParticles2D smoke emitter above every building that has a chimney
+# (tavern, blacksmith, manor).  The emitter uses soft grey modulate so it reads
+# clearly against the sky without breaking the desaturated palette.
+
+const _CHIMNEY_BUILDINGS := ["tavern", "blacksmith", "manor"]
+# Pixel offsets (in world space) from the tile anchor to the chimney mouth.
+# Tuned to match the chimney positions drawn in generate_assets.js.
+const _CHIMNEY_OFFSET := {
+	"tavern":     Vector2(-38.0, -60.0),
+	"blacksmith": Vector2(-42.0, -52.0),
+	"manor":      Vector2(-34.0, -66.0),
+}
+
+func _init_chimney_smoke() -> void:
+	for b in buildings:
+		var bname: String = b["name"]
+		if bname not in _CHIMNEY_BUILDINGS:
+			continue
+		var anchor := Vector2i(b["x"], b["y"])
+		var wx: float = (anchor.x - anchor.y) * (TILE_SIZE.x / 2.0)
+		var wy: float = (anchor.x + anchor.y) * (TILE_SIZE.y / 2.0)
+		var offset: Vector2 = _CHIMNEY_OFFSET.get(bname, Vector2.ZERO)
+
+		var emitter := CPUParticles2D.new()
+		emitter.name        = "ChimneySmoke_" + bname
+		emitter.position    = Vector2(wx, wy) + offset
+		emitter.z_index     = 10
+		emitter.emitting    = true
+		emitter.amount      = 6
+		emitter.lifetime    = 2.4
+		emitter.one_shot    = false
+		emitter.explosiveness = 0.0
+		emitter.randomness  = 0.8
+		emitter.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+		emitter.emission_sphere_radius = 2.0
+		# Drift upward, slight horizontal wander
+		emitter.direction   = Vector2(0.0, -1.0)
+		emitter.spread      = 18.0
+		emitter.gravity     = Vector2(0.0, -14.0)
+		emitter.initial_velocity_min = 6.0
+		emitter.initial_velocity_max = 14.0
+		emitter.scale_amount_min = 1.0
+		emitter.scale_amount_max = 3.0
+		emitter.scale_amount_curve = null
+		# Fade from mid-grey to transparent over lifetime
+		var grad := Gradient.new()
+		grad.add_point(0.0, Color(0.72, 0.69, 0.63, 0.55))
+		grad.add_point(1.0, Color(0.72, 0.69, 0.63, 0.0))
+		emitter.color_ramp = grad
+		add_child(emitter)
