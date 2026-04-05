@@ -104,7 +104,7 @@ func _append_line(line: String) -> void:
 	if file == null:
 		file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file == null:
-		push_warning("AnalyticsLogger: cannot open %s (err %d)" % [
+		push_error("AnalyticsLogger: cannot open %s (err %d)" % [
 				SAVE_PATH, FileAccess.get_open_error()])
 		return
 	file.seek_end()

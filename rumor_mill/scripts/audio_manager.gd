@@ -197,6 +197,8 @@ func play_music(track_name: String, crossfade: bool = false) -> void:
 	if track_name == _current_music:
 		return
 	var stream: AudioStream = _music_cache.get(track_name, null)
+	if stream == null and OS.is_debug_build():
+		push_warning("AudioManager: play_music('%s') — no stream in cache (asset missing?)" % track_name)
 	_current_music = track_name
 
 	var next_player  := _music_player_b if _music_active_a else _music_player_a
@@ -311,6 +313,8 @@ func _crossfade_ambient(track_name: String) -> void:
 func play_sfx(sfx_name: String) -> void:
 	var stream: AudioStream = _sfx_cache.get(sfx_name, null)
 	if stream == null:
+		if OS.is_debug_build():
+			push_warning("AudioManager: play_sfx('%s') — no stream in cache (asset missing?)" % sfx_name)
 		return
 	var pb := _sfx_player.get_stream_playback() as AudioStreamPlaybackPolyphonic
 	if pb != null:
@@ -321,6 +325,8 @@ func play_sfx(sfx_name: String) -> void:
 func play_sfx_pitched(sfx_name: String, pitch_scale: float) -> void:
 	var stream: AudioStream = _sfx_cache.get(sfx_name, null)
 	if stream == null:
+		if OS.is_debug_build():
+			push_warning("AudioManager: play_sfx_pitched('%s') — no stream in cache (asset missing?)" % sfx_name)
 		return
 	var pb := _sfx_player.get_stream_playback() as AudioStreamPlaybackPolyphonic
 	if pb != null:

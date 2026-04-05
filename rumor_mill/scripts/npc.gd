@@ -447,13 +447,19 @@ func _on_move_finished(arrived_cell: Vector2i) -> void:
 		sprite.play("idle")
 
 
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+func _has_engine() -> bool:
+	return propagation_engine_ref != null
+
+
 # ── Rumor ingestion ──────────────────────────────────────────────────────────
 
 func hear_rumor(rumor: Rumor, source_faction: String) -> void:
 	var rid := rumor.id
 
 	# Register with the engine so it decays and appears in the lineage tree.
-	if propagation_engine_ref != null:
+	if _has_engine():
 		propagation_engine_ref.register_rumor(rumor)
 
 	if rumor_slots.has(rid):
@@ -599,7 +605,7 @@ func _tick_believe(
 		tick: int
 ) -> void:
 	# ── γ: recovery check — NPC may forget/reject the rumor ──────────────────
-	if propagation_engine_ref != null:
+	if _has_engine():
 		var gamma := propagation_engine_ref.calc_gamma(_loyalty, _temperament)
 		if randf() < gamma:
 			slot.state = Rumor.RumorState.REJECT
@@ -680,7 +686,7 @@ func _spread_to_neighbours(
 
 		# Heat modifier: wary/suspicious targets are harder to convince.
 		var heat_mod := 0.0
-		if propagation_engine_ref != null and propagation_engine_ref.intel_store_ref != null \
+		if _has_engine() and propagation_engine_ref.intel_store_ref != null \
 				and propagation_engine_ref.intel_store_ref.heat_enabled:
 			var h := propagation_engine_ref.intel_store_ref.get_heat(tid)
 			if h >= 75.0:
@@ -690,7 +696,7 @@ func _spread_to_neighbours(
 
 		# β formula.
 		var beta: float
-		if propagation_engine_ref != null:
+		if _has_engine():
 			beta = propagation_engine_ref.calc_beta(
 				_sociability, t_credulity, edge_w, spreader_faction, t_faction, heat_mod
 			)
@@ -702,14 +708,14 @@ func _spread_to_neighbours(
 
 		# Roll mutations before passing the rumor on.
 		var spread_rumor := slot.rumor
-		if propagation_engine_ref != null:
+		if _has_engine():
 			spread_rumor = propagation_engine_ref.try_mutate(slot.rumor, tick, all_npcs_ref)
 
 		other.hear_rumor(spread_rumor, spreader_faction)
 		spread_happened = true
 
 		# Relay heat: +2 to this NPC (spreader) if rumor traces to a player seed.
-		if propagation_engine_ref != null:
+		if _has_engine():
 			propagation_engine_ref.apply_relay_heat(npc_id, spread_rumor.id)
 
 		# Visual: show a floating speech bubble from this NPC toward the target.

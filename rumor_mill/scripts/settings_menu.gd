@@ -20,6 +20,7 @@ const C_BTN_BORDER := Color(0.55, 0.38, 0.18, 1.0)
 
 var _btn_resolution:   Button = null
 var _btn_window_mode:  Button = null
+var _btn_ui_scale:     Button = null
 var _slider_music:     HSlider = null
 var _slider_ambient:   HSlider = null
 var _slider_sfx:       HSlider = null
@@ -64,17 +65,17 @@ func _build_ui() -> void:
 	overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(overlay)
 
-	# Centred panel 380 x 420.
+	# Centred panel 380 x 460.
 	var panel := Panel.new()
-	panel.custom_minimum_size = Vector2(380, 420)
+	panel.custom_minimum_size = Vector2(380, 460)
 	panel.set_anchor(SIDE_LEFT,   0.5)
 	panel.set_anchor(SIDE_RIGHT,  0.5)
 	panel.set_anchor(SIDE_TOP,    0.5)
 	panel.set_anchor(SIDE_BOTTOM, 0.5)
 	panel.set_offset(SIDE_LEFT,  -190)
 	panel.set_offset(SIDE_RIGHT,  190)
-	panel.set_offset(SIDE_TOP,   -210)
-	panel.set_offset(SIDE_BOTTOM, 210)
+	panel.set_offset(SIDE_TOP,   -230)
+	panel.set_offset(SIDE_BOTTOM, 230)
 	panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	var style := StyleBoxFlat.new()
 	style.bg_color = C_PANEL_BG
@@ -126,7 +127,14 @@ func _build_ui() -> void:
 	wm_row.add_child(_btn_window_mode)
 	vbox.add_child(wm_row)
 
-	# ── Audio section ─────────────────────────────────────────────────────────
+	# UI scale row.
+	var scale_row := _make_setting_row("UI Scale")
+	_btn_ui_scale = _make_cycle_button(SettingsManager.get_ui_scale_label())
+	_btn_ui_scale.pressed.connect(_on_ui_scale_cycle)
+	scale_row.add_child(_btn_ui_scale)
+	vbox.add_child(scale_row)
+
+	# ── Audio section ────────────────────────��────────────────────────────────
 	vbox.add_child(_make_section_label("Audio"))
 	vbox.add_child(_make_separator())
 
@@ -329,6 +337,7 @@ func _make_action_button(text: String) -> Button:
 func _sync_from_settings() -> void:
 	_btn_resolution.text  = SettingsManager.get_resolution_label()
 	_btn_window_mode.text = SettingsManager.get_window_mode_label()
+	_btn_ui_scale.text    = SettingsManager.get_ui_scale_label()
 	_slider_music.set_value_no_signal(SettingsManager.music_volume)
 	_slider_ambient.set_value_no_signal(SettingsManager.ambient_volume)
 	_slider_sfx.set_value_no_signal(SettingsManager.sfx_volume)
@@ -361,22 +370,34 @@ func _on_window_mode_cycle() -> void:
 	tw.tween_property(_btn_window_mode, "scale", Vector2.ONE, 0.10)
 
 
+func _on_ui_scale_cycle() -> void:
+	AudioManager.play_sfx("ui_click")
+	SettingsManager.ui_scale_index = (SettingsManager.ui_scale_index + 1) % SettingsManager.UI_SCALE_PRESETS.size()
+	SettingsManager.ui_scale = SettingsManager.UI_SCALE_PRESETS[SettingsManager.ui_scale_index]
+	SettingsManager.apply_ui_scale()
+	SettingsManager.save_settings()
+	_btn_ui_scale.text = SettingsManager.get_ui_scale_label()
+	var tw := _btn_ui_scale.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_btn_ui_scale, "scale", Vector2(0.95, 0.95), 0.06)
+	tw.tween_property(_btn_ui_scale, "scale", Vector2.ONE, 0.10)
+
+
 func _on_music_changed(value: float) -> void:
 	SettingsManager.music_volume = value
+	_lbl_music_val.text = str(int(value))
 	SettingsManager.apply_to_audio_manager()
 	SettingsManager.save_settings()
-	_lbl_music_val.text = str(int(value))
 
 
 func _on_ambient_changed(value: float) -> void:
 	SettingsManager.ambient_volume = value
+	_lbl_ambient_val.text = str(int(value))
 	SettingsManager.apply_to_audio_manager()
 	SettingsManager.save_settings()
-	_lbl_ambient_val.text = str(int(value))
 
 
 func _on_sfx_changed(value: float) -> void:
 	SettingsManager.sfx_volume = value
+	_lbl_sfx_val.text = str(int(value))
 	SettingsManager.apply_to_audio_manager()
 	SettingsManager.save_settings()
-	_lbl_sfx_val.text = str(int(value))
