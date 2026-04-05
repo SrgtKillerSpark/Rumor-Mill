@@ -17,6 +17,7 @@ extends Node
 const SAVE_PATH := "user://user_settings.cfg"
 const SECTION   := "settings"
 
+const DEFAULT_MASTER_VOL         := 100.0  ## Linear 0-100
 const DEFAULT_MUSIC_VOL          := 80.0   ## Linear 0-100
 const DEFAULT_AMBIENT_VOL        := 60.0
 const DEFAULT_SFX_VOL            := 80.0
@@ -45,6 +46,7 @@ const BASE_RESOLUTIONS := [
 ## Runtime resolution list (includes native if not already a preset).
 var RESOLUTIONS: Array[Vector2i] = []
 
+var master_volume:       float = DEFAULT_MASTER_VOL
 var music_volume:        float = DEFAULT_MUSIC_VOL
 var ambient_volume:      float = DEFAULT_AMBIENT_VOL
 var sfx_volume:          float = DEFAULT_SFX_VOL
@@ -83,6 +85,7 @@ func load_settings() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(SAVE_PATH) != OK:
 		return  # File absent — use defaults
+	master_volume     = cfg.get_value(SECTION, "master_volume",     DEFAULT_MASTER_VOL)
 	music_volume      = cfg.get_value(SECTION, "music_volume",      DEFAULT_MUSIC_VOL)
 	ambient_volume    = cfg.get_value(SECTION, "ambient_volume",    DEFAULT_AMBIENT_VOL)
 	sfx_volume        = cfg.get_value(SECTION, "sfx_volume",        DEFAULT_SFX_VOL)
@@ -102,6 +105,7 @@ func load_settings() -> void:
 
 func save_settings() -> void:
 	var cfg := ConfigFile.new()
+	cfg.set_value(SECTION, "master_volume",     master_volume)
 	cfg.set_value(SECTION, "music_volume",      music_volume)
 	cfg.set_value(SECTION, "ambient_volume",    ambient_volume)
 	cfg.set_value(SECTION, "sfx_volume",        sfx_volume)
@@ -116,6 +120,7 @@ func save_settings() -> void:
 
 ## Apply current volume settings to AudioManager.
 func apply_to_audio_manager() -> void:
+	AudioManager.set_master_volume_db(_to_db(master_volume))
 	AudioManager.set_music_volume_db(_to_db(music_volume))
 	AudioManager.set_ambient_volume_db(_to_db(ambient_volume))
 	AudioManager.set_sfx_volume_db(_to_db(sfx_volume))

@@ -373,6 +373,9 @@ func set_ambient_volume_db(db: float) -> void:
 func set_sfx_volume_db(db: float) -> void:
 	_sfx_player.volume_db = db
 
+func set_master_volume_db(db: float) -> void:
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), db)
+
 
 # ── Game-event hooks (called by main.gd) ──────────────────────────────────────
 

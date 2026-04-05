@@ -21,12 +21,15 @@ const C_BTN_BORDER := Color(0.55, 0.38, 0.18, 1.0)
 var _btn_resolution:   Button = null
 var _btn_window_mode:  Button = null
 var _btn_ui_scale:     Button = null
+var _slider_master:    HSlider = null
 var _slider_music:     HSlider = null
 var _slider_ambient:   HSlider = null
 var _slider_sfx:       HSlider = null
+var _lbl_master_val:   Label = null
 var _lbl_music_val:    Label = null
 var _lbl_ambient_val:  Label = null
 var _lbl_sfx_val:      Label = null
+var _btn_controls:     Button = null
 
 
 func _ready() -> void:
@@ -67,17 +70,17 @@ func _build_ui() -> void:
 	overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(overlay)
 
-	# Centred panel 380 x 460.
+	# Centred panel 420 x 560.
 	var panel := Panel.new()
-	panel.custom_minimum_size = Vector2(380, 460)
+	panel.custom_minimum_size = Vector2(420, 560)
 	panel.set_anchor(SIDE_LEFT,   0.5)
 	panel.set_anchor(SIDE_RIGHT,  0.5)
 	panel.set_anchor(SIDE_TOP,    0.5)
 	panel.set_anchor(SIDE_BOTTOM, 0.5)
-	panel.set_offset(SIDE_LEFT,  -190)
-	panel.set_offset(SIDE_RIGHT,  190)
-	panel.set_offset(SIDE_TOP,   -230)
-	panel.set_offset(SIDE_BOTTOM, 230)
+	panel.set_offset(SIDE_LEFT,  -210)
+	panel.set_offset(SIDE_RIGHT,  210)
+	panel.set_offset(SIDE_TOP,   -280)
+	panel.set_offset(SIDE_BOTTOM, 280)
 	panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	var style := StyleBoxFlat.new()
 	style.bg_color = C_PANEL_BG
@@ -140,6 +143,15 @@ func _build_ui() -> void:
 	vbox.add_child(_make_section_label("Audio"))
 	vbox.add_child(_make_separator())
 
+	# Master volume.
+	var master_row := _make_setting_row("Master")
+	_slider_master = _make_volume_slider()
+	_lbl_master_val = _make_value_label()
+	_slider_master.value_changed.connect(_on_master_changed)
+	master_row.add_child(_slider_master)
+	master_row.add_child(_lbl_master_val)
+	vbox.add_child(master_row)
+
 	# Music volume.
 	var music_row := _make_setting_row("Music")
 	_slider_music = _make_volume_slider()
@@ -167,6 +179,14 @@ func _build_ui() -> void:
 	sfx_row.add_child(_lbl_sfx_val)
 	vbox.add_child(sfx_row)
 
+	# ── Controls section ──────────────────────────────────────────────────────
+	vbox.add_child(_make_section_label("Controls"))
+	vbox.add_child(_make_separator())
+
+	_btn_controls = _make_action_button("Controls Reference  (F1)")
+	_btn_controls.pressed.connect(_on_controls_pressed)
+	vbox.add_child(_btn_controls)
+
 	# ── Spacer + Back button ──────────────────────────────────────────────────
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -179,7 +199,8 @@ func _build_ui() -> void:
 	# ── Focus chain (Tab / Arrow navigation) ──────────────────────────────────
 	var focus_list: Array[Control] = [
 		_btn_resolution, _btn_window_mode, _btn_ui_scale,
-		_slider_music, _slider_ambient, _slider_sfx, btn_back,
+		_slider_master, _slider_music, _slider_ambient, _slider_sfx,
+		_btn_controls, btn_back,
 	]
 	for i in focus_list.size():
 		var prev_idx: int = (i - 1) % focus_list.size()
@@ -368,9 +389,11 @@ func _sync_from_settings() -> void:
 	_btn_resolution.text  = SettingsManager.get_resolution_label()
 	_btn_window_mode.text = SettingsManager.get_window_mode_label()
 	_btn_ui_scale.text    = SettingsManager.get_ui_scale_label()
+	_slider_master.set_value_no_signal(SettingsManager.master_volume)
 	_slider_music.set_value_no_signal(SettingsManager.music_volume)
 	_slider_ambient.set_value_no_signal(SettingsManager.ambient_volume)
 	_slider_sfx.set_value_no_signal(SettingsManager.sfx_volume)
+	_lbl_master_val.text  = str(int(SettingsManager.master_volume))
 	_lbl_music_val.text   = str(int(SettingsManager.music_volume))
 	_lbl_ambient_val.text = str(int(SettingsManager.ambient_volume))
 	_lbl_sfx_val.text     = str(int(SettingsManager.sfx_volume))
@@ -412,6 +435,13 @@ func _on_ui_scale_cycle() -> void:
 	tw.tween_property(_btn_ui_scale, "scale", Vector2.ONE, 0.10)
 
 
+func _on_master_changed(value: float) -> void:
+	SettingsManager.master_volume = value
+	_lbl_master_val.text = str(int(value))
+	SettingsManager.apply_to_audio_manager()
+	SettingsManager.save_settings()
+
+
 func _on_music_changed(value: float) -> void:
 	SettingsManager.music_volume = value
 	_lbl_music_val.text = str(int(value))
@@ -431,3 +461,9 @@ func _on_sfx_changed(value: float) -> void:
 	_lbl_sfx_val.text = str(int(value))
 	SettingsManager.apply_to_audio_manager()
 	SettingsManager.save_settings()
+
+
+func _on_controls_pressed() -> void:
+	var ref: Node = get_tree().root.find_child("ControlsReference", true, false)
+	if ref != null and ref.has_method("toggle"):
+		ref.toggle()
