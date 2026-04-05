@@ -312,7 +312,7 @@ func _init_recon_system() -> void:
 		add_child(interior)
 		_interiors[loc_id] = interior
 		# Location ambient: crossfade when interior opens/closes (SPA-491).
-		var _loc := loc_id  # capture loop variable for closure
+		var _loc: String = loc_id  # capture loop variable for closure
 		interior.interior_opened.connect(func() -> void: AudioManager.set_location_ambient(_loc))
 		interior.interior_closed.connect(AudioManager.clear_location_ambient)
 	recon_ctrl.set_interiors(_interiors)

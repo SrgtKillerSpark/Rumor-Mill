@@ -69,7 +69,7 @@ const ATLAS_LANTERN_POST := Vector2i(9, 0)   # SPA-526
 const ATLAS_GARDEN_BED   := Vector2i(10, 0)  # SPA-526
 const ATLAS_MARKET_STALL := Vector2i(11, 0)  # SPA-551: market stall with awning
 const ATLAS_BENCH        := Vector2i(12, 0)  # SPA-551: wooden bench
-const ATLAS_WELL         := Vector2i(13, 0)  # SPA-551: stone well with crossbar
+const ATLAS_STONE_WELL   := Vector2i(13, 0)  # SPA-551: stone well with crossbar
 
 ## Grass tile pool for random variant selection in _paint_terrain() (SPA-526).
 const GRASS_VARIANTS: Array[Vector2i] = [

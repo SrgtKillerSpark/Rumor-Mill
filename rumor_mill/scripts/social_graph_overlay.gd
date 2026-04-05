@@ -93,12 +93,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			if visible_overlay:
 				visible = true
 				_legend_panel.visible = true
-				modulate.a = 0.0
+				_draw_node.modulate.a = 0.0
+				_legend_panel.modulate.a = 0.0
 				_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-				_fade_tween.tween_property(self, "modulate:a", 1.0, 0.2)
+				_fade_tween.tween_property(_draw_node, "modulate:a", 1.0, 0.2)
+				_fade_tween.parallel().tween_property(_legend_panel, "modulate:a", 1.0, 0.2)
 			else:
 				_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-				_fade_tween.tween_property(self, "modulate:a", 0.0, 0.15)
+				_fade_tween.tween_property(_draw_node, "modulate:a", 0.0, 0.15)
+				_fade_tween.parallel().tween_property(_legend_panel, "modulate:a", 0.0, 0.15)
 				_fade_tween.tween_callback(func() -> void:
 					visible = false
 					_legend_panel.visible = false

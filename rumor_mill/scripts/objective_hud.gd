@@ -65,7 +65,7 @@ var _nudge_pulse_tween: Tween = null
 var _nudge_phase: int = 0
 var _nudge_last_phase: int = -1  # tracks phase transitions for pulse effect
 
-const _NUDGE_TEXTS: PackedStringArray = PackedStringArray([
+var _NUDGE_TEXTS: PackedStringArray = PackedStringArray([
 	"NEXT: Right-click a building to Observe who is inside",
 	"NEXT: Right-click two NPCs in conversation to Eavesdrop",
 	"NEXT: Press R to craft your first Rumour",

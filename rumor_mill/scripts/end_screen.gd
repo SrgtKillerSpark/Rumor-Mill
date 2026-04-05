@@ -570,7 +570,7 @@ func _build_bonus_stat(scenario_id: int) -> void:
 		4:
 			bonus_label_text = "Min Protected Rep"
 			if _world_ref != null and _world_ref.scenario_manager != null:
-				var progress := _world_ref.scenario_manager.get_scenario_4_progress(
+				var progress: Dictionary = _world_ref.scenario_manager.get_scenario_4_progress(
 					_world_ref.reputation_system
 				)
 				bonus_value_text = "%d pts" % progress.get("min_score", 0)
