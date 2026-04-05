@@ -361,18 +361,49 @@ function makeGroundTiles() {
     outlineIso(cv, ...c.DIRT_M, cx, cy);
   }
 
-  // ── tile 8: grass_dirt_blend (left-to-right gradient: grass to dirt) ─────────
+  // ── tile 8: grass_dirt_blend (organic jagged edge: grass left, dirt right) ────
   {
     const ox = 512, cx = ox+32, cy = 16;
+    // Build a per-row boundary that wanders ±6px around centre for organic look.
+    // Uses a deterministic pseudo-random walk seeded by row index.
+    const boundary = [];
+    let bx = cx;
+    for (let y=0; y<32; y++) {
+      // hash-based nudge: deterministic but irregular
+      bx += ((y*17+13) % 7) - 3;
+      bx = Math.max(cx-10, Math.min(cx+10, bx));
+      boundary[y] = bx;
+    }
     for (let y=0; y<32; y++) {
       for (let x=ox; x<ox+64; x++) {
         const lx = x - cx, ly = y - cy;
         if (Math.abs(lx)/31 + Math.abs(ly)/15 > 1.0) continue;
-        const t = (lx + 31) / 62;
-        const r = Math.round(c.GRASS_M[0] * (1-t) + c.DIRT_M[0] * t);
-        const g = Math.round(c.GRASS_M[1] * (1-t) + c.DIRT_M[1] * t);
-        const b = Math.round(c.GRASS_M[2] * (1-t) + c.DIRT_M[2] * t);
-        cv.sp(x, y, r, g, b);
+        if (x < boundary[y]) {
+          cv.sp(x, y, ...c.GRASS_M);
+        } else {
+          cv.sp(x, y, ...c.DIRT_M);
+        }
+      }
+    }
+    // Soft blend strip — 3px feather around the boundary edge
+    for (let y=0; y<32; y++) {
+      for (let d=-2; d<=2; d++) {
+        const bx2 = boundary[y] + d;
+        const ly = y - cy;
+        if (Math.abs(bx2-cx)/31 + Math.abs(ly)/15 > 0.98) continue;
+        if (d === 0) {
+          // blend pixel — average of the two
+          const r = (c.GRASS_M[0] + c.DIRT_M[0]) >> 1;
+          const g2 = (c.GRASS_M[1] + c.DIRT_M[1]) >> 1;
+          const b2 = (c.GRASS_M[2] + c.DIRT_M[2]) >> 1;
+          cv.sp(bx2, y, r, g2, b2);
+        } else if (d < 0) {
+          cv.sp(bx2, y, ...c.GRASS_M);
+          if (d === -1) cv.sp(bx2, y, ...c.DIRT_M, 60);  // slight dirt bleed
+        } else {
+          cv.sp(bx2, y, ...c.DIRT_M);
+          if (d ===  1) cv.sp(bx2, y, ...c.GRASS_M, 55);  // slight grass bleed
+        }
       }
     }
     cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_L, 10, 0.12);
@@ -391,9 +422,36 @@ function makeRoadDirt() {
   fillIso(cv, ...c.DIRT_M, 255, 32, 16);
   cv.isoNoise(32, 16, 31, 15, ...c.DIRT_L, 14, 0.20);
   cv.isoNoise(32, 16, 31, 15, ...c.DIRT_D, 10, 0.14);
-  // wheel-rut lines
-  cv.line(20, 10, 44, 22, ...c.DIRT_D, 160);
-  cv.line(22, 12, 46, 24, ...c.DIRT_D, 100);
+
+  // deep wheel-rut pair — shadow + highlight edge for 3D groove
+  cv.line(18, 10, 42, 22, ...c.DIRT_D, 200);
+  cv.line(19, 10, 43, 22, ...c.DIRT_D, 140);
+  cv.line(20, 10, 44, 22, ...c.DIRT_L, 80);  // highlight rim
+  cv.line(24, 13, 48, 25, ...c.DIRT_D, 180);
+  cv.line(25, 13, 49, 25, ...c.DIRT_D, 110);
+  cv.line(26, 13, 50, 25, ...c.DIRT_L, 60);  // highlight rim
+
+  // dried mud crack network (thin DIRT_D lines radiating from rut centre)
+  cv.line(28, 14, 24, 12, ...c.DIRT_D, 100);
+  cv.line(32, 16, 30, 12, ...c.DIRT_D, 80);
+  cv.line(36, 18, 38, 15, ...c.DIRT_D, 90);
+  cv.line(28, 14, 29, 17, ...c.DIRT_D, 70);
+  cv.line(34, 17, 33, 20, ...c.DIRT_D, 75);
+
+  // scattered pebbles (STONE_M single pixels with STONE_D shadow)
+  const pebbles = [[15,12],[39,9],[44,18],[22,20],[37,22],[12,17],[50,14]];
+  for (const [px, py] of pebbles) {
+    if (Math.abs(px-32)/31 + Math.abs(py-16)/15 > 0.90) continue;
+    cv.sp(px, py, ...c.STONE_M);
+    cv.sp(px+1, py+1, ...c.STONE_D, 80);
+  }
+
+  // footprint impressions — shallow oval depressions
+  cv.sp(22, 17, ...c.DIRT_D, 120);
+  cv.sp(23, 17, ...c.DIRT_D, 80);
+  cv.sp(38, 12, ...c.DIRT_D, 100);
+  cv.sp(39, 12, ...c.DIRT_D, 70);
+
   outlineIso(cv, ...c.DIRT_D, 32, 16);
   return cv.toPNG();
 }
@@ -427,6 +485,31 @@ function makeRoadStone() {
     }
   }
   cv.isoNoise(32, 16, 31, 15, ...c.STONE_L, 8, 0.08);
+
+  // moss in mortar joints — GRASS_D dots at low alpha along mortar lines
+  const mossSpots = [
+    [14,7],[22,12],[36,7],[44,12],[20,17],[32,12],[28,22],[38,17],
+    [16,22],[48,12],[10,17],[50,17],
+  ];
+  for (const [mx, my] of mossSpots) {
+    if (Math.abs(mx-32)/31 + Math.abs(my-16)/15 > 0.82) continue;
+    cv.sp(mx, my, ...c.GRASS_D, 90);
+    cv.sp(mx+1, my, ...c.GRASS_D, 55);
+  }
+
+  // worn low-spot puddle (small WATER_D ellipse near centre)
+  for (let py=-2; py<=2; py++) {
+    for (let px=-4; px<=4; px++) {
+      if (px*px/16 + py*py/4 <= 1.0)
+        cv.sp(32+px, 18+py, ...c.WATER_D, 110);
+    }
+  }
+  cv.sp(30, 17, ...c.WATER_L, 70);  // reflection catch-light
+
+  // hairline crack on one cobble
+  cv.line(38, 8, 41, 10, ...c.STONE_D, 140);
+  cv.sp(40, 9, ...c.STONE_D, 100);
+
   outlineIso(cv, ...c.STONE_D, 32, 16);
   return cv.toPNG();
 }
@@ -1782,11 +1865,41 @@ function makeParchment() {
     if ((x+y)%5===0 && Math.random()<0.15) cv.sp(x, y, ...c.PARCH_D, 80);
   }
 
-  // corner decorations (ink scrollwork)
+  // horizontal fiber lines — simulate paper/vellum grain
+  for (let y=5; y<44; y+=3) {
+    for (let x=4; x<44; x++) {
+      if (Math.random() < 0.25) cv.sp(x, y, ...c.PARCH_L, 55);
+      if (Math.random() < 0.10) cv.sp(x, y, ...c.PARCH_D, 35);
+    }
+  }
+
+  // aged ink blot (small dark smudge, hand-crafted feel)
+  const blotX = 34, blotY = 11;
+  cv.sp(blotX, blotY, ...c.INK, 160);
+  cv.sp(blotX+1, blotY, ...c.INK, 120);
+  cv.sp(blotX, blotY+1, ...c.INK, 100);
+  cv.sp(blotX-1, blotY, ...c.INK, 70);
+  cv.sp(blotX, blotY-1, ...c.INK, 60);
+  cv.sp(blotX+1, blotY+1, ...c.INK, 45);
+
+  // edge vignette — subtle darkening 1-2px inward from border
+  for (let i=0; i<48; i++) {
+    cv.sp(0, i, ...c.PARCH_D, 80);
+    cv.sp(47, i, ...c.PARCH_D, 80);
+    cv.sp(i, 0, ...c.PARCH_D, 80);
+    cv.sp(i, 47, ...c.PARCH_D, 80);
+    cv.sp(1, i, ...c.PARCH_D, 40);
+    cv.sp(46, i, ...c.PARCH_D, 40);
+    cv.sp(i, 1, ...c.PARCH_D, 40);
+    cv.sp(i, 46, ...c.PARCH_D, 40);
+  }
+
+  // corner decorations (ink scrollwork — more elaborate)
   const scroll = (sx, sy, fx, fy) => {
-    cv.line(sx, sy, sx+fx*3, sy+fy*3, ...c.INK, 180);
-    cv.line(sx+fx*1, sy, sx+fx*1, sy+fy*2, ...c.INK, 120);
-    cv.line(sx, sy+fy*1, sx+fx*2, sy+fy*1, ...c.INK, 120);
+    cv.line(sx, sy, sx+fx*4, sy+fy*4, ...c.INK, 180);
+    cv.line(sx+fx*1, sy, sx+fx*1, sy+fy*3, ...c.INK, 130);
+    cv.line(sx, sy+fy*1, sx+fx*3, sy+fy*1, ...c.INK, 130);
+    cv.sp(sx+fx*2, sy+fy*2, ...c.INK, 180);  // centre knot
   };
   scroll(2,2, 1,1);    // top-left
   scroll(45,2, -1,1);  // top-right
