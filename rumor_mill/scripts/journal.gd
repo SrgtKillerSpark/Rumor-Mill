@@ -1194,7 +1194,7 @@ func _build_objectives_section() -> void:
 	var s2_win_body := Label.new()
 	s2_win_body.text = (
 		"  %d / %d townsfolk believe Alys Herbwife is spreading illness.  %s"
-	) % [illness_count, ScenarioManager.S2_WIN_ILLNESS_MIN, s2_win_status]
+	) % [illness_count, sm.s2_win_illness_min if sm != null else ScenarioManager.S2_WIN_ILLNESS_MIN_DEFAULT, s2_win_status]
 	s2_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s2_win_body.add_theme_font_size_override("font_size", 12)
 	s2_win_body.add_theme_color_override("font_color", s2_win_color)

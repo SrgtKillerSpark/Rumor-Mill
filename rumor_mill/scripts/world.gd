@@ -697,6 +697,13 @@ func _apply_active_scenario() -> void:
 			var adjusted: int = maxi(1, scenario_manager.get_days_allowed() + days_bonus)
 			scenario_manager.override_days_allowed(adjusted)
 
+	# 7b. Scenario-specific difficulty overrides from scenarios.json.
+	var _diff_key_map := {"apprentice": "easy", "master": "normal", "spymaster": "hard"}
+	var _scen_diff_key: String = _diff_key_map.get(GameState.selected_difficulty, "normal")
+	var _scen_diff_mods: Dictionary = scenario_data.get("difficultyModifiers", {}).get(_scen_diff_key, {})
+	if scenario_manager != null and _scen_diff_mods.has("winBelieversOverride"):
+		scenario_manager.s2_win_illness_min = int(_scen_diff_mods["winBelieversOverride"])
+
 	# 8. Rival agent — only active in Scenario 3.
 	rival_agent = RivalAgent.new()
 	rival_agent.cooldown_offset = int(diff_mods.get("rival_cooldown_offset", 0))
