@@ -424,6 +424,12 @@ func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> 
 	location_code = _reroute_if_avoided(location_code)
 	current_location_code = location_code
 
+	# Visual schedule clarity (SPA-586): dim NPC when indoors/asleep at home
+	# during night-time slots (0 = midnight, 1 = dawn).  Uses the parent node
+	# modulate so it is independent of sprite.modulate state tints.
+	var sleeping: bool = (location_code == "home") and (slot == 0 or slot == 1)
+	modulate.a = 0.45 if sleeping else 1.0
+
 	var target: Vector2i
 	if location_code == "home":
 		target = _home_cell

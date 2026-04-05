@@ -41,6 +41,14 @@ var _day_flash_tween:  Tween     = null
 var _day_banner_label: Label     = null
 var _day_banner_tween: Tween     = null
 
+# ── Directional shadow gradient (SPA-586) ─────────────────────────────────────
+# A subtle full-screen gradient that shifts direction as the sun moves:
+# dawn → warm light from the left; dusk → warm light from the right.
+# Layer 1 keeps it above terrain but below HUD.
+var _shadow_layer: CanvasLayer    = null
+var _shadow_rect:  ColorRect      = null
+var _shadow_mat:   ShaderMaterial = null
+
 @onready var tick_timer:      Timer          = $TickTimer
 @onready var canvas_modulate: CanvasModulate = $CanvasModulate
 # time_label removed — time is displayed via ObjectiveHUD
@@ -57,6 +65,7 @@ func _ready() -> void:
 	_apply_time_of_day(0)
 	_update_time_label()
 	_build_day_flash_overlay()
+	_build_shadow_overlay()
 	emit_signal("game_tick", 0)
 
 
@@ -104,6 +113,7 @@ func _on_tick_timer_timeout() -> void:
 		_play_day_transition_flash()
 	emit_signal("game_tick", current_tick)
 	_apply_time_of_day(hour_of_day)
+	_update_shadow_direction(hour_of_day)
 	_update_time_label()
 
 
@@ -182,3 +192,72 @@ func set_paused(paused: bool) -> void:
 		tick_timer.stop()
 	else:
 		tick_timer.start()
+
+
+# ── Directional shadow overlay (SPA-586) ──────────────────────────────────────
+
+func _build_shadow_overlay() -> void:
+	_shadow_layer = CanvasLayer.new()
+	_shadow_layer.layer = 1   # above terrain/atmo, below HUD
+	add_child(_shadow_layer)
+
+	_shadow_rect = ColorRect.new()
+	_shadow_rect.name = "ShadowOverlay"
+	_shadow_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_shadow_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var shader := Shader.new()
+	shader.code = """
+shader_type canvas_item;
+
+// origin: where the "sun" is (0=left edge, 1=right edge, 0.5=overhead noon).
+uniform float u_sun_x      : hint_range(0.0, 1.0) = 0.5;
+// strength: overall alpha of the effect (0 at noon/night, max at dawn/dusk).
+uniform float u_strength   : hint_range(0.0, 1.0) = 0.0;
+// warm: 1.0 for sunrise/sunset warm tint, 0.0 for flat shadow.
+uniform float u_warm       : hint_range(0.0, 1.0) = 0.0;
+
+void fragment() {
+	float dist = abs(UV.x - u_sun_x);
+	// A soft ramp: bright on the sun side, dark shadow on the far side.
+	float shadow = smoothstep(0.0, 1.0, dist);
+	// Warm amber for sunrise/sunset, cool grey for general shadow.
+	vec3 warm_col  = vec3(0.90, 0.55, 0.15);
+	vec3 cool_col  = vec3(0.05, 0.08, 0.20);
+	vec3 col = mix(cool_col, warm_col, u_warm);
+	COLOR = vec4(col, shadow * u_strength);
+}
+"""
+	_shadow_mat = ShaderMaterial.new()
+	_shadow_mat.shader = shader
+	_shadow_mat.set_shader_parameter("u_sun_x",   0.5)
+	_shadow_mat.set_shader_parameter("u_strength", 0.0)
+	_shadow_mat.set_shader_parameter("u_warm",     0.0)
+	_shadow_rect.material = _shadow_mat
+	_shadow_layer.add_child(_shadow_rect)
+
+
+func _update_shadow_direction(hour: int) -> void:
+	if _shadow_mat == null:
+		return
+
+	# Sun moves from left (dawn/east) at hour 6 to right (dusk/west) at hour 18.
+	# Overnight it is below the horizon — no directional effect.
+	var sun_x:    float = 0.5
+	var strength: float = 0.0
+	var warm:     float = 0.0
+
+	if hour >= 6 and hour <= 18:
+		# Normalise 6→18 to 0→1 so sun_x goes 0.05 (left) → 0.95 (right)
+		var t: float = float(hour - 6) / 12.0
+		sun_x = lerp(0.05, 0.95, t)
+
+		# Golden hour strength peaks at dawn and dusk
+		# Use a sine curve peaking at dawn (t=0) and dusk (t=1), valley at noon (t=0.5)
+		var noon_dip: float = abs(t - 0.5) * 2.0   # 0 at noon, 1 at dawn/dusk
+		strength = noon_dip * 0.18   # max 18% alpha — subtle
+		warm = smoothstep(0.4, 1.0, noon_dip)
+
+	_shadow_mat.set_shader_parameter("u_sun_x",    sun_x)
+	_shadow_mat.set_shader_parameter("u_strength", strength)
+	_shadow_mat.set_shader_parameter("u_warm",     warm)

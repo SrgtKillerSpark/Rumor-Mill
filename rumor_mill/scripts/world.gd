@@ -141,6 +141,10 @@ var _building_day_tex:  Texture2D = null
 var _building_night_tex: Texture2D = null
 var _is_night: bool = false
 
+## Visual polish systems (SPA-586).
+var _ambient_particles: Node = null
+var _weather_system:    Node = null
+
 ## Active scenario id — change before _ready() to load a different scenario.
 ## Valid values: "scenario_1", "scenario_2", "scenario_3", "scenario_4"
 var active_scenario_id: String = "scenario_1"
@@ -185,6 +189,8 @@ func _ready() -> void:
 	_init_vignette_overlay()
 	_init_atmo_vignette()
 	_init_night_buildings()
+	_init_ambient_particles()
+	_init_weather_system()
 
 
 func _exit_tree() -> void:
@@ -761,6 +767,12 @@ func on_game_tick(tick: int) -> void:
 		_is_night = night_now
 		_update_building_night(_is_night)
 
+	# ── Visual polish: particles + weather (SPA-586). ──
+	if _ambient_particles != null:
+		_ambient_particles.on_game_tick(tick, tpd)
+	if _weather_system != null:
+		_weather_system.on_game_tick(tick, tpd)
+
 	# ── Reputation: recalculate all snapshots BEFORE state transitions fire. ──
 	if reputation_system != null:
 		reputation_system.recalculate_all(npcs, tick)
@@ -1141,3 +1153,37 @@ func _update_building_night(is_night: bool) -> void:
 	if src == null:
 		return
 	src.texture = _building_night_tex if is_night else _building_day_tex
+
+
+# ── Visual polish: ambient particles (SPA-586) ───────────────────────────────
+
+func _init_ambient_particles() -> void:
+	var script: GDScript = load("res://scripts/ambient_particles.gd")
+	if script == null:
+		push_error("World: could not load ambient_particles.gd")
+		return
+	_ambient_particles = Node.new()
+	_ambient_particles.set_script(script)
+	_ambient_particles.name = "AmbientParticles"
+	add_child(_ambient_particles)
+
+
+# ── Visual polish: weather system (SPA-586) ──────────────────────────────────
+
+func _init_weather_system() -> void:
+	var script: GDScript = load("res://scripts/weather_system.gd")
+	if script == null:
+		push_error("World: could not load weather_system.gd")
+		return
+	_weather_system = Node.new()
+	_weather_system.set_script(script)
+	_weather_system.name = "WeatherSystem"
+	add_child(_weather_system)
+	# Wire the weather_changed signal so AudioManager can respond when it adds rain SFX.
+	_weather_system.weather_changed.connect(_on_weather_changed)
+
+
+func _on_weather_changed(type: String) -> void:
+	# Audio hook: forward to AudioManager when rain SFX track is available.
+	# AudioManager.set_weather_ambient(type)  ← uncomment once track is added.
+	pass
