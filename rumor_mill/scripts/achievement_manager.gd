@@ -98,6 +98,10 @@ var _unlocked: Dictionary = {}
 ## True when GodotSteam initialised successfully this session.
 var _steam_active: bool = false
 
+## Late-bound reference to the Steam singleton (avoids parse-time errors when
+## the GodotSteam GDExtension is not installed).
+var _steam: Object = null
+
 
 func _ready() -> void:
 	_load()
@@ -106,7 +110,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	if _steam_active:
-		Steam.run_callbacks()
+		_steam.run_callbacks()
 
 
 # ---------------------------------------------------------------------------
@@ -129,8 +133,8 @@ func unlock(achievement_id: String) -> void:
 	achievement_unlocked.emit(achievement_id, display_name)
 
 	if _steam_active:
-		Steam.setAchievement(ACHIEVEMENTS[achievement_id]["steam_api_name"])
-		Steam.storeStats()
+		_steam.setAchievement(ACHIEVEMENTS[achievement_id]["steam_api_name"])
+		_steam.storeStats()
 
 
 ## Returns true if the given achievement has been unlocked.
@@ -159,7 +163,8 @@ func get_all() -> Array:
 func _init_steam() -> void:
 	if not Engine.has_singleton("Steam"):
 		return
-	var result: Dictionary = Steam.steamInitEx()
+	_steam = Engine.get_singleton("Steam")
+	var result: Dictionary = _steam.steamInitEx()
 	if result.get("status", -1) == 0:  # STEAM_API_INIT_RESULT_OK
 		_steam_active = true
 	else:
