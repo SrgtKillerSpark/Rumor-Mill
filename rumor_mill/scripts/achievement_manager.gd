@@ -95,9 +95,18 @@ const SAVE_PATH := "user://achievements.json"
 ## Set of unlocked achievement ids (id → true).
 var _unlocked: Dictionary = {}
 
+## True when GodotSteam initialised successfully this session.
+var _steam_active: bool = false
+
 
 func _ready() -> void:
 	_load()
+	_init_steam()
+
+
+func _process(_delta: float) -> void:
+	if _steam_active:
+		Steam.run_callbacks()
 
 
 # ---------------------------------------------------------------------------
@@ -119,9 +128,9 @@ func unlock(achievement_id: String) -> void:
 
 	achievement_unlocked.emit(achievement_id, display_name)
 
-	# TODO: When GodotSteam is integrated, call:
-	#   Steam.setAchievement(ACHIEVEMENTS[achievement_id]["steam_api_name"])
-	#   Steam.storeStats()
+	if _steam_active:
+		Steam.setAchievement(ACHIEVEMENTS[achievement_id]["steam_api_name"])
+		Steam.storeStats()
 
 
 ## Returns true if the given achievement has been unlocked.
@@ -139,6 +148,22 @@ func get_all() -> Array:
 		entry["unlocked"] = _unlocked.has(ach_id)
 		result.append(entry)
 	return result
+
+
+# ---------------------------------------------------------------------------
+# Steam helpers
+# ---------------------------------------------------------------------------
+
+## Attempt to initialise GodotSteam.  Sets _steam_active on success.
+## Silently skips if the extension is not present (standalone / dev mode).
+func _init_steam() -> void:
+	if not Engine.has_singleton("Steam"):
+		return
+	var result: Dictionary = Steam.steamInitEx()
+	if result.get("status", -1) == 0:  # STEAM_API_INIT_RESULT_OK
+		_steam_active = true
+	else:
+		push_warning("[AchievementManager] Steam init failed: %s" % str(result.get("verbal", "unknown")))
 
 
 # ---------------------------------------------------------------------------

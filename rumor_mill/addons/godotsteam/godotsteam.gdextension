@@ -1,0 +1,20 @@
+; GodotSteam GDExtension descriptor
+; Download pre-compiled binaries from https://godotsteam.com and place them
+; in the platform subdirectories listed below, then reload the project.
+;
+; Required directory layout:
+;   addons/godotsteam/win64/godotsteam.dll
+;   addons/godotsteam/linux64/libgodotsteam.so
+;   addons/godotsteam/osx/libgodotsteam.framework
+
+[configuration]
+entry_symbol = "godotsteam_gdext_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+windows.debug.x86_64   = "res://addons/godotsteam/win64/godotsteam.dll"
+windows.release.x86_64 = "res://addons/godotsteam/win64/godotsteam.dll"
+linux.debug.x86_64     = "res://addons/godotsteam/linux64/libgodotsteam.so"
+linux.release.x86_64   = "res://addons/godotsteam/linux64/libgodotsteam.so"
+macos.debug            = "res://addons/godotsteam/osx/libgodotsteam.framework"
+macos.release          = "res://addons/godotsteam/osx/libgodotsteam.framework"
