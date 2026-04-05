@@ -54,6 +54,7 @@ var target_shift_excluded_ids: Array[String] = []
 # ── Lineage registry ─────────────────────────────────────────────────────────
 # rumor_id → { "parent_id": String, "mutation_type": String, "tick": int }
 var lineage: Dictionary = {}
+var _mutation_counter: int = 0
 
 ## Reference to the player intel store for heat tracking. Set by World.
 var intel_store_ref: PlayerIntelStore = null
@@ -183,8 +184,9 @@ func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
 	if do_detail_add:
 		mut_tags.append("detail_add")
 
-	# Build unique id: parent_id + mutation counter suffix.
-	var new_id := source.id + "_m%d" % lineage.size()
+	# Build unique id: parent_id + monotonic counter suffix.
+	_mutation_counter += 1
+	var new_id := source.id + "_m%d" % _mutation_counter
 
 	# Carry forward remaining shelf life so mutations cannot reset the decay clock.
 	var elapsed_ticks := maxi(tick - source.created_tick, 0)

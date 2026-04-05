@@ -333,7 +333,11 @@ func _remove_injected_overrides(ev: FactionEvent) -> void:
 		if npc == null:
 			continue
 		for entry in injected_map[npc_id]:
-			npc.day_pattern_overrides.erase(entry)
+			# Value-based removal: after save/load, dict references differ.
+			for i in range(npc.day_pattern_overrides.size() - 1, -1, -1):
+				if npc.day_pattern_overrides[i].hash() == entry.hash():
+					npc.day_pattern_overrides.remove_at(i)
+					break
 
 
 # ---------------------------------------------------------------------------

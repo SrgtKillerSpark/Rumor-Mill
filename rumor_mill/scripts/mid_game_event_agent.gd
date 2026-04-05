@@ -68,6 +68,14 @@ func tick(current_day: int, world: Node) -> void:
 		return
 	_world = world
 
+	# Revert rival intensity bonus when its duration expires.
+	if rival_agent_ref != null and rival_agent_ref.has_meta("intensity_revert_day"):
+		if current_day >= int(rival_agent_ref.get_meta("intensity_revert_day")):
+			var amt: int = int(rival_agent_ref.get_meta("intensity_revert_amount"))
+			rival_agent_ref.cooldown_offset += amt
+			rival_agent_ref.remove_meta("intensity_revert_day")
+			rival_agent_ref.remove_meta("intensity_revert_amount")
+
 	# Don't present a new event while one is pending player choice.
 	if not _pending_event.is_empty():
 		return
