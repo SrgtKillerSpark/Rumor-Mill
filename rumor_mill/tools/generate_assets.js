@@ -432,9 +432,12 @@ function makeRoadStone() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// BUILDING TILES (tiles_buildings.png — 640×64, ten 64×64 tiles)
+// BUILDING TILES (tiles_buildings.png — 1280×128, ten 128×128 tiles)
 //
-// Each tile: bottom half (y32-63) = iso ground face; top (y0-31) = building.
+// Base art drawn at 64×64 per-tile, then upscaled 2× via nearest-neighbour.
+// Unique silhouettes for Mill, Guard Post, Well, and Storage are drawn at
+// full 128px resolution on top of the upscaled base.
+// Each tile: bottom half (y64-127) = iso ground face; top (y0-63) = building.
 // Tile indices match ATLAS_* constants in world.gd:
 //   0=manor  1=tavern  2=chapel  3=market  4=well
 //   5=blacksmith  6=mill  7=storage  8=guardpost  9=town_hall
@@ -931,7 +934,153 @@ function makeBuildingTiles(nightMode = false) {
     cv.line(_cx,       _cy+_hh-2, _cx+_hw-2, _cy+2, ...c.OUTLINE, 12);
   }
 
-  return cv.toPNG();
+  // ── Upscale 2× via nearest-neighbour (640×64 → 1280×128) ──────────────────
+  const _sc = nearestNeighborScale(cv.data, 640, 64, 1280, 128);
+  const cv2 = createCanvas(1280, 128);
+  for (let _i = 0; _i < _sc.length; _i++) cv2.data[_i] = _sc[_i];
+
+  // ── UNIQUE SILHOUETTES at 128px resolution ─────────────────────────────────
+  // Drawn on top of the NN-scaled base. All coordinates in 1280×128 space.
+  // Mapping: original pixel (x,y) → scaled pixel (x*2, y*2).
+
+  // 4: WELL — conical thatched roof over wooden frame ─────────────────────────
+  // Scaled geometry: crossbar at y=28, frame supports at x=540, x=612.
+  {
+    const ox4 = 4*128;                      // 512
+    const peakX = ox4+64, peakY = 8;        // cone peak above frame
+    const bL = ox4+24,  bR = ox4+104, baseY = 28;
+    // Cone fill
+    cv2.fillPoly([[peakX-2,peakY],[peakX+2,peakY],[bR,baseY],[bL,baseY]], ...c.THATCH_D);
+    // Shingle texture lines
+    for (let ry=peakY+4; ry<baseY; ry+=4) {
+      const t = (ry-peakY)/(baseY-peakY);
+      cv2.line(Math.round(peakX+(bL-peakX)*t), ry, Math.round(peakX+(bR-peakX)*t), ry, ...c.THATCH_L, 80);
+    }
+    // Outline edges
+    cv2.line(peakX, peakY, bL, baseY, ...c.OUTLINE);
+    cv2.line(peakX, peakY, bR, baseY, ...c.OUTLINE);
+    // Finial cap
+    cv2.fillRect(peakX-1, peakY-3, 3, 4, ...c.STONE_L);
+    cv2.sp(peakX, peakY-4, ...c.STONE_M);
+  }
+
+  // 6: MILL — large waterwheel on left face, breaks roofline above ────────────
+  // Scaled: roofline at y=28 (64-36), left face left-edge at x=769.
+  {
+    const ox6 = 6*128;                      // 768
+    const wwcx = ox6+22, wwcy = 42;         // wheel center: (790, 42)
+    const wwr = 18;                          // wheel radius
+    // Outer rim
+    for (let a=0; a<Math.PI*2; a+=0.05)
+      cv2.sp(wwcx+Math.round(wwr*Math.cos(a)), wwcy+Math.round(wwr*Math.sin(a)), ...c.WOOD_D);
+    // Inner rim
+    for (let a=0; a<Math.PI*2; a+=0.07)
+      cv2.sp(wwcx+Math.round((wwr-3)*Math.cos(a)), wwcy+Math.round((wwr-3)*Math.sin(a)), ...c.WOOD_M);
+    // 8 spokes
+    for (let a=0; a<Math.PI*2; a+=Math.PI/4)
+      cv2.line(wwcx, wwcy, wwcx+Math.round((wwr-2)*Math.cos(a)), wwcy+Math.round((wwr-2)*Math.sin(a)), ...c.WOOD_D);
+    // Hub
+    cv2.fillRect(wwcx-3, wwcy-3, 6, 6, ...c.WOOD_D);
+    cv2.fillRect(wwcx-1, wwcy-1, 2, 2, ...c.STONE_L);
+    // 8 paddle boards on rim
+    for (let a=0; a<Math.PI*2; a+=Math.PI/4) {
+      const px=wwcx+Math.round(wwr*Math.cos(a)), py=wwcy+Math.round(wwr*Math.sin(a));
+      cv2.fillRect(px-3, py-2, 6, 4, ...c.WOOD_M);
+    }
+    // Axle beam from hub to wall
+    cv2.fillRect(wwcx, wwcy-1, ox6+38-wwcx, 2, ...c.WOOD_M);
+    // Millrace (water channel beneath wheel at ground level)
+    cv2.fillRect(ox6, 62, wwcx-ox6+8, 2, ...c.WATER_D);
+    cv2.line(ox6, 62, wwcx+6, 62, ...c.WATER_L, 140);
+  }
+
+  // 7: STORAGE — loading crane arm breaking right-face roof edge ──────────────
+  // Scaled: roof top at y=36 (64-28), right edge at x=1023.
+  {
+    const ox7 = 7*128;                      // 896
+    const topY7 = 36;                        // roof top
+    const cpx = ox7+106;                     // crane post x: 1002
+    // Vertical post
+    cv2.fillRect(cpx, topY7-22, 3, 24, ...c.WOOD_D);
+    cv2.line(cpx-1, topY7-22, cpx-1, topY7+2, ...c.OUTLINE, 120);
+    cv2.line(cpx+3, topY7-22, cpx+3, topY7+2, ...c.OUTLINE, 80);
+    // Diagonal crane arm (slopes up-right, breaking upper silhouette)
+    const aTipX = ox7+122, aTipY = topY7-30;  // arm tip: (1018, 6)
+    cv2.line(cpx+1, topY7-22, aTipX, aTipY, ...c.WOOD_M);
+    cv2.line(cpx+2, topY7-21, aTipX+1, aTipY+1, ...c.WOOD_D);
+    // Diagonal brace
+    cv2.line(cpx+1, topY7-4, aTipX-4, aTipY+6, ...c.WOOD_D, 160);
+    // Pulley housing at arm tip
+    cv2.fillRect(aTipX-2, aTipY-3, 5, 4, ...c.STONE_M);
+    cv2.sp(aTipX, aTipY-2, ...c.STONE_L);
+    // Hanging rope
+    cv2.line(aTipX, aTipY, aTipX, aTipY+24, ...c.WOOD_D, 160);
+    // Cargo block on rope
+    cv2.fillRect(aTipX-4, aTipY+20, 8, 7, ...c.WOOD_M);
+    cv2.line(aTipX-4, aTipY+20, aTipX+3, aTipY+20, ...c.OUTLINE);
+    cv2.line(aTipX-4, aTipY+26, aTipX+3, aTipY+26, ...c.OUTLINE);
+    cv2.line(aTipX-4, aTipY+20, aTipX-4, aTipY+26, ...c.OUTLINE);
+    cv2.line(aTipX+3, aTipY+20, aTipX+3, aTipY+26, ...c.OUTLINE);
+  }
+
+  // 8: GUARD POST — narrower upper tower section with proper crenellations ────
+  // Scaled: roof top at y=16 (64-48). Upper section adds 12px height, narrows.
+  {
+    const ox8 = 8*128, cx8 = ox8+64;        // 1024, 1088
+    const topY8 = 16;                        // existing roof top
+    const extH = 12, tHw = 42, tHh = 21;    // extension height, narrower iso dims
+    // Upper tower left face
+    cv2.fillPoly([
+      [cx8-tHw, topY8-extH], [cx8, topY8-extH-tHh],
+      [cx8, topY8-tHh],      [cx8-tHw, topY8],
+    ], ...c.STONE_L);
+    // Upper tower right face
+    cv2.fillPoly([
+      [cx8, topY8-extH-tHh], [cx8+tHw, topY8-extH],
+      [cx8+tHw, topY8],      [cx8, topY8-tHh],
+    ], 136, 130, 116);
+    // Upper roof
+    cv2.fillPoly([
+      [cx8-tHw, topY8-extH], [cx8, topY8-extH-tHh],
+      [cx8+tHw, topY8-extH], [cx8, topY8-extH+tHh],
+    ], ...c.STONE_M);
+    // Outlines
+    cv2.line(cx8-tHw, topY8-extH, cx8, topY8-extH-tHh, ...c.OUTLINE);
+    cv2.line(cx8, topY8-extH-tHh, cx8+tHw, topY8-extH, ...c.OUTLINE);
+    cv2.line(cx8+tHw, topY8-extH, cx8+tHw, topY8, ...c.OUTLINE);
+    cv2.line(cx8-tHw, topY8-extH, cx8-tHw, topY8, ...c.OUTLINE);
+    // Crenellations — left face of upper tower
+    for (let bx=cx8-tHw+4; bx<cx8-6; bx+=12) {
+      cv2.fillRect(bx, topY8-extH-4, 7, 6, ...c.STONE_L);
+      cv2.line(bx-1, topY8-extH-5, bx+7, topY8-extH-5, ...c.OUTLINE);
+      cv2.line(bx-1, topY8-extH-5, bx-1, topY8-extH+2, ...c.OUTLINE);
+      cv2.line(bx+7, topY8-extH-5, bx+7, topY8-extH+2, ...c.OUTLINE);
+      cv2.line(bx-1, topY8-extH+2, bx+7, topY8-extH+2, ...c.OUTLINE);
+    }
+    // Crenellations — right face of upper tower
+    for (let bx=cx8+6; bx<cx8+tHw-4; bx+=12) {
+      cv2.fillRect(bx, topY8-extH-4, 7, 6, 142, 136, 122);
+      cv2.line(bx-1, topY8-extH-5, bx+7, topY8-extH-5, ...c.OUTLINE);
+      cv2.line(bx+7, topY8-extH-5, bx+7, topY8-extH+2, ...c.OUTLINE);
+      cv2.line(bx-1, topY8-extH+2, bx+7, topY8-extH+2, ...c.OUTLINE);
+    }
+    // Arrow slit in upper left face
+    cv2.fillRect(cx8-30, topY8-extH+2, 6, 10, 40, 36, 44);
+    cv2.line(cx8-31, topY8-extH+1, cx8-24, topY8-extH+1, ...c.STONE_D);
+    cv2.line(cx8-31, topY8-extH+12, cx8-24, topY8-extH+12, ...c.STONE_D);
+    // Stone coursing on upper sections
+    for (let ey=topY8-extH+5; ey<topY8; ey+=8) {
+      cv2.line(cx8-tHw+2, ey, cx8-2, ey, ...c.STONE_D, 35);
+      cv2.line(cx8+2, ey, cx8+tHw-2, ey, ...c.STONE_D, 25);
+    }
+    // Watch torch on upper tower (above battlement, clearly visible)
+    cv2.sp(cx8-14, topY8-extH+6, ...c.FORGE, 200);
+    cv2.sp(cx8-13, topY8-extH+6, ...c.FORGE, 180);
+    cv2.sp(cx8-15, topY8-extH+5, ...c.FORGE, 110);
+    cv2.sp(cx8-14, topY8-extH+5, 255, 230, 120, 90);
+  }
+
+  return cv2.toPNG();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
