@@ -53,7 +53,7 @@
     "startingReputations": {},
     "objectiveCard": {
       "mission": "Destroy Lord Edric Fenn's reputation.",
-      "winCondition": "Get his reputation score below 30 (out of 100).",
+      "winCondition": "Get his reputation score to 29 or lower (out of 100).",
       "timeLimit": "You have 30 days.",
       "danger": "If you are caught eavesdropping, the town will know your face.",
       "strategyHint": "Edric is too proud to believe rumors about himself. Target the people around him — damage faction sentiment among merchants and nobles to erode his support."

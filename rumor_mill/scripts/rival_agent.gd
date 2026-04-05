@@ -58,7 +58,7 @@ func _get_cooldown(day: int) -> int:
 
 
 func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
-	var intensity: int = 4 if day >= 20 else (3 if day >= 8 else 2)
+	var intensity: int = 3 if day >= 8 else 2
 	var claim_type_str: String
 	var subject_id: String
 

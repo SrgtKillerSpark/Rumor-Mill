@@ -63,7 +63,7 @@ Edric's extremely low credulity makes direct rumor targeting ineffective. The in
 |-------|------|----------|-----------|----------|
 | Early | 1-7 | 3 days | 2 | Always PRAISE Tomas |
 | Mid | 8-15 | 2 days | 3 | Alternates PRAISE/Tomas and SCANDAL/Calder |
-| Late | 16-25 | 1 day | 4 | Metric-driven targeting (attacks weakest gap) |
+| Late | 16-25 | 1 day | 3 | Metric-driven targeting (attacks weakest gap) |
 
 Late-phase targeting logic:
 - `calder_gap = calder_score - 40` (distance above fail floor)
@@ -234,14 +234,11 @@ The Maren instant-fail mechanic creates a binary difficulty curve. The Maren-Aly
 
 ### HIGH: Scenario 3 — Rival Agent Late-Phase Pacing
 
-The rival agent's late-phase behavior (days 16-25, intensity 4, daily seeds) creates steep difficulty escalation:
-- At Master difficulty, the player gets 2 whispers/day while the rival seeds 1 rumor/day at intensity 4
-- The rival's metric-driven targeting means it always attacks the player's weakest position
-- Combined with the dual-objective requirement (Calder up AND Tomas down), late-game recovery is extremely difficult if the player falls behind
+The rival agent's late-phase behavior (days 16-25, daily seeds) previously escalated to intensity 4, creating steep difficulty that made late-game recovery nearly impossible for players who fell behind.
 
-**Risk:** If the player doesn't establish a strong lead by day 15, the late phase may be unwinnable regardless of skill.
+**Fix (SPA-471):** Late-phase intensity capped at 3 (same as mid-phase). The rival still seeds daily with metric-driven targeting, but at reduced impact.
 
-**Recommended analytics:** Win rate by day-15 reputation snapshot. If wins correlate almost entirely with early-game performance, the late phase may need pacing adjustment (e.g., rival cooldown never going below 2 days, or intensity capping at 3).
+**Recommended analytics:** Win rate by day-15 reputation snapshot. If wins still correlate almost entirely with early-game performance, consider also extending late-phase cooldown to 2 days.
 
 ### MEDIUM: Scenario 4 — Win/Fail Threshold Equality
 
