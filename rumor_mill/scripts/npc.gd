@@ -1097,6 +1097,45 @@ func show_bribed_effect() -> void:
 	tw.chain().tween_callback(lbl.queue_free)
 
 
+## Spawns a floating "+N" or "−N" label above this NPC to indicate a reputation
+## change.  Uses palette colours: gold (MERCH_T) for gain, red (FLAG_R) for loss.
+## Called by the reputation system or scenario evaluator on significant deltas.
+func show_reputation_change(delta: int) -> void:
+	if delta == 0:
+		return
+	var lbl := Label.new()
+	lbl.text = ("+" if delta > 0 else "") + str(delta)
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.position = Vector2(-10.0, -68.0)
+	# MERCH_T gold for gain, FLAG_R crimson for loss — both from the locked palette
+	lbl.modulate = Color(0.784, 0.635, 0.180, 1.0) if delta > 0 else Color(0.698, 0.149, 0.149, 1.0)
+	add_child(lbl)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -18.0), 1.2)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.2).set_delay(0.4)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
+## Spawns a small "!" glyph in muted stone colour above this NPC for ~1 second,
+## signalling that suspicion was raised.  Kept subtle (STONE_L, no bloom) so it
+## reads as a quiet warning rather than an alarm — the heat shimmer handles
+## the escalated-danger state.
+func show_suspicion_raised() -> void:
+	var lbl := Label.new()
+	lbl.text = "!"
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.position = Vector2(-4.0, -72.0)
+	# STONE_L (#A29C8A) — muted, consistent with the ink-line pixel aesthetic
+	lbl.modulate = Color(0.635, 0.612, 0.545, 1.0)
+	add_child(lbl)
+	var tw := create_tween()
+	tw.tween_property(lbl, "modulate:a", 0.3, 0.25)
+	tw.tween_property(lbl, "modulate:a", 1.0, 0.25)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.50).set_delay(0.2)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
 # ── Ambient / reaction speech bubbles ────────────────────────────────────────
 
 ## Maps a rumor state to the matching dialogue category key, or "" for states
