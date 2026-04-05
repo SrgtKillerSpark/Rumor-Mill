@@ -489,6 +489,9 @@ func _spawn_npcs() -> void:
 		npc_container.add_child(npc)
 
 		# Random start cell on a walkable tile.
+		if walkable_cells.is_empty():
+			push_error("World: No walkable cells — cannot spawn NPC")
+			return
 		var start_cell: Vector2i = walkable_cells[randi() % walkable_cells.size()]
 
 		npc.init_from_data(data, start_cell, walkable_cells, _pathfinder)
@@ -535,7 +538,10 @@ func _build_schedule(faction: String, start_cell: Vector2i) -> Array[Vector2i]:
 				waypoints.append(entry)
 		else:
 			# Fallback: random walkable cell.
-			waypoints.append(walkable_cells[randi() % walkable_cells.size()])
+			if not walkable_cells.is_empty():
+				waypoints.append(walkable_cells[randi() % walkable_cells.size()])
+			else:
+				push_error("World: No walkable cells — NPC schedule fallback failed")
 	return waypoints
 
 
