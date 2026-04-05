@@ -67,14 +67,14 @@ func _build_ui() -> void:
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_backdrop)
 
-	# ── Centered briefing card (520 px wide, auto-height) ────────────────────
+	# ── Centered briefing card (580 px wide, auto-height) ────────────────────
 	_card = Panel.new()
 	_card.anchor_left   = 0.5
 	_card.anchor_right  = 0.5
 	_card.anchor_top    = 0.5
 	_card.anchor_bottom = 0.5
-	_card.offset_left   = -260.0
-	_card.offset_right  =  260.0
+	_card.offset_left   = -290.0
+	_card.offset_right  =  290.0
 	_card.offset_top    = -220.0
 	_card.offset_bottom =  220.0
 	var card_style := StyleBoxFlat.new()
@@ -121,7 +121,7 @@ func _build_ui() -> void:
 		lbl.text = mission
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		lbl.add_theme_font_size_override("font_size", 16)
+		lbl.add_theme_font_size_override("font_size", 18)
 		lbl.add_theme_color_override("font_color", C_MISSION)
 		lbl.add_theme_constant_override("outline_size", 1)
 		lbl.add_theme_color_override("font_outline_color", Color(0.10, 0.08, 0.02, 0.6))
@@ -187,8 +187,8 @@ func _add_labeled_line(parent: VBoxContainer, label_text: String, body_text: Str
 		C_TITLE.to_html(false), label_text, body_text
 	]
 	rtl.add_theme_color_override("default_color", body_color)
-	rtl.add_theme_font_size_override("normal_font_size", 12)
-	rtl.add_theme_font_size_override("bold_font_size", 12)
+	rtl.add_theme_font_size_override("normal_font_size", 14)
+	rtl.add_theme_font_size_override("bold_font_size", 14)
 	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(rtl)
 
