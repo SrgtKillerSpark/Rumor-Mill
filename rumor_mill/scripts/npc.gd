@@ -1648,6 +1648,8 @@ func show_state_emote(state_name: String) -> void:
 
 ## Brief highlight flash when the player clicks to observe/eavesdrop this NPC.
 func flash_click() -> void:
+	if sprite == null:
+		return
 	if _flash_tween:
 		_flash_tween.kill()
 	_flash_tween = create_tween()
