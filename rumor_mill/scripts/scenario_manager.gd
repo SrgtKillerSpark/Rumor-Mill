@@ -478,6 +478,15 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_3_state != ScenarioState.ACTIVE:
 		return
+
+	# Timeout must be checked before the null guard so a missing NPC cannot
+	# prevent the scenario from ever resolving.
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	if current_day > _days_allowed:
+		scenario_3_state = ScenarioState.FAILED
+		scenario_resolved.emit(3, ScenarioState.FAILED)
+		return
+
 	var calder: ReputationSystem.ReputationSnapshot = rep.get_snapshot(CALDER_FENN_ID)
 	var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
 	if calder == null or tomas == null:
@@ -496,13 +505,6 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 		return
 
 	if calder.score < S3_FAIL_CALDER_BELOW:
-		scenario_3_state = ScenarioState.FAILED
-		scenario_resolved.emit(3, ScenarioState.FAILED)
-		return
-
-	# Timeout fail: day limit exceeded (> gives the player the full last day; get_time_fraction is clamped at 1.0).
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day > _days_allowed:
 		scenario_3_state = ScenarioState.FAILED
 		scenario_resolved.emit(3, ScenarioState.FAILED)
 
@@ -602,13 +604,21 @@ func get_scenario_4_progress(rep: ReputationSystem) -> Dictionary:
 func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_5_state != ScenarioState.ACTIVE:
 		return
+
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+
+	# Timeout must be checked before the null guard so a missing NPC cannot
+	# prevent the scenario from ever resolving.
+	if current_day > _days_allowed:
+		scenario_5_state = ScenarioState.FAILED
+		scenario_resolved.emit(5, ScenarioState.FAILED)
+		return
+
 	var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
 	var edric:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
 	var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
 	if aldric == null or edric == null or tomas == null:
 		return
-
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
 
 	# Day 15 endorsement: Prior Aldous endorses the candidate with the highest rep.
 	if not _s5_endorsement_fired and current_day >= S5_ENDORSEMENT_DAY:
@@ -640,14 +650,8 @@ func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 		scenario_resolved.emit(5, ScenarioState.WON)
 		return
 
-	# FAIL 1: Aldric drops below 30 (instant fail — campaign collapses).
+	# FAIL: Aldric drops below 30 (instant fail — campaign collapses).
 	if aldric.score < S5_FAIL_ALDRIC_BELOW:
-		scenario_5_state = ScenarioState.FAILED
-		scenario_resolved.emit(5, ScenarioState.FAILED)
-		return
-
-	# FAIL 2: Timeout.
-	if current_day > _days_allowed:
 		scenario_5_state = ScenarioState.FAILED
 		scenario_resolved.emit(5, ScenarioState.FAILED)
 
@@ -677,6 +681,23 @@ func get_scenario_5_progress(rep: ReputationSystem) -> Dictionary:
 func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_6_state != ScenarioState.ACTIVE:
 		return
+
+	# Timeout must be checked before the null guard so a missing NPC cannot
+	# prevent the scenario from ever resolving.
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	if current_day > _days_allowed:
+		scenario_6_state = ScenarioState.FAILED
+		scenario_resolved.emit(6, ScenarioState.FAILED)
+		return
+
+	# FAIL (exposure): heat ceiling in S6 (guards on Aldric's payroll).
+	if _intel_store != null:
+		for npc_id in _intel_store.heat:
+			if _intel_store.heat[npc_id] >= S6_EXPOSED_HEAT:
+				scenario_6_state = ScenarioState.FAILED
+				scenario_resolved.emit(6, ScenarioState.FAILED)
+				return
+
 	var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
 	var marta:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(MARTA_COIN_ID)
 	if aldric == null or marta == null:
@@ -688,23 +709,8 @@ func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 		scenario_resolved.emit(6, ScenarioState.WON)
 		return
 
-	# FAIL 1: Marta drops below 30 (instant fail — she's been silenced).
+	# FAIL: Marta drops below 30 (instant fail — she's been silenced).
 	if marta.score < S6_FAIL_MARTA_BELOW:
-		scenario_6_state = ScenarioState.FAILED
-		scenario_resolved.emit(6, ScenarioState.FAILED)
-		return
-
-	# FAIL 2: Exposed — heat ceiling is 60 in S6 (guards on Aldric's payroll).
-	if _intel_store != null:
-		for npc_id in _intel_store.heat:
-			if _intel_store.heat[npc_id] >= S6_EXPOSED_HEAT:
-				scenario_6_state = ScenarioState.FAILED
-				scenario_resolved.emit(6, ScenarioState.FAILED)
-				return
-
-	# FAIL 3: Timeout.
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day > _days_allowed:
 		scenario_6_state = ScenarioState.FAILED
 		scenario_resolved.emit(6, ScenarioState.FAILED)
 

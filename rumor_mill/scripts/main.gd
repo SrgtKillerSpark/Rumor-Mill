@@ -431,7 +431,8 @@ func _start_target_npc_marker(npc_id: String) -> void:
 		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	# Auto-remove after 60 seconds.
 	get_tree().create_timer(60.0).timeout.connect(func() -> void:
-		tw.kill()
+		if tw != null and tw.is_valid():
+			tw.kill()
 		if is_instance_valid(crest):
 			crest.queue_free()
 	)
@@ -1199,10 +1200,12 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 				if not _banner_seed_fired:
 					var _rumour_nudge_timer := get_tree().create_timer(4.0)
 					_rumour_nudge_timer.timeout.connect(func() -> void:
+						if not is_instance_valid(self):
+							return
 						if _tutorial_banner != null and not _banner_seed_fired:
 							_tutorial_banner.queue_hint("hint_rumour_panel")
 						# SPA-626: Auto-open Rumour Panel after first eavesdrop (4 s delay).
-						if rumor_panel != null and not rumor_panel.panel.visible and not _banner_seed_fired:
+						if is_instance_valid(rumor_panel) and rumor_panel.panel != null and not rumor_panel.panel.visible and not _banner_seed_fired:
 							rumor_panel.toggle()
 					)
 			_banner_eavesdrop_count += 1
@@ -1511,7 +1514,9 @@ func _init_help_reminder() -> void:
 	# Fade out after 90 seconds.
 	var fade_timer := get_tree().create_timer(90.0)
 	fade_timer.timeout.connect(func() -> void:
-		if panel != null and is_instance_valid(panel):
+		if not is_instance_valid(self) or not is_instance_valid(panel):
+			return
+		if panel != null:
 			var tw := create_tween()
 			tw.tween_property(panel, "modulate:a", 0.0, 1.5)
 			tw.tween_callback(panel.queue_free)

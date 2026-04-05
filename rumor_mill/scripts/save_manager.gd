@@ -175,7 +175,7 @@ static func save_game(
 	f.store_string(JSON.stringify(data, "\t"))
 	f.close()
 	# Atomically replace the save file so a crash during write cannot corrupt the slot.
-	var dir := DirAccess.open("user://")
+	dir = DirAccess.open("user://")
 	if dir == null:
 		return "Failed to open user:// for atomic rename (error %d)." % DirAccess.get_open_error()
 	var rename_err := dir.rename(tmp_path, path)
@@ -310,6 +310,7 @@ static func _serialize_propagation(pe: PropagationEngine) -> Dictionary:
 		"contradiction_count":       pe.contradiction_count,
 		"time_pressure_bonus":       pe.time_pressure_bonus,
 		"target_shift_excluded_ids": pe.target_shift_excluded_ids.duplicate(),
+		"mutation_counter":          pe._mutation_counter,
 	}
 
 
@@ -405,6 +406,8 @@ static func _serialize_reputation(rs: ReputationSystem) -> Dictionary:
 
 
 static func _serialize_scenario_manager(sm: ScenarioManager) -> Dictionary:
+	if sm == null:
+		return {}
 	return {
 		"scenario_1_state":        int(sm.scenario_1_state),
 		"scenario_2_state":        int(sm.scenario_2_state),
@@ -518,6 +521,7 @@ static func _restore_propagation(pe: PropagationEngine, d: Dictionary) -> void:
 	pe.contradiction_count = int(d.get("contradiction_count", 0))
 	pe.time_pressure_bonus = float(d.get("time_pressure_bonus", 0.0))
 	pe.target_shift_excluded_ids.assign(d.get("target_shift_excluded_ids", []))
+	pe._mutation_counter   = int(d.get("mutation_counter", 0))
 
 
 static func _restore_npc_slots(
@@ -606,7 +610,7 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 	store.evidence_inventory.clear()
 	for ed in d.get("evidence_inventory", []):
 		var item := PlayerIntelStore.EvidenceItem.new(
-			ed["type"],
+			ed.get("type", ""),
 			float(ed.get("believability_bonus", 0.0)),
 			float(ed.get("mutability_modifier", 0.0)),
 			ed.get("compatible_claims", []).duplicate(),

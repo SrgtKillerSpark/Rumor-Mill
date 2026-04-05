@@ -170,14 +170,13 @@ func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
 		mut_tags.append("soften")
 
 	if do_target_shift and not all_npcs.is_empty():
-		var shift_candidates: Array = all_npcs
-		if not target_shift_excluded_ids.is_empty():
-			shift_candidates = all_npcs.filter(
-				func(n: Node2D) -> bool:
-					return not target_shift_excluded_ids.has(n.npc_data.get("id", ""))
-			)
+		var shift_candidates: Array = all_npcs.filter(
+			func(n: Node2D) -> bool:
+				var nid: String = n.npc_data.get("id", "")
+				return nid != source.subject_npc_id and not target_shift_excluded_ids.has(nid)
+		)
 		if not shift_candidates.is_empty():
-			var target_npc: Node2D = shift_candidates[randi() % shift_candidates.size()]
+			var target_npc: Node2D = shift_candidates.pick_random()
 			new_subject = target_npc.npc_data.get("id", source.subject_npc_id)
 			mut_tags.append("target_shift")
 
@@ -202,6 +201,12 @@ func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
 		remaining_shelf,
 		source.id          # lineage_parent_id
 	)
+	# Inherit the parent's current (decayed) believability so mutations don't
+	# reset the decay progress.  If intensity changed, scale proportionally.
+	if source.intensity > 0:
+		mutated.current_believability = source.current_believability * (float(new_intensity) / float(source.intensity))
+	else:
+		mutated.current_believability = source.current_believability
 
 	# Register the new copy.
 	live_rumors[new_id] = mutated
