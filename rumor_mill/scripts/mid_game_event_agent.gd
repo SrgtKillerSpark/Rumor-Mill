@@ -140,15 +140,17 @@ func get_pending_event() -> Dictionary:
 ## Serialise state for save/load.
 func to_data() -> Dictionary:
 	return {
-		"resolved_ids": _resolved_ids.duplicate(),
-		"rolled_days":  _rolled_days.duplicate(),
+		"resolved_ids":  _resolved_ids.duplicate(),
+		"rolled_days":   _rolled_days.duplicate(),
+		"pending_event": _pending_event.duplicate(),
 	}
 
 
 ## Restore state from save data.
 func restore_from_data(d: Dictionary) -> void:
-	_resolved_ids = d.get("resolved_ids", {}).duplicate()
-	_rolled_days  = d.get("rolled_days", {}).duplicate()
+	_resolved_ids  = d.get("resolved_ids", {}).duplicate()
+	_rolled_days   = d.get("rolled_days", {}).duplicate()
+	_pending_event = d.get("pending_event", {}).duplicate()
 
 
 # ---------------------------------------------------------------------------

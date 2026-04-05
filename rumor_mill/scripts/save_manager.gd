@@ -142,6 +142,7 @@ static func save_game(
 	var data := {
 		"version":          SAVE_VERSION,
 		"scenario_id":      world.active_scenario_id,
+		"selected_difficulty": GameState.selected_difficulty,
 		"tick":             day_night.current_tick,
 		"day":              day_night.current_day,
 		"social_graph":     _serialize_social_graph(world.social_graph),
@@ -228,6 +229,7 @@ static func apply_pending_load(
 		return
 	var data := _pending_load_data
 
+	GameState.selected_difficulty = data.get("selected_difficulty", "master")
 	_restore_day_night(day_night, data)
 	_restore_social_graph(world.social_graph, data.get("social_graph", {}))
 	_restore_propagation(world.propagation_engine, data.get("propagation", {}))
