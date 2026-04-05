@@ -57,6 +57,7 @@ func _ready() -> void:
 	_apply_time_of_day(0)
 	_update_time_label()
 	_build_day_flash_overlay()
+	emit_signal("game_tick", 0)
 
 
 func _build_day_flash_overlay() -> void:
@@ -98,6 +99,7 @@ func _on_tick_timer_timeout() -> void:
 	var hour_of_day: int = current_tick % ticks_per_day
 	if hour_of_day == 0:
 		current_day += 1
+		emit_signal("day_transition_started", current_day)
 		emit_signal("day_changed", current_day)
 		_play_day_transition_flash()
 	emit_signal("game_tick", current_tick)
@@ -108,8 +110,6 @@ func _on_tick_timer_timeout() -> void:
 func _play_day_transition_flash() -> void:
 	if _day_flash_rect == null:
 		return
-
-	emit_signal("day_transition_started", current_day)
 
 	if _day_flash_tween != null and _day_flash_tween.is_valid():
 		_day_flash_tween.kill()

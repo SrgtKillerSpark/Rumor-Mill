@@ -67,6 +67,8 @@ static func save_game(
 		journal:   CanvasLayer,
 		slot:      int = 1
 ) -> String:
+	if slot < AUTO_SLOT or slot > SLOT_COUNT:
+		return "Invalid save slot %d (must be %d–%d)." % [slot, AUTO_SLOT, SLOT_COUNT]
 	# Ensure save directory exists.
 	var dir := DirAccess.open("user://")
 	if dir != null and not dir.dir_exists("saves"):
@@ -159,7 +161,6 @@ static func apply_pending_load(
 	if _pending_load_data.is_empty():
 		return
 	var data := _pending_load_data
-	_pending_load_data = {}
 
 	_restore_day_night(day_night, data)
 	_restore_social_graph(world.social_graph, data.get("social_graph", {}))
@@ -182,6 +183,7 @@ static func apply_pending_load(
 	# Rebuild reputation cache after all systems (including FactionEventSystem) are
 	# restored so that active event bonuses (e.g. religious_festival +10) are included.
 	world.reputation_system.recalculate_all(world.npcs, day_night.current_tick)
+	_pending_load_data = {}
 
 
 # ── Serialisation ─────────────────────────────────────────────────────────────

@@ -67,6 +67,7 @@ var _banner_camera_gate:       bool = false  # set true after camera_moved fires
 var _banner_observe_gate:      bool = false  # set true after first successful Observe
 var _banner_eavesdrop_gate:    bool = false  # set true after first successful Eavesdrop
 var _banner_seed_fired:        bool = false  # guard for hint_propagation 5 s delay
+var _banner_hint06_fired:      bool = false  # guard: rumour panel nudge at tick 24
 var _banner_believe_fired:     bool = false  # guard for hint_objectives
 var _banner_journal_hint_fired: bool = false  # guard: journal hint shown (observe or eavesdrop)
 var _banner_social_graph_fired: bool = false  # guard: social graph hint shown
@@ -791,9 +792,10 @@ func _on_s1_game_tick(tick: int) -> void:
 	# HINT-06: fire at day 2 (tick 24) if tokens exist, player has eavesdropped, and no rumour seeded.
 	# Gating on _banner_eavesdrop_gate ensures the player has gathered intel before being nudged
 	# toward the Rumour Panel — avoids an arbitrary first seed choice (SPA-170 recommendation).
-	if tick == 24 and _tutorial_banner != null and not _banner_seed_fired:
+	if tick >= 24 and not _banner_hint06_fired and _tutorial_banner != null and not _banner_seed_fired:
 		var intel: PlayerIntelStore = world.intel_store
 		if intel != null and intel.whisper_tokens_remaining >= 1 and _banner_eavesdrop_gate:
+			_banner_hint06_fired = true
 			_tutorial_banner.queue_hint("hint_rumour_panel")
 
 
@@ -1370,4 +1372,3 @@ func _play_win_celebration() -> void:
 			lbl.position + Vector2(randf_range(-70.0, 70.0), randf_range(-130.0, -50.0)), 1.5)
 		tw.tween_property(lbl, "modulate:a", 0.0, 1.5)
 	get_tree().create_timer(2.0).timeout.connect(layer.queue_free)
-

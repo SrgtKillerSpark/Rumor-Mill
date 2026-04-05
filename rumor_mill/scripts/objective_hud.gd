@@ -340,10 +340,11 @@ func _compute_win_progress() -> float:
 	match sid:
 		"scenario_1":
 			var p: Dictionary = _scenario_manager.get_scenario_1_progress(_reputation_system)
-			var score: int = p.get("edric_score", 50)
-			var target: int = p.get("win_threshold", 30)
-			# From 50 → target: progress = (50 - score) / (50 - target)
-			return clampf(float(50 - score) / float(max(50 - target, 1)), 0.0, 1.0)
+			var score: int  = p.get("edric_score", ScenarioManager.S1_EDRIC_START_SCORE)
+			var start: int  = p.get("start_score",  ScenarioManager.S1_EDRIC_START_SCORE)
+			var target: int = p.get("win_threshold", ScenarioManager.S1_WIN_EDRIC_BELOW)
+			# From start → target: progress = (start - score) / (start - target)
+			return clampf(float(start - score) / float(max(start - target, 1)), 0.0, 1.0)
 		"scenario_2":
 			var p: Dictionary = _scenario_manager.get_scenario_2_progress(_reputation_system)
 			var count: int = p.get("illness_believer_count", 0)

@@ -34,10 +34,14 @@ func get_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 		clamp(from.x, 0, _grid_size.x - 1),
 		clamp(from.y, 0, _grid_size.y - 1)
 	)
+	if safe_from != from:
+		push_warning("[AStarPathfinder] from %s clamped to %s (grid %s)" % [from, safe_from, _grid_size])
 	var safe_to := Vector2i(
 		clamp(to.x, 0, _grid_size.x - 1),
 		clamp(to.y, 0, _grid_size.y - 1)
 	)
+	if safe_to != to:
+		push_warning("[AStarPathfinder] to %s clamped to %s (grid %s)" % [to, safe_to, _grid_size])
 	if _astar.is_point_solid(safe_from) or _astar.is_point_solid(safe_to):
 		return []
 	var id_path: Array[Vector2i] = _astar.get_id_path(safe_from, safe_to)

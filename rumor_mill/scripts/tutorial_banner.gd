@@ -209,7 +209,8 @@ func _slide_out_dismiss() -> void:
 func _finish_dismiss() -> void:
 	if _tutorial_sys != null and _active_id != "":
 		_tutorial_sys.mark_seen(_active_id)
-	_active_id       = ""
+	_active_id   = ""
+	_active_body = ""
 	_container.modulate.a = 1.0
 	visible          = false
 	_hovered         = false
@@ -225,10 +226,6 @@ func _instant_hide() -> void:
 
 
 func _on_dismiss_pressed() -> void:
-	if _tutorial_sys != null and _active_id != "":
-		_tutorial_sys.mark_seen(_active_id)
-	_active_id   = ""
-	_active_body = ""
 	_slide_out_dismiss()
 
 

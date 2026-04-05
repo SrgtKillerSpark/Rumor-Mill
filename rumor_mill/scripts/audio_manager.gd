@@ -110,6 +110,9 @@ var _current_phase: String = ""
 ## True if ambient is currently in "day" mode.
 var _ambient_is_day: bool = true
 
+## Ticks per in-game day; set from DayNightCycle via connect_to_day_night().
+var _ticks_per_day: int = 24
+
 ## Non-empty when a location interior is open and overrides the ambient layer.
 var _location_ambient: String = ""
 
@@ -379,8 +382,11 @@ func connect_to_day_night(day_night: Node) -> void:
 		day_night.game_tick.connect(_on_game_tick)
 	if day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_day_changed)
+	# Cache ticks_per_day for use in _on_game_tick.
+	if "ticks_per_day" in day_night:
+		_ticks_per_day = day_night.ticks_per_day
 	# Determine initial ambient and music state from current tick.
-	var initial_hour: int = day_night.current_tick % day_night.ticks_per_day
+	var initial_hour: int = day_night.current_tick % _ticks_per_day
 	_ambient_is_day = (initial_hour >= DAY_START_HOUR and initial_hour < DAY_END_HOUR)
 	var initial_track := "ambient_day" if _ambient_is_day else "ambient_night"
 	var stream: AudioStream = _music_cache.get(initial_track, null)
@@ -433,7 +439,7 @@ func on_fail() -> void:
 # ── DayNightCycle signal handlers ─────────────────────────────────────────────
 
 func _on_game_tick(tick: int) -> void:
-	var hour: int = tick % 24   # ticks_per_day assumed 24; safe fallback
+	var hour: int = tick % _ticks_per_day
 	# Ambient day/night crossfade.
 	var should_be_day: bool = (hour >= DAY_START_HOUR and hour < DAY_END_HOUR)
 	if should_be_day != _ambient_is_day:

@@ -345,7 +345,7 @@ func init_from_data(
 	# Speech bubble setup — stagger initial cooldown so NPCs don't all talk at once.
 	_npc_dialogue_key     = data.get("id", "")
 	_load_dialogue_db()
-	_idle_bubble_cooldown = randi_range(0, 50)
+	_idle_bubble_cooldown = randi_range(1, 50)
 
 
 # ── Per-tick entry point ─────────────────────────────────────────────────────

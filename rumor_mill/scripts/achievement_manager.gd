@@ -182,6 +182,7 @@ func _save() -> void:
 			SAVE_PATH, FileAccess.get_open_error()])
 		return
 	file.store_string(JSON.stringify(_unlocked))
+	file.close()
 
 
 func _load() -> void:

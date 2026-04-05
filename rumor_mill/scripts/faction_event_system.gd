@@ -308,6 +308,7 @@ func _activate_guard_crackdown(ev: FactionEvent) -> void:
 
 func _expire_event(ev: FactionEvent, day: int) -> void:
 	ev.is_expired = true
+	ev.is_active  = false
 	match ev.event_type:
 		"religious_festival":
 			_remove_injected_overrides(ev)

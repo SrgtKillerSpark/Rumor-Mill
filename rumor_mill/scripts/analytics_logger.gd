@@ -32,12 +32,12 @@ func start_session(scenario_id: String, difficulty: String) -> void:
 func log_event(event_type: String, data: Dictionary) -> void:
 	if not SettingsManager.analytics_enabled:
 		return
-	var entry: Dictionary = {
-		"ts":   Time.get_datetime_string_from_system(true),
-		"type": event_type,
-	}
+	var entry: Dictionary = {}
 	for key in data:
 		entry[key] = data[key]
+	# Reserved fields overwrite any caller-supplied values.
+	entry["ts"]   = Time.get_datetime_string_from_system(true)
+	entry["type"] = event_type
 	_append_line(JSON.stringify(entry))
 
 

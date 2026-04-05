@@ -132,6 +132,7 @@ const TOMAS_REEVE_ID   := "tomas_reeve"
 # SPA-98: raised from 25 — Edric's credulity=0.05 and loyalty=0.80 override make
 # the original 26-point drop punishing for a tutorial scenario.
 const S1_WIN_EDRIC_BELOW   := 30
+const S1_EDRIC_START_SCORE := 50  ## Edric's default base reputation at scenario start.
 # SPA-502: cumulative exposure threshold — when any NPC's heat reaches this value,
 # the Guard Captain connects the dots and the player is exposed.
 const S1_EXPOSED_HEAT      := 80.0
@@ -341,7 +342,8 @@ func get_scenario_2_progress(rep: ReputationSystem) -> Dictionary:
 func get_scenario_1_progress(rep: ReputationSystem) -> Dictionary:
 	var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
 	return {
-		"edric_score":   snap.score if snap != null else 50,
+		"edric_score":   snap.score if snap != null else S1_EDRIC_START_SCORE,
+		"start_score":   S1_EDRIC_START_SCORE,
 		"win_threshold": S1_WIN_EDRIC_BELOW,
 		"state":         scenario_1_state,
 	}

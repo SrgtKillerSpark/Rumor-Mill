@@ -78,6 +78,8 @@ func record_game(
 	bribes_paid:   int,
 ) -> void:
 	var play_time := get_session_duration_sec()
+	# Reset the session clock so a subsequent flush_session_time() doesn't double-count.
+	_session_start_time = int(Time.get_unix_time_from_system())
 
 	# ── Global totals ─────────────────────────────────────────────────────────
 	_data["total_play_time_sec"]  = _data.get("total_play_time_sec",  0) + play_time

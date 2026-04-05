@@ -155,7 +155,9 @@ func _on_socially_dead(npc_id: String, npc_name: String, tick: int) -> void:
 ## Call at scenario end to finalize data (sample current day, add peak moment).
 func finalize() -> void:
 	if _day_night_ref != null and "current_day" in _day_night_ref:
-		_sample_day(_day_night_ref.current_day)
+		var day: int = _day_night_ref.current_day
+		if day != _last_sampled_day:
+			_sample_day(day)
 
 	# Add peak rumor spread as a key moment if we had any activity.
 	if _peak_live_count > 0:
