@@ -85,6 +85,10 @@ var _ambient_is_day: bool = true
 var _music_cache: Dictionary = {}
 var _sfx_cache:   Dictionary = {}
 
+## Currently active volume levels (dB), kept in sync with set_*_volume_db calls.
+var _music_volume_db:   float = DEFAULT_MUSIC_DB
+var _ambient_volume_db: float = DEFAULT_AMBIENT_DB
+
 # ── Node refs (created in _ready) ─────────────────────────────────────────────
 var _music_player_a:   AudioStreamPlayer = null   # Crossfade slot A
 var _music_player_b:   AudioStreamPlayer = null   # Crossfade slot B
@@ -169,7 +173,7 @@ func play_music(track_name: String, crossfade: bool = false) -> void:
 
 	next_player.stream = stream
 	if stream != null:
-		next_player.volume_db = DEFAULT_MUSIC_DB if not crossfade else -80.0
+		next_player.volume_db = _music_volume_db if not crossfade else -80.0
 		next_player.play()
 	else:
 		next_player.stop()
@@ -179,7 +183,7 @@ func play_music(track_name: String, crossfade: bool = false) -> void:
 			_music_tween.kill()
 		_music_tween = create_tween()
 		_music_tween.set_parallel(true)
-		_music_tween.tween_property(next_player, "volume_db", DEFAULT_MUSIC_DB, CROSSFADE_TIME)
+		_music_tween.tween_property(next_player, "volume_db", _music_volume_db, CROSSFADE_TIME)
 		_music_tween.tween_property(prev_player, "volume_db", -80.0,            CROSSFADE_TIME)
 		_music_tween.chain().tween_callback(prev_player.stop)
 	else:
@@ -216,7 +220,7 @@ func set_ambient(is_day: bool) -> void:
 			_ambient_tween.kill()
 		_ambient_tween = create_tween()
 		_ambient_tween.set_parallel(true)
-		_ambient_tween.tween_property(next_player, "volume_db", DEFAULT_AMBIENT_DB, CROSSFADE_TIME)
+		_ambient_tween.tween_property(next_player, "volume_db", _ambient_volume_db, CROSSFADE_TIME)
 		_ambient_tween.tween_property(prev_player, "volume_db", -80.0,              CROSSFADE_TIME)
 		_ambient_tween.chain().tween_callback(prev_player.stop)
 	else:
@@ -248,10 +252,12 @@ func play_sfx_pitched(sfx_name: String, pitch_scale: float) -> void:
 # ── Public API — Volume control ────────────────────────────────────────────────
 
 func set_music_volume_db(db: float) -> void:
+	_music_volume_db = db
 	_music_player_a.volume_db = db
 	_music_player_b.volume_db = db
 
 func set_ambient_volume_db(db: float) -> void:
+	_ambient_volume_db = db
 	_ambient_player_a.volume_db = db
 	_ambient_player_b.volume_db = db
 
@@ -278,7 +284,7 @@ func connect_to_day_night(day_night: Node) -> void:
 	var ap := _ambient_player_a
 	ap.stream = stream
 	if stream != null:
-		ap.volume_db = DEFAULT_AMBIENT_DB
+		ap.volume_db = _ambient_volume_db
 		ap.play()
 
 
