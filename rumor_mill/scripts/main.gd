@@ -776,8 +776,8 @@ func _on_ctx_day_changed(day: int) -> void:
 	elif day == 3:
 		_tutorial_banner.queue_hint("ctx_check_journal")
 	# Halfway warning: check if past 50% of days and progress is slow.
-	if not _ctx_halfway_fired and scenario_manager != null:
-		var total: int = scenario_manager.get_days_allowed()
+	if not _ctx_halfway_fired and world.scenario_manager != null:
+		var total: int = world.scenario_manager.get_days_allowed()
 		if day > total / 2:
 			_ctx_halfway_fired = true
 			_tutorial_banner.queue_hint("ctx_halfway_warning")
