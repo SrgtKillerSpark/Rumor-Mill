@@ -4,6 +4,7 @@ extends CanvasLayer
 ##
 ## Redesigned: top-centre of the screen.
 ##   - Large day counter with urgency colouring (green → yellow → red)
+##   - Context-sensitive "what to do next" nudge below day counter
 ##   - Plain-language objective line
 ##   - Day timeline progress bar (colour matches day counter urgency)
 ##   - Win-condition progress bar (green, driven by scenario manager)
@@ -55,6 +56,21 @@ var _faction_panel: Panel = null
 var _faction_labels: Dictionary = {}  # faction_id → {mood: Label, bar: ColorRect}
 var _world_ref: Node2D = null
 
+# ── Context-sensitive "what to do next" nudge (SPA-520) ─────────────────────
+var _nudge_label: Label = null
+## Tracks which loop step the player has reached.  Once phase reaches 4 the
+## nudge hides permanently for this session.
+## 0 = observe, 1 = eavesdrop ×2, 2 = open Rumour Panel, 3 = watch spread, 4 = done
+var _nudge_phase: int = 0
+
+const _NUDGE_TEXTS: PackedStringArray = PackedStringArray([
+	"Try observing a building",
+	"Try eavesdropping on two NPCs",
+	"Open the Rumour Panel (R)",
+	"Watch your rumour spread",
+])
+const C_NUDGE := Color(0.75, 0.90, 0.65, 1.0)  # soft green hint colour
+
 # ── Urgency colour palette for day counter ───────────────────────────────────
 const C_DAY_SAFE    := Color(0.30, 0.85, 0.35, 1.0)  # green
 const C_DAY_CAUTION := Color(0.95, 0.85, 0.15, 1.0)  # yellow
@@ -64,6 +80,7 @@ const C_DAY_CRITICAL := Color(0.95, 0.20, 0.10, 1.0) # red
 
 func _ready() -> void:
 	layer = 4
+	_build_nudge_label()
 	_build_banner()
 	_build_metrics_row()
 
@@ -120,6 +137,7 @@ func _pulse_day_counter() -> void:
 
 func _on_tick(_tick: int) -> void:
 	_refresh_time()
+	_refresh_nudge()
 
 
 func _refresh() -> void:
@@ -136,9 +154,66 @@ func _refresh() -> void:
 	target_label.text = _scenario_manager.get_win_condition_line()
 
 	_refresh_time()
+	_refresh_nudge()
 	_refresh_metrics()
 	_refresh_win_progress()
 	_refresh_faction_panel()
+
+
+# ── Context-sensitive nudge (SPA-520) ───────────────────────────────────────
+
+func _build_nudge_label() -> void:
+	var vbox: VBoxContainer = $Panel/VBox
+	_nudge_label = Label.new()
+	_nudge_label.text = ""
+	_nudge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_nudge_label.add_theme_font_size_override("font_size", 11)
+	_nudge_label.add_theme_color_override("font_color", C_NUDGE)
+	_nudge_label.add_theme_constant_override("outline_size", 2)
+	_nudge_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	# Insert right after DayRow (index 0 in VBox).
+	vbox.add_child(_nudge_label)
+	vbox.move_child(_nudge_label, 1)
+
+
+func _refresh_nudge() -> void:
+	if _nudge_label == null or _nudge_phase >= _NUDGE_TEXTS.size():
+		return
+
+	# Phase 0 → 1: player has observed at least one building.
+	if _nudge_phase == 0 and _intel_store != null:
+		if not _intel_store.location_intel.is_empty():
+			_nudge_phase = 1
+
+	# Phase 1 → 2: player has eavesdropped on two or more NPC pairs.
+	if _nudge_phase == 1 and _intel_store != null:
+		if _intel_store.relationship_intel.size() >= 2:
+			_nudge_phase = 2
+
+	# Phase 2 → 3: player has seeded at least one rumor (any NPC has a rumor slot).
+	if _nudge_phase == 2 and _world_ref != null and "npcs" in _world_ref:
+		for npc in _world_ref.npcs:
+			if not npc.rumor_slots.is_empty():
+				_nudge_phase = 3
+				break
+
+	# Phase 3 → 4 (done): any NPC has entered the SPREAD state.
+	if _nudge_phase == 3 and _world_ref != null and "npcs" in _world_ref:
+		for npc in _world_ref.npcs:
+			for rid in npc.rumor_slots:
+				if npc.rumor_slots[rid].state == Rumor.RumorState.SPREAD:
+					_nudge_phase = 4
+					break
+			if _nudge_phase == 4:
+				break
+
+	# Update label visibility and text.
+	if _nudge_phase >= _NUDGE_TEXTS.size():
+		_nudge_label.text = ""
+		_nudge_label.visible = false
+	else:
+		_nudge_label.text = "▸ " + _NUDGE_TEXTS[_nudge_phase]
+		_nudge_label.visible = true
 
 
 func _refresh_time() -> void:
