@@ -637,9 +637,9 @@ func hear_rumor(rumor: Rumor, source_faction: String) -> void:
 
 	if rumor_slots.has(rid):
 		var slot: Rumor.NpcRumorSlot = rumor_slots[rid]
-		if slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.REJECT,
-						   Rumor.RumorState.SPREAD,  Rumor.RumorState.ACT,
-						   Rumor.RumorState.EXPIRED]:
+		if slot.state in [Rumor.RumorState.BELIEVE,      Rumor.RumorState.REJECT,
+						   Rumor.RumorState.SPREAD,       Rumor.RumorState.ACT,
+						   Rumor.RumorState.CONTRADICTED, Rumor.RumorState.EXPIRED]:
 			return
 		# Reinforcement from another source.
 		slot.heard_from_count += 1
