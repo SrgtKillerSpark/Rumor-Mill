@@ -1893,4 +1893,7 @@ func _play_win_celebration() -> void:
 		tw.tween_property(lbl, "position",
 			lbl.position + Vector2(randf_range(-70.0, 70.0), randf_range(-130.0, -50.0)), 1.5)
 		tw.tween_property(lbl, "modulate:a", 0.0, 1.5)
-	get_tree().create_timer(2.0).timeout.connect(layer.queue_free)
+	get_tree().create_timer(2.0).timeout.connect(func() -> void:
+		if is_instance_valid(layer):
+			layer.queue_free()
+	)
