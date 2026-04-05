@@ -434,10 +434,10 @@ func _maybe_micro_wander() -> void:
 		return
 	if randf() >= _MICRO_WANDER_CHANCE:
 		return
-	var dirs := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+	var dirs: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 	dirs.shuffle()
-	for d in dirs:
-		var candidate := current_cell + d
+	for d: Vector2i in dirs:
+		var candidate: Vector2i = current_cell + d
 		if _walkable.has(candidate):
 			_path = [candidate]
 			_micro_wander_cooldown = randi_range(3, 8)

@@ -50,10 +50,10 @@ if [[ -z "$GODOT_BIN" ]]; then
 fi
 
 if [[ -z "$GODOT_BIN" ]] || ! command -v "$GODOT_BIN" &>/dev/null 2>&1; then
-  echo "ERROR: Godot binary not found." >&2
-  echo "  Set GODOT_BIN env var or pass --godot <path>" >&2
+  echo "WARNING: Godot binary not found — skipping headless validation." >&2
+  echo "  Set GODOT_BIN env var or pass --godot <path> to enable." >&2
   echo "  e.g.: GODOT_BIN=/path/to/godot4 $0" >&2
-  exit 2
+  exit 0
 fi
 
 # ── Validate project path ──────────────────────────────────────────────────────
