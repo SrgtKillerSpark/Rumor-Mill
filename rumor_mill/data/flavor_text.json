@@ -45,5 +45,87 @@
     "guardpost": "A sturdy watchtower near the town square where the guard keeps vigil, its narrow windows offering a clear view of the comings and goings below.",
     "graveyard": "A quiet and well-kept plot beyond the chapel where the town's dead rest, tended by Denny's steady if grim attention.",
     "well": "The town well draws a steady trickle of townsfolk at all hours — a natural crossing-point for news, greetings, and the occasional overheard word."
+  },
+  "rumor_flavor": {
+    "accusation": {
+      "flavor": "A pointed finger carries more weight than a drawn sword in a town this small.",
+      "variants": [
+        "They say the proof is plain for anyone with eyes to see.",
+        "One accusation is gossip; two is a pattern; three is a verdict.",
+        "The accused protests — but that only makes the whispers louder."
+      ]
+    },
+    "scandal": {
+      "flavor": "Behind closed doors, reputations are made and unmade in equal measure.",
+      "variants": [
+        "It was an open secret, really — the only surprise is that someone finally said it aloud.",
+        "Decency is a thin garment, and this town has sharp eyes for loose threads.",
+        "Some things are best left unspoken — which is precisely why everyone is speaking of it."
+      ]
+    },
+    "illness": {
+      "flavor": "Nothing empties a room faster than the rumor of plague.",
+      "variants": [
+        "They coughed once at market and by evening the whole street was talking.",
+        "Sickness of the body invites sickness of the reputation — one feeds the other.",
+        "The healer's visit was noted. The second visit was feared."
+      ]
+    },
+    "prophecy": {
+      "flavor": "The faithful see signs where the skeptic sees only weather and coincidence.",
+      "variants": [
+        "A dream is a flimsy thing — until the dreamer names someone you know.",
+        "Divine favor and divine wrath look much the same from the outside.",
+        "The old women nod knowingly, as if they expected this all along."
+      ]
+    },
+    "praise": {
+      "flavor": "A good deed well-timed can redeem even the most tarnished name.",
+      "variants": [
+        "Generosity buys goodwill — and goodwill is the one currency no ledger tracks.",
+        "The town remembers its heroes, at least until the next scandal comes along.",
+        "Even the cynics had to admit: it was a fine thing, what they did."
+      ]
+    },
+    "death": {
+      "flavor": "Death visits without announcement, and the town holds its breath until the bell tolls.",
+      "variants": [
+        "The gravedigger sharpened his spade before the news had even spread.",
+        "A body found is a story half-told — and this town will write the other half.",
+        "No one mourns a stranger, but everyone mourns a mystery."
+      ]
+    },
+    "heresy": {
+      "flavor": "To speak against the Chapel is to speak against the town's very foundations.",
+      "variants": [
+        "The prior's silence on the matter speaks louder than any sermon.",
+        "There are sins the Chapel forgives and sins it does not. This is the latter sort.",
+        "Old rites die hard in the countryside — and the clergy's patience dies harder."
+      ]
+    },
+    "blackmail": {
+      "flavor": "Secrets are the real currency of power, and someone has been hoarding them.",
+      "variants": [
+        "Silence has a price, and someone has been paying it regularly.",
+        "The truth is a blade — it cuts deepest when held to the throat by a friend.",
+        "Everyone has something to hide. The trick is knowing whose secret is worth the most."
+      ]
+    },
+    "secret_alliance": {
+      "flavor": "Strange bedfellows make for dangerous politics in a town this size.",
+      "variants": [
+        "They were seen together where no honest business would bring them.",
+        "An alliance forged in shadow is twice as strong — and twice as suspect.",
+        "When enemies share a table, the whole town should worry about what's on the menu."
+      ]
+    },
+    "forbidden_romance": {
+      "flavor": "The heart wants what propriety forbids, and this town has eyes everywhere.",
+      "variants": [
+        "Love is blind, but the neighbors most certainly are not.",
+        "A stolen glance at the well, a lingering hand at the market — the signs are there for anyone watching.",
+        "The chapel frowns, the gossips thrill, and the lovers pretend no one has noticed."
+      ]
+    }
   }
 }
