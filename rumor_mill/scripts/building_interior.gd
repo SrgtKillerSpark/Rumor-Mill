@@ -33,7 +33,10 @@ func _ready() -> void:
 
 func _find_close_btn() -> Button:
 	# Walk the panel tree looking for a Button named "CloseBtn".
-	return _panel.find_child("CloseBtn", true, false) as Button
+	var btn := _panel.find_child("CloseBtn", true, false) as Button
+	if btn == null:
+		push_warning("BuildingInterior: CloseBtn not found in panel — Escape/E key fallback only.")
+	return btn
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -55,6 +58,7 @@ func show_interior() -> void:
 		_anim_tween.kill()
 	_anim_tween = create_tween()
 	_anim_tween.set_parallel(true)
+	_anim_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	# Overlay dims in over 0.3s.
 	_anim_tween.tween_property(_overlay, "modulate:a", 1.0, 0.3) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
@@ -84,6 +88,7 @@ func close_interior() -> void:
 		_anim_tween.kill()
 	_anim_tween = create_tween()
 	_anim_tween.set_parallel(true)
+	_anim_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	# Overlay and panel fade out together over 0.2s.
 	_anim_tween.tween_property(_overlay, "modulate:a", 0.0, 0.2) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)

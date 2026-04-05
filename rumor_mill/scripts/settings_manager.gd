@@ -24,6 +24,10 @@ const DEFAULT_GAME_SPEED         := 1.0    ## tick_duration_seconds
 const DEFAULT_ANALYTICS_ENABLED  := true   ## Opt-in local analytics (SPA-244)
 const DEFAULT_RESOLUTION_INDEX   := 0      ## 0=720p, 1=1080p, 2=1440p
 const DEFAULT_WINDOW_MODE        := 0      ## 0=Windowed, 1=Borderless, 2=Fullscreen
+const DEFAULT_UI_SCALE           := 1.0    ## 1.0 = 100%, range 0.75–1.5
+
+## Available UI scale presets.
+const UI_SCALE_PRESETS := [0.75, 0.85, 1.0, 1.15, 1.25, 1.5]
 
 ## Window mode constants.
 const WINDOW_WINDOWED   := 0   ## Regular window with title bar and decorations.
@@ -44,12 +48,15 @@ var game_speed:          float = DEFAULT_GAME_SPEED
 var analytics_enabled:   bool  = DEFAULT_ANALYTICS_ENABLED
 var resolution_index:    int   = DEFAULT_RESOLUTION_INDEX
 var window_mode:         int   = DEFAULT_WINDOW_MODE
+var ui_scale:            float = DEFAULT_UI_SCALE
+var ui_scale_index:      int   = 2   ## index into UI_SCALE_PRESETS (default 1.0)
 
 
 func _ready() -> void:
 	load_settings()
 	apply_to_audio_manager()
 	apply_display_settings()
+	apply_ui_scale()
 
 
 func load_settings() -> void:
@@ -66,6 +73,9 @@ func load_settings() -> void:
 	var _legacy_fs: bool = cfg.get_value(SECTION, "fullscreen", false)
 	window_mode = cfg.get_value(SECTION, "window_mode",
 		WINDOW_FULLSCREEN if _legacy_fs else DEFAULT_WINDOW_MODE)
+	ui_scale_index = cfg.get_value(SECTION, "ui_scale_index", 2)
+	ui_scale_index = clampi(ui_scale_index, 0, UI_SCALE_PRESETS.size() - 1)
+	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
 
 
 func save_settings() -> void:
@@ -77,6 +87,7 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "analytics_enabled", analytics_enabled)
 	cfg.set_value(SECTION, "resolution_index",  resolution_index)
 	cfg.set_value(SECTION, "window_mode",       window_mode)
+	cfg.set_value(SECTION, "ui_scale_index",    ui_scale_index)
 	cfg.save(SAVE_PATH)
 
 
@@ -98,11 +109,28 @@ func apply_display_settings() -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		_:  # WINDOW_WINDOWED
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+			var screen_size := DisplayServer.screen_get_size()
+			if res.x < 320 or res.y < 240 or res.x > screen_size.x or res.y > screen_size.y:
+				push_warning("SettingsManager: invalid resolution %s, clamping to screen." % str(res))
+				res.x = clampi(res.x, 320, screen_size.x)
+				res.y = clampi(res.y, 240, screen_size.y)
 			DisplayServer.window_set_size(res)
 			# Centre window on screen.
-			var screen_size := DisplayServer.screen_get_size()
 			var win_pos := Vector2i((screen_size.x - res.x) / 2, (screen_size.y - res.y) / 2)
 			DisplayServer.window_set_position(win_pos)
+
+
+## Apply the UI scale factor to the root viewport's content_scale_factor.
+func apply_ui_scale() -> void:
+	var tree := get_tree()
+	if tree == null:
+		return
+	tree.root.content_scale_factor = ui_scale
+
+
+## Get the label for the current UI scale preset.
+func get_ui_scale_label() -> String:
+	return "%d%%" % int(ui_scale * 100.0)
 
 
 ## Get the label for the current resolution preset.

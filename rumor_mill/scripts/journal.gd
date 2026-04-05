@@ -143,6 +143,7 @@ func _open() -> void:
 		_panel_tween.kill()
 	_panel_tween = create_tween().set_parallel(true) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_panel_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_panel_tween.tween_property(_overlay_bg, "modulate:a", 1.0, 0.18)
 	_panel_tween.tween_property(_parchment, "modulate:a", 1.0, 0.20)
 	_panel_tween.tween_property(_parchment, "position:x", _open_pos_x, 0.25)
@@ -160,6 +161,7 @@ func _close() -> void:
 		_panel_tween.kill()
 	_panel_tween = create_tween().set_parallel(true) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	_panel_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_panel_tween.tween_property(_overlay_bg, "modulate:a", 0.0, 0.12)
 	_panel_tween.tween_property(_parchment, "modulate:a", 0.0, 0.12)
 	_panel_tween.chain().tween_callback(func() -> void:

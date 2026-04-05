@@ -529,7 +529,7 @@ func _build_bonus_stat(scenario_id: int) -> void:
 			bonus_label_text = "Guard Suspicion"
 			if _world_ref != null and _world_ref.reputation_system != null:
 				var snap: Variant = _world_ref.reputation_system.get_snapshot("bram_guard")
-				if snap != null:
+				if snap != null and "score" in snap:
 					var s: int = snap.score
 					if s >= 80:
 						bonus_value_text = "Active"
