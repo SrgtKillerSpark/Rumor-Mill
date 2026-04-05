@@ -73,13 +73,15 @@ theme_override_colors/separator_color = Color(0.52, 0.38, 0.18, 1.0)
 [node name="Description" type="RichTextLabel" parent="Panel/Layout"]
 size_flags_vertical = 3
 bbcode_enabled = true
-text = "[color=#3c2208]The entrance hall is dressed in cool limestone and hung with tapestries depicting the Alderman's lineage. Candelabra cast long shadows across polished flagstone. A carved oak staircase ascends to the private chambers.
+text = "[color=#3c2208]The entrance hall is dressed in cool limestone and hung with tapestries depicting the Alderman's lineage in muted burgundy and silver thread. A pair of iron bracket torches flank the inner doorway, casting long orange shadows across polished flagstone. A carved oak staircase ascends to the private chambers beneath a fan-vaulted ceiling.
+
+[i]Furnishings:[/i] A high-backed carved chair beneath the family crest, an oak writing desk with a sealed inkpot, iron bracket torches (two pairs — entrance and corridor), a guard's halbert rack by the door, a woven hall-runner in burgundy, and a tall candelabrum of eight beeswax candles in the stairwell corner.
 
 [i]Faction notes:[/i] This is [b]Noble faction territory[/b]. Visitors are watched. The Alderman's family holds considerable sway over civic law; accusations levelled here carry legal weight — but [b]slander within earshot of the guard costs dearly[/b].
 
 [b]Notable locations:[/b]
 • [color=#6a1a2a]Council chamber (upper floor)[/color] — closed sessions, Alderman present
-• [color=#6a1a2a]Anteroom[/color] — petitioners and servants gather
+• [color=#6a1a2a]Anteroom[/color] — petitioners and servants gather beneath a barred window
 • [color=#aaaaaa]Silver cabinet[/color] — reportedly locked with the town seal[/color]"
 theme_override_colors/default_color = Color(0.28, 0.14, 0.08, 1.0)
 theme_override_font_sizes/normal_font_size = 12

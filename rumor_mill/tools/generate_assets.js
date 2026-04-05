@@ -750,14 +750,26 @@ function makeBuildingTiles(nightMode = false) {
     cv.line(ox0+48, 32-wH-15, ox0+57, 32-wH-15, ...c.OUTLINE);
     cv.line(ox0+48, 32-wH-8, ox0+57, 32-wH-8, ...c.OUTLINE);  // flag bottom edge
     // night: lit windows — warm amber glow replacing cold blue (SPA-523)
+    // SPA-602: widened halos (r²≤16), wall shadow pass for depth
     if (nightMode) {
-      cv.fillRect(ox0+7,  32-wH+4, 7, 9, 220, 175, 60);
-      for (let dy=-2; dy<=2; dy++) for (let dx=-2; dx<=2; dx++)
-        if (dx*dx+dy*dy<=4)
-          cv.sp(ox0+10+dx, 32-wH+8+dy, 255, 210, 80, Math.max(0, 40-(dx*dx+dy*dy)*8));
-      cv.fillRect(ox0+19, 32-wH+2, 5, 6, 220, 175, 60);
-      for (let dy=-1; dy<=1; dy++) for (let dx=-1; dx<=1; dx++)
-        cv.sp(ox0+21+dx, 32-wH+5+dy, 255, 210, 80, Math.max(0, 28-(dx*dx+dy*dy)*10));
+      // darken left-face wall at night (unlit stone reads darker)
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox0+1; nx < ox0+30; nx++)
+          cv.sp(nx, ny, 0, 0, 0, 22);
+      // darken right-face wall
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox0+33; nx < ox0+62; nx++)
+          cv.sp(nx, ny, 0, 0, 0, 18);
+      // arched window: bright amber fill + wide halo
+      cv.fillRect(ox0+7,  32-wH+4, 7, 9, 235, 185, 70);
+      for (let dy=-4; dy<=4; dy++) for (let dx=-4; dx<=4; dx++)
+        if (dx*dx+dy*dy<=16)
+          cv.sp(ox0+10+dx, 32-wH+8+dy, 255, 210, 80, Math.max(0, 55-(dx*dx+dy*dy)*3));
+      // second window: amber fill + halo
+      cv.fillRect(ox0+19, 32-wH+2, 5, 6, 235, 185, 70);
+      for (let dy=-3; dy<=3; dy++) for (let dx=-3; dx<=3; dx++)
+        if (dx*dx+dy*dy<=9)
+          cv.sp(ox0+21+dx, 32-wH+5+dy, 255, 210, 80, Math.max(0, 42-(dx*dx+dy*dy)*5));
     }
   }
 
@@ -821,11 +833,24 @@ function makeBuildingTiles(nightMode = false) {
     // candlelight silhouette inside window (seated patron)
     cv.sp(ox+14, 32-wH+5, 30, 20, 10, 60);
     // night: warm tavern window glow — brighter amber, wider halo (SPA-523)
+    // SPA-602: widened halos, wall shadow pass, chimney smoke lit by forge glow
     if (nightMode) {
-      cv.fillRect(ox+12, 32-wH+2, 6, 5, 235, 190, 70);
-      for (let dy=-2; dy<=2; dy++) for (let dx=-3; dx<=3; dx++)
-        if (dx*dx+dy*dy<=6)
-          cv.sp(ox+15+dx, 32-wH+4+dy, 255, 200, 80, Math.max(0, 50-(dx*dx+dy*dy)*7));
+      // darken timber-frame wall at night
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox+1; nx < ox+30; nx++)
+          cv.sp(nx, ny, 0, 0, 0, 20);
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox+33; nx < ox+62; nx++)
+          cv.sp(nx, ny, 0, 0, 0, 16);
+      // window: bright amber fill + wide warm halo (r²≤18)
+      cv.fillRect(ox+12, 32-wH+2, 6, 5, 245, 195, 75);
+      for (let dy=-4; dy<=4; dy++) for (let dx=-4; dx<=4; dx++)
+        if (dx*dx+dy*dy<=18)
+          cv.sp(ox+15+dx, 32-wH+4+dy, 255, 200, 80, Math.max(0, 62-(dx*dx+dy*dy)*3));
+      // lantern at night: brighter forge bloom
+      for (let dy=-3; dy<=3; dy++) for (let dx=-3; dx<=3; dx++)
+        if (dx*dx+dy*dy<=9)
+          cv.sp(ox+22+dx, 32-wH+2+dy, ...c.FORGE, Math.max(0, 50-(dx*dx+dy*dy)*6));
     }
   }
 
@@ -881,13 +906,23 @@ function makeBuildingTiles(nightMode = false) {
     // window tracery divider on left face (adds Gothic feel)
     cv.line(ox+8, 32-wH+4, ox+8, 32-wH+12, ...c.STONE_D, 90);
     // night: candlelight behind stained glass — warm halo on both windows (SPA-523)
+    // SPA-602: widened halos, wall shadow pass for chapel depth
     if (nightMode) {
-      for (let dy=-2; dy<=3; dy++) for (let dx=-2; dx<=3; dx++)
-        if (dx*dx+dy*dy<=8)
-          cv.sp(ox+8+dx, 32-wH+8+dy, 255, 190, 60, Math.max(0, 22-(dx*dx+dy*dy)*3));
-      for (let dy=-2; dy<=3; dy++) for (let dx=-2; dx<=2; dx++)
-        if (dx*dx+dy*dy<=6)
-          cv.sp(ox+46+dx, 32-wH+7+dy, 255, 190, 60, Math.max(0, 18-(dx*dx+dy*dy)*3));
+      // darken chapel stone walls at night
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox+1; nx < ox+30; nx++)
+          cv.sp(nx, ny, 0, 0, 0, 24);
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox+33; nx < ox+62; nx++)
+          cv.sp(nx, ny, 0, 0, 0, 20);
+      // left stained glass window: wider warm halo (r²≤16)
+      for (let dy=-4; dy<=4; dy++) for (let dx=-4; dx<=4; dx++)
+        if (dx*dx+dy*dy<=16)
+          cv.sp(ox+8+dx, 32-wH+8+dy, 255, 190, 60, Math.max(0, 40-(dx*dx+dy*dy)*2));
+      // right narrow window: wider warm halo (r²≤12)
+      for (let dy=-3; dy<=3; dy++) for (let dx=-3; dx<=3; dx++)
+        if (dx*dx+dy*dy<=12)
+          cv.sp(ox+46+dx, 32-wH+7+dy, 255, 190, 60, Math.max(0, 32-(dx*dx+dy*dy)*2));
     }
   }
 
@@ -3576,6 +3611,7 @@ function makeStateIcons() {
 //   8=oak_tree  9=lantern_post  10=garden_bed  (SPA-526)
 //   11=market_stall  12=bench  13=stone_well   (SPA-551)
 //   14=chapel_candle                            (SPA-595)
+//   15=woodpile  16=notice_board  17=iron_torch (SPA-602)
 //   col 0  CRATE        — wooden storage crate
 //   col 1  BARREL       — wooden barrel
 //   col 2  SIGN         — post-mounted wooden sign
@@ -3590,7 +3626,7 @@ function makeStateIcons() {
 // Palette-locked; all colours from P.  Background transparent.
 // ═══════════════════════════════════════════════════════════════════════════════
 function makePropsAtlas() {
-  const cv = createCanvas(960, 32);  // SPA-595: expanded from 896 to 960 (prop 14 chapel_candle added)
+  const cv = createCanvas(1152, 32);  // SPA-602: expanded from 960 to 1152 (props 15–17: woodpile, notice_board, iron_torch)
 
   // ── shared: draw an isometric cuboid centred at (cx, cy) ──────────────────
   // hw/hh = iso half-width/height of top face; bh = box height in screen pixels
@@ -4040,12 +4076,117 @@ function makePropsAtlas() {
     }
   }
 
+  // ── 15: WOODPILE (SPA-602) — stacked log pile, WOOD_M/WOOD_D ──────────────
+  {
+    const ox=960, cx=ox+32, cy=25;
+    // bottom log (longest, widest face visible)
+    cv.fillPoly([
+      [cx-12, cy-2], [cx, cy-5], [cx+12, cy-2],
+      [cx+12, cy+1], [cx,   cy+4], [cx-12, cy+1],
+    ], ...c.WOOD_M);
+    // end-grain left (visible cut end, darker ring)
+    cv.fillPoly([[cx-14, cy-1],[cx-12,cy-2],[cx-12,cy+1],[cx-14,cy+2]], ...c.WOOD_D);
+    cv.sp(cx-13, cy, ...c.DIRT_D, 120);  // heartwood dot
+    // bark lines on top face
+    cv.line(cx-8, cy-4, cx+8, cy-4, ...c.WOOD_D, 80);
+    cv.line(cx-5, cy-3, cx+5, cy-3, ...c.WOOD_D, 50);
+    // middle log (slightly narrower, offset to show stacking)
+    cv.fillPoly([
+      [cx-10, cy-6], [cx+1, cy-9], [cx+11, cy-6],
+      [cx+11, cy-4], [cx+1,  cy-7], [cx-10, cy-4],
+    ], ...c.WOOD_M);
+    cv.fillPoly([[cx-12,cy-5],[cx-10,cy-6],[cx-10,cy-4],[cx-12,cy-3]], ...c.WOOD_D);
+    cv.sp(cx-11, cy-4, ...c.DIRT_D, 100);
+    cv.line(cx-6, cy-8, cx+6, cy-8, ...c.WOOD_D, 70);
+    // top log (shortest, topmost)
+    cv.fillPoly([
+      [cx-8, cy-10], [cx+2, cy-13], [cx+9, cy-10],
+      [cx+9, cy-8],  [cx+2, cy-11], [cx-8, cy-8],
+    ], ...c.WOOD_M);
+    cv.fillPoly([[cx-10,cy-9],[cx-8,cy-10],[cx-8,cy-8],[cx-10,cy-7]], ...c.WOOD_D);
+    cv.sp(cx-9, cy-8, ...c.DIRT_D, 90);
+    // outline all logs (OUTLINE)
+    cv.line(cx-12, cy-2, cx, cy-5, ...c.OUTLINE, 160);
+    cv.line(cx, cy-5, cx+12, cy-2, ...c.OUTLINE, 160);
+    cv.line(cx-10, cy-6, cx+1, cy-9, ...c.OUTLINE, 140);
+    cv.line(cx+1, cy-9, cx+11, cy-6, ...c.OUTLINE, 140);
+    cv.line(cx-8, cy-10, cx+2, cy-13, ...c.OUTLINE, 120);
+    cv.line(cx+2, cy-13, cx+9, cy-10, ...c.OUTLINE, 120);
+  }
+
+  // ── 16: NOTICE_BOARD (SPA-602) — tall post + parchment board ────────────
+  {
+    const ox=1024, cx=ox+32, cy=26;
+    // post: WOOD_D vertical pole, sunk into ground
+    cv.line(cx, cy, cx, cy-22, ...c.WOOD_D);
+    cv.sp(cx-1, cy-15, ...c.WOOD_M, 120);  // post highlight
+    // horizontal crossbar near top
+    cv.line(cx-5, cy-19, cx+5, cy-19, ...c.WOOD_D);
+    cv.line(cx-4, cy-18, cx+4, cy-18, ...c.WOOD_M, 80);
+    // parchment board hung from crossbar
+    cv.fillRect(cx-7, cy-17, 15, 11, ...c.PARCH_L);
+    cv.line(cx-7, cy-17, cx+7, cy-17, ...c.PARCH_D);
+    cv.line(cx-7, cy-6,  cx+7, cy-6,  ...c.PARCH_D);
+    cv.line(cx-7, cy-17, cx-7, cy-6,  ...c.PARCH_D);
+    cv.line(cx+7, cy-17, cx+7, cy-6,  ...c.PARCH_D);
+    // ink text lines on parchment (3 lines of "text")
+    cv.line(cx-5, cy-14, cx+5, cy-14, ...c.INK, 160);
+    cv.line(cx-5, cy-11, cx+3, cy-11, ...c.INK, 120);
+    cv.line(cx-5, cy-9,  cx+4, cy-9,  ...c.INK, 100);
+    // hanging cords from crossbar to board corners
+    cv.line(cx-6, cy-19, cx-6, cy-17, ...c.WOOD_D, 140);
+    cv.line(cx+6, cy-19, cx+6, cy-17, ...c.WOOD_D, 140);
+    // post base stub (ground contact)
+    cv.sp(cx-1, cy, ...c.WOOD_D, 180);
+    cv.sp(cx+1, cy, ...c.WOOD_D, 180);
+    // outline board
+    cv.line(cx-8, cy-18, cx+8, cy-18, ...c.OUTLINE, 120);
+    cv.line(cx-8, cy-5,  cx+8, cy-5,  ...c.OUTLINE, 120);
+  }
+
+  // ── 17: IRON_TORCH (SPA-602) — iron bracket torch, FORGE flame ───────────
+  {
+    const ox=1088, cx=ox+32, cy=26;
+    // small stone base block (bracket mount)
+    cv.fillRect(cx-4, cy-8, 8, 4, ...c.STONE_M);
+    cv.line(cx-4, cy-8, cx+3, cy-8, ...c.OUTLINE, 180);
+    cv.line(cx-4, cy-8, cx-4, cy-4, ...c.STONE_D, 140);
+    cv.sp(cx-3, cy-6, ...c.STONE_L, 60);  // stone highlight
+    // iron bracket arm (diagonal up-left)
+    cv.line(cx-3, cy-8, cx-6, cy-14, ...c.STONE_D);
+    cv.sp(cx-4, cy-12, ...c.STONE_D, 200);
+    // torch cup at bracket tip (small rect)
+    cv.fillRect(cx-8, cy-16, 5, 4, ...c.STONE_D);
+    cv.line(cx-9, cy-16, cx-3, cy-16, ...c.OUTLINE, 160);
+    cv.sp(cx-6, cy-15, ...c.STONE_M, 100);  // cup highlight
+    // wick
+    cv.sp(cx-6, cy-17, ...c.INK, 200);
+    // flame — FORGE core, CANVAS tip
+    cv.sp(cx-6, cy-22, ...c.CANVAS, 200);  // tip
+    cv.sp(cx-6, cy-21, ...c.FORGE,  240);
+    cv.sp(cx-7, cy-20, ...c.FORGE,  220);
+    cv.sp(cx-5, cy-20, ...c.FORGE,  220);
+    cv.sp(cx-6, cy-20, ...c.FORGE,  255);
+    cv.sp(cx-7, cy-19, ...c.FORGE,  180);
+    cv.sp(cx-5, cy-19, ...c.FORGE,  180);
+    cv.sp(cx-6, cy-19, ...c.FORGE,  220);
+    cv.sp(cx-6, cy-18, ...c.CANVAS, 150);
+    // warm glow bloom around flame
+    for (let gly = -7; gly <= 1; gly++) {
+      for (let glx = -5; glx <= 5; glx++) {
+        const dist = Math.sqrt(glx*glx + gly*gly);
+        if (dist < 6 && dist > 1.5)
+          cv.sp(cx-6+glx, cy-20+gly, ...c.FORGE, Math.max(0, (6-dist)*8)|0);
+      }
+    }
+  }
+
   // ── ground shadow ellipses under all props ────────────────────────────────
   // Small darkened oval at base gives each prop visual weight on the ground.
-  const propShadowCX = [32, 96, 160, 224, 288, 352, 416, 480, 544, 608, 672, 736, 800, 864, 928];
-  const propShadowCY = [26, 26,  28,  27,  25,  25,  28,  27,  27,  27,  26,  25,  27,  25,  27];
-  const propShadowHW = [13, 10,   4,  20,  16,  15,   7,   6,  16,   4,  15,  17,  14,  10,   5];
-  for (let _p = 0; _p < 15; _p++) {
+  const propShadowCX = [32, 96, 160, 224, 288, 352, 416, 480, 544, 608, 672, 736, 800, 864, 928, 992, 1056, 1120];
+  const propShadowCY = [26, 26,  28,  27,  25,  25,  28,  27,  27,  27,  26,  25,  27,  25,  27,   26,   28,   26];
+  const propShadowHW = [13, 10,   4,  20,  16,  15,   7,   6,  16,   4,  15,  17,  14,  10,   5,   14,    5,    6];
+  for (let _p = 0; _p < 18; _p++) {
     const _cx = propShadowCX[_p], _cy = propShadowCY[_p], _hw = propShadowHW[_p];
     for (let _sx = -_hw; _sx <= _hw; _sx++) {
       const _alpha = Math.max(0, 30 - Math.abs(_sx)*2);
@@ -4066,7 +4207,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 13 (SPA-595): ground tile detail pass (cols 6–11), chapel candle prop (col 14), env detail review\n');
+console.log('\nRumor Mill — Art Pass 14 (SPA-602): night tile glow enhancement, 3 new props (woodpile, notice_board, iron_torch), interior polish\n');
 
 write('assets/textures/tiles_ground.png',           makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',        makeRoadDirt());

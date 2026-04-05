@@ -73,14 +73,16 @@ theme_override_colors/separator_color = Color(0.52, 0.38, 0.18, 1.0)
 [node name="Description" type="RichTextLabel" parent="Panel/Layout"]
 size_flags_vertical = 3
 bbcode_enabled = true
-text = "[color=#5a3210]The low-beamed common room smells of tallow candles and spilled ale. A [b]fire[/b] crackles in the hearth at the far end, casting amber shadows across rough-hewn tables. Merchants huddle over cups of mulled wine; a minstrel plucks a lute in the corner.
+text = "[color=#5a3210]The low-beamed common room smells of tallow candles and spilled ale. A [b]fire[/b] crackles in the stone hearth at the far end, casting amber shadows across rough-hewn trestle tables. An iron chandelier hung with six tallow candles sways faintly when the door opens. Merchants huddle over cups of mulled wine; a minstrel plucks a lute in the corner beside a painted wooden screen.
+
+[i]Furnishings:[/i] Heavy oak benches and trestle tables, a barrel-stave counter, iron candle-holders, a wood-burning hearth with iron grate, a hanging sign-board above the bar (crude mug burned into the wood), and a locked chest under the stairs for valuables.
 
 [i]Faction notes:[/i] The Tavern serves as neutral ground — all three factions are known to gather here after dusk. Barmaids circulate constantly; [b]overheard conversations spread quickly[/b] among patrons.
 
 [b]Notable locations:[/b]
-• [color=#7a2222]Fireside alcove[/color] — nobles' preferred seats
-• [color=#1a3a6a]Long bench near the door[/color] — merchants' territory
-• [color=#2a2a1a]Corner table by the stairs[/color] — clergy discretely sup here[/color]"
+• [color=#7a2222]Fireside alcove[/color] — nobles' preferred seats, fur-lined bench
+• [color=#1a3a6a]Long bench near the door[/color] — merchants' territory, ink-stained ledgers
+• [color=#2a2a1a]Corner table by the stairs[/color] — clergy discreetly sup here[/color]"
 theme_override_colors/default_color = Color(0.32, 0.18, 0.06, 1.0)
 theme_override_font_sizes/normal_font_size = 12
 

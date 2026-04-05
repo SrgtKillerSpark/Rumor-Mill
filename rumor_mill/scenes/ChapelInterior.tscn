@@ -73,13 +73,15 @@ theme_override_colors/separator_color = Color(0.52, 0.38, 0.18, 1.0)
 [node name="Description" type="RichTextLabel" parent="Panel/Layout"]
 size_flags_vertical = 3
 bbcode_enabled = true
-text = "[color=#28262e]Cool, still air hangs between whitewashed walls. Narrow lancet windows filter pale light across rows of simple wooden pews. At the altar a [b]stone shepherd figure[/b] regards the nave with serene indifference. Beeswax candles burn at the base of an iron cross.
+text = "[color=#28262e]Cool, still air hangs between whitewashed walls. Narrow lancet windows filter pale light in gold, blue, and red across rows of simple wooden pews. At the altar a [b]stone shepherd figure[/b] regards the nave with serene indifference. Three tall pillar candles burn before the altar on iron stands; beeswax drips have crusted the flagstones below them.
+
+[i]Furnishings:[/i] Oak pew benches worn smooth with use, a carved stone altar with an iron cross, iron candle-stands (each bearing an ivory pillar candle), an embroidered kneeling-cloth in Clergy cream and near-black, a carved wooden lectern, and an iron-bound alms chest near the entrance.
 
 [i]Faction notes:[/i] This is [b]Clergy faction territory[/b]. Confessions heard here are sacrosanct — but the priest is not above repeating what he learns. [b]Rumours seeded here carry a sanctity modifier[/b], lending them undeserved credibility among the devout.
 
 [b]Notable locations:[/b]
-• [color=#1a1a28]Confessional[/color] — private, closely guarded by Aldous Prior
-• [color=#1a1a28]Vestry[/color] — records of births, deaths, and marriages
+• [color=#1a1a28]Confessional[/color] — heavy curtain, closely guarded by Aldous Prior
+• [color=#1a1a28]Vestry[/color] — iron-bound books of births, deaths, and marriages
 • [color=#888880]Cemetery gate[/color] — accessed via the north door[/color]"
 theme_override_colors/default_color = Color(0.22, 0.20, 0.26, 1.0)
 theme_override_font_sizes/normal_font_size = 12
