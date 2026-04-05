@@ -107,7 +107,7 @@ func setup(world: Node2D, intel_store: PlayerIntelStore, day_night: Node) -> voi
 
 # ── Input ─────────────────────────────────────────────────────────────────────
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_J:
 			toggle()

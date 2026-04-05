@@ -90,6 +90,9 @@ func is_expired() -> bool:
 ## Reduce believability by one tick's worth of decay.
 ## Called once per game tick by PropagationEngine.tick_decay().
 func decay_one_tick() -> void:
+	if shelf_life_ticks <= 0:
+		current_believability = 0.0
+		return
 	current_believability = maxf(current_believability - (1.0 / float(shelf_life_ticks)), 0.0)
 
 

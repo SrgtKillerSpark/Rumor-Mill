@@ -764,7 +764,7 @@ func on_game_tick(tick: int) -> void:
 		propagation_engine.tick_decay()
 
 	# Map continuous tick to a 0–5 schedule slot.
-	var tpd: int = day_night.ticks_per_day if day_night != null else 24
+	tpd = day_night.ticks_per_day if day_night != null else 24
 	var hour_of_day: int = tick % tpd
 	var schedule_slot: int = (hour_of_day * SCHEDULE_SLOTS) / tpd
 	var current_day: int   = day_night.current_day if day_night != null else (tick / tpd + 1)
@@ -827,7 +827,7 @@ func seed_rumor_from_player(
 		# Refund token if we can't proceed.
 		intel_store.whisper_tokens_remaining = mini(
 			intel_store.whisper_tokens_remaining + 1,
-			PlayerIntelStore.MAX_DAILY_WHISPERS)
+			intel_store.max_daily_whispers)
 		return ""
 
 	# Find the claim template.
@@ -841,7 +841,7 @@ func seed_rumor_from_player(
 		push_warning("World.seed_rumor_from_player: claim '%s' not found" % claim_id)
 		intel_store.whisper_tokens_remaining = mini(
 			intel_store.whisper_tokens_remaining + 1,
-			PlayerIntelStore.MAX_DAILY_WHISPERS)
+			intel_store.max_daily_whispers)
 		return ""
 
 	var claim_type: Rumor.ClaimType = Rumor.claim_type_from_string(claim_template.get("type", "accusation"))
@@ -915,7 +915,7 @@ func vouch_for_npc(voucher_npc_id: String, subject_npc_id: String) -> bool:
 		push_warning("World.vouch_for_npc: NPC '%s' not found" % voucher_npc_id)
 		intel_store.whisper_tokens_remaining = mini(
 			intel_store.whisper_tokens_remaining + 1,
-			PlayerIntelStore.MAX_DAILY_WHISPERS)
+			intel_store.max_daily_whispers)
 		return false
 
 	# Force the voucher NPC into DEFENDING state for the subject.

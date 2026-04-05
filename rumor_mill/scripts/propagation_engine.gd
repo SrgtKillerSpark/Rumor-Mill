@@ -185,6 +185,10 @@ func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
 	# Build unique id: parent_id + mutation counter suffix.
 	var new_id := source.id + "_m%d" % lineage.size()
 
+	# Carry forward remaining shelf life so mutations cannot reset the decay clock.
+	var elapsed_ticks := maxi(tick - source.created_tick, 0)
+	var remaining_shelf := maxi(source.shelf_life_ticks - elapsed_ticks, 1)
+
 	var mutated := Rumor.create(
 		new_id,
 		new_subject,
@@ -192,7 +196,7 @@ func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
 		new_intensity,
 		source.mutability,
 		tick,
-		source.shelf_life_ticks,
+		remaining_shelf,
 		source.id          # lineage_parent_id
 	)
 

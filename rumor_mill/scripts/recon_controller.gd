@@ -566,7 +566,8 @@ func _try_eavesdrop(target: Node2D) -> void:
 	_intel_store.add_heat(id_a, 8.0)
 	_intel_store.add_heat(id_b, 8.0)
 
-	var bar_str := "[" + "*".repeat(intel.bars()) + " ".repeat(3 - intel.bars()) + "]"
+	var _bars := mini(intel.bars(), 3)
+	var bar_str := "[" + "*".repeat(_bars) + " ".repeat(3 - _bars) + "]"
 	var belief_line   := ("\n" + belief_ctx)   if not belief_ctx.is_empty()   else ""
 	var critical_line := ("\n" + critical_ctx) if not critical_ctx.is_empty() else ""
 	var heat_line := ""

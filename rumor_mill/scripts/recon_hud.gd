@@ -98,7 +98,7 @@ func setup_hints(world: Node2D) -> void:
 
 # ── Input ─────────────────────────────────────────────────────────────────────
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_R:
 			if _rumor_panel_ref != null and _rumor_panel_ref.has_method("toggle"):
@@ -188,17 +188,17 @@ func show_milestone(text: String, color: Color) -> void:
 
 func _build_count_labels() -> void:
 	_action_count_label = Label.new()
-	_action_count_label.add_theme_font_size_override("font_size", 12)
+	_action_count_label.add_theme_font_size_override("font_size", 14)
 	_action_count_label.add_theme_color_override("font_color", PIP_FULL_ACTION)
-	_action_count_label.add_theme_constant_override("outline_size", 2)
-	_action_count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	_action_count_label.add_theme_constant_override("outline_size", 3)
+	_action_count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	action_pips_row.get_parent().add_child(_action_count_label)
 
 	_whisper_count_label = Label.new()
-	_whisper_count_label.add_theme_font_size_override("font_size", 12)
+	_whisper_count_label.add_theme_font_size_override("font_size", 14)
 	_whisper_count_label.add_theme_color_override("font_color", PIP_FULL_WHISPER)
-	_whisper_count_label.add_theme_constant_override("outline_size", 2)
-	_whisper_count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	_whisper_count_label.add_theme_constant_override("outline_size", 3)
+	_whisper_count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	whisper_pips_row.get_parent().add_child(_whisper_count_label)
 
 
@@ -349,6 +349,7 @@ func _build_extra_key_hints() -> void:
 	_add_key_hint(key_hint_row, "R", "Rumor", Color(0.92, 0.65, 0.12, 1.0))
 	_add_key_hint(key_hint_row, "J", "Journal", Color(0.894, 0.820, 0.659, 1.0))  # PARCH_L
 	_add_key_hint(key_hint_row, "G", "Graph", Color(0.55, 0.75, 1.00, 1.0))
+	_add_key_hint(key_hint_row, "F1", "Help", Color(0.70, 0.65, 0.50, 1.0))
 
 
 ## Create a styled key hint badge with a subtle pulse animation.

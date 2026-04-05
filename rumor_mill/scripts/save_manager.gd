@@ -462,6 +462,9 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 	store.location_intel.clear()
 	for loc_id in d.get("location_intel", {}):
 		for entry in d["location_intel"][loc_id]:
+			if not entry is Dictionary or not entry.has("location_id") or not entry.has("observed_at"):
+				push_error("save_manager: malformed location_intel entry — skipped")
+				continue
 			var intel := PlayerIntelStore.LocationIntel.new(
 				entry["location_id"], int(entry["observed_at"]))
 			intel.npcs_seen = entry.get("npcs_seen", []).duplicate(true)
@@ -474,6 +477,9 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 			push_error("save_manager: relationship_intel[%s] is not a Dictionary — skipped" % key)
 			continue
 		var _ew: Variant = rd.get("edge_weight", 0.5)
+		if not rd.has("npc_a_id") or not rd.has("npc_b_id"):
+			push_error("save_manager: relationship_intel[%s] missing npc_a_id/npc_b_id — skipped" % key)
+			continue
 		var ri := PlayerIntelStore.RelationshipIntel.new(
 			rd["npc_a_id"],       rd["npc_b_id"],
 			rd.get("npc_a_name", ""), rd.get("npc_b_name", ""),

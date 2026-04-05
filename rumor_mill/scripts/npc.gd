@@ -234,6 +234,9 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	if _has_bubble:
+		_active_bubbles = maxi(_active_bubbles - 1, 0)
+		_has_bubble = false
 	if hover_area != null:
 		if hover_area.mouse_entered.is_connected(_on_hover_enter):
 			hover_area.mouse_entered.disconnect(_on_hover_enter)
@@ -385,6 +388,8 @@ func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> 
 
 	schedule_waypoints = [target]
 	_waypoint_index    = 0
+	if _pathfinder == null:
+		return
 	_path = _pathfinder.get_path(current_cell, target)
 	if _path.is_empty() and target != current_cell:
 		var fallback := AstarPathfinder.nearest_walkable(target, _walkable)
@@ -440,7 +445,7 @@ func _maybe_micro_wander() -> void:
 
 
 func _advance_waypoint() -> void:
-	if schedule_waypoints.is_empty():
+	if schedule_waypoints.is_empty() or _pathfinder == null:
 		return
 	_waypoint_index = (_waypoint_index + 1) % schedule_waypoints.size()
 	var target: Vector2i = schedule_waypoints[_waypoint_index]
@@ -1378,8 +1383,8 @@ func flash_click() -> void:
 	if _flash_tween:
 		_flash_tween.kill()
 	_flash_tween = create_tween()
-	_flash_tween.tween_property(sprite, "color", Color.WHITE, 0.08)
-	_flash_tween.tween_property(sprite, "color", _base_color,  0.20)
+	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.08)
+	_flash_tween.tween_property(sprite, "self_modulate", _base_color,  0.20)
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────

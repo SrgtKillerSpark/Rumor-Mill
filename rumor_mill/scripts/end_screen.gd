@@ -323,10 +323,16 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_again.call_deferred("grab_focus")
 
 	# ── Count-up tween (start after entrance completes) ───────────────────────
-	get_tree().create_timer(0.45).timeout.connect(_start_count_up_tween)
+	get_tree().create_timer(0.45).timeout.connect(func() -> void:
+		if is_inside_tree():
+			_start_count_up_tween()
+	)
 
 	# ── SPA-336: Show feedback prompt after a short delay ────────────────────
-	get_tree().create_timer(5.0).timeout.connect(_show_feedback_prompt)
+	get_tree().create_timer(5.0).timeout.connect(func() -> void:
+		if is_inside_tree():
+			_show_feedback_prompt()
+	)
 
 
 ## Guess the fail reason for the fail-text lookup.
