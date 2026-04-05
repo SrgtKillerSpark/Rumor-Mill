@@ -1489,9 +1489,9 @@ func flash_reputation(gained: bool) -> void:
 ## Shows a floating emote icon above the NPC on rumor state change.
 const STATE_EMOTES: Dictionary = {
 	"EVALUATING": "🤔",
-	"SPREADING":  "📢",
-	"ACTING":     "⚡",
-	"REJECTING":  "✋",
+	"SPREAD":     "📢",
+	"ACT":        "⚡",
+	"REJECT":     "✋",
 	"DEFENDING":  "🛡️",
 }
 
