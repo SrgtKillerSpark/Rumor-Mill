@@ -58,6 +58,7 @@ var _auto_secs:     float          = 7.0
 var _timer:         float          = 0.0
 var _suppressed:    bool           = false
 var _hovered:       bool           = false  # cursor is over the banner
+var _active_gate:   String         = ""    ## SPA-758: action gate key for the active hint
 
 
 func _ready() -> void:
@@ -130,6 +131,15 @@ func dismiss_hint(hint_id: String) -> void:
 		_tutorial_sys.mark_seen(hint_id)
 
 
+## SPA-758: Notify the banner that a player action occurred.  If the currently
+## active hint has an action_gate matching the given key, dismiss it.
+func notify_action(action_key: String) -> void:
+	if _active_gate == "" or _active_id == "":
+		return
+	if _active_gate == action_key:
+		_slide_out_dismiss()
+
+
 ## Replay the most recently shown hint (triggered by H hotkey).
 func replay_hint() -> void:
 	if _tutorial_sys == null:
@@ -162,6 +172,8 @@ func _process(delta: float) -> void:
 		return
 	if _hovered:
 		return  # pause timer while cursor is over the banner
+	if _active_gate != "":
+		return  # SPA-758: action-gated hints persist until the gate action is completed
 	_timer -= delta
 	if _timer <= 0.0:
 		_auto_dismiss()
@@ -185,6 +197,7 @@ func _show_next() -> void:
 		_tutorial_sys.set_last_hint(hint_id)
 		_auto_secs  = float(data.get("auto_dismiss_secs", 7))
 		_timer      = _auto_secs
+		_active_gate = str(data.get("action_gate", ""))
 
 		var body_override: String = str(entry["body_override"])
 		_active_body = body_override
@@ -236,6 +249,7 @@ func _finish_dismiss() -> void:
 		_tutorial_sys.mark_seen(_active_id)
 	_active_id   = ""
 	_active_body = ""
+	_active_gate = ""
 	_container.modulate.a = 1.0
 	visible          = false
 	_hovered         = false

@@ -154,6 +154,7 @@ var _selected_evidence_item               = null  # PlayerIntelStore.EvidenceIte
 var _panel_tween:          Tween  = null  # open/close slide animation
 var _evidence_tutorial_fired: bool        = false
 var _panel_seed_shown_fired:  bool        = false  # guard for panel_seed_shown signal
+var _seed_recommended_shown: bool        = false  # SPA-758: guard for one-time "Recommended" badge
 
 # Spread prediction overlay — draw node + hovered seed NPC.
 var _spread_draw_node:  Node2D = null
@@ -654,6 +655,21 @@ func _rebuild_seed_list() -> void:
 		var compatible := _intel_store_ref.get_compatible_evidence(claim_type_upper)
 		_add_evidence_section(compatible)
 
+	# SPA-758: Determine recommended seed target on first Panel 3 open in S1.
+	var recommended_id: String = ""
+	var _is_s1: bool = _world_ref != null and _world_ref.get("active_scenario_id") == "scenario_1"
+	if _is_s1 and not _seed_recommended_shown:
+		var best_soc: float = -1.0
+		for npc in _world_ref.npcs:
+			var nid: String = npc.npc_data.get("id", "")
+			if nid == _selected_subject:
+				continue
+			var soc: float = float(npc.npc_data.get("sociability", 0.5))
+			if soc > best_soc:
+				best_soc = soc
+				recommended_id = nid
+		_seed_recommended_shown = true
+
 	for npc in _world_ref.npcs:
 		var npc_id:   String = npc.npc_data.get("id",      "")
 		# Cannot seed to the subject themselves.
@@ -662,7 +678,7 @@ func _rebuild_seed_list() -> void:
 		var npc_name: String = npc.npc_data.get("name",    "")
 		var faction:  String = npc.npc_data.get("faction", "")
 
-		var entry := _build_seed_entry(npc, npc_id, npc_name, faction)
+		var entry := _build_seed_entry(npc, npc_id, npc_name, faction, npc_id == recommended_id)
 		_seed_list.add_child(entry)
 
 
@@ -670,11 +686,20 @@ func _build_seed_entry(
 		npc_node: Node2D,
 		npc_id:   String,
 		npc_name: String,
-		faction:  String
+		faction:  String,
+		is_recommended: bool = false
 ) -> Control:
 	var outer := PanelContainer.new()
 
-	if npc_id == _selected_seed_npc:
+	if is_recommended:
+		# SPA-758: Gold border highlight for recommended seed target.
+		var rec_style := StyleBoxFlat.new()
+		rec_style.bg_color = Color(0.12, 0.09, 0.04, 0.95)
+		rec_style.border_color = Color(0.957, 0.651, 0.227, 0.85)
+		rec_style.set_border_width_all(2)
+		rec_style.set_corner_radius_all(4)
+		outer.add_theme_stylebox_override("panel", rec_style)
+	elif npc_id == _selected_seed_npc:
 		var style := StyleBoxFlat.new()
 		style.bg_color = C_SELECTED_SEED_BG
 		outer.add_theme_stylebox_override("panel", style)
@@ -703,6 +728,14 @@ func _build_seed_entry(
 	name_lbl.add_theme_constant_override("outline_size", 1)
 	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
 	header.add_child(name_lbl)
+
+	# SPA-758: "Recommended" badge for highest-sociability NPC on first S1 open.
+	if is_recommended:
+		var rec_badge := Label.new()
+		rec_badge.text = "★ Recommended — highest reach"
+		rec_badge.add_theme_font_size_override("font_size", 12)
+		rec_badge.add_theme_color_override("font_color", Color(0.957, 0.651, 0.227, 1.0))
+		header.add_child(rec_badge)
 
 	# Estimates with numeric percentages.
 	var spread_est:  float = _estimate_spread(npc_node)

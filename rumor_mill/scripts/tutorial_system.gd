@@ -206,6 +206,7 @@ const HINT_DATA: Dictionary = {
 			+ "You get [b]3 actions per day[/b] (recon + eavesdrop share this pool)."
 		),
 		"auto_dismiss_secs": 9,
+		"action_gate": "observe",
 	},
 	"hint_target_npc": {
 		"title": "Step 2: Find Your Target",
@@ -215,6 +216,7 @@ const HINT_DATA: Dictionary = {
 			+ "Strong bonds = fast rumour spread."
 		),
 		"auto_dismiss_secs": 9,
+		"action_gate": "eavesdrop",
 	},
 	"hint_hover_npc": {
 		"title": "Inspect NPCs",
@@ -259,6 +261,7 @@ const HINT_DATA: Dictionary = {
 			+ "  3. Pick a [b]seed target[/b] — whisper it to a well-connected NPC"
 		),
 		"auto_dismiss_secs": 10,
+		"action_gate": "craft_rumor",
 	},
 	"hint_seed_target": {
 		"title": "Pick a Well-Connected Seed Target",

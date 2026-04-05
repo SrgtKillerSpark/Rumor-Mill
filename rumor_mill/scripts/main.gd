@@ -53,6 +53,11 @@ var _event_choice_modal: CanvasLayer = null
 # ── SPA-589: Visual affordances for new players ──────────────────────────────
 var _visual_affordances: CanvasLayer = null
 
+# ── SPA-758: Onboarding waypoint marker (3-step guided sequence) ─────────────
+var _waypoint_node:  Node2D = null   # world-space marker (pulsing diamond + label)
+var _waypoint_tween: Tween  = null
+var _waypoint_step:  int    = 0      # 0=inactive, 1=market, 2=eavesdrop pair, 3=R key
+
 # ── SPA-709: Milestone reward notification popup ──────────────────────────────
 var _milestone_notifier: CanvasLayer = null
 
@@ -458,6 +463,154 @@ func _init_s1_onboarding_flow() -> void:
 	# 3. Persistent gated banner — stays until first Recon Action.
 	if _tutorial_banner != null:
 		_tutorial_banner.queue_hint("hint_s1_investigate_gate")
+
+	# 4. SPA-758: Waypoint marker on Market — step 1 of 3-step guided sequence.
+	_show_waypoint_step1_market(market_world_pos)
+
+
+# ── SPA-758: Onboarding waypoint marker system ──────────────────────────────
+
+## Step 1: Pulsing marker on Market building — "Start here — Observe who's inside"
+func _show_waypoint_step1_market(market_pos: Vector2) -> void:
+	_clear_waypoint()
+	_waypoint_step = 1
+	_waypoint_node = _create_waypoint_marker(
+		market_pos + Vector2(0.0, -48.0),
+		"▼  Start here — Observe who's inside"
+	)
+	if world != null:
+		world.add_child(_waypoint_node)
+
+
+## Step 2: Move marker to two NPCs in conversation — "Eavesdrop on their relationship"
+func _show_waypoint_step2_eavesdrop() -> void:
+	_clear_waypoint()
+	_waypoint_step = 2
+	# Find two NPCs that are close enough for eavesdrop (within 3 tiles).
+	var best_pair_pos: Vector2 = Vector2.ZERO
+	var found: bool = false
+	if world != null:
+		for i in range(world.npcs.size()):
+			if found:
+				break
+			for j in range(i + 1, world.npcs.size()):
+				var npc_a: Node2D = world.npcs[i]
+				var npc_b: Node2D = world.npcs[j]
+				var dist: int = abs(npc_a.current_cell.x - npc_b.current_cell.x) \
+				              + abs(npc_a.current_cell.y - npc_b.current_cell.y)
+				if dist <= 3:
+					best_pair_pos = (npc_a.position + npc_b.position) * 0.5
+					found = true
+					break
+	if not found:
+		# Fallback: use position of first NPC.
+		if world != null and world.npcs.size() > 0:
+			best_pair_pos = world.npcs[0].position
+	_waypoint_node = _create_waypoint_marker(
+		best_pair_pos + Vector2(0.0, -56.0),
+		"▼  Eavesdrop on their relationship"
+	)
+	if world != null:
+		world.add_child(_waypoint_node)
+
+
+## Step 3: Flash R key prompt (screen-space, not world-space).
+func _show_waypoint_step3_craft() -> void:
+	_clear_waypoint()
+	_waypoint_step = 3
+	# Create a screen-space prompt via a CanvasLayer label.
+	var cl := CanvasLayer.new()
+	cl.name = "WaypointCraftPrompt"
+	cl.layer = 18
+	add_child(cl)
+	var lbl := Label.new()
+	lbl.text = "Press  R  to craft your first rumor"
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 18)
+	lbl.add_theme_color_override("font_color", Color(0.957, 0.651, 0.227, 1.0))
+	lbl.add_theme_constant_override("outline_size", 3)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	lbl.anchor_left   = 0.5
+	lbl.anchor_right  = 0.5
+	lbl.anchor_top    = 0.7
+	lbl.anchor_bottom = 0.7
+	lbl.offset_left   = -200
+	lbl.offset_right  = 200
+	lbl.offset_top    = -20
+	lbl.offset_bottom = 20
+	cl.add_child(lbl)
+	# Pulse the label.
+	_waypoint_tween = cl.create_tween().set_loops()
+	_waypoint_tween.tween_property(lbl, "modulate:a", 0.3, 0.8) \
+		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_waypoint_tween.tween_property(lbl, "modulate:a", 1.0, 0.8) \
+		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	# Auto-remove after 30 seconds.
+	get_tree().create_timer(30.0).timeout.connect(func() -> void:
+		if _waypoint_step == 3:
+			_clear_waypoint()
+			_waypoint_step = 0
+	)
+
+
+## Advance waypoint on action.  Called from _on_recon_action_for_tutorial.
+func _advance_waypoint(action: String) -> void:
+	if _waypoint_step == 1 and action == "observe":
+		_show_waypoint_step2_eavesdrop()
+	elif _waypoint_step == 2 and action == "eavesdrop":
+		_show_waypoint_step3_craft()
+
+
+## Clear the current waypoint marker.
+func _clear_waypoint() -> void:
+	if _waypoint_tween != null and _waypoint_tween.is_valid():
+		_waypoint_tween.kill()
+	_waypoint_tween = null
+	if _waypoint_node != null and is_instance_valid(_waypoint_node):
+		_waypoint_node.queue_free()
+		_waypoint_node = null
+	# Step 3 uses a CanvasLayer child instead of _waypoint_node.
+	var craft_prompt := get_node_or_null("WaypointCraftPrompt")
+	if craft_prompt != null:
+		craft_prompt.queue_free()
+
+
+## Build a world-space pulsing waypoint marker (diamond + label).
+func _create_waypoint_marker(pos: Vector2, text: String) -> Node2D:
+	var root := Node2D.new()
+	root.name = "WaypointMarker"
+	root.position = pos
+	root.z_index = 12
+
+	# Diamond shape.
+	var diamond := Polygon2D.new()
+	diamond.polygon = PackedVector2Array([
+		Vector2(0.0,  -10.0),
+		Vector2(7.0,   0.0),
+		Vector2(0.0,   10.0),
+		Vector2(-7.0,  0.0),
+	])
+	diamond.color = Color(0.957, 0.651, 0.227, 0.90)
+	root.add_child(diamond)
+
+	# Text label offset to the right.
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", Color(0.96, 0.84, 0.40, 1.0))
+	lbl.add_theme_constant_override("outline_size", 2)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	lbl.position = Vector2(12, -10)
+	root.add_child(lbl)
+
+	# Pulse tween.
+	_waypoint_tween = root.create_tween().set_loops()
+	_waypoint_tween.tween_property(root, "modulate:a", 0.35, 1.0) \
+		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_waypoint_tween.tween_property(root, "modulate:a", 1.0, 1.0) \
+		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
+	return root
 
 
 ## SPA-627: Show the briefing card mid-game (read-only). Blocked during active dialogs.
@@ -1183,6 +1336,16 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 		if _tutorial_banner != null and _tutorial_banner.has_method("dismiss_hint"):
 			_tutorial_banner.dismiss_hint("hint_s1_investigate_gate")
 
+	# SPA-758: Notify banner of action for action-gated hints + advance waypoint.
+	if message.begins_with("Observed"):
+		if _tutorial_banner != null and _tutorial_banner.has_method("notify_action"):
+			_tutorial_banner.notify_action("observe")
+		_advance_waypoint("observe")
+	elif message.begins_with("Eavesdropped"):
+		if _tutorial_banner != null and _tutorial_banner.has_method("notify_action"):
+			_tutorial_banner.notify_action("eavesdrop")
+		_advance_waypoint("eavesdrop")
+
 	# S1 banner: open observe gate (HINT-04 unlocks) and eavesdrop gate (HINT-05).
 	if _tutorial_banner != null:
 		if message.begins_with("Observed") and not _banner_observe_gate:
@@ -1271,6 +1434,12 @@ func _on_s1_rumor_seeded(
 		_claim_id: String,
 		_seed_target_name: String
 ) -> void:
+	# SPA-758: Dismiss action-gated craft_rumor banner and clear waypoint step 3.
+	if _tutorial_banner != null and _tutorial_banner.has_method("notify_action"):
+		_tutorial_banner.notify_action("craft_rumor")
+	if _waypoint_step == 3:
+		_clear_waypoint()
+		_waypoint_step = 0
 	# HINT-08: 5 s after first seed.
 	if _banner_seed_fired or _tutorial_banner == null:
 		return
