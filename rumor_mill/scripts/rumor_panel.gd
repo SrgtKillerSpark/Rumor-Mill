@@ -688,6 +688,7 @@ func _try_confirm_seed() -> void:
 
 	if rumor_id.is_empty():
 		_flash_status("Failed to seed rumor. Check subject / claim / target.")
+		AudioManager.on_rumor_fail()
 		return
 
 	# Consume evidence now that seeding succeeded.

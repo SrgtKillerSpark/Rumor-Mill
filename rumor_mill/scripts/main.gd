@@ -789,6 +789,9 @@ func _init_audio() -> void:
 	if sm != null:
 		sm.scenario_resolved.connect(_on_scenario_resolved_audio)
 
+	# Reputation collapse SFX: play reputation_down when an NPC goes socially dead.
+	world.socially_dead_triggered.connect(AudioManager.on_socially_dead)
+
 
 
 # ── SPA-244: Local analytics logger ──────────────────────────────────────────

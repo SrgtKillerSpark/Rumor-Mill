@@ -18,9 +18,11 @@ extends Node
 ## Called by main.gd:
 ##   AudioManager.connect_to_day_night(day_night_node)
 ##   AudioManager.on_rumor_seeded(...)
+##   AudioManager.on_rumor_fail()
 ##   AudioManager.on_recon_action(message, success)
 ##   AudioManager.on_win()
 ##   AudioManager.on_fail()
+##   AudioManager.on_socially_dead(npc_id, npc_name, tick)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -57,6 +59,7 @@ const SFX_FILES: Dictionary = {
 	"recon_observe":      "sfx/recon_observe.wav",
 	"recon_eavesdrop":    "sfx/recon_eavesdrop.wav",
 	"rumor_spread":       "sfx/rumor_spread.wav",
+	"rumor_fail":         "sfx/rumor_fail.wav",
 	"journal_open":       "sfx/journal_open.wav",
 	"journal_close":      "sfx/journal_close.wav",
 	"rumor_panel_open":   "sfx/rumor_panel_open.wav",
@@ -66,6 +69,8 @@ const SFX_FILES: Dictionary = {
 	"fail":               "sfx/fail.wav",
 	"ui_click":           "sfx/ui_click.wav",
 	"new_day":            "sfx/new_day.wav",
+	"reputation_up":      "sfx/reputation_up.wav",
+	"reputation_down":    "sfx/reputation_down.wav",
 }
 
 # ── State ──────────────────────────────────────────────────────────────────────
@@ -315,3 +320,13 @@ func _on_game_tick(tick: int) -> void:
 
 func _on_day_changed(_day: int) -> void:
 	play_sfx("new_day")
+
+
+## Called when the player's rumor seed attempt is rejected (no tokens, bad target, etc.).
+func on_rumor_fail() -> void:
+	play_sfx("rumor_fail")
+
+
+## Called when an NPC reaches the socially-dead threshold (reputation collapse).
+func on_socially_dead(_npc_id: String, _npc_name: String, _tick: int) -> void:
+	play_sfx("reputation_down")
