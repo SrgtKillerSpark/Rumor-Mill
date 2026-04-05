@@ -20,6 +20,12 @@ texture_filter = 0
 rendering_quadrant_size = 16
 y_sort_enabled = true
 
+[node name="PropsLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("4_tileset")
+texture_filter = 0
+rendering_quadrant_size = 16
+y_sort_enabled = true
+
 [node name="NPCContainer" type="Node2D" parent="."]
 y_sort_enabled = true
 

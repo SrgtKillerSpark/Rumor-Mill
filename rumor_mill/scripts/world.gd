@@ -21,6 +21,7 @@ const SRC_GROUND     := 0
 const SRC_ROAD_DIRT  := 1
 const SRC_ROAD_STONE := 2
 const SRC_BUILDING   := 3
+const SRC_PROPS      := 4
 
 const ATLAS_VOID        := Vector2i(0, 0)
 const ATLAS_GRASS       := Vector2i(1, 0)
@@ -38,11 +39,21 @@ const ATLAS_MILL        := Vector2i(6, 0)
 const ATLAS_STORAGE     := Vector2i(7, 0)
 const ATLAS_GUARDPOST   := Vector2i(8, 0)
 const ATLAS_TOWN_HALL   := Vector2i(9, 0)
+# Prop atlas coords — matches tiles_props.png tile order (SPA-434)
+const ATLAS_CRATE       := Vector2i(0, 0)
+const ATLAS_BARREL      := Vector2i(1, 0)
+const ATLAS_SIGN        := Vector2i(2, 0)
+const ATLAS_FENCE       := Vector2i(3, 0)
+const ATLAS_CART        := Vector2i(4, 0)
+const ATLAS_HAY_BALE    := Vector2i(5, 0)
+const ATLAS_FLOWER_POT  := Vector2i(6, 0)
+const ATLAS_WELL_BUCKET := Vector2i(7, 0)
 
 @export var npc_scene: PackedScene
 
 @onready var terrain_layer:  TileMapLayer = $TerrainLayer
 @onready var building_layer: TileMapLayer = $BuildingLayer
+@onready var props_layer:    TileMapLayer = $PropsLayer
 @onready var npc_container:  Node2D       = $NPCContainer
 @onready var day_night:      Node         = $DayNightCycle
 
@@ -106,6 +117,7 @@ func _ready() -> void:
 	_load_grid()
 	_paint_terrain()
 	_place_buildings()
+	_place_props()
 	_collect_walkable_cells()
 	_extract_building_entries()
 	_build_gathering_points()
@@ -205,6 +217,71 @@ func _place_buildings() -> void:
 		label.position = Vector2(wx - 40.0, wy - 72.0)
 		label.z_index = -1   # render behind NPC sprites to prevent label overlap
 		add_child(label)
+
+
+# Prop placement rules per building type — which props appear nearby (SPA-434).
+const BUILDING_PROPS := {
+	"tavern":     [ATLAS_BARREL, ATLAS_BARREL, ATLAS_CRATE, ATLAS_SIGN],
+	"market":     [ATLAS_CRATE, ATLAS_CRATE, ATLAS_BARREL, ATLAS_CART, ATLAS_SIGN],
+	"manor":      [ATLAS_FLOWER_POT, ATLAS_FLOWER_POT, ATLAS_FENCE],
+	"chapel":     [ATLAS_FLOWER_POT, ATLAS_SIGN],
+	"blacksmith": [ATLAS_BARREL, ATLAS_CRATE, ATLAS_CART],
+	"mill":       [ATLAS_HAY_BALE, ATLAS_HAY_BALE, ATLAS_BARREL, ATLAS_CART],
+	"storage":    [ATLAS_CRATE, ATLAS_CRATE, ATLAS_BARREL, ATLAS_BARREL],
+	"guardpost":  [ATLAS_BARREL, ATLAS_FENCE, ATLAS_CRATE],
+	"town_hall":  [ATLAS_FLOWER_POT, ATLAS_SIGN, ATLAS_FENCE],
+	"well":       [ATLAS_WELL_BUCKET],
+}
+
+
+func _place_props() -> void:
+	if grid_data.is_empty():
+		return
+	var rows: Array = grid_data["grid"]
+	var occupied: Dictionary = {}  # track cells already holding a prop
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 434  # deterministic layout
+
+	for b in buildings:
+		var bname: String = b["name"]
+		if not BUILDING_PROPS.has(bname):
+			continue
+		var bx: int = b["x"]
+		var by: int = b["y"]
+		var bw: int = b.get("width", 1)
+		var bh: int = b.get("height", 1)
+
+		# Collect candidate cells just outside the building footprint.
+		var candidates: Array[Vector2i] = []
+		for dx in range(-1, bw + 1):
+			for dy in range(-1, bh + 1):
+				# Skip interior cells
+				if dx >= 0 and dx < bw and dy >= 0 and dy < bh:
+					continue
+				var cx: int = bx + dx
+				var cy: int = by + dy
+				if cx < 0 or cx >= GRID_W or cy < 0 or cy >= GRID_H:
+					continue
+				var cell_type: int = rows[cy][cx]
+				# Only place on walkable ground
+				if cell_type in [1, 2, 3]:
+					candidates.append(Vector2i(cx, cy))
+
+		# Place a subset of the building's prop palette.
+		var prop_list: Array = BUILDING_PROPS[bname]
+		var placed := 0
+		for prop_atlas in prop_list:
+			if candidates.is_empty():
+				break
+			var idx: int = rng.randi_range(0, candidates.size() - 1)
+			var cell: Vector2i = candidates[idx]
+			if occupied.has(cell):
+				candidates.remove_at(idx)
+				continue
+			props_layer.set_cell(cell, SRC_PROPS, prop_atlas)
+			occupied[cell] = true
+			candidates.remove_at(idx)
+			placed += 1
 
 
 func _collect_walkable_cells() -> void:
