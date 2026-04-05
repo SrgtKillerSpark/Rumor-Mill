@@ -103,6 +103,7 @@ static func save_game(
 		"socially_dead_ids":    world._socially_dead_ids.keys(),
 		"timeline":             timeline,
 		"tutorial_progress":    _serialize_tutorial(tutorial_sys),
+		"milestone_fired":      world.milestone_tracker._fired.duplicate() if world.milestone_tracker != null else {},
 	}
 
 	var path := save_path(world.active_scenario_id, slot)
@@ -325,9 +326,15 @@ static func _serialize_scenario_manager(sm: ScenarioManager) -> Dictionary:
 		"scenario_2_state":        int(sm.scenario_2_state),
 		"scenario_3_state":        int(sm.scenario_3_state),
 		"scenario_4_state":        int(sm.scenario_4_state),
+		"scenario_5_state":        int(sm.scenario_5_state),
+		"scenario_6_state":        int(sm.scenario_6_state),
 		"calder_score_start":      sm.calder_score_start,
 		"calder_score_final":      sm.calder_score_final,
 		"deadline_warnings_fired": sm._deadline_warnings_fired.duplicate(),
+		"s5_endorsement_fired":    sm._s5_endorsement_fired,
+		"s5_endorsed_candidate":   sm.s5_endorsed_candidate,
+		"s2_maren_first_reject_tick": sm._s2_maren_first_reject_tick,
+		"s2_maren_carrier_name":  sm.s2_maren_carrier_name,
 	}
 
 
@@ -528,6 +535,8 @@ static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> voi
 	sm.scenario_2_state   = int(d.get("scenario_2_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.scenario_3_state   = int(d.get("scenario_3_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.scenario_4_state   = int(d.get("scenario_4_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
+	sm.scenario_5_state   = int(d.get("scenario_5_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
+	sm.scenario_6_state   = int(d.get("scenario_6_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.calder_score_start        = int(d.get("calder_score_start", -1))
 	sm.calder_score_final        = int(d.get("calder_score_final", -1))
 	var _raw_fired: Dictionary = d.get("deadline_warnings_fired", {})
@@ -535,6 +544,10 @@ static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> voi
 	for _k in _raw_fired:
 		_fired[int(float(_k))] = _raw_fired[_k]
 	sm._deadline_warnings_fired = _fired
+	sm._s5_endorsement_fired       = bool(d.get("s5_endorsement_fired", false))
+	sm.s5_endorsed_candidate       = str(d.get("s5_endorsed_candidate", ""))
+	sm._s2_maren_first_reject_tick = int(d.get("s2_maren_first_reject_tick", -1))
+	sm.s2_maren_carrier_name       = str(d.get("s2_maren_carrier_name", ""))
 
 
 static func _restore_rival_agent(ra: RivalAgent, d: Dictionary) -> void:
