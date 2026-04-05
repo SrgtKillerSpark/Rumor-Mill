@@ -124,6 +124,9 @@ var illness_escalation_agent: IllnessEscalationAgent = null
 ## S4 faction shift agent — only active in Scenario 4.
 var s4_faction_shift_agent: S4FactionShiftAgent = null
 
+## Guild defense agent — only active in Scenario 6.
+var guild_defense_agent: GuildDefenseAgent = null
+
 ## Mid-game narrative event agent — data-driven branching events (all scenarios).
 var mid_game_event_agent: MidGameEventAgent = null
 
@@ -592,6 +595,8 @@ func _on_day_changed(_day: int) -> void:
 		illness_escalation_agent.tick(_day, self)
 	if s4_faction_shift_agent != null:
 		s4_faction_shift_agent.tick(_day, self)
+	if guild_defense_agent != null:
+		guild_defense_agent.tick(_day, self)
 	if mid_game_event_agent != null:
 		mid_game_event_agent.tick(_day, self)
 	if faction_event_system != null:
@@ -704,6 +709,49 @@ func _apply_active_scenario() -> void:
 	if scenario_manager != null and _scen_diff_mods.has("winBelieversOverride"):
 		scenario_manager.s2_win_illness_min = int(_scen_diff_mods["winBelieversOverride"])
 
+	# 7c. Scenario 5 difficulty overrides (SPA-676).
+	if scenario_manager != null and active_scenario_id == "scenario_5":
+		if _scen_diff_mods.has("winAldricMin"):
+			scenario_manager.S5_WIN_ALDRIC_MIN = int(_scen_diff_mods["winAldricMin"])
+		if _scen_diff_mods.has("winRivalsMax"):
+			scenario_manager.S5_WIN_RIVALS_MAX = int(_scen_diff_mods["winRivalsMax"])
+		if _scen_diff_mods.has("failAldricBelow"):
+			scenario_manager.S5_FAIL_ALDRIC_BELOW = int(_scen_diff_mods["failAldricBelow"])
+		if _scen_diff_mods.has("endorsementBonusOverride"):
+			scenario_manager.S5_ENDORSEMENT_BONUS = int(_scen_diff_mods["endorsementBonusOverride"])
+		if _scen_diff_mods.has("daysAllowedOverride"):
+			scenario_manager.override_days_allowed(int(_scen_diff_mods["daysAllowedOverride"]))
+
+	# 7d. Scenario 6 difficulty overrides (SPA-676).
+	if scenario_manager != null and active_scenario_id == "scenario_6":
+		if _scen_diff_mods.has("winAldricMax"):
+			scenario_manager.S6_WIN_ALDRIC_MAX = int(_scen_diff_mods["winAldricMax"])
+		if _scen_diff_mods.has("winMartaMin"):
+			scenario_manager.S6_WIN_MARTA_MIN = int(_scen_diff_mods["winMartaMin"])
+		if _scen_diff_mods.has("failMartaBelow"):
+			scenario_manager.S6_FAIL_MARTA_BELOW = int(_scen_diff_mods["failMartaBelow"])
+		if _scen_diff_mods.has("exposedHeatOverride"):
+			scenario_manager.S6_EXPOSED_HEAT = float(_scen_diff_mods["exposedHeatOverride"])
+		if _scen_diff_mods.has("daysAllowedOverride"):
+			scenario_manager.override_days_allowed(int(_scen_diff_mods["daysAllowedOverride"]))
+		# Apply hard-mode starting reputation overrides (e.g. Aldric 60, Marta 48).
+		if _scen_diff_mods.has("startingReputationOverrides"):
+			var s6_rep_overrides: Dictionary = _scen_diff_mods["startingReputationOverrides"]
+			for npc_id in s6_rep_overrides:
+				reputation_system.set_base_override(npc_id, int(s6_rep_overrides[npc_id]))
+		# Apply hard-mode personality overrides.
+		if _scen_diff_mods.has("personalityOverrides"):
+			var s6_pers: Array = _scen_diff_mods["personalityOverrides"]
+			for entry in s6_pers:
+				var npc_id: String = entry.get("npcId", "")
+				for npc in npcs:
+					if npc.npc_data.get("id", "") == npc_id:
+						if entry.has("loyalty"):
+							npc.npc_data["loyalty"] = float(entry["loyalty"])
+						if entry.has("credulity"):
+							npc.npc_data["credulity"] = float(entry["credulity"])
+						break
+
 	# 8. Rival agent — only active in Scenario 3.
 	rival_agent = RivalAgent.new()
 	rival_agent.cooldown_offset = int(diff_mods.get("rival_cooldown_offset", 0))
@@ -727,6 +775,23 @@ func _apply_active_scenario() -> void:
 	s4_faction_shift_agent.inquisitor_ref = inquisitor_agent
 	if active_scenario_id == "scenario_4":
 		s4_faction_shift_agent.activate()
+
+	# 11b. Guild defense agent — only active in Scenario 6 (SPA-676).
+	guild_defense_agent = GuildDefenseAgent.new()
+	if active_scenario_id == "scenario_6":
+		var gd_config: Dictionary = scenario_data.get("guildDefenseConfig", {})
+		if not gd_config.is_empty():
+			var defender_ids: Array = gd_config.get("defenderNpcIds", [])
+			if not defender_ids.is_empty():
+				guild_defense_agent.defender_npc_ids.assign(defender_ids)
+			guild_defense_agent.defense_target_id = gd_config.get("defenseTarget", "aldric_vane")
+			guild_defense_agent.praise_intensity = int(gd_config.get("praiseIntensity", 2))
+			guild_defense_agent.cooldown_days = int(gd_config.get("cooldownDays", 3))
+			guild_defense_agent.start_day = int(gd_config.get("startDay", 5))
+		# Apply difficulty cooldown override.
+		if _scen_diff_mods.has("guildDefenseCooldownOverride"):
+			guild_defense_agent.cooldown_days = int(_scen_diff_mods["guildDefenseCooldownOverride"])
+		guild_defense_agent.activate()
 
 	# 12. Milestone tracker — created here; callback wired from main.gd after recon_hud is ready.
 	milestone_tracker = MilestoneTracker.new()

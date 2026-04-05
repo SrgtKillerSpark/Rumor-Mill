@@ -50,7 +50,7 @@ var _starting_text:    String = ""
 var _victory_text:     String = ""
 var _fail_texts:       Dictionary = {}
 var _days_allowed:     int = 30
-var _active_scenario:  int = 0  # 1, 2, 3, or 4 — set by load_scenario_data
+var _active_scenario:  int = 0  # 1–6 — set by load_scenario_data
 var _objective_card:   Dictionary = {}
 var _milestone_toasts: Array = []
 
@@ -272,21 +272,23 @@ const S4_FAIL_REP_BELOW    := 40
 # Scenario 5 thresholds (The Election — SPA-605).
 # Three-way race: Aldric must reach 65+ and be highest; both rivals must be below 45.
 # Instant fail if Aldric drops below 30. Day 15 endorsement by Prior Aldous (+8 to leader).
+# Vars (not const) so difficulty modifiers from scenarios.json can override them.
 const S5_CANDIDATE_IDS: Array[String] = ["edric_fenn", "aldric_vane", "tomas_reeve"]
-const S5_WIN_ALDRIC_MIN    := 65
-const S5_WIN_RIVALS_MAX    := 45
-const S5_FAIL_ALDRIC_BELOW := 30
-const S5_ENDORSEMENT_DAY   := 15
-const S5_ENDORSEMENT_BONUS := 8
+var S5_WIN_ALDRIC_MIN:    int = 65
+var S5_WIN_RIVALS_MAX:    int = 45
+var S5_FAIL_ALDRIC_BELOW: int = 30
+const S5_ENDORSEMENT_DAY:       int = 15
+var S5_ENDORSEMENT_BONUS: int = 8
 
 # Scenario 6 thresholds (The Merchant's Debt — SPA-605).
 # Expose Aldric (rep <= 30) while protecting Marta (rep >= 60).
 # Lower heat ceiling (60) — guards are on Aldric's payroll.
 # Instant fail if Marta drops below 30.
-const S6_WIN_ALDRIC_MAX    := 30
-const S6_WIN_MARTA_MIN     := 60
-const S6_FAIL_MARTA_BELOW  := 30
-const S6_EXPOSED_HEAT      := 60.0
+# Vars (not const) so difficulty modifiers from scenarios.json can override them.
+var S6_WIN_ALDRIC_MAX:   int   = 30
+var S6_WIN_MARTA_MIN:    int   = 60
+var S6_FAIL_MARTA_BELOW: int   = 30
+var S6_EXPOSED_HEAT:     float = 60.0
 
 enum ScenarioState { ACTIVE, WON, FAILED }
 
