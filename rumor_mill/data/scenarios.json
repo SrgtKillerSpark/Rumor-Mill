@@ -232,7 +232,7 @@
     ],
     "personalityOverrides": [
       { "npcId": "aldous_prior", "loyalty": 0.95, "credulity": 0.10 },
-      { "npcId": "finn_monk",    "loyalty": 0.30, "credulity": 0.75 },
+      { "npcId": "finn_monk",    "loyalty": 0.45, "credulity": 0.60 },
       { "npcId": "vera_midwife", "loyalty": 0.65, "credulity": 0.70 },
       { "npcId": "sybil_oats",   "credulity": 0.60 },
       { "npcId": "nell_picker",  "credulity": 0.85 },
@@ -241,7 +241,7 @@
     "startingReputations": {
       "aldous_prior": 60,
       "vera_midwife": 60,
-      "finn_monk": 62
+      "finn_monk": 65
     },
     "targetShiftExcluded": ["aldous_prior", "vera_midwife", "finn_monk"],
     "protectedNpcIds": ["aldous_prior", "vera_midwife", "finn_monk"],
@@ -249,7 +249,7 @@
       "mission": "Defend three accused townsfolk from the Inquisitor's slander.",
       "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk's reputations above 45.",
       "timeLimit": "You have 20 days.",
-      "danger": "Finn is the most vulnerable — credulous and easily swayed, he absorbs slander quickly. The Inquisitor is a relentless opponent who actively spreads accusations on a cooldown that accelerates over time.",
+      "danger": "Finn is the most vulnerable — impressionable and wavering in loyalty, he absorbs slander more readily than the others. The Inquisitor is a relentless opponent who actively spreads accusations on a cooldown that accelerates over time.",
       "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera.",
       "firstAction": "Check the Scenario HUD to see who is closest to 45. Press R, choose the most threatened NPC as the subject, select Praise as the claim, and whisper it to their strongest ally."
     }
