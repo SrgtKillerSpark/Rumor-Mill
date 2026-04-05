@@ -65,6 +65,17 @@ func set_base_override(npc_id: String, base_score: int) -> void:
 	_base_overrides[npc_id] = clampi(base_score, 0, 100)
 
 
+## Apply a delta to an NPC's base score (e.g. +5 or -3 from mid-game events).
+## Reads the current base (override or default 50) and adjusts it.
+func apply_score_delta(npc_id: String, delta: int) -> void:
+	var current: int = _base_overrides.get(npc_id, 50)
+	# If a snapshot exists, use its score as the more accurate current value.
+	var snap: ReputationSnapshot = _cache.get(npc_id, null) as ReputationSnapshot
+	if snap != null:
+		current = snap.score
+	_base_overrides[npc_id] = clampi(current + delta, 0, 100)
+
+
 ## Remove all base score overrides (e.g. when loading a new scenario).
 func clear_base_overrides() -> void:
 	_base_overrides.clear()

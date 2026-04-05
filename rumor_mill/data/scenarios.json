@@ -59,7 +59,67 @@
       "danger": "If you are caught eavesdropping, the town will know your face.",
       "strategyHint": "Edric is too proud to believe rumors about himself. Target the people around him — damage faction sentiment among merchants and nobles to erode his support.",
       "firstAction": "Right-click a building (try the Market) to Observe who is inside. Then right-click two NPCs in conversation to Eavesdrop on their relationship. Use what you learn to craft your first Scandal rumor (press R)."
-    }
+    },
+    "midGameEvents": [
+      {
+        "id": "s1_the_ledger",
+        "name": "The Ledger",
+        "dayWindowStart": 8,
+        "dayWindowEnd": 12,
+        "probability": 0.65,
+        "description": "A merchant has found discrepancies in Edric Fenn's tax ledger — sums that do not add up, contracts that were never honoured. The evidence is in your hands. What do you do with it?",
+        "choices": [
+          {
+            "label": "Circulate the ledger through the market",
+            "outcomeText": "The ledger passes from hand to hand. By evening, half the market quarter is whispering about Edric's accounts. But the Guard Captain is asking questions about where the document came from.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -5 }],
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 15.0 }]
+            }
+          },
+          {
+            "label": "Use it as leverage — keep it quiet for now",
+            "outcomeText": "You pocket the ledger. Knowledge is currency, and this particular coin buys you room to manoeuvre. Edric's allies sense something has shifted, but they cannot name what.",
+            "effects": {
+              "bonusReconActions": 2,
+              "bonusReconDays": 3,
+              "personalityChanges": [{ "npcId": "edric_fenn", "trait": "loyalty", "delta": -0.15 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s1_the_feast",
+        "name": "The Feast Invitation",
+        "dayWindowStart": 18,
+        "dayWindowEnd": 22,
+        "probability": 0.60,
+        "description": "Lord Edric has announced a public feast at the Manor — roast boar, Rhenish wine, and speeches about his nine years of service. It is a transparent attempt to shore up his reputation. How do you respond?",
+        "choices": [
+          {
+            "label": "Infiltrate the feast and gather intelligence",
+            "outcomeText": "You slip in among the servants. Over three courses you learn who truly supports Edric and who merely tolerates him. You leave with fresh intelligence and extra opportunities to act — but the Guard Captain noticed an unfamiliar face.",
+            "effects": {
+              "bonusReconActions": 3,
+              "bonusReconDays": 2,
+              "heatChanges": [{ "npcId": "bram_guard", "delta": 10.0 }]
+            }
+          },
+          {
+            "label": "Spread word the feast is a bribe",
+            "outcomeText": "By the time the first course is served, the story has already changed. 'A feast for the town,' they say, 'or a feast to buy silence?' The nobles shift uncomfortably in their seats.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -3 }],
+              "credulityChanges": [
+                { "npcId": "isolde_fenn", "delta": 0.10 },
+                { "npcId": "calder_fenn", "delta": 0.10 },
+                { "npcId": "annit_scribe", "delta": 0.10 }
+              ]
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "scenarioId": "scenario_2",
@@ -122,7 +182,58 @@
       "danger": "Sister Maren is skeptical and watchful. If Maren rejects ANY illness rumor about Alys, you instantly fail.",
       "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle.",
       "firstAction": "Observe the Market or Apothecary to find NPCs connected to Alys. Then press R, pick Alys as the subject, choose Illness as the claim, and whisper it to someone credulous like Sybil Oats."
-    }
+    },
+    "midGameEvents": [
+      {
+        "id": "s2_strangers_cough",
+        "name": "The Stranger's Cough",
+        "dayWindowStart": 5,
+        "dayWindowEnd": 8,
+        "probability": 0.70,
+        "description": "A traveler has arrived at the gate, visibly ill — coughing, pale, leaning on a stick. The town is already nervous. You could use this.",
+        "choices": [
+          {
+            "label": "Link the stranger's illness to Alys",
+            "outcomeText": "You mention, quietly, that the stranger visited Alys's stall yesterday. By noon, two more townspeople have decided they believe the illness rumor. Fear is a fast teacher.",
+            "effects": {
+              "instantBelievers": { "subjectNpcId": "alys_herbwife", "count": 2, "pool": "credulous_market" }
+            }
+          },
+          {
+            "label": "Spread quarantine rumors to distract Maren",
+            "outcomeText": "Sister Maren rushes to the gate to tend to the stranger. While she is occupied, the illness story about Alys spreads unchallenged through the market quarter.",
+            "effects": {
+              "credulityChanges": [{ "npcId": "maren_nun", "delta": -0.08 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s2_alys_fights_back",
+        "name": "Alys Fights Back",
+        "dayWindowStart": 13,
+        "dayWindowEnd": 16,
+        "probability": 0.60,
+        "description": "Alys the Herb-Wife has had enough. She stands in the Market Square and declares her innocence to anyone who will listen. Her voice is steady, but her hands are shaking. The crowd watches.",
+        "choices": [
+          {
+            "label": "Twist her words — she protests too much",
+            "outcomeText": "You lean toward the nearest merchant and murmur: 'If she were truly innocent, would she need to say so?' The seed lands. But Alys's speech has reached one believer, who begins to doubt.",
+            "effects": {
+              "personalityChanges": [{ "npcId": "alys_herbwife", "trait": "temperament", "delta": 0.20 }],
+              "recoverBelievers": { "subjectNpcId": "alys_herbwife", "count": 1 }
+            }
+          },
+          {
+            "label": "Stage a distraction — pull the crowd away",
+            "outcomeText": "A dropped crate, a shout from the alley, a child's cry. The crowd turns away before Alys can finish. Her words dissolve into the market noise, unheard.",
+            "effects": {
+              "illnessEscalationCooldownDelta": -1
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "scenarioId": "scenario_3",
@@ -191,7 +302,60 @@
       "danger": "If Calder's reputation drops below 35, instant fail. A rival agent is actively working against you.",
       "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter. Tomas has weak loyalties — rumors stick.",
       "firstAction": "Observe a building to find Calder's allies. Press R to craft a Praise rumor about Calder and whisper it to a well-connected NPC. Then craft a Scandal about Tomas and seed it through the merchants."
-    }
+    },
+    "midGameEvents": [
+      {
+        "id": "s3_debt_letter",
+        "name": "The Debt Letter",
+        "dayWindowStart": 6,
+        "dayWindowEnd": 9,
+        "probability": 0.70,
+        "description": "A crumpled letter has surfaced at the Tavern — addressed to a moneylender in the capital, signed by Tomas Reeve. The debts are substantial. This could be the weapon you need, but the rival will notice.",
+        "choices": [
+          {
+            "label": "Publish it widely — let the whole town see",
+            "outcomeText": "By sundown, copies of the letter are pinned to the Tavern door and the Market notice board. Tomas's reputation takes a sharp blow. But the rival, sensing your hand, redoubles their efforts.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -7 }],
+              "rivalIntensityBonus": { "delta": 1, "durationDays": 5 }
+            }
+          },
+          {
+            "label": "Show it privately to key merchants",
+            "outcomeText": "You share the letter with Aldric Vane and Marta Coin over quiet drinks. The damage is smaller but surgical — and Tomas's allies begin to wonder if their loyalty is misplaced.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -3 }],
+              "personalityChanges": [{ "npcId": "tomas_reeve", "trait": "loyalty", "delta": -0.15 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s3_calders_blunder",
+        "name": "Calder's Blunder",
+        "dayWindowStart": 15,
+        "dayWindowEnd": 19,
+        "probability": 0.55,
+        "description": "Calder Fenn has publicly insulted a merchant's weights in the Market Square. The merchant is furious, and the crowd is watching. Left alone, this will damage Calder's reputation. You must act quickly.",
+        "choices": [
+          {
+            "label": "Reframe it as boldness — Calder fights for honest trade",
+            "outcomeText": "You work the crowd: 'Did you see that? The boy has spine. That's what this town needs — someone who calls out cheats to their face.' The commons warm to him. The nobles raise an eyebrow.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "calder_fenn", "delta": 2 }],
+              "injectRumor": { "claimType": "praise", "subjectNpcId": "calder_fenn", "intensity": 3, "targetFaction": "merchant" }
+            }
+          },
+          {
+            "label": "Have Lady Isolde smooth things over quietly",
+            "outcomeText": "Lady Isolde sends wine and an apology within the hour. The merchant is mollified. More importantly, the rival's planned attack is delayed — Isolde's intervention has shifted the conversation.",
+            "effects": {
+              "rivalCooldownBonus": 3
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "scenarioId": "scenario_4",
@@ -256,6 +420,65 @@
       "danger": "Finn is the most vulnerable — impressionable and wavering in loyalty, he absorbs slander more readily than the others. The Inquisitor is a relentless opponent who actively spreads accusations on a cooldown that accelerates over time.",
       "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera.",
       "firstAction": "Check the Scenario HUD to see who is closest to 45. Press R, choose the most threatened NPC as the subject, select Praise as the claim, and whisper it to their strongest ally."
-    }
+    },
+    "midGameEvents": [
+      {
+        "id": "s4_noble_speaks",
+        "name": "A Noble Speaks",
+        "dayWindowStart": 4,
+        "dayWindowEnd": 7,
+        "probability": 0.75,
+        "description": "A minor noble — one who owes Aldous a favour from years past — has stood up at the Market Square and spoken in defence of the accused. The crowd listened. You can build on this momentum, but you must choose how.",
+        "choices": [
+          {
+            "label": "Rally behind the noble — focus on the weakest accused",
+            "outcomeText": "You direct the noble's allies toward the most endangered name on the writ. The defence is concentrated and effective. One reputation steadies.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "__weakest_protected__", "delta": 6 }]
+            }
+          },
+          {
+            "label": "Ask the noble to vouch for all three accused",
+            "outcomeText": "The noble agrees, but spreading the defence thins it. All three accused gain some shelter — but the Inquisitor, sensing organised resistance, quickens his pace.",
+            "effects": {
+              "reputationChanges": [
+                { "npcId": "aldous_prior", "delta": 3 },
+                { "npcId": "vera_midwife", "delta": 3 },
+                { "npcId": "finn_monk", "delta": 3 }
+              ],
+              "inquisitorCooldownDelta": -1
+            }
+          }
+        ]
+      },
+      {
+        "id": "s4_forged_evidence",
+        "name": "Forged Evidence",
+        "dayWindowStart": 11,
+        "dayWindowEnd": 14,
+        "probability": 0.65,
+        "description": "Brother Cornelius has produced a document — a confession, he claims, signed by one of the accused. You recognise the forgery. But challenging it publicly will draw the Inquisitor's full attention to that name.",
+        "choices": [
+          {
+            "label": "Challenge the evidence publicly — expose the forgery",
+            "outcomeText": "You stand in the chapel and name the forgery for what it is. The document is discredited. But Brother Cornelius fixes his gaze on the accused — he will not forget this humiliation.",
+            "effects": {
+              "inquisitorFocusTarget": { "npcId": "__highest_rep_protected__", "durationDays": 3 }
+            }
+          },
+          {
+            "label": "Counter with character witnesses — drown out the evidence",
+            "outcomeText": "You send allies to speak for the targeted accused. Their reputation recovers. But the noise draws attention away from the other two, and whispers find fertile ground.",
+            "effects": {
+              "reputationChanges": [
+                { "npcId": "__highest_rep_protected__", "delta": 5 },
+                { "npcId": "__other_protected_1__", "delta": -2 },
+                { "npcId": "__other_protected_2__", "delta": -2 }
+              ]
+            }
+          }
+        ]
+      }
+    ]
   }
 ]

@@ -117,6 +117,9 @@ var illness_escalation_agent: IllnessEscalationAgent = null
 ## S4 faction shift agent — only active in Scenario 4.
 var s4_faction_shift_agent: S4FactionShiftAgent = null
 
+## Mid-game narrative event agent — data-driven branching events (all scenarios).
+var mid_game_event_agent: MidGameEventAgent = null
+
 ## Milestone tracker — fires one-shot narrative notifications (SPA-479).
 ## Callback must be set from main.gd after recon_hud is ready.
 var milestone_tracker: MilestoneTracker = null
@@ -562,6 +565,8 @@ func _on_day_changed(_day: int) -> void:
 		illness_escalation_agent.tick(_day, self)
 	if s4_faction_shift_agent != null:
 		s4_faction_shift_agent.tick(_day, self)
+	if mid_game_event_agent != null:
+		mid_game_event_agent.tick(_day, self)
 	if faction_event_system != null:
 		faction_event_system.on_day_changed(_day)
 
@@ -695,6 +700,15 @@ func _apply_active_scenario() -> void:
 	# 13. Faction event system — initialise after all subsystems are ready.
 	faction_event_system = FactionEventSystem.new()
 	faction_event_system.initialize(self)
+
+	# 14. Mid-game event agent — data-driven branching events from scenarios.json.
+	mid_game_event_agent = MidGameEventAgent.new()
+	var mid_events: Array = scenario_data.get("midGameEvents", [])
+	mid_game_event_agent.load_events(mid_events)
+	mid_game_event_agent.rival_agent_ref = rival_agent
+	mid_game_event_agent.inquisitor_agent_ref = inquisitor_agent
+	mid_game_event_agent.illness_agent_ref = illness_escalation_agent
+	mid_game_event_agent.activate()
 
 	# Seed the reputation cache now that all overrides are in place.
 	reputation_system.recalculate_all(npcs, 0)
