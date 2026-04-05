@@ -89,8 +89,8 @@ All assets must use only the colours below.
 
 ## NPC Sprite Specifications
 
-File: `assets/textures/npc_sprites.png` (224×432)  
-Frame size: **32×48px**  
+File: `assets/textures/npc_sprites.png` (336×648)  
+Frame size: **48×72px** (upscaled 1.5× from 32×48 base art)  
 Sheet layout: 7 columns × 9 rows (3 faction rows + 6 archetype rows; rows 6–8 added in SPA-486)
 
 | Row | Type      | Faction / Archetype | Body colour     | Trim colour    | Hat silhouette                              |
@@ -105,7 +105,7 @@ Sheet layout: 7 columns × 9 rows (3 faction rows + 6 archetype rows; rows 6–8
 | 7   | Archetype | Elder               | `PLASTER`       | `STONE_M`      | Open grey hood + white temple hair + staff  |
 | 8   | Archetype | Spy                 | `STONE_D`       | `INK`          | Deep cowl hiding face + dagger at belt      |
 
-**Faction silhouette differentiation (SPA-478):** Merchant, Noble, and Clergy each have a unique hat shape readable at the 32×48 sprite scale. Merchant reads wide (hat brim 14 px), Noble reads tall (3-spike crown), Clergy reads soft and wide-shouldered (hood drapes + cassock bell).
+**Faction silhouette differentiation (SPA-478):** Merchant, Noble, and Clergy each have a unique hat shape readable at the 48×72 sprite scale. Merchant reads wide (hat brim 14 px base, 21 px upscaled), Noble reads tall (3-spike crown), Clergy reads soft and wide-shouldered (hood drapes + cassock bell).
 
 **Art Pass 8 archetype additions (SPA-486):** Scholar (row 6) reads academic — square flat mortarboard + ink-blue robe + scroll. Elder (row 7) reads ancient — open grey hood showing white temple hair + walking staff. Spy (row 8) reads shadowy — deep dark cowl hiding face + narrow hunched cloak silhouette.
 

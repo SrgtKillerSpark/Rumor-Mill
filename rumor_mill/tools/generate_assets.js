@@ -3,11 +3,11 @@
  * generate_assets.js — Art Pass 9 pixel-art generator for Rumor Mill (SPA-507)
  *
  * Produces all textures needed:
- *   assets/textures/tiles_ground.png      (192×32 — 3 ground variants)
+ *   assets/textures/tiles_ground.png      (576×32 — 9 ground variants: void, grass_base, grass_dark, grass_sparse, grass_dense, grass_floral, dirt_muddy, dirt_packed, grass_dirt_blend)
  *   assets/textures/tiles_road_dirt.png   (64×32)
  *   assets/textures/tiles_road_stone.png  (64×32)
  *   assets/textures/tiles_buildings.png   (640×64 — 10 building types)
- *   assets/textures/npc_sprites.png       (224×432 — 7 frames × 9 archetypes)
+ *   assets/textures/npc_sprites.png       (336×648 — 7 frames × 9 archetypes, 48×72 per frame)
  *                                           row 0 = merchant, 1 = noble, 2 = clergy
  *                                           row 3 = guard,    4 = commoner
  *                                           row 5 = tavern_staff (apron/kerchief)
@@ -16,13 +16,13 @@
  *                                           row 8 = spy         (dark hooded cloak)
  *   assets/textures/ui_parchment.png      (48×48 — 9-slice parchment border tile)
  *   assets/textures/ui_faction_badges.png (72×24 — 3 × 24px faction badges)
- *   assets/textures/ui_claim_icons.png    (80×16 — 5 × 16px claim-type icons)
- *   assets/textures/ui_npc_portraits.png  (120×96 — 5 cols × 3 rows of 24×32 portraits)
+ *   assets/textures/ui_claim_icons.png    (160×32 — 5 × 32px claim-type icons)  ← SPA-523
+ *   assets/textures/ui_npc_portraits.png  (320×240 — 5 cols × 3 rows of 64×80 portraits)
  *                                           col 0=merchant, 1=noble, 2=clergy, 3=guard, 4=commoner
  *                                           row 0=male base, 1=female base, 2=elder/leader
- *   assets/textures/ui_state_icons.png    (72×12 — 6 × 12px rumor-state icons)
- *                                           col 0=EVALUATING, 1=BELIEVE, 2=SPREAD,
- *                                               3=ACT, 4=CONTRADICTED, 5=EXPIRED
+ *   assets/textures/ui_state_icons.png    (144×16 — 9 × 16px rumor-state icons)
+ *                                           col 0=UNAWARE, 1=EVALUATING, 2=BELIEVE, 3=REJECTING,
+ *                                               4=SPREAD, 5=ACT, 6=CONTRADICTED, 7=EXPIRED, 8=DEFENDING
  *
  * Run from project root:  node tools/generate_assets.js
  */
@@ -132,10 +132,30 @@ function createCanvas(w, h) {
     }
   };
 
-  return { data, sp, fillRect, fillPoly, line, isoNoise, toPNG: ()=>makePNG(w,h,data) };
+  return { data, w, h, sp, fillRect, fillPoly, line, isoNoise, toPNG: ()=>makePNG(w,h,data) };
 }
 
-// ─── Palette ──────────────────────────────────────────────────────────────────
+// ─── Nearest-neighbour upscale ───────────────────────────────────────────────
+// Scales raw RGBA data from (srcW×srcH) to (dstW×dstH) using nearest-neighbour
+// sampling.  Handles non-integer ratios (e.g. 1.5×, 2.67×).
+function nearestNeighborScale(srcData, srcW, srcH, dstW, dstH) {
+  const dst = new Uint8Array(dstW * dstH * 4);
+  for (let dy = 0; dy < dstH; dy++) {
+    const sy = Math.floor(dy * srcH / dstH);
+    for (let dx = 0; dx < dstW; dx++) {
+      const sx = Math.floor(dx * srcW / dstW);
+      const si = (sy * srcW + sx) * 4;
+      const di = (dy * dstW + dx) * 4;
+      dst[di]   = srcData[si];
+      dst[di+1] = srcData[si+1];
+      dst[di+2] = srcData[si+2];
+      dst[di+3] = srcData[si+3];
+    }
+  }
+  return dst;
+}
+
+// ─── Palette ──────��───────────────────────────────────────────────────────────
 //  Pentiment × Dwarf-Fortress: desaturated naturals, deep faction primaries.
 const P = {
   VOID:         [12, 10, 20],
@@ -204,7 +224,7 @@ function outlineIso(cv, r, g, b, cx=32, cy=16, hw=31, hh=15) {
 //   col 0 = void, col 1 = grass, col 2 = dark grass
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeGroundTiles() {
-  const cv = createCanvas(192, 32);
+  const cv = createCanvas(576, 32);
 
   // ── tile 0: void — very dark, just a subtle diamond outline ──────────────
   // (left transparent so Godot shows nothing)
@@ -304,7 +324,7 @@ function makeRoadStone() {
 //   0=manor  1=tavern  2=chapel  3=market  4=well
 //   5=blacksmith  6=mill  7=storage  8=guardpost  9=town_hall
 // ═══════════════════════════════════════════════════════════════════════════════
-function makeBuildingTiles() {
+function makeBuildingTiles(nightMode = false) {
   const cv = createCanvas(640, 64);
 
   // ── shared: paint iso ground face in bottom half of a tile column ──────────
@@ -405,6 +425,16 @@ function makeBuildingTiles() {
     cv.fillRect(ox0+48, 32-wH-15, 10, 7, ...c.FLAG_R);
     cv.line(ox0+48, 32-wH-15, ox0+57, 32-wH-15, ...c.OUTLINE);
     cv.line(ox0+48, 32-wH-8, ox0+57, 32-wH-8, ...c.OUTLINE);  // flag bottom edge
+    // night: lit windows — warm amber glow replacing cold blue (SPA-523)
+    if (nightMode) {
+      cv.fillRect(ox0+7,  32-wH+4, 7, 9, 220, 175, 60);
+      for (let dy=-2; dy<=2; dy++) for (let dx=-2; dx<=2; dx++)
+        if (dx*dx+dy*dy<=4)
+          cv.sp(ox0+10+dx, 32-wH+8+dy, 255, 210, 80, Math.max(0, 40-(dx*dx+dy*dy)*8));
+      cv.fillRect(ox0+19, 32-wH+2, 5, 6, 220, 175, 60);
+      for (let dy=-1; dy<=1; dy++) for (let dx=-1; dx<=1; dx++)
+        cv.sp(ox0+21+dx, 32-wH+5+dy, 255, 210, 80, Math.max(0, 28-(dx*dx+dy*dy)*10));
+    }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -466,6 +496,13 @@ function makeBuildingTiles() {
     cv.line(ox+20, 32-wH+6, ox+1, 32,     ...c.WOOD_D, 60);
     // candlelight silhouette inside window (seated patron)
     cv.sp(ox+14, 32-wH+5, 30, 20, 10, 60);
+    // night: warm tavern window glow — brighter amber, wider halo (SPA-523)
+    if (nightMode) {
+      cv.fillRect(ox+12, 32-wH+2, 6, 5, 235, 190, 70);
+      for (let dy=-2; dy<=2; dy++) for (let dx=-3; dx<=3; dx++)
+        if (dx*dx+dy*dy<=6)
+          cv.sp(ox+15+dx, 32-wH+4+dy, 255, 200, 80, Math.max(0, 50-(dx*dx+dy*dy)*7));
+    }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -519,6 +556,15 @@ function makeBuildingTiles() {
     cv.sp(ox+33, 32-wH-14, ...c.CHAPEL_STONE);
     // window tracery divider on left face (adds Gothic feel)
     cv.line(ox+8, 32-wH+4, ox+8, 32-wH+12, ...c.STONE_D, 90);
+    // night: candlelight behind stained glass — warm halo on both windows (SPA-523)
+    if (nightMode) {
+      for (let dy=-2; dy<=3; dy++) for (let dx=-2; dx<=3; dx++)
+        if (dx*dx+dy*dy<=8)
+          cv.sp(ox+8+dx, 32-wH+8+dy, 255, 190, 60, Math.max(0, 22-(dx*dx+dy*dy)*3));
+      for (let dy=-2; dy<=3; dy++) for (let dx=-2; dx<=2; dx++)
+        if (dx*dx+dy*dy<=6)
+          cv.sp(ox+46+dx, 32-wH+7+dy, 255, 190, 60, Math.max(0, 18-(dx*dx+dy*dy)*3));
+    }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -774,8 +820,8 @@ function makeBuildingTiles() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// NPC SPRITES (npc_sprites.png — 224×432)
-// Layout: 7 frames wide (32px each) × 9 archetype rows (48px each)
+// NPC SPRITES (npc_sprites.png ��� 336×648, upscaled 1.5× from 224×432 base)
+// Layout: 7 frames wide (48px each) × 9 archetype rows (72px each)
 //   row 0 = merchant    (deep blue/gold)
 //   row 1 = noble       (burgundy/silver)
 //   row 2 = clergy      (cream/black)
@@ -1451,7 +1497,9 @@ function makeNPCSprites() {
     drawSpy(6*32, oy8, -1, 0,  0);
   }
 
-  return cv.toPNG();
+  // Upscale 1.5× (32×48 → 48×72 per frame, 224×432 → 336×648 total)
+  const scaled = nearestNeighborScale(cv.data, 224, 432, 336, 648);
+  return makePNG(336, 648, scaled);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1541,77 +1589,78 @@ function makeFactionBadges() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CLAIM TYPE ICONS (ui_claim_icons.png — 80×16, five 16×16 icons)
+// CLAIM TYPE ICONS (ui_claim_icons.png — 160×32, five 32×32 icons)  ← SPA-523
 //   0=assassination  1=theft  2=slander  3=witness  4=alliance
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeClaimIcons() {
-  const cv = createCanvas(80, 16);
+  const cv = createCanvas(160, 32);
 
-  // 0: assassination — dagger
+  // 0: assassination — dagger (32×32)
   {
     const ox=0;
-    cv.fillRect(ox+7, 1, 3, 9, ...c.STONE_L);
-    cv.fillPoly([[ox+7,10],[ox+10,10],[ox+8,14]], ...c.STONE_D);
-    cv.fillRect(ox+5, 5, 7, 2, ...c.WOOD_M);
-    cv.line(ox+8, 1, ox+8, 13, ...c.OUTLINE);
+    cv.fillRect(ox+14, 2,  6, 18, ...c.STONE_L);
+    cv.fillPoly([[ox+14,20],[ox+20,20],[ox+16,28]], ...c.STONE_D);
+    cv.fillRect(ox+10, 10, 14, 4, ...c.WOOD_M);
+    cv.line(ox+16, 2, ox+16, 26, ...c.OUTLINE);
   }
-  // 1: theft — bag with coin
-  {
-    const ox=16;
-    cv.fillPoly([[ox+5,5],[ox+11,5],[ox+13,10],[ox+3,10]], ...c.WOOD_L);
-    cv.fillRect(ox+5,10, 6,4, ...c.WOOD_L);
-    cv.line(ox+5,5, ox+11,5, ...c.OUTLINE);
-    cv.line(ox+3,10, ox+13,10, ...c.OUTLINE);
-    cv.line(ox+5,14, ox+11,14, ...c.OUTLINE);
-    cv.sp(ox+7, 3, ...c.MERCH_T);  // string
-    cv.sp(ox+8, 3, ...c.MERCH_T);
-  }
-  // 2: slander — speech bubble
+  // 1: theft — bag with coin (32×32)
   {
     const ox=32;
-    cv.fillRect(ox+2, 2, 12, 8, ...c.PARCH_L);
-    cv.fillPoly([[ox+4,10],[ox+8,10],[ox+5,14]], ...c.PARCH_L);
-    cv.line(ox+2,2, ox+13,2, ...c.OUTLINE);
-    cv.line(ox+2,2, ox+2,9,  ...c.OUTLINE);
-    cv.line(ox+2,9, ox+13,9, ...c.OUTLINE);
-    cv.line(ox+13,2,ox+13,9, ...c.OUTLINE);
-    // text lines
-    cv.line(ox+4,5, ox+11,5, ...c.INK, 160);
-    cv.line(ox+4,7, ox+9, 7, ...c.INK, 120);
+    cv.fillPoly([[ox+10,10],[ox+22,10],[ox+26,20],[ox+6,20]], ...c.WOOD_L);
+    cv.fillRect(ox+10, 20, 12, 8, ...c.WOOD_L);
+    cv.line(ox+10, 10, ox+22, 10, ...c.OUTLINE);
+    cv.line(ox+6,  20, ox+26, 20, ...c.OUTLINE);
+    cv.line(ox+10, 28, ox+22, 28, ...c.OUTLINE);
+    cv.sp(ox+14, 6, ...c.MERCH_T);  // string
+    cv.sp(ox+16, 6, ...c.MERCH_T);
   }
-  // 3: witness — eye
-  {
-    const ox=48;
-    cv.fillPoly([[ox+2,8],[ox+8,4],[ox+14,8],[ox+8,12]], ...c.PARCH_L);
-    cv.fillRect(ox+6,6, 5,5, ...c.MERCH_B);
-    cv.sp(ox+7,7,  ...c.WATER_L);
-    cv.sp(ox+8,8,  40,60,100);
-    cv.line(ox+2,8, ox+8,4,  ...c.OUTLINE);
-    cv.line(ox+8,4, ox+14,8, ...c.OUTLINE);
-    cv.line(ox+14,8,ox+8,12, ...c.OUTLINE);
-    cv.line(ox+8,12,ox+2,8,  ...c.OUTLINE);
-  }
-  // 4: alliance — clasped hands
+  // 2: slander — speech bubble (32×32)
   {
     const ox=64;
-    cv.fillRect(ox+2, 4, 5, 8, ...c.SKIN);
-    cv.fillRect(ox+9, 4, 5, 8, ...c.SKIN);
-    cv.fillRect(ox+5, 6, 6, 4, ...c.SKIN);
-    cv.line(ox+2,4,  ox+6,4,  ...c.OUTLINE);
-    cv.line(ox+9,4,  ox+13,4, ...c.OUTLINE);
-    cv.line(ox+2,12, ox+13,12,...c.OUTLINE);
-    cv.line(ox+2,4,  ox+2,12, ...c.OUTLINE);
-    cv.line(ox+13,4, ox+13,12,...c.OUTLINE);
+    cv.fillRect(ox+4,  4, 24, 16, ...c.PARCH_L);
+    cv.fillPoly([[ox+8,20],[ox+16,20],[ox+10,28]], ...c.PARCH_L);
+    cv.line(ox+4,  4, ox+26,  4, ...c.OUTLINE);
+    cv.line(ox+4,  4, ox+4,  18, ...c.OUTLINE);
+    cv.line(ox+4,  18, ox+26, 18, ...c.OUTLINE);
+    cv.line(ox+26, 4, ox+26,  18, ...c.OUTLINE);
+    // text lines
+    cv.line(ox+8,  10, ox+22, 10, ...c.INK, 160);
+    cv.line(ox+8,  14, ox+18, 14, ...c.INK, 120);
+  }
+  // 3: witness — eye (32×32)
+  {
+    const ox=96;
+    cv.fillPoly([[ox+4,16],[ox+16,8],[ox+28,16],[ox+16,24]], ...c.PARCH_L);
+    cv.fillRect(ox+12, 12, 10, 10, ...c.MERCH_B);
+    cv.sp(ox+14, 14, ...c.WATER_L);
+    cv.sp(ox+16, 16, 40, 60, 100);
+    cv.line(ox+4,  16, ox+16,  8, ...c.OUTLINE);
+    cv.line(ox+16,  8, ox+28, 16, ...c.OUTLINE);
+    cv.line(ox+28, 16, ox+16, 24, ...c.OUTLINE);
+    cv.line(ox+16, 24, ox+4,  16, ...c.OUTLINE);
+  }
+  // 4: alliance — clasped hands (32×32)
+  {
+    const ox=128;
+    cv.fillRect(ox+4,  8, 10, 16, ...c.SKIN);
+    cv.fillRect(ox+18, 8, 10, 16, ...c.SKIN);
+    cv.fillRect(ox+10, 12, 12, 8, ...c.SKIN);
+    cv.line(ox+4,  8, ox+12,  8, ...c.OUTLINE);
+    cv.line(ox+18, 8, ox+26,  8, ...c.OUTLINE);
+    cv.line(ox+4,  24, ox+26, 24, ...c.OUTLINE);
+    cv.line(ox+4,  8,  ox+4,  24, ...c.OUTLINE);
+    cv.line(ox+26, 8,  ox+26, 24, ...c.OUTLINE);
   }
 
   return cv.toPNG();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// NPC PORTRAIT ATLAS  (ui_npc_portraits.png — 120×96, five 24×32 cols × 3 rows)
+// NPC PORTRAIT ATLAS  (ui_npc_portraits.png — 320×240, upscaled from 120×96 base)
+//   Five 64×80 cols × 3 rows (upscaled from 24×32 per cell)
 //   Row 0 (y=  0): male archetypes    — merchant, noble, clergy, guard, commoner
-//   Row 1 (y= 32): female archetypes  — same faction/role order
-//   Row 2 (y= 64): elder/leader variants — cloak trim, rank accessory
+//   Row 1 (y= 80): female archetypes  — same faction/role order
+//   Row 2 (y=160): elder/leader variants — cloak trim, rank accessory
 //
 // Portrait spec (24×32 px per cell):
 //   y  0‒ 3  hat / headwear
@@ -1783,7 +1832,9 @@ function makeNPCPortraits() {
   for (let i = 0; i < 5; i++)
     drawPortrait(i*24, 64, { ...ARCHETYPES[i], elder: true });
 
-  return cv.toPNG();
+  // Upscale to 64×80 per cell (320×240 total) from 24×32 base (120×96)
+  const scaled = nearestNeighborScale(cv.data, 120, 96, 320, 240);
+  return makePNG(320, 240, scaled);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2220,18 +2271,19 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 9: visual fidelity overhaul — NPC body shading, building AO, richer textures (SPA-507)\n');
+console.log('\nRumor Mill — Art Pass 9 + SPA-523: claim icons 32x32, lit windows night variant\n');
 
-write('assets/textures/tiles_ground.png',       makeGroundTiles());
-write('assets/textures/tiles_road_dirt.png',    makeRoadDirt());
-write('assets/textures/tiles_road_stone.png',   makeRoadStone());
-write('assets/textures/tiles_buildings.png',    makeBuildingTiles());
-write('assets/textures/tiles_props.png',        makePropsAtlas());
-write('assets/textures/npc_sprites.png',        makeNPCSprites());
-write('assets/textures/ui_parchment.png',       makeParchment());
-write('assets/textures/ui_faction_badges.png',  makeFactionBadges());
-write('assets/textures/ui_claim_icons.png',     makeClaimIcons());
-write('assets/textures/ui_npc_portraits.png',   makeNPCPortraits());
-write('assets/textures/ui_state_icons.png',     makeStateIcons());
+write('assets/textures/tiles_ground.png',           makeGroundTiles());
+write('assets/textures/tiles_road_dirt.png',        makeRoadDirt());
+write('assets/textures/tiles_road_stone.png',       makeRoadStone());
+write('assets/textures/tiles_buildings.png',        makeBuildingTiles());
+write('assets/textures/tiles_buildings_night.png',  makeBuildingTiles(true));
+write('assets/textures/tiles_props.png',            makePropsAtlas());
+write('assets/textures/npc_sprites.png',            makeNPCSprites());
+write('assets/textures/ui_parchment.png',           makeParchment());
+write('assets/textures/ui_faction_badges.png',      makeFactionBadges());
+write('assets/textures/ui_claim_icons.png',         makeClaimIcons());
+write('assets/textures/ui_npc_portraits.png',       makeNPCPortraits());
+write('assets/textures/ui_state_icons.png',         makeStateIcons());
 
 console.log('\nAll assets generated.\n');

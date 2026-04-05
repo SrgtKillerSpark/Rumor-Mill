@@ -11,7 +11,7 @@ extends Node2D
 ## Mutations use PropagationEngine.try_mutate() (4 independent types).
 ## Shelf-life expiry is detected via Rumor.is_expired() after PropagationEngine.tick_decay().
 ##
-## Sprite sheet layout (assets/textures/npc_sprites.png, 224×432):
+## Sprite sheet layout (assets/textures/npc_sprites.png, 336×648):
 ##   Row 0 = merchant (deep blue/gold)   Row 1 = noble (burgundy/silver)
 ##   Row 2 = clergy (cream/black)
 ##   Row 3 = guard   (stone tabard/helmet — archetype "guard_civic")
@@ -20,7 +20,7 @@ extends Node2D
 ##   Row 6 = scholar  (ink-blue robe, scroll — archetype "scholar")
 ##   Row 7 = elder    (grey robe, walking staff — archetype "elder")
 ##   Row 8 = spy      (dark hooded cloak, dagger — archetype "spy")
-##   Cols 0-2 = idle frames (32×48 each); Cols 3-6 = walk frames
+##   Cols 0-2 = idle frames (48×72 each); Cols 3-6 = walk frames
 
 ## Emitted once when this NPC first receives a rumor (UNAWARE → EVALUATING).
 signal first_npc_became_evaluating
@@ -117,8 +117,8 @@ const COMMONER_ROLES := [
 	"Merchant's Wife", "Traveling Merchant",
 ]
 # Sprite frame dimensions
-const SPRITE_W := 32
-const SPRITE_H := 48
+const SPRITE_W := 48
+const SPRITE_H := 72
 
 @onready var sprite:      AnimatedSprite2D = $Sprite
 @onready var name_label:  Label            = $NameLabel
