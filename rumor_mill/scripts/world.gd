@@ -1410,7 +1410,7 @@ func _init_chimney_smoke() -> void:
 		emitter.scale_amount_curve = null
 		# Fade from mid-grey to transparent over lifetime
 		var grad := Gradient.new()
-		grad.add_point(0.0, Color(0.72, 0.69, 0.63, 0.55))
-		grad.add_point(1.0, Color(0.72, 0.69, 0.63, 0.0))
+		grad.set_color(0, Color(0.72, 0.69, 0.63, 0.55))
+		grad.set_color(1, Color(0.72, 0.69, 0.63, 0.0))
 		emitter.color_ramp = grad
 		add_child(emitter)

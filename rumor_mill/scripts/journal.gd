@@ -358,7 +358,7 @@ func _build_rumors_section() -> void:
 
 		# Auto-dismiss after 5 seconds of unpaused time so the banner stays
 		# visible for its full duration even when the scene tree is paused.
-		var banner_timer := get_tree().create_timer(5.0, false)
+		var banner_timer := get_tree().create_timer(5.0, true)
 		banner_timer.timeout.connect(func() -> void:
 			if is_instance_valid(banner_panel):
 				var tw := create_tween()

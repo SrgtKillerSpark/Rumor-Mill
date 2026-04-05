@@ -466,9 +466,12 @@ func _refresh_time() -> void:
 			h12 = 12
 		time_label.text = "%d:%02d %s" % [h12, m, ampm]
 
-	# Update day timeline progress bar.
+	# Update day timeline progress bar (shows time-of-day, not scenario progress).
 	if progress_bar != null and progress_bg != null:
-		progress_bar.anchor_right = fraction
+		var day_fraction: float = 0.0
+		if "current_tick" in _day_night and "ticks_per_day" in _day_night:
+			day_fraction = clampf(float(_day_night.current_tick) / float(max(_day_night.ticks_per_day, 1)), 0.0, 1.0)
+		progress_bar.anchor_right = day_fraction
 		progress_bar.color = day_color
 
 

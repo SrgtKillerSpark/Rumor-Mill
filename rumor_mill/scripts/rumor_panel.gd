@@ -835,7 +835,7 @@ func _try_confirm_seed() -> void:
 	_selected_seed_npc      = ""
 	_confirm_pending        = false
 	_selected_evidence_item = null
-	panel.visible = false
+	toggle()
 
 
 

@@ -1687,8 +1687,8 @@ func _init_pause_menu() -> void:
 	# SPA-335: flush session time whenever the pause menu opens so partial
 	# play time is saved if the player quits from the pause menu.
 	_pause_menu.visibility_changed.connect(_on_pause_menu_visibility_changed_flush)
-	# S1: suppress banner while pause menu is open.
-	if world.active_scenario_id == "scenario_1" and _tutorial_banner != null:
+	# Suppress tutorial banner while pause menu is open (all scenarios).
+	if _tutorial_banner != null:
 		_pause_menu.visibility_changed.connect(_on_pause_menu_visibility_changed_banner)
 
 

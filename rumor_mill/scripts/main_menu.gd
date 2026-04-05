@@ -96,6 +96,7 @@ var _btn_continue:       Button      = null
 # SPA-589: Atmospheric dusk background elements
 var _dusk_sky:           ColorRect   = null  # gradient sky background
 var _silhouettes:        Array       = []    # whispering figure silhouettes (Array[ColorRect])
+var _silhouette_anchors: Array       = []    # original [left, right] anchors per silhouette
 var _silhouette_phase:   float       = 0.0   # animation timer for figure sway
 var _fog_overlay:        ColorRect   = null  # subtle ground fog
 var _lantern_glow:       ColorRect   = null  # warm lantern point-light effect
@@ -348,6 +349,7 @@ func _build_backdrop() -> void:
 ## hooded/cloaked figures standing in the dusk.
 func _build_silhouettes() -> void:
 	_silhouettes.clear()
+	_silhouette_anchors.clear()
 	# Positions and heights for silhouettes (normalised anchor coords).
 	# Each: [left_anchor, right_anchor, height_frac, alpha]
 	var figures: Array = [
@@ -367,6 +369,7 @@ func _build_silhouettes() -> void:
 		fig.set_anchor(SIDE_BOTTOM, 1.0)
 		add_child(fig)
 		_silhouettes.append(fig)
+		_silhouette_anchors.append([f[0], f[1]])
 
 
 ## Animate whispering figures with subtle sway and opacity pulsing.
@@ -379,8 +382,9 @@ func _process(delta: float) -> void:
 		# Each figure sways at a slightly different phase.
 		var phase_offset: float = float(i) * 1.3
 		var sway: float = sin(_silhouette_phase + phase_offset) * 0.003
-		fig.set_anchor(SIDE_LEFT,  fig.get_anchor(SIDE_LEFT) + sway * delta)
-		fig.set_anchor(SIDE_RIGHT, fig.get_anchor(SIDE_RIGHT) + sway * delta)
+		var orig: Array = _silhouette_anchors[i]
+		fig.set_anchor(SIDE_LEFT,  orig[0] + sway)
+		fig.set_anchor(SIDE_RIGHT, orig[1] + sway)
 		# Subtle opacity pulse (breathing effect).
 		var alpha_base: float = fig.color.a
 		var pulse: float = sin(_silhouette_phase * 0.8 + phase_offset) * 0.04
