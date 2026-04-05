@@ -47,7 +47,7 @@ func tick(current_day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
 func _get_cooldown(day: int) -> int:
 	var base: int
 	if day <= 7:
-		base = 3
+		base = 4
 	elif day <= 15:
 		base = 2
 	else:
