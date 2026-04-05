@@ -24,8 +24,8 @@ const C_BTN_NORMAL    := Color(0.35, 0.22, 0.08, 1.0)
 const C_BTN_HOVER     := Color(0.55, 0.35, 0.12, 1.0)
 const C_BTN_TEXT      := Color(0.92, 0.82, 0.60, 1.0)
 
-const PANEL_WIDTH  := 600
-const PANEL_HEIGHT := 300
+const PANEL_WIDTH  := 650
+const PANEL_HEIGHT := 340
 
 # ── Node refs (built in _ready) ───────────────────────────────────────────────
 
@@ -40,6 +40,8 @@ var _dismiss_btn: Button         = null
 var _tutorial_sys: TutorialSystem = null
 var _queue: Array = []           ## Array[String] of tooltip IDs waiting to display
 var _active_id: String = ""      ## ID of the tooltip currently shown, or ""
+var _step_label: Label = null    ## Shows "Step X of Y" in the footer
+var _total_queued: int = 0       ## Total tooltips queued in this batch
 
 
 func _ready() -> void:
@@ -51,9 +53,14 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
+	# Only allow Enter to dismiss — Escape is deliberately blocked so the player
+	# must read the tooltip.  The button is still the primary dismiss action.
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE or event.keycode == KEY_ENTER:
+		if event.keycode == KEY_ENTER:
 			_on_dismiss_pressed()
+			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ESCAPE:
+			# Consume Escape so it doesn't leak to other UI layers.
 			get_viewport().set_input_as_handled()
 
 
@@ -72,7 +79,9 @@ func queue_tooltip(tooltip_id: String) -> void:
 	if _queue.has(tooltip_id) or _active_id == tooltip_id:
 		return
 	_queue.append(tooltip_id)
+	_total_queued = _queue.size() + (1 if _active_id != "" else 0)
 	if _active_id == "":
+		_total_queued = _queue.size()
 		_show_next()
 
 
@@ -96,6 +105,11 @@ func _show_next() -> void:
 
 	_title_label.text = data.get("title", "")
 	_body_label.text  = data.get("body", "")
+	# Update step counter.
+	if _step_label != null:
+		var current_step: int = _total_queued - _queue.size()
+		_step_label.text = "Tip %d of %d" % [current_step, _total_queued]
+		_step_label.visible = (_total_queued > 1)
 	visible = true
 	_dismiss_btn.call_deferred("grab_focus")
 
@@ -151,7 +165,7 @@ func _build_ui() -> void:
 	# Title label.
 	_title_label = Label.new()
 	_title_label.add_theme_color_override("font_color", C_HEADING)
-	_title_label.add_theme_font_size_override("font_size", 20)
+	_title_label.add_theme_font_size_override("font_size", 22)
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(_title_label)
 
@@ -181,10 +195,17 @@ func _build_ui() -> void:
 	spacer.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(spacer)
 
-	# Dismiss button row (right-aligned).
+	# Dismiss button row — step counter on left, button on right.
 	var btn_row := HBoxContainer.new()
 	btn_row.alignment = BoxContainer.ALIGNMENT_END
 	vbox.add_child(btn_row)
+
+	_step_label = Label.new()
+	_step_label.add_theme_font_size_override("font_size", 12)
+	_step_label.add_theme_color_override("font_color", Color(0.60, 0.55, 0.40, 0.8))
+	_step_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_step_label.visible = false
+	btn_row.add_child(_step_label)
 
 	_dismiss_btn = Button.new()
 	_dismiss_btn.text                    = "  Got it!  "

@@ -168,9 +168,9 @@ const TITLES := [
 	"Rumor Crafting — (3/3) Seed Target & Confirm",
 ]
 const HINTS := [
-	"Select the NPC this rumor will be about.  R to close.",
-	"Choose what kind of rumor to spread.  ← Back to change subject.",
-	"Choose who to whisper to.  ← Back to change claim.  Confirm uses 1 Whisper Token.",
+	"Select the NPC this rumor will be about.  Press R or Esc to close.",
+	"Choose what kind of rumor to spread.  Click ← Back to change subject.",
+	"Choose who to whisper the rumor to.  Click ← Back to change claim.  Seeding costs 1 Whisper Token.",
 ]
 
 
@@ -440,13 +440,15 @@ func _build_subject_entry(
 
 	var name_lbl := Label.new()
 	name_lbl.text = "  " + npc_name
-	name_lbl.add_theme_font_size_override("font_size", 12)
+	name_lbl.add_theme_font_size_override("font_size", 14)
 	name_lbl.add_theme_color_override("font_color", C_NPC_NAME)
+	name_lbl.add_theme_constant_override("outline_size", 1)
+	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
 	header.add_child(name_lbl)
 
 	var faction_lbl := Label.new()
 	faction_lbl.text = "  [" + faction.capitalize() + "]"
-	faction_lbl.add_theme_font_size_override("font_size", 12)
+	faction_lbl.add_theme_font_size_override("font_size", 13)
 	faction_lbl.add_theme_color_override("font_color", _faction_color(faction))
 	header.add_child(faction_lbl)
 
@@ -611,13 +613,17 @@ func _rebuild_seed_list() -> void:
 	if _world_ref == null or _intel_store_ref == null:
 		return
 
-	# Update Whisper Token bar.
+	# Update Whisper Token bar — show cost prominently.
 	var tokens: int = _intel_store_ref.whisper_tokens_remaining
 	var max_t:  int = PlayerIntelStore.MAX_DAILY_WHISPERS
-	_whisper_bar.text = "Whisper Tokens: %s  (%d/%d)  — replenishes at dawn" % [
-		"[W]".repeat(tokens) + "[ ]".repeat(max_t - tokens),
+	_whisper_bar.text = "Whisper Tokens: %d / %d remaining  |  Cost: 1 token per rumor  |  Replenishes at dawn" % [
 		tokens, max_t
 	]
+	_whisper_bar.add_theme_font_size_override("font_size", 13)
+	if tokens == 0:
+		_whisper_bar.add_theme_color_override("font_color", Color(0.95, 0.40, 0.25, 1.0))
+	else:
+		_whisper_bar.add_theme_color_override("font_color", C_GOLD)
 
 	# Chain indicator — show when seeding would create a rumor chain.
 	var chain_info := _detect_current_chain()
@@ -675,19 +681,31 @@ func _build_seed_entry(
 
 	var name_lbl := Label.new()
 	name_lbl.text = "  " + npc_name + "  [" + faction.capitalize() + "]"
-	name_lbl.add_theme_font_size_override("font_size", 12)
+	name_lbl.add_theme_font_size_override("font_size", 14)
+	name_lbl.add_theme_color_override("font_color", C_NPC_NAME)
+	name_lbl.add_theme_constant_override("outline_size", 1)
+	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
 	header.add_child(name_lbl)
 
-	# Estimates.
+	# Estimates with numeric percentages.
 	var spread_est:  float = _estimate_spread(npc_node)
 	var belief_est:  float = _estimate_believability(npc_id)
+	var belief_pct:  int   = roundi(belief_est * 100.0)
 
 	var est_lbl := Label.new()
-	est_lbl.text = "    Spread est: ~%d NPCs   Believability: %d%%" % [
-		roundi(spread_est), roundi(belief_est * 100.0)
+	est_lbl.text = "    Spread: ~%d NPCs   Believability: %d%%" % [
+		roundi(spread_est), belief_pct
 	]
-	est_lbl.add_theme_font_size_override("font_size", 12)
-	est_lbl.add_theme_color_override("font_color", C_ESTIMATE)
+	est_lbl.add_theme_font_size_override("font_size", 13)
+	# Colour-code believability: green if high, amber if moderate, red if low.
+	var belief_color: Color
+	if belief_pct >= 60:
+		belief_color = Color(0.40, 0.90, 0.45, 1.0)
+	elif belief_pct >= 35:
+		belief_color = Color(0.95, 0.80, 0.30, 1.0)
+	else:
+		belief_color = Color(0.95, 0.45, 0.25, 1.0)
+	est_lbl.add_theme_color_override("font_color", belief_color)
 	vbox.add_child(est_lbl)
 
 	vbox.add_child(HSeparator.new())

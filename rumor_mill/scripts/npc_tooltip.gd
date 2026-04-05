@@ -70,8 +70,8 @@ const STATE_ICON := {
 }
 
 const OFFSET := Vector2(18, -160)  # screen offset from cursor
-const PANEL_W := 270
-const PANEL_H := 165
+const PANEL_W := 300
+const PANEL_H := 180
 
 var _panel:           PanelContainer = null
 var _name_lbl:        Label          = null
@@ -207,24 +207,24 @@ func _build_panel() -> void:
 	vbox.add_child(header_row)
 
 	_portrait_rect = TextureRect.new()
-	_portrait_rect.custom_minimum_size = Vector2(48, 60)
+	_portrait_rect.custom_minimum_size = Vector2(64, 80)
 	_portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_portrait_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_portrait_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header_row.add_child(_portrait_rect)
 
 	var header_col := VBoxContainer.new()
-	header_col.add_theme_constant_override("separation", 1)
+	header_col.add_theme_constant_override("separation", 2)
 	header_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header_row.add_child(header_col)
 
-	_name_lbl = _make_label("", 15, C_TITLE)
+	_name_lbl = _make_label("", 16, C_TITLE)
 	header_col.add_child(_name_lbl)
 
-	_faction_lbl = _make_label("", 12, C_LABEL)
+	_faction_lbl = _make_label("", 13, C_LABEL)
 	header_col.add_child(_faction_lbl)
 
-	_role_lbl = _make_label("", 12, C_MUTED)
+	_role_lbl = _make_label("", 13, C_MUTED)
 	header_col.add_child(_role_lbl)
 
 	var sep := HSeparator.new()
@@ -233,7 +233,7 @@ func _build_panel() -> void:
 	sep.add_theme_stylebox_override("separator", sep_style)
 	vbox.add_child(sep)
 
-	_bio_lbl = _make_label("", 12, C_MUTED)
+	_bio_lbl = _make_label("", 13, C_MUTED)
 	_bio_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_bio_lbl.custom_minimum_size = Vector2(PANEL_W - 20, 0)
 	vbox.add_child(_bio_lbl)
@@ -255,22 +255,22 @@ func _build_panel() -> void:
 	_state_icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	state_row.add_child(_state_icon_rect)
 
-	_state_lbl = _make_label("", 12, C_LABEL)
+	_state_lbl = _make_label("", 13, C_LABEL)
 	state_row.add_child(_state_lbl)
 
-	_rumor_lbl = _make_label("", 12, C_MUTED)
+	_rumor_lbl = _make_label("", 13, C_MUTED)
 	vbox.add_child(_rumor_lbl)
 
-	_rep_lbl = _make_label("", 12, C_LABEL)
+	_rep_lbl = _make_label("", 13, C_LABEL)
 	vbox.add_child(_rep_lbl)
 
-	_dead_lbl = _make_label("☠ SOCIALLY DEAD — reputation frozen", 12, Color(0.85, 0.15, 0.15, 1.0))
+	_dead_lbl = _make_label("☠ SOCIALLY DEAD — reputation frozen", 13, Color(0.85, 0.15, 0.15, 1.0))
 	_dead_lbl.visible = false
 	vbox.add_child(_dead_lbl)
 
-	_hint_lbl = _make_label("Right-click to Eavesdrop", 11, C_HINT)
-	_hint_lbl.add_theme_constant_override("outline_size", 1)
-	_hint_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	_hint_lbl = _make_label("Right-click to Eavesdrop  (uses 1 Action)", 12, C_HINT)
+	_hint_lbl.add_theme_constant_override("outline_size", 2)
+	_hint_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 	vbox.add_child(_hint_lbl)
 
 	_panel.modulate.a = 0.0

@@ -14,7 +14,7 @@ const C_TITLE  := Color(0.92, 0.78, 0.12, 1.0)
 const C_LABEL  := Color(0.82, 0.75, 0.60, 1.0)
 
 const OFFSET       := Vector2(18, -95)
-const PANEL_W      := 270
+const PANEL_W      := 300
 const FADE_IN_SEC  := 0.12
 const FADE_OUT_SEC := 0.10
 
@@ -154,8 +154,10 @@ func _build_panel() -> void:
 	_panel.add_child(vbox)
 
 	_name_lbl = Label.new()
-	_name_lbl.add_theme_font_size_override("font_size", 14)
+	_name_lbl.add_theme_font_size_override("font_size", 16)
 	_name_lbl.add_theme_color_override("font_color", C_TITLE)
+	_name_lbl.add_theme_constant_override("outline_size", 2)
+	_name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
 	vbox.add_child(_name_lbl)
 
 	var sep := HSeparator.new()
@@ -165,18 +167,18 @@ func _build_panel() -> void:
 	vbox.add_child(sep)
 
 	_desc_lbl = Label.new()
-	_desc_lbl.add_theme_font_size_override("font_size", 12)
+	_desc_lbl.add_theme_font_size_override("font_size", 13)
 	_desc_lbl.add_theme_color_override("font_color", C_LABEL)
 	_desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_desc_lbl.custom_minimum_size = Vector2(PANEL_W - 20, 0)
 	vbox.add_child(_desc_lbl)
 
 	_hint_lbl = Label.new()
-	_hint_lbl.text = "Right-click to Observe"
-	_hint_lbl.add_theme_font_size_override("font_size", 11)
+	_hint_lbl.text = "Right-click to Observe  (uses 1 Action)"
+	_hint_lbl.add_theme_font_size_override("font_size", 12)
 	_hint_lbl.add_theme_color_override("font_color", C_HINT)
-	_hint_lbl.add_theme_constant_override("outline_size", 1)
-	_hint_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	_hint_lbl.add_theme_constant_override("outline_size", 2)
+	_hint_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 	vbox.add_child(_hint_lbl)
 
 	_panel.modulate.a = 0.0
