@@ -1,4 +1,4 @@
-# Rumor Mill — Art Style Guide (Sprint 5 / SPA-41)
+# Rumor Mill — Art Style Guide (Art Pass 10 / SPA-542)
 
 **Visual target:** Pentiment × Dwarf Fortress.
 Desaturated naturals, ink-line silhouettes, warm parchment UI.
