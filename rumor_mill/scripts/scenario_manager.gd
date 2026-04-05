@@ -227,11 +227,11 @@ const ALDOUS_PRIOR_ID  := "aldous_prior"
 # Scenario 1 thresholds.
 # SPA-98: raised from 25 — Edric's credulity=0.05 and loyalty=0.80 override make
 # the original 26-point drop punishing for a tutorial scenario.
-const S1_WIN_EDRIC_BELOW   := 30
-const S1_EDRIC_START_SCORE := 50  ## Edric's default base reputation at scenario start.
+var S1_WIN_EDRIC_BELOW   := 30
+var S1_EDRIC_START_SCORE := 50  ## Edric's default base reputation at scenario start.
 # SPA-502: cumulative exposure threshold — when any NPC's heat reaches this value,
 # the Guard Captain connects the dots and the player is exposed.
-const S1_EXPOSED_HEAT      := 80.0
+var S1_EXPOSED_HEAT      := 80.0
 
 # Scenario 2 thresholds.
 # Win when 7+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
@@ -253,9 +253,9 @@ const TICKS_PER_DAY        := 24
 # like random frustration near 40; wider buffer rewards strategy over luck.
 # Tomas start lowered 52→48 in scenarios.json; rival daily phase pushed from day 16→18.
 # Required gains now: +10 (Calder) / -13 (Tomas) with the rival seeding every day from day 18.
-const S3_WIN_CALDER_MIN    := 75
-const S3_WIN_TOMAS_MAX     := 35
-const S3_FAIL_CALDER_BELOW := 35
+var S3_WIN_CALDER_MIN    := 75
+var S3_WIN_TOMAS_MAX     := 35
+var S3_FAIL_CALDER_BELOW := 35
 
 # Scenario 4 thresholds & NPC ids.
 # Protected NPCs must be >= S4_WIN_REP_MIN at deadline to win.
@@ -266,8 +266,8 @@ const S3_FAIL_CALDER_BELOW := 35
 # Starting reps raised in scenarios.json (Aldous 65→70, Vera 65→68, Finn 70→72).
 # Inquisitor daily phase pushed from day 13→15; late intensity reduced 4→3.
 const S4_PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
-const S4_WIN_REP_MIN       := 45
-const S4_FAIL_REP_BELOW    := 40
+var S4_WIN_REP_MIN       := 45
+var S4_FAIL_REP_BELOW    := 40
 
 # Scenario 5 thresholds (The Election — SPA-605).
 # Three-way race: Aldric must reach 65+ and be highest; both rivals must be below 45.

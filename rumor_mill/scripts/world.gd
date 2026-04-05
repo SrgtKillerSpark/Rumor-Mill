@@ -729,7 +729,42 @@ func _apply_active_scenario() -> void:
 	if scenario_manager != null and _scen_diff_mods.has("winBelieversOverride"):
 		scenario_manager.s2_win_illness_min = int(_scen_diff_mods["winBelieversOverride"])
 
-	# 7c. Scenario 5 difficulty overrides (SPA-676).
+	# 7c. Scenario 1 difficulty overrides (SPA-691).
+	if scenario_manager != null and active_scenario_id == "scenario_1":
+		if _scen_diff_mods.has("exposedHeatOverride"):
+			scenario_manager.S1_EXPOSED_HEAT = float(_scen_diff_mods["exposedHeatOverride"])
+		if _scen_diff_mods.has("daysAllowedOverride"):
+			scenario_manager.override_days_allowed(int(_scen_diff_mods["daysAllowedOverride"]))
+
+	# 7d. Scenario 3 difficulty overrides (SPA-691).
+	if scenario_manager != null and active_scenario_id == "scenario_3":
+		if _scen_diff_mods.has("winCalderMin"):
+			scenario_manager.S3_WIN_CALDER_MIN = int(_scen_diff_mods["winCalderMin"])
+		if _scen_diff_mods.has("winTomasMax"):
+			scenario_manager.S3_WIN_TOMAS_MAX = int(_scen_diff_mods["winTomasMax"])
+		if _scen_diff_mods.has("failCalderBelow"):
+			scenario_manager.S3_FAIL_CALDER_BELOW = int(_scen_diff_mods["failCalderBelow"])
+		if _scen_diff_mods.has("daysAllowedOverride"):
+			scenario_manager.override_days_allowed(int(_scen_diff_mods["daysAllowedOverride"]))
+		if _scen_diff_mods.has("startingReputationOverrides"):
+			var s3_rep_overrides: Dictionary = _scen_diff_mods["startingReputationOverrides"]
+			for npc_id in s3_rep_overrides:
+				reputation_system.set_base_override(npc_id, int(s3_rep_overrides[npc_id]))
+
+	# 7e. Scenario 4 difficulty overrides (SPA-691).
+	if scenario_manager != null and active_scenario_id == "scenario_4":
+		if _scen_diff_mods.has("winRepMin"):
+			scenario_manager.S4_WIN_REP_MIN = int(_scen_diff_mods["winRepMin"])
+		if _scen_diff_mods.has("failRepBelow"):
+			scenario_manager.S4_FAIL_REP_BELOW = int(_scen_diff_mods["failRepBelow"])
+		if _scen_diff_mods.has("daysAllowedOverride"):
+			scenario_manager.override_days_allowed(int(_scen_diff_mods["daysAllowedOverride"]))
+		if _scen_diff_mods.has("startingReputationOverrides"):
+			var s4_rep_overrides: Dictionary = _scen_diff_mods["startingReputationOverrides"]
+			for npc_id in s4_rep_overrides:
+				reputation_system.set_base_override(npc_id, int(s4_rep_overrides[npc_id]))
+
+	# 7f. Scenario 5 difficulty overrides (SPA-676).
 	if scenario_manager != null and active_scenario_id == "scenario_5":
 		if _scen_diff_mods.has("winAldricMin"):
 			scenario_manager.S5_WIN_ALDRIC_MIN = int(_scen_diff_mods["winAldricMin"])
@@ -742,7 +777,7 @@ func _apply_active_scenario() -> void:
 		if _scen_diff_mods.has("daysAllowedOverride"):
 			scenario_manager.override_days_allowed(int(_scen_diff_mods["daysAllowedOverride"]))
 
-	# 7d. Scenario 6 difficulty overrides (SPA-676).
+	# 7g. Scenario 6 difficulty overrides (SPA-676).
 	if scenario_manager != null and active_scenario_id == "scenario_6":
 		if _scen_diff_mods.has("winAldricMax"):
 			scenario_manager.S6_WIN_ALDRIC_MAX = int(_scen_diff_mods["winAldricMax"])
