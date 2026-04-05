@@ -93,6 +93,8 @@ func _process(delta: float) -> void:
 	# Pulse NPC rings.
 	for npc_id in _npc_rings:
 		var ring: Polygon2D = _npc_rings[npc_id]
+		if not is_instance_valid(ring):
+			continue
 		ring.modulate.a = 0.5 + pulse * 0.5  # subtle brightness variation
 
 
@@ -103,6 +105,8 @@ func _fade_out() -> void:
 	# Fade all NPC rings.
 	for npc_id in _npc_rings:
 		var ring: Polygon2D = _npc_rings[npc_id]
+		if not is_instance_valid(ring):
+			continue
 		tween.parallel().tween_property(ring, "modulate:a", 0.0, 1.5)
 	tween.chain().tween_callback(_disable)
 
