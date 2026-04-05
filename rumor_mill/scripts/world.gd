@@ -803,8 +803,10 @@ func _apply_active_scenario() -> void:
 					if npc.npc_data.get("id", "") == npc_id:
 						if entry.has("loyalty"):
 							npc.npc_data["loyalty"] = float(entry["loyalty"])
+							npc._loyalty = float(entry["loyalty"])
 						if entry.has("credulity"):
 							npc.npc_data["credulity"] = float(entry["credulity"])
+							npc._credulity = float(entry["credulity"])
 						break
 
 	# 8. Rival agent — only active in Scenario 3.

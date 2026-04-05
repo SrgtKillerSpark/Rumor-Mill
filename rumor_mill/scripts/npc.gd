@@ -196,8 +196,9 @@ var _avoided_subject_ids: Array[String] = []
 # Cumulative credulity modifier from memory consequences.  Drives both
 # _credulity and npc_data["credulity"] so the change is visible everywhere.
 var _credulity_modifier:       float = 0.0
-const _CREDULITY_MODIFIER_FLOOR: float = -0.15   # rejection penalty cap
-const _CREDULITY_ACT_GAIN:       float =  0.10   # reward for acting on a rumor
+const _CREDULITY_MODIFIER_FLOOR:   float = -0.15   # rejection penalty cap
+const _CREDULITY_MODIFIER_CEILING: float =  0.15   # act-on-rumor reward cap
+const _CREDULITY_ACT_GAIN:        float =  0.10   # reward for acting on a rumor
 const _CREDULITY_REJECT_PENALTY: float = -0.05   # penalty per rejection
 
 # Minimum ticks an NPC must spend in EVALUATING before the believe/reject
@@ -1184,7 +1185,7 @@ func _record_rumor_history(rumor: Rumor, subject_id: String, outcome: String, ti
 ## decisions and other NPCs' spread calculations reflect the change.
 func _apply_credulity_modifier(delta: float) -> void:
 	var prev := _credulity_modifier
-	_credulity_modifier = maxf(_credulity_modifier + delta, _CREDULITY_MODIFIER_FLOOR)
+	_credulity_modifier = clampf(_credulity_modifier + delta, _CREDULITY_MODIFIER_FLOOR, _CREDULITY_MODIFIER_CEILING)
 	var actual_delta := _credulity_modifier - prev
 	if abs(actual_delta) < 0.0001:
 		return

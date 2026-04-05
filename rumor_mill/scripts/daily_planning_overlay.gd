@@ -198,7 +198,7 @@ func _hide_overlay() -> void:
 	var speed_node: Node = get_parent().get_node_or_null("SpeedHUD") if get_parent() != null else null
 	if speed_node != null and speed_node.has_method("_set_speed"):
 		speed_node._set_speed(speed_node.Speed.NORMAL)
-	elif _day_night != null:
+	if _day_night != null:
 		_day_night.set_paused(false)
 
 
