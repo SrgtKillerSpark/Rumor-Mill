@@ -4,6 +4,7 @@ class_name AstarPathfinder
 
 var _astar: AStarGrid2D
 var _grid_size: Vector2i
+var _warned_oob: Dictionary = {}  # Vector2i -> true; suppresses repeat OOB warnings
 
 
 func setup(grid_size: Vector2i, walkable_cells: Array[Vector2i]) -> void:
@@ -34,13 +35,15 @@ func get_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 		clamp(from.x, 0, _grid_size.x - 1),
 		clamp(from.y, 0, _grid_size.y - 1)
 	)
-	if safe_from != from:
+	if safe_from != from and not _warned_oob.has(from):
+		_warned_oob[from] = true
 		push_warning("[AStarPathfinder] from %s clamped to %s (grid %s)" % [from, safe_from, _grid_size])
 	var safe_to := Vector2i(
 		clamp(to.x, 0, _grid_size.x - 1),
 		clamp(to.y, 0, _grid_size.y - 1)
 	)
-	if safe_to != to:
+	if safe_to != to and not _warned_oob.has(to):
+		_warned_oob[to] = true
 		push_warning("[AStarPathfinder] to %s clamped to %s (grid %s)" % [to, safe_to, _grid_size])
 	if _astar.is_point_solid(safe_from) or _astar.is_point_solid(safe_to):
 		return []
