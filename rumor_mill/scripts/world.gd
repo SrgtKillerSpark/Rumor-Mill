@@ -67,9 +67,13 @@ const ATLAS_WELL_BUCKET  := Vector2i(7, 0)
 const ATLAS_OAK_TREE     := Vector2i(8, 0)   # SPA-526
 const ATLAS_LANTERN_POST := Vector2i(9, 0)   # SPA-526
 const ATLAS_GARDEN_BED   := Vector2i(10, 0)  # SPA-526
-const ATLAS_MARKET_STALL := Vector2i(11, 0)  # SPA-551: market stall with awning
-const ATLAS_BENCH        := Vector2i(12, 0)  # SPA-551: wooden bench
-const ATLAS_STONE_WELL   := Vector2i(13, 0)  # SPA-551: stone well with crossbar
+const ATLAS_MARKET_STALL  := Vector2i(11, 0)  # SPA-551: market stall with awning
+const ATLAS_BENCH         := Vector2i(12, 0)  # SPA-551: wooden bench
+const ATLAS_STONE_WELL    := Vector2i(13, 0)  # SPA-551: stone well with crossbar
+const ATLAS_CHAPEL_CANDLE := Vector2i(14, 0)  # SPA-595: ivory pillar candle with forge flame
+const ATLAS_WOODPILE      := Vector2i(15, 0)  # SPA-602: stacked log pile
+const ATLAS_NOTICE_BOARD  := Vector2i(16, 0)  # SPA-602: post-mounted parchment notice board
+const ATLAS_IRON_TORCH    := Vector2i(17, 0)  # SPA-602: iron bracket torch with forge flame
 
 ## Grass tile pool for random variant selection in _paint_terrain() (SPA-526).
 const GRASS_VARIANTS: Array[Vector2i] = [
@@ -144,6 +148,11 @@ var _is_night: bool = false
 ## Visual polish systems (SPA-586).
 var _ambient_particles: Node = null
 var _weather_system:    Node = null
+
+## Reputation change indicators (SPA-599): npc_id → last emitted score.
+## Compared each tick against the new snapshot; shows floating +/- when delta ≥ threshold.
+var _prev_rep_scores: Dictionary = {}
+const _REP_CHANGE_THRESHOLD := 3  # minimum score change to show a floating indicator
 
 ## Active scenario id — change before _ready() to load a different scenario.
 ## Valid values: "scenario_1", "scenario_2", "scenario_3", "scenario_4"
@@ -776,19 +785,33 @@ func on_game_tick(tick: int) -> void:
 	# ── Reputation: recalculate all snapshots BEFORE state transitions fire. ──
 	if reputation_system != null:
 		reputation_system.recalculate_all(npcs, tick)
+
 		# ── SOCIALLY_DEAD edge detection — emit once per NPC on first trigger. ──
+		# ── Reputation change indicator — show floating +/- for significant shifts. ──
 		for npc in npcs:
 			var npc_id: String = npc.npc_data.get("id", "")
 			if npc_id.is_empty() or _socially_dead_ids.has(npc_id):
 				continue
 			var snap: ReputationSystem.ReputationSnapshot = reputation_system.get_snapshot(npc_id)
-			if snap != null and snap.is_socially_dead:
+			if snap == null:
+				continue
+			if snap.is_socially_dead:
 				_socially_dead_ids[npc_id] = true
 				var npc_name: String = npc.npc_data.get("name", npc_id)
 				emit_signal("socially_dead_triggered", npc_id, npc_name, tick)
 				emit_signal("rumor_event",
 					"[SOCIALLY DEAD] %s — death rumor believed by 5+ townspeople. Reputation permanently frozen." % npc_name,
 					tick)
+			# Floating +/- indicator: compare against last emitted score (not raw pre_scores)
+			# to avoid showing the same delta every tick during stable believers.
+			var prev_emitted: int = _prev_rep_scores.get(npc_id, -1)
+			if prev_emitted < 0:
+				_prev_rep_scores[npc_id] = snap.score
+			else:
+				var delta: int = snap.score - prev_emitted
+				if abs(delta) >= _REP_CHANGE_THRESHOLD:
+					_prev_rep_scores[npc_id] = snap.score
+					npc.show_reputation_change(delta)
 	if scenario_manager != null and reputation_system != null:
 		scenario_manager.evaluate(reputation_system, tick)
 	if milestone_tracker != null:
