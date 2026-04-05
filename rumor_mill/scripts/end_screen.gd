@@ -49,6 +49,8 @@ const PEAK_BELIEF_TARGET: Dictionary = {
 	2: { "id": "alys_herbwife", "name": "Alys Herbwife" },
 	3: { "id": "calder_fenn",   "name": "Calder Fenn" },
 	4: { "id": "aldous_prior",  "name": "Aldous Prior" },
+	5: { "id": "aldric_vane",   "name": "Aldric Vane" },
+	6: { "id": "marta_coin",    "name": "Marta Coin" },
 }
 
 const NPC_OUTCOMES: Dictionary = {
@@ -71,6 +73,16 @@ const NPC_OUTCOMES: Dictionary = {
 		{ "id": "aldous_prior", "name": "Prior Aldous" },
 		{ "id": "vera_midwife", "name": "Vera Midwife" },
 		{ "id": "finn_monk",    "name": "Brother Finn" },
+	],
+	"scenario_5": [
+		{ "id": "aldric_vane",  "name": "Aldric Vane" },
+		{ "id": "edric_fenn",   "name": "Edric Fenn" },
+		{ "id": "tomas_reeve",  "name": "Tomas Reeve" },
+	],
+	"scenario_6": [
+		{ "id": "aldric_vane",  "name": "Guild Master Aldric" },
+		{ "id": "marta_coin",   "name": "Marta Coin" },
+		{ "id": "annit_scribe", "name": "Annit Scribe" },
 	],
 }
 
@@ -611,6 +623,30 @@ func _build_bonus_stat(scenario_id: int) -> void:
 				bonus_value_text = "%d pts" % progress.get("min_score", 0)
 			else:
 				bonus_value_text = "—"
+		5:
+			bonus_label_text = "Election Margin"
+			if _world_ref != null and _world_ref.scenario_manager != null:
+				var progress: Dictionary = _world_ref.scenario_manager.get_scenario_5_progress(
+					_world_ref.reputation_system
+				)
+				var aldric: int = progress.get("aldric_score", 48)
+				var edric: int  = progress.get("edric_score", 58)
+				var tomas: int  = progress.get("tomas_score", 45)
+				var runner_up: int = max(edric, tomas)
+				var margin: int = aldric - runner_up
+				bonus_value_text = ("+%d pts" % margin) if margin >= 0 else ("%d pts" % margin)
+			else:
+				bonus_value_text = "—"
+		6:
+			bonus_label_text = "Peak Heat"
+			if _world_ref != null and _world_ref.scenario_manager != null:
+				var progress: Dictionary = _world_ref.scenario_manager.get_scenario_6_progress(
+					_world_ref.reputation_system
+				)
+				var max_heat: float = progress.get("max_heat", 0.0)
+				bonus_value_text = "%d / %d" % [int(max_heat), int(ScenarioManager.S6_EXPOSED_HEAT)]
+			else:
+				bonus_value_text = "—"
 		_:
 			return   # No bonus stat for unknown scenarios.
 
@@ -750,6 +786,8 @@ static func _next_scenario_id(current: String) -> String:
 		"scenario_1": return "scenario_2"
 		"scenario_2": return "scenario_3"
 		"scenario_3": return "scenario_4"
+		"scenario_4": return "scenario_5"
+		"scenario_5": return "scenario_6"
 	return ""
 
 

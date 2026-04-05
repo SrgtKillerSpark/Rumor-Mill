@@ -731,6 +731,30 @@ func _refresh_threat() -> void:
 		threat = clampf(1.0 - float(max(min_margin, 0)) / 30.0, 0.0, 1.0)
 		label_text = "Inquisitor: %s" % _threat_word(threat)
 
+	# S5: threat = time pressure + Aldric's distance from rivals.
+	elif _scenario_manager._active_scenario == 5:
+		var time_frac: float = _scenario_manager.get_time_fraction(
+			_day_night.current_tick if _day_night != null else 0)
+		threat = clampf(time_frac * 0.5, 0.0, 1.0)
+		if _reputation_system != null:
+			var aldric: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot("aldric_vane")
+			if aldric != null and aldric.score < 50:
+				threat = maxf(threat, clampf(1.0 - float(aldric.score - 30) / 20.0, 0.0, 1.0))
+		label_text = "Election: %s" % _threat_word(threat)
+
+	# S6: threat = heat approaching lower ceiling of 60.
+	elif _scenario_manager._active_scenario == 6:
+		var heat: float = _intel_store.get_heat("player") if _intel_store != null else 0.0
+		threat = clampf(heat / ScenarioManager.S6_EXPOSED_HEAT, 0.0, 1.0)
+		var time_frac: float = _scenario_manager.get_time_fraction(
+			_day_night.current_tick if _day_night != null else 0)
+		threat = maxf(threat, time_frac * 0.5)
+		if _reputation_system != null:
+			var marta: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot("marta_coin")
+			if marta != null and marta.score < 45:
+				threat = maxf(threat, clampf(1.0 - float(marta.score - 30) / 15.0, 0.0, 1.0))
+		label_text = "Exposure: %s" % _threat_word(threat)
+
 	else:
 		_lbl_threat.text = ""
 		return

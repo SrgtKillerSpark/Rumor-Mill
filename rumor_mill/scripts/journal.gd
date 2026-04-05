@@ -1331,16 +1331,24 @@ func _build_objectives_section() -> void:
 
 	var days_elapsed: int = (_day_night_ref.current_day - 1) if _day_night_ref != null else 0
 
-	# Per-scenario day limits (from scenarios.json); used for cross-scenario display.
+	# Read day limit from ScenarioManager to avoid hardcoded drift.
+	var _sm_days: int = sm.get_days_allowed() if sm != null else 30
+	var days_remaining: int = max(0, _sm_days - days_elapsed)
+
+	# Fallback day limits for inactive-scenario labels (used when showing all objectives).
 	const S1_DAYS := 30
 	const S2_DAYS := 20
 	const S3_DAYS := 25
 	const S4_DAYS := 20
+	const S5_DAYS := 25
+	const S6_DAYS := 22
 
 	var s1_days_remaining: int = max(0, S1_DAYS - days_elapsed)
 	var s2_days_remaining: int = max(0, S2_DAYS - days_elapsed)
 	var s3_days_remaining: int = max(0, S3_DAYS - days_elapsed)
 	var s4_days_remaining: int = max(0, S4_DAYS - days_elapsed)
+	var s5_days_remaining: int = max(0, S5_DAYS - days_elapsed)
+	var s6_days_remaining: int = max(0, S6_DAYS - days_elapsed)
 
 	var edric_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("edric_fenn")  if rep != null else null
 	var calder_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("calder_fenn") if rep != null else null
@@ -1348,6 +1356,8 @@ func _build_objectives_section() -> void:
 	var aldous_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("aldous_prior") if rep != null else null
 	var vera_snap:   ReputationSystem.ReputationSnapshot = rep.get_snapshot("vera_midwife")  if rep != null else null
 	var finn_snap:   ReputationSystem.ReputationSnapshot = rep.get_snapshot("finn_monk")     if rep != null else null
+	var aldric_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("aldric_vane")   if rep != null else null
+	var marta_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("marta_coin")    if rep != null else null
 
 	var active_scenario_id: String = ""
 	if _world_ref != null and "active_scenario_id" in _world_ref:
@@ -1360,6 +1370,14 @@ func _build_objectives_section() -> void:
 	var s4_state := ScenarioManager.ScenarioState.ACTIVE
 	if sm != null:
 		s4_state = sm.scenario_4_state
+
+	var s5_state := ScenarioManager.ScenarioState.ACTIVE
+	if sm != null:
+		s5_state = sm.scenario_5_state
+
+	var s6_state := ScenarioManager.ScenarioState.ACTIVE
+	if sm != null:
+		s6_state = sm.scenario_6_state
 
 	# ── Scenario 1 ────────────────────────────────────────────────────────
 	var s1_lbl := Label.new()
@@ -1624,6 +1642,176 @@ func _build_objectives_section() -> void:
 	s4_fail_body.add_theme_font_size_override("font_size", 12)
 	s4_fail_body.add_theme_color_override("font_color", C_BODY)
 	_content_vbox.add_child(s4_fail_body)
+
+	# ── Scenario 5 ────────────────────────────────────────────────────────
+	var s5_suffix := "  (upcoming)" if active_scenario_id != "scenario_5" else ""
+	var s5_lbl := Label.new()
+	s5_lbl.text = "Scenario 5: The Election%s" % s5_suffix
+	s5_lbl.add_theme_font_size_override("font_size", 14)
+	s5_lbl.add_theme_color_override("font_color", C_HEADING)
+	_content_vbox.add_child(s5_lbl)
+
+	if active_scenario_id == "scenario_5":
+		var s5_days_lbl := Label.new()
+		s5_days_lbl.text = "Days remaining: %d / %d" % [s5_days_remaining, S5_DAYS]
+		s5_days_lbl.add_theme_font_size_override("font_size", 12)
+		s5_days_lbl.add_theme_color_override("font_color", C_BODY)
+		_content_vbox.add_child(s5_days_lbl)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	var s5_win_hdr := Label.new()
+	s5_win_hdr.text = "WIN CONDITION"
+	s5_win_hdr.add_theme_font_size_override("font_size", 12)
+	s5_win_hdr.add_theme_color_override("font_color", C_SPREADING)
+	_content_vbox.add_child(s5_win_hdr)
+
+	var s5_win_status := ""
+	var s5_win_color  := C_BODY
+	match s5_state:
+		ScenarioManager.ScenarioState.WON:
+			s5_win_status = "[WON]"
+			s5_win_color  = C_SPREADING
+		ScenarioManager.ScenarioState.FAILED:
+			s5_win_status = "[FAILED]"
+			s5_win_color  = C_CONTRADICTED
+
+	var aldric_score_str := "48"
+	var aldric_band_str  := "Suspect"
+	if aldric_snap != null:
+		aldric_score_str = str(aldric_snap.score)
+		aldric_band_str  = ReputationSystem.score_label(aldric_snap.score)
+
+	var edric_s5_str := "58"
+	var edric_s5_band := "Respected"
+	if edric_snap != null:
+		edric_s5_str = str(edric_snap.score)
+		edric_s5_band = ReputationSystem.score_label(edric_snap.score)
+
+	var tomas_s5_str := "45"
+	var tomas_s5_band := "Suspect"
+	if tomas_snap != null:
+		tomas_s5_str = str(tomas_snap.score)
+		tomas_s5_band = ReputationSystem.score_label(tomas_snap.score)
+
+	var s5_win_body := Label.new()
+	s5_win_body.text = (
+		"  Aldric Vane must reach \u2265 %d rep AND be the highest of three candidates.  %s\n"
+		+ "  Both rivals must drop below %d.\n\n"
+		+ "  Aldric Vane:  %s / 100  \u2014 %s\n"
+		+ "  Edric Fenn:   %s / 100  \u2014 %s\n"
+		+ "  Tomas Reeve:  %s / 100  \u2014 %s\n"
+		+ "  Endorsement: Day %d (Prior Aldous grants +%d to leader)"
+	) % [sm.S5_WIN_ALDRIC_MIN if sm != null else 65, s5_win_status,
+		sm.S5_WIN_RIVALS_MAX if sm != null else 45,
+		aldric_score_str, aldric_band_str,
+		edric_s5_str, edric_s5_band,
+		tomas_s5_str, tomas_s5_band,
+		ScenarioManager.S5_ENDORSEMENT_DAY, sm.S5_ENDORSEMENT_BONUS if sm != null else 8]
+	s5_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
+	s5_win_body.add_theme_font_size_override("font_size", 12)
+	s5_win_body.add_theme_color_override("font_color", s5_win_color)
+	_content_vbox.add_child(s5_win_body)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	var s5_fail_hdr := Label.new()
+	s5_fail_hdr.text = "FAIL CONDITIONS"
+	s5_fail_hdr.add_theme_font_size_override("font_size", 12)
+	s5_fail_hdr.add_theme_color_override("font_color", C_CONTRADICTED)
+	_content_vbox.add_child(s5_fail_hdr)
+
+	var s5_fail_body := Label.new()
+	s5_fail_body.text = (
+		"  [ ] Aldric Vane drops below %d reputation\n"
+		+ "  [ ] %d days elapsed without Aldric winning the election  (days remaining: %d)"
+	) % [sm.S5_FAIL_ALDRIC_BELOW if sm != null else 30, S5_DAYS, s5_days_remaining]
+	s5_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
+	s5_fail_body.add_theme_font_size_override("font_size", 12)
+	s5_fail_body.add_theme_color_override("font_color", C_BODY)
+	_content_vbox.add_child(s5_fail_body)
+
+	# ── Scenario 6 ────────────────────────────────────────────────────────
+	var s6_suffix := "  (upcoming)" if active_scenario_id != "scenario_6" else ""
+	var s6_lbl := Label.new()
+	s6_lbl.text = "Scenario 6: The Merchant's Debt%s" % s6_suffix
+	s6_lbl.add_theme_font_size_override("font_size", 14)
+	s6_lbl.add_theme_color_override("font_color", C_HEADING)
+	_content_vbox.add_child(s6_lbl)
+
+	if active_scenario_id == "scenario_6":
+		var s6_days_lbl := Label.new()
+		s6_days_lbl.text = "Days remaining: %d / %d" % [s6_days_remaining, S6_DAYS]
+		s6_days_lbl.add_theme_font_size_override("font_size", 12)
+		s6_days_lbl.add_theme_color_override("font_color", C_BODY)
+		_content_vbox.add_child(s6_days_lbl)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	var s6_win_hdr := Label.new()
+	s6_win_hdr.text = "WIN CONDITION"
+	s6_win_hdr.add_theme_font_size_override("font_size", 12)
+	s6_win_hdr.add_theme_color_override("font_color", C_SPREADING)
+	_content_vbox.add_child(s6_win_hdr)
+
+	var s6_win_status := ""
+	var s6_win_color  := C_BODY
+	match s6_state:
+		ScenarioManager.ScenarioState.WON:
+			s6_win_status = "[WON]"
+			s6_win_color  = C_SPREADING
+		ScenarioManager.ScenarioState.FAILED:
+			s6_win_status = "[FAILED]"
+			s6_win_color  = C_CONTRADICTED
+
+	var aldric_s6_str := "55"
+	var aldric_s6_band := "Respected"
+	if aldric_snap != null:
+		aldric_s6_str = str(aldric_snap.score)
+		aldric_s6_band = ReputationSystem.score_label(aldric_snap.score)
+
+	var marta_score_str := "52"
+	var marta_band_str  := "Respected"
+	if marta_snap != null:
+		marta_score_str = str(marta_snap.score)
+		marta_band_str  = ReputationSystem.score_label(marta_snap.score)
+
+	var s6_win_body := Label.new()
+	s6_win_body.text = (
+		"  Expose Aldric Vane (rep \u2264 %d) and protect Marta Coin (rep \u2265 %d).  %s\n\n"
+		+ "  Aldric Vane:  %s / 100  \u2014 %s\n"
+		+ "  Marta Coin:   %s / 100  \u2014 %s\n"
+		+ "  Heat ceiling: %d  (guards on Aldric's payroll)"
+	) % [sm.S6_WIN_ALDRIC_MAX if sm != null else 30,
+		sm.S6_WIN_MARTA_MIN if sm != null else 60, s6_win_status,
+		aldric_s6_str, aldric_s6_band,
+		marta_score_str, marta_band_str,
+		int(sm.S6_EXPOSED_HEAT) if sm != null else 60]
+	s6_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
+	s6_win_body.add_theme_font_size_override("font_size", 12)
+	s6_win_body.add_theme_color_override("font_color", s6_win_color)
+	_content_vbox.add_child(s6_win_body)
+
+	_content_vbox.add_child(HSeparator.new())
+
+	var s6_fail_hdr := Label.new()
+	s6_fail_hdr.text = "FAIL CONDITIONS"
+	s6_fail_hdr.add_theme_font_size_override("font_size", 12)
+	s6_fail_hdr.add_theme_color_override("font_color", C_CONTRADICTED)
+	_content_vbox.add_child(s6_fail_hdr)
+
+	var s6_fail_body := Label.new()
+	s6_fail_body.text = (
+		"  [ ] Marta Coin drops below %d reputation  (silenced)\n"
+		+ "  [ ] Heat reaches %d  (exposed by guards)\n"
+		+ "  [ ] %d days elapsed without meeting both targets  (days remaining: %d)"
+	) % [sm.S6_FAIL_MARTA_BELOW if sm != null else 30,
+		int(sm.S6_EXPOSED_HEAT) if sm != null else 60,
+		S6_DAYS, s6_days_remaining]
+	s6_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
+	s6_fail_body.add_theme_font_size_override("font_size", 12)
+	s6_fail_body.add_theme_color_override("font_color", C_BODY)
+	_content_vbox.add_child(s6_fail_body)
 
 
 # ── Notification dot ──────────────────────────────────────────────────────────
