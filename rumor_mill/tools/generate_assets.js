@@ -3,7 +3,7 @@
  * generate_assets.js — Art Pass 9 pixel-art generator for Rumor Mill (SPA-507)
  *
  * Produces all textures needed:
- *   assets/textures/tiles_ground.png      (576×32 — 9 ground variants: void, grass_base, grass_dark, grass_sparse, grass_dense, grass_floral, dirt_muddy, dirt_packed, grass_dirt_blend)
+ *   assets/textures/tiles_ground.png      (768×32 — 12 ground variants: void, grass_base, grass_dark, grass_sparse, grass_dense, grass_floral, dirt_muddy, dirt_packed, grass_dirt_blend, stone_smooth, stone_cracked, stone_cobble)
  *   assets/textures/tiles_road_dirt.png   (64×32)
  *   assets/textures/tiles_road_stone.png  (64×32)
  *   assets/textures/tiles_buildings.png   (640×64 — 10 building types)
@@ -220,11 +220,14 @@ function outlineIso(cv, r, g, b, cx=32, cy=16, hw=31, hh=15) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GROUND TILES  (tiles_ground.png — 192×32, three 64×32 isometric tiles)
-//   col 0 = void, col 1 = grass, col 2 = dark grass
+// GROUND TILES  (tiles_ground.png — 768×32, twelve 64×32 isometric tiles)
+//   col 0 = void           col 1 = grass           col 2 = grass_dark
+//   col 3 = grass_sparse   col 4 = grass_dense      col 5 = grass_floral
+//   col 6 = dirt_muddy     col 7 = dirt_packed      col 8 = grass_dirt_blend
+//   col 9 = stone_smooth   col 10 = stone_cracked   col 11 = stone_cobble (SPA-551)
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeGroundTiles() {
-  const cv = createCanvas(576, 32);
+  const cv = createCanvas(768, 32);
 
   // ── tile 0: void — very dark, just a subtle diamond outline ──────────────
   // (left transparent so Godot shows nothing)
@@ -409,6 +412,71 @@ function makeGroundTiles() {
     cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_L, 10, 0.12);
     cv.isoNoise(cx, cy, 31, 15, ...c.DIRT_L,  10, 0.10);
     outlineIso(cv, ...c.GRASS_D, cx, cy);
+  }
+
+  // ── tile 9: stone_smooth (SPA-551) — dressed stone slabs, courtyard feel ────
+  {
+    const ox = 576, cx = ox+32, cy = 16;
+    fillIso(cv, ...c.STONE_M, 255, cx, cy);
+    cv.isoNoise(cx, cy, 31, 15, ...c.STONE_L, 10, 0.18);
+    cv.isoNoise(cx, cy, 31, 15, ...c.STONE_D,  6, 0.10);
+    // horizontal slab seam
+    cv.line(cx-18, cy-6, cx+18, cy+6, ...c.STONE_D, 60);
+    // vertical seams suggesting individual blocks
+    cv.line(cx-8,  cy-12, cx-8,  cy+4, ...c.STONE_D, 40);
+    cv.line(cx+10, cy-11, cx+10, cy+4, ...c.STONE_D, 40);
+    // chip highlights near seam intersections
+    cv.sp(cx-14, cy-4, ...c.STONE_L, 70);
+    cv.sp(cx+6,  cy-7, ...c.STONE_L, 60);
+    cv.sp(cx+12, cy+2, ...c.STONE_L, 50);
+    outlineIso(cv, ...c.STONE_D, cx, cy);
+  }
+
+  // ── tile 10: stone_cracked (SPA-551) — weathered stone, diagonal crack network
+  {
+    const ox = 640, cx = ox+32, cy = 16;
+    fillIso(cv, ...c.STONE_M, 255, cx, cy);
+    cv.isoNoise(cx, cy, 31, 15, ...c.STONE_L, 8, 0.12);
+    cv.isoNoise(cx, cy, 31, 15, ...c.STONE_D, 8, 0.14);
+    // main diagonal crack + branch
+    cv.line(cx+2,  cy-13, cx-9,  cy+2,  ...c.STONE_D, 210);
+    cv.line(cx-9,  cy+2,  cx-15, cy+8,  ...c.STONE_D, 170);
+    cv.line(cx+2,  cy-13, cx+8,  cy-5,  ...c.STONE_D, 185);
+    cv.line(cx+13, cy-1,  cx+6,  cy+9,  ...c.STONE_D, 155);
+    // highlight edge of each crack (one-pixel offset, lighter)
+    cv.line(cx+3,  cy-13, cx-8,  cy+2,  ...c.STONE_L, 80);
+    cv.line(cx+14, cy-1,  cx+7,  cy+9,  ...c.STONE_L, 60);
+    // weathering chips
+    cv.sp(cx-5, cy-8, ...c.STONE_L, 130);
+    cv.sp(cx+9, cy-4, ...c.STONE_D, 110);
+    outlineIso(cv, ...c.STONE_D, cx, cy);
+  }
+
+  // ── tile 11: stone_cobble (SPA-551) — cobblestone paving, STONE_D mortar gaps
+  {
+    const ox = 704, cx = ox+32, cy = 16;
+    fillIso(cv, ...c.STONE_D, 255, cx, cy);   // mortar/gap base
+    // individual cobblestones as small iso diamonds
+    const cobbleDefs = [
+      [-20, -6], [-8, -10], [4, -8], [17, -5],
+      [-24,  0], [-12, -3], [0,  -1], [13, 1],
+      [-17,  6], [-5,  4],  [7,  5], [19, 3],
+    ];
+    for (const [dx, dy] of cobbleDefs) {
+      const ccx = cx+dx, ccy = cy+dy;
+      if (Math.abs(ccx-cx)/31 + Math.abs(ccy-cy)/15 > 0.90) continue;
+      for (let y2=ccy-3; y2<=ccy+3; y2++) {
+        for (let x2=ccx-7; x2<=ccx+7; x2++) {
+          if (Math.abs(x2-ccx)/7 + Math.abs(y2-ccy)/3 <= 0.95 &&
+              Math.abs(x2-cx)/31 + Math.abs(y2-cy)/15 <= 0.96)
+            cv.sp(x2, y2, ...c.STONE_M);
+        }
+      }
+      // top-left catch-light on each cobble
+      cv.sp(ccx-4, ccy-1, ...c.STONE_L, 160);
+      cv.sp(ccx-2, ccy-2, ...c.STONE_L, 100);
+    }
+    outlineIso(cv, ...c.STONE_D, cx, cy);
   }
 
   return cv.toPNG();
@@ -2726,7 +2794,10 @@ function makeStateIcons() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PROPS ATLAS  (tiles_props.png — 704×32, eleven 64×32 isometric prop tiles)
+// PROPS ATLAS  (tiles_props.png — 896×32, fourteen 64×32 isometric prop tiles)
+//   0=crate  1=barrel  2=sign  3=fence  4=cart  5=hay_bale  6=flower_pot  7=well_bucket
+//   8=oak_tree  9=lantern_post  10=garden_bed  (SPA-526)
+//   11=market_stall  12=bench  13=stone_well   (SPA-551)
 //   col 0  CRATE        — wooden storage crate
 //   col 1  BARREL       — wooden barrel
 //   col 2  SIGN         — post-mounted wooden sign
@@ -2741,7 +2812,7 @@ function makeStateIcons() {
 // Palette-locked; all colours from P.  Background transparent.
 // ═══════════════════════════════════════════════════════════════════════════════
 function makePropsAtlas() {
-  const cv = createCanvas(704, 32);
+  const cv = createCanvas(896, 32);  // SPA-551: expanded from 704 to 896 (props 11-13 added)
 
   // ── shared: draw an isometric cuboid centred at (cx, cy) ──────────────────
   // hw/hh = iso half-width/height of top face; bh = box height in screen pixels
@@ -3055,12 +3126,102 @@ function makePropsAtlas() {
     }
   }
 
+  // ── 11: MARKET_STALL (SPA-551) — wooden counter with CANVAS awning + FLAG_R stripe
+  {
+    const ox=704, cx=ox+32, cy=24;
+    // counter body (low, wide cuboid)
+    drawCuboid(cx, cy, 16, 6, 4, c.WOOD_L, c.WOOD_M, c.WOOD_D);
+    // plank line on counter top
+    cv.line(cx-14, cy-1, cx, cy+4, ...c.WOOD_D, 50);
+    // goods on counter surface (parchment-coloured bundles)
+    cv.fillRect(cx-11, cy-8, 5, 3, ...c.PARCH_L);
+    cv.line(cx-11, cy-8, cx-7, cy-8, ...c.PARCH_D, 120);
+    cv.fillRect(cx+3, cy-8, 4, 3, ...c.PARCH_L);
+    // two support posts at front corners
+    cv.fillRect(cx-17, cy-13, 2, 13, ...c.WOOD_D);
+    cv.line(cx-17, cy-13, cx-16, cy-13, ...c.OUTLINE);
+    cv.fillRect(cx+15, cy-13, 2, 13, ...c.WOOD_D);
+    cv.line(cx+15, cy-13, cx+16, cy-13, ...c.OUTLINE);
+    // awning (flat quadrilateral slanting back from posts)
+    cv.fillPoly([[cx-17, cy-12], [cx+16, cy-12], [cx+11, cy-18], [cx-12, cy-18]], ...c.CANVAS);
+    // red stripe along front awning edge
+    cv.line(cx-17, cy-12, cx+16, cy-12, ...c.FLAG_R);
+    cv.line(cx-16, cy-13, cx+15, cy-13, ...c.FLAG_R, 160);
+    // awning outline
+    cv.line(cx-12, cy-18, cx+11, cy-18, ...c.OUTLINE);
+    cv.line(cx-17, cy-12, cx-12, cy-18, ...c.OUTLINE);
+    cv.line(cx+16, cy-12, cx+11, cy-18, ...c.OUTLINE);
+  }
+
+  // ── 12: BENCH (SPA-551) — simple wooden bench, seat + four legs ───────────────
+  {
+    const ox=768, cx=ox+32, cy=26;
+    // seat plank (low cuboid)
+    drawCuboid(cx, cy, 13, 5, 3, c.WOOD_L, c.WOOD_M, c.WOOD_D);
+    // wood grain on top face
+    cv.line(cx-11, cy-2, cx,   cy+3, ...c.WOOD_D, 50);
+    cv.line(cx-3,  cy-3, cx+8, cy+2, ...c.WOOD_D, 35);
+    // four legs (two visible pairs in iso)
+    const legXs = [cx-12, cx-2, cx+3, cx+11];
+    for (const lx of legXs) {
+      cv.fillRect(lx-1, cy+1, 2, 4, ...c.WOOD_D);
+      cv.line(lx-1, cy+1, lx, cy+1, ...c.OUTLINE);
+      cv.line(lx-1, cy+5, lx+1, cy+5, ...c.OUTLINE);
+    }
+  }
+
+  // ── 13: STONE_WELL (SPA-551) — stone drum, wooden A-frame, rope ──────────────
+  {
+    const ox=832, cx=ox+32, cy=22;
+    const wr=9, wh=8;   // well radius / wall height
+    // top rim face (iso ellipse approximation)
+    for (let y2=cy-4; y2<=cy+4; y2++) {
+      for (let x2=cx-wr; x2<=cx+wr; x2++) {
+        if (Math.abs(x2-cx)/wr + Math.abs(y2-cy)/4 <= 1.0)
+          cv.sp(x2, y2, ...c.STONE_L);
+      }
+    }
+    cv.isoNoise(cx, cy, wr-1, 3, ...c.STONE_M, 8, 0.25);
+    // water surface inside
+    for (let y2=cy-2; y2<=cy+2; y2++) {
+      for (let x2=cx-6; x2<=cx+6; x2++) {
+        if (Math.abs(x2-cx)/6 + Math.abs(y2-cy)/2 <= 0.90)
+          cv.sp(x2, y2, ...c.WATER_D, 190);
+      }
+    }
+    cv.sp(cx-2, cy-1, ...c.WATER_L, 130);
+    // left face of stone drum
+    cv.fillPoly([[cx-wr, cy], [cx, cy+4], [cx, cy+4+wh], [cx-wr, cy+wh]], ...c.STONE_M);
+    cv.line(cx-wr, cy+3, cx, cy+6, ...c.STONE_D, 70);   // mortar seam
+    cv.line(cx-wr, cy+6, cx, cy+9, ...c.STONE_D, 50);
+    // right face (darker)
+    cv.fillPoly([[cx, cy+4], [cx+wr, cy], [cx+wr, cy+wh], [cx, cy+4+wh]], ...c.STONE_D);
+    // drum outline
+    cv.line(cx-wr, cy, cx, cy+4, ...c.OUTLINE);
+    cv.line(cx, cy+4, cx+wr, cy, ...c.OUTLINE);
+    cv.line(cx-wr, cy, cx-wr, cy+wh, ...c.OUTLINE);
+    cv.line(cx+wr, cy, cx+wr, cy+wh, ...c.OUTLINE);
+    cv.line(cx-wr, cy+wh, cx, cy+4+wh, ...c.OUTLINE);
+    cv.line(cx, cy+4+wh, cx+wr, cy+wh, ...c.OUTLINE);
+    // A-frame: two diagonal legs meeting at apex
+    cv.line(cx-7, cy-2, cx, cy-16, ...c.WOOD_D);
+    cv.line(cx+7, cy-2, cx, cy-16, ...c.WOOD_D);
+    cv.line(cx-7, cy-2, cx, cy-16, ...c.WOOD_M, 70);   // highlight sheen
+    // crossbar
+    cv.line(cx-5, cy-10, cx+5, cy-10, ...c.WOOD_D);
+    // rope hanging from crossbar centre
+    cv.line(cx, cy-10, cx, cy-3, ...c.WOOD_D, 190);
+    // apex peg / pulley
+    cv.sp(cx, cy-16, ...c.STONE_M);
+    cv.sp(cx-1, cy-16, ...c.STONE_D, 160);
+  }
+
   // ── ground shadow ellipses under all props ────────────────────────────────
   // Small darkened oval at base gives each prop visual weight on the ground.
-  const propShadowCX = [32, 96, 160, 224, 288, 352, 416, 480, 544, 608, 672];
-  const propShadowCY = [26, 26, 28,  27,  25,  25,  28,  27,  27,  27,  26 ];
-  const propShadowHW = [13, 10,  4,  20,  16,  15,   7,   6,  16,   4,  15 ];
-  for (let _p = 0; _p < 11; _p++) {
+  const propShadowCX = [32, 96, 160, 224, 288, 352, 416, 480, 544, 608, 672, 736, 800, 864];
+  const propShadowCY = [26, 26,  28,  27,  25,  25,  28,  27,  27,  27,  26,  25,  27,  25];
+  const propShadowHW = [13, 10,   4,  20,  16,  15,   7,   6,  16,   4,  15,  17,  14,  10];
+  for (let _p = 0; _p < 14; _p++) {
     const _cx = propShadowCX[_p], _cy = propShadowCY[_p], _hw = propShadowHW[_p];
     for (let _sx = -_hw; _sx <= _hw; _sx++) {
       const _alpha = Math.max(0, 30 - Math.abs(_sx)*2);
