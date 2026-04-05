@@ -171,26 +171,27 @@ const HINT_DATA: Dictionary = {
 	"hint_camera": {
 		"title": "Your Mission Begins",
 		"body":  (
-			"You are a spymaster sent to [b]ruin Lord Edric Fenn[/b].  "
-			+ "Use [b]WASD[/b] to look around the town.  [b]Scroll[/b] to zoom."
+			"You are a [b]rumor-monger[/b] — hired to [b]destroy Lord Edric Fenn's reputation[/b] "
+			+ "before the tax rolls are signed.  Observe, eavesdrop, craft lies, and plant them.  "
+			+ "Use [b]WASD[/b] to look around.  [b]Scroll[/b] to zoom."
 		),
-		"auto_dismiss_secs": 8,
+		"auto_dismiss_secs": 9,
 	},
 	"hint_first_action": {
-		"title": "Step 1: Gather Intel",
+		"title": "Step 1: Observe a Building",
 		"body":  (
 			"[b]Right-click a building[/b] to [b]Observe[/b] who is inside.  "
 			+ "Try the [b]Market Square[/b] — it's always busy.  "
-			+ "You have [b]3 actions[/b] per day. Use them wisely."
+			+ "You have [b]3 actions[/b] per day. This is your first."
 		),
 		"auto_dismiss_secs": 9,
 	},
 	"hint_target_npc": {
-		"title": "Step 2: Find Your Target",
+		"title": "Step 2: Eavesdrop on Conversations",
 		"body":  (
 			"Your target is [b]Lord Edric Fenn[/b].  Hover over townspeople to find him.  "
-			+ "[b]Right-click a building[/b] to Observe who is present, or "
-			+ "[b]right-click two NPCs in conversation[/b] to Eavesdrop on their relationship."
+			+ "[b]Right-click two NPCs in conversation[/b] to Eavesdrop — you will learn who trusts whom.  "
+			+ "This intel is the raw material for your rumors."
 		),
 		"auto_dismiss_secs": 9,
 	},
@@ -229,10 +230,11 @@ const HINT_DATA: Dictionary = {
 		"auto_dismiss_secs": 7,
 	},
 	"hint_rumour_panel": {
-		"title": "Craft a Rumour",
+		"title": "Step 3: Craft Your First Rumour",
 		"body":  (
 			"Press [b]R[/b] to open the Rumour Panel.  "
-			+ "Pick a subject, choose a claim, then whisper it to a well-connected townsperson."
+			+ "Pick a [b]subject[/b] (who the rumour is about), choose a [b]claim[/b] (scandal, illness, praise), "
+			+ "then pick a [b]seed target[/b] — the person you will whisper it to.  This is the core of the game."
 		),
 		"auto_dismiss_secs": 9,
 	},

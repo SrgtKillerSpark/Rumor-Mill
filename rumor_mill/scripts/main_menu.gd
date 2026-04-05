@@ -69,6 +69,7 @@ var _lbl_sfx_val:        Label      = null
 var _lbl_speed_val:      Label      = null
 var _btn_resolution:     Button     = null
 var _btn_window_mode:    Button     = null
+var _btn_ui_scale:       Button     = null
 
 # Briefing-phase refs
 var _briefing_title:     Label      = null
@@ -388,11 +389,13 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 
 	inner.add_child(title_row)
 
-	# First sentence of startingText as a brief teaser.
-	var full_text: String = sc.get("startingText", "")
-	var teaser := full_text.split("\n")[0] if "\n" in full_text else full_text
-	if teaser.length() > 120:
-		teaser = teaser.substr(0, 117) + "..."
+	# Hook text sells the fantasy; fall back to startingText first line.
+	var teaser: String = sc.get("hookText", "")
+	if teaser == "":
+		var full_text: String = sc.get("startingText", "")
+		teaser = full_text.split("\n")[0] if "\n" in full_text else full_text
+	if teaser.length() > 160:
+		teaser = teaser.substr(0, 157) + "..."
 
 	var desc_lbl := Label.new()
 	desc_lbl.text = teaser
@@ -595,7 +598,10 @@ func _populate_objective_card() -> void:
 	bbcode += "[b]Goal:[/b] %s\n" % card.get("winCondition", "")
 	bbcode += "[b]Time:[/b] %s\n" % card.get("timeLimit", "")
 	bbcode += "[color=#d94030][b]DANGER:[/b] %s[/color]\n" % card.get("danger", "")
-	bbcode += "[color=#b5a664][b]Hint:[/b] %s[/color]" % card.get("strategyHint", "")
+	bbcode += "[color=#b5a664][b]Hint:[/b] %s[/color]\n" % card.get("strategyHint", "")
+	var first_action: String = card.get("firstAction", "")
+	if first_action != "":
+		bbcode += "\n[color=#f4a63a][b]YOUR FIRST MOVE:[/b] %s[/color]" % first_action
 	_briefing_objective.text = bbcode
 
 
@@ -745,7 +751,7 @@ func _on_intro_begin_pressed() -> void:
 # ── Phase 5: Settings panel ───────────────────────────────────────────────────
 
 func _build_settings_panel() -> void:
-	_panel_settings = _make_panel(480, 540)
+	_panel_settings = _make_panel(480, 580)
 	add_child(_panel_settings)
 
 	var vbox := VBoxContainer.new()
@@ -834,6 +840,39 @@ func _build_settings_panel() -> void:
 	_btn_window_mode.add_theme_stylebox_override("hover", wm_hover)
 	_btn_window_mode.pressed.connect(_on_window_mode_cycle)
 	fs_row.add_child(_btn_window_mode)
+
+	# UI scale cycle button
+	var sc_row := HBoxContainer.new()
+	sc_row.add_theme_constant_override("separation", 8)
+	vbox.add_child(sc_row)
+
+	var sc_name := Label.new()
+	sc_name.text = "UI Scale:"
+	sc_name.custom_minimum_size = Vector2(80, 0)
+	sc_name.add_theme_font_size_override("font_size", 13)
+	sc_name.add_theme_color_override("font_color", C_BODY)
+	sc_row.add_child(sc_name)
+
+	_btn_ui_scale = Button.new()
+	_btn_ui_scale.text = SettingsManager.get_ui_scale_label()
+	_btn_ui_scale.custom_minimum_size = Vector2(120, 30)
+	_btn_ui_scale.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_btn_ui_scale.add_theme_font_size_override("font_size", 13)
+	_btn_ui_scale.add_theme_color_override("font_color", C_BTN_TEXT)
+	var sc_normal := StyleBoxFlat.new()
+	sc_normal.bg_color = C_BTN_NORMAL
+	sc_normal.set_border_width_all(1)
+	sc_normal.border_color = C_PANEL_BORDER
+	sc_normal.set_content_margin_all(4)
+	var sc_hover := StyleBoxFlat.new()
+	sc_hover.bg_color = C_BTN_HOVER
+	sc_hover.set_border_width_all(1)
+	sc_hover.border_color = C_PANEL_BORDER
+	sc_hover.set_content_margin_all(4)
+	_btn_ui_scale.add_theme_stylebox_override("normal", sc_normal)
+	_btn_ui_scale.add_theme_stylebox_override("hover", sc_hover)
+	_btn_ui_scale.pressed.connect(_on_ui_scale_cycle)
+	sc_row.add_child(_btn_ui_scale)
 
 	vbox.add_child(_separator())
 
@@ -988,6 +1027,14 @@ func _on_window_mode_cycle() -> void:
 	SettingsManager.apply_display_settings()
 	SettingsManager.save_settings()
 	_btn_window_mode.text = SettingsManager.get_window_mode_label()
+
+
+func _on_ui_scale_cycle() -> void:
+	SettingsManager.ui_scale_index = (SettingsManager.ui_scale_index + 1) % SettingsManager.UI_SCALE_PRESETS.size()
+	SettingsManager.ui_scale = SettingsManager.UI_SCALE_PRESETS[SettingsManager.ui_scale_index]
+	SettingsManager.apply_ui_scale()
+	SettingsManager.save_settings()
+	_btn_ui_scale.text = SettingsManager.get_ui_scale_label()
 
 
 # ── Phase 6: Credits panel ────────────────────────────────────────────────────
