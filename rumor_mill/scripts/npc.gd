@@ -1,6 +1,6 @@
 extends Node2D
 
-## npc.gd — Sprint 5 update (Art Pass 2 / SPA-99): heat shimmer VFX, coin bribe flash.
+## npc.gd — Art Pass 11 (SPA-585): 4-directional sprites, 64×96 frames, 2-frame idle.
 ## Sprint 5: AnimatedSprite2D, faction sprites, heat/bribery visual polish.
 ## Sprint 4: full SIR diffusion model.
 ##
@@ -11,7 +11,7 @@ extends Node2D
 ## Mutations use PropagationEngine.try_mutate() (4 independent types).
 ## Shelf-life expiry is detected via Rumor.is_expired() after PropagationEngine.tick_decay().
 ##
-## Sprite sheet layout (assets/textures/npc_sprites.png, 336×648):
+## Sprite sheet layout (assets/textures/npc_sprites.png, 960×864, 15 cols × 9 rows, 64×96/frame):
 ##   Row 0 = merchant (deep blue/gold)   Row 1 = noble (burgundy/silver)
 ##   Row 2 = clergy (cream/black)
 ##   Row 3 = guard   (stone tabard/helmet — archetype "guard_civic")
@@ -20,7 +20,10 @@ extends Node2D
 ##   Row 6 = scholar  (ink-blue robe, scroll — archetype "scholar")
 ##   Row 7 = elder    (grey robe, walking staff — archetype "elder")
 ##   Row 8 = spy      (dark hooded cloak, dagger — archetype "spy")
-##   Cols 0-2 = idle frames (48×72 each); Cols 3-6 = walk frames
+##   Cols  0-1  = idle_south (2 frames)   Cols  2-4  = walk_south (3 frames)
+##   Cols  5-6  = idle_north (2 frames)   Cols  7-9  = walk_north (3 frames)
+##   Cols 10-11 = idle_east  (2 frames)   Cols 12-14 = walk_east  (3 frames)
+##   west = flip_h of east (handled in code)
 
 ## Emitted once when this NPC first receives a rumor (UNAWARE → EVALUATING).
 signal first_npc_became_evaluating
@@ -125,15 +128,27 @@ const COMMONER_ROLES := [
 	"Craftsman", "Mill Operator", "Storage Keeper", "Transport Worker",
 	"Merchant's Wife", "Traveling Merchant",
 ]
-# Sprite frame dimensions
-const SPRITE_W := 48
-const SPRITE_H := 72
+# Sprite frame dimensions (SPA-585: upgraded to 64×96, 2× upscale from 32×48 base)
+const SPRITE_W := 64
+const SPRITE_H := 96
+# Column positions within each row (see header comment for full layout)
+const _IDLE_S_COL  := 0   # south idle start
+const _WALK_S_COL  := 2   # south walk start
+const _IDLE_N_COL  := 5   # north idle start
+const _WALK_N_COL  := 7   # north walk start
+const _IDLE_E_COL  := 10  # east idle start
+const _WALK_E_COL  := 12  # east walk start
+const _IDLE_FRAMES := 2
+const _WALK_FRAMES := 3
 
 @onready var sprite:      AnimatedSprite2D = $Sprite
 @onready var name_label:  Label            = $NameLabel
 @onready var hover_area:  Area2D           = $HoverArea
 
 var _faction: String = "merchant"
+# Current facing direction — updated by _walk_to, persists into idle
+# "south" | "north" | "east" | "west"
+var _facing_dir: String = "south"
 
 # ── Defender state (NPC-level, not per rumor slot) ───────────────────────────
 var _is_defending:            bool   = false
@@ -297,28 +312,27 @@ func _setup_sprite(faction: String) -> void:
 		row = FACTION_ROW.get(faction, 0)
 	var frames := SpriteFrames.new()
 
-	# ── idle animation (3 frames at 4 fps) ───────────────────────────────────
-	frames.add_animation("idle")
-	frames.set_animation_speed("idle", 4.0)
-	frames.set_animation_loop("idle", true)
-	for col in range(3):
-		var at := AtlasTexture.new()
-		at.atlas  = tex
-		at.region = Rect2(col * SPRITE_W, row * SPRITE_H, SPRITE_W, SPRITE_H)
-		frames.add_frame("idle", at)
+	# Helper to add an animation with frames from consecutive columns
+	var _add_anim := func(anim: String, start_col: int, count: int, fps: float) -> void:
+		frames.add_animation(anim)
+		frames.set_animation_speed(anim, fps)
+		frames.set_animation_loop(anim, true)
+		for i in range(count):
+			var at := AtlasTexture.new()
+			at.atlas  = tex
+			at.region = Rect2((start_col + i) * SPRITE_W, row * SPRITE_H, SPRITE_W, SPRITE_H)
+			frames.add_frame(anim, at)
 
-	# ── walk animation (4 frames at 8 fps) ───────────────────────────────────
-	frames.add_animation("walk")
-	frames.set_animation_speed("walk", 8.0)
-	frames.set_animation_loop("walk", true)
-	for col in range(3, 7):
-		var at := AtlasTexture.new()
-		at.atlas  = tex
-		at.region = Rect2(col * SPRITE_W, row * SPRITE_H, SPRITE_W, SPRITE_H)
-		frames.add_frame("walk", at)
+	# ── 6 directional animations (SPA-585) ───────────────────────────────────
+	_add_anim.call("idle_south", _IDLE_S_COL, _IDLE_FRAMES, 3.0)
+	_add_anim.call("walk_south", _WALK_S_COL, _WALK_FRAMES, 8.0)
+	_add_anim.call("idle_north", _IDLE_N_COL, _IDLE_FRAMES, 3.0)
+	_add_anim.call("walk_north", _WALK_N_COL, _WALK_FRAMES, 8.0)
+	_add_anim.call("idle_east",  _IDLE_E_COL, _IDLE_FRAMES, 3.0)
+	_add_anim.call("walk_east",  _WALK_E_COL, _WALK_FRAMES, 8.0)
 
 	sprite.sprite_frames = frames
-	sprite.play("idle")
+	sprite.play("idle_south")
 
 
 # ── Initialisation ───────────────────────────────────────────────────────────
@@ -514,13 +528,22 @@ func _walk_to(cell: Vector2i) -> void:
 	if cell == current_cell:
 		return
 	_is_moving = true
+	# Determine cardinal facing from grid cell delta (SPA-585).
+	# In isometric: cell.x++ = screen right+down (east), cell.y++ = screen left+down (south).
+	var cdx := cell.x - current_cell.x
+	var cdy := cell.y - current_cell.y
+	if abs(cdx) >= abs(cdy):
+		# East/west movement dominates.
+		_facing_dir = "west" if cdx < 0 else "east"
+	else:
+		_facing_dir = "south" if cdy > 0 else "north"
 	if sprite.sprite_frames != null:
-		sprite.play("walk")
+		match _facing_dir:
+			"south": sprite.flip_h = false; sprite.play("walk_south")
+			"north": sprite.flip_h = false; sprite.play("walk_north")
+			"east":  sprite.flip_h = false; sprite.play("walk_east")
+			"west":  sprite.flip_h = true;  sprite.play("walk_east")
 	var world_pos := _cell_to_world(cell)
-	# Flip sprite to face direction of travel.
-	var dx := world_pos.x - position.x
-	if abs(dx) > 1.0 and sprite.sprite_frames != null:
-		sprite.flip_h = dx < 0
 	var duration  := maxf(position.distance_to(world_pos) / MOVE_SPEED, 0.05)
 	if _tween:
 		_tween.kill()
@@ -533,7 +556,11 @@ func _on_move_finished(arrived_cell: Vector2i) -> void:
 	current_cell = arrived_cell
 	_is_moving   = false
 	if sprite.sprite_frames != null:
-		sprite.play("idle")
+		match _facing_dir:
+			"north": sprite.play("idle_north")
+			"east":  sprite.flip_h = false; sprite.play("idle_east")
+			"west":  sprite.flip_h = true;  sprite.play("idle_east")
+			_:       sprite.play("idle_south")
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
