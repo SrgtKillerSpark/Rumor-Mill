@@ -58,6 +58,8 @@ var dismissed_tooltips:  Dictionary = {}  ## Persistent tooltip dismissal tracki
 
 
 func _ready() -> void:
+	# Enforce minimum window size so the game never drops below 720p.
+	DisplayServer.window_set_min_size(Vector2i(1280, 720))
 	_build_resolution_list()
 	load_settings()
 	apply_to_audio_manager()

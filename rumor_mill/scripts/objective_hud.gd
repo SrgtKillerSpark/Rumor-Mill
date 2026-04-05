@@ -233,6 +233,19 @@ func _refresh() -> void:
 
 func _build_nudge_label() -> void:
 	var vbox: VBoxContainer = $Panel/VBox
+	# Wrap the nudge in a PanelContainer with a semi-transparent background
+	# so the "what to do next" hint stands out clearly against the HUD.
+	var nudge_panel := PanelContainer.new()
+	var nudge_style := StyleBoxFlat.new()
+	nudge_style.bg_color = Color(0.05, 0.12, 0.05, 0.70)
+	nudge_style.set_border_width_all(1)
+	nudge_style.border_color = Color(0.40, 1.0, 0.50, 0.35)
+	nudge_style.set_corner_radius_all(4)
+	nudge_style.content_margin_left = 8.0
+	nudge_style.content_margin_right = 8.0
+	nudge_style.content_margin_top = 4.0
+	nudge_style.content_margin_bottom = 4.0
+	nudge_panel.add_theme_stylebox_override("panel", nudge_style)
 	_nudge_label = Label.new()
 	_nudge_label.text = ""
 	_nudge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -240,9 +253,10 @@ func _build_nudge_label() -> void:
 	_nudge_label.add_theme_color_override("font_color", C_NUDGE)
 	_nudge_label.add_theme_constant_override("outline_size", 3)
 	_nudge_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	nudge_panel.add_child(_nudge_label)
 	# Insert right after DayRow (index 0 in VBox).
-	vbox.add_child(_nudge_label)
-	vbox.move_child(_nudge_label, 1)
+	vbox.add_child(nudge_panel)
+	vbox.move_child(nudge_panel, 1)
 
 
 ## SPA-627: Subtle "Press O to review mission" label beneath the objective line.

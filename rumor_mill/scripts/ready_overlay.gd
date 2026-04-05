@@ -191,6 +191,12 @@ func _show_phase_2() -> void:
 	# Divider.
 	_add_divider()
 
+	# Quick-start core loop — shows the 4 steps at a glance.
+	_add_core_loop_steps()
+
+	# Second divider after loop.
+	_add_divider()
+
 	# First action — 14pt blue, top priority.
 	var first_action := _objective_card.get("firstAction", "")
 	if first_action != "":
@@ -268,6 +274,10 @@ func _show_recall_card() -> void:
 		_vbox.add_child(spacer)
 		_add_labeled_line(_vbox, "FIRST MOVE:", first_action, C_ACTION)
 
+	# Core loop quick reference for recall mode.
+	_add_divider()
+	_add_core_loop_steps()
+
 	var bottom_spacer := Control.new()
 	bottom_spacer.custom_minimum_size = Vector2(0, 8)
 	_vbox.add_child(bottom_spacer)
@@ -277,6 +287,42 @@ func _show_recall_card() -> void:
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
+func _add_core_loop_steps() -> void:
+	## Compact visual showing the 4-step game loop so new players understand
+	## what to do within 30 seconds of reading.
+	var steps := [
+		["1. OBSERVE", "Right-click a building", Color(0.55, 0.85, 0.95, 1.0)],
+		["2. EAVESDROP", "Right-click NPC pairs", Color(0.70, 0.90, 0.60, 1.0)],
+		["3. CRAFT", "Press R to create a rumor", Color(0.95, 0.85, 0.40, 1.0)],
+		["4. WATCH", "Journal (J) tracks spread", Color(0.90, 0.65, 0.40, 1.0)],
+	]
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 4)
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for step in steps:
+		var step_lbl := Label.new()
+		step_lbl.text = step[0]
+		step_lbl.custom_minimum_size = Vector2(110, 0)
+		step_lbl.add_theme_font_size_override("font_size", 13)
+		step_lbl.add_theme_color_override("font_color", step[2])
+		step_lbl.add_theme_constant_override("outline_size", 2)
+		step_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+		step_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		grid.add_child(step_lbl)
+		var desc_lbl := Label.new()
+		desc_lbl.text = step[1]
+		desc_lbl.add_theme_font_size_override("font_size", 13)
+		desc_lbl.add_theme_color_override("font_color", C_BODY)
+		desc_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		grid.add_child(desc_lbl)
+	var center := CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.add_child(grid)
+	_vbox.add_child(center)
+
 
 func _clear_card_content() -> void:
 	if _pulse_tween != null and _pulse_tween.is_valid():

@@ -1270,35 +1270,73 @@ func _on_idle_timeout() -> void:
 		_idle_timer.start()
 
 
-## SPA-518: "Press H for help" reminder in bottom-right, visible for 60 s then fades out.
+## SPA-704: Persistent help key hints in bottom-right with subtle background.
+## Shows essential hotkeys for 90 s then fades to a compact single-line reminder.
 func _init_help_reminder() -> void:
 	var layer := CanvasLayer.new()
 	layer.layer = 18
 	layer.name = "HelpReminderLayer"
 	add_child(layer)
 
-	_help_reminder = Label.new()
-	_help_reminder.text = "Press H for help"
-	_help_reminder.add_theme_font_size_override("font_size", 12)
-	_help_reminder.add_theme_color_override("font_color", Color(0.80, 0.72, 0.55, 0.70))
-	_help_reminder.anchor_left   = 1.0
-	_help_reminder.anchor_top    = 1.0
-	_help_reminder.anchor_right  = 1.0
-	_help_reminder.anchor_bottom = 1.0
-	_help_reminder.offset_left   = -140
-	_help_reminder.offset_top    = -40
-	_help_reminder.offset_right  = -16
-	_help_reminder.offset_bottom = -16
-	_help_reminder.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	layer.add_child(_help_reminder)
+	# Background panel for readability.
+	var panel := PanelContainer.new()
+	panel.anchor_left   = 1.0
+	panel.anchor_top    = 1.0
+	panel.anchor_right  = 1.0
+	panel.anchor_bottom = 1.0
+	panel.offset_left   = -220
+	panel.offset_top    = -80
+	panel.offset_right  = -12
+	panel.offset_bottom = -12
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.04, 0.02, 0.65)
+	style.set_border_width_all(1)
+	style.border_color = Color(0.55, 0.38, 0.18, 0.40)
+	style.set_corner_radius_all(4)
+	style.content_margin_left = 10.0
+	style.content_margin_right = 10.0
+	style.content_margin_top = 6.0
+	style.content_margin_bottom = 6.0
+	panel.add_theme_stylebox_override("panel", style)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# Fade out after 60 seconds.
-	var fade_timer := get_tree().create_timer(60.0)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 2)
+
+	var line1 := Label.new()
+	line1.text = "R: Rumor  |  J: Journal  |  G: Graph"
+	line1.add_theme_font_size_override("font_size", 11)
+	line1.add_theme_color_override("font_color", Color(0.85, 0.78, 0.58, 0.85))
+	line1.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	vbox.add_child(line1)
+
+	var line2 := Label.new()
+	line2.text = "O: Mission  |  H: Hint  |  F1: Controls"
+	line2.add_theme_font_size_override("font_size", 11)
+	line2.add_theme_color_override("font_color", Color(0.80, 0.72, 0.55, 0.70))
+	line2.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	vbox.add_child(line2)
+
+	var line3 := Label.new()
+	line3.text = "Esc: Pause + Settings"
+	line3.add_theme_font_size_override("font_size", 11)
+	line3.add_theme_color_override("font_color", Color(0.80, 0.72, 0.55, 0.55))
+	line3.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	vbox.add_child(line3)
+
+	panel.add_child(vbox)
+	layer.add_child(panel)
+
+	# Store panel ref so we can fade it.
+	_help_reminder = line1  # keep ref for compat
+
+	# Fade out after 90 seconds.
+	var fade_timer := get_tree().create_timer(90.0)
 	fade_timer.timeout.connect(func() -> void:
-		if _help_reminder != null and is_instance_valid(_help_reminder):
+		if panel != null and is_instance_valid(panel):
 			var tw := create_tween()
-			tw.tween_property(_help_reminder, "modulate:a", 0.0, 1.0)
-			tw.tween_callback(_help_reminder.queue_free)
+			tw.tween_property(panel, "modulate:a", 0.0, 1.5)
+			tw.tween_callback(panel.queue_free)
 	)
 
 
