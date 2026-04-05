@@ -7,10 +7,13 @@
  *   assets/textures/tiles_road_dirt.png   (64×32)
  *   assets/textures/tiles_road_stone.png  (64×32)
  *   assets/textures/tiles_buildings.png   (640×64 — 10 building types)
- *   assets/textures/npc_sprites.png       (224×288 — 7 frames × 6 archetypes)
+ *   assets/textures/npc_sprites.png       (224×432 — 7 frames × 9 archetypes)
  *                                           row 0 = merchant, 1 = noble, 2 = clergy
  *                                           row 3 = guard,    4 = commoner
  *                                           row 5 = tavern_staff (apron/kerchief)
+ *                                           row 6 = scholar     (ink-blue robe/scroll)
+ *                                           row 7 = elder       (grey robe/staff)
+ *                                           row 8 = spy         (dark hooded cloak)
  *   assets/textures/ui_parchment.png      (48×48 — 9-slice parchment border tile)
  *   assets/textures/ui_faction_badges.png (72×24 — 3 × 24px faction badges)
  *   assets/textures/ui_claim_icons.png    (80×16 — 5 × 16px claim-type icons)
@@ -366,10 +369,20 @@ function makeBuildingTiles() {
     for (let iy=32-wH+14; iy<32; iy+=3)
       for (let ix=ox0+2; ix<ox0+25; ix+=4)
         cv.sp(ix, iy, ...c.GRASS_D, 120);
-    // flag on right face
-    cv.line(ox0+56, 32-wH-12, ox0+56, 32-wH, ...c.WOOD_M);
-    cv.fillRect(ox0+48, 32-wH-12, 9, 6, ...c.FLAG_R);
-    cv.line(ox0+48, 32-wH-12, ox0+56, 32-wH-12, ...c.OUTLINE);
+    // stone course horizontal lines (masonry detail)
+    for (let cy2=32-wH+5; cy2<32; cy2+=4)
+      cv.line(ox0+1, cy2, ox0+30, cy2, ...c.STONE_D, 45);
+    // stone course lines on right face
+    for (let cy2=32-wH+5; cy2<32; cy2+=4)
+      cv.line(ox0+33, cy2, ox0+62, cy2, ...c.STONE_D, 35);
+    // corbel detail above arched window (small stone bracket)
+    cv.fillRect(ox0+5, 32-wH+3, 3, 2, ...c.MANOR_STONE);
+    cv.line(ox0+5, 32-wH+3, ox0+7, 32-wH+3, ...c.STONE_D);
+    // flag on right face (taller pole, larger banner)
+    cv.line(ox0+57, 32-wH-15, ox0+57, 32-wH, ...c.WOOD_M);
+    cv.fillRect(ox0+48, 32-wH-15, 10, 7, ...c.FLAG_R);
+    cv.line(ox0+48, 32-wH-15, ox0+57, 32-wH-15, ...c.OUTLINE);
+    cv.line(ox0+48, 32-wH-8, ox0+57, 32-wH-8, ...c.OUTLINE);  // flag bottom edge
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -417,6 +430,20 @@ function makeBuildingTiles() {
     cv.sp(ox+21, 32-wH+2, ...c.FORGE, 130);
     cv.sp(ox+23, 32-wH+2, ...c.FORGE, 130);
     cv.sp(ox+22, 32-wH+1, 255,230,120, 100);
+    // chimney stack on roof (left side, above thatch)
+    cv.fillRect(ox+6, 32-wH-8, 5, 8, ...c.STONE_M);
+    cv.line(ox+5, 32-wH-8, ox+11, 32-wH-8, ...c.OUTLINE);
+    cv.line(ox+5, 32-wH-8, ox+5,  32-wH,   ...c.OUTLINE);
+    cv.line(ox+11, 32-wH-8, ox+11, 32-wH,  ...c.OUTLINE);
+    // smoke wisp from chimney
+    cv.sp(ox+8, 32-wH-9,  ...c.STONE_L, 100);
+    cv.sp(ox+7, 32-wH-11, ...c.STONE_L, 60);
+    cv.sp(ox+9, 32-wH-12, ...c.STONE_L, 40);
+    // X-brace diagonal beams on left face (cross the vertical timbers)
+    cv.line(ox+1, 32-wH+6, ox+20, 32,     ...c.WOOD_D, 60);
+    cv.line(ox+20, 32-wH+6, ox+1, 32,     ...c.WOOD_D, 60);
+    // candlelight silhouette inside window (seated patron)
+    cv.sp(ox+14, 32-wH+5, 30, 20, 10, 60);
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -451,10 +478,25 @@ function makeBuildingTiles() {
     cv.line(ox+6, 32-wH+4, ox+6,  32-wH+12,...c.STONE_D);
     cv.line(ox+10,32-wH+4, ox+10, 32-wH+12,...c.STONE_D);
     cv.line(ox+6, 32-wH+12,ox+10, 32-wH+12,...c.STONE_D);
-    // right face: second narrow window
+    // right face: second narrow window with tracery
     cv.fillRect(ox+44, 32-wH+3, 4, 8, 80, 108, 160);
     cv.sp(ox+45, 32-wH+5, ...c.MERCH_T, 180);
     cv.sp(ox+46, 32-wH+7, ...c.FLAG_R, 140);
+    cv.line(ox+46, 32-wH+3, ox+46, 32-wH+11, ...c.STONE_D, 80);  // tracery
+    // stone arch over front door (left face, lower centre)
+    cv.line(ox+2, 32-5, ox+14, 32-5, ...c.CHAPEL_STONE);
+    // stone coursing lines
+    for (let cy2=32-wH+5; cy2<32; cy2+=4)
+      cv.line(ox+1, cy2, ox+30, cy2, ...c.STONE_D, 35);
+    // bell silhouette at spire base (tiny bell shape inside spire)
+    cv.fillRect(ox+30, 32-wH-5, 4, 3, ...c.STONE_M);
+    cv.line(ox+30, 32-wH-5, ox+33, 32-wH-5, ...c.STONE_D);
+    // finial on spire top (small diamond gem tip)
+    cv.sp(ox+32, 32-wH-15, ...c.CHAPEL_STONE);
+    cv.sp(ox+31, 32-wH-14, ...c.CHAPEL_STONE);
+    cv.sp(ox+33, 32-wH-14, ...c.CHAPEL_STONE);
+    // window tracery divider on left face (adds Gothic feel)
+    cv.line(ox+8, 32-wH+4, ox+8, 32-wH+12, ...c.STONE_D, 90);
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -488,6 +530,26 @@ function makeBuildingTiles() {
     // merchant pennant (small flag on center post)
     cv.fillRect(ox+28, 32-wH-14, 7, 5, ...c.MERCH_T);
     cv.line(ox+28, 32-wH-14, ox+34, 32-wH-14, ...c.OUTLINE);
+    // scales/balance hanging from awning crossbar (icon of trade)
+    cv.line(ox+46, 32-wH+2, ox+54, 32-wH+2, ...c.WOOD_D);       // balance beam
+    cv.line(ox+50, 32-wH+1, ox+50, 32-wH+4, ...c.WOOD_D);       // pivot
+    cv.sp(ox+46, 32-wH+3, ...c.STONE_L);                          // left pan
+    cv.sp(ox+54, 32-wH+3, ...c.STONE_L);                          // right pan
+    cv.line(ox+45, 32-wH+2, ox+47, 32-wH+4, ...c.STONE_M, 120); // left chain
+    cv.line(ox+53, 32-wH+2, ox+55, 32-wH+4, ...c.STONE_M, 120); // right chain
+    // bread loaf on counter (rounded ochre)
+    cv.fillRect(ox+26, 32-4, 4, 3, ...c.THATCH_L);
+    cv.sp(ox+27, 32-5, ...c.DIRT_L);
+    cv.line(ox+26, 32-4, ox+29, 32-4, ...c.WOOD_D, 80);
+    // cloth bolt (rolled fabric in market colours)
+    cv.fillRect(ox+32, 32-6, 3, 5, ...c.CANVAS);
+    cv.sp(ox+33, 32-6, ...c.MERCH_T, 120);
+    // price board hanging from left post
+    cv.fillRect(ox+4, 32-wH+4, 6, 4, ...c.PARCH_L);
+    cv.line(ox+4, 32-wH+4, ox+9, 32-wH+4, ...c.INK, 160);
+    cv.line(ox+4, 32-wH+6, ox+9, 32-wH+6, ...c.INK, 100);
+    cv.line(ox+3, 32-wH+3, ox+10, 32-wH+3, ...c.OUTLINE);
+    cv.line(ox+3, 32-wH+7, ox+10, 32-wH+7, ...c.OUTLINE);
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -638,8 +700,8 @@ function makeBuildingTiles() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// NPC SPRITES (npc_sprites.png — 224×288)
-// Layout: 7 frames wide (32px each) × 6 archetype rows (48px each)
+// NPC SPRITES (npc_sprites.png — 224×432)
+// Layout: 7 frames wide (32px each) × 9 archetype rows (48px each)
 //   row 0 = merchant    (deep blue/gold)
 //   row 1 = noble       (burgundy/silver)
 //   row 2 = clergy      (cream/black)
@@ -649,9 +711,10 @@ function makeBuildingTiles() {
 // Columns: 0-2 idle frames, 3-6 walk frames
 // ═══════════════════════════════════════════════════════════════════════════════
 function makeNPCSprites() {
-  // 6 archetype rows × 48px = 288px height
+  // 9 archetype rows × 48px = 432px height  (Art Pass 8, SPA-486)
   // row 0=merchant, 1=noble, 2=clergy, 3=guard, 4=commoner, 5=tavern_staff
-  const cv = createCanvas(224, 288);
+  // row 6=scholar,  7=elder, 8=spy
+  const cv = createCanvas(224, 432);
 
   const FACTIONS = [
     { body: c.MERCH_B,  trim: c.MERCH_T,  hat: c.MERCH_B,  hatrim: c.MERCH_T,  hatStyle: 'wide'    },
@@ -1081,6 +1144,189 @@ function makeNPCSprites() {
     drawTavernStaff(4*32, oy5, -1, 0,  0,   0, 0);
     drawTavernStaff(5*32, oy5, 0,  2,  -2,  2, -2);
     drawTavernStaff(6*32, oy5, -1, 0,  0,   0, 0);
+  }
+
+
+  // ── Row 6: SCHOLAR archetype ──────────────────────────────────────────────
+  // Ink-blue robe, red faculty cuffs, square mortarboard skullcap, scroll.
+  const drawScholar = (ox, oy, dy=0, lx=0, rx=0, laY=0, raY=0) => {
+    const hx = ox+12, hy = oy+2+dy;
+    cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    cv.sp(hx+1, hy+1, ...c.SKIN_HI);
+    cv.sp(hx+2, hy+2, ...c.HAIR, 160);
+    cv.sp(hx+5, hy+2, ...c.HAIR, 160);
+    cv.sp(hx+2, hy+3, ...c.HAIR);
+    cv.sp(hx+5, hy+3, ...c.HAIR);
+    cv.sp(hx+3, hy+5, ...c.SKIN_SH);
+    cv.sp(hx+3, hy+7, ...c.OUTLINE, 90);
+    cv.sp(hx+4, hy+7, ...c.OUTLINE, 90);
+    cv.line(hx, hy, hx+7, hy, ...c.OUTLINE);
+    cv.line(hx, hy, hx, hy+7, ...c.OUTLINE);
+    cv.line(hx+7, hy, hx+7, hy+7, ...c.OUTLINE);
+    cv.line(hx, hy+7, hx+7, hy+7, ...c.OUTLINE);
+    // square mortarboard skullcap (flat-topped = clearly academic)
+    cv.fillRect(hx, hy-4, 8, 5, ...c.ROOF_SLATE);
+    cv.fillRect(hx-1, hy-1, 10, 2, ...c.STONE_D);
+    cv.line(hx-1, hy-1, hx+8, hy-1, ...c.OUTLINE);
+    cv.line(hx, hy-4, hx+7, hy-4, ...c.OUTLINE);
+    const bx = ox+11, by = oy+10+dy;
+    cv.fillRect(bx, by, 10, 14, ...c.MERCH_B);
+    cv.fillRect(bx, by+11, 10, 3, ...c.FLAG_R);   // red faculty cuffs
+    cv.sp(bx+3, by+3, ...c.STONE_D, 120);         // ink-stain spot
+    cv.sp(bx+5, by+5, ...c.STONE_D, 90);
+    cv.fillRect(bx, by+6, 10, 2, ...c.STONE_D);   // belt/sash
+    cv.line(bx, by, bx+9, by, ...c.OUTLINE);
+    cv.line(bx, by, bx, by+13, ...c.OUTLINE);
+    cv.line(bx+9, by, bx+9, by+13, ...c.OUTLINE);
+    cv.line(bx, by+13, bx+9, by+13, ...c.OUTLINE);
+    const laLen = 10 - Math.abs(laY);
+    const raLen = 10 - Math.abs(raY);
+    cv.fillRect(bx-2, by+1+laY, 3, laLen, ...c.MERCH_B);
+    cv.fillRect(bx+9, by+1+raY, 3, raLen, ...c.MERCH_B);
+    cv.fillRect(bx-2, by+1+laY+laLen-2, 3, 2, ...c.FLAG_R);
+    cv.fillRect(bx+9, by+1+raY+raLen-2, 3, 2, ...c.FLAG_R);
+    cv.fillRect(bx-2, by+1+laY+laLen, 3, 2, ...c.SKIN);
+    cv.fillRect(bx+9, by+1+raY+raLen, 3, 2, ...c.SKIN);
+    cv.fillPoly([
+      [bx-1, by+8], [bx+10, by+8],
+      [bx+12, oy+46], [bx-3, oy+46],
+    ], ...c.MERCH_B);
+    cv.line(bx-3, oy+46, bx+12, oy+46, ...c.OUTLINE);
+    cv.fillRect(bx+1+lx, oy+44, 4, 2, ...c.STONE_D);
+    cv.fillRect(bx+5+rx, oy+44, 4, 2, ...c.STONE_D);
+    // parchment scroll in left hand
+    const sx = bx-5, sy = by+4;
+    cv.fillRect(sx, sy, 4, 7, ...c.PARCH_L);
+    cv.line(sx, sy, sx+3, sy, ...c.PARCH_D);
+    cv.line(sx, sy+6, sx+3, sy+6, ...c.PARCH_D);
+    cv.line(sx-1, sy, sx-1, sy+7, ...c.WOOD_D);
+    cv.line(sx+4, sy, sx+4, sy+7, ...c.WOOD_D);
+  };
+  {
+    const oy6 = 6*48;
+    drawScholar(0*32, oy6, 0,  0,  0,  0,  0);
+    drawScholar(1*32, oy6, -1, 0,  0,  1,  1);
+    drawScholar(2*32, oy6, 0,  0,  0,  0, -2);
+    drawScholar(3*32, oy6, 0,  -2, 2,  -2, 2);
+    drawScholar(4*32, oy6, -1, 0,  0,   0, 0);
+    drawScholar(5*32, oy6, 0,  2,  -2,  2, -2);
+    drawScholar(6*32, oy6, -1, 0,  0,   0, 0);
+  }
+
+  // ── Row 7: ELDER archetype ────────────────────────────────────────────────
+  // Stooped grey robe, white temples, open hood, walking staff, lower stance.
+  const drawElder = (ox, oy, dy=0, lx=0, rx=0) => {
+    const hx = ox+12, hy = oy+4+dy;   // lower stance (+2px)
+    cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
+    cv.sp(hx+1, hy+1, ...c.SKIN_HI);
+    cv.sp(hx+1, hy+2, ...c.PARCH_L, 200);  // white temple hair
+    cv.sp(hx+6, hy+2, ...c.PARCH_L, 200);
+    cv.sp(hx+2, hy+3, ...c.STONE_L);       // pale aged eyes
+    cv.sp(hx+5, hy+3, ...c.STONE_L);
+    cv.sp(hx+3, hy+5, ...c.SKIN_SH);
+    cv.sp(hx+1, hy+5, ...c.SKIN_SH, 80);   // wrinkle lines
+    cv.sp(hx+6, hy+5, ...c.SKIN_SH, 80);
+    cv.sp(hx+3, hy+7, ...c.OUTLINE, 70);
+    cv.sp(hx+4, hy+7, ...c.OUTLINE, 70);
+    cv.line(hx, hy, hx+7, hy, ...c.OUTLINE);
+    cv.line(hx, hy, hx, hy+7, ...c.OUTLINE);
+    cv.line(hx+7, hy, hx+7, hy+7, ...c.OUTLINE);
+    cv.line(hx, hy+7, hx+7, hy+7, ...c.OUTLINE);
+    // open hood showing white hair on sides
+    cv.fillRect(hx-1, hy-3, 10, 4, ...c.STONE_L);
+    cv.fillRect(hx-1, hy+3, 2, 6, ...c.STONE_L);
+    cv.fillRect(hx+8, hy+3, 2, 6, ...c.STONE_L);
+    cv.line(hx-1, hy-3, hx+8, hy-3, ...c.OUTLINE);
+    const bx = ox+11, by = oy+12+dy;
+    cv.fillRect(bx, by, 10, 13, ...c.PLASTER);
+    cv.fillRect(bx, by+5, 10, 2, ...c.STONE_M);
+    cv.line(bx, by, bx+9, by, ...c.OUTLINE);
+    cv.line(bx, by, bx, by+12, ...c.OUTLINE);
+    cv.line(bx+9, by, bx+9, by+12, ...c.OUTLINE);
+    cv.line(bx, by+12, bx+9, by+12, ...c.OUTLINE);
+    cv.fillPoly([
+      [bx-1, by+8], [bx+10, by+8],
+      [bx+11, oy+45], [bx-2, oy+45],
+    ], ...c.PLASTER);
+    cv.line(bx-2, oy+45, bx+11, oy+45, ...c.OUTLINE);
+    cv.fillRect(bx+1+lx, oy+43, 4, 2, ...c.WOOD_D);
+    cv.fillRect(bx+5+rx, oy+43, 4, 2, ...c.WOOD_D);
+    cv.fillRect(bx-2, by+2, 3, 9, ...c.PLASTER);
+    cv.fillRect(bx+9, by+2, 3, 9, ...c.PLASTER);
+    cv.fillRect(bx-2, by+10, 3, 2, ...c.SKIN);
+    cv.fillRect(bx+9, by+10, 3, 2, ...c.SKIN);
+    // walking staff (gnarled top, taller than NPC)
+    const stX = ox+26;
+    cv.line(stX, oy+5, stX, oy+47, ...c.WOOD_M);
+    cv.sp(stX-1, oy+6, ...c.WOOD_D);
+    cv.sp(stX+1, oy+6, ...c.WOOD_D);
+    cv.sp(stX, oy+5, ...c.WOOD_D);
+    cv.line(stX-1, oy+6, stX+1, oy+6, ...c.OUTLINE);
+  };
+  {
+    const oy7 = 7*48;
+    drawElder(0*32, oy7, 0,  0,  0);
+    drawElder(1*32, oy7, -1, 0,  0);
+    drawElder(2*32, oy7, 0,  0,  0);
+    drawElder(3*32, oy7, 0,  -2, 2);
+    drawElder(4*32, oy7, -1, 0,  0);
+    drawElder(5*32, oy7, 0,  2,  -2);
+    drawElder(6*32, oy7, -1, 0,  0);
+  }
+
+  // ── Row 8: SPY archetype ──────────────────────────────────────────────────
+  // Dark hooded cloak, hunched narrow silhouette, dagger hilt at belt.
+  const drawSpy = (ox, oy, dy=0, lx=0, rx=0) => {
+    const hx = ox+13, hy = oy+3+dy;  // centred narrower
+    cv.fillRect(hx, hy, 7, 7, ...c.SKIN);
+    cv.sp(hx+1, hy+2, ...c.STONE_D);  // shadowed eyes
+    cv.sp(hx+4, hy+2, ...c.STONE_D);
+    cv.line(hx, hy, hx+6, hy, ...c.OUTLINE);
+    cv.line(hx, hy, hx, hy+6, ...c.OUTLINE);
+    cv.line(hx+6, hy, hx+6, hy+6, ...c.OUTLINE);
+    cv.line(hx, hy+6, hx+6, hy+6, ...c.OUTLINE);
+    // deep cowl — wide drape hiding forehead
+    cv.fillRect(hx-3, hy-5, 13, 7, ...c.STONE_D);
+    cv.fillRect(hx-4, hy+1, 4, 9, ...c.STONE_D);
+    cv.fillRect(hx+7, hy+1, 4, 9, ...c.STONE_D);
+    cv.fillRect(hx-1, hy-4, 9, 4, ...c.INK);   // shadow inside hood
+    cv.line(hx-3, hy-5, hx+9, hy-5, ...c.OUTLINE);
+    cv.line(hx-4, hy+9, hx+10, hy+9, ...c.OUTLINE);
+    const bx = ox+12, by = oy+11+dy;
+    cv.fillRect(bx, by, 8, 13, ...c.STONE_D);
+    cv.sp(bx+1, by+1, ...c.STONE_M, 80);
+    cv.fillRect(bx, by+7, 8, 2, ...c.INK);      // dark belt
+    cv.line(bx, by, bx+7, by, ...c.OUTLINE);
+    cv.line(bx, by, bx, by+12, ...c.OUTLINE);
+    cv.line(bx+7, by, bx+7, by+12, ...c.OUTLINE);
+    cv.line(bx, by+12, bx+7, by+12, ...c.OUTLINE);
+    // wide cloak skirt (hides legs)
+    cv.fillPoly([
+      [bx-2, by+6], [bx+9, by+6],
+      [bx+13, oy+47], [bx-6, oy+47],
+    ], ...c.STONE_D);
+    cv.line(bx-6, oy+47, bx+13, oy+47, ...c.OUTLINE);
+    cv.fillRect(bx+lx, oy+44, 4, 3, ...c.INK);
+    cv.fillRect(bx+4+rx, oy+44, 4, 3, ...c.INK);
+    // narrow dark sleeves
+    cv.fillRect(bx-2, by+1, 3, 9, ...c.STONE_D);
+    cv.fillRect(bx+7, by+1, 3, 9, ...c.STONE_D);
+    cv.fillRect(bx-2, by+9, 3, 2, ...c.SKIN);
+    cv.fillRect(bx+7, by+9, 3, 2, ...c.SKIN);
+    // dagger hilt at right hip
+    cv.fillRect(bx+6, by+9, 2, 4, ...c.STONE_L);
+    cv.fillRect(bx+5, by+8, 4, 2, ...c.WOOD_D);
+    cv.line(bx+5, by+8, bx+8, by+8, ...c.OUTLINE);
+  };
+  {
+    const oy8 = 8*48;
+    drawSpy(0*32, oy8, 0,  0,  0);
+    drawSpy(1*32, oy8, -1, 0,  0);
+    drawSpy(2*32, oy8, 0,  0,  0);
+    drawSpy(3*32, oy8, 0,  -2, 2);
+    drawSpy(4*32, oy8, -1, 0,  0);
+    drawSpy(5*32, oy8, 0,  2,  -2);
+    drawSpy(6*32, oy8, -1, 0,  0);
   }
 
   return cv.toPNG();
@@ -1633,10 +1879,20 @@ function makePropsAtlas() {
     drawCuboid(cx, cy, 12, 6, 10, c.WOOD_L, c.WOOD_M, c.WOOD_D);
     // plank lines on left face
     cv.line(cx-12, cy-4, cx, cy+2,    ...c.WOOD_D, 80);
-    // metal corner rivets
+    cv.line(cx-12, cy-7, cx, cy-1,    ...c.WOOD_D, 50);  // extra plank
+    // plank lines on right face
+    cv.line(cx, cy+2,  cx+12, cy-4,   ...c.WOOD_D, 60);
+    // wood grain noise on top face
+    cv.sp(cx-4, cy-11, ...c.WOOD_L, 80);
+    cv.sp(cx+2, cy-12, ...c.WOOD_D, 60);
+    // metal corner rivets (4 corners)
     cv.sp(cx-12, cy-10, ...c.STONE_L);
     cv.sp(cx-1,  cy-14, ...c.STONE_L);
     cv.sp(cx-1,  cy+5,  ...c.STONE_L);
+    cv.sp(cx+12, cy-10, ...c.STONE_L);
+    cv.sp(cx+1,  cy+5,  ...c.STONE_L);
+    // central latch on front face
+    cv.sp(cx, cy-2, ...c.STONE_L);
   }
 
   // ── 1: BARREL ─────────────────────────────────────────────────────────────
@@ -1652,6 +1908,15 @@ function makePropsAtlas() {
     cv.line(cx, cy-1,  cx+9, cy-5,  ...c.WOOD_D);
     cv.line(cx, cy+4,  cx+9, cy,    ...c.WOOD_D);
     cv.line(cx, cy-6,  cx+9, cy-10, ...c.WOOD_D);
+    // dark stave lines on left face (barrel boards)
+    cv.line(cx-5, cy-11, cx-5, cy+3, ...c.WOOD_D, 60);
+    cv.line(cx-2, cy-12, cx-2, cy+4, ...c.WOOD_D, 40);
+    cv.line(cx+3, cy-12, cx+3, cy+4, ...c.WOOD_D, 40);
+    // moisture/age stain on lower barrel
+    cv.sp(cx-3, cy+2, ...c.WOOD_D, 80);
+    cv.sp(cx+2, cy+3, ...c.WOOD_D, 60);
+    // bung hole dot
+    cv.sp(cx-1, cy-4, ...c.STONE_M);
   }
 
   // ── 2: SIGN ───────────────────────────────────────────────────────────────
@@ -1673,6 +1938,13 @@ function makePropsAtlas() {
     cv.line(cx-7, 13, cx+6, 13, ...c.OUTLINE);
     cv.line(cx-7, 6,  cx-7, 13, ...c.OUTLINE);
     cv.line(cx+6, 6,  cx+6, 13, ...c.OUTLINE);
+    // decorative bracket arm (post to sign)
+    cv.line(cx-1, 5, cx-1, 7, ...c.WOOD_D, 120);
+    // knot detail on post
+    cv.sp(cx, 16, ...c.WOOD_D, 100);
+    cv.sp(cx-1, 17, ...c.WOOD_D, 70);
+    // third text line on parchment
+    cv.line(cx-2, 12, cx+2, 12, ...c.INK, 80);
   }
 
   // ── 3: FENCE ──────────────────────────────────────────────────────────────
@@ -1715,6 +1987,15 @@ function makePropsAtlas() {
     // handles extending front
     cv.line(cx-5, cy+7, cx-10, cy+12, ...c.WOOD_D);
     cv.line(cx+5, cy+7, cx+10, cy+12, ...c.WOOD_D);
+    // cargo: burlap sack on cart bed
+    cv.fillRect(cx-6, cy-12, 8, 6, ...c.DIRT_L);
+    cv.line(cx-6, cy-12, cx+1, cy-12, ...c.DIRT_D);
+    cv.line(cx-6, cy-12, cx-6, cy-7,  ...c.DIRT_D);
+    cv.line(cx+1, cy-12, cx+1, cy-7,  ...c.DIRT_D);
+    cv.sp(cx-3, cy-10, ...c.DIRT_M, 150);   // sack crease
+    // wheel shadow dot (ground contact)
+    cv.sp(cx-15, cy+6, ...c.OUTLINE, 40);
+    cv.sp(cx+14, cy+1, ...c.OUTLINE, 40);
   }
 
   // ── 5: HAY_BALE ───────────────────────────────────────────────────────────
@@ -1731,6 +2012,16 @@ function makePropsAtlas() {
     // bale outline (rounded feel)
     cv.line(cx-14, cy-9, cx, cy-15, ...c.OUTLINE);
     cv.line(cx, cy-15, cx+14, cy-9, ...c.OUTLINE);
+    // dense straw fringe on left face
+    for (let tx=cx-12; tx<=cx-2; tx+=3)
+      cv.sp(tx, cy-9+((tx%3===0)?1:0), ...c.THATCH_D, 90);
+    // right face straw texture
+    for (let tx=cx+2; tx<=cx+12; tx+=3)
+      cv.sp(tx, cy-9+((tx%3===0)?1:0), ...c.THATCH_D, 70);
+    // twine knot at centre of bale
+    cv.sp(cx, cy-6, ...c.WOOD_D, 180);
+    cv.sp(cx-1, cy-7, ...c.WOOD_D, 120);
+    cv.sp(cx+1, cy-7, ...c.WOOD_D, 120);
   }
 
   // ── 6: FLOWER_POT ─────────────────────────────────────────────────────────
@@ -1793,7 +2084,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 7: faction silhouettes, props atlas, VFX indicators (SPA-478)\n');
+console.log('\nRumor Mill — Art Pass 8: NPC variety, building polish, props detail (SPA-486)\n');
 
 write('assets/textures/tiles_ground.png',       makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',    makeRoadDirt());

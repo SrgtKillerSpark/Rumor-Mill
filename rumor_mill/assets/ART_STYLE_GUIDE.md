@@ -89,20 +89,25 @@ All assets must use only the colours below.
 
 ## NPC Sprite Specifications
 
-File: `assets/textures/npc_sprites.png` (224×288)  
+File: `assets/textures/npc_sprites.png` (224×432)  
 Frame size: **32×48px**  
-Sheet layout: 7 columns × 6 rows (3 faction rows + 3 archetype rows added in SPA-99)
+Sheet layout: 7 columns × 9 rows (3 faction rows + 6 archetype rows; rows 6–8 added in SPA-486)
 
-| Row | Type      | Faction / Archetype | Body colour     | Trim colour    | Hat silhouette                        |
-|-----|-----------|---------------------|-----------------|----------------|---------------------------------------|
-| 0   | Faction   | Merchant            | `MERCH_BODY`    | `MERCH_TRIM`   | Wide-brim felt (14 px) + feather quill |
-| 1   | Faction   | Noble               | `NOBLE_BODY`    | `NOBLE_TRIM`   | 3-spike coronet with silver gem tips  |
-| 2   | Faction   | Clergy              | `CLERGY_BODY`   | `CLERGY_TRIM`  | Draped hood + bell-shaped cassock robe |
-| 3   | Archetype | Guard               | `STONE_M`       | `STONE_D`      | Nasal helmet                          |
-| 4   | Archetype | Commoner            | `DIRT_M`        | `DIRT_D`       | Soft cloth cap                        |
-| 5   | Archetype | Tavern Staff        | `WOOD_M`        | `PLASTER`      | Parchment head-kerchief               |
+| Row | Type      | Faction / Archetype | Body colour     | Trim colour    | Hat silhouette                              |
+|-----|-----------|---------------------|-----------------|----------------|---------------------------------------------|
+| 0   | Faction   | Merchant            | `MERCH_BODY`    | `MERCH_TRIM`   | Wide-brim felt (14 px) + feather quill      |
+| 1   | Faction   | Noble               | `NOBLE_BODY`    | `NOBLE_TRIM`   | 3-spike coronet with silver gem tips        |
+| 2   | Faction   | Clergy              | `CLERGY_BODY`   | `CLERGY_TRIM`  | Draped hood + bell-shaped cassock robe      |
+| 3   | Archetype | Guard               | `STONE_M`       | `STONE_D`      | Nasal helmet                                |
+| 4   | Archetype | Commoner            | `DIRT_M`        | `DIRT_D`       | Soft cloth cap                              |
+| 5   | Archetype | Tavern Staff        | `WOOD_M`        | `PLASTER`      | Parchment head-kerchief                     |
+| 6   | Archetype | Scholar             | `MERCH_B`       | `FLAG_R`       | Square mortarboard skullcap + scroll prop   |
+| 7   | Archetype | Elder               | `PLASTER`       | `STONE_M`      | Open grey hood + white temple hair + staff  |
+| 8   | Archetype | Spy                 | `STONE_D`       | `INK`          | Deep cowl hiding face + dagger at belt      |
 
 **Faction silhouette differentiation (SPA-478):** Merchant, Noble, and Clergy each have a unique hat shape readable at the 32×48 sprite scale. Merchant reads wide (hat brim 14 px), Noble reads tall (3-spike crown), Clergy reads soft and wide-shouldered (hood drapes + cassock bell).
+
+**Art Pass 8 archetype additions (SPA-486):** Scholar (row 6) reads academic — square flat mortarboard + ink-blue robe + scroll. Elder (row 7) reads ancient — open grey hood showing white temple hair + walking staff. Spy (row 8) reads shadowy — deep dark cowl hiding face + narrow hunched cloak silhouette.
 
 | Cols | Animation | Speed  | Loop |
 |------|-----------|--------|------|

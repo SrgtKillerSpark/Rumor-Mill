@@ -11,12 +11,15 @@ extends Node2D
 ## Mutations use PropagationEngine.try_mutate() (4 independent types).
 ## Shelf-life expiry is detected via Rumor.is_expired() after PropagationEngine.tick_decay().
 ##
-## Sprite sheet layout (assets/textures/npc_sprites.png, 224×288):
+## Sprite sheet layout (assets/textures/npc_sprites.png, 224×432):
 ##   Row 0 = merchant (deep blue/gold)   Row 1 = noble (burgundy/silver)
 ##   Row 2 = clergy (cream/black)
 ##   Row 3 = guard   (stone tabard/helmet — archetype "guard_civic")
 ##   Row 4 = commoner (drab linen — craftsmen, laborers, etc.)
 ##   Row 5 = tavern_staff (apron, warm amber — archetype "tavern_staff")
+##   Row 6 = scholar  (ink-blue robe, scroll — archetype "scholar")
+##   Row 7 = elder    (grey robe, walking staff — archetype "elder")
+##   Row 8 = spy      (dark hooded cloak, dagger — archetype "spy")
 ##   Cols 0-2 = idle frames (32×48 each); Cols 3-6 = walk frames
 
 ## Emitted once when this NPC first receives a rumor (UNAWARE → EVALUATING).
@@ -97,10 +100,13 @@ const FACTION_ROW := {
 	"noble":    1,
 	"clergy":   2,
 }
-# Archetype overrides — these rows take priority over faction (rows 3-5)
+# Archetype overrides — these rows take priority over faction (rows 3-8)
 const ARCHETYPE_ROW := {
 	"guard_civic":  3,
 	"tavern_staff": 5,
+	"scholar":      6,
+	"elder":        7,
+	"spy":          8,
 }
 # Roles that map to the commoner archetype row (row 4)
 const COMMONER_ROLES := [
