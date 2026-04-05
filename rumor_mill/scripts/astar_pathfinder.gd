@@ -49,6 +49,8 @@ func get_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 
 ## Convenience: find the nearest walkable cell to `cell` from a provided list.
 static func nearest_walkable(cell: Vector2i, walkable: Array[Vector2i]) -> Vector2i:
+	if walkable.is_empty():
+		return cell
 	var best := walkable[0]
 	var best_dist := cell.distance_squared_to(best)
 	for w in walkable:
