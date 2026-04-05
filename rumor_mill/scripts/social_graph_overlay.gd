@@ -34,6 +34,15 @@ const STATE_RING_COLOR := {
 
 const EDGE_BASE_COLOR := Color(0.50, 0.80, 1.00, 1.0)
 
+# Edge colour ramp by relationship weight (weak → strong).
+const EDGE_WEAK_COLOR   := Color(0.40, 0.45, 0.55, 1.0)   # cool grey — low bond
+const EDGE_MEDIUM_COLOR := Color(0.50, 0.75, 0.90, 1.0)   # soft blue — moderate bond
+const EDGE_STRONG_COLOR := Color(0.20, 1.00, 0.70, 1.0)   # vivid teal — strong bond
+
+# Active rumor glow on NPC nodes.
+const ACTIVE_RUMOR_GLOW_COLOR := Color(1.0, 0.85, 0.10, 0.35)  # warm gold pulse
+const ACTIVE_RUMOR_GLOW_RADIUS := 20.0
+
 # Mutated edge tints: orange = trust decreased, blue = trust increased.
 const EDGE_MUTATED_NEG_COLOR := Color(0.90, 0.55, 0.10, 1.0)
 const EDGE_MUTATED_POS_COLOR := Color(0.30, 0.55, 0.90, 1.0)
@@ -236,7 +245,7 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				_draw_node.draw_line(from_screen, to_screen,
 									 LIVE_SPREAD_EDGE_COLOR, LIVE_SPREAD_EDGE_WIDTH)
 			else:
-				var alpha := clamp((weight - EDGE_THRESHOLD) / (1.0 - EDGE_THRESHOLD), 0.05, 0.55)
+				var alpha := clamp((weight - EDGE_THRESHOLD) / (1.0 - EDGE_THRESHOLD), 0.10, 0.65)
 				var width := lerpf(0.5, 2.5, weight)
 				# Check for social graph mutations in either direction.
 				var mut_fwd: float = sg.get_net_mutation(nid, tid)
@@ -247,7 +256,8 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 				elif mut_fwd > 0.001 or mut_rev > 0.001:
 					base_color = EDGE_MUTATED_POS_COLOR
 				else:
-					base_color = EDGE_BASE_COLOR
+					# Colour-code by relationship strength.
+					base_color = _edge_strength_color(weight)
 				_draw_node.draw_line(from_screen, to_screen,
 									 Color(base_color.r, base_color.g, base_color.b, alpha), width)
 
@@ -280,6 +290,7 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 
 
 func _draw_nodes(npcs: Array) -> void:
+	var sg: SocialGraph = _world_ref.social_graph if _world_ref != null else null
 	for npc in npcs:
 		var screen_pos := _world_to_screen(npc.global_position)
 		var faction: String = npc.npc_data.get("faction", "merchant")
@@ -287,13 +298,19 @@ func _draw_nodes(npcs: Array) -> void:
 		var state: Rumor.RumorState = npc.get_worst_rumor_state()
 		var ring: Color = STATE_RING_COLOR.get(state, Color.TRANSPARENT)
 
+		# Active rumor glow — draw a soft halo behind NPCs involved in any rumor.
+		var has_active_rumor: bool = _npc_has_active_rumor(npc)
+		if has_active_rumor:
+			var pulse: float = 0.6 + 0.4 * sin(Time.get_ticks_msec() * 0.003)
+			var glow_col := Color(ACTIVE_RUMOR_GLOW_COLOR.r, ACTIVE_RUMOR_GLOW_COLOR.g,
+								  ACTIVE_RUMOR_GLOW_COLOR.b, ACTIVE_RUMOR_GLOW_COLOR.a * pulse)
+			_draw_node.draw_circle(screen_pos, ACTIVE_RUMOR_GLOW_RADIUS, glow_col)
+
 		# Filled node.
 		_draw_node.draw_circle(screen_pos, NODE_RADIUS, fill)
 
 		# State ring (only drawn when not UNAWARE).
 		if ring.a > 0.01:
-			# Draw as an arc outline by drawing a slightly larger circle then
-			# the fill circle on top. Godot 4 draw_arc handles this cleanly.
 			_draw_node.draw_arc(
 				screen_pos, NODE_RADIUS + RING_THICKNESS * 0.5,
 				0.0, TAU, 24, ring, RING_THICKNESS
@@ -302,14 +319,12 @@ func _draw_nodes(npcs: Array) -> void:
 		# Name label — drawn with a dark background pill for legibility over any background.
 		var npc_name: String = npc.npc_data.get("name", "?").split(" ")[0]  # first name only
 		var label_pos := screen_pos + Vector2(-NODE_RADIUS * 1.2, NODE_RADIUS + 12.0)
-		# Background pill behind the label.
 		var font_size_px := 13
 		var text_w: float = ThemeDB.fallback_font.get_string_size(npc_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size_px).x
 		_draw_node.draw_rect(
 			Rect2(label_pos + Vector2(-3, -12), Vector2(text_w + 6, 16)),
 			Color(0.0, 0.0, 0.0, 0.65)
 		)
-		# Main label (no separate shadow pass needed — background handles contrast).
 		_draw_node.draw_string(
 			ThemeDB.fallback_font,
 			label_pos,
@@ -320,8 +335,39 @@ func _draw_nodes(npcs: Array) -> void:
 			Color(0.95, 0.95, 0.85, 0.95)
 		)
 
-		# Reputation score sub-label — shown if reputation system is available.
 		var npc_id: String = npc.npc_data.get("id", "")
+
+		# Trust level bar — average relationship weight from social graph.
+		if sg != null and not npc_id.is_empty():
+			var avg_trust: float = _avg_trust(sg, npc_id)
+			if avg_trust > 0.01:
+				var bar_pos := label_pos + Vector2(0.0, 14.0)
+				var bar_w: float = 30.0
+				var bar_h: float = 4.0
+				# Background track.
+				_draw_node.draw_rect(
+					Rect2(bar_pos + Vector2(-1, -5), Vector2(bar_w + 2, bar_h + 2)),
+					Color(0.0, 0.0, 0.0, 0.55)
+				)
+				# Filled portion.
+				var trust_color := _trust_bar_color(avg_trust)
+				_draw_node.draw_rect(
+					Rect2(bar_pos + Vector2(0, -4), Vector2(bar_w * clamp(avg_trust, 0.0, 1.0), bar_h)),
+					trust_color
+				)
+				# Trust label next to bar.
+				var trust_text := "%d%%" % roundi(avg_trust * 100.0)
+				_draw_node.draw_string(
+					ThemeDB.fallback_font,
+					bar_pos + Vector2(bar_w + 4.0, -1.0),
+					trust_text,
+					HORIZONTAL_ALIGNMENT_LEFT,
+					-1,
+					10,
+					trust_color
+				)
+
+		# Reputation score sub-label — shown if reputation system is available.
 		if not npc_id.is_empty() and _world_ref != null \
 				and "reputation_system" in _world_ref and _world_ref.reputation_system != null:
 			var snap: ReputationSystem.ReputationSnapshot = \
@@ -329,7 +375,7 @@ func _draw_nodes(npcs: Array) -> void:
 			if snap != null:
 				var rep_text := "%d" % snap.score
 				var rep_color: Color = ReputationSystem.score_color(snap.score)
-				var rep_pos := label_pos + Vector2(0.0, 14.0)
+				var rep_pos := label_pos + Vector2(0.0, 28.0)
 				var rep_w: float = ThemeDB.fallback_font.get_string_size(rep_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
 				_draw_node.draw_rect(
 					Rect2(rep_pos + Vector2(-3, -10), Vector2(rep_w + 6, 13)),
@@ -346,6 +392,48 @@ func _draw_nodes(npcs: Array) -> void:
 				)
 
 
+# ── Helpers: strength / trust / active rumor ─────────────────────────────────
+
+## Lerp edge colour from EDGE_WEAK_COLOR → EDGE_MEDIUM_COLOR → EDGE_STRONG_COLOR based on weight.
+func _edge_strength_color(weight: float) -> Color:
+	if weight < 0.55:
+		var t: float = clamp((weight - EDGE_THRESHOLD) / (0.55 - EDGE_THRESHOLD), 0.0, 1.0)
+		return EDGE_WEAK_COLOR.lerp(EDGE_MEDIUM_COLOR, t)
+	else:
+		var t: float = clamp((weight - 0.55) / (1.0 - 0.55), 0.0, 1.0)
+		return EDGE_MEDIUM_COLOR.lerp(EDGE_STRONG_COLOR, t)
+
+
+## Average social graph weight for an NPC across all their neighbours.
+func _avg_trust(sg: SocialGraph, npc_id: String) -> float:
+	var neighbours: Dictionary = sg.get_neighbours(npc_id)
+	if neighbours.is_empty():
+		return 0.0
+	var total: float = 0.0
+	for tid in neighbours:
+		total += float(neighbours[tid])
+	return total / float(neighbours.size())
+
+
+## Colour for the trust bar: red → amber → green.
+func _trust_bar_color(trust: float) -> Color:
+	if trust >= 0.6:
+		return Color(0.30, 0.90, 0.45, 0.90)
+	elif trust >= 0.35:
+		return Color(0.95, 0.80, 0.30, 0.90)
+	else:
+		return Color(0.95, 0.40, 0.25, 0.90)
+
+
+## Whether an NPC has any rumor slot in an active state (not UNAWARE / EXPIRED).
+func _npc_has_active_rumor(npc: Node2D) -> bool:
+	for rid in npc.rumor_slots:
+		var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+		if slot.state != Rumor.RumorState.UNAWARE and slot.state != Rumor.RumorState.EXPIRED:
+			return true
+	return false
+
+
 # ── Legend ─────────────────────────────────────────────────────────────────────
 
 func _build_legend() -> void:
@@ -356,8 +444,8 @@ func _build_legend() -> void:
 	_legend_panel.set_anchor_and_offset(SIDE_RIGHT,  1.0, -210.0)
 	_legend_panel.set_anchor_and_offset(SIDE_LEFT,   1.0, -210.0)
 	_legend_panel.set_anchor_and_offset(SIDE_TOP,    0.0,   10.0)
-	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  283.0)
-	_legend_panel.custom_minimum_size = Vector2(195, 268)
+	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  383.0)
+	_legend_panel.custom_minimum_size = Vector2(195, 368)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.05, 0.03, 0.92)
@@ -369,7 +457,7 @@ func _build_legend() -> void:
 	_legend_label = RichTextLabel.new()
 	_legend_label.bbcode_enabled = true
 	_legend_label.fit_content    = true
-	_legend_label.custom_minimum_size = Vector2(180, 253)
+	_legend_label.custom_minimum_size = Vector2(180, 353)
 
 	_legend_label.append_text("[b][color=white]Social Graph View[/color][/b]  [color=gray][G to hide][/color]\n\n")
 	_legend_label.append_text("[b]Factions[/b]\n")
@@ -390,6 +478,12 @@ func _build_legend() -> void:
 	_legend_label.append_text("[color=#ff8000]—[/color] Recent transmission\n")
 	_legend_label.append_text("[color=#e68c1a]—[/color] Trust fell (NPC acted on rumor)\n")
 	_legend_label.append_text("[color=#4d8ce6]—[/color] Trust rose (NPC spread praise)\n")
+	_legend_label.append_text("[color=#667388]—[/color] Weak bond\n")
+	_legend_label.append_text("[color=#80bfe6]—[/color] Moderate bond\n")
+	_legend_label.append_text("[color=#33ffb3]—[/color] Strong bond\n\n")
+	_legend_label.append_text("[b]Other[/b]\n")
+	_legend_label.append_text("[color=#ffd91a]●[/color] Active rumor glow\n")
+	_legend_label.append_text("▬ Trust level bar\n")
 
 	_legend_panel.add_child(_legend_label)
 	add_child(_legend_panel)

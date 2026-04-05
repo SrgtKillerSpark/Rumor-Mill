@@ -225,6 +225,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_event_choice_modal()
 	_init_objective_hud()
 	_init_speed_hud()
+	_init_zone_indicator()
 	_init_npc_conversation_overlay()
 	_init_scenario1_hud()
 	_init_scenario2_hud()
@@ -556,6 +557,14 @@ func _init_speed_hud() -> void:
 	add_child(hud)
 	if hud.has_method("setup"):
 		hud.setup(day_night)
+
+
+func _init_zone_indicator() -> void:
+	var zi := preload("res://scripts/zone_indicator.gd").new()
+	zi.name = "ZoneIndicator"
+	add_child(zi)
+	if zi.has_method("setup"):
+		zi.setup(world, camera)
 
 
 func _init_npc_conversation_overlay() -> void:

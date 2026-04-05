@@ -57,6 +57,12 @@ var _expanded_rumors: Dictionary = {}
 ## Rumors-tab filter text (persists across tab switches).
 var _rumor_filter_text: String = ""
 
+## Rumors-tab status filter: "" = all, or one of the status strings.
+var _rumor_status_filter: String = ""
+
+## Rumors-tab sort order: true = newest first (default), false = oldest first.
+var _rumor_sort_newest: bool = true
+
 ## Intelligence-tab filter text (NPC name search).
 var _intel_filter_text: String = ""
 
@@ -323,6 +329,55 @@ func _build_rumors_section() -> void:
 		_rumor_filter_text = ""
 		call_deferred("_rebuild_section", Section.RUMORS)
 	)
+
+	# ── Status filter buttons ────────────────────────────────────────────────
+	var status_row := HBoxContainer.new()
+	status_row.add_theme_constant_override("separation", 3)
+	_content_vbox.add_child(status_row)
+
+	var status_lbl := Label.new()
+	status_lbl.text = "Status:"
+	status_lbl.add_theme_font_size_override("font_size", 12)
+	status_lbl.add_theme_color_override("font_color", C_SUBKEY)
+	status_row.add_child(status_lbl)
+
+	var status_options: Array = ["", "EVALUATING", "SPREADING", "STALLING", "CONTRADICTED", "EXPIRED"]
+	var status_labels: Array  = ["All", "Evaluating", "Spreading", "Stalling", "Contradicted", "Expired"]
+	for si in range(status_options.size()):
+		var sbtn := Button.new()
+		sbtn.text = status_labels[si]
+		sbtn.add_theme_font_size_override("font_size", 11)
+		var is_active: bool = _rumor_status_filter == status_options[si]
+		var sbtn_style := StyleBoxFlat.new()
+		sbtn_style.set_content_margin_all(3)
+		if is_active:
+			sbtn_style.bg_color = C_TAB_ACTIVE
+			sbtn.add_theme_color_override("font_color", C_HEADING)
+		else:
+			sbtn_style.bg_color = C_TAB_INACTIVE
+			sbtn.add_theme_color_override("font_color", C_SUBKEY)
+		sbtn.add_theme_stylebox_override("normal", sbtn_style)
+		var captured_status: String = status_options[si]
+		sbtn.pressed.connect(func() -> void:
+			_rumor_status_filter = captured_status
+			call_deferred("_rebuild_section", Section.RUMORS)
+		)
+		# Wire focus neighbours so arrow keys cycle through the status buttons.
+		sbtn.focus_mode = Control.FOCUS_ALL
+		status_row.add_child(sbtn)
+
+	# ── Sort toggle ──────────────────────────────────────────────────────────
+	var sort_btn := Button.new()
+	sort_btn.text = "↓ Newest" if _rumor_sort_newest else "↑ Oldest"
+	sort_btn.add_theme_font_size_override("font_size", 11)
+	sort_btn.add_theme_color_override("font_color", C_KEY)
+	sort_btn.focus_mode = Control.FOCUS_ALL
+	sort_btn.pressed.connect(func() -> void:
+		_rumor_sort_newest = not _rumor_sort_newest
+		call_deferred("_rebuild_section", Section.RUMORS)
+	)
+	status_row.add_child(sort_btn)
+
 	# ─────────────────────────────────────────────────────────────────────────
 
 	if all_rumors.is_empty():
@@ -331,9 +386,12 @@ func _build_rumors_section() -> void:
 
 	var npc_names: Dictionary = _build_npc_name_lookup()
 
-	# Sort newest first.
+	# Sort by creation tick (newest or oldest first).
 	var sorted_rumors: Array = all_rumors.values()
-	sorted_rumors.sort_custom(func(a, b): return a.created_tick > b.created_tick)
+	if _rumor_sort_newest:
+		sorted_rumors.sort_custom(func(a, b): return a.created_tick > b.created_tick)
+	else:
+		sorted_rumors.sort_custom(func(a, b): return a.created_tick < b.created_tick)
 
 	# Apply text filter (subject name or claim type).
 	var filter_lower := _rumor_filter_text.to_lower().strip_edges()
@@ -344,8 +402,27 @@ func _build_rumors_section() -> void:
 			return subj_name.contains(filter_lower) or claim_str.contains(filter_lower)
 		)
 
+	# Apply status filter — compute status for each rumor to match.
+	if not _rumor_status_filter.is_empty():
+		sorted_rumors = sorted_rumors.filter(func(r: Rumor) -> bool:
+			var spr: int = 0
+			var bel: int = 0
+			if _world_ref != null:
+				for npc in _world_ref.npcs:
+					if npc.rumor_slots.has(r.id):
+						var slot: Rumor.NpcRumorSlot = npc.rumor_slots[r.id]
+						if slot.state == Rumor.RumorState.SPREAD:
+							spr += 1; bel += 1
+						elif slot.state == Rumor.RumorState.BELIEVE or slot.state == Rumor.RumorState.ACT:
+							bel += 1
+			var is_cont: bool = _is_contradicted(r, spr)
+			var st: String = _rumor_journal_status(r, spr, bel, is_cont)
+			return st == _rumor_status_filter
+		)
+
 	if sorted_rumors.is_empty():
-		_add_body_label("No rumors match \"%s\"." % _rumor_filter_text)
+		var hint := _rumor_filter_text if not _rumor_filter_text.is_empty() else _rumor_status_filter
+		_add_body_label("No rumors match \"%s\"." % hint)
 		return
 
 	for rumor in sorted_rumors:

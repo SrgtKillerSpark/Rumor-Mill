@@ -587,6 +587,21 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 	mut_lbl.add_theme_color_override("font_color", C_MUTABILITY)
 	stats_row.add_child(mut_lbl)
 
+	# Base believability hint — helps player assess claim strength before seed target.
+	var base_belief: int = roundi(float(intensity) / 5.0 * 100.0)
+	var belief_hint := Label.new()
+	belief_hint.text = "   Base Belief: %d%%" % base_belief
+	belief_hint.add_theme_font_size_override("font_size", 11)
+	var bhint_color: Color
+	if base_belief >= 60:
+		bhint_color = Color(0.40, 0.90, 0.45, 1.0)
+	elif base_belief >= 40:
+		bhint_color = Color(0.95, 0.80, 0.30, 1.0)
+	else:
+		bhint_color = Color(0.95, 0.45, 0.25, 1.0)
+	belief_hint.add_theme_color_override("font_color", bhint_color)
+	stats_row.add_child(belief_hint)
+
 	vbox.add_child(HSeparator.new())
 
 	var btn := Button.new()
@@ -692,12 +707,25 @@ func _build_seed_entry(
 	var belief_est:  float = _estimate_believability(npc_id)
 	var belief_pct:  int   = roundi(belief_est * 100.0)
 
-	var est_lbl := Label.new()
-	est_lbl.text = "    Spread: ~%d NPCs   Believability: %d%%" % [
-		roundi(spread_est), belief_pct
-	]
-	est_lbl.add_theme_font_size_override("font_size", 13)
-	# Colour-code believability: green if high, amber if moderate, red if low.
+	# Spread estimate row.
+	var spread_row := HBoxContainer.new()
+	spread_row.add_theme_constant_override("separation", 6)
+	vbox.add_child(spread_row)
+
+	var spread_icon := Label.new()
+	spread_icon.text = "    Spread: ~%d NPCs" % roundi(spread_est)
+	spread_icon.add_theme_font_size_override("font_size", 13)
+	var spread_color: Color
+	if spread_est >= 4.0:
+		spread_color = Color(0.40, 0.90, 0.45, 1.0)
+	elif spread_est >= 2.0:
+		spread_color = Color(0.95, 0.80, 0.30, 1.0)
+	else:
+		spread_color = Color(0.95, 0.45, 0.25, 1.0)
+	spread_icon.add_theme_color_override("font_color", spread_color)
+	spread_row.add_child(spread_icon)
+
+	# Believability with colour-coded badge.
 	var belief_color: Color
 	if belief_pct >= 60:
 		belief_color = Color(0.40, 0.90, 0.45, 1.0)
@@ -705,8 +733,38 @@ func _build_seed_entry(
 		belief_color = Color(0.95, 0.80, 0.30, 1.0)
 	else:
 		belief_color = Color(0.95, 0.45, 0.25, 1.0)
-	est_lbl.add_theme_color_override("font_color", belief_color)
-	vbox.add_child(est_lbl)
+
+	var belief_lbl := Label.new()
+	belief_lbl.text = "Believability: %d%%" % belief_pct
+	belief_lbl.add_theme_font_size_override("font_size", 13)
+	belief_lbl.add_theme_color_override("font_color", belief_color)
+	spread_row.add_child(belief_lbl)
+
+	# Success probability hint — combines spread + believability for a quick read.
+	var success_score: float = (spread_est / 6.0) * 0.4 + belief_est * 0.6
+	var hint_text: String
+	var hint_color: Color
+	if success_score >= 0.65:
+		hint_text  = "Very Likely"
+		hint_color = Color(0.30, 0.95, 0.50, 1.0)
+	elif success_score >= 0.45:
+		hint_text  = "Good Chance"
+		hint_color = Color(0.50, 0.90, 0.40, 1.0)
+	elif success_score >= 0.30:
+		hint_text  = "Moderate"
+		hint_color = Color(0.95, 0.80, 0.30, 1.0)
+	elif success_score >= 0.15:
+		hint_text  = "Risky"
+		hint_color = Color(0.95, 0.55, 0.25, 1.0)
+	else:
+		hint_text  = "Unlikely"
+		hint_color = Color(0.95, 0.35, 0.25, 1.0)
+
+	var hint_lbl := Label.new()
+	hint_lbl.text = "[%s]" % hint_text
+	hint_lbl.add_theme_font_size_override("font_size", 12)
+	hint_lbl.add_theme_color_override("font_color", hint_color)
+	spread_row.add_child(hint_lbl)
 
 	vbox.add_child(HSeparator.new())
 
