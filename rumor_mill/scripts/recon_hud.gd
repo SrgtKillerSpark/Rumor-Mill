@@ -33,12 +33,24 @@ const PIP_EMPTY_WHISPER := Color(0.15, 0.20, 0.28, 1.0)  # dark blue
 
 const PIP_SIZE := Vector2(14, 14)
 
+# Heat meter colours
+const C_HEAT_LOW    := Color(0.30, 0.75, 0.35, 1.0)  # green — safe
+const C_HEAT_MED    := Color(0.95, 0.75, 0.15, 1.0)  # yellow — caution
+const C_HEAT_HIGH   := Color(0.95, 0.40, 0.10, 1.0)  # orange — danger
+const C_HEAT_CRIT   := Color(0.95, 0.15, 0.10, 1.0)  # red — critical
+const C_HEAT_BG     := Color(0.18, 0.12, 0.06, 1.0)
+
 var _intel_store_ref:  PlayerIntelStore = null
 var _rumor_panel_ref:  CanvasLayer      = null
 var _world_ref:        Node2D           = null
 var _hint_btn:         Button           = null
 var _hint_label:       Label            = null
 var _hint_tween:       Tween            = null
+
+# Heat meter UI nodes.
+var _heat_row:       HBoxContainer = null
+var _heat_bar_fill:  ColorRect     = null
+var _heat_count_lbl: Label         = null
 
 # Toast animation tweens.
 var _toast_tween:       Tween = null
@@ -65,6 +77,7 @@ func _ready() -> void:
 	_build_pips(action_pips_row, 3, 3, PIP_FULL_ACTION, PIP_EMPTY_ACTION)
 	_build_pips(whisper_pips_row, 2, 2, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 	_build_count_labels()
+	_build_heat_meter()
 	_build_extra_key_hints()
 	_build_hint_button()
 	_build_flash_overlay()
@@ -198,7 +211,103 @@ func show_action_flash(success: bool) -> void:
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
 
 
-func _build_extra_key_hints() -> void:
+## Build a horizontal heat meter row: icon + "Heat" label + bar + numeric value.
+## Inserted into the CounterPanel VBox between whispers and key hints.
+func _build_heat_meter() -> void:
+	var vbox: VBoxContainer = $CounterPanel/VBox
+	_heat_row = HBoxContainer.new()
+	_heat_row.add_theme_constant_override("separation", 4)
+	_heat_row.visible = false  # hidden until heat_enabled
+
+	# Flame icon
+	var icon := Label.new()
+	icon.text = "🔥"
+	icon.add_theme_font_size_override("font_size", 11)
+	icon.add_theme_color_override("font_color", Color(0.85, 0.45, 0.15, 1.0))
+	_heat_row.add_child(icon)
+
+	# "Heat" title
+	var title := Label.new()
+	title.text = "Heat"
+	title.custom_minimum_size = Vector2(54, 0)
+	title.add_theme_font_size_override("font_size", 11)
+	title.add_theme_color_override("font_color", Color(0.75, 0.68, 0.52, 1.0))
+	_heat_row.add_child(title)
+
+	# Bar background
+	var bar_bg := ColorRect.new()
+	bar_bg.custom_minimum_size = Vector2(80, 10)
+	bar_bg.color = C_HEAT_BG
+	_heat_row.add_child(bar_bg)
+
+	# Bar fill
+	_heat_bar_fill = ColorRect.new()
+	_heat_bar_fill.anchor_bottom = 1.0
+	_heat_bar_fill.anchor_right = 0.0
+	_heat_bar_fill.color = C_HEAT_LOW
+	bar_bg.add_child(_heat_bar_fill)
+
+	# Numeric label
+	_heat_count_lbl = Label.new()
+	_heat_count_lbl.text = "0"
+	_heat_count_lbl.add_theme_font_size_override("font_size", 11)
+	_heat_count_lbl.add_theme_color_override("font_color", C_HEAT_LOW)
+	_heat_row.add_child(_heat_count_lbl)
+
+	_heat_row.tooltip_text = "Suspicion: highest NPC heat level (0-100). High heat makes NPCs reject your rumors."
+
+	# Insert before KeyHintRow (index 2 = after ActionsRow, WhispersRow)
+	var key_hint_idx: int = -1
+	for i in vbox.get_child_count():
+		if vbox.get_child(i).name == "KeyHintRow":
+			key_hint_idx = i
+			break
+	if key_hint_idx >= 0:
+		vbox.add_child(_heat_row)
+		vbox.move_child(_heat_row, key_hint_idx)
+	else:
+		vbox.add_child(_heat_row)
+
+	# Expand counter panel to fit the heat row when visible.
+	var counter_panel: Panel = $CounterPanel
+	counter_panel.offset_bottom += 18
+
+
+func _refresh_heat() -> void:
+	if _intel_store_ref == null or _heat_row == null:
+		return
+	if not _intel_store_ref.heat_enabled:
+		_heat_row.visible = false
+		return
+	_heat_row.visible = true
+
+	# Find the maximum heat across all NPCs as the player's "heat level."
+	var max_heat: float = 0.0
+	for npc_id in _intel_store_ref.heat:
+		var h: float = _intel_store_ref.heat[npc_id]
+		if h > max_heat:
+			max_heat = h
+
+	var fraction: float = clampf(max_heat / 100.0, 0.0, 1.0)
+	if _heat_bar_fill != null:
+		_heat_bar_fill.anchor_right = fraction
+		# Colour gradient: green → yellow → orange → red
+		var heat_color: Color
+		if fraction < 0.25:
+			heat_color = C_HEAT_LOW
+		elif fraction < 0.50:
+			heat_color = C_HEAT_LOW.lerp(C_HEAT_MED, (fraction - 0.25) / 0.25)
+		elif fraction < 0.75:
+			heat_color = C_HEAT_MED.lerp(C_HEAT_HIGH, (fraction - 0.50) / 0.25)
+		else:
+			heat_color = C_HEAT_HIGH.lerp(C_HEAT_CRIT, (fraction - 0.75) / 0.25)
+		_heat_bar_fill.color = heat_color
+		if _heat_count_lbl != null:
+			_heat_count_lbl.text = "%d" % int(max_heat)
+			_heat_count_lbl.add_theme_color_override("font_color", heat_color)
+
+
+
 	var key_hint_row: HBoxContainer = $CounterPanel/VBox/KeyHintRow
 	key_hint_row.add_theme_constant_override("separation", 6)
 	_add_key_hint(key_hint_row, "R", "Rumor", Color(0.92, 0.65, 0.12, 1.0))
@@ -263,6 +372,9 @@ func _refresh_pips() -> void:
 		_action_count_label.text = "%d/%d" % [remaining, max_val]
 	if _whisper_count_label != null:
 		_whisper_count_label.text = "%d/%d" % [whispers, max_w]
+
+	# Heat meter.
+	_refresh_heat()
 
 	# Favors row.
 	var show_favors: bool = _intel_store_ref.heat_enabled or favors > 0

@@ -157,15 +157,24 @@ const TOOLTIP_DATA: Dictionary = {
 
 const HINT_DATA: Dictionary = {
 	"hint_camera": {
-		"title": "Navigate the Town",
+		"title": "Your Mission Begins",
 		"body":  (
-			"Use [b]WASD[/b] or arrow keys to pan.  "
-			+ "[b]Scroll wheel[/b] to zoom.  [b]Middle-mouse drag[/b] for free pan."
+			"You are a spymaster sent to [b]ruin Lord Edric Fenn[/b].  "
+			+ "Use [b]WASD[/b] to look around the town.  [b]Scroll[/b] to zoom."
 		),
-		"auto_dismiss_secs": 7,
+		"auto_dismiss_secs": 8,
+	},
+	"hint_first_action": {
+		"title": "Step 1: Gather Intel",
+		"body":  (
+			"[b]Right-click a building[/b] to [b]Observe[/b] who is inside.  "
+			+ "Try the [b]Market Square[/b] — it's always busy.  "
+			+ "You have [b]3 actions[/b] per day. Use them wisely."
+		),
+		"auto_dismiss_secs": 9,
 	},
 	"hint_target_npc": {
-		"title": "Find Your Target",
+		"title": "Step 2: Find Your Target",
 		"body":  (
 			"Your target is [b]Lord Edric Fenn[/b].  Hover over townspeople to find him.  "
 			+ "[b]Right-click a building[/b] to Observe who is present, or "
@@ -330,6 +339,33 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			+ "Target [b]higher-sociability NPCs[/b] or use stronger claim types to accelerate."
 		),
 		"auto_dismiss_secs": 9,
+	},
+	"ctx_s2_opening": {
+		"title": "The Plague Scare — First Move",
+		"body":  (
+			"[b]Observe[/b] the [b]Apothecary[/b] or [b]Market[/b] to find NPCs connected to [b]Alys Herbwife[/b].  "
+			+ "Then craft an [b]Illness[/b] rumor — you need [b]6 believers[/b] to win.  "
+			+ "Watch out for [b]Sister Maren[/b] — if she rejects the rumor, you lose."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s3_opening": {
+		"title": "The Succession — First Move",
+		"body":  (
+			"You fight on [b]two fronts[/b]: raise [b]Calder Fenn[/b] with [b]Praise[/b] "
+			+ "and tear down [b]Tomas Reeve[/b] with [b]Scandal[/b].  "
+			+ "A [b]rival agent[/b] works against you — act fast!"
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s4_opening": {
+		"title": "The Holy Inquisition — First Move",
+		"body":  (
+			"This is a [b]defense mission[/b].  An Inquisitor will attack [b]Aldous[/b], [b]Vera[/b], and [b]Finn[/b].  "
+			+ "Use [b]Praise[/b] rumours to keep their reputations [b]above 45[/b].  "
+			+ "Watch the Inquisitor HUD for incoming attacks."
+		),
+		"auto_dismiss_secs": 10,
 	},
 }
 

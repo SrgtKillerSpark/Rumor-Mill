@@ -73,6 +73,15 @@ var _bldg_highlight: Polygon2D   = null
 var _popup_panel: Panel  = null
 var _popup_npc:   Node2D = null
 
+# ── Building interior panels (set via set_interiors()) ────────────────────────
+var _interiors: Dictionary = {}  ## location_id → BuildingInterior CanvasLayer node
+
+
+## Register interior panel nodes keyed by location id (e.g. "tavern", "manor", "chapel").
+## Called from main.gd after the interior scenes are added to the tree.
+func set_interiors(interiors: Dictionary) -> void:
+	_interiors = interiors
+
 
 func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
 	_world_ref   = world
@@ -486,6 +495,9 @@ func _try_observe(location_id: String) -> void:
 
 	emit_signal("action_performed", msg, true)
 	_show_observe_sparkle()
+	# Show the building interior panel (lore/flavour) if one is registered.
+	if _interiors.has(location_id):
+		_interiors[location_id].show_interior()
 	# Trigger an "observe" dialogue bubble on each NPC present at the location.
 	for npc in _world_ref.npcs:
 		if (npc.current_cell - entry_cell).length() <= 4:
@@ -511,14 +523,14 @@ func _try_eavesdrop(target: Node2D) -> void:
 	var temperament: float = float(target.npc_data.get("temperament", 0.5))
 	if temperament > 0.7 and randf() < EAVESDROP_FAIL_CHANCE:
 		var name_a: String = target.npc_data.get("name", "?")
-		emit_signal("action_performed",
-			"\"%s seemed to glance your way.\" (%d Recon left)" % [
-				name_a, _intel_store.recon_actions_remaining],
-			false)
 		_flash_npc_detected(target)
 		# Heat: +4 on detection failure to both NPCs involved.
 		_intel_store.add_heat(target.npc_data.get("id", ""), 4.0)
 		_intel_store.add_heat(partner.npc_data.get("id", ""), 4.0)
+		emit_signal("action_performed",
+			"\"%s seemed to glance your way.\" [+4 suspicion] (%d Recon left)" % [
+				name_a, _intel_store.recon_actions_remaining],
+			false)
 		player_exposed.emit()
 		return
 
@@ -557,11 +569,15 @@ func _try_eavesdrop(target: Node2D) -> void:
 	var bar_str := "[" + "*".repeat(intel.bars()) + " ".repeat(3 - intel.bars()) + "]"
 	var belief_line   := ("\n" + belief_ctx)   if not belief_ctx.is_empty()   else ""
 	var critical_line := ("\n" + critical_ctx) if not critical_ctx.is_empty() else ""
-	var msg := "Eavesdropped: %s <-> %s  %s %s (%s)%s%s  (%d Recon left)" % [
+	var heat_line := ""
+	if _intel_store.heat_enabled:
+		heat_line = "\n[+8 suspicion]"
+	var msg := "Eavesdropped: %s <-> %s  %s %s (%s)%s%s%s  (%d Recon left)" % [
 		name_a, name_b,
 		bar_str, intel.affinity_label.capitalize(), intel.strength_label(),
 		belief_line,
 		critical_line,
+		heat_line,
 		_intel_store.recon_actions_remaining
 	]
 

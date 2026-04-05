@@ -166,6 +166,16 @@ func _on_begin_game(scenario_id: String) -> void:
 			debug_console.set_overlay(debug_overlay)
 
 	_init_recon_system()
+	# Wire milestone tracker callback now that recon_hud is set up.
+	if world.milestone_tracker != null and recon_hud != null and recon_hud.has_method("show_milestone"):
+		var _sid: int = int(scenario_id.trim_prefix("scenario_"))
+		world.milestone_tracker.setup(
+			_sid,
+			world.reputation_system,
+			world.scenario_manager,
+			world.intel_store,
+			recon_hud.show_milestone
+		)
 	_init_journal()
 	_wire_rumor_events()
 	_init_objective_hud()
@@ -230,6 +240,21 @@ func _init_recon_system() -> void:
 	recon_ctrl.name = "ReconController"
 	add_child(recon_ctrl)
 	recon_ctrl.setup(world, intel_store)
+
+	# Building interior panels: shown when the player successfully observes
+	# the corresponding building (tavern / manor / chapel).
+	var _interior_scenes := {
+		"tavern": "res://scenes/TavernInterior.tscn",
+		"manor":  "res://scenes/ManorInterior.tscn",
+		"chapel": "res://scenes/ChapelInterior.tscn",
+	}
+	var _interiors := {}
+	for loc_id in _interior_scenes:
+		var interior: CanvasLayer = load(_interior_scenes[loc_id]).instantiate()
+		interior.name = loc_id.capitalize() + "Interior"
+		add_child(interior)
+		_interiors[loc_id] = interior
+	recon_ctrl.set_interiors(_interiors)
 
 	# Pipe action results to the HUD toast.
 	if recon_hud != null and recon_hud.has_method("show_toast"):
@@ -309,6 +334,15 @@ func _on_rumor_event(message: String, tick: int) -> void:
 		elif message.contains("→ Believe"):
 			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
 			recon_hud.show_milestone("%s is convinced!" % npc_name, Color(0.50, 1.00, 0.55, 1.0))
+		elif message.contains("→ Spread"):
+			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
+			recon_hud.show_milestone("%s is spreading the word!" % npc_name, Color(0.40, 0.85, 1.00, 1.0))
+		elif message.contains("→ Act"):
+			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
+			recon_hud.show_milestone("%s takes action!" % npc_name, Color(1.00, 0.85, 0.20, 1.0))
+		elif message.contains("→ Reject"):
+			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
+			recon_hud.show_milestone("%s rejected the rumor" % npc_name, Color(0.85, 0.40, 0.30, 1.0))
 
 
 ## Show a HUD toast + milestone when an NPC first becomes SOCIALLY_DEAD.
@@ -329,6 +363,8 @@ func _init_objective_hud() -> void:
 		return
 	if objective_hud.has_method("setup"):
 		objective_hud.setup(sm, day_night, world.reputation_system, world.intel_store)
+	if objective_hud.has_method("setup_world"):
+		objective_hud.setup_world(world)
 
 
 func _init_speed_hud() -> void:

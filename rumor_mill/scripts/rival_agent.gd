@@ -12,13 +12,21 @@ class_name RivalAgent
 
 ## Emitted each time the rival successfully seeds a counter-rumor.
 signal rival_acted(day: int, claim_type: String, subject_id: String)
+## Emitted when the player successfully disrupts the rival.
+signal rival_disrupted(day: int)
 
 const TOMAS_REEVE_ID := "tomas_reeve"
 const CALDER_FENN_ID := "calder_fenn"
 
+## Number of extra cooldown days added while a disruption is active.
+const DISRUPTION_COOLDOWN_BONUS := 3
+
 var _active: bool = false
 var _last_seed_day: int = 0
 var _alternate_flag: bool = false  # flips each seed during days 8–15
+
+## Days remaining on the current disruption effect (0 = no disruption).
+var _disruption_days_remaining: int = 0
 
 ## Difficulty modifier applied to every cooldown tier (positive = slower rival).
 ## Set by World._apply_active_scenario() before activate() is called.
@@ -29,6 +37,7 @@ func activate() -> void:
 	_active = true
 	_last_seed_day = 0
 	_alternate_flag = false
+	_disruption_days_remaining = 0
 
 
 ## Called once per in-game day from World._on_day_changed().
@@ -37,6 +46,9 @@ func activate() -> void:
 func tick(current_day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
 	if not _active:
 		return
+	# Decay disruption effect one day at a time.
+	if _disruption_days_remaining > 0:
+		_disruption_days_remaining -= 1
 	var cooldown := _get_cooldown(current_day)
 	if current_day - _last_seed_day < cooldown:
 		return
@@ -53,8 +65,29 @@ func _get_cooldown(day: int) -> int:
 	else:
 		base = 1
 	# cooldown_offset > 0 slows the rival (easier); < 0 speeds it up (harder).
-	# Clamp to at least 1 so the rival always waits at least one day between seeds.
-	return maxi(1, base + cooldown_offset)
+	# Disruption adds a temporary bonus on top of the difficulty offset.
+	var disruption_bonus: int = DISRUPTION_COOLDOWN_BONUS if _disruption_days_remaining > 0 else 0
+	return maxi(1, base + cooldown_offset + disruption_bonus)
+
+
+## Apply a counter-intel disruption that slows the rival for DISRUPTION_COOLDOWN_BONUS days.
+## Costs the caller one recon action (checked and spent by the caller before calling this).
+## Returns false if a disruption is already active or the rival hasn't acted yet.
+func apply_disruption(current_day: int) -> bool:
+	if not _active:
+		return false
+	if _last_seed_day == 0:
+		return false  # Rival hasn't acted yet — nothing concrete to disrupt
+	if _disruption_days_remaining > 0:
+		return false  # Already disrupted; wait for it to expire
+	_disruption_days_remaining = DISRUPTION_COOLDOWN_BONUS
+	rival_disrupted.emit(current_day)
+	return true
+
+
+## Returns true when the rival can currently be disrupted by the player.
+func can_be_disrupted() -> bool:
+	return _active and _last_seed_day > 0 and _disruption_days_remaining <= 0
 
 
 func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -> void:

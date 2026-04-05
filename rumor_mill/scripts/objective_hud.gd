@@ -2,19 +2,23 @@ extends CanvasLayer
 
 ## objective_hud.gd — Persistent HUD showing scenario objective and day counter.
 ##
-## Shows at the top-left of the screen:
-##   • Scenario title (gold)
-##   • One-line objective (first sentence of startingText)
-##   • "Day X / Y" counter + current time-of-day label, updated each tick
-##   • Amber day progress bar that fills as days pass
+## Redesigned: top-centre of the screen.
+##   - Large day counter with urgency colouring (green → yellow → red)
+##   - Plain-language objective line
+##   - Day timeline progress bar (colour matches day counter urgency)
+##   - Win-condition progress bar (green, driven by scenario manager)
+##   - Metrics row: Avg Rep, Believers, Pariahs
+##   - Faction influence mini-panel (merchant / noble / clergy)
 
-@onready var title_label:     Label     = $Panel/VBox/TitleLabel
-@onready var objective_label: Label     = $Panel/VBox/ObjectiveLabel
-@onready var target_label:    Label     = $Panel/VBox/TargetLabel
-@onready var day_label:       Label     = $Panel/VBox/DayRow/DayLabel
-@onready var time_label:      Label     = $Panel/VBox/DayRow/TimeOfDayLabel
-@onready var progress_bar:    ColorRect = $Panel/VBox/DayProgressBG/DayProgressBar
-@onready var progress_bg:     ColorRect = $Panel/VBox/DayProgressBG
+@onready var day_label:        Label     = $Panel/VBox/DayRow/DayLabel
+@onready var day_max_label:    Label     = $Panel/VBox/DayRow/DayMaxLabel
+@onready var time_label:       Label     = $Panel/VBox/DayRow/TimeOfDayLabel
+@onready var objective_label:  Label     = $Panel/VBox/ObjectiveLabel
+@onready var target_label:     Label     = $Panel/VBox/TargetLabel
+@onready var progress_bar:     ColorRect = $Panel/VBox/DayProgressBG/DayProgressBar
+@onready var progress_bg:      ColorRect = $Panel/VBox/DayProgressBG
+@onready var win_progress_bar: ColorRect = $Panel/VBox/WinProgressBG/WinProgressBar
+@onready var win_progress_lbl: Label     = $Panel/VBox/WinProgressBG/WinProgressLabel
 
 var _scenario_manager: ScenarioManager = null
 var _day_night:        Node            = null
@@ -33,12 +37,22 @@ var _metrics_row: HBoxContainer = null
 var _lbl_rumors_active: Label = null
 var _lbl_rep_avg: Label = null
 var _lbl_believers: Label = null
+var _lbl_threat: Label = null
+
+# ── Faction overview mini-panel ──────────────────────────────────────────────
+var _faction_panel: Panel = null
+var _faction_labels: Dictionary = {}  # faction_id → {mood: Label, bar: ColorRect}
+var _world_ref: Node2D = null
+
+# ── Urgency colour palette for day counter ───────────────────────────────────
+const C_DAY_SAFE    := Color(0.30, 0.85, 0.35, 1.0)  # green
+const C_DAY_CAUTION := Color(0.95, 0.85, 0.15, 1.0)  # yellow
+const C_DAY_URGENT  := Color(0.95, 0.55, 0.10, 1.0)  # orange
+const C_DAY_CRITICAL := Color(0.95, 0.20, 0.10, 1.0) # red
 
 
 func _ready() -> void:
 	layer = 4
-	title_label.add_theme_font_size_override("font_size", 20)
-	objective_label.add_theme_font_size_override("font_size", 13)
 	_build_banner()
 	_build_metrics_row()
 
@@ -49,6 +63,7 @@ func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: Reput
 	_days_allowed      = scenario_manager.get_days_allowed()
 	_reputation_system = rep_system
 	_intel_store       = intel_store
+	day_max_label.text = "%d" % _days_allowed
 	_refresh()
 	if day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_day_changed)
@@ -58,6 +73,12 @@ func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: Reput
 		scenario_manager.deadline_warning.connect(_on_deadline_warning)
 	# Capture initial reputation scores for the first dawn comparison.
 	_snapshot_dawn_scores()
+
+
+## Called by main.gd to provide world reference for faction overview.
+func setup_world(world: Node2D) -> void:
+	_world_ref = world
+	_build_faction_panel()
 
 
 func _on_day_changed(_day: int) -> void:
@@ -74,12 +95,19 @@ func _refresh() -> void:
 	if _scenario_manager == null:
 		return
 
-	title_label.text = _scenario_manager.get_title()
-	objective_label.text = _scenario_manager.get_objective_one_liner()
+	# Build a concise objective: "Discredit Edric Fenn — 12 days remaining"
+	var one_liner: String = _scenario_manager.get_objective_one_liner()
+	var current_day: int = _day_night.current_day if _day_night != null else 1
+	var remaining: int = max(_days_allowed - current_day + 1, 0)
+	objective_label.text = "%s — %d day%s remaining" % [
+		one_liner, remaining, "" if remaining == 1 else "s"]
+
 	target_label.text = _scenario_manager.get_win_condition_line()
 
 	_refresh_time()
 	_refresh_metrics()
+	_refresh_win_progress()
+	_refresh_faction_panel()
 
 
 func _refresh_time() -> void:
@@ -87,7 +115,12 @@ func _refresh_time() -> void:
 		return
 
 	var current_day: int = _day_night.current_day
-	day_label.text = "Day %d / %d" % [current_day, _days_allowed]
+
+	# ── Day counter with urgency colouring ───────────────────────────────
+	day_label.text = "DAY %d" % current_day
+	var fraction: float = clampf(float(current_day - 1) / float(max(_days_allowed - 1, 1)), 0.0, 1.0)
+	var day_color: Color = _get_urgency_color(fraction)
+	day_label.add_theme_color_override("font_color", day_color)
 
 	# Update time-of-day label.
 	if "current_tick" in _day_night and "ticks_per_day" in _day_night:
@@ -102,17 +135,82 @@ func _refresh_time() -> void:
 			h12 = 12
 		time_label.text = "%d:%02d %s" % [h12, m, ampm]
 
-	# Update progress bar width as a fraction of days_allowed.
+	# Update day timeline progress bar.
 	if progress_bar != null and progress_bg != null:
-		var fraction: float = clampf(float(current_day - 1) / float(max(_days_allowed - 1, 1)), 0.0, 1.0)
-		# Animate the bar width by adjusting anchor_right.
 		progress_bar.anchor_right = fraction
-		# Colour shifts from amber → orange-red in the last 25% of days.
-		if fraction >= 0.75:
-			var t: float = (fraction - 0.75) / 0.25
-			progress_bar.color = Color(0.85 + 0.1 * t, 0.55 - 0.35 * t, 0.10 - 0.10 * t, 1.0)
-		else:
-			progress_bar.color = Color(0.85, 0.55, 0.10, 1.0)
+		progress_bar.color = day_color
+
+
+## Map a 0-1 fraction to a green→yellow→orange→red gradient.
+func _get_urgency_color(fraction: float) -> Color:
+	if fraction < 0.50:
+		return C_DAY_SAFE
+	elif fraction < 0.70:
+		var t: float = (fraction - 0.50) / 0.20
+		return C_DAY_SAFE.lerp(C_DAY_CAUTION, t)
+	elif fraction < 0.85:
+		var t: float = (fraction - 0.70) / 0.15
+		return C_DAY_CAUTION.lerp(C_DAY_URGENT, t)
+	else:
+		var t: float = (fraction - 0.85) / 0.15
+		return C_DAY_URGENT.lerp(C_DAY_CRITICAL, t)
+
+
+# ── Win-condition progress bar ───────────────────────────────────────────────
+
+func _refresh_win_progress() -> void:
+	if _scenario_manager == null or win_progress_bar == null or _reputation_system == null:
+		return
+	var prog: float = _compute_win_progress()
+	win_progress_bar.anchor_right = prog
+	if win_progress_lbl != null:
+		win_progress_lbl.text = "%d%% toward victory" % int(prog * 100.0) if prog > 0.0 else ""
+	# Colour: shifts from neutral amber → green as progress increases.
+	if prog >= 0.80:
+		win_progress_bar.color = Color(0.10, 0.85, 0.25, 1.0)
+	elif prog >= 0.50:
+		win_progress_bar.color = Color(0.50, 0.80, 0.20, 1.0)
+	else:
+		win_progress_bar.color = Color(0.85, 0.55, 0.10, 1.0)
+
+
+## Compute a 0.0–1.0 win progress from scenario-specific progress data.
+func _compute_win_progress() -> float:
+	if _scenario_manager == null or _reputation_system == null:
+		return 0.0
+	# S1: Edric's rep must drop below 30. Starting at ~50, progress = how far down.
+	if _scenario_manager.has_method("get_scenario_1_progress"):
+		var p: Dictionary = _scenario_manager.get_scenario_1_progress(_reputation_system)
+		if not p.is_empty():
+			var score: int = p.get("edric_score", 50)
+			var target: int = p.get("win_threshold", 30)
+			# From 50 → target: progress = (50 - score) / (50 - target)
+			return clampf(float(50 - score) / float(max(50 - target, 1)), 0.0, 1.0)
+	# S2: Need 6+ believers. Progress = believers / 6.
+	if _scenario_manager.has_method("get_scenario_2_progress"):
+		var p: Dictionary = _scenario_manager.get_scenario_2_progress(_reputation_system)
+		if not p.is_empty():
+			var count: int = p.get("illness_believer_count", 0)
+			var target: int = p.get("win_threshold", 6)
+			return clampf(float(count) / float(max(target, 1)), 0.0, 1.0)
+	# S3: Average of Calder progress and Tomas progress.
+	if _scenario_manager.has_method("get_scenario_3_progress"):
+		var p: Dictionary = _scenario_manager.get_scenario_3_progress(_reputation_system)
+		if not p.is_empty():
+			var calder: int = p.get("calder_score", 50)
+			var tomas: int = p.get("tomas_score", 50)
+			# Calder: from 50 → 75, progress = (score - 50) / (75 - 50)
+			var calder_prog: float = clampf(float(calder - 50) / 25.0, 0.0, 1.0)
+			# Tomas: from 50 → 35, progress = (50 - score) / (50 - 35)
+			var tomas_prog: float = clampf(float(50 - tomas) / 15.0, 0.0, 1.0)
+			return (calder_prog + tomas_prog) / 2.0
+	# S4: Survival scenario — progress = days survived / total days.
+	if _scenario_manager.has_method("get_scenario_4_progress"):
+		var p: Dictionary = _scenario_manager.get_scenario_4_progress(_reputation_system)
+		if not p.is_empty():
+			var current_day: int = _day_night.current_day if _day_night != null else 1
+			return clampf(float(current_day) / float(max(_days_allowed, 1)), 0.0, 1.0)
+	return 0.0
 
 
 # ── Metrics row (below progress bar) ─────────────────────────────────────────
@@ -120,12 +218,13 @@ func _refresh_time() -> void:
 func _build_metrics_row() -> void:
 	# Expand the Panel to make room for the metrics row.
 	var panel: Panel = $Panel
-	panel.offset_bottom += 22
+	panel.offset_bottom += 20
 
 	# Add metrics row as a child of Panel/VBox.
 	var vbox: VBoxContainer = $Panel/VBox
 	_metrics_row = HBoxContainer.new()
-	_metrics_row.add_theme_constant_override("separation", 12)
+	_metrics_row.add_theme_constant_override("separation", 16)
+	_metrics_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(_metrics_row)
 
 	# Average reputation metric
@@ -145,6 +244,11 @@ func _build_metrics_row() -> void:
 	_lbl_rumors_active.add_theme_color_override("font_color", Color(0.90, 0.35, 0.25, 1.0))
 	_lbl_rumors_active.tooltip_text = "NPCs whose reputation has collapsed beyond recovery"
 	_metrics_row.add_child(_lbl_rumors_active)
+
+	# Threat level indicator (SPA-479)
+	_lbl_threat = _make_metric_label("")
+	_lbl_threat.tooltip_text = "How close rivals or inquisitors are to exposing you"
+	_metrics_row.add_child(_lbl_threat)
 
 
 func _make_metric_label(text: String) -> Label:
@@ -183,6 +287,222 @@ func _refresh_metrics() -> void:
 		_lbl_believers.text = "Believers: %d" % _reputation_system.get_global_believer_count()
 	if _lbl_rumors_active != null:
 		_lbl_rumors_active.text = "Pariahs: %d" % dead_count
+	_refresh_threat()
+
+
+# ── Threat level indicator (SPA-479) ────────────────────────────────────────
+
+func _refresh_threat() -> void:
+	if _lbl_threat == null:
+		return
+	if _intel_store == null or _scenario_manager == null:
+		_lbl_threat.text = ""
+		return
+
+	var threat: float = 0.0   # 0.0 = safe, 1.0 = maximum danger
+	var label_text: String = ""
+
+	# S1: detection risk from eavesdrop heat exposure.
+	if _scenario_manager._active_scenario == 1:
+		# S1 has no heat system — threat is based on time pressure only.
+		var current_day: int = _day_night.current_day if _day_night != null else 1
+		threat = clampf(float(current_day) / float(max(_days_allowed, 1)), 0.0, 1.0)
+		label_text = "Exposure: %s" % _threat_word(threat)
+
+	# S2: threat = how close Maren is to rejecting (approx via heat + time).
+	elif _scenario_manager._active_scenario == 2:
+		var maren_heat: float = _intel_store.get_heat("maren_nun")
+		threat = clampf(maren_heat / 80.0, 0.0, 1.0)
+		# Also factor in time pressure.
+		var time_frac: float = _scenario_manager.get_time_fraction(
+			_day_night.current_tick if _day_night != null else 0)
+		threat = maxf(threat, time_frac * 0.7)
+		label_text = "Threat: %s" % _threat_word(threat)
+
+	# S3: threat = rival agent intensity (based on time in final quarter).
+	elif _scenario_manager._active_scenario == 3:
+		var time_frac: float = _scenario_manager.get_time_fraction(
+			_day_night.current_tick if _day_night != null else 0)
+		# Rival escalates in final quarter.
+		if time_frac >= 0.75:
+			threat = clampf((time_frac - 0.75) / 0.25 * 0.6 + 0.4, 0.0, 1.0)
+		else:
+			threat = clampf(time_frac * 0.4, 0.0, 1.0)
+		# Also factor in Calder's danger zone.
+		if _reputation_system != null:
+			var calder: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot("calder_fenn")
+			if calder != null and calder.score < 50:
+				threat = maxf(threat, clampf(1.0 - float(calder.score) / 50.0, 0.0, 1.0))
+		label_text = "Rival: %s" % _threat_word(threat)
+
+	# S4: threat = inverse of weakest protected NPC's score margin above 45.
+	elif _scenario_manager._active_scenario == 4:
+		var min_margin: int = 100
+		for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+			if _reputation_system == null:
+				break
+			var snap: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot(npc_id)
+			if snap != null:
+				var margin: int = snap.score - ScenarioManager.S4_FAIL_REP_BELOW
+				if margin < min_margin:
+					min_margin = margin
+		threat = clampf(1.0 - float(max(min_margin, 0)) / 30.0, 0.0, 1.0)
+		label_text = "Inquisitor: %s" % _threat_word(threat)
+
+	else:
+		_lbl_threat.text = ""
+		return
+
+	_lbl_threat.text = label_text
+	_lbl_threat.add_theme_color_override("font_color", _threat_color(threat))
+
+
+## Convert a 0-1 threat value to a descriptive word.
+func _threat_word(t: float) -> String:
+	if t < 0.25:
+		return "Low"
+	elif t < 0.50:
+		return "Moderate"
+	elif t < 0.75:
+		return "High"
+	else:
+		return "Critical"
+
+
+## Convert a 0-1 threat value to a colour (green → amber → red).
+func _threat_color(t: float) -> Color:
+	if t < 0.25:
+		return Color(0.35, 0.80, 0.35, 1.0)
+	elif t < 0.50:
+		return Color(0.90, 0.80, 0.25, 1.0)
+	elif t < 0.75:
+		return Color(0.95, 0.55, 0.15, 1.0)
+	else:
+		return Color(0.95, 0.25, 0.15, 1.0)
+
+
+# ── Faction influence mini-panel ─────────────────────────────────────────────
+
+func _build_faction_panel() -> void:
+	if _world_ref == null:
+		return
+
+	var panel: Panel = $Panel
+	_faction_panel = Panel.new()
+	_faction_panel.offset_left = panel.offset_left
+	_faction_panel.offset_right = panel.offset_right
+	_faction_panel.anchor_left = 0.5
+	_faction_panel.anchor_right = 0.5
+	_faction_panel.offset_top = panel.offset_bottom + 2
+	_faction_panel.offset_bottom = panel.offset_bottom + 58
+
+	var bg := ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.10, 0.07, 0.05, 0.88)
+	_faction_panel.add_child(bg)
+
+	var hbox := HBoxContainer.new()
+	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hbox.offset_left = 8.0
+	hbox.offset_top = 4.0
+	hbox.offset_right = -8.0
+	hbox.offset_bottom = -4.0
+	hbox.add_theme_constant_override("separation", 12)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	_faction_panel.add_child(hbox)
+
+	const FACTIONS := {
+		"merchant": {"name": "Merchants", "color": Color(0.784, 0.635, 0.180, 1.0)},
+		"noble":    {"name": "Nobles",    "color": Color(0.65, 0.45, 0.85, 1.0)},
+		"clergy":   {"name": "Clergy",    "color": Color(0.55, 0.80, 0.95, 1.0)},
+	}
+
+	for faction_id in ["merchant", "noble", "clergy"]:
+		var info: Dictionary = FACTIONS[faction_id]
+		var col := VBoxContainer.new()
+		col.add_theme_constant_override("separation", 2)
+		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		# Faction name label
+		var name_lbl := Label.new()
+		name_lbl.text = info["name"]
+		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_lbl.add_theme_font_size_override("font_size", 9)
+		name_lbl.add_theme_color_override("font_color", info["color"])
+		col.add_child(name_lbl)
+
+		# Mood label
+		var mood_lbl := Label.new()
+		mood_lbl.text = "Calm"
+		mood_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		mood_lbl.add_theme_font_size_override("font_size", 10)
+		mood_lbl.add_theme_color_override("font_color", Color(0.70, 0.65, 0.50, 1.0))
+		mood_lbl.add_theme_constant_override("outline_size", 1)
+		mood_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+		col.add_child(mood_lbl)
+
+		# Influence bar background
+		var bar_bg := ColorRect.new()
+		bar_bg.custom_minimum_size = Vector2(0, 4)
+		bar_bg.color = Color(0.20, 0.15, 0.08, 1.0)
+		col.add_child(bar_bg)
+
+		# Influence bar fill
+		var bar_fill := ColorRect.new()
+		bar_fill.anchor_bottom = 1.0
+		bar_fill.anchor_right = 0.0
+		bar_fill.color = info["color"]
+		bar_bg.add_child(bar_fill)
+
+		_faction_labels[faction_id] = {"mood": mood_lbl, "bar": bar_fill}
+		hbox.add_child(col)
+
+	add_child(_faction_panel)
+
+
+func _refresh_faction_panel() -> void:
+	if _faction_panel == null or _world_ref == null:
+		return
+	if not "npcs" in _world_ref:
+		return
+
+	for faction_id in ["merchant", "noble", "clergy"]:
+		var member_count: int = 0
+		var believer_count: int = 0
+		for npc in _world_ref.npcs:
+			if npc.npc_data.get("faction", "") != faction_id:
+				continue
+			member_count += 1
+			for rid in npc.rumor_slots:
+				var slot = npc.rumor_slots[rid]
+				if slot.state in [Rumor.RumorState.BELIEVE,
+								   Rumor.RumorState.SPREAD,
+								   Rumor.RumorState.ACT]:
+					believer_count += 1
+					break  # count each NPC once
+
+		# Derive faction mood from believer ratio.
+		var ratio: float = float(believer_count) / float(max(member_count, 1))
+		var mood: String
+		var mood_color: Color
+		if ratio < 0.1:
+			mood = "Calm"
+			mood_color = Color(0.50, 0.80, 0.45, 1.0)
+		elif ratio < 0.3:
+			mood = "Unsettled"
+			mood_color = Color(0.90, 0.80, 0.30, 1.0)
+		elif ratio < 0.6:
+			mood = "Agitated"
+			mood_color = Color(0.95, 0.55, 0.15, 1.0)
+		else:
+			mood = "Hostile"
+			mood_color = Color(0.90, 0.25, 0.15, 1.0)
+
+		if _faction_labels.has(faction_id):
+			var entry: Dictionary = _faction_labels[faction_id]
+			entry["mood"].text = mood
+			entry["mood"].add_theme_color_override("font_color", mood_color)
+			entry["bar"].anchor_right = ratio
 
 
 # ── Banner system (dawn bulletin + deadline warnings) ────────────────────────
@@ -191,12 +511,12 @@ func _build_banner() -> void:
 	_banner_label = Label.new()
 	_banner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	# Use proportional anchoring so the banner stays below the HUD panel on all resolutions.
-	_banner_label.anchor_left = 0.05
-	_banner_label.anchor_right = 0.95
+	_banner_label.anchor_left = 0.15
+	_banner_label.anchor_right = 0.85
 	_banner_label.anchor_top = 0.0
 	_banner_label.anchor_bottom = 0.0
-	_banner_label.offset_top = 110.0
-	_banner_label.offset_bottom = 180.0
+	_banner_label.offset_top = 165.0
+	_banner_label.offset_bottom = 235.0
 	_banner_label.offset_left = 0.0
 	_banner_label.offset_right = 0.0
 	_banner_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -250,12 +570,12 @@ func _show_dawn_bulletin() -> void:
 		var delta: int = snap.score - prev_score
 		if abs(delta) < 3:
 			continue
-		var arrow: String = "▲" if delta > 0 else "▼"
+		var arrow: String = "+" if delta > 0 else ""
 		var npc_name: String = npc_id.replace("_", " ").capitalize()
-		lines.append("%s %s %+d (%d)" % [arrow, npc_name, delta, snap.score])
+		lines.append("%s %s%d (%d)" % [npc_name, arrow, delta, snap.score])
 	if lines.is_empty():
 		return
-	var bulletin: String = "☀ Dawn Report\n" + "\n".join(lines)
+	var bulletin: String = "Dawn Report\n" + "\n".join(lines)
 	_show_banner(bulletin, Color(0.85, 0.78, 0.55, 1.0), 8.0)
 
 
@@ -265,10 +585,10 @@ func _on_deadline_warning(threshold: float, days_remaining: int) -> void:
 	var color: Color
 	if threshold >= 0.90:
 		urgency = "CRITICAL"
-		color = Color(0.95, 0.20, 0.10, 1.0)
+		color = C_DAY_CRITICAL
 	else:
 		urgency = "WARNING"
-		color = Color(0.95, 0.65, 0.10, 1.0)
-	var text: String = "⚠ %s — %d day%s remaining!" % [
+		color = C_DAY_URGENT
+	var text: String = "%s - %d day%s remaining!" % [
 		urgency, days_remaining, "" if days_remaining == 1 else "s"]
 	_show_banner(text, color, 5.0)

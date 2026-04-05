@@ -27,10 +27,11 @@ const NPC_DISPLAY_NAMES := {
 }
 
 # ── Node refs ────────────────────────────────────────────────────────────────
-var _score_labels:   Dictionary = {}  # npc_id -> Label
-var _bars:           Dictionary = {}  # npc_id -> ColorRect (fill)
-var _bar_bgs:        Dictionary = {}  # npc_id -> ColorRect (background)
-var _inquisitor_lbl: Label      = null
+var _score_labels:      Dictionary = {}  # npc_id -> Label
+var _bars:              Dictionary = {}  # npc_id -> ColorRect (fill)
+var _bar_bgs:           Dictionary = {}  # npc_id -> ColorRect (background)
+var _inquisitor_lbl:    Label      = null
+var _faction_shift_lbl: Label      = null
 
 
 func _scenario_number() -> int:
@@ -41,6 +42,9 @@ func _on_setup_extra(world: Node2D) -> void:
 	var inquisitor = world.get("inquisitor_agent") if world != null else null
 	if inquisitor != null:
 		inquisitor.inquisitor_acted.connect(notify_inquisitor_acted)
+	var shift_agent = world.get("s4_faction_shift_agent") if world != null else null
+	if shift_agent != null:
+		shift_agent.faction_shift_occurred.connect(notify_faction_shift)
 
 
 # ── UI construction ──────────────────────────────────────────────────────────
@@ -118,6 +122,14 @@ func _build_ui() -> void:
 	_inquisitor_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_inquisitor_lbl)
 
+	_faction_shift_lbl = Label.new()
+	_faction_shift_lbl.add_theme_font_size_override("font_size", 11)
+	_faction_shift_lbl.add_theme_color_override("font_color", Color(0.55, 0.80, 0.70, 0.80))
+	_faction_shift_lbl.text = "Town: watching and waiting"
+	_faction_shift_lbl.tooltip_text = "Faction power shifts mid-game: merchants may rally for the accused, the Bishop can pressure the Inquisitor, and clergy may show solidarity."
+	_faction_shift_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	right_vbox.add_child(_faction_shift_lbl)
+
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
 
@@ -159,3 +171,16 @@ func notify_inquisitor_acted(day: int, claim_type: String, subject_id: String) -
 	var tween := create_tween()
 	tween.tween_property(_inquisitor_lbl, "modulate:a", 0.25, 0.12)
 	tween.tween_property(_inquisitor_lbl, "modulate:a", 1.0, 0.30)
+
+
+# ── Faction shift activity ────────────────────────────────────────────────────
+
+## Called by s4_faction_shift_agent.faction_shift_occurred signal.
+func notify_faction_shift(day: int, _event_type: String, description: String) -> void:
+	if _faction_shift_lbl == null:
+		return
+	_faction_shift_lbl.text = "Town: Day %d — %s" % [day, description]
+	_faction_shift_lbl.add_theme_color_override("font_color", Color(0.30, 0.90, 0.70, 1.0))
+	var tween := create_tween()
+	tween.tween_property(_faction_shift_lbl, "modulate:a", 0.25, 0.12)
+	tween.tween_property(_faction_shift_lbl, "modulate:a", 1.0, 0.30)

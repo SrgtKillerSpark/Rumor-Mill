@@ -84,6 +84,16 @@ var rival_agent: RivalAgent = null
 ## Inquisitor agent — only active in Scenario 4.
 var inquisitor_agent: InquisitorAgent = null
 
+## Illness escalation agent — only active in Scenario 2.
+var illness_escalation_agent: IllnessEscalationAgent = null
+
+## S4 faction shift agent — only active in Scenario 4.
+var s4_faction_shift_agent: S4FactionShiftAgent = null
+
+## Milestone tracker — fires one-shot narrative notifications (SPA-479).
+## Callback must be set from main.gd after recon_hud is ready.
+var milestone_tracker: MilestoneTracker = null
+
 ## Faction event system — fires 1-2 random events per scenario run (SPA-199).
 var faction_event_system: FactionEventSystem = null
 
@@ -486,6 +496,10 @@ func _on_day_changed(_day: int) -> void:
 		rival_agent.tick(_day, self, scenario_manager)
 	if inquisitor_agent != null and scenario_manager != null:
 		inquisitor_agent.tick(_day, self, scenario_manager)
+	if illness_escalation_agent != null:
+		illness_escalation_agent.tick(_day, self)
+	if s4_faction_shift_agent != null:
+		s4_faction_shift_agent.tick(_day, self)
 	if faction_event_system != null:
 		faction_event_system.on_day_changed(_day)
 
@@ -599,7 +613,22 @@ func _apply_active_scenario() -> void:
 	if active_scenario_id == "scenario_4":
 		inquisitor_agent.activate()
 
-	# 10. Faction event system — initialise after all subsystems are ready.
+	# 10. Illness escalation agent — only active in Scenario 2.
+	illness_escalation_agent = IllnessEscalationAgent.new()
+	illness_escalation_agent.cooldown_offset = int(diff_mods.get("illness_escalation_offset", 0))
+	if active_scenario_id == "scenario_2":
+		illness_escalation_agent.activate()
+
+	# 11. S4 faction shift agent — only active in Scenario 4.
+	s4_faction_shift_agent = S4FactionShiftAgent.new()
+	s4_faction_shift_agent.inquisitor_ref = inquisitor_agent
+	if active_scenario_id == "scenario_4":
+		s4_faction_shift_agent.activate()
+
+	# 12. Milestone tracker — created here; callback wired from main.gd after recon_hud is ready.
+	milestone_tracker = MilestoneTracker.new()
+
+	# 13. Faction event system — initialise after all subsystems are ready.
 	faction_event_system = FactionEventSystem.new()
 	faction_event_system.initialize(self)
 
@@ -664,6 +693,8 @@ func on_game_tick(tick: int) -> void:
 					tick)
 	if scenario_manager != null and reputation_system != null:
 		scenario_manager.evaluate(reputation_system, tick)
+	if milestone_tracker != null:
+		milestone_tracker.evaluate(tick)
 
 	# ── Time pressure: boost spread probability in the final 25% of the scenario. ──
 	if propagation_engine != null and scenario_manager != null:

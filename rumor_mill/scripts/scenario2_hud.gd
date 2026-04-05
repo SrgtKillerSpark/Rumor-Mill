@@ -21,15 +21,22 @@ const BAR_HEIGHT     := 10
 const MAX_NAMES_SHOWN := 5
 
 # ── Node refs ────────────────────────────────────────────────────────────────
-var _count_lbl:     Label     = null
-var _bar:           ColorRect = null
-var _bar_bg:        ColorRect = null
-var _believers_lbl: Label     = null
-var _rejecters_lbl: Label     = null
+var _count_lbl:       Label     = null
+var _bar:             ColorRect = null
+var _bar_bg:          ColorRect = null
+var _believers_lbl:   Label     = null
+var _rejecters_lbl:   Label     = null
+var _escalation_lbl:  Label     = null
 
 
 func _scenario_number() -> int:
 	return 2
+
+
+func _on_setup_extra(world: Node2D) -> void:
+	var esc_agent = world.get("illness_escalation_agent") if world != null else null
+	if esc_agent != null:
+		esc_agent.illness_escalated.connect(notify_illness_escalated)
 
 
 # ── UI construction ──────────────────────────────────────────────────────────
@@ -109,6 +116,14 @@ func _build_ui() -> void:
 	legend_lbl.text = "Target: 6+ believers"
 	right_vbox.add_child(legend_lbl)
 
+	_escalation_lbl = Label.new()
+	_escalation_lbl.add_theme_font_size_override("font_size", 11)
+	_escalation_lbl.add_theme_color_override("font_color", Color(0.60, 0.85, 0.30, 0.80))
+	_escalation_lbl.text = "Rumours: quiet so far"
+	_escalation_lbl.tooltip_text = "Illness reports are escalating on their own. Each auto-spread increases the risk Sister Maren will notice."
+	_escalation_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	right_vbox.add_child(_escalation_lbl)
+
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
 
@@ -161,3 +176,16 @@ func _refresh() -> void:
 	_update_result_label(state,
 		"VICTORY — The plague scare spreads",
 		"FAILED — The truth prevails")
+
+
+# ── Escalation activity ───────────────────────────────────────────────────────
+
+## Called by illness_escalation_agent.illness_escalated signal.
+func notify_illness_escalated(day: int, _claim_type: String, _subject_id: String) -> void:
+	if _escalation_lbl == null:
+		return
+	_escalation_lbl.text = "Rumours: Day %d — illness spreading on its own" % day
+	_escalation_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.10, 1.0))
+	var tween := create_tween()
+	tween.tween_property(_escalation_lbl, "modulate:a", 0.25, 0.12)
+	tween.tween_property(_escalation_lbl, "modulate:a", 1.0,  0.30)
