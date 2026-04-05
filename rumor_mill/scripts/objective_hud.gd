@@ -39,6 +39,17 @@ var _lbl_rep_avg: Label = null
 var _lbl_believers: Label = null
 var _lbl_threat: Label = null
 
+# ── Reputation tween state ───────────────────────────────────────────────────
+## Last "true" avg rep value from the reputation system.
+var _last_avg_rep: int = -1
+## Currently displayed (possibly mid-tween) value used to drive label text.
+var _displayed_avg_rep: float = -1.0
+var _avg_rep_tween: Tween = null
+var _avg_rep_flash_tween: Tween = null
+
+# ── Day counter pulse tween ──────────────────────────────────────────────────
+var _day_counter_tween: Tween = null
+
 # ── Faction overview mini-panel ──────────────────────────────────────────────
 var _faction_panel: Panel = null
 var _faction_labels: Dictionary = {}  # faction_id → {mood: Label, bar: ColorRect}
@@ -69,6 +80,8 @@ func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: Reput
 		day_night.day_changed.connect(_on_day_changed)
 	if day_night.has_signal("game_tick"):
 		day_night.game_tick.connect(_on_tick)
+	if day_night.has_signal("day_transition_started"):
+		day_night.day_transition_started.connect(_on_day_transition_started)
 	if scenario_manager.has_signal("deadline_warning"):
 		scenario_manager.deadline_warning.connect(_on_deadline_warning)
 	# Capture initial reputation scores for the first dawn comparison.
@@ -85,6 +98,24 @@ func _on_day_changed(_day: int) -> void:
 	_refresh()
 	_show_dawn_bulletin()
 	_snapshot_dawn_scores()
+
+
+func _on_day_transition_started(_day: int) -> void:
+	_pulse_day_counter()
+
+
+func _pulse_day_counter() -> void:
+	if day_label == null:
+		return
+	if _day_counter_tween != null and _day_counter_tween.is_valid():
+		_day_counter_tween.kill()
+		day_label.scale = Vector2.ONE
+	day_label.pivot_offset = day_label.size / 2.0
+	_day_counter_tween = create_tween()
+	_day_counter_tween.tween_property(day_label, "scale", Vector2(1.2, 1.2), 0.2) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_day_counter_tween.tween_property(day_label, "scale", Vector2(1.0, 1.0), 0.2) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 
 
 func _on_tick(_tick: int) -> void:
@@ -291,18 +322,64 @@ func _refresh_metrics() -> void:
 			dead_count += 1
 	var avg: int = total_score / max(snaps.size(), 1)
 	if _lbl_rep_avg != null:
-		_lbl_rep_avg.text = "Avg Rep: %d" % avg
-		if avg >= 40:
-			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.784, 0.635, 0.180, 1.0))  # MERCH_TRIM gold
-		elif avg >= 25:
-			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.90, 0.75, 0.30, 1.0))
-		else:
-			_lbl_rep_avg.add_theme_color_override("font_color", Color(0.90, 0.45, 0.35, 1.0))
+		_update_avg_rep_display(avg)
 	if _lbl_believers != null:
 		_lbl_believers.text = "Believers: %d" % _reputation_system.get_global_believer_count()
 	if _lbl_rumors_active != null:
 		_lbl_rumors_active.text = "Pariahs: %d" % dead_count
 	_refresh_threat()
+
+
+## Animate the avg-rep label from its current displayed value to new_avg.
+## Color flash: green tint for gains, red tint for losses, fading back to white.
+func _update_avg_rep_display(new_avg: int) -> void:
+	# Always keep the urgency color up-to-date.
+	var urgency_color: Color
+	if new_avg >= 40:
+		urgency_color = Color(0.784, 0.635, 0.180, 1.0)  # MERCH_TRIM gold
+	elif new_avg >= 25:
+		urgency_color = Color(0.90, 0.75, 0.30, 1.0)
+	else:
+		urgency_color = Color(0.90, 0.45, 0.35, 1.0)
+	_lbl_rep_avg.add_theme_color_override("font_color", urgency_color)
+
+	# First call — initialise without animation.
+	if _last_avg_rep < 0:
+		_last_avg_rep      = new_avg
+		_displayed_avg_rep = float(new_avg)
+		_lbl_rep_avg.text  = "Avg Rep: %d" % new_avg
+		return
+
+	# No meaningful change — let any running tween finish.
+	if new_avg == _last_avg_rep:
+		return
+
+	var delta: int = new_avg - _last_avg_rep
+	_last_avg_rep = new_avg
+
+	# Kill the previous number tween and start from wherever we currently are.
+	if _avg_rep_tween != null and _avg_rep_tween.is_valid():
+		_avg_rep_tween.kill()
+	_avg_rep_tween = create_tween()
+	_avg_rep_tween.tween_method(_set_displayed_avg_rep, _displayed_avg_rep, float(new_avg), 0.8) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+	# Brief color flash using self_modulate (does not fight font_color override).
+	var flash_color: Color = Color(0.20, 0.90, 0.35, 1.0) if delta > 0 else Color(0.90, 0.25, 0.15, 1.0)
+	if _avg_rep_flash_tween != null and _avg_rep_flash_tween.is_valid():
+		_avg_rep_flash_tween.kill()
+		_lbl_rep_avg.self_modulate = Color.WHITE
+	_avg_rep_flash_tween = create_tween()
+	_avg_rep_flash_tween.tween_property(_lbl_rep_avg, "self_modulate", flash_color, 0.05) \
+		.set_ease(Tween.EASE_OUT)
+	_avg_rep_flash_tween.tween_property(_lbl_rep_avg, "self_modulate", Color.WHITE, 0.5) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+
+
+func _set_displayed_avg_rep(value: float) -> void:
+	_displayed_avg_rep = value
+	if _lbl_rep_avg != null:
+		_lbl_rep_avg.text = "Avg Rep: %d" % int(value)
 
 
 # ── Threat level indicator (SPA-479) ────────────────────────────────────────

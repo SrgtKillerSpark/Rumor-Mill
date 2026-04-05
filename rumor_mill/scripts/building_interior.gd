@@ -20,6 +20,8 @@ signal interior_closed
 @onready var _close_btn:  Button    = _find_close_btn()
 
 var _open: bool = false
+var _transitioning: bool = false
+var _anim_tween: Tween = null
 
 
 func _ready() -> void:
@@ -37,19 +39,69 @@ func _find_close_btn() -> Button:
 # ── Public API ────────────────────────────────────────────────────────────────
 
 func show_interior() -> void:
-	_overlay.visible = true
-	_panel.visible   = true
-	_open = true
-	emit_signal("interior_opened")
-	if _close_btn != null:
-		_close_btn.call_deferred("grab_focus")
+	if _open or _transitioning:
+		return
+	_transitioning = true
+
+	# Prepare initial states for the animation.
+	_overlay.modulate.a = 0.0
+	_overlay.visible    = true
+	_panel.modulate.a   = 0.0
+	_panel.pivot_offset = _panel.size / 2.0
+	_panel.scale        = Vector2(0.95, 0.95)
+	_panel.visible      = true
+
+	if _anim_tween != null and _anim_tween.is_valid():
+		_anim_tween.kill()
+	_anim_tween = create_tween()
+	_anim_tween.set_parallel(true)
+	# Overlay dims in over 0.3s.
+	_anim_tween.tween_property(_overlay, "modulate:a", 1.0, 0.3) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	# Panel fades in and scales up over 0.25s.
+	_anim_tween.tween_property(_panel, "modulate:a", 1.0, 0.25) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	_anim_tween.tween_property(_panel, "scale", Vector2(1.0, 1.0), 0.25) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	# After all parallels finish, mark open and emit.
+	_anim_tween.set_parallel(false)
+	_anim_tween.tween_callback(func() -> void:
+		_transitioning = false
+		_open = true
+		emit_signal("interior_opened")
+		if _close_btn != null:
+			_close_btn.call_deferred("grab_focus")
+	)
 
 
 func close_interior() -> void:
-	_overlay.visible = false
-	_panel.visible   = false
+	if not _open or _transitioning:
+		return
+	_transitioning = true
 	_open = false
-	emit_signal("interior_closed")
+
+	if _anim_tween != null and _anim_tween.is_valid():
+		_anim_tween.kill()
+	_anim_tween = create_tween()
+	_anim_tween.set_parallel(true)
+	# Overlay and panel fade out together over 0.2s.
+	_anim_tween.tween_property(_overlay, "modulate:a", 0.0, 0.2) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+	_anim_tween.tween_property(_panel, "modulate:a", 0.0, 0.2) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	_anim_tween.tween_property(_panel, "scale", Vector2(0.95, 0.95), 0.2) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	_anim_tween.set_parallel(false)
+	_anim_tween.tween_callback(func() -> void:
+		_overlay.visible    = false
+		_panel.visible      = false
+		# Reset modulate/scale so the next open starts clean.
+		_overlay.modulate.a = 1.0
+		_panel.modulate.a   = 1.0
+		_panel.scale        = Vector2(1.0, 1.0)
+		_transitioning = false
+		emit_signal("interior_closed")
+	)
 
 
 func is_open() -> bool:
@@ -59,7 +111,8 @@ func is_open() -> bool:
 # ── Input ─────────────────────────────────────────────────────────────────────
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not _open:
+	# Block input while a transition is playing.
+	if not _open or _transitioning:
 		return
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_E or event.keycode == KEY_ESCAPE:

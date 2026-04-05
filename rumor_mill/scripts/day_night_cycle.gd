@@ -9,6 +9,8 @@ extends Node
 
 signal game_tick(tick: int)
 signal day_changed(day: int)
+## Emitted at the start of the day transition flash so HUDs can react.
+signal day_transition_started(day: int)
 
 @export var tick_duration_seconds: float = 1.0   ## Real seconds between ticks
 @export var ticks_per_day: int = 24              ## Ticks that make one full day
@@ -34,8 +36,10 @@ var current_day: int = 1
 var _time_keys: Array = []
 
 # ── Day transition flash overlay ──────────────────────────────────────────────
-var _day_flash_rect:  ColorRect = null
-var _day_flash_tween: Tween     = null
+var _day_flash_rect:   ColorRect = null
+var _day_flash_tween:  Tween     = null
+var _day_banner_label: Label     = null
+var _day_banner_tween: Tween     = null
 
 @onready var tick_timer:      Timer          = $TickTimer
 @onready var canvas_modulate: CanvasModulate = $CanvasModulate
@@ -60,11 +64,33 @@ func _build_day_flash_overlay() -> void:
 	var layer := CanvasLayer.new()
 	layer.layer = 20
 	add_child(layer)
+
 	_day_flash_rect = ColorRect.new()
 	_day_flash_rect.color = Color(0.95, 0.90, 0.60, 0.0)  # warm parchment, fully transparent
 	_day_flash_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_day_flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_day_flash_rect)
+
+	# Day number banner that fades in over the flash.
+	_day_banner_label = Label.new()
+	_day_banner_label.set_anchors_preset(Control.PRESET_CENTER)
+	_day_banner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_day_banner_label.anchor_left   = 0.5
+	_day_banner_label.anchor_right  = 0.5
+	_day_banner_label.anchor_top    = 0.5
+	_day_banner_label.anchor_bottom = 0.5
+	_day_banner_label.offset_left   = -200.0
+	_day_banner_label.offset_right  =  200.0
+	_day_banner_label.offset_top    = -30.0
+	_day_banner_label.offset_bottom =  30.0
+	_day_banner_label.add_theme_font_size_override("font_size", 28)
+	# Dark ink on the warm flash — reads as medieval manuscript.
+	_day_banner_label.add_theme_color_override("font_color", Color(0.22, 0.12, 0.04, 1.0))
+	_day_banner_label.add_theme_constant_override("outline_size", 2)
+	_day_banner_label.add_theme_color_override("font_outline_color", Color(0.95, 0.85, 0.55, 0.5))
+	_day_banner_label.modulate.a = 0.0
+	_day_banner_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(_day_banner_label)
 
 
 func _on_tick_timer_timeout() -> void:
@@ -82,14 +108,31 @@ func _on_tick_timer_timeout() -> void:
 func _play_day_transition_flash() -> void:
 	if _day_flash_rect == null:
 		return
+
+	emit_signal("day_transition_started", current_day)
+
 	if _day_flash_tween != null and _day_flash_tween.is_valid():
 		_day_flash_tween.kill()
+	if _day_banner_tween != null and _day_banner_tween.is_valid():
+		_day_banner_tween.kill()
+
+	# Warm parchment flash — fade in then out.
 	_day_flash_tween = create_tween()
-	# Fade in to a soft warm glow, then fade back out.
 	_day_flash_tween.tween_property(_day_flash_rect, "color:a", 0.30, 0.25) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
 	_day_flash_tween.tween_property(_day_flash_rect, "color:a", 0.0,  0.55) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+
+	# Day number banner — fades in over the flash, then fades out.
+	if _day_banner_label != null:
+		_day_banner_label.text = "Day %d" % current_day
+		_day_banner_label.modulate.a = 0.0
+		_day_banner_tween = create_tween()
+		_day_banner_tween.tween_property(_day_banner_label, "modulate:a", 1.0, 0.30) \
+			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+		_day_banner_tween.tween_interval(0.20)
+		_day_banner_tween.tween_property(_day_banner_label, "modulate:a", 0.0, 0.55) \
+			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
 
 
 func _apply_time_of_day(hour: int) -> void:
