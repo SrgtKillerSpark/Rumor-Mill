@@ -36,10 +36,14 @@ var current_day: int = 1
 var _time_keys: Array = []
 
 # ── Day transition flash overlay ──────────────────────────────────────────────
-var _day_flash_rect:   ColorRect = null
-var _day_flash_tween:  Tween     = null
-var _day_banner_label: Label     = null
-var _day_banner_tween: Tween     = null
+var _day_flash_rect:    ColorRect = null
+var _day_flash_tween:   Tween     = null
+var _day_banner_label:  Label     = null
+var _day_banner_tween:  Tween     = null
+var _day_obj_label:     Label     = null
+var _day_obj_tween:     Tween     = null
+## Set by World after ScenarioManager is ready. Called with no args; returns String.
+var objective_text_provider: Callable
 
 # ── Directional shadow gradient (SPA-586) ─────────────────────────────────────
 # A subtle full-screen gradient that shifts direction as the sun moves:
@@ -102,6 +106,25 @@ func _build_day_flash_overlay() -> void:
 	_day_banner_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_day_banner_label)
 
+	# Scenario objective reminder — fades in below the day number.
+	_day_obj_label = Label.new()
+	_day_obj_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_day_obj_label.anchor_left   = 0.5
+	_day_obj_label.anchor_right  = 0.5
+	_day_obj_label.anchor_top    = 0.5
+	_day_obj_label.anchor_bottom = 0.5
+	_day_obj_label.offset_left   = -230.0
+	_day_obj_label.offset_right  =  230.0
+	_day_obj_label.offset_top    =  14.0
+	_day_obj_label.offset_bottom =  40.0
+	_day_obj_label.add_theme_font_size_override("font_size", 13)
+	_day_obj_label.add_theme_color_override("font_color", Color(0.30, 0.18, 0.06, 1.0))
+	_day_obj_label.add_theme_constant_override("outline_size", 1)
+	_day_obj_label.add_theme_color_override("font_outline_color", Color(0.95, 0.85, 0.55, 0.4))
+	_day_obj_label.modulate.a = 0.0
+	_day_obj_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(_day_obj_label)
+
 
 func _on_tick_timer_timeout() -> void:
 	current_tick += 1
@@ -143,6 +166,23 @@ func _play_day_transition_flash() -> void:
 		_day_banner_tween.tween_interval(0.20)
 		_day_banner_tween.tween_property(_day_banner_label, "modulate:a", 0.0, 0.55) \
 			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+
+	# Scenario objective reminder — same timing as the day banner.
+	if _day_obj_label != null:
+		var obj_text := ""
+		if objective_text_provider.is_valid():
+			obj_text = objective_text_provider.call()
+		if not obj_text.is_empty():
+			if _day_obj_tween != null and _day_obj_tween.is_valid():
+				_day_obj_tween.kill()
+			_day_obj_label.text = obj_text
+			_day_obj_label.modulate.a = 0.0
+			_day_obj_tween = create_tween()
+			_day_obj_tween.tween_property(_day_obj_label, "modulate:a", 1.0, 0.30) \
+				.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+			_day_obj_tween.tween_interval(0.20)
+			_day_obj_tween.tween_property(_day_obj_label, "modulate:a", 0.0, 0.55) \
+				.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
 
 
 func _apply_time_of_day(hour: int) -> void:

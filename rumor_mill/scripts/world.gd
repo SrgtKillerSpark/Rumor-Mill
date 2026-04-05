@@ -667,6 +667,10 @@ func _apply_active_scenario() -> void:
 	# 4. Narrative text into scenario manager.
 	if scenario_manager != null:
 		scenario_manager.load_scenario_data(scenario_data)
+		# SPA-684: feed objective text into the day-change cinematic.
+		if day_night != null:
+			day_night.objective_text_provider = func() -> String:
+				return scenario_manager.get_objective_one_liner()
 
 	# 5. Propagation engine mutation filters.
 	if propagation_engine != null:
