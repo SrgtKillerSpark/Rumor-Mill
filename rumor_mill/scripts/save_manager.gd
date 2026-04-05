@@ -6,7 +6,7 @@
 ## NPC memory (credulity, rumor history, avoidance, defender state),
 ## reputation overrides, player intel (recon budget, heat, evidence),
 ## scenario state, journal timeline, rival agent state (S3),
-## inquisitor agent state (S4).
+## inquisitor agent state (S4), illness escalation agent state (S2).
 ##
 ## Load flow:
 ##   1. prepare_load(scenario_id, slot) validates file and stores data in _pending_load_data.
@@ -88,9 +88,10 @@ static func save_game(
 		"intel_store":      _serialize_intel_store(world.intel_store),
 		"reputation":       _serialize_reputation(world.reputation_system),
 		"scenario":         _serialize_scenario_manager(world.scenario_manager),
-		"rival_agent":          _serialize_rival_agent(world.rival_agent),
-		"inquisitor_agent":     _serialize_inquisitor_agent(world.inquisitor_agent),
-		"faction_event_system": _serialize_faction_event_system(world.faction_event_system),
+		"rival_agent":               _serialize_rival_agent(world.rival_agent),
+		"inquisitor_agent":          _serialize_inquisitor_agent(world.inquisitor_agent),
+		"illness_escalation_agent":  _serialize_illness_escalation_agent(world.illness_escalation_agent),
+		"faction_event_system":      _serialize_faction_event_system(world.faction_event_system),
 		"socially_dead_ids":    world._socially_dead_ids.keys(),
 		"timeline":             timeline,
 	}
@@ -167,6 +168,7 @@ static func apply_pending_load(
 	_restore_scenario_manager(world.scenario_manager, data.get("scenario", {}))
 	_restore_rival_agent(world.rival_agent, data.get("rival_agent", {}))
 	_restore_inquisitor_agent(world.inquisitor_agent, data.get("inquisitor_agent", {}))
+	_restore_illness_escalation_agent(world.illness_escalation_agent, data.get("illness_escalation_agent", {}))
 	_restore_faction_event_system(world.faction_event_system, data.get("faction_event_system", {}))
 	world._socially_dead_ids.clear()
 	for npc_id in data.get("socially_dead_ids", []):
@@ -330,6 +332,16 @@ static func _serialize_inquisitor_agent(ia: InquisitorAgent) -> Dictionary:
 		"active":        ia._active,
 		"last_seed_day": ia._last_seed_day,
 		"target_index":  ia._target_index,
+	}
+
+
+static func _serialize_illness_escalation_agent(iea: IllnessEscalationAgent) -> Dictionary:
+	if iea == null:
+		return {}
+	return {
+		"active":          iea._active,
+		"last_seed_day":   iea._last_seed_day,
+		"cooldown_offset": iea.cooldown_offset,
 	}
 
 
@@ -506,6 +518,14 @@ static func _restore_inquisitor_agent(ia: InquisitorAgent, d: Dictionary) -> voi
 	ia._active        = bool(d.get("active", false))
 	ia._last_seed_day = int(d.get("last_seed_day", 0))
 	ia._target_index  = int(d.get("target_index", 0))
+
+
+static func _restore_illness_escalation_agent(iea: IllnessEscalationAgent, d: Dictionary) -> void:
+	if iea == null or d.is_empty():
+		return
+	iea._active          = bool(d.get("active", false))
+	iea._last_seed_day   = int(d.get("last_seed_day", 0))
+	iea.cooldown_offset  = int(d.get("cooldown_offset", 0))
 
 
 static func _serialize_faction_event_system(fes: FactionEventSystem) -> Dictionary:
