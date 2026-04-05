@@ -19,6 +19,7 @@ enum ScheduleArchetype {
 	GUARD_CIVIC,
 	CLERGY,
 	INDEPENDENT,
+	SCHOLAR,
 }
 
 ## Location code → gathering_point is resolved by world.gd.
@@ -43,6 +44,9 @@ const ARCHETYPE_TABLES: Dictionary = {
 	ScheduleArchetype.INDEPENDENT: [
 		"home", "home", "well", "market", "market", "tavern",
 	],
+	ScheduleArchetype.SCHOLAR: [
+		"home", "home", "chapel", "town_hall", "market", "home",
+	],
 }
 
 ## Number of schedule slots per game day.
@@ -57,6 +61,7 @@ static func archetype_from_string(s: String) -> ScheduleArchetype:
 		"noble_household": return ScheduleArchetype.NOBLE_HOUSEHOLD
 		"guard_civic":     return ScheduleArchetype.GUARD_CIVIC
 		"clergy":          return ScheduleArchetype.CLERGY
+		"scholar":         return ScheduleArchetype.SCHOLAR
 		_:                 return ScheduleArchetype.INDEPENDENT
 
 

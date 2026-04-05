@@ -83,6 +83,9 @@ var _path: Array[Vector2i] = []
 var _waypoint_index: int = 0
 var _is_moving: bool = false
 var _tween: Tween = null
+var _micro_wander_cooldown: int = 0
+
+const _MICRO_WANDER_CHANCE := 0.20  # probability per idle tick of taking a small wander step
 
 # rumor_id → Rumor.NpcRumorSlot
 var rumor_slots: Dictionary = {}
@@ -383,6 +386,10 @@ func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> 
 	schedule_waypoints = [target]
 	_waypoint_index    = 0
 	_path = _pathfinder.get_path(current_cell, target)
+	if _path.is_empty() and target != current_cell:
+		var fallback := AstarPathfinder.nearest_walkable(target, _walkable)
+		if fallback != target:
+			_path = _pathfinder.get_path(current_cell, fallback)
 	if _path.size() > 0 and _path[0] == current_cell:
 		_path.remove_at(0)
 
@@ -404,11 +411,32 @@ func _step_movement() -> void:
 		_advance_waypoint()
 
 	if _path.is_empty():
+		_maybe_micro_wander()
 		return
 
 	var next_cell: Vector2i = _path[0]
 	_path.remove_at(0)
 	_walk_to(next_cell)
+
+
+## When idle at a destination, occasionally take one step to a random adjacent walkable cell,
+## making NPCs look like they're milling about rather than frozen in place.
+func _maybe_micro_wander() -> void:
+	if _is_schedule_overridden():
+		return
+	if _micro_wander_cooldown > 0:
+		_micro_wander_cooldown -= 1
+		return
+	if randf() >= _MICRO_WANDER_CHANCE:
+		return
+	var dirs := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+	dirs.shuffle()
+	for d in dirs:
+		var candidate := current_cell + d
+		if _walkable.has(candidate):
+			_path = [candidate]
+			_micro_wander_cooldown = randi_range(3, 8)
+			return
 
 
 func _advance_waypoint() -> void:
@@ -417,6 +445,10 @@ func _advance_waypoint() -> void:
 	_waypoint_index = (_waypoint_index + 1) % schedule_waypoints.size()
 	var target: Vector2i = schedule_waypoints[_waypoint_index]
 	_path = _pathfinder.get_path(current_cell, target)
+	if _path.is_empty() and target != current_cell:
+		var fallback := AstarPathfinder.nearest_walkable(target, _walkable)
+		if fallback != target:
+			_path = _pathfinder.get_path(current_cell, fallback)
 	if _path.size() > 0 and _path[0] == current_cell:
 		_path.remove_at(0)
 
@@ -580,10 +612,12 @@ func _tick_evaluating(
 		_worst_state_dirty = true
 		_record_rumor_history(rumor, subject_id, "believed", tick)
 		_update_schedule_avoidance(rumor)
+		_show_believe_reaction()
 	else:
 		slot.state = Rumor.RumorState.REJECT
 		slot.ticks_in_state = 0
 		_worst_state_dirty = true
+		_show_reject_reaction()
 		# High-loyalty NPCs who reject a negative rumor about a close ally enter DEFENDING.
 		if _loyalty > 0.7 and not Rumor.is_positive_claim(rumor.claim_type) \
 				and not _is_defending:
@@ -778,6 +812,40 @@ func _show_hear_reaction() -> void:
 	tw.chain().tween_callback(lbl.queue_free)
 
 
+## Spawns a large bright "!" above this NPC when they transition EVALUATING → BELIEVE,
+## with a pop-scale bounce so the belief moment reads clearly from a distance.
+func _show_believe_reaction() -> void:
+	var lbl := Label.new()
+	lbl.text = "!"
+	lbl.add_theme_font_size_override("font_size", 22)
+	lbl.position = Vector2(-6.0, -84.0)
+	lbl.modulate = Color(0.30, 1.00, 0.42, 1.0)  # bright green matching BELIEVE tint
+	add_child(lbl)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "scale", Vector2(1.6, 1.6), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(lbl, "scale", Vector2(1.0, 1.0), 0.18).set_delay(0.18)
+	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -22.0), 1.6).set_delay(0.1)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.0).set_delay(0.55)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
+## Spawns a brief "✗" above this NPC when they transition EVALUATING → REJECT,
+## signalling scepticism/disbelief.
+func _show_reject_reaction() -> void:
+	var lbl := Label.new()
+	lbl.text = "✗"
+	lbl.add_theme_font_size_override("font_size", 16)
+	lbl.position = Vector2(-6.0, -76.0)
+	lbl.modulate = Color(0.80, 0.80, 0.85, 1.0)  # cool grey matching REJECT tint
+	add_child(lbl)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -14.0), 0.9)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.9).set_delay(0.25)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
 ## Spawns a brief ear-shaped icon above this NPC when they receive a whispered
 ## rumor from another NPC, making the receiver's reaction visible to the player.
 func _show_whisper_received() -> void:
@@ -854,6 +922,10 @@ func _navigate_relative_to_subject(subject_id: String, toward: bool) -> void:
 	var subject_cell: Vector2i = subj_node.current_cell
 	var target_cell: Vector2i = subject_cell if toward else _cell_furthest_from(subject_cell)
 	_path = _pathfinder.get_path(current_cell, target_cell)
+	if _path.is_empty() and target_cell != current_cell:
+		var fallback := AstarPathfinder.nearest_walkable(target_cell, _walkable)
+		if fallback != target_cell:
+			_path = _pathfinder.get_path(current_cell, fallback)
 	if _path.size() > 0 and _path[0] == current_cell:
 		_path.remove_at(0)
 
@@ -890,6 +962,10 @@ func _start_spread_clustering(rumor: Rumor) -> void:
 	if best == null:
 		return
 	_path = _pathfinder.get_path(current_cell, best.current_cell)
+	if _path.is_empty() and best.current_cell != current_cell:
+		var fallback := AstarPathfinder.nearest_walkable(best.current_cell, _walkable)
+		if fallback != best.current_cell:
+			_path = _pathfinder.get_path(current_cell, fallback)
 	if _path.size() > 0 and _path[0] == current_cell:
 		_path.remove_at(0)
 
@@ -1152,7 +1228,7 @@ func show_observed() -> void:
 ## successfully eavesdrops on this NPC.
 ## Called by recon_controller after a successful Eavesdrop action.
 func show_eavesdropped() -> void:
-	_show_dialogue_bubble("eavesdrop")
+	_show_dialogue_bubble("eavesdrop", true)
 
 
 ## Spawns a floating coin-burst label above this NPC confirming a successful
@@ -1228,7 +1304,8 @@ func _state_to_dialogue_category(state: Rumor.RumorState) -> String:
 ## Spawns a parchment-style speech bubble above this NPC with a random line
 ## from the given dialogue category.  Respects the global 2-bubble cap and
 ## skips if this NPC already owns a visible bubble.
-func _show_dialogue_bubble(category: String) -> void:
+## prominent=true uses larger text and a longer hold (for eavesdrop readability).
+func _show_dialogue_bubble(category: String, prominent: bool = false) -> void:
 	if _has_bubble:
 		return
 	if _active_bubbles >= _MAX_BUBBLES:
@@ -1265,21 +1342,21 @@ func _show_dialogue_bubble(category: String) -> void:
 	var lbl := Label.new()
 	lbl.text                    = text
 	lbl.autowrap_mode           = TextServer.AUTOWRAP_WORD_SMART
-	lbl.custom_minimum_size     = Vector2(80.0, 0.0)
-	lbl.add_theme_font_size_override("font_size", 9)
+	lbl.custom_minimum_size     = Vector2(100.0 if prominent else 80.0, 0.0)
+	lbl.add_theme_font_size_override("font_size", 11 if prominent else 9)
 	lbl.add_theme_color_override("font_color", Color(0.25, 0.18, 0.08, 1.0))
 	panel.add_child(lbl)
 
 	# Position above the NameLabel (which sits at Y = -100).
 	panel.modulate.a = 0.0
-	panel.position   = Vector2(-44.0, -152.0)
+	panel.position   = Vector2(-50.0 if prominent else -44.0, -160.0 if prominent else -152.0)
 	add_child(panel)
 
 	_active_bubbles += 1
 	_has_bubble      = true
 
 	# Fade in → hold → fade out.
-	var hold_time := randf_range(3.0, 4.0)
+	var hold_time := randf_range(5.0, 6.5) if prominent else randf_range(3.0, 4.0)
 	var tw        := create_tween()
 	tw.tween_property(panel, "modulate:a", 1.0, 0.3)
 	tw.tween_interval(hold_time)

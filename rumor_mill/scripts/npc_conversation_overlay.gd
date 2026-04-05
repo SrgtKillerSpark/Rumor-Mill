@@ -177,19 +177,19 @@ func _on_draw() -> void:
 		var bubble_pos := screen_pos + Vector2(12.0, -30.0)
 		var alpha: float = t * COL_BUBBLE.a
 
-		# Dark pill background.
+		# Dark pill background — slightly larger for readability.
 		_draw_node.draw_rect(
-			Rect2(bubble_pos - Vector2(9, 7), Vector2(18, 13)),
-			Color(0.10, 0.08, 0.05, alpha * 0.85)
+			Rect2(bubble_pos - Vector2(11, 8), Vector2(22, 16)),
+			Color(0.10, 0.08, 0.05, alpha * 0.90)
 		)
-		# "..." text.
+		# "..." text at 11px so it reads at normal zoom.
 		_draw_node.draw_string(
 			ThemeDB.fallback_font,
-			bubble_pos + Vector2(-6, 4),
+			bubble_pos + Vector2(-7, 5),
 			"...",
 			HORIZONTAL_ALIGNMENT_LEFT,
 			-1,
-			9,
+			11,
 			Color(COL_BUBBLE.r, COL_BUBBLE.g, COL_BUBBLE.b, alpha)
 		)
 
