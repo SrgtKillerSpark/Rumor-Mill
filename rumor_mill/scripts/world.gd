@@ -23,11 +23,17 @@ const SRC_ROAD_STONE := 2
 const SRC_BUILDING   := 3
 const SRC_PROPS      := 4
 
-const ATLAS_VOID        := Vector2i(0, 0)
-const ATLAS_GRASS       := Vector2i(1, 0)
-const ATLAS_GRASS_DARK  := Vector2i(2, 0)  # shadow / building footprint variant
-const ATLAS_ROAD_DIRT   := Vector2i(0, 0)
-const ATLAS_ROAD_STONE  := Vector2i(0, 0)  # fixed: road_stone source uses (0,0)
+const ATLAS_VOID             := Vector2i(0, 0)
+const ATLAS_GRASS            := Vector2i(1, 0)
+const ATLAS_GRASS_DARK       := Vector2i(2, 0)  # shadow / building footprint variant
+const ATLAS_GRASS_SPARSE     := Vector2i(3, 0)  # sparse dots, lighter (SPA-526)
+const ATLAS_GRASS_DENSE      := Vector2i(4, 0)  # denser, darker (SPA-526)
+const ATLAS_GRASS_FLORAL     := Vector2i(5, 0)  # flower dot variant (SPA-526)
+const ATLAS_DIRT_MUDDY       := Vector2i(6, 0)  # DIRT_D + puddles (SPA-526)
+const ATLAS_DIRT_PACKED      := Vector2i(7, 0)  # DIRT_L, smooth (SPA-526)
+const ATLAS_GRASS_DIRT_BLEND := Vector2i(8, 0)  # edge blend grass→dirt (SPA-526)
+const ATLAS_ROAD_DIRT        := Vector2i(0, 0)
+const ATLAS_ROAD_STONE       := Vector2i(0, 0)  # fixed: road_stone source uses (0,0)
 # Building atlas columns — matches tiles_buildings.png tile order (SPA-41)
 const ATLAS_MANOR       := Vector2i(0, 0)
 const ATLAS_TAVERN      := Vector2i(1, 0)
@@ -39,15 +45,23 @@ const ATLAS_MILL        := Vector2i(6, 0)
 const ATLAS_STORAGE     := Vector2i(7, 0)
 const ATLAS_GUARDPOST   := Vector2i(8, 0)
 const ATLAS_TOWN_HALL   := Vector2i(9, 0)
-# Prop atlas coords — matches tiles_props.png tile order (SPA-434)
-const ATLAS_CRATE       := Vector2i(0, 0)
-const ATLAS_BARREL      := Vector2i(1, 0)
-const ATLAS_SIGN        := Vector2i(2, 0)
-const ATLAS_FENCE       := Vector2i(3, 0)
-const ATLAS_CART        := Vector2i(4, 0)
-const ATLAS_HAY_BALE    := Vector2i(5, 0)
-const ATLAS_FLOWER_POT  := Vector2i(6, 0)
-const ATLAS_WELL_BUCKET := Vector2i(7, 0)
+# Prop atlas coords — matches tiles_props.png tile order (SPA-434 / SPA-526)
+const ATLAS_CRATE        := Vector2i(0, 0)
+const ATLAS_BARREL       := Vector2i(1, 0)
+const ATLAS_SIGN         := Vector2i(2, 0)
+const ATLAS_FENCE        := Vector2i(3, 0)
+const ATLAS_CART         := Vector2i(4, 0)
+const ATLAS_HAY_BALE     := Vector2i(5, 0)
+const ATLAS_FLOWER_POT   := Vector2i(6, 0)
+const ATLAS_WELL_BUCKET  := Vector2i(7, 0)
+const ATLAS_OAK_TREE     := Vector2i(8, 0)   # SPA-526
+const ATLAS_LANTERN_POST := Vector2i(9, 0)   # SPA-526
+const ATLAS_GARDEN_BED   := Vector2i(10, 0)  # SPA-526
+
+## Grass tile pool for random variant selection in _paint_terrain() (SPA-526).
+const GRASS_VARIANTS: Array[Vector2i] = [
+	ATLAS_GRASS, ATLAS_GRASS_SPARSE, ATLAS_GRASS_DENSE, ATLAS_GRASS_FLORAL
+]
 
 @export var npc_scene: PackedScene
 
@@ -189,12 +203,14 @@ func _load_grid() -> void:
 	buildings  = grid_data.get("buildings", [])
 
 
-# ── Terrain / building painting (unchanged from Sprint 1) ───────────────────
+# ── Terrain / building painting ──────────────────────────────────────────────
 
 func _paint_terrain() -> void:
 	if grid_data.is_empty():
 		return
 	var rows: Array = grid_data["grid"]
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 526  # deterministic; unique to terrain pass (SPA-526)
 	for y in range(GRID_H):
 		for x in range(GRID_W):
 			var cell_type: int = rows[y][x]
@@ -203,7 +219,20 @@ func _paint_terrain() -> void:
 				0:
 					pass
 				1:
-					terrain_layer.set_cell(coords, SRC_GROUND, ATLAS_GRASS)
+					# Use edge-blend tile for grass cells adjacent to dirt road.
+					var adj_dirt := false
+					for offset in [Vector2i(1,0), Vector2i(-1,0), Vector2i(0,1), Vector2i(0,-1)]:
+						var nx: int = x + offset.x
+						var ny: int = y + offset.y
+						if nx >= 0 and nx < GRID_W and ny >= 0 and ny < GRID_H:
+							if rows[ny][nx] == 2:
+								adj_dirt = true
+								break
+					if adj_dirt:
+						terrain_layer.set_cell(coords, SRC_GROUND, ATLAS_GRASS_DIRT_BLEND)
+					else:
+						var idx: int = rng.randi_range(0, GRASS_VARIANTS.size() - 1)
+						terrain_layer.set_cell(coords, SRC_GROUND, GRASS_VARIANTS[idx])
 				2:
 					terrain_layer.set_cell(coords, SRC_ROAD_DIRT, ATLAS_ROAD_DIRT)
 				3:
@@ -248,18 +277,18 @@ func _place_buildings() -> void:
 		add_child(label)
 
 
-# Prop placement rules per building type — which props appear nearby (SPA-434).
+# Prop placement rules per building type — which props appear nearby (SPA-434 / SPA-526).
 const BUILDING_PROPS := {
-	"tavern":     [ATLAS_BARREL, ATLAS_BARREL, ATLAS_CRATE, ATLAS_SIGN],
+	"tavern":     [ATLAS_BARREL, ATLAS_BARREL, ATLAS_CRATE, ATLAS_SIGN, ATLAS_LANTERN_POST],
 	"market":     [ATLAS_CRATE, ATLAS_CRATE, ATLAS_BARREL, ATLAS_CART, ATLAS_SIGN],
-	"manor":      [ATLAS_FLOWER_POT, ATLAS_FLOWER_POT, ATLAS_FENCE],
-	"chapel":     [ATLAS_FLOWER_POT, ATLAS_SIGN],
+	"manor":      [ATLAS_FLOWER_POT, ATLAS_FLOWER_POT, ATLAS_FENCE, ATLAS_OAK_TREE, ATLAS_GARDEN_BED],
+	"chapel":     [ATLAS_FLOWER_POT, ATLAS_SIGN, ATLAS_GARDEN_BED],
 	"blacksmith": [ATLAS_BARREL, ATLAS_CRATE, ATLAS_CART],
 	"mill":       [ATLAS_HAY_BALE, ATLAS_HAY_BALE, ATLAS_BARREL, ATLAS_CART],
 	"storage":    [ATLAS_CRATE, ATLAS_CRATE, ATLAS_BARREL, ATLAS_BARREL],
-	"guardpost":  [ATLAS_BARREL, ATLAS_FENCE, ATLAS_CRATE],
-	"town_hall":  [ATLAS_FLOWER_POT, ATLAS_SIGN, ATLAS_FENCE],
-	"well":       [ATLAS_WELL_BUCKET],
+	"guardpost":  [ATLAS_BARREL, ATLAS_FENCE, ATLAS_CRATE, ATLAS_LANTERN_POST],
+	"town_hall":  [ATLAS_FLOWER_POT, ATLAS_SIGN, ATLAS_FENCE, ATLAS_OAK_TREE, ATLAS_LANTERN_POST],
+	"well":       [ATLAS_WELL_BUCKET, ATLAS_LANTERN_POST],
 }
 
 

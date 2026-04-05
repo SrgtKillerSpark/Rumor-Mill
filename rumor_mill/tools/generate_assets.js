@@ -2360,12 +2360,100 @@ function makePropsAtlas() {
     cv.line(cx, cy-14, cx, cy-20, ...c.WOOD_D, 180);
   }
 
+  // ── 8: OAK_TREE ───────────────────────────────────────────────────────────────
+  {
+    const ox=512, cx=ox+32, cy=27;
+    // trunk (narrow, from ground up ~13px)
+    cv.fillRect(cx-2, cy-12, 4, 13, ...c.WOOD_D);
+    cv.line(cx-2, cy-12, cx+1, cy-12, ...c.OUTLINE);
+    cv.line(cx-2, cy-12, cx-2, cy,    ...c.OUTLINE);
+    cv.line(cx+1, cy-12, cx+1, cy,    ...c.OUTLINE);
+    cv.line(cx-1, cy-10, cx-1, cy-5,  ...c.WOOD_M, 100);  // bark texture
+    cv.line(cx+0, cy-8,  cx+0, cy-3,  ...c.WOOD_M, 80);
+    cv.sp(cx-3, cy-1, ...c.WOOD_D);   // root flares
+    cv.sp(cx+2, cy-1, ...c.WOOD_D);
+    // canopy outer dark ring
+    for (let a=0; a<Math.PI*2; a+=0.15)
+      cv.sp(cx+Math.round(12*Math.cos(a)), cy-18+Math.round(7*Math.sin(a)), ...c.GRASS_D);
+    // canopy mid fill
+    for (let dy2=-6; dy2<=6; dy2++) {
+      for (let dx2=-11; dx2<=11; dx2++) {
+        if (dx2*dx2/121 + dy2*dy2/49 <= 1.0)
+          cv.sp(cx+dx2, cy-18+dy2, ...c.GRASS_M);
+      }
+    }
+    // canopy highlight (top-left catch-light)
+    for (let dy2=-5; dy2<=1; dy2++) {
+      for (let dx2=-8; dx2<=-2; dx2++) {
+        if (dx2*dx2/64 + dy2*dy2/36 <= 1.0)
+          cv.sp(cx+dx2, cy-20+dy2, ...c.GRASS_L, 180);
+      }
+    }
+    cv.isoNoise(cx, cy-18, 10, 6, ...c.GRASS_D, 8, 0.20);
+    cv.isoNoise(cx, cy-18, 10, 6, ...c.GRASS_L, 6, 0.10);
+  }
+
+  // ── 9: LANTERN_POST ────────────────────────────────────────────────────────────
+  {
+    const ox=576, cx=ox+32, cy=27;
+    // tall post (2px wide, stone-grey)
+    cv.fillRect(cx-1, 4, 2, cy-3, ...c.STONE_M);
+    cv.line(cx-1, 4,  cx,  4,    ...c.OUTLINE);
+    cv.line(cx-1, 4,  cx-1, cy-3, ...c.OUTLINE);
+    cv.line(cx,   4,  cx,   cy-3, ...c.OUTLINE);
+    // decorative iron band mid-post
+    cv.fillRect(cx-2, cy-16, 4, 2, ...c.STONE_D);
+    cv.line(cx-2, cy-16, cx+1, cy-16, ...c.OUTLINE);
+    // lantern housing box
+    cv.fillRect(cx-5, 2, 9, 7, ...c.STONE_D);
+    cv.line(cx-5, 2,  cx+3, 2,  ...c.OUTLINE);
+    cv.line(cx-5, 8,  cx+3, 8,  ...c.OUTLINE);
+    cv.line(cx-5, 2,  cx-5, 8,  ...c.OUTLINE);
+    cv.line(cx+3, 2,  cx+3, 8,  ...c.OUTLINE);
+    // warm glow inner fill
+    cv.fillRect(cx-3, 3, 6, 5, ...c.CANVAS, 200);
+    // lantern cap (triangle)
+    cv.fillPoly([[cx-5, 2], [cx+3, 2], [cx-1, -2]], ...c.STONE_D);
+    // soft bloom around lantern
+    for (let gly=-3; gly<=5; gly++) {
+      for (let glx=-7; glx<=7; glx++) {
+        const dist = Math.sqrt(glx*glx + gly*gly);
+        if (dist < 8 && dist > 4)
+          cv.sp(cx+glx, 5+gly, ...c.CANVAS, Math.max(0, (8-dist)*10)|0);
+      }
+    }
+  }
+
+  // ── 10: GARDEN_BED ────────────────────────────────────────────────────────────
+  {
+    const ox=640, cx=ox+32, cy=26;
+    // raised plank frame (low iso cuboid)
+    drawCuboid(cx, cy, 14, 6, 5, c.WOOD_M, c.WOOD_D, c.WOOD_D);
+    cv.line(cx-14, cy-1, cx, cy+5, ...c.WOOD_D, 60);   // plank lines
+    cv.line(cx, cy+5, cx+14, cy-1, ...c.WOOD_D, 60);
+    // soil top face
+    cv.fillPoly([
+      [cx-14, cy-5], [cx, cy-11],
+      [cx+14, cy-5], [cx, cy+1],
+    ], ...c.DIRT_D);
+    cv.isoNoise(cx, cy-5, 13, 5, ...c.DIRT_M, 8, 0.15);
+    // plant tufts in a row
+    const plantXs = [cx-8, cx-3, cx+2, cx+8];
+    for (const px of plantXs) {
+      cv.line(px, cy-5, px, cy-11, ...c.GRASS_M);
+      cv.sp(px-1, cy-11, ...c.GRASS_L, 180);
+      cv.sp(px,   cy-12, ...c.GRASS_L, 220);
+      cv.sp(px+1, cy-11, ...c.GRASS_L, 180);
+      cv.sp(px,   cy-13, ...c.GRASS_D, 150);
+    }
+  }
+
   // ── ground shadow ellipses under all props ────────────────────────────────
   // Small darkened oval at base gives each prop visual weight on the ground.
-  const propShadowCX = [32, 96, 160, 224, 288, 352, 416, 480];
-  const propShadowCY = [26, 26, 28,  27,  25,  25,  28,  27 ];
-  const propShadowHW = [13, 10,  4,  20,  16,  15,   7,   6 ];
-  for (let _p = 0; _p < 8; _p++) {
+  const propShadowCX = [32, 96, 160, 224, 288, 352, 416, 480, 544, 608, 672];
+  const propShadowCY = [26, 26, 28,  27,  25,  25,  28,  27,  27,  27,  26 ];
+  const propShadowHW = [13, 10,  4,  20,  16,  15,   7,   6,  16,   4,  15 ];
+  for (let _p = 0; _p < 11; _p++) {
     const _cx = propShadowCX[_p], _cy = propShadowCY[_p], _hw = propShadowHW[_p];
     for (let _sx = -_hw; _sx <= _hw; _sx++) {
       const _alpha = Math.max(0, 30 - Math.abs(_sx)*2);
