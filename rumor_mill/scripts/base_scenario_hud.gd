@@ -15,7 +15,7 @@ extends CanvasLayer
 ##   override _on_setup_extra(world)     (wire extra signals — S3, S4 only)
 
 # ── Shared palette ───────────────────────────────────────────────────────────
-const C_PANEL_BG := Color(0.15, 0.10, 0.08, 0.88)
+const C_PANEL_BG := Color(0.15, 0.10, 0.08, 0.92)
 const C_HEADING  := Color(0.91, 0.85, 0.70, 1.0)
 const C_BODY     := Color(0.75, 0.70, 0.60, 1.0)
 const C_WIN      := Color(0.10, 0.75, 0.22, 1.0)
@@ -70,6 +70,14 @@ func _scenario_number() -> int:
 	return 0
 
 
+# ── Label styling helper ─────────────────────────────────────────────────────
+
+## Apply a subtle text outline to a label for better readability over varied backgrounds.
+func _apply_text_outline(label: Label, size: int = 2, color: Color = Color(0, 0, 0, 0.6)) -> void:
+	label.add_theme_constant_override("outline_size", size)
+	label.add_theme_color_override("font_outline_color", color)
+
+
 # ── Null-guard helper ────────────────────────────────────────────────────────
 
 ## Returns true when _world_ref has the required ReputationSystem and ScenarioManager.
@@ -110,12 +118,17 @@ func _make_panel(panel_name: String, height: int, hbox_separation: int = 16) -> 
 	return hbox
 
 
-## Build a progress bar (dark background + colored fill child).
+## Build a progress bar (dark background + colored fill child) with rounded corners.
 ## Returns [bar_bg, bar_fill]. Caller adds bar_bg to the desired parent.
 func _make_progress_bar(bar_width: int, bar_height: int, bg_tooltip: String = "") -> Array:
-	var bg := ColorRect.new()
+	var bg := Panel.new()
 	bg.custom_minimum_size = Vector2(bar_width, bar_height)
-	bg.color = Color(0.25, 0.25, 0.25)
+	var bg_style := StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.20, 0.18, 0.15)
+	bg_style.set_corner_radius_all(3)
+	bg_style.set_border_width_all(1)
+	bg_style.border_color = Color(0.35, 0.28, 0.18, 0.6)
+	bg.add_theme_stylebox_override("panel", bg_style)
 	if not bg_tooltip.is_empty():
 		bg.tooltip_text  = bg_tooltip
 		bg.mouse_filter  = Control.MOUSE_FILTER_PASS

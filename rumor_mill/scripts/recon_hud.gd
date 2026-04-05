@@ -31,7 +31,7 @@ const PIP_EMPTY_ACTION  := Color(0.30, 0.22, 0.12, 1.0)  # dark
 const PIP_FULL_WHISPER  := Color(0.345, 0.580, 0.769, 1.0) # WATER_L (#5894C4)
 const PIP_EMPTY_WHISPER := Color(0.15, 0.20, 0.28, 1.0)  # dark blue
 
-const PIP_SIZE := Vector2(14, 14)
+const PIP_SIZE := Vector2(16, 16)
 
 # Heat meter colours
 const C_HEAT_LOW    := Color(0.30, 0.75, 0.35, 1.0)  # green — safe
@@ -46,6 +46,7 @@ var _world_ref:        Node2D           = null
 var _hint_btn:         Button           = null
 var _hint_label:       Label            = null
 var _hint_tween:       Tween            = null
+var _dawn_label:       Label            = null
 
 # Heat meter UI nodes.
 var _heat_row:       HBoxContainer = null
@@ -78,6 +79,7 @@ func _ready() -> void:
 	_build_pips(whisper_pips_row, 2, 2, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 	_build_count_labels()
 	_build_heat_meter()
+	_build_dawn_label()
 	_build_extra_key_hints()
 	_build_hint_button()
 	_build_flash_overlay()
@@ -117,6 +119,12 @@ func show_toast(message: String, success: bool) -> void:
 	toast_label.text = icon + message
 	var color := Color(0.894, 0.820, 0.659, 1.0) if success else Color(0.941, 0.510, 0.173, 1.0)  # PARCH_L / FORGE
 	toast_label.add_theme_color_override("font_color", color)
+	toast_label.add_theme_constant_override("outline_size", 2)
+	toast_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	# Tint the toast border to match success/fail for stronger visual cue.
+	var border_node: ColorRect = toast_panel.get_node_or_null("ToastBorder")
+	if border_node != null:
+		border_node.color = Color(0.30, 0.65, 0.25, 1.0) if success else Color(0.75, 0.30, 0.12, 1.0)
 	show_action_flash(success)
 
 	# Slide in from below, then fade out after TOAST_DURATION seconds.
@@ -190,6 +198,25 @@ func _build_count_labels() -> void:
 	whisper_pips_row.get_parent().add_child(_whisper_count_label)
 
 
+## Build a small label under the counter panel showing when actions refresh.
+## Only visible when all actions have been spent.
+func _build_dawn_label() -> void:
+	_dawn_label = Label.new()
+	_dawn_label.add_theme_font_size_override("font_size", 10)
+	_dawn_label.add_theme_color_override("font_color", Color(0.65, 0.55, 0.35, 0.80))
+	_dawn_label.add_theme_constant_override("outline_size", 1)
+	_dawn_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	_dawn_label.text = ""
+	_dawn_label.visible = false
+	var vbox: VBoxContainer = $CounterPanel/VBox
+	vbox.add_child(_dawn_label)
+	# Move it just before the KeyHintRow.
+	for i in vbox.get_child_count():
+		if vbox.get_child(i).name == "KeyHintRow":
+			vbox.move_child(_dawn_label, i)
+			break
+
+
 func _build_flash_overlay() -> void:
 	_flash_rect = ColorRect.new()
 	_flash_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -204,10 +231,10 @@ func show_action_flash(success: bool) -> void:
 		return
 	if _flash_tween != null and _flash_tween.is_valid():
 		_flash_tween.kill()
-	var color := Color(0.30, 0.85, 0.40, 0.12) if success else Color(0.95, 0.35, 0.15, 0.12)
+	var color := Color(0.30, 0.85, 0.40, 0.18) if success else Color(0.95, 0.35, 0.15, 0.18)
 	_flash_rect.color = color
 	_flash_tween = create_tween()
-	_flash_tween.tween_property(_flash_rect, "color:a", 0.0, FLASH_DURATION) \
+	_flash_tween.tween_property(_flash_rect, "color:a", 0.0, FLASH_DURATION * 1.2) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
 
 
@@ -235,9 +262,14 @@ func _build_heat_meter() -> void:
 	_heat_row.add_child(title)
 
 	# Bar background
-	var bar_bg := ColorRect.new()
-	bar_bg.custom_minimum_size = Vector2(80, 10)
-	bar_bg.color = C_HEAT_BG
+	var bar_bg := Panel.new()
+	bar_bg.custom_minimum_size = Vector2(90, 12)
+	var bar_style := StyleBoxFlat.new()
+	bar_style.bg_color = C_HEAT_BG
+	bar_style.set_corner_radius_all(3)
+	bar_style.set_border_width_all(1)
+	bar_style.border_color = Color(0.35, 0.25, 0.12, 0.5)
+	bar_bg.add_theme_stylebox_override("panel", bar_style)
 	_heat_row.add_child(bar_bg)
 
 	# Bar fill
@@ -364,8 +396,18 @@ func _refresh_pips() -> void:
 		_last_whisper_rem = whispers
 
 	# Update row tooltips so hovering the pip area explains the resource.
-	action_pips_row.get_parent().tooltip_text = "Recon Actions: %d / %d remaining (refresh at dawn)" % [remaining, max_val]
-	whisper_pips_row.get_parent().tooltip_text = "Whisper Tokens: %d / %d remaining (press R to craft a rumor)" % [whispers, max_w]
+	action_pips_row.get_parent().tooltip_text = "Recon Actions: %d / %d remaining\nRight-click buildings to Observe, NPCs to Eavesdrop.\nRefreshes at dawn each day." % [remaining, max_val]
+	whisper_pips_row.get_parent().tooltip_text = "Whisper Tokens: %d / %d remaining\nPress R to craft and seed a rumor.\nRefreshes at dawn each day." % [whispers, max_w]
+	action_pips_row.get_parent().mouse_filter = Control.MOUSE_FILTER_PASS
+	whisper_pips_row.get_parent().mouse_filter = Control.MOUSE_FILTER_PASS
+
+	# Show dawn refresh hint when all actions and whispers are spent.
+	if _dawn_label != null:
+		if remaining == 0 and whispers == 0:
+			_dawn_label.text = "☀ Actions refresh at dawn"
+			_dawn_label.visible = true
+		else:
+			_dawn_label.visible = false
 
 	# Update numeric count labels beside pips.
 	if _action_count_label != null:

@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bk7tnx2p8qvwm"
-path="res://.godot/imported/rumor_fail.wav-bk7tnx2p8qvwm.sample"
+path="res://.godot/imported/rumor_fail.wav-0b2d60143678b0372bf8d75ce4ac72f4.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/rumor_fail.wav"
-dest_files=["res://.godot/imported/rumor_fail.wav-bk7tnx2p8qvwm.sample"]
+dest_files=["res://.godot/imported/rumor_fail.wav-0b2d60143678b0372bf8d75ce4ac72f4.sample"]
 
 [params]
 

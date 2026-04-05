@@ -5,7 +5,7 @@
     "description": "The alderman Edric Fenn controls the town through a web of loyal allies, informants, and fear. Your patron's candidate loses another term unless Fenn is discredited before the autumn tax rolls are signed. You have thirty days to plant the right story and make sure it reaches the right ears.",
     "daysAllowed": 30,
     "introText": "The stranger came with the harvest wagons — quiet as a loose coin in a full purse. Lord Edric Fenn has held the aldermanship for nine years, and the tax rolls are fat with his favor. The autumn assessment is twelve days off, and your patron grows impatient. A single rumor, well-placed, can bring down what nine years built.",
-    "startingText": "A foreign factor has entered the town quietly, carrying letters of introduction that may — or may not — be genuine.\n\nLord Edric Fenn holds the aldermanship with an iron hand. In twelve days the autumn tax assessment begins. If Fenn is still in office, your patron's candidate loses another term.\n\nYou have thirty days. You have your wits. And you have a story that no one has heard yet.",
+    "startingText": "YOUR GOAL: Destroy Lord Edric Fenn's reputation. Get his score below 30.\n\nHOW: Right-click buildings to Observe who is inside. Right-click NPCs to Eavesdrop on relationships. Press R to craft a Scandal rumor and whisper it to a well-connected townsperson. Watch it spread.\n\nWATCH OUT: If you are caught eavesdropping, you lose instantly. You have 30 days.\n\nLord Edric Fenn holds the aldermanship with an iron hand. Your patron's candidate loses another term unless Fenn is discredited before the autumn tax rolls are signed.",
     "victoryText": "The petition arrived at dawn — seven signatures, including Prior Aldous himself.\n\nLord Edric Fenn stepped down from the alderman's chair before midday. He did not look well.\n\nYou were already three days' ride away when word reached the capital.",
     "failTexts": {
       "exposed": "The Guard Captain's eyes found you across the Market Square.\n\n\"I've been watching you,\" he said. \"The Tavern, the Chapel steps, the widow's door. You've been very busy for a traveler with no business here.\"\n\nHe didn't arrest you. He didn't need to. By evening, the whole town knew your face.",
@@ -56,7 +56,8 @@
       "winCondition": "Get his reputation score to 29 or lower (out of 100).",
       "timeLimit": "You have 30 days.",
       "danger": "If you are caught eavesdropping, the town will know your face.",
-      "strategyHint": "Edric is too proud to believe rumors about himself. Target the people around him — damage faction sentiment among merchants and nobles to erode his support."
+      "strategyHint": "Edric is too proud to believe rumors about himself. Target the people around him — damage faction sentiment among merchants and nobles to erode his support.",
+      "firstAction": "Right-click a building (try the Market) to Observe who is inside. Then right-click two NPCs in conversation to Eavesdrop on their relationship. Use what you learn to craft your first Scandal rumor (press R)."
     }
   },
   {
@@ -65,7 +66,7 @@
     "description": "A rival herb-wife has arrived with the autumn rains and is undercutting the midwife who pays your wages. Spread an illness rumor through enough of the townsfolk and she will pack her cart and leave before the market closes. But the Chapel watches, and Sister Maren will not stay silent if the story grows too bold.",
     "daysAllowed": 22,
     "introText": "She came with the autumn rains and the smell of something sharp — wormwood, maybe, or something worse. Alys the Herb-Wife has set up her trestle by the chapel steps, and already three of Vera's regulars have crossed the square to her instead. Illness travels fast in this town. Faster still when someone gives it a name.",
-    "startingText": "The Herb-Wife arrived with the autumn rains. She set up her stall near the Chapel — too near, some said, to the Midwife's usual customers.\n\nYou were here first. And illness rumors, in this town, spread fast.\n\nYou have twenty-two days before the market turns.",
+    "startingText": "YOUR GOAL: Get 6 or more townspeople to believe illness rumors about Alys Herbwife.\n\nHOW: Observe the Market and Apothecary to find NPCs connected to Alys. Press R to craft an Illness rumor, then whisper it to a credulous, well-connected NPC. Watch believers accumulate in the Scenario HUD.\n\nWATCH OUT: If Sister Maren rejects ANY illness rumor about Alys, you lose instantly. Keep the rumor away from her circle. You have 22 days.\n\nAlys the Herb-Wife set up her stall near the Chapel — too near to the Midwife's usual customers. Illness rumors, in this town, spread fast.",
     "victoryText": "Alys the Herb-Wife packed her cart before dawn. She didn't say why.\n\nThree days later, Sister Maren declared publicly that the illness talk had been unfounded. But by then, the Herb-Wife was gone, and the Midwife's customers had come back.",
     "failTexts": {
       "contradicted": "Sister Maren stood in the Market Square and named every NPC who had spread the rumor. She did not name you.\n\nShe didn't need to.",
@@ -117,7 +118,8 @@
       "winCondition": "Get 6 or more NPCs to believe/spread/act on illness rumors about Alys.",
       "timeLimit": "You have 22 days.",
       "danger": "Sister Maren is skeptical and watchful. If Maren rejects ANY illness rumor about Alys, you instantly fail.",
-      "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle."
+      "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle.",
+      "firstAction": "Observe the Market or Apothecary to find NPCs connected to Alys. Then press R, pick Alys as the subject, choose Illness as the claim, and whisper it to someone credulous like Sybil Oats."
     }
   },
   {
@@ -126,7 +128,7 @@
     "description": "Lady Isolde Fenn wants her son Calder elevated — but Tomas Reeve blocks any clean path to power, and Lord Edric is not ready to step aside. You must raise one reputation and ruin another simultaneously, while a rival agent works against you. Twenty-seven days, two targets — and if Calder's reputation drops below 40, you fail instantly.",
     "daysAllowed": 27,
     "introText": "Lady Isolde received you in the lesser hall, away from the servants. Her son Calder is twenty-two, quick, and capable — everything a future alderman should be. His only obstacle is Tomas Reeve, who has the favor of half the merchant quarter. The winter festival is twenty-five days away, and a rival is already working against you. It only takes one night to make or ruin a reputation — but it takes all twenty-five to manage two.",
-    "startingText": "Lady Isolde Fenn has a problem: her son Calder is brilliant, charming, and twenty-two years old. Her husband is not ready to step aside.\n\nShe hired you to solve the first half. The second half solves itself, if Tomas Reeve falls far enough before the winter festival.\n\nTwenty-seven days. Two reputations to manage. One wrong twist and Calder himself becomes the story.",
+    "startingText": "YOUR GOAL: Raise Calder Fenn's reputation to 75+ AND drop Tomas Reeve's reputation to 35 or below.\n\nHOW: Use Praise rumors to boost Calder through his allies. Use Scandal rumors to tear down Tomas through the merchant quarter. Press R to craft rumors. You fight on two fronts simultaneously.\n\nWATCH OUT: If Calder's reputation drops below 40, you lose instantly. A rival agent is actively working against you — praising Tomas and scandalizing Calder. You have 27 days.\n\nLady Isolde hired you to elevate her son. Tomas Reeve blocks any clean path to power. One wrong twist and Calder himself becomes the story.",
     "victoryText": "The winter festival nominations were read aloud in the Town Square.\n\nCalder Fenn's name drew a real cheer — not a polite one. Tomas Reeve's name drew silence.\n\nLady Isolde watched from her window. She did not smile. But she did exhale.",
     "failTexts": {
       "calder_implicated": "The rumor had started as praise. You knew that.\n\nSomewhere between the Tavern and the Chapel steps, it had changed.\n\nCalder Fenn was now the subject of a story that no one believed was an accident. Including Lady Isolde.",
@@ -184,7 +186,8 @@
       "winCondition": "Raise Calder's reputation to 75+ (starts at 65) and drop Tomas's reputation to 35 or below (starts at 52).",
       "timeLimit": "You have 27 days.",
       "danger": "If Calder's reputation drops below 40, instant fail. A rival agent is actively working against you.",
-      "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter. Tomas has weak loyalties — rumors stick."
+      "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter. Tomas has weak loyalties — rumors stick.",
+      "firstAction": "Observe a building to find Calder's allies. Press R to craft a Praise rumor about Calder and whisper it to a well-connected NPC. Then craft a Scandal about Tomas and seed it through the merchants."
     }
   },
   {
@@ -193,7 +196,7 @@
     "description": "An inquisitor has arrived with sealed orders and the weight of the Church behind him. Three townsfolk stand accused of heresy — and you owe each of them a debt that cannot be repaid in coin. Twenty days to keep their names clean, their reputations intact, and the inquisitor's stories from taking root.",
     "daysAllowed": 20,
     "introText": "Brother Cornelius arrived at vespers with three names on a writ and the Bishop's seal in red wax. By morning, the chapel steps were crowded with the fearful and the curious. Aldous Prior looked ill. Vera Midwife did not come to market. Finn Monk was seen packing a bag.\n\nYou know what happens when the Church names someone. The town does the rest.\n\nYou have twenty days. You have your wits. And you have a voice that can vouch for the innocent — if you spend it wisely.",
-    "startingText": "This scenario is purely defensive. You are not attacking — you are protecting.\n\nThe Inquisitor arrived with vespers and a sealed writ. Three names: Aldous Prior, Vera Midwife, Finn Monk. The charges are vague — heresy, improper doctrine, unsanctioned healing. Vague enough to stick.\n\nYou owe these people. In twenty days, the Inquisitor will present his findings to the Bishop. Keep all three reputations above 45 by counter-spreading positive rumours. The Inquisitor will seed slander on a cooldown that accelerates — you must outpace him.",
+    "startingText": "YOUR GOAL: Keep all three accused — Aldous Prior, Vera Midwife, and Finn Monk — above 45 reputation for 20 days.\n\nHOW: This is purely defensive. Press R to craft Praise rumors about the accused, then whisper them to well-connected NPCs. Counter-spread faster than the Inquisitor can slander. Prioritize whoever is closest to 45.\n\nWATCH OUT: If ANY of the three drops below 45 reputation, you lose instantly. The Inquisitor seeds accusations on a cooldown that accelerates over time — he gets faster as the deadline approaches.\n\nBrother Cornelius arrived with a sealed writ and three names. The charges are vague — heresy, improper doctrine, unsanctioned healing. Vague enough to stick. You owe these people.",
     "victoryText": "Brother Cornelius left at dawn on the twenty-first day, his writ unsigned.\n\nThe Bishop's clerk recorded the outcome as 'insufficient evidence.' But you knew the truth — there had been plenty of evidence. It simply hadn't been believed.\n\nAldous Prior resumed his sermons. Vera Midwife reopened her door. Finn Monk stopped packing.\n\nThe town had chosen its own.",
     "failTexts": {
       "reputation_collapsed": "The crowd gathered at the chapel steps before Brother Cornelius had even finished his morning prayers.\n\nThey came with stories — some true, most not, all believed. By evening, the writ was signed.\n\nYou watched from the edge of the square as the accused were led away. You had tried. The town had chosen differently.",
@@ -247,7 +250,8 @@
       "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk's reputations above 45.",
       "timeLimit": "You have 20 days.",
       "danger": "Finn is the most vulnerable — credulous and easily swayed, he absorbs slander quickly. The Inquisitor is a relentless opponent who actively spreads accusations on a cooldown that accelerates over time.",
-      "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera."
+      "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera.",
+      "firstAction": "Check the Scenario HUD to see who is closest to 45. Press R, choose the most threatened NPC as the subject, select Praise as the claim, and whisper it to their strongest ally."
     }
   }
 ]

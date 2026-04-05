@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://cm3pf5e9j8rnxa"
-path="res://.godot/imported/reputation_up.wav-cm3pf5e9j8rnxa.sample"
+uid="uid://dsj1davixp5ry"
+path="res://.godot/imported/reputation_up.wav-3f245654d7fc6cbdc56ec88604e58c23.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/reputation_up.wav"
-dest_files=["res://.godot/imported/reputation_up.wav-cm3pf5e9j8rnxa.sample"]
+dest_files=["res://.godot/imported/reputation_up.wav-3f245654d7fc6cbdc56ec88604e58c23.sample"]
 
 [params]
 

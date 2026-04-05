@@ -164,7 +164,8 @@ func _refresh_win_progress() -> void:
 	var prog: float = _compute_win_progress()
 	win_progress_bar.anchor_right = prog
 	if win_progress_lbl != null:
-		win_progress_lbl.text = "%d%% toward victory" % int(prog * 100.0) if prog > 0.0 else ""
+		var status_text: String = _get_progress_assessment(prog)
+		win_progress_lbl.text = "%d%% — %s" % [int(prog * 100.0), status_text] if prog > 0.0 else "No progress yet — try Observing a building"
 	# Colour: shifts from neutral amber → green as progress increases.
 	if prog >= 0.80:
 		win_progress_bar.color = Color(0.10, 0.85, 0.25, 1.0)
@@ -172,6 +173,28 @@ func _refresh_win_progress() -> void:
 		win_progress_bar.color = Color(0.50, 0.80, 0.20, 1.0)
 	else:
 		win_progress_bar.color = Color(0.85, 0.55, 0.10, 1.0)
+
+
+## Returns a plain-English "How am I doing?" assessment based on progress vs time.
+func _get_progress_assessment(prog: float) -> String:
+	var time_frac: float = 0.0
+	if _day_night != null and _days_allowed > 1:
+		var current_day: int = _day_night.current_day
+		time_frac = clampf(float(current_day - 1) / float(_days_allowed - 1), 0.0, 1.0)
+
+	# Compare progress to time elapsed to give a relative assessment.
+	if prog >= 0.95:
+		return "Almost there!"
+	elif prog >= 0.80:
+		return "Strong position — keep pushing"
+	elif prog > time_frac + 0.15:
+		return "Ahead of schedule"
+	elif prog >= time_frac - 0.10:
+		return "On track"
+	elif prog >= time_frac - 0.30:
+		return "Falling behind — act fast"
+	else:
+		return "Behind — change strategy"
 
 
 ## Compute a 0.0–1.0 win progress from scenario-specific progress data.

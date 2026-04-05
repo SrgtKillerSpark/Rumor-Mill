@@ -17,8 +17,8 @@ extends BaseScenarioHud
 # ── S4-specific palette ──────────────────────────────────────────────────────
 const C_DEFEND := Color(0.50, 0.80, 1.00, 1.0)  # sky blue for defending
 
-const BAR_WIDTH  := 100
-const BAR_HEIGHT := 8
+const BAR_WIDTH  := 120
+const BAR_HEIGHT := 10
 
 const NPC_DISPLAY_NAMES := {
 	"aldous_prior": "Aldous Prior",

@@ -19,8 +19,9 @@ class_name TutorialSystem
 
 ## Ordered list used to control queue priority when multiple tooltips fire at once.
 const TOOLTIP_ORDER: Array = [
-	"recon_actions",
+	"core_loop",
 	"navigation_controls",
+	"recon_actions",
 	"observe",
 	"eavesdrop",
 	"npc_state_change",
@@ -33,26 +34,37 @@ const TOOLTIP_ORDER: Array = [
 
 ## Tooltip content: title + BBCode body text.
 const TOOLTIP_DATA: Dictionary = {
-	"recon_actions": {
-		"title": "Recon Actions",
+	"core_loop": {
+		"title": "How to Play — The Core Loop",
 		"body":  (
-			"Each day you have [b]3 Recon Actions[/b] and [b]2 Whisper Tokens[/b].\n"
-			+ "• [b]Right-click a building[/b] to [b]Observe[/b] — note who is present.\n"
-			+ "• [b]Right-click an NPC[/b] in conversation to [b]Eavesdrop[/b] — learn relationships.\n"
-			+ "• [b]Press R[/b] to craft and seed a rumour (costs one Whisper Token).\n"
-			+ "Actions refresh at dawn each new day."
+			"Your goal is to manipulate the town through rumours. Here is the loop:\n\n"
+			+ "  1. [b]OBSERVE[/b] — Right-click a building to see who is inside.\n"
+			+ "  2. [b]EAVESDROP[/b] — Right-click two NPCs talking to learn their bond.\n"
+			+ "  3. [b]CRAFT A RUMOUR[/b] — Press [b]R[/b] to pick a subject, claim, and seed target.\n"
+			+ "  4. [b]WATCH IT SPREAD[/b] — Believers tell others; reputations shift.\n\n"
+			+ "Repeat this loop each day. Check the [b]Objective HUD[/b] (top) to track progress."
 		),
 	},
 	"navigation_controls": {
-		"title": "Navigation",
+		"title": "Navigation & Hotkeys",
 		"body":  (
 			"Moving around the map:\n"
 			+ "• [b]WASD[/b] or [b]Arrow Keys[/b] — pan the camera\n"
 			+ "• [b]Scroll Wheel[/b] — zoom in / out\n"
 			+ "• [b]Middle Mouse Drag[/b] — free pan\n\n"
-			+ "[b]Hotkeys:[/b]\n"
+			+ "[b]Key Hotkeys:[/b]\n"
 			+ "  [b]R[/b] = Rumour Panel   [b]J[/b] = Journal\n"
-			+ "  [b]G[/b] = Social Graph   [b]Esc[/b] = Pause"
+			+ "  [b]G[/b] = Social Graph   [b]Space[/b] = Pause"
+		),
+	},
+	"recon_actions": {
+		"title": "Daily Resources",
+		"body":  (
+			"Each day you have limited actions:\n"
+			+ "• [b]3 Recon Actions[/b] — spent on Observe and Eavesdrop.\n"
+			+ "• [b]2 Whisper Tokens[/b] — spent when seeding a rumour to an NPC.\n\n"
+			+ "All resources [b]refresh at dawn[/b] each new day.\n"
+			+ "Plan carefully — once you run out, you must wait for tomorrow."
 		),
 	},
 	"observe": {

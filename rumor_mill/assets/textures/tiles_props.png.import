@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c5p4r0ps7t1le"
-path="res://.godot/imported/tiles_props.png-a434b5e1c2d3e4f5a6b7c8d9e0f1a2b3.ctex"
+path="res://.godot/imported/tiles_props.png-67c7f376cbe9d9a682d753226eec8c96.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/tiles_props.png"
-dest_files=["res://.godot/imported/tiles_props.png-a434b5e1c2d3e4f5a6b7c8d9e0f1a2b3.ctex"]
+dest_files=["res://.godot/imported/tiles_props.png-67c7f376cbe9d9a682d753226eec8c96.ctex"]
 
 [params]
 

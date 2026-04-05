@@ -18,8 +18,8 @@ const C_DANGER  := Color(0.90, 0.30, 0.10, 1.0)   # orange-red — nearing win
 const C_CAUTION := Color(0.95, 0.80, 0.15, 1.0)   # yellow — getting close
 
 const WIN_THRESHOLD := 30
-const BAR_WIDTH     := 140
-const BAR_HEIGHT    := 10
+const BAR_WIDTH     := 160
+const BAR_HEIGHT    := 12
 
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _score_lbl:   Label     = null
@@ -52,11 +52,12 @@ func _build_ui() -> void:
 	hbox.add_child(score_vbox)
 
 	_score_lbl = Label.new()
-	_score_lbl.add_theme_font_size_override("font_size", 12)
+	_score_lbl.add_theme_font_size_override("font_size", 13)
 	_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_score_lbl.text = "Edric Fenn  Rep: — / 100  Target: <30"
 	_score_lbl.tooltip_text = "Lord Edric Fenn's current reputation (0–100). Win when it drops below 30."
 	_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_apply_text_outline(_score_lbl)
 	score_vbox.add_child(_score_lbl)
 
 	var bar_hbox := HBoxContainer.new()
@@ -84,11 +85,12 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 12)
+	_days_lbl.add_theme_font_size_override("font_size", 13)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 30"
 	_days_lbl.tooltip_text = "Days left before the tax rolls are signed. The scenario fails on timeout."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_apply_text_outline(_days_lbl)
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()

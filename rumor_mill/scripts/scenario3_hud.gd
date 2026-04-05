@@ -12,8 +12,8 @@ extends BaseScenarioHud
 ##
 ## Wire via setup(world, day_night) from main.gd.
 
-const BAR_WIDTH  := 120
-const BAR_HEIGHT := 10
+const BAR_WIDTH  := 140
+const BAR_HEIGHT := 12
 
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _calder_score_lbl: Label     = null
@@ -55,11 +55,12 @@ func _build_ui() -> void:
 	hbox.add_child(calder_vbox)
 
 	_calder_score_lbl = Label.new()
-	_calder_score_lbl.add_theme_font_size_override("font_size", 12)
+	_calder_score_lbl.add_theme_font_size_override("font_size", 13)
 	_calder_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_calder_score_lbl.text = "Calder Fenn  Rep: 50 / 100  Target: 75+"
 	_calder_score_lbl.tooltip_text = "Calder Fenn's reputation. Win condition: raise to 75 or higher."
 	_calder_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_apply_text_outline(_calder_score_lbl)
 	calder_vbox.add_child(_calder_score_lbl)
 
 	var calder_bar_hbox := HBoxContainer.new()
@@ -77,11 +78,12 @@ func _build_ui() -> void:
 	hbox.add_child(tomas_vbox)
 
 	_tomas_score_lbl = Label.new()
-	_tomas_score_lbl.add_theme_font_size_override("font_size", 12)
+	_tomas_score_lbl.add_theme_font_size_override("font_size", 13)
 	_tomas_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_tomas_score_lbl.text = "Tomas Reeve  Rep: 50 / 100  Target: \u226435"
 	_tomas_score_lbl.tooltip_text = "Tomas Reeve's reputation. Win condition: drag it down to 35 or lower."
 	_tomas_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_apply_text_outline(_tomas_score_lbl)
 	tomas_vbox.add_child(_tomas_score_lbl)
 
 	var tomas_bar_hbox := HBoxContainer.new()

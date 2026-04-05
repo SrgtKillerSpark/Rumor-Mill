@@ -16,8 +16,8 @@ extends BaseScenarioHud
 # ── S2-specific palette ──────────────────────────────────────────────────────
 const C_ILLNESS := Color(0.60, 0.85, 0.30, 1.0)  # sickly green for plague theme
 
-const BAR_WIDTH      := 140
-const BAR_HEIGHT     := 10
+const BAR_WIDTH      := 160
+const BAR_HEIGHT     := 12
 const MAX_NAMES_SHOWN := 5
 
 # ── Node refs ────────────────────────────────────────────────────────────────
@@ -57,11 +57,12 @@ func _build_ui() -> void:
 	hbox.add_child(count_vbox)
 
 	_count_lbl = Label.new()
-	_count_lbl.add_theme_font_size_override("font_size", 12)
+	_count_lbl.add_theme_font_size_override("font_size", 13)
 	_count_lbl.add_theme_color_override("font_color", C_BODY)
 	_count_lbl.text = "Believers: 0 / 6+"
 	_count_lbl.tooltip_text = "Number of townspeople who believe the illness rumor about Alys Herbwife. Win when 6 or more believe it."
 	_count_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_apply_text_outline(_count_lbl)
 	count_vbox.add_child(_count_lbl)
 
 	var bar_hbox := HBoxContainer.new()
@@ -97,11 +98,12 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 12)
+	_days_lbl.add_theme_font_size_override("font_size", 13)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 20"
 	_days_lbl.tooltip_text = "Days remaining before the autumn market closes. Fail if you run out of time."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_apply_text_outline(_days_lbl)
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
