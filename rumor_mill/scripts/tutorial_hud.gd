@@ -79,39 +79,39 @@ func queue_tooltip(tooltip_id: String) -> void:
 	if _queue.has(tooltip_id) or _active_id == tooltip_id:
 		return
 	_queue.append(tooltip_id)
-	_total_queued = _queue.size() + (1 if _active_id != "" else 0)
 	if _active_id == "":
 		_total_queued = _queue.size()
 		_show_next()
+	else:
+		_total_queued = _queue.size() + 1
 
 
 # ── Internal display ──────────────────────────────────────────────────────────
 
 func _show_next() -> void:
-	if _queue.is_empty():
-		_active_id = ""
-		visible    = false
+	while not _queue.is_empty():
+		var tooltip_id: String = _queue.pop_front()
+		if _tutorial_sys.has_seen(tooltip_id):
+			continue
+
+		var data: Dictionary = _tutorial_sys.get_tooltip(tooltip_id)
+		if data.is_empty():
+			continue
+
+		_active_id = tooltip_id
+		_title_label.text = data.get("title", "")
+		_body_label.text  = data.get("body", "")
+		# Update step counter.
+		if _step_label != null:
+			var current_step: int = _total_queued - _queue.size()
+			_step_label.text = "Tip %d of %d" % [current_step, _total_queued]
+			_step_label.visible = (_total_queued > 1)
+		visible = true
+		_dismiss_btn.call_deferred("grab_focus")
 		return
 
-	_active_id = _queue.pop_front()
-	if _tutorial_sys.has_seen(_active_id):
-		_show_next()
-		return
-
-	var data: Dictionary = _tutorial_sys.get_tooltip(_active_id)
-	if data.is_empty():
-		_show_next()
-		return
-
-	_title_label.text = data.get("title", "")
-	_body_label.text  = data.get("body", "")
-	# Update step counter.
-	if _step_label != null:
-		var current_step: int = _total_queued - _queue.size()
-		_step_label.text = "Tip %d of %d" % [current_step, _total_queued]
-		_step_label.visible = (_total_queued > 1)
-	visible = true
-	_dismiss_btn.call_deferred("grab_focus")
+	_active_id = ""
+	visible    = false
 
 
 func _on_dismiss_pressed() -> void:

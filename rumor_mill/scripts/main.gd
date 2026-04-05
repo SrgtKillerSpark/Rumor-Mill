@@ -1678,7 +1678,7 @@ func _on_scenario_resolved_tutorial_steps(
 		"scenario_%d" % scenario_id,
 		GameState.selected_difficulty,
 		_tutorial_sys.get_seen_count(),
-		TutorialSystem.TOOLTIP_ORDER.size(),
+		TutorialSystem.TOOLTIP_DATA.size(),
 	)
 
 

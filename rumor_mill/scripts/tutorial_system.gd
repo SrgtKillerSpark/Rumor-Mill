@@ -17,21 +17,6 @@
 
 class_name TutorialSystem
 
-## Ordered list used to control queue priority when multiple tooltips fire at once.
-const TOOLTIP_ORDER: Array = [
-	"core_loop",
-	"navigation_controls",
-	"recon_actions",
-	"observe",
-	"eavesdrop",
-	"npc_state_change",
-	"rumor_crafting",
-	"reputation",
-	"evidence_items",
-	"rival_agent",
-	"inquisitor_agent",
-]
-
 ## Tooltip content: title + BBCode body text.
 const TOOLTIP_DATA: Dictionary = {
 	"core_loop": {

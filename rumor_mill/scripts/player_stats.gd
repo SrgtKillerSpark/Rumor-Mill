@@ -120,7 +120,7 @@ func get_scenario_stats(scenario_id: String, difficulty: String) -> Dictionary:
 
 ## Record tutorial step completion for a finished game. Saves immediately.
 ## seen  — number of distinct tutorial tooltip IDs marked seen this session.
-## total — total number of available tutorial steps (TutorialSystem.TOOLTIP_ORDER.size()).
+## total — total number of available tutorial steps (TutorialSystem.TOOLTIP_DATA.size()).
 func record_tutorial_steps(
 	scenario_id: String,
 	difficulty:  String,

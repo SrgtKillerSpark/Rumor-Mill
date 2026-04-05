@@ -105,12 +105,13 @@ func unsuppress() -> void:
 	if not _suppressed:
 		return
 	_suppressed = false
-	# If there was an active hint when suppressed, re-queue it at front.
 	if _active_id != "":
-		_queue.push_front({"id": _active_id, "body_override": _active_body})
-		_active_id   = ""
-		_active_body = ""
-	if not _queue.is_empty():
+		# Resume the active hint in place — reset timer and re-show without
+		# re-queuing (avoids stale-entry accumulation on suppress/unsuppress cycles).
+		_timer   = _auto_secs
+		visible  = true
+		_hovered = false
+	elif not _queue.is_empty():
 		_show_next()
 
 
@@ -169,46 +170,45 @@ func _process(delta: float) -> void:
 # ── Internal display ──────────────────────────────────────────────────────────
 
 func _show_next() -> void:
-	if _queue.is_empty() or _suppressed:
-		_active_id = ""
-		visible    = false
+	while not _queue.is_empty() and not _suppressed:
+		var entry: Dictionary = _queue.pop_front()
+		var hint_id: String   = str(entry["id"])
+
+		if _tutorial_sys.has_seen(hint_id):
+			continue
+
+		var data: Dictionary = _tutorial_sys.get_hint(hint_id)
+		if data.is_empty():
+			continue
+
+		_active_id  = hint_id
+		_tutorial_sys.set_last_hint(hint_id)
+		_auto_secs  = float(data.get("auto_dismiss_secs", 7))
+		_timer      = _auto_secs
+
+		var body_override: String = str(entry["body_override"])
+		_active_body = body_override
+		var body: String = body_override if body_override != "" \
+			else str(data.get("body", ""))
+		_title_label.text = data.get("title", "")
+		_body_label.text  = body
+
+		# Position banner off-screen to the left for slide-in.
+		_container.offset_left  = -(BANNER_WIDTH + MARGIN + 20)
+		_container.offset_right = -(MARGIN + 20)
+		visible = true
+		_hovered = false
+
+		# Slide in from left.
+		var tween := create_tween()
+		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_container, "offset_left",  MARGIN, 0.25)
+		tween.parallel().tween_property(_container, "offset_right", MARGIN + BANNER_WIDTH, 0.25)
 		return
 
-	var entry: Dictionary = _queue.pop_front()
-	var hint_id: String   = str(entry["id"])
-
-	if _tutorial_sys.has_seen(hint_id):
-		_show_next()
-		return
-
-	var data: Dictionary = _tutorial_sys.get_hint(hint_id)
-	if data.is_empty():
-		_show_next()
-		return
-
-	_active_id  = hint_id
-	_tutorial_sys.set_last_hint(hint_id)
-	_auto_secs  = float(data.get("auto_dismiss_secs", 7))
-	_timer      = _auto_secs
-
-	var body_override: String = str(entry["body_override"])
-	_active_body = body_override
-	var body: String = body_override if body_override != "" \
-		else str(data.get("body", ""))
-	_title_label.text = data.get("title", "")
-	_body_label.text  = body
-
-	# Position banner off-screen to the left for slide-in.
-	_container.offset_left  = -(BANNER_WIDTH + MARGIN + 20)
-	_container.offset_right = -(MARGIN + 20)
-	visible = true
-	_hovered = false
-
-	# Slide in from left.
-	var tween := create_tween()
-	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_container, "offset_left",  MARGIN, 0.25)
-	tween.parallel().tween_property(_container, "offset_right", MARGIN + BANNER_WIDTH, 0.25)
+	# Queue exhausted or suppressed — nothing to show.
+	_active_id = ""
+	visible    = false
 
 
 func _auto_dismiss() -> void:
