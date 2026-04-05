@@ -60,12 +60,15 @@ static func get_save_info(scenario_id: String, slot: int) -> Dictionary:
 
 ## Save the current game state to disk.
 ## slot: AUTO_SLOT (0) for auto-save, 1–3 for manual slots.
+## tutorial_sys: optional TutorialSystem reference; when provided, seen-tooltip
+##               progress and last hint id are included in the save.
 ## Returns "" on success, or a human-readable error string on failure.
 static func save_game(
-		world:     Node2D,
-		day_night: Node,
-		journal:   CanvasLayer,
-		slot:      int = 1
+		world:        Node2D,
+		day_night:    Node,
+		journal:      CanvasLayer,
+		slot:         int = 1,
+		tutorial_sys: TutorialSystem = null
 ) -> String:
 	if slot < AUTO_SLOT or slot > SLOT_COUNT:
 		return "Invalid save slot %d (must be %d–%d)." % [slot, AUTO_SLOT, SLOT_COUNT]
@@ -98,6 +101,7 @@ static func save_game(
 		"faction_event_system":      _serialize_faction_event_system(world.faction_event_system),
 		"socially_dead_ids":    world._socially_dead_ids.keys(),
 		"timeline":             timeline,
+		"tutorial_progress":    _serialize_tutorial(tutorial_sys),
 	}
 
 	var path := save_path(world.active_scenario_id, slot)
@@ -153,10 +157,13 @@ static func pending_scenario_id() -> String:
 
 ## Apply the pending save data to all game systems.
 ## Call at the end of main.gd _on_begin_game(), after all inits complete.
+## tutorial_sys: optional TutorialSystem reference; when provided, seen-tooltip
+##               progress and last hint id are restored from the save.
 static func apply_pending_load(
-		world:     Node2D,
-		day_night: Node,
-		journal:   CanvasLayer
+		world:        Node2D,
+		day_night:    Node,
+		journal:      CanvasLayer,
+		tutorial_sys: TutorialSystem = null
 ) -> void:
 	if _pending_load_data.is_empty():
 		return
@@ -180,6 +187,7 @@ static func apply_pending_load(
 	var _timeline_data: Variant = data.get("timeline", [])
 	if journal != null and journal.has_method("restore_timeline") and _timeline_data is Array:
 		journal.restore_timeline(_timeline_data)
+	_restore_tutorial(tutorial_sys, data.get("tutorial_progress", {}))
 	# Rebuild reputation cache after all systems (including FactionEventSystem) are
 	# restored so that active event bonuses (e.g. religious_festival +10) are included.
 	world.reputation_system.recalculate_all(world.npcs, day_night.current_tick)
@@ -584,3 +592,19 @@ static func _restore_faction_event_system(fes: FactionEventSystem, d: Dictionary
 	if fes == null or d.is_empty():
 		return
 	fes.restore_from_data(d)
+
+
+static func _serialize_tutorial(ts: TutorialSystem) -> Dictionary:
+	if ts == null:
+		return {}
+	return {
+		"seen":         ts._seen.duplicate(),
+		"last_hint_id": ts._last_hint_id,
+	}
+
+
+static func _restore_tutorial(ts: TutorialSystem, d: Dictionary) -> void:
+	if ts == null or d.is_empty():
+		return
+	ts._seen         = d.get("seen", {}).duplicate()
+	ts._last_hint_id = str(d.get("last_hint_id", ""))

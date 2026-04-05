@@ -151,6 +151,9 @@ func _on_begin_game(scenario_id: String) -> void:
 		return
 	_game_started = true
 
+	# SPA-561: Smooth fade-out before leaving the main menu.
+	await TransitionManager.fade_out(0.35)
+
 	# Hide / free the menu overlay.
 	if _main_menu != null:
 		_main_menu.queue_free()
@@ -160,6 +163,8 @@ func _on_begin_game(scenario_id: String) -> void:
 	# before the synchronous world init runs (~1.5 s > MIN_DURATION_SEC).
 	if _loading_tips != null:
 		_loading_tips.start_transition()
+	# SPA-561: Fade back in so the loading tip is visible.
+	await TransitionManager.fade_in(0.35)
 	await get_tree().create_timer(1.5).timeout
 
 	# Apply the chosen scenario's edge/personality/reputation overrides.
@@ -232,14 +237,17 @@ func _on_begin_game(scenario_id: String) -> void:
 		_sm_ref.retry_count = PlayerStats.get_scenario_stats(
 			scenario_id, GameState.selected_difficulty).get("retries", 0)
 
+	# SPA-561: Fade out before dismissing loading tips, then fade into gameplay.
+	await TransitionManager.fade_out(0.3)
 	# Loading complete — dismiss the tip screen.
 	if _loading_tips != null:
 		_loading_tips.end_transition()
+	await TransitionManager.fade_in(0.4)
 
 	# Restore saved state if a load was triggered from the pause menu.
 	var _was_save_load := SaveManager.has_pending_load()
 	if _was_save_load:
-		SaveManager.apply_pending_load(world, day_night, journal)
+		SaveManager.apply_pending_load(world, day_night, journal, _tutorial_sys)
 
 	# SPA-519: Pause Day 1 on fresh game start so the player can orient.
 	# Skip if this is a save-load (player already knows the game).
@@ -1164,6 +1172,7 @@ func _init_pause_menu() -> void:
 	add_child(_pause_menu)
 	_pause_menu.setup(world.active_scenario_id)
 	_pause_menu.setup_save_load(world, day_night, journal)
+	_pause_menu.setup_tutorial(_tutorial_sys)
 	# SPA-335: flush session time whenever the pause menu opens so partial
 	# play time is saved if the player quits from the pause menu.
 	_pause_menu.visibility_changed.connect(_on_pause_menu_visibility_changed_flush)
@@ -1187,7 +1196,7 @@ func _init_npc_tooltip() -> void:
 
 ## Auto-save to slot 0 at the start of each new day (SPA-220).
 func _on_new_day_auto_save(day: int) -> void:
-	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT)
+	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT, _tutorial_sys)
 	if not err.is_empty():
 		push_warning("[Main] Auto-save failed on day %d: %s" % [day, err])
 

@@ -454,6 +454,14 @@ func _build_hint_button() -> void:
 	hover_style.set_corner_radius_all(3)
 	hover_style.set_content_margin_all(2)
 	_hint_btn.add_theme_stylebox_override("hover", hover_style)
+	_hint_btn.tooltip_text = "Get a context-aware hint about your next best action."
+	var focus_style := StyleBoxFlat.new()
+	focus_style.bg_color = Color(0.40, 0.25, 0.08, 0.95)
+	focus_style.set_border_width_all(2)
+	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)
+	focus_style.set_corner_radius_all(3)
+	focus_style.set_content_margin_all(2)
+	_hint_btn.add_theme_stylebox_override("focus", focus_style)
 	_hint_btn.pressed.connect(_on_hint_pressed)
 	key_hint_row.add_child(_hint_btn)
 

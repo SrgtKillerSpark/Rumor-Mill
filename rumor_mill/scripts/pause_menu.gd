@@ -24,10 +24,11 @@ var _scenario_id: String = ""
 var _how_to_play: CanvasLayer = null
 var _settings_menu: CanvasLayer = null
 
-# ── Save/load refs (wired by main.gd via setup_save_load) ─────────────────────
-var _world_ref:     Node2D      = null
-var _day_night_ref: Node        = null
-var _journal_ref:   CanvasLayer = null
+# ── Save/load refs (wired by main.gd via setup_save_load / setup_tutorial) ────
+var _world_ref:       Node2D        = null
+var _day_night_ref:   Node          = null
+var _journal_ref:     CanvasLayer   = null
+var _tutorial_sys_ref: TutorialSystem = null
 
 var _status_label: Label = null
 
@@ -70,6 +71,11 @@ func setup_save_load(world: Node2D, day_night: Node, journal: CanvasLayer) -> vo
 	_world_ref     = world
 	_day_night_ref = day_night
 	_journal_ref   = journal
+
+
+## Called by main.gd to provide the tutorial system reference for save/load.
+func setup_tutorial(sys: TutorialSystem) -> void:
+	_tutorial_sys_ref = sys
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -342,7 +348,7 @@ func _on_slot_action(slot: int) -> void:
 			_set_status("Save unavailable.", Color(1.0, 0.5, 0.5, 1.0))
 			_hide_slot_picker()
 			return
-		var err: String = SaveManager.save_game(_world_ref, _day_night_ref, _journal_ref, slot)
+		var err: String = SaveManager.save_game(_world_ref, _day_night_ref, _journal_ref, slot, _tutorial_sys_ref)
 		_hide_slot_picker()
 		if err.is_empty():
 			var slot_name := "Auto" if slot == SaveManager.AUTO_SLOT else ("Slot %d" % slot)
