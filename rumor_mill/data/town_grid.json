@@ -107,6 +107,22 @@
       "y": 29,
       "width": 3,
       "height": 3
+    },
+    {
+      "name": "well",
+      "type": 8,
+      "x": 24,
+      "y": 10,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "name": "graveyard",
+      "type": 1,
+      "x": 38,
+      "y": 38,
+      "width": 3,
+      "height": 3
     }
   ],
   "walkable_types": [
