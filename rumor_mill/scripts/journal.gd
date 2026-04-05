@@ -50,9 +50,21 @@ var _scroll_positions:  Dictionary = {}   # Section → int (v_scroll pixel)
 var _last_opened_tick:  int       = -1
 var _notification_pending: bool   = false
 var _panel_tween:          Tween  = null
+var _dot_pulse_tween:      Tween  = null
 
 ## Per-rumor expand state: rumor_id → bool.
 var _expanded_rumors: Dictionary = {}
+
+## State-change tracking: rumor_id → last-seen journal status string.
+## Snapshotted on journal close so we can diff on next open.
+var _rumor_last_status: Dictionary = {}
+
+## Rumor IDs whose status changed since last journal visit.
+## Populated on _open(), cleared on _close().
+var _changed_rumor_ids: Dictionary = {}
+
+## Summary of transitions since last visit: {status_string → count}.
+var _transition_summary: Dictionary = {}
 
 ## Rumors-tab filter text (persists across tab switches).
 var _rumor_filter_text: String = ""
@@ -146,6 +158,8 @@ func _open() -> void:
 	_last_opened_tick   = _get_current_tick()
 	_notification_pending = false
 	_notif_dot.visible  = false
+	_stop_dot_pulse()
+	_compute_status_diff()
 	_pause_game(true)
 	_rebuild_section(_current_section)
 	call_deferred("_restore_scroll")
@@ -171,6 +185,10 @@ func _close() -> void:
 	AudioManager.play_sfx("journal_close")
 	_save_scroll()
 	_is_open            = false
+	# Snapshot current statuses so next open can detect changes.
+	_rumor_last_status = _snapshot_rumor_statuses()
+	_changed_rumor_ids.clear()
+	_transition_summary.clear()
 	# Animate close: quick fade.
 	if _panel_tween != null and _panel_tween.is_valid():
 		_panel_tween.kill()
@@ -298,6 +316,48 @@ func _build_rumors_section() -> void:
 		_add_body_label("(World not connected)")
 		return
 
+	# ── What's New banner ────────────────────────────────────────────────────
+	if not _transition_summary.is_empty():
+		var banner_panel := PanelContainer.new()
+		var banner_style := StyleBoxFlat.new()
+		banner_style.bg_color = Color(0.18, 0.14, 0.08, 0.95)
+		banner_style.border_color = C_HEADING
+		banner_style.set_border_width_all(1)
+		banner_style.set_corner_radius_all(3)
+		banner_style.set_content_margin_all(6)
+		banner_panel.add_theme_stylebox_override("panel", banner_style)
+		_content_vbox.add_child(banner_panel)
+
+		var banner_vbox := VBoxContainer.new()
+		banner_panel.add_child(banner_vbox)
+
+		var banner_title := Label.new()
+		banner_title.text = "What's Changed"
+		banner_title.add_theme_font_size_override("font_size", 13)
+		banner_title.add_theme_color_override("font_color", C_HEADING)
+		banner_vbox.add_child(banner_title)
+
+		var parts: Array = []
+		for st in _transition_summary:
+			var cnt: int = _transition_summary[st]
+			parts.append("%d now %s" % [cnt, st.capitalize()])
+		var summary_lbl := Label.new()
+		summary_lbl.text = "  " + ", ".join(parts) + " since last check"
+		summary_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+		summary_lbl.add_theme_font_size_override("font_size", 12)
+		summary_lbl.add_theme_color_override("font_color", C_KEY)
+		banner_vbox.add_child(summary_lbl)
+
+		# Auto-dismiss after 5 seconds.
+		var banner_timer := get_tree().create_timer(5.0)
+		banner_timer.timeout.connect(func() -> void:
+			if is_instance_valid(banner_panel):
+				var tw := create_tween()
+				tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+				tw.tween_property(banner_panel, "modulate:a", 0.0, 0.3)
+				tw.tween_callback(banner_panel.queue_free)
+		)
+
 	# Collect unique rumors from all NPC slots.
 	var all_rumors: Dictionary = {}   # rumor_id → Rumor
 	for npc in _world_ref.npcs:
@@ -350,11 +410,31 @@ func _build_rumors_section() -> void:
 	status_lbl.add_theme_color_override("font_color", C_SUBKEY)
 	status_row.add_child(status_lbl)
 
+	# Pre-compute per-status counts for badge display.
+	var _status_counts: Dictionary = {}
+	var _total_rumor_count: int = all_rumors.size()
+	for _cnt_rid in all_rumors:
+		var _cr: Rumor = all_rumors[_cnt_rid]
+		var _cspr: int = 0
+		var _cbel: int = 0
+		if _world_ref != null:
+			for npc in _world_ref.npcs:
+				if npc.rumor_slots.has(_cnt_rid):
+					var _cslot: Rumor.NpcRumorSlot = npc.rumor_slots[_cnt_rid]
+					if _cslot.state == Rumor.RumorState.SPREAD:
+						_cspr += 1; _cbel += 1
+					elif _cslot.state == Rumor.RumorState.BELIEVE or _cslot.state == Rumor.RumorState.ACT:
+						_cbel += 1
+		var _cis_cont: bool = _is_contradicted(_cr, _cspr)
+		var _cst: String = _rumor_journal_status(_cr, _cspr, _cbel, _cis_cont)
+		_status_counts[_cst] = _status_counts.get(_cst, 0) + 1
+
 	var status_options: Array = ["", "EVALUATING", "SPREADING", "STALLING", "CONTRADICTED", "EXPIRED"]
 	var status_labels: Array  = ["All", "Evaluating", "Spreading", "Stalling", "Contradicted", "Expired"]
 	for si in range(status_options.size()):
 		var sbtn := Button.new()
-		sbtn.text = status_labels[si]
+		var _btn_count: int = _total_rumor_count if status_options[si] == "" else _status_counts.get(status_options[si], 0)
+		sbtn.text = "%s (%d)" % [status_labels[si], _btn_count]
 		sbtn.add_theme_font_size_override("font_size", 12)
 		var is_active: bool = _rumor_status_filter == status_options[si]
 		var sbtn_style := StyleBoxFlat.new()
@@ -477,16 +557,35 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 	var seed_day_str:   String = _tick_to_day_str(rumor.created_tick)
 	var expanded:       bool   = _expanded_rumors.get(rid, false)
 
+	# ── State-change left-border accent ─────────────────────────────────────
+	var _card_has_change: bool = _changed_rumor_ids.has(rid)
+	if _card_has_change:
+		var accent_bar := ColorRect.new()
+		accent_bar.custom_minimum_size = Vector2(0, 2)
+		accent_bar.color = C_HEADING if _is_positive_transition(journal_status) else C_CONTRADICTED
+		_content_vbox.add_child(accent_bar)
+
 	# Collapsed header row — click to expand/collapse.
 	var header_btn := Button.new()
-	header_btn.text = "%s — %s   [%s]   %d believers  /  %d rejectors" % [
-		claim_str, subject_name, journal_status, believers, rejectors]
+	var _change_marker: String = " *" if _card_has_change else ""
+	header_btn.text = "%s — %s   [%s]   %d believers  /  %d rejectors%s" % [
+		claim_str, subject_name, journal_status, believers, rejectors, _change_marker]
 	header_btn.toggle_mode           = false
 	header_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header_btn.add_theme_font_size_override("font_size", 12)
 	header_btn.add_theme_color_override("font_color",         C_KEY)
 	header_btn.add_theme_color_override("font_pressed_color", C_HEADING)
 	header_btn.add_theme_color_override("font_hover_color",   C_HEADING)
+
+	if _card_has_change:
+		var hdr_style := StyleBoxFlat.new()
+		hdr_style.set_content_margin_all(4)
+		hdr_style.bg_color = Color(0.15, 0.11, 0.06, 1.0)
+		hdr_style.border_color = C_HEADING if _is_positive_transition(journal_status) else C_CONTRADICTED
+		hdr_style.set_border_width_all(0)
+		hdr_style.border_width_left = 3
+		header_btn.add_theme_stylebox_override("normal", hdr_style)
+
 	_content_vbox.add_child(header_btn)
 
 	# Status / shelf-life strip.
@@ -598,6 +697,54 @@ func _rumor_status_color(status: String) -> Color:
 		"CONTRADICTED": return C_CONTRADICTED
 		"EXPIRED":      return C_EXPIRED
 	return C_BODY
+
+
+## Build a snapshot of every rumor's current journal status.
+func _snapshot_rumor_statuses() -> Dictionary:
+	var result: Dictionary = {}
+	if _world_ref == null:
+		return result
+	var all_rumors: Dictionary = {}
+	for npc in _world_ref.npcs:
+		for rid in npc.rumor_slots:
+			if not all_rumors.has(rid):
+				all_rumors[rid] = npc.rumor_slots[rid].rumor
+	for rid in all_rumors:
+		var rumor: Rumor = all_rumors[rid]
+		var spr: int = 0
+		var bel: int = 0
+		for npc in _world_ref.npcs:
+			if npc.rumor_slots.has(rid):
+				var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+				if slot.state == Rumor.RumorState.SPREAD:
+					spr += 1; bel += 1
+				elif slot.state == Rumor.RumorState.BELIEVE or slot.state == Rumor.RumorState.ACT:
+					bel += 1
+		var is_cont: bool = _is_contradicted(rumor, spr)
+		result[rid] = _rumor_journal_status(rumor, spr, bel, is_cont)
+	return result
+
+
+## Compare current statuses against _rumor_last_status.  Populates
+## _changed_rumor_ids and _transition_summary for the current open session.
+func _compute_status_diff() -> void:
+	_changed_rumor_ids.clear()
+	_transition_summary.clear()
+	var current: Dictionary = _snapshot_rumor_statuses()
+	for rid in current:
+		var cur_st: String = current[rid]
+		if _rumor_last_status.has(rid):
+			var old_st: String = _rumor_last_status[rid]
+			if old_st != cur_st:
+				_changed_rumor_ids[rid] = true
+				_transition_summary[cur_st] = _transition_summary.get(cur_st, 0) + 1
+		# New rumors (not seen before) are NOT flagged as transitions — only
+		# status *changes* on known rumors count.
+
+
+## Returns true if a transition to this status is "positive" (desirable).
+func _is_positive_transition(status: String) -> bool:
+	return status == "SPREADING" or status == "EVALUATING"
 
 
 func _collect_mutations(parent_rid: String) -> Array:
@@ -1422,10 +1569,9 @@ func _on_game_tick(_tick: int) -> void:
 
 	if _is_open or _notification_pending:
 		return
-	if _has_new_entries_since(_last_opened_tick):
+	if _has_new_entries_since(_last_opened_tick) or _has_status_transitions():
 		_notification_pending = true
-		if _notif_dot != null:
-			_notif_dot.visible = true
+		_show_notification_dot()
 
 
 func _has_new_entries_since(since_tick: int) -> bool:
@@ -1449,6 +1595,41 @@ func _has_new_entries_since(since_tick: int) -> bool:
 	return false
 
 
+## Returns true if any rumor's status differs from the last-seen snapshot.
+func _has_status_transitions() -> bool:
+	if _rumor_last_status.is_empty() or _world_ref == null:
+		return false
+	var current: Dictionary = _snapshot_rumor_statuses()
+	for rid in current:
+		if _rumor_last_status.has(rid) and _rumor_last_status[rid] != current[rid]:
+			return true
+	return false
+
+
+func _show_notification_dot() -> void:
+	if _notif_dot == null:
+		return
+	_notif_dot.visible = true
+	_start_dot_pulse()
+
+
+func _start_dot_pulse() -> void:
+	_stop_dot_pulse()
+	_dot_pulse_tween = create_tween().set_loops()
+	_dot_pulse_tween.tween_property(_notif_dot, "modulate:a", 0.4, 0.6) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_dot_pulse_tween.tween_property(_notif_dot, "modulate:a", 1.0, 0.6) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_dot_pulse() -> void:
+	if _dot_pulse_tween != null and _dot_pulse_tween.is_valid():
+		_dot_pulse_tween.kill()
+		_dot_pulse_tween = null
+	if _notif_dot != null:
+		_notif_dot.modulate.a = 1.0
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 ## Called by scenario or world systems to record a named timeline event.
@@ -1457,8 +1638,7 @@ func push_timeline_event(tick: int, message: String) -> void:
 	_pending_events.append({"tick": tick, "message": message})
 	if not _is_open and tick > _last_opened_tick:
 		_notification_pending = true
-		if _notif_dot != null:
-			_notif_dot.visible = true
+		_show_notification_dot()
 
 
 ## Open the journal directly to the Timeline tab with optional pre-set filters.
