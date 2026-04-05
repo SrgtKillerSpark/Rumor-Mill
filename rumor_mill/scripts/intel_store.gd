@@ -4,6 +4,9 @@
 
 class_name PlayerIntelStore
 
+## Emitted once per spend when whisper_tokens_remaining drops to 0.
+signal tokens_exhausted
+
 const MAX_DAILY_ACTIONS  := 3
 const MAX_DAILY_WHISPERS := 2
 const MAX_EVIDENCE       := 3
@@ -123,10 +126,13 @@ func try_spend_action() -> bool:
 
 
 ## Attempt to spend one whisper token. Returns false if none remain.
+## Emits tokens_exhausted when the last token is consumed.
 func try_spend_whisper() -> bool:
 	if whisper_tokens_remaining <= 0:
 		return false
 	whisper_tokens_remaining -= 1
+	if whisper_tokens_remaining == 0:
+		tokens_exhausted.emit()
 	return true
 
 

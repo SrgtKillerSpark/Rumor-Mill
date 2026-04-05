@@ -413,6 +413,10 @@ func _init_context_banner() -> void:
 	if day_night != null and day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_ctx_day_changed)
 
+	# Whisper token exhaustion hint (SPA-448).
+	if world.intel_store != null:
+		world.intel_store.tokens_exhausted.connect(_on_ctx_tokens_exhausted)
+
 	# NPC state change hints: first SPREAD, ACT, or REJECT triggers.
 	for npc in world.npcs:
 		npc.rumor_state_changed.connect(_on_ctx_rumor_state_changed)
@@ -717,6 +721,14 @@ func _on_ctx_rumor_state_changed(
 	elif new_state_name == "REJECT" and not _ctx_reject_fired:
 		_ctx_reject_fired = true
 		_tutorial_banner.queue_hint("ctx_rumor_rejected")
+
+
+## Fires once when the player exhausts all Whisper Tokens (S2/S3/S4) (SPA-448).
+func _on_ctx_tokens_exhausted() -> void:
+	if _ctx_tokens_fired or _tutorial_banner == null:
+		return
+	_ctx_tokens_fired = true
+	_tutorial_banner.queue_hint("ctx_out_of_tokens")
 
 
 ## Evidence tutorial trigger — fires once when compatible evidence is first shown (S2/S3).
