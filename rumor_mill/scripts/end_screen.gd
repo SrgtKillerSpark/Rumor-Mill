@@ -243,6 +243,9 @@ var _current_scenario_id: String = ""
 # Each entry: { "label": Label, "target": int, "suffix": String }
 var _tween_targets: Array = []
 
+# ── Re-entry guard — prevents duplicate UI from double signal emission ────────
+var _resolving: bool = false
+
 
 func _ready() -> void:
 	layer = 30
@@ -262,8 +265,9 @@ func setup(world: Node2D, day_night: Node, analytics: ScenarioAnalytics = null) 
 # ── Signal handler ────────────────────────────────────────────────────────────
 
 func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioState) -> void:
-	if _world_ref == null:
+	if _resolving or _world_ref == null:
 		return
+	_resolving = true
 
 	# Freeze the game world so NPCs stop moving behind the end-screen overlay.
 	if _day_night_ref != null and _day_night_ref.has_method("set_paused"):

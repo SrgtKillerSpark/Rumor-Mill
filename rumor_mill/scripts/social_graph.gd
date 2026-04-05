@@ -26,6 +26,7 @@ const MUTATION_CAP := 3
 const OPPOSING_PAIRS: Array = [
 	["merchant", "noble"],
 	["noble", "clergy"],
+	["merchant", "clergy"],
 ]
 
 

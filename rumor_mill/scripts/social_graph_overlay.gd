@@ -285,14 +285,14 @@ func _process(delta: float) -> void:
 	if visible_overlay:
 		_draw_node.queue_redraw()
 
-	if not _active_spread_edges.is_empty():
-		var expired: Array = []
-		for key in _active_spread_edges:
-			_active_spread_edges[key] -= delta
-			if _active_spread_edges[key] <= 0.0:
-				expired.append(key)
-		for key in expired:
-			_active_spread_edges.erase(key)
+		if not _active_spread_edges.is_empty():
+			var expired: Array = []
+			for key in _active_spread_edges:
+				_active_spread_edges[key] -= delta
+				if _active_spread_edges[key] <= 0.0:
+					expired.append(key)
+			for key in expired:
+				_active_spread_edges.erase(key)
 
 
 ## Called by main.gd _on_rumor_event.  Highlights the social-graph edge for a

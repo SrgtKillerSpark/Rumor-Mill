@@ -165,12 +165,20 @@ static func save_game(
 	}
 
 	var path := save_path(world.active_scenario_id, slot)
-	var f := FileAccess.open(path, FileAccess.WRITE)
+	var tmp_path := path + ".tmp"
+	var f := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if f == null:
 		return "Failed to open '%s' for writing (error %d)." % [
-			path, FileAccess.get_open_error()]
+			tmp_path, FileAccess.get_open_error()]
 	f.store_string(JSON.stringify(data, "\t"))
 	f.close()
+	# Atomically replace the save file so a crash during write cannot corrupt the slot.
+	var dir := DirAccess.open("user://")
+	if dir == null:
+		return "Failed to open user:// for atomic rename (error %d)." % DirAccess.get_open_error()
+	var rename_err := dir.rename(tmp_path, path)
+	if rename_err != OK:
+		return "Failed to rename temp save to '%s' (error %d)." % [path, rename_err]
 	return ""
 
 
@@ -262,6 +270,8 @@ static func apply_pending_load(
 # ── Serialisation ─────────────────────────────────────────────────────────────
 
 static func _serialize_social_graph(sg: SocialGraph) -> Dictionary:
+	if sg == null:
+		return {}
 	return {
 		"edges":          sg.edges.duplicate(true),
 		"mutation_log":   sg._mutation_log.duplicate(true),
@@ -271,6 +281,8 @@ static func _serialize_social_graph(sg: SocialGraph) -> Dictionary:
 
 
 static func _serialize_propagation(pe: PropagationEngine) -> Dictionary:
+	if pe == null:
+		return {}
 	var rumors := {}
 	for rid in pe.live_rumors:
 		var r: Rumor = pe.live_rumors[rid]
@@ -296,6 +308,8 @@ static func _serialize_propagation(pe: PropagationEngine) -> Dictionary:
 
 
 static func _serialize_npc_slots(npcs: Array) -> Dictionary:
+	if npcs == null:
+		return {}
 	var out := {}
 	for npc in npcs:
 		var npc_id: String = npc.npc_data.get("id", "")
@@ -325,6 +339,8 @@ static func _serialize_npc_slots(npcs: Array) -> Dictionary:
 
 
 static func _serialize_intel_store(store: PlayerIntelStore) -> Dictionary:
+	if store == null:
+		return {}
 	var loc_intel := {}
 	for loc_id in store.location_intel:
 		var entries: Array = []

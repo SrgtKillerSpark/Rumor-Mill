@@ -29,6 +29,7 @@ const FACTION_MOD_OPPOSING := 0.5
 const OPPOSING_PAIRS: Array = [
 	["merchant", "noble"],
 	["noble", "clergy"],
+	["merchant", "clergy"],
 ]
 
 # ── Chain type constants ──────────────────────────────────────────────────────

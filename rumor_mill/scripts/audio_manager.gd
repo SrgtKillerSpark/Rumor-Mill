@@ -200,8 +200,10 @@ func play_music(track_name: String, crossfade: bool = false) -> void:
 	if track_name == _current_music:
 		return
 	var stream: AudioStream = _music_cache.get(track_name, null)
-	if stream == null and OS.is_debug_build():
-		push_warning("AudioManager: play_music('%s') — no stream in cache (asset missing?)" % track_name)
+	if stream == null:
+		if OS.is_debug_build():
+			push_warning("AudioManager: play_music('%s') — no stream in cache (asset missing?)" % track_name)
+		return
 	_current_music = track_name
 
 	var next_player  := _music_player_b if _music_active_a else _music_player_a

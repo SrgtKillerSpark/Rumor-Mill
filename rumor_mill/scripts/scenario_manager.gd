@@ -132,7 +132,10 @@ func get_win_progress(rep: ReputationSystem, current_tick: int) -> float:
 			if calder == null or tomas == null:
 				return 0.0
 			# Calder needs to reach 75 (assume start ≈ 50); Tomas needs to drop to 35 (assume start ≈ 50).
-			var calder_start: float = float(maxi(calder_score_start, 40))
+			# calder_score_start is -1 until the first evaluate() call; return 0 until it is initialised.
+			if calder_score_start == -1:
+				return 0.0
+			var calder_start: float = float(calder_score_start)
 			var prog_calder: float = clampf(
 				(calder.score - calder_start) / (S3_WIN_CALDER_MIN - calder_start), 0.0, 1.0)
 			var prog_tomas: float = clampf(
@@ -409,9 +412,9 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 				scenario_1_state = ScenarioState.FAILED
 				scenario_resolved.emit(1, ScenarioState.FAILED)
 				return
-	# Timeout fail: day limit reached (>= aligns with get_time_fraction hitting 1.0).
+	# Timeout fail: day limit exceeded (> gives the player the full last day; get_time_fraction is clamped at 1.0).
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day >= _days_allowed:
+	if current_day > _days_allowed:
 		scenario_1_state = ScenarioState.FAILED
 		scenario_resolved.emit(1, ScenarioState.FAILED)
 
@@ -436,9 +439,9 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 			scenario_2_state = ScenarioState.FAILED
 			scenario_resolved.emit(2, ScenarioState.FAILED)
 			return
-	# Timeout fail: day limit reached (>= aligns with get_time_fraction hitting 1.0).
+	# Timeout fail: day limit exceeded (> gives the player the full last day; get_time_fraction is clamped at 1.0).
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day >= _days_allowed:
+	if current_day > _days_allowed:
 		scenario_2_state = ScenarioState.FAILED
 		scenario_resolved.emit(2, ScenarioState.FAILED)
 
@@ -468,9 +471,9 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 		scenario_resolved.emit(3, ScenarioState.FAILED)
 		return
 
-	# Timeout fail: day limit reached (>= aligns with get_time_fraction hitting 1.0).
+	# Timeout fail: day limit exceeded (> gives the player the full last day; get_time_fraction is clamped at 1.0).
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day >= _days_allowed:
+	if current_day > _days_allowed:
 		scenario_3_state = ScenarioState.FAILED
 		scenario_resolved.emit(3, ScenarioState.FAILED)
 
@@ -513,9 +516,9 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 			scenario_4_state = ScenarioState.FAILED
 			scenario_resolved.emit(4, ScenarioState.FAILED)
 			return
-	# Deadline reached: resolve win or fail (>= aligns with get_time_fraction hitting 1.0).
+	# Deadline reached: resolve win or fail (> gives the player the full last day; get_time_fraction is clamped at 1.0).
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day >= _days_allowed:
+	if current_day > _days_allowed:
 		var all_above: bool = true
 		for npc_id in S4_PROTECTED_NPC_IDS:
 			var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
@@ -598,12 +601,12 @@ func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 		if aldric == null or edric == null or tomas == null:
 			return
 
-	# WIN: Aldric >= 65, highest of all three, both rivals < 45.
+	# WIN: Aldric >= 65, highest of all three, both rivals <= 45.
 	if (aldric.score >= S5_WIN_ALDRIC_MIN
 			and aldric.score > edric.score
 			and aldric.score > tomas.score
-			and edric.score < S5_WIN_RIVALS_MAX
-			and tomas.score < S5_WIN_RIVALS_MAX):
+			and edric.score <= S5_WIN_RIVALS_MAX
+			and tomas.score <= S5_WIN_RIVALS_MAX):
 		scenario_5_state = ScenarioState.WON
 		scenario_resolved.emit(5, ScenarioState.WON)
 		return
@@ -615,7 +618,7 @@ func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 		return
 
 	# FAIL 2: Timeout.
-	if current_day >= _days_allowed:
+	if current_day > _days_allowed:
 		scenario_5_state = ScenarioState.FAILED
 		scenario_resolved.emit(5, ScenarioState.FAILED)
 
@@ -672,7 +675,7 @@ func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 
 	# FAIL 3: Timeout.
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day >= _days_allowed:
+	if current_day > _days_allowed:
 		scenario_6_state = ScenarioState.FAILED
 		scenario_resolved.emit(6, ScenarioState.FAILED)
 

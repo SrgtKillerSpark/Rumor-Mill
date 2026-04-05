@@ -348,8 +348,9 @@ func _build_rumors_section() -> void:
 		summary_lbl.add_theme_color_override("font_color", C_KEY)
 		banner_vbox.add_child(summary_lbl)
 
-		# Auto-dismiss after 5 seconds.
-		var banner_timer := get_tree().create_timer(5.0)
+		# Auto-dismiss after 5 seconds of unpaused time so the banner stays
+		# visible for its full duration even when the scene tree is paused.
+		var banner_timer := get_tree().create_timer(5.0, false)
 		banner_timer.timeout.connect(func() -> void:
 			if is_instance_valid(banner_panel):
 				var tw := create_tween()
