@@ -129,7 +129,7 @@ func _populate(scenario_mgr: ScenarioManager, day_night: Node, world: Node2D) ->
 	# Scenario title and day.
 	var title: String = scenario_mgr.get_title() if scenario_mgr != null else "Unknown"
 	var day: int = day_night.current_day if day_night != null else 1
-	var total_days: int = scenario_mgr.days_allowed if scenario_mgr != null else 30
+	var total_days: int = scenario_mgr.get_days_allowed() if scenario_mgr != null else 30
 
 	bbcode += "[b][color=#ebc80c]%s[/color][/b]\n" % title
 	bbcode += "[color=#b5a664]Day %d of %d[/color]\n\n" % [day, total_days]
