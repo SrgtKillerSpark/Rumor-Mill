@@ -182,7 +182,7 @@
     "description": "A rival herb-wife has arrived with the autumn rains and is undercutting the midwife who pays your wages. Spread an illness rumor through enough of the townsfolk and she will pack her cart and leave before the market closes. But the Chapel watches, and Sister Maren will not stay silent if the story grows too bold.",
     "daysAllowed": 24,
     "introText": "She came with the autumn rains and the smell of something sharp — wormwood, maybe, or something worse. Alys the Herb-Wife has set up her trestle by the chapel steps, and already three of Vera's regulars have crossed the square to her instead. Illness travels fast in this town. Faster still when someone gives it a name.",
-    "startingText": "YOUR GOAL: Get 7 or more townspeople to believe illness rumors about Alys Herbwife.\n\nHOW: Observe the Market and Apothecary to find NPCs connected to Alys. Press R to craft an Illness rumor, then whisper it to a credulous, well-connected NPC. Watch believers accumulate in the Scenario HUD.\n\nWATCH OUT: If Sister Maren rejects ANY illness rumor about Alys, you lose instantly. Keep the rumor away from her circle. You have 24 days.\n\nAlys the Herb-Wife set up her stall near the Chapel — too near to the Midwife's usual customers. Illness rumors, in this town, spread fast.",
+    "startingText": "YOUR GOAL: Get 7 or more townspeople to believe illness rumors about Alys Herbwife.\n\nHOW: Observe the Market and Apothecary to find NPCs connected to Alys. Press R to craft an Illness rumor, then whisper it to a credulous, well-connected NPC. Watch believers accumulate in the Scenario HUD.\n\nWATCH OUT: If Sister Maren rejects ANY illness rumor about Alys, you have 2 days before you lose. Use the grace window to reach 7 believers or counter-seed doubt — but keep the rumor away from her circle. You have 24 days.\n\nAlys the Herb-Wife set up her stall near the Chapel — too near to the Midwife's usual customers. Illness rumors, in this town, spread fast.",
     "victoryText": "Alys the Herb-Wife packed her cart before dawn. She didn't say why.\n\nThree days later, Sister Maren declared publicly that the illness talk had been unfounded. But by then, the Herb-Wife was gone, and the Midwife's customers had come back.",
     "failTexts": {
       "contradicted": "Sister Maren stood in the Market Square and named every NPC who had spread the rumor. She did not name you.\n\nShe didn't need to.",
@@ -233,7 +233,7 @@
       "mission": "The herbwife Alys knows too much. Convince seven townspeople she carries plague — before the nun Maren sees through the lie.",
       "winCondition": "7 or more townspeople must believe the illness rumor about Alys.",
       "timeLimit": "You have 24 days.",
-      "danger": "Sister Maren is skeptical and watchful. If Maren rejects ANY illness rumor about Alys, you instantly fail.",
+      "danger": "Sister Maren is skeptical and watchful. If Maren rejects ANY illness rumor about Alys, a 2-day grace window begins — fail to recover and you lose.",
       "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle.",
       "firstAction": "Observe the Market or Apothecary to find NPCs connected to Alys. Then press R, pick Alys as the subject, choose Illness as the claim, and whisper it to someone credulous like Sybil Oats."
     },
@@ -323,7 +323,7 @@
         "daysAllowedOverride": 29,
         "credulityDelta": 0.10,
         "winBelieversOverride": 5,
-        "designNote": "More days, more credulous NPCs, and only 5 believers needed. Maren's rejection is still instant-fail — teaches the avoidance mechanic with a wider margin."
+        "designNote": "More days, more credulous NPCs, and only 5 believers needed. Maren's rejection triggers a 2-day grace window — teaches the avoidance mechanic with a wider margin."
       },
       "normal": {
         "designNote": "Base values as balanced. No overrides applied."
