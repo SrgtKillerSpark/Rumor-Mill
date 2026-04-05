@@ -222,6 +222,21 @@ function outlineIso(cv, r, g, b, cx=32, cy=16, hw=31, hh=15) {
   cv.line(cx, cy+hh, cx-hw, cy, r, g, b);
 }
 
+// 1px bright inner rim on the NW and NE (top) edges of an iso diamond.
+// Simulates light from upper-left hitting the "far" tile rim — creates clear
+// depth even at reduced camera zoom.  Call AFTER texture, BEFORE outlineIso.
+function isoTopRim(cv, r, g, b, a=130, cx=32, cy=16, hw=31, hh=15) {
+  cv.line(cx-hw+2, cy-1, cx-1, cy-hh+2, r, g, b, a);
+  cv.line(cx+1, cy-hh+2, cx+hw-2, cy-1, r, g, b, a);
+}
+
+// 1px dark inner rim on the SW and SE (bottom) edges — ambient shadow at
+// the tile's near edge.  Pairs with isoTopRim for a full bevel effect.
+function isoBottomRim(cv, r, g, b, a=80, cx=32, cy=16, hw=31, hh=15) {
+  cv.line(cx-hw+2, cy+1, cx-1, cy+hh-2, r, g, b, a);
+  cv.line(cx+1, cy+hh-2, cx+hw-2, cy+1, r, g, b, a);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // GROUND TILES  (tiles_ground.png — 768×32, twelve 64×32 isometric tiles)
 //   col 0 = void           col 1 = grass           col 2 = grass_dark
@@ -260,6 +275,8 @@ function makeGroundTiles() {
         }
       }
     }
+    isoTopRim(cv, ...c.GRASS_L, 130, cx, cy);
+    isoBottomRim(cv, ...c.GRASS_D, 90, cx, cy);
     outlineIso(cv, ...c.GRASS_D, cx, cy);
   }
 
@@ -268,6 +285,7 @@ function makeGroundTiles() {
     const ox = 128, cx = ox+32, cy = 16;
     fillIso(cv, ...c.GRASS_D, 255, cx, cy);
     cv.isoNoise(cx, cy, 31, 15, ...c.GRASS_M, 6, 0.12);
+    isoTopRim(cv, ...c.GRASS_M, 100, cx, cy);
     outlineIso(cv, 28, 48, 18, cx, cy);
   }
 
@@ -284,6 +302,8 @@ function makeGroundTiles() {
         }
       }
     }
+    isoTopRim(cv, 200, 230, 180, 110, cx, cy);
+    isoBottomRim(cv, ...c.GRASS_M, 70, cx, cy);
     outlineIso(cv, ...c.GRASS_M, cx, cy);
   }
 
@@ -301,6 +321,8 @@ function makeGroundTiles() {
         }
       }
     }
+    isoTopRim(cv, ...c.GRASS_M, 110, cx, cy);
+    isoBottomRim(cv, 28, 48, 18, 100, cx, cy);
     outlineIso(cv, 28, 48, 18, cx, cy);
   }
 
@@ -326,6 +348,8 @@ function makeGroundTiles() {
       cv.sp(fx-1, fy, ...floralColors[fi], 130);
       cv.sp(fx, fy-1, ...floralColors[fi], 130);
     }
+    isoTopRim(cv, ...c.GRASS_L, 120, cx, cy);
+    isoBottomRim(cv, ...c.GRASS_D, 85, cx, cy);
     outlineIso(cv, ...c.GRASS_D, cx, cy);
   }
 
@@ -359,6 +383,8 @@ function makeGroundTiles() {
     cv.sp(cx-10, cy-3, ...c.WATER_L, 130);
     cv.sp(cx+7,  cy+2, ...c.WATER_L, 100);
     cv.sp(cx-3,  cy+4, ...c.WATER_L, 80);
+    isoTopRim(cv, ...c.DIRT_M, 110, cx, cy);
+    isoBottomRim(cv, ...c.DIRT_D, 90, cx, cy);
     outlineIso(cv, ...c.DIRT_D, cx, cy);
   }
 
@@ -389,6 +415,8 @@ function makeGroundTiles() {
     cv.sp(cx+5, cy-4, ...c.DIRT_M, 75);
     cv.sp(cx-12, cy+4, ...c.DIRT_M, 90);
     cv.sp(cx-11, cy+4, ...c.DIRT_M, 60);
+    isoTopRim(cv, ...c.DIRT_L, 120, cx, cy);
+    isoBottomRim(cv, ...c.DIRT_D, 85, cx, cy);
     outlineIso(cv, ...c.DIRT_M, cx, cy);
   }
 
@@ -447,6 +475,8 @@ function makeGroundTiles() {
     }
     cv.sp(cx+6,  cy-3, ...c.DIRT_D, 120);
     cv.sp(cx+14, cy+2, ...c.DIRT_D, 90);
+    isoTopRim(cv, ...c.GRASS_L, 110, cx, cy);
+    isoBottomRim(cv, ...c.DIRT_D, 80, cx, cy);
     outlineIso(cv, ...c.GRASS_D, cx, cy);
   }
 
@@ -470,6 +500,8 @@ function makeGroundTiles() {
     cv.sp(cx-16, cy-2, ...c.STONE_L, 60);
     cv.sp(cx+18, cy+1, ...c.STONE_L, 55);
     cv.line(cx-6, cy-8, cx+6, cy-2, ...c.STONE_L, 28);
+    isoTopRim(cv, ...c.STONE_L, 140, cx, cy);
+    isoBottomRim(cv, ...c.STONE_D, 90, cx, cy);
     outlineIso(cv, ...c.STONE_D, cx, cy);
   }
 
@@ -496,6 +528,8 @@ function makeGroundTiles() {
     cv.sp(cx-10, cy+3, ...c.STONE_D, 150);
     cv.sp(cx-7,  cy-4, ...c.STONE_D, 120);
     cv.sp(cx+4,  cy+6, ...c.STONE_D, 110);
+    isoTopRim(cv, ...c.STONE_L, 125, cx, cy);
+    isoBottomRim(cv, ...c.STONE_D, 95, cx, cy);
     outlineIso(cv, ...c.STONE_D, cx, cy);
   }
 
@@ -532,6 +566,8 @@ function makeGroundTiles() {
     cv.sp(cx-6, cy-5, ...c.STONE_D, 175);
     cv.sp(cx+8, cy+1, ...c.STONE_D, 155);
     cv.sp(cx-2, cy+4, ...c.STONE_D, 140);
+    isoTopRim(cv, ...c.STONE_L, 120, cx, cy);
+    isoBottomRim(cv, ...c.STONE_D, 100, cx, cy);
     outlineIso(cv, ...c.STONE_D, cx, cy);
   }
 
@@ -576,6 +612,8 @@ function makeRoadDirt() {
   cv.sp(38, 12, ...c.DIRT_D, 100);
   cv.sp(39, 12, ...c.DIRT_D, 70);
 
+  isoTopRim(cv, ...c.DIRT_L, 130, 32, 16);
+  isoBottomRim(cv, ...c.DIRT_D, 90, 32, 16);
   outlineIso(cv, ...c.DIRT_D, 32, 16);
   return cv.toPNG();
 }
@@ -634,6 +672,8 @@ function makeRoadStone() {
   cv.line(38, 8, 41, 10, ...c.STONE_D, 140);
   cv.sp(40, 9, ...c.STONE_D, 100);
 
+  isoTopRim(cv, ...c.STONE_L, 140, 32, 16);
+  isoBottomRim(cv, ...c.STONE_D, 95, 32, 16);
   outlineIso(cv, ...c.STONE_D, 32, 16);
   return cv.toPNG();
 }
@@ -1820,7 +1860,7 @@ function makeNPCSprites() {
     {
       const _sy = (hatStyle === 'hood') ? oy+47 : oy+37+dy;
       for (let _sx = -6; _sx <= 6; _sx++) {
-        cv.sp(ox+16+_sx, _sy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+        cv.sp(ox+16+_sx, _sy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
       }
     }
     // faction badge (tiny 3×3 diamond on belt)
@@ -1918,7 +1958,7 @@ function makeNPCSprites() {
       cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
     }
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
   };
 
   // ── Generic east-facing (side profile) for faction archetypes ────────────────
@@ -1994,7 +2034,7 @@ function makeNPCSprites() {
       cv.line(bx+5+legOff, ly, bx+5+legOff, ly+9, ...c.OUTLINE);
     }
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
   };
 
   for (let fi=0; fi<3; fi++) {
@@ -2088,7 +2128,7 @@ function makeNPCSprites() {
 
     // ground cast shadow
     for (let _sx = -6; _sx <= 6; _sx++) {
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
     }
     // spear (tall weapon on right side: shaft from ground to above head)
     const sx = ox+27;
@@ -2129,7 +2169,7 @@ function makeNPCSprites() {
     cv.line(bx+1+lx, ly, bx+1+lx, ly+9, ...c.OUTLINE); cv.line(bx+4+lx, ly, bx+4+lx, ly+9, ...c.OUTLINE);
     cv.line(bx+6+rx, ly, bx+6+rx, ly+9, ...c.OUTLINE); cv.line(bx+9+rx, ly, bx+9+rx, ly+9, ...c.OUTLINE);
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
   };
 
   const drawGuard_east = (ox, oy, dy=0, legOff=0) => {
@@ -2165,7 +2205,7 @@ function makeNPCSprites() {
     cv.line(bx+2+legOff, ly, bx+2+legOff, ly+9, ...c.OUTLINE);
     cv.line(bx+5+legOff, ly, bx+5+legOff, ly+9, ...c.OUTLINE);
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
   };
 
   {
@@ -2248,7 +2288,7 @@ function makeNPCSprites() {
     cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
     // ground cast shadow
     for (let _sx = -6; _sx <= 6; _sx++) {
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
     }
   };
 
@@ -2282,7 +2322,7 @@ function makeNPCSprites() {
     cv.line(bx+1+lx, ly, bx+1+lx, ly+9, ...c.OUTLINE); cv.line(bx+4+lx, ly, bx+4+lx, ly+9, ...c.OUTLINE);
     cv.line(bx+5+rx, ly, bx+5+rx, ly+9, ...c.OUTLINE); cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
   };
 
   const drawCommoner_east = (ox, oy, dy=0, legOff=0) => {
@@ -2314,7 +2354,7 @@ function makeNPCSprites() {
     cv.line(bx+2+legOff, ly, bx+2+legOff, ly+9, ...c.OUTLINE);
     cv.line(bx+5+legOff, ly, bx+5+legOff, ly+9, ...c.OUTLINE);
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
   };
 
   {
@@ -2419,7 +2459,7 @@ function makeNPCSprites() {
     cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
     // ground cast shadow
     for (let _sx = -6; _sx <= 6; _sx++) {
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
     }
   };
 
@@ -2454,7 +2494,7 @@ function makeNPCSprites() {
     cv.line(bx+1+lx, ly, bx+1+lx, ly+9, ...c.OUTLINE); cv.line(bx+4+lx, ly, bx+4+lx, ly+9, ...c.OUTLINE);
     cv.line(bx+5+rx, ly, bx+5+rx, ly+9, ...c.OUTLINE); cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
   };
 
   const drawTavernStaff_east = (ox, oy, dy=0, legOff=0) => {
@@ -2488,7 +2528,7 @@ function makeNPCSprites() {
     cv.line(bx+2+legOff, ly, bx+2+legOff, ly+9, ...c.OUTLINE);
     cv.line(bx+5+legOff, ly, bx+5+legOff, ly+9, ...c.OUTLINE);
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 20-Math.abs(_sx)*3));
+      cv.sp(ox+16+_sx, oy+37+dy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
   };
 
   {
@@ -2840,7 +2880,7 @@ function makeNPCSprites() {
     cv.fillRect(bx+4+rx, oy+44, 4, 3, ...c.INK);
     // ground cast shadow
     for (let _sx = -6; _sx <= 6; _sx++) {
-      cv.sp(ox+16+_sx, oy+47, ...c.OUTLINE, Math.max(0, 15-Math.abs(_sx)*2));
+      cv.sp(ox+16+_sx, oy+47, ...c.OUTLINE, Math.max(0, 25-Math.abs(_sx)*3));
     }
     // narrow dark sleeves
     cv.fillRect(bx-2, by+1, 3, 9, ...c.STONE_D);
@@ -2879,7 +2919,7 @@ function makeNPCSprites() {
     cv.fillRect(bx-2, by+1, 3, 9, ...c.STONE_D); cv.fillRect(bx+7, by+1, 3, 9, ...c.STONE_D);
     cv.fillRect(bx-2, by+9, 3, 2, ...c.SKIN); cv.fillRect(bx+7, by+9, 3, 2, ...c.SKIN);
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+47, ...c.OUTLINE, Math.max(0, 15-Math.abs(_sx)*2));
+      cv.sp(ox+16+_sx, oy+47, ...c.OUTLINE, Math.max(0, 25-Math.abs(_sx)*3));
   };
 
   const drawSpy_east = (ox, oy, dy=0, legOff=0) => {
@@ -2911,7 +2951,7 @@ function makeNPCSprites() {
     cv.line(bx-4, oy+47, bx+11, oy+47, ...c.OUTLINE);
     cv.fillRect(bx+3+legOff, oy+44, 4, 3, ...c.INK);
     for (let _sx=-6; _sx<=6; _sx++)
-      cv.sp(ox+16+_sx, oy+47, ...c.OUTLINE, Math.max(0, 15-Math.abs(_sx)*2));
+      cv.sp(ox+16+_sx, oy+47, ...c.OUTLINE, Math.max(0, 25-Math.abs(_sx)*3));
   };
 
   {
