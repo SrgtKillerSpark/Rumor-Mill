@@ -8,20 +8,22 @@
 ##   WIN:  reputation(edric_fenn) < 30
 ##   FAIL: any NPC heat >= 80 (exposed / SPA-502)
 ##         OR caught eavesdropping (instant exposed)
-##         OR days elapsed > days_allowed (timeout)
+##         OR days elapsed >= days_allowed (timeout)
 ##
 ## Scenario 2 — The Plague Scare:
 ##   WIN:  6+ NPCs in BELIEVE/SPREAD/ACT for illness rumors about alys_herbwife
 ##   FAIL: maren_nun rejects illness rumors about alys_herbwife (contradicted)
-##         OR days elapsed > days_allowed (timeout)
+##         OR days elapsed >= days_allowed (timeout)
 ##
 ## Scenario 3 — The Succession:
 ##   WIN:  reputation(calder_fenn) >= 75  AND  reputation(tomas_reeve) <= 35
 ##   FAIL: reputation(calder_fenn) < 40
+##         OR days elapsed >= days_allowed (timeout)
 ##
 ## Scenario 4 — The Holy Inquisition:
-##   WIN:  All 3 protected NPCs above reputation 45 when 20 days elapsed
+##   WIN:  All 3 protected NPCs above reputation 45 when days elapsed >= days_allowed
 ##   FAIL: Any protected NPC drops below reputation 45
+##         OR days elapsed >= days_allowed with any NPC below 45
 
 class_name ScenarioManager
 
@@ -252,9 +254,9 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 				scenario_1_state = ScenarioState.FAILED
 				scenario_resolved.emit(1, ScenarioState.FAILED)
 				return
-	# Timeout fail: days elapsed exceeds the scenario timer.
+	# Timeout fail: day limit reached (>= aligns with get_time_fraction hitting 1.0).
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day > _days_allowed:
+	if current_day >= _days_allowed:
 		scenario_1_state = ScenarioState.FAILED
 		scenario_resolved.emit(1, ScenarioState.FAILED)
 
@@ -272,9 +274,9 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 		scenario_2_state = ScenarioState.FAILED
 		scenario_resolved.emit(2, ScenarioState.FAILED)
 		return
-	# Timeout fail: days elapsed exceeds the scenario timer.
+	# Timeout fail: day limit reached (>= aligns with get_time_fraction hitting 1.0).
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day > _days_allowed:
+	if current_day >= _days_allowed:
 		scenario_2_state = ScenarioState.FAILED
 		scenario_resolved.emit(2, ScenarioState.FAILED)
 
@@ -304,9 +306,9 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 		scenario_resolved.emit(3, ScenarioState.FAILED)
 		return
 
-	# Timeout fail: days elapsed exceeds the scenario timer.
+	# Timeout fail: day limit reached (>= aligns with get_time_fraction hitting 1.0).
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day > _days_allowed:
+	if current_day >= _days_allowed:
 		scenario_3_state = ScenarioState.FAILED
 		scenario_resolved.emit(3, ScenarioState.FAILED)
 
@@ -348,9 +350,9 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 			scenario_4_state = ScenarioState.FAILED
 			scenario_resolved.emit(4, ScenarioState.FAILED)
 			return
-	# Win: all 20 days survived AND all protected NPCs still above 45.
+	# Deadline reached: resolve win or fail (>= aligns with get_time_fraction hitting 1.0).
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
-	if current_day > _days_allowed:
+	if current_day >= _days_allowed:
 		var all_above: bool = true
 		for npc_id in S4_PROTECTED_NPC_IDS:
 			var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
