@@ -48,6 +48,54 @@ func get_session_duration_seconds() -> int:
 	return int(Time.get_unix_time_from_system()) - _session_start_time
 
 
+## Log a rumor being seeded into the social graph.
+## Captures subject, claim type, seed target, and day for propagation analysis.
+func log_rumor_seeded(subject_name: String, claim_id: String, seed_target: String, day: int, scenario_id: String) -> void:
+	log_event("rumor_seeded", {
+		"subject_name":  subject_name,
+		"claim_id":      claim_id,
+		"seed_target":   seed_target,
+		"day":           day,
+		"scenario_id":   scenario_id,
+	})
+
+
+## Log an NPC rumor-slot state transition (BELIEVE, SPREAD, ACT, REJECT, etc.).
+## Used to track how quickly rumors propagate and which NPCs resist them.
+func log_npc_state_changed(npc_name: String, rumor_id: String, new_state: String, day: int, scenario_id: String) -> void:
+	log_event("npc_state_changed", {
+		"npc_name":    npc_name,
+		"rumor_id":    rumor_id,
+		"new_state":   new_state,
+		"day":         day,
+		"scenario_id": scenario_id,
+	})
+
+
+## Log a meaningful reputation score change for an NPC between days.
+## Only called when abs(delta) >= 3 to avoid noise from micro-fluctuations.
+func log_reputation_delta(npc_id: String, from_score: int, to_score: int, day: int, scenario_id: String) -> void:
+	log_event("reputation_delta", {
+		"npc_id":      npc_id,
+		"from_score":  from_score,
+		"to_score":    to_score,
+		"delta":       to_score - from_score,
+		"day":         day,
+		"scenario_id": scenario_id,
+	})
+
+
+## Log a player evidence-collection action (observe or eavesdrop).
+## Used to correlate recon activity with rumor propagation speed.
+func log_evidence_interaction(action_type: String, success: bool, day: int, scenario_id: String) -> void:
+	log_event("evidence_interaction", {
+		"action_type": action_type,
+		"success":     success,
+		"day":         day,
+		"scenario_id": scenario_id,
+	})
+
+
 # ── Internal ─────────────────────────────────────────────────────────────────
 
 func _append_line(line: String) -> void:

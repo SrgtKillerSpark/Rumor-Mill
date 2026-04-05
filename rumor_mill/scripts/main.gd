@@ -43,6 +43,8 @@ var _analytics: ScenarioAnalytics = null
 
 # ── SPA-244: Local player behaviour event log ──────────────────────────────────
 var _analytics_logger: AnalyticsLogger = null
+var _analytics_scenario_id: String = ""        # cached scenario id for per-event handlers
+var _analytics_rep_snapshot: Dictionary = {}   # npc_id → int score, for delta tracking
 
 
 # Prevent duplicate tooltip triggers for observe / eavesdrop / npc_state_change.
@@ -856,10 +858,25 @@ func _init_audio() -> void:
 func _init_analytics_logger(scenario_id: String) -> void:
 	_analytics_logger = AnalyticsLogger.new()
 	_analytics_logger.start_session(scenario_id, GameState.selected_difficulty)
+	_analytics_scenario_id = scenario_id
 
-	# Log each rumor seeded (claim_id for frequency analysis).
+	# Log each rumor seeded (full context for propagation frequency analysis).
 	if rumor_panel != null:
 		rumor_panel.rumor_seeded.connect(_on_analytics_rumor_seeded)
+
+	# Log NPC rumor-slot state transitions (BELIEVE / SPREAD / ACT / REJECT).
+	if "npcs" in world:
+		for npc in world.npcs:
+			if npc.has_signal("rumor_state_changed"):
+				npc.rumor_state_changed.connect(_on_analytics_npc_state_changed)
+
+	# Log evidence collection interactions (observe / eavesdrop).
+	if _recon_ctrl_ref != null and _recon_ctrl_ref.has_signal("action_performed"):
+		_recon_ctrl_ref.action_performed.connect(_on_analytics_evidence_interaction)
+
+	# Log per-day reputation deltas for balance tuning.
+	if day_night != null and day_night.has_signal("day_changed"):
+		day_night.day_changed.connect(_on_analytics_new_day)
 
 	# Log scenario outcome and session summary.
 	var sm: ScenarioManager = world.scenario_manager
@@ -869,17 +886,50 @@ func _init_analytics_logger(scenario_id: String) -> void:
 
 func _on_analytics_rumor_seeded(
 		_rumor_id: String,
-		_subject_name: String,
+		subject_name: String,
 		claim_id: String,
-		_seed_target_name: String
+		seed_target_name: String
 ) -> void:
 	if _analytics_logger == null:
 		return
 	var day: int = day_night.current_day if day_night != null and "current_day" in day_night else 0
-	_analytics_logger.log_event("rumor_crafted", {
-		"claim_id": claim_id,
-		"day":      day,
-	})
+	_analytics_logger.log_rumor_seeded(subject_name, claim_id, seed_target_name, day, _analytics_scenario_id)
+
+
+func _on_analytics_npc_state_changed(npc_name: String, new_state: String, rumor_id: String) -> void:
+	if _analytics_logger == null:
+		return
+	var day: int = day_night.current_day if day_night != null and "current_day" in day_night else 0
+	_analytics_logger.log_npc_state_changed(npc_name, rumor_id, new_state, day, _analytics_scenario_id)
+
+
+func _on_analytics_evidence_interaction(message: String, success: bool) -> void:
+	if _analytics_logger == null:
+		return
+	var action_type: String
+	if "Observe" in message:
+		action_type = "observe"
+	elif "Eavesdrop" in message:
+		action_type = "eavesdrop"
+	else:
+		return  # Only log observe and eavesdrop evidence interactions.
+	var day: int = day_night.current_day if day_night != null and "current_day" in day_night else 0
+	_analytics_logger.log_evidence_interaction(action_type, success, day, _analytics_scenario_id)
+
+
+func _on_analytics_new_day(day: int) -> void:
+	if _analytics_logger == null or world == null:
+		return
+	var rep: ReputationSystem = world.reputation_system if "reputation_system" in world else null
+	if rep == null:
+		return
+	var snapshots: Dictionary = rep.get_all_snapshots()
+	for npc_id in snapshots:
+		var snap: ReputationSystem.ReputationSnapshot = snapshots[npc_id]
+		var prev_score: int = _analytics_rep_snapshot.get(npc_id, snap.score)
+		if abs(snap.score - prev_score) >= 3:
+			_analytics_logger.log_reputation_delta(npc_id, prev_score, snap.score, day, _analytics_scenario_id)
+		_analytics_rep_snapshot[npc_id] = snap.score
 
 
 func _on_analytics_scenario_resolved(

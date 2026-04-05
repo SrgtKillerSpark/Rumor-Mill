@@ -63,9 +63,9 @@
     "scenarioId": "scenario_2",
     "title": "The Plague Scare",
     "description": "A rival herb-wife has arrived with the autumn rains and is undercutting the midwife who pays your wages. Spread an illness rumor through enough of the townsfolk and she will pack her cart and leave before the market closes. But the Chapel watches, and Sister Maren will not stay silent if the story grows too bold.",
-    "daysAllowed": 20,
+    "daysAllowed": 22,
     "introText": "She came with the autumn rains and the smell of something sharp — wormwood, maybe, or something worse. Alys the Herb-Wife has set up her trestle by the chapel steps, and already three of Vera's regulars have crossed the square to her instead. Illness travels fast in this town. Faster still when someone gives it a name.",
-    "startingText": "The Herb-Wife arrived with the autumn rains. She set up her stall near the Chapel — too near, some said, to the Midwife's usual customers.\n\nYou were here first. And illness rumors, in this town, spread fast.\n\nYou have twenty days before the market turns.",
+    "startingText": "The Herb-Wife arrived with the autumn rains. She set up her stall near the Chapel — too near, some said, to the Midwife's usual customers.\n\nYou were here first. And illness rumors, in this town, spread fast.\n\nYou have twenty-two days before the market turns.",
     "victoryText": "Alys the Herb-Wife packed her cart before dawn. She didn't say why.\n\nThree days later, Sister Maren declared publicly that the illness talk had been unfounded. But by then, the Herb-Wife was gone, and the Midwife's customers had come back.",
     "failTexts": {
       "contradicted": "Sister Maren stood in the Market Square and named every NPC who had spread the rumor. She did not name you.\n\nShe didn't need to.",
@@ -109,13 +109,13 @@
     ],
     "personalityOverrides": [
       { "npcId": "alys_herbwife", "temperament": 0.55 },
-      { "npcId": "maren_nun", "credulity": 0.30 }
+      { "npcId": "maren_nun", "credulity": 0.20 }
     ],
     "startingReputations": {},
     "objectiveCard": {
       "mission": "Drive away the rival Herb-Wife Alys using illness rumors.",
       "winCondition": "Get 6 or more NPCs to believe/spread/act on illness rumors about Alys.",
-      "timeLimit": "You have 20 days.",
+      "timeLimit": "You have 22 days.",
       "danger": "Sister Maren is skeptical and watchful. If Maren rejects ANY illness rumor about Alys, you instantly fail.",
       "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle."
     }
@@ -123,10 +123,10 @@
   {
     "scenarioId": "scenario_3",
     "title": "The Succession",
-    "description": "Lady Isolde Fenn wants her son Calder elevated — but Tomas Reeve blocks any clean path to power, and Lord Edric is not ready to step aside. You must raise one reputation and ruin another simultaneously, while a rival agent works against you. Twenty-five days, two targets — and if Calder's reputation drops below 40, you fail instantly.",
-    "daysAllowed": 25,
+    "description": "Lady Isolde Fenn wants her son Calder elevated — but Tomas Reeve blocks any clean path to power, and Lord Edric is not ready to step aside. You must raise one reputation and ruin another simultaneously, while a rival agent works against you. Twenty-seven days, two targets — and if Calder's reputation drops below 40, you fail instantly.",
+    "daysAllowed": 27,
     "introText": "Lady Isolde received you in the lesser hall, away from the servants. Her son Calder is twenty-two, quick, and capable — everything a future alderman should be. His only obstacle is Tomas Reeve, who has the favor of half the merchant quarter. The winter festival is twenty-five days away, and a rival is already working against you. It only takes one night to make or ruin a reputation — but it takes all twenty-five to manage two.",
-    "startingText": "Lady Isolde Fenn has a problem: her son Calder is brilliant, charming, and twenty-two years old. Her husband is not ready to step aside.\n\nShe hired you to solve the first half. The second half solves itself, if Tomas Reeve falls far enough before the winter festival.\n\nTwenty-five days. Two reputations to manage. One wrong twist and Calder himself becomes the story.",
+    "startingText": "Lady Isolde Fenn has a problem: her son Calder is brilliant, charming, and twenty-two years old. Her husband is not ready to step aside.\n\nShe hired you to solve the first half. The second half solves itself, if Tomas Reeve falls far enough before the winter festival.\n\nTwenty-seven days. Two reputations to manage. One wrong twist and Calder himself becomes the story.",
     "victoryText": "The winter festival nominations were read aloud in the Town Square.\n\nCalder Fenn's name drew a real cheer — not a polite one. Tomas Reeve's name drew silence.\n\nLady Isolde watched from her window. She did not smile. But she did exhale.",
     "failTexts": {
       "calder_implicated": "The rumor had started as praise. You knew that.\n\nSomewhere between the Tavern and the Chapel steps, it had changed.\n\nCalder Fenn was now the subject of a story that no one believed was an accident. Including Lady Isolde.",
@@ -175,14 +175,14 @@
       { "npcId": "tomas_reeve", "loyalty": 0.40 }
     ],
     "startingReputations": {
-      "calder_fenn": 62,
+      "calder_fenn": 65,
       "tomas_reeve": 52
     },
     "targetShiftExcluded": ["calder_fenn"],
     "objectiveCard": {
       "mission": "Elevate Calder Fenn and ruin Tomas Reeve — simultaneously.",
-      "winCondition": "Raise Calder's reputation to 75+ (starts at 62) and drop Tomas's reputation to 35 or below (starts at 52).",
-      "timeLimit": "You have 25 days.",
+      "winCondition": "Raise Calder's reputation to 75+ (starts at 65) and drop Tomas's reputation to 35 or below (starts at 52).",
+      "timeLimit": "You have 27 days.",
       "danger": "If Calder's reputation drops below 40, instant fail. A rival agent is actively working against you.",
       "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter. Tomas has weak loyalties — rumors stick."
     }
