@@ -17,8 +17,8 @@
 ##   FAIL: reputation(calder_fenn) < 40
 ##
 ## Scenario 4 — The Holy Inquisition:
-##   WIN:  All 3 protected NPCs above reputation 50 when 20 days elapsed
-##   FAIL: Any protected NPC drops below reputation 50
+##   WIN:  All 3 protected NPCs above reputation 45 when 20 days elapsed
+##   FAIL: Any protected NPC drops below reputation 45
 
 class_name ScenarioManager
 
@@ -83,9 +83,9 @@ func get_objective_card() -> Dictionary:
 func get_win_condition_line() -> String:
 	match _active_scenario:
 		1: return "Target: Edric Fenn reputation below 30"
-		2: return "Target: 7+ NPCs believing illness rumors"
+		2: return "Target: 6+ NPCs believing illness rumors"
 		3: return "Target: Calder rep ≥ 75, Tomas rep ≤ 35"
-		4: return "Protect: Aldous, Vera, Finn — keep all above 50"
+		4: return "Protect: Aldous, Vera, Finn — keep all above 45"
 	return ""
 
 
@@ -94,9 +94,9 @@ func get_win_condition_line() -> String:
 func get_objective_one_liner() -> String:
 	match _active_scenario:
 		1: return "Ruin Lord Edric Fenn's reputation — bring it below 30 before the tax rolls are signed."
-		2: return "Spread the illness rumor to 7+ townspeople. Avoid Sister Maren rejecting it."
+		2: return "Spread the illness rumor to 6+ townspeople. Avoid Sister Maren rejecting it."
 		3: return "Raise Calder Fenn to 75+ reputation and drag Tomas Reeve to 35 or lower."
-		4: return "Keep Aldous Prior, Vera Midwife, and Finn Monk above 50 reputation for 20 days."
+		4: return "Keep Aldous Prior, Vera Midwife, and Finn Monk above 45 reputation for 20 days."
 	return _starting_text.substr(0, mini(_starting_text.find(".") + 1, 80))
 
 
@@ -124,7 +124,7 @@ const TOMAS_REEVE_ID   := "tomas_reeve"
 const S1_WIN_EDRIC_BELOW   := 30
 
 # Scenario 2 thresholds.
-# Win when 7+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
+# Win when 6+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
 # SPA-98: raised from 5 — 5 believers was trivially reachable in 3-4 days with ILL-01
 # (intensity=5). The real tension is avoiding Maren's contradiction, not the count.
 const S2_WIN_ILLNESS_MIN   := 6
