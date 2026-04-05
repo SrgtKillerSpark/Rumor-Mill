@@ -21,12 +21,17 @@ const BAR_HEIGHT     := 12
 const MAX_NAMES_SHOWN := 5
 
 # ── Node refs ────────────────────────────────────────────────────────────────
-var _count_lbl:       Label     = null
-var _bar:             ColorRect = null
-var _bar_bg:          ColorRect = null
-var _believers_lbl:   Label     = null
-var _rejecters_lbl:   Label     = null
-var _escalation_lbl:  Label     = null
+var _count_lbl:         Label     = null
+var _bar:               ColorRect = null
+var _bar_bg:            ColorRect = null
+var _believers_lbl:     Label     = null
+var _rejecters_lbl:     Label     = null
+var _maren_warning_lbl: Label     = null
+var _escalation_lbl:    Label     = null
+
+## SPA-592: Maren's direct social-graph neighbours (NPC id → edge weight).
+## Populated in _on_setup_extra; used to flag seed-target risk in the believers list.
+var _maren_neighbours: Dictionary = {}
 
 
 func _scenario_number() -> int:
@@ -37,6 +42,12 @@ func _on_setup_extra(world: Node2D) -> void:
 	var esc_agent = world.get("illness_escalation_agent") if world != null else null
 	if esc_agent != null:
 		esc_agent.illness_escalated.connect(notify_illness_escalated)
+	# SPA-592: cache Maren's social neighbours so believers connected to her can be flagged.
+	if world != null and world.get("social_graph") != null:
+		_maren_neighbours = world.social_graph.get_neighbours(ScenarioManager.MAREN_NUN_ID)
+	# SPA-592: connect to grace-window signal so the HUD can show the countdown warning.
+	if world != null and world.get("scenario_manager") != null:
+		world.scenario_manager.s2_maren_grace_started.connect(_on_maren_grace_started)
 
 
 # ── UI construction ──────────────────────────────────────────────────────────
@@ -80,17 +91,30 @@ func _build_ui() -> void:
 	hbox.add_child(names_vbox)
 
 	_believers_lbl = Label.new()
-	_believers_lbl.add_theme_font_size_override("font_size", 11)
+	_believers_lbl.add_theme_font_size_override("font_size", 12)
 	_believers_lbl.add_theme_color_override("font_color", C_ILLNESS)
 	_believers_lbl.text = "Believe: —"
 	names_vbox.add_child(_believers_lbl)
 
 	_rejecters_lbl = Label.new()
-	_rejecters_lbl.add_theme_font_size_override("font_size", 11)
+	_rejecters_lbl.add_theme_font_size_override("font_size", 12)
 	_rejecters_lbl.add_theme_color_override("font_color", C_FAIL)
 	_rejecters_lbl.text = ""
 	_rejecters_lbl.visible = false
 	names_vbox.add_child(_rejecters_lbl)
+
+	# SPA-592: grace-window countdown warning shown when Maren has rejected.
+	_maren_warning_lbl = Label.new()
+	_maren_warning_lbl.add_theme_font_size_override("font_size", 11)
+	_maren_warning_lbl.add_theme_color_override("font_color", C_FAIL)
+	_maren_warning_lbl.text = ""
+	_maren_warning_lbl.visible = false
+	_maren_warning_lbl.tooltip_text = (
+		"Sister Maren has rejected the illness rumor. Reach 7 believers before"
+		+ " the grace period expires or the scenario will fail."
+	)
+	_maren_warning_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	names_vbox.add_child(_maren_warning_lbl)
 
 	# Days remaining + result.
 	var right_vbox := VBoxContainer.new()
@@ -113,13 +137,13 @@ func _build_ui() -> void:
 	right_vbox.add_child(_result_lbl)
 
 	var legend_lbl := Label.new()
-	legend_lbl.add_theme_font_size_override("font_size", 11)
+	legend_lbl.add_theme_font_size_override("font_size", 12)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
 	legend_lbl.text = "Target: 7+ believers"
 	right_vbox.add_child(legend_lbl)
 
 	_escalation_lbl = Label.new()
-	_escalation_lbl.add_theme_font_size_override("font_size", 11)
+	_escalation_lbl.add_theme_font_size_override("font_size", 12)
 	_escalation_lbl.add_theme_color_override("font_color", Color(0.60, 0.85, 0.30, 0.80))
 	_escalation_lbl.text = "Rumours: quiet so far"
 	_escalation_lbl.tooltip_text = "Illness reports are escalating on their own. Each auto-spread increases the risk Sister Maren will notice."
@@ -157,7 +181,11 @@ func _refresh() -> void:
 	if believers.size() > 0:
 		var names: Array = []
 		for npc_id in believers.slice(0, MAX_NAMES_SHOWN):
-			names.append(_display_name(npc_id))
+			# SPA-592: flag NPCs directly connected to Maren — seeding them risked this chain.
+			var display := _display_name(npc_id)
+			if _maren_neighbours.has(npc_id):
+				display += " (!)"
+			names.append(display)
 		var suffix := ""
 		if believers.size() > MAX_NAMES_SHOWN:
 			suffix = " +%d more" % (believers.size() - MAX_NAMES_SHOWN)
@@ -194,3 +222,19 @@ func notify_illness_escalated(day: int, _claim_type: String, _subject_id: String
 	var tween := create_tween()
 	tween.tween_property(_escalation_lbl, "modulate:a", 0.25, 0.12)
 	tween.tween_property(_escalation_lbl, "modulate:a", 1.0,  0.30)
+
+
+# ── SPA-592: Grace window warning ─────────────────────────────────────────────
+
+## Called when Maren first rejects, starting the 2-day grace window.
+func _on_maren_grace_started(days_remaining: int) -> void:
+	if _maren_warning_lbl == null:
+		return
+	_maren_warning_lbl.text = "⚠ Maren rejected — %d days to reach 7 believers!" % days_remaining
+	_maren_warning_lbl.visible = true
+	# Flash the warning to draw the player's eye.
+	var tween := create_tween()
+	tween.tween_property(_maren_warning_lbl, "modulate:a", 0.1, 0.15)
+	tween.tween_property(_maren_warning_lbl, "modulate:a", 1.0, 0.30)
+	tween.tween_property(_maren_warning_lbl, "modulate:a", 0.1, 0.15)
+	tween.tween_property(_maren_warning_lbl, "modulate:a", 1.0, 0.30)

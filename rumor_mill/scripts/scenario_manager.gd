@@ -1,4 +1,4 @@
-## scenario_manager.gd — Win/fail condition evaluator for Scenarios 1–4.
+## scenario_manager.gd — Win/fail condition evaluator for Scenarios 1–6.
 ##
 ## Plain class (no Node); owned by World.
 ## Reads the cached ReputationSystem snapshots each tick and emits
@@ -24,6 +24,19 @@
 ##   WIN:  All 3 protected NPCs above reputation 45 when days elapsed >= days_allowed
 ##   FAIL: Any protected NPC drops below reputation 40 (instant)
 ##         OR days elapsed >= days_allowed with any NPC below 45
+##
+## Scenario 5 — The Election (SPA-605):
+##   WIN:  reputation(aldric_vane) >= 65 AND highest among 3 candidates
+##         AND reputation(edric_fenn) < 45 AND reputation(tomas_reeve) < 45
+##   FAIL: reputation(aldric_vane) < 30 (instant)
+##         OR days elapsed >= days_allowed (timeout)
+##   EVENT: Day 15 — Prior Aldous endorses highest-rep candidate (+8 bonus)
+##
+## Scenario 6 — The Merchant's Debt (SPA-605):
+##   WIN:  reputation(aldric_vane) <= 30 AND reputation(marta_coin) >= 60
+##   FAIL: reputation(marta_coin) < 30 (instant)
+##         OR any NPC heat >= 60 (lower threshold — guards on payroll)
+##         OR days elapsed >= days_allowed (timeout)
 
 class_name ScenarioManager
 
@@ -91,6 +104,8 @@ func get_win_condition_line() -> String:
 		2: return "Target: 7+ NPCs believing illness rumors"
 		3: return "Target: Calder rep ≥ 75, Tomas rep ≤ 35"
 		4: return "Protect: Aldous, Vera, Finn — keep all above 45"
+		5: return "Elect Aldric Vane: rep ≥ 65 & highest, rivals < 45"
+		6: return "Expose Aldric (rep ≤ 30), protect Marta (rep ≥ 60)"
 	return ""
 
 
@@ -102,6 +117,8 @@ func get_objective_one_liner() -> String:
 		2: return "Spread the illness rumor to 7+ townspeople. Avoid Sister Maren rejecting it."
 		3: return "Raise Calder Fenn to 75+ reputation and drag Tomas Reeve to 35 or lower."
 		4: return "Keep Aldous Prior, Vera Midwife, and Finn Monk above 45 reputation for 20 days."
+		5: return "Get Aldric Vane elected — boost him to 65+ and undermine both rivals below 45."
+		6: return "Expose Aldric Vane's embezzlement (rep ≤ 30) while protecting Marta Coin (rep ≥ 60)."
 	return _starting_text.substr(0, mini(_starting_text.find(".") + 1, 80))
 
 
@@ -127,6 +144,9 @@ const ALYS_HERBWIFE_ID := "alys_herbwife"
 const MAREN_NUN_ID     := "maren_nun"
 const CALDER_FENN_ID   := "calder_fenn"
 const TOMAS_REEVE_ID   := "tomas_reeve"
+const ALDRIC_VANE_ID   := "aldric_vane"
+const MARTA_COIN_ID    := "marta_coin"
+const ALDOUS_PRIOR_ID  := "aldous_prior"
 
 # Scenario 1 thresholds.
 # SPA-98: raised from 25 — Edric's credulity=0.05 and loyalty=0.80 override make
@@ -143,6 +163,9 @@ const S1_EXPOSED_HEAT      := 80.0
 # in the first 3–4 days given the high-credulity merchant chain. 7 requires deliberate
 # routing through 2+ independent clusters and keeps tension alive into mid-game.
 const S2_WIN_ILLNESS_MIN   := 7
+# SPA-592: days of grace after Maren first rejects before triggering the instant fail.
+# Prevents silent propagation chains from ending the scenario without player agency.
+const S2_MAREN_GRACE_DAYS  := 2
 # Ticks per in-game day (matches DayNightCycle default).
 const TICKS_PER_DAY        := 24
 
@@ -169,15 +192,42 @@ const S4_PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "fi
 const S4_WIN_REP_MIN       := 45
 const S4_FAIL_REP_BELOW    := 40
 
+# Scenario 5 thresholds (The Election — SPA-605).
+# Three-way race: Aldric must reach 65+ and be highest; both rivals must be below 45.
+# Instant fail if Aldric drops below 30. Day 15 endorsement by Prior Aldous (+8 to leader).
+const S5_CANDIDATE_IDS: Array[String] = ["edric_fenn", "aldric_vane", "tomas_reeve"]
+const S5_WIN_ALDRIC_MIN    := 65
+const S5_WIN_RIVALS_MAX    := 45
+const S5_FAIL_ALDRIC_BELOW := 30
+const S5_ENDORSEMENT_DAY   := 15
+const S5_ENDORSEMENT_BONUS := 8
+
+# Scenario 6 thresholds (The Merchant's Debt — SPA-605).
+# Expose Aldric (rep <= 30) while protecting Marta (rep >= 60).
+# Lower heat ceiling (60) — guards are on Aldric's payroll.
+# Instant fail if Marta drops below 30.
+const S6_WIN_ALDRIC_MAX    := 30
+const S6_WIN_MARTA_MIN     := 60
+const S6_FAIL_MARTA_BELOW  := 30
+const S6_EXPOSED_HEAT      := 60.0
+
 enum ScenarioState { ACTIVE, WON, FAILED }
 
 ## Emitted the first time a scenario resolves.
-## scenario_id: 1, 2, 3, or 4.  state: WON or FAILED.
+## scenario_id: 1–6.  state: WON or FAILED.
 signal scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioState)
 
 ## Emitted once when the scenario crosses a deadline threshold (0.75 or 0.90).
 ## threshold: 0.75 or 0.90.  days_remaining: int.
 signal deadline_warning(threshold: float, days_remaining: int)
+
+## SPA-592: Emitted the first time Maren rejects the illness rumor, starting the grace window.
+## days_remaining: how many days the player has to reach 7 believers before the fail fires.
+signal s2_maren_grace_started(days_remaining: int)
+
+## Scenario 5 only: emitted when Prior Aldous endorses a candidate on day 15.
+## candidate_id: the NPC with the highest reputation. bonus: the rep boost applied.
+signal endorsement_triggered(candidate_id: String, bonus: int)
 
 ## Optional reference to the player intel store (for heat-based fail checks).
 var _intel_store: PlayerIntelStore = null
@@ -186,6 +236,8 @@ var scenario_1_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_2_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_3_state: ScenarioState = ScenarioState.ACTIVE
 var scenario_4_state: ScenarioState = ScenarioState.ACTIVE
+var scenario_5_state: ScenarioState = ScenarioState.ACTIVE
+var scenario_6_state: ScenarioState = ScenarioState.ACTIVE
 
 ## Tracks which deadline thresholds have already fired (0.75, 0.90).
 var _deadline_warnings_fired: Dictionary = {}
@@ -200,6 +252,18 @@ var calder_score_start: int = -1
 ## Calder's score at the moment the scenario resolved (set in _check_scenario_3).
 var calder_score_final: int = -1
 
+## Scenario 5 only: whether the day-15 endorsement has already fired.
+var _s5_endorsement_fired: bool = false
+## Scenario 5 only: which candidate received the endorsement (empty = not yet).
+var s5_endorsed_candidate: String = ""
+
+## SPA-592: tick when Maren first entered REJECT state (-1 = not yet).
+## Used to enforce S2_MAREN_GRACE_DAYS before the contradicted fail fires.
+var _s2_maren_first_reject_tick: int = -1
+## SPA-592: display name of the NPC who first carried the illness rumor to Maren.
+## Set by World._on_npc_rumor_transmitted; read by end_screen for chain attribution.
+var s2_maren_carrier_name: String = ""
+
 
 ## Evaluate win/fail conditions for the active scenario only.
 ## Call once per tick, after reputation_system.recalculate_all().
@@ -210,6 +274,8 @@ func evaluate(rep: ReputationSystem, current_tick: int) -> void:
 		2: _check_scenario_2(rep, current_tick)
 		3: _check_scenario_3(rep, current_tick)
 		4: _check_scenario_4(rep, current_tick)
+		5: _check_scenario_5(rep, current_tick)
+		6: _check_scenario_6(rep, current_tick)
 
 
 ## Returns the fraction of time elapsed (0.0–1.0) for the current scenario.
@@ -280,10 +346,17 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 		scenario_resolved.emit(2, ScenarioState.WON)
 		return
 	# Contradicted fail: Sister Maren rejects illness rumors about Alys Herbwife.
+	# SPA-592: grace window — record first rejection tick and only fail after
+	# S2_MAREN_GRACE_DAYS, giving the player a chance to hit 7 believers or
+	# counter-seed doubt before the silent-chain penalty closes the scenario.
 	if rep.has_illness_rejecter(ALYS_HERBWIFE_ID, MAREN_NUN_ID):
-		scenario_2_state = ScenarioState.FAILED
-		scenario_resolved.emit(2, ScenarioState.FAILED)
-		return
+		if _s2_maren_first_reject_tick == -1:
+			_s2_maren_first_reject_tick = current_tick
+			s2_maren_grace_started.emit(S2_MAREN_GRACE_DAYS)
+		elif current_tick >= _s2_maren_first_reject_tick + TICKS_PER_DAY * S2_MAREN_GRACE_DAYS:
+			scenario_2_state = ScenarioState.FAILED
+			scenario_resolved.emit(2, ScenarioState.FAILED)
+			return
 	# Timeout fail: day limit reached (>= aligns with get_time_fraction hitting 1.0).
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
 	if current_day >= _days_allowed:
@@ -408,4 +481,139 @@ func get_scenario_4_progress(rep: ReputationSystem) -> Dictionary:
 		"fail_threshold":    S4_FAIL_REP_BELOW,
 		"min_score":         min_score,
 		"state":             scenario_4_state,
+	}
+
+
+# ---------------------------------------------------------------------------
+# Scenario 5 — The Election (SPA-605)
+# ---------------------------------------------------------------------------
+
+func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
+	if scenario_5_state != ScenarioState.ACTIVE:
+		return
+	var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
+	var edric:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
+	var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
+	if aldric == null or edric == null or tomas == null:
+		return
+
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+
+	# Day 15 endorsement: Prior Aldous endorses the candidate with the highest rep.
+	if not _s5_endorsement_fired and current_day >= S5_ENDORSEMENT_DAY:
+		_s5_endorsement_fired = true
+		var best_id: String = ALDRIC_VANE_ID
+		var best_score: int = aldric.score
+		if edric.score > best_score:
+			best_id = EDRIC_FENN_ID
+			best_score = edric.score
+		if tomas.score > best_score:
+			best_id = TOMAS_REEVE_ID
+		s5_endorsed_candidate = best_id
+		rep.apply_score_delta(best_id, S5_ENDORSEMENT_BONUS)
+		endorsement_triggered.emit(best_id, S5_ENDORSEMENT_BONUS)
+		# Re-read snapshots after endorsement delta.
+		aldric = rep.get_snapshot(ALDRIC_VANE_ID)
+		edric  = rep.get_snapshot(EDRIC_FENN_ID)
+		tomas  = rep.get_snapshot(TOMAS_REEVE_ID)
+		if aldric == null or edric == null or tomas == null:
+			return
+
+	# WIN: Aldric >= 65, highest of all three, both rivals < 45.
+	if (aldric.score >= S5_WIN_ALDRIC_MIN
+			and aldric.score > edric.score
+			and aldric.score > tomas.score
+			and edric.score < S5_WIN_RIVALS_MAX
+			and tomas.score < S5_WIN_RIVALS_MAX):
+		scenario_5_state = ScenarioState.WON
+		scenario_resolved.emit(5, ScenarioState.WON)
+		return
+
+	# FAIL 1: Aldric drops below 30 (instant fail — campaign collapses).
+	if aldric.score < S5_FAIL_ALDRIC_BELOW:
+		scenario_5_state = ScenarioState.FAILED
+		scenario_resolved.emit(5, ScenarioState.FAILED)
+		return
+
+	# FAIL 2: Timeout.
+	if current_day >= _days_allowed:
+		scenario_5_state = ScenarioState.FAILED
+		scenario_resolved.emit(5, ScenarioState.FAILED)
+
+
+## Returns the current Scenario 5 progress dict.
+func get_scenario_5_progress(rep: ReputationSystem) -> Dictionary:
+	var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
+	var edric:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
+	var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
+	return {
+		"aldric_score":       aldric.score if aldric != null else 48,
+		"edric_score":        edric.score  if edric  != null else 58,
+		"tomas_score":        tomas.score  if tomas  != null else 45,
+		"win_aldric_min":     S5_WIN_ALDRIC_MIN,
+		"win_rivals_max":     S5_WIN_RIVALS_MAX,
+		"fail_aldric_below":  S5_FAIL_ALDRIC_BELOW,
+		"endorsement_fired":  _s5_endorsement_fired,
+		"endorsed_candidate": s5_endorsed_candidate,
+		"state":              scenario_5_state,
+	}
+
+
+# ---------------------------------------------------------------------------
+# Scenario 6 — The Merchant's Debt (SPA-605)
+# ---------------------------------------------------------------------------
+
+func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
+	if scenario_6_state != ScenarioState.ACTIVE:
+		return
+	var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
+	var marta:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(MARTA_COIN_ID)
+	if aldric == null or marta == null:
+		return
+
+	# WIN: Aldric <= 30 AND Marta >= 60.
+	if aldric.score <= S6_WIN_ALDRIC_MAX and marta.score >= S6_WIN_MARTA_MIN:
+		scenario_6_state = ScenarioState.WON
+		scenario_resolved.emit(6, ScenarioState.WON)
+		return
+
+	# FAIL 1: Marta drops below 30 (instant fail — she's been silenced).
+	if marta.score < S6_FAIL_MARTA_BELOW:
+		scenario_6_state = ScenarioState.FAILED
+		scenario_resolved.emit(6, ScenarioState.FAILED)
+		return
+
+	# FAIL 2: Exposed — heat ceiling is 60 in S6 (guards on Aldric's payroll).
+	if _intel_store != null:
+		for npc_id in _intel_store.heat:
+			if _intel_store.heat[npc_id] >= S6_EXPOSED_HEAT:
+				scenario_6_state = ScenarioState.FAILED
+				scenario_resolved.emit(6, ScenarioState.FAILED)
+				return
+
+	# FAIL 3: Timeout.
+	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	if current_day >= _days_allowed:
+		scenario_6_state = ScenarioState.FAILED
+		scenario_resolved.emit(6, ScenarioState.FAILED)
+
+
+## Returns the current Scenario 6 progress dict.
+func get_scenario_6_progress(rep: ReputationSystem) -> Dictionary:
+	var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
+	var marta:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(MARTA_COIN_ID)
+	var current_heat: float = 0.0
+	if _intel_store != null:
+		for npc_id in _intel_store.heat:
+			if _intel_store.heat[npc_id] > current_heat:
+				current_heat = _intel_store.heat[npc_id]
+	return {
+		"aldric_score":     aldric.score if aldric != null else 55,
+		"marta_score":      marta.score  if marta  != null else 52,
+		"win_aldric_max":   S6_WIN_ALDRIC_MAX,
+		"win_marta_min":    S6_WIN_MARTA_MIN,
+		"fail_marta_below": S6_FAIL_MARTA_BELOW,
+		"heat_ceiling":     S6_EXPOSED_HEAT,
+		"max_heat":         current_heat,
+		"state":            scenario_6_state,
 	}

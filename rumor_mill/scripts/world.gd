@@ -106,6 +106,9 @@ var scenario_manager:  ScenarioManager  = null
 ## NPC ids for which socially_dead_triggered has already been emitted this session.
 var _socially_dead_ids: Dictionary = {}
 
+## SPA-592: cached display name of the Sister Maren NPC for carrier tracking.
+var _maren_display_name: String = ""
+
 ## Sprint 4: SIR propagation engine (β/γ formulas, mutations, lineage registry).
 var propagation_engine: PropagationEngine = null
 
@@ -296,7 +299,7 @@ func _place_buildings() -> void:
 		var label := Label.new()
 		label.text = b["name"].replace("_", " ").capitalize()
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 11)
+		label.add_theme_font_size_override("font_size", 12)
 		label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
 		label.add_theme_constant_override("outline_size", 2)
 		label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
@@ -491,6 +494,9 @@ func _spawn_npcs() -> void:
 		npc.init_from_data(data, start_cell, walkable_cells, _pathfinder)
 		npc.schedule_waypoints = _build_schedule(data.get("faction", "merchant"), start_cell)
 		npcs.append(npc)
+		# SPA-592: cache Maren's display name for rumor carrier attribution.
+		if data.get("id", "") == ScenarioManager.MAREN_NUN_ID:
+			_maren_display_name = data.get("name", "")
 
 	# Give every NPC a reference to the full NPC list (for spread targeting).
 	for npc in npcs:
@@ -1016,6 +1022,12 @@ func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: Str
 	if not rumor_id.is_empty():
 		msg += " [%s]" % rumor_id
 	emit_signal("rumor_event", msg, tick)
+	# SPA-592: record first NPC to carry a rumor to Maren for fail-screen attribution.
+	if scenario_manager != null \
+			and not _maren_display_name.is_empty() \
+			and to_name == _maren_display_name \
+			and scenario_manager.s2_maren_carrier_name.is_empty():
+		scenario_manager.s2_maren_carrier_name = from_name
 
 
 func _on_npc_suspicion_danger(_npc_name: String) -> void:

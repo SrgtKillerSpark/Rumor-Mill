@@ -275,6 +275,11 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	# ── Summary narrative (SPA-128) ───────────────────────────────────────────
 	var fail_reason := "" if won else _infer_fail_reason(scenario_id)
 	var summary := _get_summary_text(scenario_id, won, fail_reason)
+	# SPA-592: append propagation chain attribution when Maren's contradiction caused the fail.
+	if scenario_id == 2 and fail_reason == "contradicted" and sm != null:
+		var carrier: String = sm.s2_maren_carrier_name
+		if not carrier.is_empty():
+			summary += ("\n\nThe rumor reached her through %s." % carrier)
 	_narrative_lbl.text = "[center][i]" + summary + "[/i][/center]"
 
 	# ── Stats panel ───────────────────────────────────────────────────────────
@@ -1077,7 +1082,7 @@ func _build_timeline_section(parent: VBoxContainer) -> void:
 		var day_lbl := Label.new()
 		day_lbl.text = "Day %d" % day
 		day_lbl.custom_minimum_size = Vector2(50, 0)
-		day_lbl.add_theme_font_size_override("font_size", 11)
+		day_lbl.add_theme_font_size_override("font_size", 12)
 		day_lbl.add_theme_color_override("font_color", C_STAT_LABEL)
 		row.add_child(day_lbl)
 
@@ -1091,7 +1096,7 @@ func _build_timeline_section(parent: VBoxContainer) -> void:
 		# Count label.
 		var count_lbl := Label.new()
 		count_lbl.text = "%d believers / %d active" % [believers, live]
-		count_lbl.add_theme_font_size_override("font_size", 10)
+		count_lbl.add_theme_font_size_override("font_size", 12)
 		count_lbl.add_theme_color_override("font_color", C_MUTED)
 		row.add_child(count_lbl)
 
@@ -1149,7 +1154,7 @@ func _build_influence_section(parent: VBoxContainer) -> void:
 			entry.get("spread_count", 0),
 			entry.get("received_count", 0),
 		]
-		stats_lbl.add_theme_font_size_override("font_size", 11)
+		stats_lbl.add_theme_font_size_override("font_size", 12)
 		stats_lbl.add_theme_color_override("font_color", C_BODY)
 		row.add_child(stats_lbl)
 
@@ -1184,14 +1189,14 @@ func _build_moments_section(parent: VBoxContainer) -> void:
 		var day_lbl := Label.new()
 		day_lbl.text = "Day %d" % moment.get("day", 0)
 		day_lbl.custom_minimum_size = Vector2(50, 0)
-		day_lbl.add_theme_font_size_override("font_size", 11)
+		day_lbl.add_theme_font_size_override("font_size", 12)
 		day_lbl.add_theme_color_override("font_color", C_SUBHEADING)
 		row.add_child(day_lbl)
 
 		# Moment text.
 		var text_lbl := Label.new()
 		text_lbl.text = str(moment.get("text", ""))
-		text_lbl.add_theme_font_size_override("font_size", 11)
+		text_lbl.add_theme_font_size_override("font_size", 12)
 		text_lbl.add_theme_color_override("font_color", _moment_color(str(moment.get("type", ""))))
 		text_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		text_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1306,7 +1311,7 @@ func _show_feedback_prompt() -> void:
 	_feedback_char_lbl = Label.new()
 	_feedback_char_lbl.text = "0 / %d" % FEEDBACK_CHAR_LIMIT
 	_feedback_char_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_feedback_char_lbl.add_theme_font_size_override("font_size", 11)
+	_feedback_char_lbl.add_theme_font_size_override("font_size", 12)
 	_feedback_char_lbl.add_theme_color_override("font_color", C_MUTED)
 	vbox.add_child(_feedback_char_lbl)
 
