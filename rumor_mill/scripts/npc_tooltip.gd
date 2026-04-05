@@ -16,6 +16,7 @@ const C_BORDER  := Color(0.55, 0.38, 0.18, 1.0)
 const C_TITLE   := Color(0.92, 0.78, 0.12, 1.0)
 const C_LABEL   := Color(0.82, 0.75, 0.60, 1.0)
 const C_MUTED   := Color(0.60, 0.53, 0.42, 1.0)
+const C_HINT    := Color(0.90, 0.75, 0.40, 0.85)
 
 const FADE_IN_SEC  := 0.12
 const FADE_OUT_SEC := 0.10
@@ -86,6 +87,7 @@ var _flavor_text:  Dictionary = {}
 var _world_ref:    Node2D = null
 var _rep_lbl:      Label = null
 var _dead_lbl:     Label = null
+var _hint_lbl:     Label = null
 
 
 func _ready() -> void:
@@ -125,11 +127,13 @@ func _on_npc_hovered(npc: Node2D) -> void:
 	_populate(npc)
 	_visible_flag = true
 	_fade_to(1.0)
+	Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
 
 
 func _on_npc_unhovered() -> void:
 	_visible_flag = false
 	_fade_to(0.0)
+	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 
 func _fade_to(target_alpha: float) -> void:
@@ -220,6 +224,11 @@ func _build_panel() -> void:
 	_dead_lbl = _make_label("☠ SOCIALLY DEAD — reputation frozen", 12, Color(0.85, 0.15, 0.15, 1.0))
 	_dead_lbl.visible = false
 	vbox.add_child(_dead_lbl)
+
+	_hint_lbl = _make_label("Right-click to Eavesdrop", 11, C_HINT)
+	_hint_lbl.add_theme_constant_override("outline_size", 1)
+	_hint_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	vbox.add_child(_hint_lbl)
 
 	_panel.modulate.a = 0.0
 	_panel.visible = false

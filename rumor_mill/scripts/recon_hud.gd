@@ -188,13 +188,17 @@ func show_milestone(text: String, color: Color) -> void:
 
 func _build_count_labels() -> void:
 	_action_count_label = Label.new()
-	_action_count_label.add_theme_font_size_override("font_size", 11)
+	_action_count_label.add_theme_font_size_override("font_size", 12)
 	_action_count_label.add_theme_color_override("font_color", PIP_FULL_ACTION)
+	_action_count_label.add_theme_constant_override("outline_size", 2)
+	_action_count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 	action_pips_row.get_parent().add_child(_action_count_label)
 
 	_whisper_count_label = Label.new()
-	_whisper_count_label.add_theme_font_size_override("font_size", 11)
+	_whisper_count_label.add_theme_font_size_override("font_size", 12)
 	_whisper_count_label.add_theme_color_override("font_color", PIP_FULL_WHISPER)
+	_whisper_count_label.add_theme_constant_override("outline_size", 2)
+	_whisper_count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 	whisper_pips_row.get_parent().add_child(_whisper_count_label)
 
 
@@ -202,10 +206,10 @@ func _build_count_labels() -> void:
 ## Only visible when all actions have been spent.
 func _build_dawn_label() -> void:
 	_dawn_label = Label.new()
-	_dawn_label.add_theme_font_size_override("font_size", 10)
-	_dawn_label.add_theme_color_override("font_color", Color(0.65, 0.55, 0.35, 0.80))
-	_dawn_label.add_theme_constant_override("outline_size", 1)
-	_dawn_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	_dawn_label.add_theme_font_size_override("font_size", 11)
+	_dawn_label.add_theme_color_override("font_color", Color(0.65, 0.55, 0.35, 0.85))
+	_dawn_label.add_theme_constant_override("outline_size", 2)
+	_dawn_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 	_dawn_label.text = ""
 	_dawn_label.visible = false
 	var vbox: VBoxContainer = $CounterPanel/VBox

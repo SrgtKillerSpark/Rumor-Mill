@@ -13,7 +13,7 @@ const C_BORDER := Color(0.55, 0.38, 0.18, 1.0)
 const C_TITLE  := Color(0.92, 0.78, 0.12, 1.0)
 const C_LABEL  := Color(0.82, 0.75, 0.60, 1.0)
 
-const OFFSET       := Vector2(18, -80)
+const OFFSET       := Vector2(18, -95)
 const PANEL_W      := 240
 const FADE_IN_SEC  := 0.12
 const FADE_OUT_SEC := 0.10
@@ -21,9 +21,12 @@ const FADE_OUT_SEC := 0.10
 ## Hit radius in grid tiles — matches recon_controller's BUILDING_HIT_TILES.
 const BUILDING_HIT_TILES := 2
 
+const C_HINT    := Color(0.90, 0.75, 0.40, 0.85)
+
 var _panel:       PanelContainer = null
 var _name_lbl:    Label          = null
 var _desc_lbl:    Label          = null
+var _hint_lbl:    Label          = null
 
 var _world_ref:   Node2D   = null
 var _flavor_text: Dictionary = {}
@@ -75,8 +78,10 @@ func _process(_delta: float) -> void:
 	if loc != "":
 		_populate(loc)
 		_fade_to(1.0)
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
 	else:
 		_fade_to(0.0)
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 
 func _hit_test_location(world_pos: Vector2) -> String:
@@ -165,6 +170,14 @@ func _build_panel() -> void:
 	_desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_desc_lbl.custom_minimum_size = Vector2(PANEL_W - 20, 0)
 	vbox.add_child(_desc_lbl)
+
+	_hint_lbl = Label.new()
+	_hint_lbl.text = "Right-click to Observe"
+	_hint_lbl.add_theme_font_size_override("font_size", 11)
+	_hint_lbl.add_theme_color_override("font_color", C_HINT)
+	_hint_lbl.add_theme_constant_override("outline_size", 1)
+	_hint_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	vbox.add_child(_hint_lbl)
 
 	_panel.modulate.a = 0.0
 	_panel.visible = false
