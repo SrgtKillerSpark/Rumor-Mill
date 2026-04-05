@@ -1056,6 +1056,9 @@ func _on_new_day_auto_save(day: int) -> void:
 func _on_scenario_resolved_audio(scenario_id: int, state: ScenarioManager.ScenarioState) -> void:
 	if state == ScenarioManager.ScenarioState.WON:
 		AudioManager.on_win()
+		AudioManager.play_sfx("reputation_up")
+		_camera_shake(6.0, 0.5)
+		_play_win_celebration()
 		# Persist the win so the main menu can unlock subsequent scenarios.
 		var active_id: String = world.active_scenario_id if "active_scenario_id" in world else ("scenario_%d" % scenario_id)
 		ProgressData.mark_completed(active_id)
@@ -1206,4 +1209,26 @@ func _notification(what: int) -> void:
 func _camera_shake(intensity: float, duration: float) -> void:
 	if camera != null and camera.has_method("shake_screen"):
 		camera.shake_screen(intensity, duration)
+
+
+## Tween-based gold particle burst played on scenario win (SPA-495).
+## Spawns floating glyphs from screen centre and fades them out over 1.5 s.
+func _play_win_celebration() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 25
+	add_child(layer)
+	var center := get_viewport().get_visible_rect().size * 0.5
+	var symbols: Array = ["✦", "★", "✦", "★", "✦", "★", "✦", "★"]
+	for sym in symbols:
+		var lbl := Label.new()
+		lbl.text = sym
+		lbl.add_theme_font_size_override("font_size", 26)
+		lbl.add_theme_color_override("font_color", Color(1.0, 0.82, 0.22, 1.0))
+		lbl.position = center + Vector2(randf_range(-90.0, 90.0), randf_range(-50.0, 50.0))
+		layer.add_child(lbl)
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(lbl, "position",
+			lbl.position + Vector2(randf_range(-70.0, 70.0), randf_range(-130.0, -50.0)), 1.5)
+		tw.tween_property(lbl, "modulate:a", 0.0, 1.5)
+	get_tree().create_timer(2.0).timeout.connect(layer.queue_free)
 

@@ -38,6 +38,9 @@ signal graph_edge_mutated(actor_name: String, subject_name: String, delta: float
 signal npc_hovered(npc: Node2D)
 signal npc_unhovered()
 
+## Emitted once each time this NPC's heat crosses 75 going upward (danger zone).
+signal suspicion_danger(npc_name: String)
+
 const TILE_W := 64
 const TILE_H := 32
 const MOVE_SPEED := 180.0  # pixels/second
@@ -187,6 +190,7 @@ var _hovered: bool = false
 # _cached_state_tint is refreshed each game tick by _update_label().
 var _cached_state_tint: Color = Color.WHITE
 var _heat_pulse_phase:  float = 0.0
+var _prev_heat:         float = 0.0  # tracks last frame's heat for threshold detection
 
 # ── Speech bubble system ──────────────────────────────────────────────────────
 ## Dialogue lines loaded once from data/npc_dialogue.json (shared across all NPCs).
@@ -1110,9 +1114,13 @@ func _get_heat() -> float:
 ## When heat >= 50 this overrides sprite.modulate with a pulsing warm glow
 ## that blends between the current state colour and a red/orange alert.
 func _process(delta: float) -> void:
+	# Emit suspicion_danger once when heat crosses 75 upward (checked every frame).
+	var h := _get_heat()
+	if _prev_heat < 75.0 and h >= 75.0:
+		emit_signal("suspicion_danger", npc_data.get("name", "NPC"))
+	_prev_heat = h
 	if _hovered or sprite == null or sprite.sprite_frames == null:
 		return
-	var h := _get_heat()
 	if h < 50.0:
 		return  # _update_label() sets sprite.modulate directly when heat is low
 	_heat_pulse_phase += delta * (3.0 if h >= 75.0 else 2.0)

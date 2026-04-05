@@ -97,6 +97,11 @@ var milestone_tracker: MilestoneTracker = null
 ## Faction event system — fires 1-2 random events per scenario run (SPA-199).
 var faction_event_system: FactionEventSystem = null
 
+## VFX: screen-edge vignette pulse for suspicion danger (SPA-495).
+var _vignette_layer: CanvasLayer = null
+var _vignette_rect:  ColorRect   = null
+var _vignette_tween: Tween       = null
+
 ## Active scenario id — change before _ready() to load a different scenario.
 ## Valid values: "scenario_1", "scenario_2", "scenario_3", "scenario_4"
 var active_scenario_id: String = "scenario_1"
@@ -138,6 +143,7 @@ func _ready() -> void:
 	_init_intel_store()
 	_init_reputation_system()
 	_wire_debug_nodes()
+	_init_vignette_overlay()
 
 
 func _exit_tree() -> void:
@@ -148,6 +154,8 @@ func _exit_tree() -> void:
 			npc.rumor_transmitted.disconnect(_on_npc_rumor_transmitted)
 		if npc.graph_edge_mutated.is_connected(_on_npc_graph_edge_mutated):
 			npc.graph_edge_mutated.disconnect(_on_npc_graph_edge_mutated)
+		if npc.suspicion_danger.is_connected(_on_npc_suspicion_danger):
+			npc.suspicion_danger.disconnect(_on_npc_suspicion_danger)
 	if day_night != null and day_night.day_changed.is_connected(_on_day_changed):
 		day_night.day_changed.disconnect(_on_day_changed)
 
@@ -422,6 +430,7 @@ func _spawn_npcs() -> void:
 		npc.rumor_state_changed.connect(_on_npc_rumor_state_changed)
 		npc.rumor_transmitted.connect(_on_npc_rumor_transmitted)
 		npc.graph_edge_mutated.connect(_on_npc_graph_edge_mutated)
+		npc.suspicion_danger.connect(_on_npc_suspicion_danger)
 
 
 
@@ -887,11 +896,25 @@ func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id:
 
 func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: String) -> void:
 	AudioManager.play_sfx("whisper")
+	var cam := get_viewport().get_camera_2d()
+	if cam != null and cam.has_method("shake_screen"):
+		cam.shake_screen(4.0, 0.3)
 	var tick: int = day_night.current_tick if day_night != null else 0
 	var msg := "%s whispered to %s" % [from_name, to_name]
 	if not rumor_id.is_empty():
 		msg += " [%s]" % rumor_id
 	emit_signal("rumor_event", msg, tick)
+
+
+func _on_npc_suspicion_danger(_npc_name: String) -> void:
+	if _vignette_rect == null:
+		return
+	if _vignette_tween != null:
+		_vignette_tween.kill()
+	_vignette_rect.modulate.a = 0.0
+	_vignette_tween = create_tween()
+	_vignette_tween.tween_property(_vignette_rect, "modulate:a", 0.15, 0.2)
+	_vignette_tween.tween_property(_vignette_rect, "modulate:a", 0.0, 0.4)
 
 
 func _on_npc_graph_edge_mutated(actor_name: String, subject_name: String, delta: float) -> void:
@@ -964,3 +987,32 @@ func inject_rumor(
 	target_npc.hear_rumor(rumor, source_faction)
 
 	return rumor_id
+
+
+# ── VFX: suspicion danger vignette (SPA-495) ─────────────────────────────────
+
+## Builds a screen-edge vignette overlay using a radial gradient shader.
+## Alpha is driven to 0 at startup; _on_npc_suspicion_danger() pulses it.
+func _init_vignette_overlay() -> void:
+	_vignette_layer = CanvasLayer.new()
+	_vignette_layer.layer = 20
+	add_child(_vignette_layer)
+
+	_vignette_rect = ColorRect.new()
+	_vignette_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_vignette_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_vignette_rect.modulate.a = 0.0
+
+	var shader := Shader.new()
+	shader.code = """
+shader_type canvas_item;
+void fragment() {
+	float dist = distance(UV, vec2(0.5, 0.5));
+	float vignette = smoothstep(0.35, 0.75, dist);
+	COLOR = vec4(0.85, 0.15, 0.05, vignette);
+}
+"""
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	_vignette_rect.material = mat
+	_vignette_layer.add_child(_vignette_rect)
