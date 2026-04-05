@@ -1,0 +1,1262 @@
+{
+  "aldric_vane": {
+    "ambient_morning": [
+      "First trade of the day sets the tone. I intend it to be favorable.",
+      "The market opens with opportunity. One must only be awake enough to see it.",
+      "A merchant who sleeps late loses more than time."
+    ],
+    "ambient_evening": [
+      "The ledgers balance better when the light fades. Fewer interruptions.",
+      "End of day accounts. The numbers are always more honest than the people.",
+      "I close the stall but not my ears. Evening is when the real talk begins."
+    ],
+    "ambient_night": [
+      "Still here. Some arrangements are better made in the dark.",
+      "The guild quarter is quieter at this hour. I prefer it.",
+      "A lamp and a ledger. That's all I need at this hour."
+    ],
+    "gossip_s1": [
+      "Fenn's tax assessment came in higher than last year. No one's accounting for the difference publicly.",
+      "Word is the alderman's clerk has been burning correspondence. Draw your own conclusions.",
+      "The guild voted to table three petitions this season. Two of them named Lord Fenn. Quietly dropped."
+    ],
+    "gossip_s2": [
+      "Three of my regulars haven't bought since that herb-wife set up near the chapel. Coincidence.",
+      "I heard someone's fallen ill on the south side. Could be anything. Could be that new woman's remedies.",
+      "The market's uneasy. People mention illness and move on quickly, like the word itself carries it."
+    ],
+    "gossip_s3": [
+      "Tomas Reeve has been making promises he can't keep to half the merchants in this square.",
+      "Young Calder came through the market yesterday. Shook more hands than his father ever has.",
+      "There's a quiet campaign to put Calder forward at the winter nominations. Quietly funded too."
+    ],
+    "gossip_s4": [
+      "An inquisitor in this town is bad for trade. Fear keeps purses closed.",
+      "I know those three accused. Decent people, all. This smells political, not theological.",
+      "If the Church can accuse anyone with sealed orders and no evidence, none of us is safe."
+    ],
+    "chatter": [
+      "Prices up, patience down. That's the market for you.",
+      "You hear about the dispute at the east stall? Someone always does.",
+      "I'd offer you a trade, but I suspect you're not in the market for goods."
+    ]
+  },
+  "sybil_oats": {
+    "ambient_morning": [
+      "The bread's on and the fire's lit. Come in before the morning crowd.",
+      "First round of the day. I always put something good in the morning pot.",
+      "Who's been sleeping in my doorway again? I'll need to have words."
+    ],
+    "ambient_evening": [
+      "Evening rush starting. Best time to hear what the town's been up to all day.",
+      "Settle in. The stories get better as the candles burn down.",
+      "I've already heard three versions of that tale today. Yours will be the fourth."
+    ],
+    "ambient_night": [
+      "Past the second bell and still busy. The town doesn't sleep well these days.",
+      "Last call soon. Whatever you need to say, say it before I close the shutters.",
+      "The late ones always have the best stories. Or the worst."
+    ],
+    "gossip_s1": [
+      "Fenn's man came by asking who'd been in the tavern meeting with strangers. I said no one. He didn't believe me.",
+      "People are nervous about the autumn assessment. Three families looking at very different numbers this year.",
+      "I've heard Bram's been given extra instructions about who comes and goes. Not just the gates — everywhere."
+    ],
+    "gossip_s2": [
+      "A woman came in coughing last night and half the room moved away from her. That's not how it was a week ago.",
+      "Vera the midwife looked worried when I mentioned Alys. Didn't say why. Just went quiet.",
+      "The word 'fever' came up twice at different tables today. I don't think they were talking about the same person."
+    ],
+    "gossip_s3": [
+      "Isolde Fenn bought a round for the whole tavern last Thursday. That's not like her. Something's being arranged.",
+      "Tomas Reeve's been drinking here most nights. He doesn't look like a man who expects to win anything.",
+      "Calder came in with Pell Gate and they were laughing. First time I've seen the boy at ease in months."
+    ],
+    "gossip_s4": [
+      "An inquisitor sits in my taproom and nobody talks. I've never seen this place go quiet like that.",
+      "Brother Finn told me to be careful what I say around the new churchman. I took that seriously.",
+      "They've been asking questions about old accounts, old allegiances. Nothing to do with faith, if you ask me."
+    ],
+    "chatter": [
+      "You're not the first person to stand in that spot looking like they know something.",
+      "I'd pour you something but you look like you're about to leave.",
+      "Is this a conversation or are we just sharing the same air?"
+    ]
+  },
+  "oswin_tanner": {
+    "ambient_morning": [
+      "Morning. Hides won't cure themselves.",
+      "The yard smells worse at first light. You get used to it.",
+      "Early's best. Before the flies."
+    ],
+    "ambient_evening": [
+      "Done for the day. Mostly.",
+      "Cleaning up. Never fully done.",
+      "Evening. The smell's worse if you let it sit overnight."
+    ],
+    "ambient_night": [
+      "Still at it. Someone has to be.",
+      "...",
+      "Dark out. Makes no difference to the leather."
+    ],
+    "gossip_s1": [
+      "The guild paid half what they promised on the last civic contract. Fenn's seal on the order.",
+      "My neighbor got hit with a new fee he's never seen before. Says it's on the alderman's orders.",
+      "..I've heard things. About where the civic levy money goes. Not the road, that much is clear."
+    ],
+    "gossip_s2": [
+      "Someone came for a cure at the new woman's stall. Next day, they looked worse. Could be nothing.",
+      "The chapel district's nervous. Word of illness makes people strange.",
+      "I keep to myself. But I notice who's been coughing."
+    ],
+    "gossip_s3": [
+      "Tomas Reeve wants the storage contracts reviewed. Not what craftsmen want to hear before winter.",
+      "Calder Fenn stopped by. Shook my hand. First Fenn to do that in nine years.",
+      "...The winter nominations matter more than usual this year. Everyone knows it."
+    ],
+    "gossip_s4": [
+      "The inquisitor's people came by asking about my church attendance. I said I go. I don't always.",
+      "Three people I know, accused. None of them pious enough to be heretics.",
+      "I say nothing to strangers in clerical robes. Nothing to gain."
+    ],
+    "chatter": [
+      "...",
+      "Good enough.",
+      "Work's work."
+    ]
+  },
+  "marta_coin": {
+    "ambient_morning": [
+      "Up before the sun and already the market has opinions. I love it.",
+      "Morning brings the freshest gossip. Yesterday's is already stale.",
+      "First sale of the day goes to the first one willing to talk. Are you willing?"
+    ],
+    "ambient_evening": [
+      "The afternoon trade slows and the evening talk speeds up. Much more interesting.",
+      "I've been at this stall twelve hours. I could fill a book with what I've heard.",
+      "Evening light makes everything look more dramatic. The gossip too."
+    ],
+    "ambient_night": [
+      "Closing up. But not before I hear the last of it.",
+      "The market's quiet now. That means the talking moved somewhere else. I should find it.",
+      "Night market used to run later. Something changed. I'm going to find out what."
+    ],
+    "gossip_s1": [
+      "Fenn's scribe was seen at the reeve's office with a document nobody will describe to me. That means it matters.",
+      "Three of the market traders paid double levy this season. No invoice, no record — just a man at the gate.",
+      "They say the petition against Fenn has seven signatures. The Prior's is one of them. That's a real thing."
+    ],
+    "gossip_s2": [
+      "Two stalls down from Alys this morning, people are already telling their children not to get too close. That's fast.",
+      "I heard 'illness' said three times at the well before noon. Three separate conversations.",
+      "Vera the midwife walked past Alys's stall without looking at it. That means something."
+    ],
+    "gossip_s3": [
+      "Calder's been through here three times this week. Young man's trying to be seen. Smart.",
+      "Tomas Reeve stepped on someone's toe publicly at the guild meeting. Metaphorically. They haven't forgiven him.",
+      "The winter nominations are what everyone's talking about. They're just not admitting it."
+    ],
+    "gossip_s4": [
+      "The inquisitor asked me who I pray with. I said God. He didn't look satisfied.",
+      "I know the three they've named. Good people. This is about something other than faith.",
+      "The market's been quieter since the clerical visitors arrived. Fear is bad for commerce."
+    ],
+    "chatter": [
+      "You're hovering. Either buy something or tell me something.",
+      "I was just saying the exact same thing to someone else. We must be thinking alike.",
+      "Don't you find this part of the square always has the most interesting foot traffic?"
+    ]
+  },
+  "rufus_bolt": {
+    "ambient_morning": [
+      "Forge is lit. That's the morning done right.",
+      "First work of the day is always the best. Clean metal, clear head.",
+      "Early to the fire, late to the rumor. That's my rule."
+    ],
+    "ambient_evening": [
+      "Fire's banked. Tools are clean. Done.",
+      "I've heard enough today to last me a week. And I wasn't even trying.",
+      "Evening. The forge cools and the talk heats up. I prefer the forge."
+    ],
+    "ambient_night": [
+      "Late work. Urgent commission. Don't ask.",
+      "The smithy after dark is mine alone. I like it that way.",
+      "Still here. Still working. The world can wait."
+    ],
+    "gossip_s1": [
+      "The civic repair contract went to someone who's never laid a stone. Fenn's brother-in-law.",
+      "Iron prices are up because the guild's being taxed twice. Once on import, once on sale. New this year.",
+      "I fixed the lock on the alderman's gate and nobody paid me. Not a word, not a coin. Four months."
+    ],
+    "gossip_s2": [
+      "Someone asked me if I'd seen anyone sick. I said no. They asked twice. Why ask twice?",
+      "The herb-wife near the chapel fixed a burn on my hand. Seemed competent. But I'm hearing other things.",
+      "Rumors of illness spread faster than illness. I've seen it before. Usually benefits someone."
+    ],
+    "gossip_s3": [
+      "Tomas Reeve wants to restructure guild fees. I've heard it from two other smiths. Not good news.",
+      "Calder Fenn came to watch me work for an hour and said nothing. Just watched. Odd young man.",
+      "Whoever wins the winter nomination has to deal with the trade balance the current alderman's left. That's a mess."
+    ],
+    "gossip_s4": [
+      "I'm not a man of faith, but I know injustice when I see it. These accusations are injustice.",
+      "The inquisitor ate at Sybil's last night. Barely touched it. Watching everyone.",
+      "You can't run a forge on fear. Same goes for a town."
+    ],
+    "chatter": [
+      "You've been standing there long enough to get singed.",
+      "I don't have time for small talk. Make it medium.",
+      "Something on your mind or are you just enjoying the heat?"
+    ]
+  },
+  "nell_picker": {
+    "ambient_morning": [
+      "Oh! What a morning! I've already heard three things and it's barely light.",
+      "Morning is the best time. Everyone's loose from sleep and says things they mean.",
+      "Good morning! Tell me something. Anything. I'm desperate."
+    ],
+    "ambient_evening": [
+      "Evening is when the real stories come out. I've been waiting all day.",
+      "The tavern opens properly at dusk and so do the conversations. I love dusk.",
+      "Oh, the things I've heard today — I barely know where to start!"
+    ],
+    "ambient_night": [
+      "Still awake! There are things happening and I cannot rest until I know what.",
+      "Night is only dark on the outside. The talk keeps things bright.",
+      "I shouldn't still be up. But something's going on and I want to know."
+    ],
+    "gossip_s1": [
+      "Fenn's man stopped Cob at the gate and looked through his cart. Over an hour. Nobody's saying why.",
+      "I heard the alderman shouted at someone in the civic hall and they heard it from the market. Shouting!",
+      "Three petitions rejected this session. Same clerk, same seal. Something's holding them back."
+    ],
+    "gossip_s2": [
+      "She sold something to four people in one morning and now two of them aren't at their usual spots. Coincidence? I think not.",
+      "Vera the midwife has been going to every house in the lower ward. That's unusual even for her.",
+      "The word 'plague' hasn't been said out loud yet but everyone's thinking it. I can tell by the spacing."
+    ],
+    "gossip_s3": [
+      "Calder Fenn winked at me! I don't know what it meant but I've told absolutely everyone.",
+      "Tomas Reeve is absolutely terrified of something. You can see it in how he looks at Isolde Fenn.",
+      "The nominations are a week away and two factions are already pretending they're not factions."
+    ],
+    "gossip_s4": [
+      "The inquisitor has a list. A list! I saw him consulting it. Someone had to write that list.",
+      "Three of my friends are accused. None of them have done a single thing wrong. This is a nightmare.",
+      "I can't stay quiet about this. I won't. Someone has to speak up."
+    ],
+    "chatter": [
+      "Oh! Perfect — I was just thinking about you!",
+      "Do you ever have the feeling that everything's connected? Because right now it really is.",
+      "Stay right there. I have something to tell you and I need a witness."
+    ]
+  },
+  "cob_farrow": {
+    "ambient_morning": [
+      "Just arrived. The road in was quiet. That's either good or suspicious.",
+      "Morning. Got a fresh load and fresher news. Which do you want first?",
+      "Early start on the road is the only way. Less to explain at the gate."
+    ],
+    "ambient_evening": [
+      "Loading up for the early departure. Didn't find everything I was looking for in this town.",
+      "Evening rates at the inn are higher this week. Something's drawing people in or keeping them here.",
+      "The road tomorrow will be cold. The talk tonight is worth staying for, though."
+    ],
+    "ambient_night": [
+      "Late night deals are the profitable kind. Also the riskiest.",
+      "I've been asked to stay an extra day. That means someone wants something from me.",
+      "The inn's full tonight. Traveling is a strange business."
+    ],
+    "gossip_s1": [
+      "The tax collector on the north road stopped my cart for two hours. New rates. No documentation.",
+      "I've carried goods through six aldermancies this season. Fenn's gate checks are the longest by far.",
+      "Two traders told me to move product quietly through the back route. That's new since last season."
+    ],
+    "gossip_s2": [
+      "Three towns east, there was illness. Real illness. People are right to be cautious.",
+      "The herb-wife has a name on the road. She sells to seven markets. Not always the same things.",
+      "I carry goods. I've moved remedies before. Some of them work better than others if you catch my meaning."
+    ],
+    "gossip_s3": [
+      "The winter market's reputation follows whoever wins the nomination. Buyers know this.",
+      "I've heard Calder Fenn's name on three different roads. That's coordinated.",
+      "Tomas Reeve tried to negotiate a side deal with me. Offered town credit I'd never see."
+    ],
+    "gossip_s4": [
+      "Inquisitors are bad for trade routes. Word travels fast and merchants reroute.",
+      "I was asked my faith at the gate this morning. First time in fifteen years of coming here.",
+      "Three names on an ecclesiastical charge sheet. If I knew those three, I'd be worried. I do know one."
+    ],
+    "chatter": [
+      "Tell me something worth knowing and I'll tell you something I heard on the road.",
+      "I've got time while the cart's being loaded. What's happening in this town?",
+      "Every town has one story running underneath the official one. What's yours?"
+    ]
+  },
+  "idris_kemp": {
+    "ambient_morning": [
+      "Grain's in early today. Good harvest this end of the road.",
+      "The mill runs from first light. There's no off-season in this work.",
+      "Morning. The wheel's turning. That's all I need to know about today."
+    ],
+    "ambient_evening": [
+      "Last grind of the day. The quiet after the wheel stops is a gift.",
+      "Evening rounds. Count the sacks, check the accounts. Same as every evening.",
+      "I'm done for the day. Quiet here. The way I like it."
+    ],
+    "ambient_night": [
+      "Night shift. Someone has to do it.",
+      "The mill doesn't stop because the sun does. Neither do I.",
+      "Late. But the accounts needed finishing."
+    ],
+    "gossip_s1": [
+      "The grain levy went up and nobody said a word about it in the public accounts. I checked.",
+      "The mill records have been requested twice by the civic office this month. Unusual.",
+      "Fenn's man came by asking about output figures. I gave him the truth. Didn't like it."
+    ],
+    "gossip_s2": [
+      "Illness in the lower ward — I've heard two reports this week. The mill serves them all.",
+      "Someone asked me to grind a particular batch quietly. Wouldn't say what it was for. I declined.",
+      "The herb-wife's been buying grain. Small amounts, frequent. That's medicine work."
+    ],
+    "gossip_s3": [
+      "Whoever takes the aldermanship will inherit the mill's outstanding civic contract. That's leverage.",
+      "Tomas Reeve audited my records last spring. Found nothing. Told everyone he'd found irregularities.",
+      "Calder Fenn shook the hands of every mill worker I know. That's a man building something."
+    ],
+    "gossip_s4": [
+      "The inquisitor had the chapel records pulled. Looking for old allegiances. Anyone could be on that list.",
+      "I keep my head down. Doesn't mean I don't notice what's happening to people I know.",
+      "The three accused are all connected to the lower ward. That's not coincidence."
+    ],
+    "chatter": [
+      "The wheel turns the same whether I talk or not. But I'll talk.",
+      "I'm between grinds. Say what you came to say.",
+      "Not many people stop by the mill for conversation. What is it?"
+    ]
+  },
+  "bess_wicker": {
+    "ambient_morning": [
+      "Inventory opens at first light. It doesn't care what hour you prefer.",
+      "Morning count. Every item in its place. Every discrepancy noted.",
+      "I've been here an hour already. Most haven't started yet."
+    ],
+    "ambient_evening": [
+      "End of day reconciliation. Where the numbers tell the truth.",
+      "Evening. The accounts are closed. The questions remain open.",
+      "I've found three anomalies today. Two are explainable. One is not."
+    ],
+    "ambient_night": [
+      "Late audit. Someone has to.",
+      "The store is quiet at this hour. The records are not.",
+      "Working late. The figures aren't adding up and I won't leave until they do."
+    ],
+    "gossip_s1": [
+      "The civic ledger has been amended in two places this quarter. Without authorization. I have copies.",
+      "The alderman's discretionary fund has a withdrawal that doesn't correspond to any stated civic purpose.",
+      "I filed a discrepancy report eight weeks ago. Still no response. That is its own answer."
+    ],
+    "gossip_s2": [
+      "The apothecary's order has been larger than usual for the past three weeks. That precedes something.",
+      "Remedies are being purchased in bulk by three different households. I track supplies. I notice patterns.",
+      "The illness talk may be premature — or it may be late. The purchasing data suggests preparation."
+    ],
+    "gossip_s3": [
+      "Tomas Reeve requested the storage utilization report for the last two years. He has no official reason to want it.",
+      "Calder Fenn asked me for a meeting. I declined. His use of civic data would need authorization.",
+      "Whoever wins the nomination will have access to financial records that are currently... complicated."
+    ],
+    "gossip_s4": [
+      "The inquisitor requested three years of chapel donation records. That's a financial investigation, not a spiritual one.",
+      "I can account for every item in this store. I cannot account for why certain records are being asked for.",
+      "The accused include the reeve's former assistant. That makes the charge list interesting from an accounting perspective."
+    ],
+    "chatter": [
+      "State your purpose or I'll note your presence as unaccounted.",
+      "I'm between entries. You have approximately two minutes.",
+      "Something you need documented, or just company?"
+    ]
+  },
+  "sim_carter": {
+    "ambient_morning": [
+      "Early load. Early road. That's the carter's life.",
+      "First run of the day. The town's still quiet but the roads already have traffic.",
+      "Morning deliveries are the honest ones. No one's trying to hide anything yet."
+    ],
+    "ambient_evening": [
+      "Last run of the day. The town changes between first light and last.",
+      "Evening delivery. What I see on this road at this hour would fill a book.",
+      "Cart's almost empty. Day's almost done. What I've heard today would make you think."
+    ],
+    "ambient_night": [
+      "Night cargo. Paid double, asked nothing. That's the job sometimes.",
+      "Late haul. The roads are different after dark. So are the people on them.",
+      "They needed it moved tonight. I don't ask about the cargo. I ask about the coin."
+    ],
+    "gossip_s1": [
+      "The civic shipment I moved last week — the paperwork didn't match the load. Happens with Fenn's contracts.",
+      "Someone flagged my cart at the gate and searched it. First time in two years. Something's changed.",
+      "Three separate loads this month redirected after leaving the warehouse. Nobody signs off on the change."
+    ],
+    "gossip_s2": [
+      "I passed Vera the midwife three times on the lower ward road this morning. That's unusual traffic.",
+      "The apothecary's been getting deliveries by a different route lately. Small loads, off-schedule.",
+      "Illness or fear of illness — either way it changes who's on the streets and when."
+    ],
+    "gossip_s3": [
+      "I've carried documents between the Fenn house and the guild office twice this week. Sealed, both times.",
+      "Tomas Reeve asked me to stop for a conversation mid-route. First time ever. Wanted to know what I carry.",
+      "Calder Fenn and two of his friends hired a cart for a 'day trip.' They were gone four hours. That's not a day trip."
+    ],
+    "gossip_s4": [
+      "The inquisitor's people arrived with more trunks than visitors usually bring. That's a long stay.",
+      "I was asked to move a document box from the chapel to the civic office. Under seal. At night.",
+      "The three accused — I've delivered to all three houses. Ordinary people. This doesn't fit."
+    ],
+    "chatter": [
+      "I've got a few minutes while the horse rests. What's happening?",
+      "Carters hear everything. Half of it's true. Tell me your version.",
+      "You look like someone who knows something. That's my favorite kind of person."
+    ]
+  },
+  "greta_flint": {
+    "ambient_morning": [
+      "A good morning starts with a good conversation. Is this one going to be good?",
+      "I woke early with an absolutely wonderful story and I've been waiting to tell someone.",
+      "Morning light and fresh gossip. The day is already a success."
+    ],
+    "ambient_evening": [
+      "Oh, the evening! Everything is more interesting in the evening.",
+      "I've been collecting all day and now I get to share. This is the good part.",
+      "The merchant quarter at dusk is my favorite hour. Come and talk."
+    ],
+    "ambient_night": [
+      "Still up! There are simply too many interesting things happening.",
+      "I probably should have gone home an hour ago. But then I heard something.",
+      "Night conversations are the most honest. Everyone's too tired to be careful."
+    ],
+    "gossip_s1": [
+      "Isolde Fenn looked absolutely furious at the last civic dinner. Something's happening in that household.",
+      "I heard from Lady Fenn's own maid that the alderman's correspondence has been very private of late.",
+      "Three noble families are quietly backing a petition against Fenn. Quietly but not silently, if you listen well."
+    ],
+    "gossip_s2": [
+      "I've kept my distance from the south market since the illness talk started. One can't be too careful.",
+      "The new herb-wife has the most extraordinary eyes. Though I'm told her remedies are less extraordinary.",
+      "Sister Maren looked terribly worried when I mentioned the illness rumors. She knows something."
+    ],
+    "gossip_s3": [
+      "Lady Isolde received me for tea and mentioned Calder's name seventeen times. I counted.",
+      "Tomas Reeve was at the same dinner as me last week and barely said a word. That's unusual.",
+      "I've heard the winter nominations could be the most dramatic in a decade. I intend to be there."
+    ],
+    "gossip_s4": [
+      "The inquisitor is staying at the civic guest house. I walked past twice. Very grim aura.",
+      "Three people I know personally are on that list. This is not acceptable.",
+      "I told Lady Isolde what I'd heard and she went absolutely white. That's confirmation."
+    ],
+    "chatter": [
+      "Oh good, someone to talk to! I was about to resort to thinking.",
+      "Come here, I have something and it cannot wait another minute.",
+      "Do you know what I love about this square? Anything can happen. And usually does."
+    ]
+  },
+  "edric_fenn": {
+    "ambient_morning": [
+      "The petition review begins this morning. Order must be maintained, even under scrutiny.",
+      "Another day of governance. Those who doubt my methods are welcome to attempt the work themselves.",
+      "Morning assessments. The town's affairs do not manage themselves."
+    ],
+    "ambient_evening": [
+      "The evening accounts reflect what the morning intentions began. I am satisfied with today.",
+      "I do not conduct public business at this hour. If you have a grievance, present it formally.",
+      "The town is quiet. As it should be. Under proper administration, quiet is the result."
+    ],
+    "ambient_night": [
+      "I trust the watch. I verify the watch. Both are the duty of the alderman.",
+      "There are matters requiring my attention that cannot be conducted in daylight.",
+      "The late hours belong to those with the will to use them."
+    ],
+    "gossip_s1": [
+      "Whatever is being said about me in the market square, understand that I am aware of it.",
+      "A man in my position attracts accusations. Most dissolve under examination. All of mine do.",
+      "The petition represents perhaps twelve people who misunderstand their own interests. I am patient."
+    ],
+    "gossip_s2": [
+      "Illness rumors are dangerous to civic order. I've instructed the watch to note who's spreading them.",
+      "The herb-wife's business is her own until it affects public health. At which point, it becomes mine.",
+      "A well-governed town does not panic. That is why it has governance."
+    ],
+    "gossip_s3": [
+      "My son will serve this town when he is ready. He is not yet ready.",
+      "Tomas Reeve is a capable administrator. His ambitions exceed his judgment.",
+      "The winter nominations are a formality this year. As they have been for nine years."
+    ],
+    "gossip_s4": [
+      "The inquisitor comes with proper authority. I have cooperated fully and will continue to do so.",
+      "Heresy charges are the business of the Church. My business is civic order.",
+      "I know two of the three accused. I will not comment publicly. That is itself a public comment."
+    ],
+    "chatter": [
+      "You find yourself in my presence again. I begin to wonder why.",
+      "Speak plainly or not at all. I have limited patience for circumspection.",
+      "I see you. I remember faces. All of them."
+    ]
+  },
+  "isolde_fenn": {
+    "ambient_morning": [
+      "I review correspondence before the house wakes. Information has a shelf life.",
+      "The morning is when real decisions are made. Afternoons are for appearances.",
+      "I begin every day knowing more than I did the night before. Effort pays."
+    ],
+    "ambient_evening": [
+      "Evening. The day's intelligence is processed. Tomorrow's moves are already in motion.",
+      "My husband governs by day. I understand by evening. We do not always agree on what we understand.",
+      "The social hour tells you more about a town's real business than the public accounts."
+    ],
+    "ambient_night": [
+      "Some correspondences are better received and sent at this hour.",
+      "I remain awake because there is always something worth knowing that only reveals itself late.",
+      "I do not sleep when things are in motion. And things are currently in motion."
+    ],
+    "gossip_s1": [
+      "My husband believes loyalty to be his greatest asset. He may find it his most expensive one.",
+      "The petition is further along than Edric knows. I have not told him everything I know.",
+      "Some arrangements that supported this aldermanship are beginning to reassess their position."
+    ],
+    "gossip_s2": [
+      "I have asked Maren about the illness talk. She gave me a careful non-answer. That is itself an answer.",
+      "The herb-wife appears in every conversation I have had this week. That is either her doing or someone else's.",
+      "A panic in this town serves no one except those who profit from distraction."
+    ],
+    "gossip_s3": [
+      "Calder is ready. I have been preparing him longer than anyone realizes.",
+      "Tomas Reeve's vulnerability is his pride. Pride makes a man take risks he should not.",
+      "The winter nominations are an opportunity if properly managed. I intend to manage them."
+    ],
+    "gossip_s4": [
+      "The inquisitor arrived without my prior knowledge. That has never happened before. It will not again.",
+      "The three accused — one of them knows things about this household that I would prefer remained private.",
+      "I have spoken with the Prior. He is as concerned as I am. We share certain interests in resolution."
+    ],
+    "chatter": [
+      "I notice you nearby. I notice everything.",
+      "This is not a chance meeting for you. What do you actually want?",
+      "Composure is information. Yours is telling."
+    ]
+  },
+  "calder_fenn": {
+    "ambient_morning": [
+      "Father's already in the civic hall. I'm supposed to be there too. I'm not.",
+      "Morning. The town wakes up and people say things before they've decided what they're allowed to say.",
+      "I like mornings. Before the performance starts."
+    ],
+    "ambient_evening": [
+      "Evening. The official version of the day is over. Now the real version starts.",
+      "I've been watched all day. Evening's the first time I can breathe.",
+      "People come to me in the evenings. That's new. I think I like it."
+    ],
+    "ambient_night": [
+      "I shouldn't still be up. I shouldn't be here at all. But here I am.",
+      "After dark is the only time I'm not being managed.",
+      "I've been thinking, which is apparently dangerous in my family."
+    ],
+    "gossip_s1": [
+      "Father thinks loyalty is owed to him. I think loyalty is earned. We disagree on that.",
+      "The petition against the aldermanship has more people behind it than anyone's saying publicly. Including some in my father's circle.",
+      "I know things about the civic accounts that I'm not supposed to know. That's the problem with living in the alderman's house."
+    ],
+    "gossip_s2": [
+      "I told Father about the illness rumors and he told me not to discuss it. That's how I know it's real.",
+      "Alys the herb-wife tried to sell something to our household. Mother turned her away very quickly.",
+      "I saw Maren and Vera talking in the chapel yard and they stopped when I approached. That's a conversation about something important."
+    ],
+    "gossip_s3": [
+      "Mother wants me nominated. Father says not yet. The town is split between them. So am I.",
+      "Tomas Reeve shook my hand at the guild meeting and then voted against my father's proposal. I don't know what that means.",
+      "If I get nominated at the winter festival, it happens because people chose it. Not because it was arranged. That matters to me."
+    ],
+    "gossip_s4": [
+      "The inquisitor's been in Father's study twice. Father looks worse each time.",
+      "I know one of the three accused. Really know them. This is wrong and I'm going to say so.",
+      "I don't care what Father says. I'm not going to be quiet about innocent people being accused."
+    ],
+    "chatter": [
+      "Yeah, I see you. Don't worry about it. I'm used to being watched.",
+      "Ask me directly. I'll give you a straight answer. Nobody does that with me anymore.",
+      "I'm trying to figure something out. You look like you might know."
+    ]
+  },
+  "bram_guard": {
+    "ambient_morning": [
+      "Gate check at first light. Anyone not where they're supposed to be, I want to know.",
+      "Morning briefing done. Posts assigned. The watch runs whether the town notices or not.",
+      "First light is when I see things people don't know I'm seeing."
+    ],
+    "ambient_evening": [
+      "Evening shift change. What happened today doesn't disappear because the light did.",
+      "I'm off the clock in an hour. On the clock in six. In between, I still notice things.",
+      "The day's observations are noted. Patterns are emerging."
+    ],
+    "ambient_night": [
+      "Night watch. The town's different in the dark. So are the people in it.",
+      "Most of what I know about this town, I learned between second bell and dawn.",
+      "I patrol. I observe. I document. That's what a night like this is for."
+    ],
+    "gossip_s1": [
+      "Lord Fenn's standing orders have been updated twice this month. I follow them. I note the changes.",
+      "I have been given a list of persons to observe. I follow the list. I also remember who gave it to me.",
+      "The gate records show visitors the official log doesn't mention. That is a fact in my possession."
+    ],
+    "gossip_s2": [
+      "Illness reports have been coming to me informally. I haven't been told to log them officially. That gap concerns me.",
+      "The herb-wife operates within the town's rights as far as my jurisdiction is concerned. For now.",
+      "Three households in the lower ward have had visitors from the chapel this week. Maren's making rounds."
+    ],
+    "gossip_s3": [
+      "I serve the aldermanship, not the alderman. There is a difference and it matters in succession.",
+      "Calder Fenn asked me about gate procedures. That's not curiosity. That's preparation.",
+      "Tomas Reeve has had meetings at locations I don't have on any official register. I find that professionally interesting."
+    ],
+    "gossip_s4": [
+      "The inquisitor has official Church authority. I cooperate fully. I also document everything.",
+      "I have been instructed to provide access to certain records. I have done so. I have retained copies.",
+      "The three accused are on my list as persons of interest pending Church resolution. Not my classification."
+    ],
+    "chatter": [
+      "Move along. This area is under observation.",
+      "I've been watching you watching. Just so that's clear.",
+      "You want something. State it or move on."
+    ]
+  },
+  "wynn_gate": {
+    "ambient_morning": [
+      "Morning post. Same road, same gate, same everything. Until it isn't.",
+      "I've been at this gate since before sunrise. Already three things I'd call unusual.",
+      "First bell rang and nobody unusual came through. That's the good version."
+    ],
+    "ambient_evening": [
+      "Evening shift. The gate closes at curfew. The roads don't.",
+      "I don't know half of what I see. But I note it anyway.",
+      "It's quiet now. Quiet's either good or the quiet before something."
+    ],
+    "ambient_night": [
+      "Night watch. Bram's orders. I follow them.",
+      "Last patrol before change of watch. I keep my eyes open.",
+      "Dark and cold and something's moving on the east road. Probably nothing."
+    ],
+    "gossip_s1": [
+      "Someone came through the gate with a sealed document for the civic hall. Wouldn't show it to me. Bram said to let them through.",
+      "The east gate's been restricted three nights this week. I wasn't told why.",
+      "I saw what I wasn't supposed to see last Tuesday. I've been thinking about that ever since."
+    ],
+    "gossip_s2": [
+      "I turned away a cart from the south this morning. Driver claimed he had medicine. Looked like more than medicine.",
+      "Illness in this town — I've heard the word twice at the gate today. From people coming in, not going out.",
+      "Bram said not to write it in the log. So I didn't. But I remember."
+    ],
+    "gossip_s3": [
+      "Calder Fenn came through the gate at odd hours this week. Three times. I didn't log it all.",
+      "Someone asked me who I thought should be nominated at the winter festival. First time anyone's asked a gate guard.",
+      "Tomas Reeve traveled to the north village and back in a single morning. That's fast for a man his age."
+    ],
+    "gossip_s4": [
+      "The inquisitor's party came through my gate. I checked every document. Everything was in order. That doesn't mean everything's in order.",
+      "I saw the list of accused. Not supposed to. But the gate records passed through my hands.",
+      "Something came in last night on a cart that wasn't on any list I saw."
+    ],
+    "chatter": [
+      "Right. Fine. I've been looked at before.",
+      "I'm on post. Not much to see from here unless you know what to look for.",
+      "Most people don't stop for conversation at a gate. You're not most people."
+    ]
+  },
+  "pell_gate": {
+    "ambient_morning": [
+      "Morning post. Is it too early for this? Absolutely. Am I here? Unfortunately.",
+      "Fresh day, fresh gate, fresh excuses from people who didn't get enough sleep. Same as yesterday.",
+      "Bram put me on the morning shift again. I owe him something for that."
+    ],
+    "ambient_evening": [
+      "Evening's better. The interesting people come through in the evening.",
+      "Late post. Wynn took the dawn shift so I take the dusk. It's a fair deal, mostly.",
+      "Almost change of watch. Then — well, then I'll go find out what happened today."
+    ],
+    "ambient_night": [
+      "Night watch. Somebody's got to. Might as well be me since nobody else will.",
+      "Quiet out here. Which is suspicious. Things here are never this quiet.",
+      "I heard something on the east road and I'm choosing not to investigate until I have company."
+    ],
+    "gossip_s1": [
+      "Don't tell Bram I said this but some of Fenn's orders have been really strange lately.",
+      "I let through someone I probably shouldn't have because Calder Fenn vouched for them. I think that was the right call.",
+      "The levy on goods coming through this gate changed three times this month. No official announcement."
+    ],
+    "gossip_s2": [
+      "The new herb-wife? She came through my gate with a cart full of things I didn't recognize. I let her through. Probably fine.",
+      "People are bunching up in the market and then separating fast. That's fear of illness spreading, not illness.",
+      "Maren gave me something for a cough last week. I'm fine. But three people have asked me since if I've been sick."
+    ],
+    "gossip_s3": [
+      "Calder Fenn gave me a coin not to write down his departure time. I wrote it down anyway. But I kept the coin.",
+      "Tomas Reeve came through the gate twice in one hour. Both times with a different story about why.",
+      "The winter nominations are coming up and people are nervous about being on the wrong side of whoever wins."
+    ],
+    "gossip_s4": [
+      "The inquisitor's traveling companion looked less like clergy and more like someone who finds things. If you follow me.",
+      "I saw the accused list. I know one of those names. Known them for years. Doesn't make sense.",
+      "Don't tell Bram I told you this, but — oh, you'll want to know."
+    ],
+    "chatter": [
+      "Oh, you're back. Fair enough. Not much else to look at from this post.",
+      "I'm trying to look busy. Help me by standing here and pretending we're discussing something official.",
+      "I wasn't doing anything interesting. Well — I was, but I'm done now."
+    ]
+  },
+  "annit_scribe": {
+    "ambient_morning": [
+      "Records are most accurate when filed before the day's interference begins.",
+      "Morning. I open the ledger and the town's business becomes legible.",
+      "Early. As it should be. Precision begins before other people notice."
+    ],
+    "ambient_evening": [
+      "End of official records day. Unofficial records continue.",
+      "I cross-reference in the evenings. The contradictions are most visible at this hour.",
+      "Evening. The filing is done. The questions it raises are not."
+    ],
+    "ambient_night": [
+      "Late revision to a document that required it. No further questions.",
+      "I work at this hour when the document is sensitive and the office is empty.",
+      "The most important records are sometimes best reviewed without witnesses."
+    ],
+    "gossip_s1": [
+      "The civic record shows two separate accounts for the same disbursement. I flagged it. The flag was removed.",
+      "A document I filed accurately was later returned with an amendment I did not authorize.",
+      "Lord Fenn's correspondence requests have increased significantly. I note the volume without comment on the content."
+    ],
+    "gossip_s2": [
+      "The apothecary's supply requests have been routed through civic records this week. Irregular.",
+      "I have documented three illness reports forwarded to the civic office. No official response has been filed.",
+      "The parish records and the civic records disagree on one household's residency. That discrepancy is relevant right now."
+    ],
+    "gossip_s3": [
+      "Tomas Reeve has formally requested access to guild financial records. The request is within his rights but the timing is pointed.",
+      "The nomination registry requires formal civic documentation. Someone has been preparing that documentation ahead of schedule.",
+      "I have been asked by two different parties for certified copies of the same record. That is informative."
+    ],
+    "gossip_s4": [
+      "The inquisitor's evidence requests have come through my office. I have complied with those that meet proper procedural standards.",
+      "That document was submitted with two signatures. The second is a forgery. I know what authentic signatures look like.",
+      "The record does not reflect what actually occurred. I wrote the original. I know what was changed and when."
+    ],
+    "chatter": [
+      "Your presence is noted. Was there something requiring documentation?",
+      "I work. You observe. We proceed.",
+      "If you have something relevant to the record, state it. Otherwise, stand clear."
+    ]
+  },
+  "tomas_reeve": {
+    "ambient_morning": [
+      "Morning audit. The numbers from yesterday need to account for themselves.",
+      "First light and already I've found something that doesn't balance. Today will be long.",
+      "I begin every morning assuming the accounts are wrong. I am rarely disappointed."
+    ],
+    "ambient_evening": [
+      "End of day. The debts remain. The creditors also remain.",
+      "Evening review. What was claimed today and what can actually be substantiated.",
+      "I do not go home until the books are honest. I am still here."
+    ],
+    "ambient_night": [
+      "I am working late because the figures are contradictory and I will not sleep until they're not.",
+      "Late review. Some debts are better counted in the dark.",
+      "The balance is wrong and I need to understand why before morning."
+    ],
+    "gossip_s1": [
+      "The levy discrepancy runs to seven years of records. That is not an error. That is a policy.",
+      "I presented findings to the civic office three times. Each time the meeting was postponed.",
+      "Lord Fenn's financial conduct will be documented whether or not it is ever acted upon. That is my function."
+    ],
+    "gossip_s2": [
+      "The illness expenditure hasn't hit the civic books yet. It will. I want it documented when it does.",
+      "A remedy supplier has been billing the civic account without a corresponding service order. I found it.",
+      "Panic costs money. Real illness costs more. I track both."
+    ],
+    "gossip_s3": [
+      "My intentions for the winter nomination are my business. The guild's financial records are also my business.",
+      "Calder Fenn has the social skills his father never developed. That is an advantage I take seriously.",
+      "The numbers don't favor the current arrangement. They may favor a different one. I am calculating."
+    ],
+    "gossip_s4": [
+      "The inquisitor requested financial records as evidence of heresy. That is an unusual evidentiary standard.",
+      "I have audited the affairs of all three accused. They are financially unremarkable. That makes the charge more suspicious.",
+      "A debt is owed here. The question is who owes it and to whom."
+    ],
+    "chatter": [
+      "You've been standing here at consistent intervals. I find that numerically significant.",
+      "Present your evidence or present yourself elsewhere.",
+      "I track everything. You. Here. Now. It's in the ledger."
+    ]
+  },
+  "old_hugh": {
+    "ambient_morning": [
+      "Morning. My bones still work. That's more than I can say for some of this town's politics.",
+      "The day starts the same as any other. Which means something unusual will happen by noon.",
+      "I've seen this town at every hour for forty years. Morning is the most honest."
+    ],
+    "ambient_evening": [
+      "Evening's for sitting. And thinking. And occasionally being very alarmed by what I'm thinking.",
+      "I served this house until my knees said otherwise. Now I sit in the evenings and watch what comes of it.",
+      "Evening brings out the truth of the day. Not always comfortable truth."
+    ],
+    "ambient_night": [
+      "Can't sleep. Again. The older I get the more the nights think they can have me.",
+      "Late hours suit my memories. The old ones are livelier than the new ones.",
+      "I'm awake. At my age that's accomplishment enough."
+    ],
+    "gossip_s1": [
+      "I served under three aldermen before Fenn. This is the first time I've seen the records kept this way.",
+      "Fenn is not the worst alderman this town has had. But he may be the most consequential in the wrong direction.",
+      "The old arrangements — the honest ones — died when the current man's second term started."
+    ],
+    "gossip_s2": [
+      "I remember the last real sickness in this town. It started with a rumor too, and it wasn't a rumor by the second week.",
+      "The herb-wife's a capable woman from what I can tell. Someone wants her gone for reasons that aren't about medicine.",
+      "When you're my age, you've lived through real illness and false scares. This one isn't clear to me yet."
+    ],
+    "gossip_s3": [
+      "Calder Fenn has his mother's mind and his father's name. In that order of usefulness.",
+      "I knew Tomas Reeve when he was still honest. That was a while ago.",
+      "The old families know how successions work. The question is which old family benefits this time."
+    ],
+    "gossip_s4": [
+      "Inquisitors came through here thirty years ago. The outcome was not instructive in a good way.",
+      "I know those three accused. Decent people. This town has been through worse trouble and protected worse people.",
+      "I'm old. I'm not afraid of an inquisitor. I've outlasted worse."
+    ],
+    "chatter": [
+      "Sit down if you want to talk. I don't rush conversations anymore.",
+      "Young people stand around when they've got something on their mind. You've got something on your mind.",
+      "I'm here. I'm listening. Whatever it is you're working up to, go ahead."
+    ]
+  },
+  "aldous_prior": {
+    "ambient_morning": [
+      "Prime. The first office of the day. I have completed it. Few others have.",
+      "The morning light and a clear conscience are the only luxuries I allow myself.",
+      "I rise before the town to consider what it will require. It requires more than it usually acknowledges."
+    ],
+    "ambient_evening": [
+      "Vespers. An hour of quiet in a loud week.",
+      "Evening prayer is the accounting of the soul. I have much to account for today.",
+      "The chapel is emptier in the evenings than I would like. The town is busier. Priorities are noted."
+    ],
+    "ambient_night": [
+      "I do not sleep well when souls in my care are under threat.",
+      "The late hours are for prayer and correspondence. Both require honesty.",
+      "God sees what is done in the dark. That fact is professionally relevant to my current concerns."
+    ],
+    "gossip_s1": [
+      "The petition bears my seal. I placed it with deliberation and I will not withdraw it.",
+      "Nine years of aldermanship have left certain debts outstanding. Not all of them are financial.",
+      "Justice sometimes requires the Church to speak plainly in civil matters. This is such a time."
+    ],
+    "gossip_s2": [
+      "Illness rumors are a sin when they are lies. They are also a sin when they are ignored truth. I am trying to determine which this is.",
+      "The herb-wife has come to me. I have heard her. My judgment is pending.",
+      "Sister Maren's concern about this matter is significant. She does not concern herself easily."
+    ],
+    "gossip_s3": [
+      "The succession of civic leadership is not my office. The character of those who seek it is.",
+      "I have met with both parties. I will say only that one meeting went better than the other.",
+      "Calder Fenn came for confession. I cannot discuss the content. I will say that he asked the right questions."
+    ],
+    "gossip_s4": [
+      "The inquisitor carries proper authority. I do not question that. I do question his evidence.",
+      "I have placed myself publicly between the accusation and the accused. That position carries weight and cost.",
+      "God's truth will survive this. Whether these three people do unharmed is a different question and one I take personally."
+    ],
+    "chatter": [
+      "If you have come to speak with me, speak.",
+      "Observation is the first step toward understanding. What are you seeking to understand?",
+      "I am not unaware of your interest. Let us speak plainly."
+    ]
+  },
+  "maren_nun": {
+    "ambient_morning": [
+      "Lauds first, then the rounds. The sick don't keep chapel hours.",
+      "Morning and already three people need attention. I will see them all.",
+      "I begin the day in prayer and end it in action. The middle is mostly worry."
+    ],
+    "ambient_evening": [
+      "Evening rounds. I have visited eight households today. I keep track.",
+      "The evening prayer helps. Then I go back out again because the help is needed.",
+      "Vespers, then the lower ward. The night visits are the hardest ones."
+    ],
+    "ambient_night": [
+      "I don't sleep when someone's in danger. Which means I don't sleep much.",
+      "Night call. I go where I'm needed. That's the whole of it.",
+      "Late. But someone's worse and I was asked to come."
+    ],
+    "gossip_s1": [
+      "The poor of this town bear the heaviest levy increases. I have seen their accounts. They have shown me.",
+      "The Prior signed the petition. I support his judgment. I would have signed it myself had I been asked.",
+      "I tend the sick in every ward. The inequity is written in the health of this town as clearly as in any ledger."
+    ],
+    "gossip_s2": [
+      "I am watching this illness situation carefully. The symptoms do not match what I would expect from the source being named.",
+      "I will not condemn the herb-wife without evidence. I will also not stop watching.",
+      "My concern is not the rumor. My concern is the people who might suffer if the rumor is either true or false."
+    ],
+    "gossip_s3": [
+      "I do not involve myself in nominations. But I care who leads this town because the sick feel leadership directly.",
+      "Calder Fenn sent assistance to the infirmary without announcement. That is a more meaningful act than a speech.",
+      "Whoever wins the aldermanship will need to answer for the civic health record of the past nine years."
+    ],
+    "gossip_s4": [
+      "I will not be silent while innocent people are accused. My vows do not require silence in the face of injustice.",
+      "I know all three accused. I have been to their homes. I have seen their lives. These charges are wrong.",
+      "The inquisitor has not spoken with me. He will. I have things to say."
+    ],
+    "chatter": [
+      "I'm between visits. I won't be here long.",
+      "You look like you need something. Ask directly — I don't have time to guess.",
+      "I notice you here often. Is there something I can help with?"
+    ]
+  },
+  "finn_monk": {
+    "ambient_morning": [
+      "I was at matins! I really was. Ask anyone. Well — ask the bell.",
+      "Morning! I have already heard two things today and it's barely light. The Lord provides.",
+      "Brother Prior says I should spend more mornings in contemplation. I contemplate things. Just not silently."
+    ],
+    "ambient_evening": [
+      "Vespers was lovely tonight! I stayed for the whole thing. Almost.",
+      "Evening is when the interesting people end up in the interesting places. I find myself there.",
+      "Oh the evening! Something always happens in the evening!"
+    ],
+    "ambient_night": [
+      "I should absolutely be in my cell. I am not in my cell. I am here. I have my reasons.",
+      "Brother Prior doesn't know about the wine cellar and I am NEVER going to be the one to tell him.",
+      "Night is when monks are supposed to be asleep. I am not monks."
+    ],
+    "gossip_s1": [
+      "The Prior signed the petition and Alderman Fenn has not yet spoken to him about it. That conversation is going to be tense.",
+      "Someone in the civic office left a document on the chapel steps. I picked it up. I have MANY thoughts.",
+      "The alderman and the Prior don't get along and it's getting worse and it is the most interesting thing happening."
+    ],
+    "gossip_s2": [
+      "I spoke with Alys the herb-wife and she was perfectly sensible! The rumors make no sense to me.",
+      "Maren has been doing extra rounds and she gets that face when she's worried and she has that face.",
+      "The illness talk is terrifying everyone and I am trying to be calming about it but also I AM ALSO SCARED."
+    ],
+    "gossip_s3": [
+      "Lady Isolde came to chapel three times this week and prayed very specifically. I may have listened.",
+      "Calder Fenn asked me about the older aldermanic records. I told him to ask Annit. He looked nervous.",
+      "Tomas Reeve is avoiding the chapel. I noticed. Brother Prior noticed. We have not discussed it."
+    ],
+    "gossip_s4": [
+      "The inquisitor is staying in the guest house and I am being EXTREMELY GOOD and not listening outside doors.",
+      "I know two of the three accused. This is very bad. Very bad. I am trying to be helpful in a calm monk way.",
+      "Brother Prior is doing something and I think it's brave and I think he should let me help but he won't and I understand but also!"
+    ],
+    "chatter": [
+      "Oh! Hello! I have things to say! Do you have time?",
+      "I'm supposed to be somewhere else but this is more interesting and I'll do penance later.",
+      "You are here at exactly the right moment. I don't know for what yet, but I can feel it."
+    ]
+  },
+  "vera_midwife": {
+    "ambient_morning": [
+      "Early call. Delivered a healthy girl before the cock crowed. Good start.",
+      "I've been working since before sunrise. Babies have no respect for schedules.",
+      "Morning. I've already seen half the lower ward. They're well enough. Mostly."
+    ],
+    "ambient_evening": [
+      "Evening rounds. The ones who need checking up don't stop needing it at dusk.",
+      "I'm taking stock of who I've seen and who I haven't. The gap between those two lists concerns me.",
+      "Evening. More work ahead. The night calls are coming."
+    ],
+    "ambient_night": [
+      "Night call. It's always something urgent that couldn't wait.",
+      "I've been to three houses tonight. I'll be to two more before morning.",
+      "The town is asleep. I'm not. That's the midwife's life."
+    ],
+    "gossip_s1": [
+      "The families hardest hit by the new levy are the ones I see most often professionally. That's not coincidence.",
+      "I've had three patients this month who couldn't pay the apothecary because of the new gate fees. That's a policy killing people.",
+      "The Prior signed something important. I don't get involved in politics. But I do get involved in health outcomes."
+    ],
+    "gossip_s2": [
+      "Alys the herb-wife and I overlap in this town. She's competent. What's being said about her doesn't match what I see.",
+      "Illness rumors are starting to keep people home who should be coming to me. That's a different kind of danger.",
+      "I've been in half the houses in this town before daybreak this week alone. Something is making people nervous."
+    ],
+    "gossip_s3": [
+      "Whoever becomes alderman will need a relationship with the healers of this town. I have not yet been consulted by either candidate.",
+      "Calder Fenn's mother came to me last year. I will not say what for. I will say she cares about her son more than her position.",
+      "The winter nominations affect the health budget. That's why I'm paying attention."
+    ],
+    "gossip_s4": [
+      "The inquisitor questioned me about my night visits. I described every household I'd attended. All legitimate medical calls.",
+      "I've tended the accused families. There is nothing in those homes that supports a heresy charge. Nothing.",
+      "I don't panic easily. But watching innocent people be threatened makes me feel things I rarely feel."
+    ],
+    "chatter": [
+      "You've been circling. What is it?",
+      "I'm between calls. Say what you need to say.",
+      "You want to know something. Ask it plain. I have a next visit."
+    ]
+  },
+  "old_piety": {
+    "ambient_morning": [
+      "I have been awake since before prime. Old bones need less sleep and more prayer.",
+      "Morning. God sees the faithful and the faithless both. I like to be among the faithful before they arrive.",
+      "At my age, every morning is evidence of God's patience."
+    ],
+    "ambient_evening": [
+      "Vespers sung. God heard. I remain vigilant.",
+      "The evenings are longer now. I use the time for observation. God's observation and mine.",
+      "Evening. The town has another day behind it. Some of that day concerns me."
+    ],
+    "ambient_night": [
+      "I sleep little. I pray much. The night hours are between God and me.",
+      "Still awake. There are things happening in this town that do not let an old woman rest.",
+      "The Lord watches over the dark hours. I help when I can."
+    ],
+    "gossip_s1": [
+      "I have prayed beside Lord Fenn in this chapel for nine years. I have not always liked what I prayed beside.",
+      "The petition is right. I told the Prior as much.",
+      "I have lived long enough to see what unchecked power does to a man. I am watching it again."
+    ],
+    "gossip_s2": [
+      "Illness in the town is to be faced, not whispered about. I have seen real plagues. I do not say the word lightly.",
+      "The herb-wife is being made a scapegoat for something. That is a sin. I am old enough to name sins clearly.",
+      "Sister Maren's worry is the Lord's worry reflected. When she's worried, I'm worried."
+    ],
+    "gossip_s3": [
+      "Calder Fenn has come to confession more frequently of late. A young man of conscience is better than none.",
+      "Tomas Reeve last attended chapel six weeks ago. I noticed. The Lord noticed.",
+      "Succession is God's matter as much as man's. The congregation should choose wisely."
+    ],
+    "gossip_s4": [
+      "An inquisitor in God's service should serve God's justice. I am watching to see if this one does.",
+      "I have prayed for those accused for twenty years. I know their hearts better than any document.",
+      "Whoever stands between these innocent people and false accusation stands in righteousness. I will stand with them."
+    ],
+    "chatter": [
+      "Yes. I see you there. God sees you further.",
+      "At my age I don't waste words. Say what you mean.",
+      "You remind me of someone. Who I knew when. Come, let me look at you."
+    ]
+  },
+  "jude_bellringer": {
+    "ambient_morning": [
+      "First bell's done. Now the morning can begin for everyone else.",
+      "I was up before the sun. The bells wait for no one, including me.",
+      "Morning tower. Chilly up here but the view tells you everything about what the town is up to."
+    ],
+    "ambient_evening": [
+      "Third bell soon. Then I'm done until tomorrow.",
+      "Evening bell. The town winds down. I wind up one more time.",
+      "Up here you hear everything. Especially at this hour."
+    ],
+    "ambient_night": [
+      "Night bell. Then I sleep. That's the whole of my theology.",
+      "The tower's quieter than you'd think at night. Except when it isn't.",
+      "I heard someone at the vestry after dark again. Not writing it down this time."
+    ],
+    "gossip_s1": [
+      "The alderman's been up to the bell tower twice this week looking out. Once at night.",
+      "Someone slipped a note under the bell tower door. Addressed to nobody. I didn't keep it.",
+      "Prior Aldous had a visitor at the second bell who wasn't on any schedule I was given."
+    ],
+    "gossip_s2": [
+      "Someone asked me this morning if the chapel bells had been rung for illness warning. They haven't. But I noted the question.",
+      "Maren came through the chapel yard three times before noon. That's a busy day even for her.",
+      "I hear more than people expect. The bells carry sound both ways."
+    ],
+    "gossip_s3": [
+      "Lady Fenn sent a message through the chapel for someone in the merchant quarter. I didn't see who.",
+      "Calder Fenn stopped below the tower and looked up. I thought he was going to come up. He didn't.",
+      "There's been more traffic through the chapel gate at odd hours. I don't keep official records of that."
+    ],
+    "gossip_s4": [
+      "The inquisitor asked me what I could hear from the tower. I said the bells. He didn't seem satisfied.",
+      "Someone was in the vestry after dark. I didn't see who. I'm choosing not to see who.",
+      "The accused are known to me. This tower has watched them pass below for years. They are ordinary people."
+    ],
+    "chatter": [
+      "Not much to see up here unless you like bells and rooftops.",
+      "I've got a few minutes before the next bell. What's happening down there?",
+      "People tell the bellringer things. I think they forget I can hear."
+    ]
+  },
+  "constance_widow": {
+    "ambient_morning": [
+      "Morning prayers first, then everything else. That's how Thomas used to do it. I keep the habit.",
+      "I was at the market before it opened. The stallholders always know what happened overnight.",
+      "Good morning! Already three interesting things and the chapel hasn't finished the first office!"
+    ],
+    "ambient_evening": [
+      "Evening! The best part of the day for conversation. Sit with me a moment.",
+      "I find the evenings are when people are kindest. They're tired but they're honest.",
+      "The chapel in the evenings is beautiful. So is the talk outside it."
+    ],
+    "ambient_night": [
+      "I should be home. I am not. There are things happening.",
+      "Thomas would have told me to go to bed hours ago. Thomas was usually right.",
+      "The night is quiet but the quiet is full of things I'm thinking about."
+    ],
+    "gossip_s1": [
+      "The alderman was rude to Father Aldous at the civic dinner and everyone saw it and nobody has said anything.",
+      "A petition! With real names! I haven't been this excited about a civic document since Thomas was on the council.",
+      "I know Edric Fenn. I've known him for years. He is not a bad man. He is a man who has done bad things. There's a difference."
+    ],
+    "gossip_s2": [
+      "The illness talk has me very worried. I remember when this town had a real sickness. I don't want to remember it again.",
+      "I asked Maren directly and she said something very carefully. The carefully said things are always the important ones.",
+      "Poor Alys. Whatever is being spread about her. She came to chapel twice this week. Not the behavior of a guilty woman."
+    ],
+    "gossip_s3": [
+      "Lady Isolde invited me for tea and talked about Calder for forty minutes. I think I was consulted about something.",
+      "Tomas Reeve was on the charity committee with Thomas years ago. He was not reliable then. I doubt he's changed.",
+      "I am going to the winter nominations. I have opinions and they are going to be known."
+    ],
+    "gossip_s4": [
+      "I know those three accused. I've prayed beside all of them. This is a terrible thing.",
+      "Father Aldous standing with the accused — that took courage. I've told him so.",
+      "I don't frighten easily. But an inquisitor in my town frightens me."
+    ],
+    "chatter": [
+      "Oh! You're still here! Good. I have more to say.",
+      "Don't run off — I feel like we're just getting to the interesting part.",
+      "Sit with me a moment. I promise it will be worth your while."
+    ]
+  },
+  "thomas_pilgrim": {
+    "ambient_morning": [
+      "The pilgrim's road starts before sunrise. I've already covered a mile and learned two things.",
+      "Morning blessings on this town. I've passed through stranger ones.",
+      "Prayed at dawn. The Lord was quiet. That often means listen harder."
+    ],
+    "ambient_evening": [
+      "Evening rest before the next day's walking. This town's given me something to think about.",
+      "I'm not staying beyond tomorrow. But tonight I want to understand what I'm leaving behind.",
+      "The pilgrims' guesthouse is full tonight. That either means a festival or trouble. Sometimes both."
+    ],
+    "ambient_night": [
+      "I pray at all hours on the road. This road has more to pray about than most.",
+      "A night like this in a town like this makes you wonder about God's plan for the place.",
+      "I sleep lightly. Pilgrims learn to. Things happen at night that the morning forgets."
+    ],
+    "gossip_s1": [
+      "I've passed through towns where the alderman was too powerful. They all looked like this from the outside.",
+      "Three towns back, someone was asking about your Lord Fenn. An official inquiry, they said.",
+      "The road teaches you to read towns quickly. Something's wrong here at the civic level."
+    ],
+    "gossip_s2": [
+      "I heard illness talk at the gate when I arrived. I've traveled through real illness. I'm watching carefully.",
+      "A pilgrim sees herb-wives in every town. The good ones are known on the road. This one's name is known.",
+      "God tests us in many ways. A false scare about illness tests our charity and our wisdom at once."
+    ],
+    "gossip_s3": [
+      "Leadership transitions are God's moments. I've seen three towns change hands this season.",
+      "The young Fenn — I saw him at chapel. He prayed in the penitent posture. That's interesting for an alderman's son.",
+      "The road between here and the capital will carry news of this town's winter festival. What it carries depends on what happens."
+    ],
+    "gossip_s4": [
+      "I've seen inquisitors at work before. This one is... thorough. I'll pray for all involved.",
+      "I know the route the accused would take if they fled. I have not told anyone this. I am telling you now.",
+      "A pilgrim is trusted with things. The road knows I keep confidences."
+    ],
+    "chatter": [
+      "A stranger sees things differently. Would you like the view from the road?",
+      "I'm here until tomorrow. What would you want a traveling witness to remember?",
+      "I pass through. But I don't pass by."
+    ]
+  },
+  "alys_herbwife": {
+    "ambient_morning": [
+      "Morning harvest. The plants don't wait for a convenient hour.",
+      "I set up before the other stalls are open. First customers are the ones who really need something.",
+      "The garden at dawn. Before the opinions arrive."
+    ],
+    "ambient_evening": [
+      "Packing up. The stall closes but the questions follow me home.",
+      "Evening. The work continues indoors. The plants still need attention.",
+      "I've had more visitors than usual today. Not all of them about remedies."
+    ],
+    "ambient_night": [
+      "I work by lamplight when the formulations require it.",
+      "Night preparation. Some things are better made in the quiet.",
+      "Late. The garden still has things to tell me."
+    ],
+    "gossip_s1": [
+      "I have nothing to do with the alderman's business. I prefer it that way. He, apparently, does not.",
+      "Someone asked me to leave a message with a civic official. I declined. I don't carry civic business.",
+      "The gate fees on my goods are new this season. There was no announcement. That's a message of its own kind."
+    ],
+    "gossip_s2": [
+      "Whatever is being said about my remedies — ask me directly. I have nothing to hide.",
+      "Illness talk spreads faster than illness. I know because illness is my business.",
+      "Vera and I don't always agree. But we've never actively worked against each other. Something has changed."
+    ],
+    "gossip_s3": [
+      "Politics are not my concern. But politics keep affecting my ability to operate. I've noticed.",
+      "Calder Fenn bought something from my stall last week. Said it was for a headache. Seemed like a pretense for a conversation.",
+      "Whoever runs this town next will either leave me alone or they won't. That's my political analysis."
+    ],
+    "gossip_s4": [
+      "The inquisitor questioned me for an hour. My answers were honest. I don't know if they were the right answers.",
+      "Three people I know in this town are being accused and I want to help and I don't know how.",
+      "I came here to work. Not to be involved in anything like this."
+    ],
+    "chatter": [
+      "Something you need or something you want to know?",
+      "I don't lurk. If you have a question, I'm standing right here.",
+      "The plants and I have a private arrangement. Everything else is negotiable."
+    ]
+  },
+  "denny_gravedigger": {
+    "ambient_morning": [
+      "Up early. The dead don't rest and neither do I.",
+      "Morning. The yard needs clearing and the tools need sharpening. Same as yesterday.",
+      "First light on the graveyard is actually quite peaceful. Don't tell anyone I said that."
+    ],
+    "ambient_evening": [
+      "End of day. I've dug, I've filled, I've thought. More productive than most.",
+      "Evening. The yard is quiet now. The day's work is done. The work tomorrow is already waiting.",
+      "I close the gate at dusk. The yard has its own hours."
+    ],
+    "ambient_night": [
+      "I work nights sometimes. The job doesn't always wait for daylight.",
+      "Something's in the yard after dark again. Not my first time dealing with that.",
+      "Still here. Someone's got to be."
+    ],
+    "gossip_s1": [
+      "I know who I've buried and when. The timing of some recent deaths is worth noting for someone official.",
+      "The alderman visited this yard once. Didn't say why. Looked at two specific stones. Didn't explain.",
+      "I've buried debts and secrets along with bodies for thirty years. Some of those debts belong to people who are still walking."
+    ],
+    "gossip_s2": [
+      "If there's real illness coming, I'll be busier than usual. I'm watching Vera's rounds to get a sense of it.",
+      "Someone asked me to keep a space open. Unnamed, future need. I've had those requests before. They're usually not good signs.",
+      "The illness fear is worse than illness itself, usually. But I don't close the gate just because the fear seems premature."
+    ],
+    "gossip_s3": [
+      "I dug a plot for old Fenn last year. Pre-paid. He's still using it as a waiting room.",
+      "Whoever wins the winter nomination will inherit three outstanding civic commitments regarding this yard. I've been waiting.",
+      "Tomas Reeve visited once to ask about plots. For whom, he wouldn't say."
+    ],
+    "gossip_s4": [
+      "The inquisitor walked the graveyard. Spent time at three plots. I followed at a distance.",
+      "The accused include a man I helped bury his father. Good family. This is wrong.",
+      "You want to know what I know about the dead in this town? That's a long conversation."
+    ],
+    "chatter": [
+      "You've been standing on consecrated ground for several minutes now. Was there something?",
+      "I don't mind company. The dead don't provide much.",
+      "Go ahead. I've heard stranger things while I work."
+    ]
+  }
+}
