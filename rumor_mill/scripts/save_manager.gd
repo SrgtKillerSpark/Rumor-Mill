@@ -6,7 +6,8 @@
 ## NPC memory (credulity, rumor history, avoidance, defender state),
 ## reputation overrides, player intel (recon budget, heat, evidence),
 ## scenario state, journal timeline, rival agent state (S3),
-## inquisitor agent state (S4), illness escalation agent state (S2).
+## inquisitor agent state (S4), s4 faction shift agent state (S4),
+## illness escalation agent state (S2).
 ##
 ## Load flow:
 ##   1. prepare_load(scenario_id, slot) validates file and stores data in _pending_load_data.
@@ -90,6 +91,7 @@ static func save_game(
 		"scenario":         _serialize_scenario_manager(world.scenario_manager),
 		"rival_agent":               _serialize_rival_agent(world.rival_agent),
 		"inquisitor_agent":          _serialize_inquisitor_agent(world.inquisitor_agent),
+		"s4_faction_shift_agent":    _serialize_s4_faction_shift_agent(world.s4_faction_shift_agent),
 		"illness_escalation_agent":  _serialize_illness_escalation_agent(world.illness_escalation_agent),
 		"faction_event_system":      _serialize_faction_event_system(world.faction_event_system),
 		"socially_dead_ids":    world._socially_dead_ids.keys(),
@@ -168,6 +170,7 @@ static func apply_pending_load(
 	_restore_scenario_manager(world.scenario_manager, data.get("scenario", {}))
 	_restore_rival_agent(world.rival_agent, data.get("rival_agent", {}))
 	_restore_inquisitor_agent(world.inquisitor_agent, data.get("inquisitor_agent", {}))
+	_restore_s4_faction_shift_agent(world.s4_faction_shift_agent, data.get("s4_faction_shift_agent", {}))
 	_restore_illness_escalation_agent(world.illness_escalation_agent, data.get("illness_escalation_agent", {}))
 	_restore_faction_event_system(world.faction_event_system, data.get("faction_event_system", {}))
 	world._socially_dead_ids.clear()
@@ -345,6 +348,17 @@ static func _serialize_illness_escalation_agent(iea: IllnessEscalationAgent) -> 
 	}
 
 
+static func _serialize_s4_faction_shift_agent(agent: S4FactionShiftAgent) -> Dictionary:
+	if agent == null:
+		return {}
+	return {
+		"active":        agent._active,
+		"phase_1_fired": agent._phase_1_fired,
+		"phase_2_fired": agent._phase_2_fired,
+		"phase_3_fired": agent._phase_3_fired,
+	}
+
+
 # ── Restoration ───────────────────────────────────────────────────────────────
 
 static func _restore_day_night(dn: Node, data: Dictionary) -> void:
@@ -518,6 +532,15 @@ static func _restore_inquisitor_agent(ia: InquisitorAgent, d: Dictionary) -> voi
 	ia._active        = bool(d.get("active", false))
 	ia._last_seed_day = int(d.get("last_seed_day", 0))
 	ia._target_index  = int(d.get("target_index", 0))
+
+
+static func _restore_s4_faction_shift_agent(agent: S4FactionShiftAgent, d: Dictionary) -> void:
+	if agent == null or d.is_empty():
+		return
+	agent._active        = bool(d.get("active", false))
+	agent._phase_1_fired = bool(d.get("phase_1_fired", false))
+	agent._phase_2_fired = bool(d.get("phase_2_fired", false))
+	agent._phase_3_fired = bool(d.get("phase_3_fired", false))
 
 
 static func _restore_illness_escalation_agent(iea: IllnessEscalationAgent, d: Dictionary) -> void:
