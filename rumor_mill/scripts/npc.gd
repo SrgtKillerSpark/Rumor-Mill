@@ -1160,6 +1160,15 @@ func _reroute_if_avoided(location_code: String) -> String:
 
 # ── Query helpers ────────────────────────────────────────────────────────────
 
+## Returns true when this NPC has at least one rumor slot in EVALUATING state.
+## Use this to pre-check bribe eligibility BEFORE spending player resources.
+func has_evaluating_rumor() -> bool:
+	for rid in rumor_slots.keys():
+		if rumor_slots[rid].state == Rumor.RumorState.EVALUATING:
+			return true
+	return false
+
+
 ## Force the highest-priority EVALUATING slot to BELIEVE (bribe effect).
 ## Returns the forced rumor_id, or "" if no EVALUATING slot exists.
 func force_believe() -> String:

@@ -754,7 +754,8 @@ func _show_action_popup(npc: Node2D, screen_pos: Vector2) -> void:
 	vbox.add_child(btn_eavesdrop)
 
 	var can_bribe: bool = _intel_store.recon_actions_remaining > 0 \
-		and _intel_store.whisper_tokens_remaining > 0
+		and _intel_store.whisper_tokens_remaining > 0 \
+		and _intel_store.bribe_charges > 0
 	var btn_bribe := Button.new()
 	btn_bribe.add_theme_font_size_override("font_size", 12)
 	if can_bribe:
@@ -811,6 +812,15 @@ func _try_bribe(target: Node2D) -> void:
 				"This NPC is too close to Calder — they would report the approach.", false)
 			return
 
+	# SPA-593: pre-check eligibility before spending any resources.
+	if not target.has_evaluating_rumor():
+		emit_signal("action_performed",
+			"No pending rumor to reinforce — %s is not currently evaluating." % npc_name, false)
+		return
+	if _intel_store.bribe_charges <= 0:
+		emit_signal("action_performed", "No Favors remaining for bribe.", false)
+		return
+
 	# Cost: 1 Recon Action + 1 Whisper Token.
 	if not _intel_store.try_spend_action():
 		emit_signal("action_performed", "No Recon Actions remaining for bribe.", false)
@@ -825,7 +835,7 @@ func _try_bribe(target: Node2D) -> void:
 	# Execute: force EVALUATING → BELIEVE.
 	var forced_id: String = target.force_believe()
 	if forced_id.is_empty():
-		# NPC is no longer EVALUATING — refund and abort.
+		# Safety net: state changed between pre-check and execution — refund and abort.
 		_intel_store.recon_actions_remaining = mini(
 			_intel_store.recon_actions_remaining + 1, PlayerIntelStore.MAX_DAILY_ACTIONS)
 		_intel_store.whisper_tokens_remaining = mini(
