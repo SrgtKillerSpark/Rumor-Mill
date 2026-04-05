@@ -525,7 +525,8 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 	var believers: int  = 0
 	var spreaders: int  = 0
 	var rejectors: int  = 0
-	var prop_path: Array = []   # names of NPCs who actively know it
+	var prop_path: Array = []          # names of NPCs who actively know it
+	var spreader_set: Dictionary = {}  # nname → true for currently SPREAD NPCs
 
 	if _world_ref != null:
 		for npc in _world_ref.npcs:
@@ -541,6 +542,7 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 					believers += 1
 					spreaders += 1
 					prop_path.append(nname)
+					spreader_set[nname] = true
 				Rumor.RumorState.ACT:
 					believers += 1
 					prop_path.append(nname + " [ACT]")
@@ -586,7 +588,50 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 		hdr_style.border_width_left = 3
 		header_btn.add_theme_stylebox_override("normal", hdr_style)
 
-	_content_vbox.add_child(header_btn)
+	# Card wrapper with background tint based on rumor status.
+	var card_panel := PanelContainer.new()
+	var card_style := StyleBoxFlat.new()
+	card_style.set_corner_radius_all(4)
+	card_style.content_margin_left   = 4.0
+	card_style.content_margin_right  = 4.0
+	card_style.content_margin_top    = 4.0
+	card_style.content_margin_bottom = 4.0
+	match journal_status:
+		"SPREADING", "EVALUATING":
+			card_style.bg_color = Color(0.22, 0.16, 0.08, 0.55)  # warm amber tint
+		"EXPIRED", "CONTRADICTED":
+			card_style.bg_color = Color(0.14, 0.14, 0.12, 0.55)  # desaturated grey tint
+		_:
+			card_style.bg_color = Color(0.18, 0.13, 0.07, 0.55)  # neutral dark
+	card_panel.add_theme_stylebox_override("panel", card_style)
+	_content_vbox.add_child(card_panel)
+	var card_vbox := VBoxContainer.new()
+	card_panel.add_child(card_vbox)
+
+	card_vbox.add_child(header_btn)
+
+	# Believability gauge — thin bar showing current_believability (0–1).
+	var bel_bar := ProgressBar.new()
+	bel_bar.min_value                = 0.0
+	bel_bar.max_value                = 1.0
+	bel_bar.value                    = rumor.current_believability
+	bel_bar.show_percentage          = false
+	bel_bar.custom_minimum_size      = Vector2(0, 8)
+	bel_bar.size_flags_horizontal    = Control.SIZE_EXPAND_FILL
+	var bel_fill_color: Color
+	if rumor.current_believability > 0.6:
+		bel_fill_color = Color(0.10, 0.68, 0.22, 1.0)   # green
+	elif rumor.current_believability >= 0.3:
+		bel_fill_color = Color(0.82, 0.50, 0.10, 1.0)   # amber
+	else:
+		bel_fill_color = Color(0.80, 0.10, 0.10, 1.0)   # red
+	var bel_fill_style := StyleBoxFlat.new()
+	bel_fill_style.bg_color = bel_fill_color
+	var bel_bg_style := StyleBoxFlat.new()
+	bel_bg_style.bg_color = Color(0.20, 0.15, 0.10, 1.0)
+	bel_bar.add_theme_stylebox_override("fill", bel_fill_style)
+	bel_bar.add_theme_stylebox_override("background", bel_bg_style)
+	card_vbox.add_child(bel_bar)
 
 	# Status / shelf-life strip.
 	var ticks_elapsed: int = (_day_night_ref.current_tick - rumor.created_tick) \
@@ -602,7 +647,24 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 	]
 	badge_label.add_theme_font_size_override("font_size", 12)
 	badge_label.add_theme_color_override("font_color", status_color)
-	_content_vbox.add_child(badge_label)
+	card_vbox.add_child(badge_label)
+
+	# Shelf life decay bar — thin bar showing ticks elapsed vs total shelf life.
+	if rumor.shelf_life_ticks > 0:
+		var shelf_bar := ProgressBar.new()
+		shelf_bar.min_value             = 0.0
+		shelf_bar.max_value             = float(rumor.shelf_life_ticks)
+		shelf_bar.value                 = float(ticks_elapsed)
+		shelf_bar.show_percentage       = false
+		shelf_bar.custom_minimum_size   = Vector2(0, 5)
+		shelf_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var shelf_fill_style := StyleBoxFlat.new()
+		shelf_fill_style.bg_color = Color(0.55, 0.38, 0.18, 1.0)  # amber-brown
+		var shelf_bg_style := StyleBoxFlat.new()
+		shelf_bg_style.bg_color = Color(0.20, 0.15, 0.10, 1.0)
+		shelf_bar.add_theme_stylebox_override("fill", shelf_fill_style)
+		shelf_bar.add_theme_stylebox_override("background", shelf_bg_style)
+		card_vbox.add_child(shelf_bar)
 
 	if rumor.bolstered_by_evidence:
 		var bolster_lbl := Label.new()
@@ -610,7 +672,7 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 		bolster_lbl.add_theme_font_size_override("font_size", 12)
 		bolster_lbl.add_theme_color_override("font_color", Color(0.95, 0.85, 0.35, 1.0))
 		bolster_lbl.tooltip_text = "Bolstered by evidence."
-		_content_vbox.add_child(bolster_lbl)
+		card_vbox.add_child(bolster_lbl)
 
 	# "Suspect source" label — shown when this rumor was seeded by the rival agent.
 	if _world_ref != null and _world_ref.propagation_engine != null:
@@ -620,12 +682,12 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 			suspect_lbl.text = "  ⚠ Suspect source — This rumor appears to have an unknown instigator."
 			suspect_lbl.add_theme_font_size_override("font_size", 12)
 			suspect_lbl.add_theme_color_override("font_color", C_CONTRADICTED)
-			_content_vbox.add_child(suspect_lbl)
+			card_vbox.add_child(suspect_lbl)
 
 	# Detail container — toggled by header button.
 	var detail := VBoxContainer.new()
 	detail.visible = expanded
-	_content_vbox.add_child(detail)
+	card_vbox.add_child(detail)
 
 	# Wire header click.
 	header_btn.pressed.connect(func() -> void:
@@ -633,15 +695,22 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 		detail.visible = _expanded_rumors[rid]
 	)
 
-	# Propagation path.
+	# Propagation path — active spreaders (● bold) vs past believers (regular).
 	if not prop_path.is_empty():
 		_add_detail_label(detail, "  Propagation path:", C_SUBKEY)
-		var path_str: String = "    " + "  →  ".join(prop_path)
-		var path_lbl := Label.new()
-		path_lbl.text            = path_str
-		path_lbl.autowrap_mode   = TextServer.AUTOWRAP_WORD
-		path_lbl.add_theme_font_size_override("font_size", 12)
-		path_lbl.add_theme_color_override("font_color", C_BODY)
+		var path_lbl := RichTextLabel.new()
+		path_lbl.bbcode_enabled      = true
+		path_lbl.fit_content         = true
+		path_lbl.autowrap_mode       = TextServer.AUTOWRAP_WORD
+		path_lbl.add_theme_font_size_override("normal_font_size", 12)
+		path_lbl.add_theme_color_override("default_color", C_BODY)
+		var parts: Array = []
+		for pname in prop_path:
+			if spreader_set.has(pname):
+				parts.append("[b]● %s[/b]" % pname)
+			else:
+				parts.append(pname)
+		path_lbl.text = "    " + "  →  ".join(parts)
 		detail.add_child(path_lbl)
 
 	# Mutation log.
