@@ -118,6 +118,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_J:
 			toggle()
 			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ESCAPE and _is_open:
+			_close()
+			get_viewport().set_input_as_handled()
 
 
 # ── Toggle ────────────────────────────────────────────────────────────────────

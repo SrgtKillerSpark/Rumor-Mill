@@ -45,6 +45,9 @@ func _input(event: InputEvent) -> void:
 		if event.keycode == KEY_F1:
 			toggle()
 			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ESCAPE and _is_visible:
+			toggle()
+			get_viewport().set_input_as_handled()
 
 
 func toggle() -> void:

@@ -117,6 +117,19 @@ func _unhandled_input(event: InputEvent) -> void:
 				)
 			_draw_node.queue_redraw()
 			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ESCAPE and visible_overlay:
+			visible_overlay = false
+			if _fade_tween != null and _fade_tween.is_valid():
+				_fade_tween.kill()
+			_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+			_fade_tween.tween_property(_draw_node, "modulate:a", 0.0, 0.15)
+			_fade_tween.parallel().tween_property(_legend_panel, "modulate:a", 0.0, 0.15)
+			_fade_tween.tween_callback(func() -> void:
+				visible = false
+				_legend_panel.visible = false
+			)
+			_draw_node.queue_redraw()
+			get_viewport().set_input_as_handled()
 
 
 # ── Draw loop ──────────────────────────────────────────────────────────────────
