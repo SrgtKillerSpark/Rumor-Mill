@@ -576,7 +576,8 @@ func _try_eavesdrop(target: Node2D) -> void:
 			"\"%s seemed to glance your way.\" [+4 suspicion] (%d Recon left)" % [
 				name_a, _intel_store.recon_actions_remaining],
 			false)
-		player_exposed.emit()
+		if _world_ref != null and _world_ref.active_scenario_id == "scenario_1":
+				player_exposed.emit()
 		return
 
 	# Record relationship intel.
