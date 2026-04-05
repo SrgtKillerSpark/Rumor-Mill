@@ -53,6 +53,9 @@ var _event_choice_modal: CanvasLayer = null
 # ── SPA-589: Visual affordances for new players ──────────────────────────────
 var _visual_affordances: CanvasLayer = null
 
+# ── SPA-768: Interactive tutorial controller (step-gated S1 tutorial) ────────
+var _tutorial_ctrl: TutorialController = null
+
 # ── SPA-758: Onboarding waypoint marker (3-step guided sequence) ─────────────
 var _waypoint_node:  Node2D = null   # world-space marker (pulsing diamond + label)
 var _waypoint_tween: Tween  = null
@@ -466,6 +469,16 @@ func _init_s1_onboarding_flow() -> void:
 
 	# 4. SPA-758: Waypoint marker on Market — step 1 of 3-step guided sequence.
 	_show_waypoint_step1_market(market_world_pos)
+
+	# 5. SPA-768: Interactive tutorial controller — step-gated progression.
+	_tutorial_ctrl = preload("res://scripts/tutorial_controller.gd").new()
+	_tutorial_ctrl.name = "TutorialController"
+	add_child(_tutorial_ctrl)
+	_tutorial_ctrl.setup(
+		_tutorial_sys, _tutorial_banner, camera,
+		_recon_ctrl_ref, journal, rumor_panel, world
+	)
+	_tutorial_ctrl.start()
 
 
 # ── SPA-758: Onboarding waypoint marker system ──────────────────────────────
