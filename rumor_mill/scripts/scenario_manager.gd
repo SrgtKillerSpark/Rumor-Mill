@@ -312,8 +312,8 @@ const S5_ENDORSEMENT_DAY:       int = 15
 var S5_ENDORSEMENT_BONUS: int = 8
 
 # Scenario 6 thresholds (The Merchant's Debt — SPA-605).
-# Expose Aldric (rep <= 30) while protecting Marta (rep >= 60).
-# Lower heat ceiling (60) — guards are on Aldric's payroll.
+# Expose Aldric (rep <= 30) while protecting Marta (rep >= 62).
+# Lower heat ceiling (55) — guards are on Aldric's payroll.
 # Instant fail if Marta drops below 30.
 # Vars (not const) so difficulty modifiers from scenarios.json can override them.
 # SPA-747: marta win 60→62, heat ceiling 60→55 — visible heat budget must be tighter.

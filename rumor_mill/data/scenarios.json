@@ -371,13 +371,13 @@
         "designNote": "Base values as balanced. No overrides applied."
       },
       "hard": {
-        "daysAllowedOverride": 20,
+        "daysAllowedOverride": 18,
         "credulityDelta": -0.10,
-        "winBelieversOverride": 9,
+        "winBelieversOverride": 10,
         "personalityOverrides": [
           { "npcId": "maren_nun", "credulity": 0.30 }
         ],
-        "designNote": "Fewer days, 9 believers needed, and Maren is slightly more curious (higher credulity = she encounters more rumors, increasing rejection risk). Requires routing through 3+ independent clusters."
+        "designNote": "Fewer days, 10 believers needed, and Maren is slightly more curious (higher credulity = she encounters more rumors, increasing rejection risk). Requires routing through 3+ independent clusters."
       }
     },
     "suggestion_overrides": {
@@ -390,9 +390,9 @@
     "title": "The Succession",
     "hookText": "Two targets. One to elevate, one to destroy. A rival agent is already working against you. This is a war fought with whispers — and you are fighting on two fronts.",
     "description": "Lady Isolde Fenn wants her son Calder elevated — but Tomas Reeve blocks any clean path to power, and Lord Edric is not ready to step aside. You must raise one reputation and ruin another simultaneously, while a rival agent works against you. Twenty-seven days, two targets — and if Calder's reputation drops below 35, you fail instantly.",
-    "daysAllowed": 27,
+    "daysAllowed": 25,
     "introText": "Lady Isolde received you in the lesser hall, away from the servants. Her son Calder is twenty-two, quick, and capable — everything a future alderman should be. His only obstacle is Tomas Reeve, who has the favor of half the merchant quarter. The winter festival is twenty-five days away, and a rival is already working against you. It only takes one night to make or ruin a reputation — but it takes all twenty-five to manage two.",
-    "startingText": "YOUR GOAL: Raise Calder Fenn's reputation to 75+ AND drop Tomas Reeve's reputation to 35 or below.\n\nHOW: Use Praise rumors to boost Calder through his allies. Use Scandal rumors to tear down Tomas through the merchant quarter. Press R to craft rumors. You fight on two fronts simultaneously.\n\nWATCH OUT: If Calder's reputation drops below 35, you lose instantly. A rival agent is actively working against you — praising Tomas and scandalizing Calder. You have 27 days.\n\nLady Isolde hired you to elevate her son. Tomas Reeve blocks any clean path to power. One wrong twist and Calder himself becomes the story.",
+    "startingText": "YOUR GOAL: Raise Calder Fenn's reputation to 75+ AND drop Tomas Reeve's reputation to 35 or below.\n\nHOW: Use Praise rumors to boost Calder through his allies. Use Scandal rumors to tear down Tomas through the merchant quarter. Press R to craft rumors. You fight on two fronts simultaneously.\n\nWATCH OUT: If Calder's reputation drops below 35, you lose instantly. A rival agent is actively working against you — praising Tomas and scandalizing Calder. You have 25 days.\n\nLady Isolde hired you to elevate her son. Tomas Reeve blocks any clean path to power. One wrong twist and Calder himself becomes the story.",
     "victoryText": "The winter festival nominations were read aloud in the Town Square.\n\nCalder Fenn's name drew a real cheer — not a polite one. Tomas Reeve's name drew silence.\n\nLady Isolde watched from her window. She did not smile. But she did exhale.",
     "failTexts": {
       "calder_implicated": "The rumor had started as praise. You knew that.\n\nSomewhere between the Tavern and the Chapel steps, it had changed.\n\nCalder Fenn was now the subject of a story that no one believed was an accident. Including Lady Isolde.",
@@ -441,13 +441,13 @@
       { "npcId": "tomas_reeve", "loyalty": 0.40 }
     ],
     "startingReputations": {
-      "calder_fenn": 65,
+      "calder_fenn": 62,
       "tomas_reeve": 48
     },
     "targetShiftExcluded": ["calder_fenn"],
     "strategicBrief": {
       "targetNpcId": "calder_fenn",
-      "repStart": 65,
+      "repStart": 62,
       "goalLabel": "Calder 75+, Tomas 35 or below",
       "primaryConstraint": "A rival whisperer actively opposes you — Calder's allies can be turned",
       "strategicHint": "Two-front war — boost Calder through noble allies while seeding scandal against Tomas through the merchant quarter."
@@ -570,18 +570,18 @@
         "designNote": "Base values as balanced. No overrides applied."
       },
       "hard": {
-        "daysAllowedOverride": 23,
+        "daysAllowedOverride": 21,
         "credulityDelta": -0.10,
         "rivalIntensityDelta": 1,
         "rivalStartDay": 14,
         "winCalderMin": 80,
         "winTomasMax": 30,
-        "failCalderBelow": 40,
+        "failCalderBelow": 42,
         "startingReputationOverrides": {
           "calder_fenn": 60,
           "tomas_reeve": 52
         },
-        "designNote": "Tighter win thresholds, earlier/stronger rival, Calder starts lower and Tomas starts higher. Requires near-perfect rumor routing on both fronts simultaneously."
+        "designNote": "Tighter win thresholds, earlier/stronger rival, Calder starts lower and Tomas starts higher. Tighter fail threshold since players can see it coming. Requires near-perfect rumor routing on both fronts simultaneously."
       }
     },
     "suggestion_overrides": {
@@ -593,8 +593,8 @@
     "scenarioId": "scenario_4",
     "title": "The Holy Inquisition",
     "hookText": "They came for three innocent people. You owe them everything. Now turn the town's own voice into a shield — because the Inquisitor will not stop, and neither can you.",
-    "description": "An inquisitor has arrived with sealed orders and the weight of the Church behind him. Three townsfolk stand accused of heresy — and you owe each of them a debt that cannot be repaid in coin. Twenty days to keep their names clean, their reputations intact, and the inquisitor's stories from taking root.",
-    "daysAllowed": 20,
+    "description": "An inquisitor has arrived with sealed orders and the weight of the Church behind him. Three townsfolk stand accused of heresy — and you owe each of them a debt that cannot be repaid in coin. Eighteen days to keep their names clean, their reputations intact, and the inquisitor's stories from taking root.",
+    "daysAllowed": 18,
     "introText": "Brother Cornelius arrived at vespers with three names on a writ and the Bishop's seal in red wax. By morning, the chapel steps were crowded with the fearful and the curious. Aldous Prior looked ill. Vera Midwife did not come to market. Finn Monk was seen packing a bag.\n\nYou know what happens when the Church names someone. The town does the rest.\n\nYou have twenty days. You have your wits. And you have a voice that can vouch for the innocent — if you spend it wisely.",
     "startingText": "YOUR GOAL: Keep all three accused — Aldous Prior, Vera Midwife, and Finn Monk — above 45 reputation for 20 days.\n\nHOW: This is purely defensive. Press R to craft Praise rumors about the accused, then whisper them to well-connected NPCs. Counter-spread faster than the Inquisitor can slander. Prioritize whoever is closest to the danger zone.\n\nWATCH OUT: If ANY of the three drops below 40 reputation, you lose instantly. Between 40-44 is a danger zone — not yet fatal, but they must be back above 45 by the deadline. The Inquisitor seeds accusations on a cooldown that accelerates over time — he gets faster as the deadline approaches.\n\nBrother Cornelius arrived with a sealed writ and three names. The charges are vague — heresy, improper doctrine, unsanctioned healing. Vague enough to stick. You owe these people.",
     "victoryText": "Brother Cornelius left at dawn on the twenty-first day, his writ unsigned.\n\nThe Bishop's clerk recorded the outcome as 'insufficient evidence.' But you knew the truth — there had been plenty of evidence. It simply hadn't been believed.\n\nAldous Prior resumed his sermons. Vera Midwife reopened her door. Finn Monk stopped packing.\n\nThe town had chosen its own.",
@@ -641,24 +641,24 @@
     "startingReputations": {
       "aldous_prior": 70,
       "vera_midwife": 68,
-      "finn_monk": 72
+      "finn_monk": 68
     },
     "targetShiftExcluded": ["aldous_prior", "vera_midwife", "finn_monk"],
     "protectedNpcIds": ["aldous_prior", "vera_midwife", "finn_monk"],
     "strategicBrief": {
       "targetNpcId": "finn_monk",
-      "repStart": 72,
-      "goalLabel": "Keep Finn, Vera, and Aldous above 45",
+      "repStart": 68,
+      "goalLabel": "Keep Finn, Vera, and Aldous above 48",
       "primaryConstraint": "The Inquisitor accelerates — accusations come faster each day",
       "strategicHint": "Prioritize Finn Monk — he absorbs slander most readily. Counter-spread positive character-witness rumors faster than the Inquisitor."
     },
     "objectiveCard": {
-      "mission": "The Inquisitor is coming for three innocent people. Defend their reputations against a tide of heresy accusations — if any one falls below 45, you have failed them.",
-      "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk above 45 reputation at the deadline.",
-      "timeLimit": "You have 20 days.",
+      "mission": "The Inquisitor is coming for three innocent people. Defend their reputations against a tide of heresy accusations — if any one falls below 48, you have failed them.",
+      "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk above 48 reputation at the deadline.",
+      "timeLimit": "You have 18 days.",
       "danger": "Finn is the most vulnerable — impressionable and wavering in loyalty, he absorbs slander more readily than the others. The Inquisitor is a relentless opponent who actively spreads accusations on a cooldown that accelerates over time.",
       "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera.",
-      "firstAction": "Check the Scenario HUD to see who is closest to 45. Press R, choose the most threatened NPC as the subject, select Praise as the claim, and whisper it to their strongest ally.",
+      "firstAction": "Check the Scenario HUD to see who is closest to 48. Press R, choose the most threatened NPC as the subject, select Praise as the claim, and whisper it to their strongest ally.",
       "goalVerb": "PROTECT",
       "goalTarget": "the accused from the Inquisitor",
       "progressMilestones": {
@@ -778,16 +778,16 @@
         "designNote": "Base values as balanced. No overrides applied."
       },
       "hard": {
-        "daysAllowedOverride": 17,
+        "daysAllowedOverride": 15,
         "credulityDelta": -0.10,
-        "inquisitorCooldownDelta": -2,
+        "inquisitorCooldownDelta": -3,
         "inquisitorIntensityDelta": 1,
-        "winRepMin": 50,
-        "failRepBelow": 45,
+        "winRepMin": 52,
+        "failRepBelow": 47,
         "startingReputationOverrides": {
-          "aldous_prior": 65,
-          "vera_midwife": 63,
-          "finn_monk": 67
+          "aldous_prior": 62,
+          "vera_midwife": 60,
+          "finn_monk": 63
         },
         "designNote": "Lower starting reps, higher thresholds, faster/stronger inquisitor, fewer days. One missed defensive cycle can cascade into an instant fail. Requires triage."
       }
@@ -801,8 +801,8 @@
     "scenarioId": "scenario_5",
     "title": "The Election",
     "hookText": "Three names on the ballot. One patron's gold in your pocket. The autumn vote is twenty-five days away — and the whole town is watching. Make sure they see what you want them to see.",
-    "description": "The autumn alderman election pits three candidates against each other: Lord Edric Fenn (the entrenched incumbent), Aldric Vane (the merchant guild's ambitious challenger), and Tomas Reeve (the civic reformer with common-folk appeal). Your patron has bet everything on Aldric Vane — and you have twenty-five days to make the town agree. Boost Aldric, undermine both rivals, and time your moves around the Prior's endorsement.",
-    "daysAllowed": 25,
+    "description": "The autumn alderman election pits three candidates against each other: Lord Edric Fenn (the entrenched incumbent), Aldric Vane (the merchant guild's ambitious challenger), and Tomas Reeve (the civic reformer with common-folk appeal). Your patron has bet everything on Aldric Vane — and you have twenty-three days to make the town agree. Boost Aldric, undermine both rivals, and time your moves around the Prior's endorsement.",
+    "daysAllowed": 23,
     "introText": "The election notices went up at dawn — three names nailed to the chapel door, the market board, and the town hall gate. Lord Edric Fenn's name was first, as always. Aldric Vane's was second, in fresh ink. Tomas Reeve's was last, written in a hand that shook slightly.\n\nYour patron met you behind the Guild Hall with a purse and a warning: 'Vane must win. Not by a hair — by a margin no one can contest. And if the Prior endorses someone else, we are finished.'",
     "startingText": "YOUR GOAL: Get Aldric Vane elected alderman.\n\nHOW: Aldric must have the highest reputation among the three candidates AND reach 65+. Both Edric Fenn and Tomas Reeve must be below 45. Use Praise rumors for Aldric and Scandal/Accusation rumors against the rivals. Press R to craft rumors.\n\nWATCH OUT: On day 15, Prior Aldous will publicly endorse the candidate with the highest reputation — that endorsement grants a +8 reputation boost. If Aldric isn't leading by then, you may lose the election. If Aldric drops below 30, instant fail. You have 25 days.\n\nThree candidates. One election. Twenty-five days to make the town choose your patron's man.",
     "victoryText": "The votes were counted in the Town Hall with the doors open and the crowd pressing in.\n\nAldric Vane's name was called three times for every one of Edric's. Tomas Reeve's supporters had already left.\n\nThe new alderman accepted the chain of office with a speech about honest trade and fair governance. Your patron watched from the second row, expressionless. But when Vane finished, the old merchant raised his cup — just once, just slightly.\n\nYou were already packed.",
@@ -850,14 +850,14 @@
     ],
     "startingReputations": {
       "edric_fenn": 58,
-      "aldric_vane": 48,
+      "aldric_vane": 45,
       "tomas_reeve": 45
     },
     "targetShiftExcluded": ["aldric_vane"],
     "electionCandidates": ["edric_fenn", "aldric_vane", "tomas_reeve"],
     "strategicBrief": {
       "targetNpcId": "aldric_vane",
-      "repStart": 48,
+      "repStart": 45,
       "goalLabel": "Aldric 65+ and leading both rivals",
       "primaryConstraint": "Prior endorses the leader on day 15 — timing is critical",
       "strategicHint": "Boost Aldric through the merchant chain while undermining both rivals — ensure he leads before day 15."
@@ -871,7 +871,7 @@
     "objectiveCard": {
       "mission": "Get Aldric Vane elected alderman in a three-way race.",
       "winCondition": "Aldric Vane reputation ≥ 65 AND highest of the three candidates. Edric Fenn AND Tomas Reeve both below 45.",
-      "timeLimit": "You have 25 days. The Prior's endorsement happens on day 15.",
+      "timeLimit": "You have 23 days. The Prior's endorsement happens on day 15.",
       "danger": "If Aldric drops below 30, instant fail. The Prior endorses whoever leads on day 15 — a +8 boost that could decide the race.",
       "strategyHint": "Three-front war. Boost Aldric through the merchant chain (Sybil, Nell, Greta). Undermine Edric through his weaker noble ties (Annit, Old Hugh). Undermine Tomas through his common-folk connections (Sim, Constance). Time everything around the day-15 endorsement.",
       "firstAction": "Observe the Market to find Aldric's merchant allies. Press R to craft a Praise rumor about Aldric and whisper it to Sybil Oats — she is the most connected merchant. Then start seeding Scandal rumors against whichever rival is currently leading.",
@@ -990,16 +990,16 @@
         "designNote": "Base values as balanced. No overrides applied."
       },
       "hard": {
-        "daysAllowedOverride": 21,
+        "daysAllowedOverride": 19,
         "credulityDelta": -0.10,
         "heatRateMultiplier": 1.30,
-        "winAldricMin": 70,
+        "winAldricMin": 72,
         "winRivalsMax": 40,
         "failAldricBelow": 35,
         "endorsementBonusOverride": 6,
         "startingReputationOverrides": {
           "edric_fenn": 62,
-          "aldric_vane": 42,
+          "aldric_vane": 38,
           "tomas_reeve": 48
         },
         "designNote": "Edric starts stronger, Aldric weaker, Tomas higher. Fewer days, tighter thresholds, smaller endorsement bonus. Requires surgical precision across all three fronts and perfect timing around the endorsement."
@@ -1015,14 +1015,14 @@
     "title": "The Merchant's Debt",
     "hookText": "The Guild Master has been cooking the books. You have the proof. But his allies run every stall in the market — and if they find you before the truth finds them, you'll be the one who disappears.",
     "description": "Marta Coin has discovered that Guild Master Aldric Vane has been embezzling from the merchant guild's common fund for years. The missing silver has been covered with false ledgers signed by Annit Scribe. Marta has hired you to expose Aldric — but quietly. If Aldric's merchant allies discover your hand before the evidence takes root, they will close ranks and silence Marta instead. Ruin Aldric's reputation. Protect Marta's. And keep your heat low — in this scenario, the guards are on Aldric's payroll.",
-    "daysAllowed": 22,
+    "daysAllowed": 20,
     "introText": "Marta Coin's hands were steady when she showed you the ledger — a real one, not the copy Annit files at the Town Hall. The numbers told a story that Aldric Vane had spent years hiding: two hundred silver marks, skimmed from guild dues, laundered through the blacksmith's accounts.\n\n'I need him gone,' she said. 'But I need to still be standing when the dust settles. If his people find out I'm behind this, they'll ruin me before he ever sees a courtroom.'\n\nShe's right. Aldric's merchant network is tight. The Guard Captain takes his coin. You'll need to work through the cracks — the clergy, the commons, the NPCs who owe Aldric nothing.",
-    "startingText": "YOUR GOAL: Expose Guild Master Aldric Vane's embezzlement and protect your patron Marta Coin.\n\nHOW: Get Aldric Vane's reputation to 30 or below while keeping Marta Coin's reputation at 60 or above. Use Accusation and Scandal rumors against Aldric, and Praise rumors for Marta. Press R to craft rumors.\n\nWATCH OUT: Heat ceiling is lower in this scenario — Bram Guard exposes you at 60 heat (not 80). Aldric's merchant allies will actively defend him. If Marta's reputation drops below 30, instant fail (she's been silenced). You have 22 days.\n\nThe merchant guild is Aldric's territory. Route your rumors through the clergy and commons — they owe him nothing.",
+    "startingText": "YOUR GOAL: Expose Guild Master Aldric Vane's embezzlement and protect your patron Marta Coin.\n\nHOW: Get Aldric Vane's reputation to 30 or below while keeping Marta Coin's reputation at 62 or above. Use Accusation and Scandal rumors against Aldric, and Praise rumors for Marta. Press R to craft rumors.\n\nWATCH OUT: Heat ceiling is lower in this scenario — Bram Guard exposes you at 55 heat (not 80). Aldric's merchant allies will actively defend him. If Marta's reputation drops below 30, instant fail (she's been silenced). You have 20 days.\n\nThe merchant guild is Aldric's territory. Route your rumors through the clergy and commons — they owe him nothing.",
     "victoryText": "The guild audit was called on a Tuesday — at Marta Coin's request, seconded by the Prior.\n\nAldric Vane did not attend. His seat in the Guild Hall was empty when the real ledger was read aloud. The silence that followed was louder than any accusation you had ever whispered.\n\nMarta Coin was elected interim Guild Master before the week was out. She did not mention your name. She didn't need to.",
     "failTexts": {
       "marta_silenced": "The story changed overnight. Suddenly it was Marta who was the thief — Marta who had falsified records, Marta who could not be trusted.\n\nAldric's allies moved fast. By the time you understood what had happened, Marta's stall was shuttered and her name was poison in the market quarter.\n\nYou had underestimated how quickly a guild can close ranks.",
       "exposed": "The Guard Captain found you at the well, just after dawn.\n\n'Aldric Vane sends his regards,' he said. Not a threat — a statement of fact. By noon, every merchant in the quarter knew your face and your purpose.\n\nMarta Coin denied ever meeting you. She had no choice.",
-      "timeout": "Twenty-two days passed. The ledger sat in Marta's locked chest, still waiting for the right moment.\n\nThe right moment never came. Aldric Vane's reputation was bruised but intact. The guild closed its books for the season, and with them, the window for an audit.\n\nMarta Coin paid you the second half of your fee without a word. You both knew it had been wasted."
+      "timeout": "Twenty days passed. The ledger sat in Marta's locked chest, still waiting for the right moment.\n\nThe right moment never came. Aldric Vane's reputation was bruised but intact. The guild closed its books for the season, and with them, the window for an audit.\n\nMarta Coin paid you the second half of your fee without a word. You both knew it had been wasted."
     },
     "edgeOverrides": [
       { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.80, "weightBtoA": 0.75 },
@@ -1066,18 +1066,18 @@
     ],
     "startingReputations": {
       "aldric_vane": 55,
-      "marta_coin": 52
+      "marta_coin": 48
     },
     "targetShiftExcluded": ["marta_coin"],
     "protectedNpcIds": ["marta_coin"],
     "strategicBrief": {
       "targetNpcId": "aldric_vane",
       "repStart": 55,
-      "goalLabel": "Aldric below 30, Marta above 60",
-      "primaryConstraint": "Heat ceiling 60 — guards are on Aldric's payroll",
+      "goalLabel": "Aldric below 30, Marta above 62",
+      "primaryConstraint": "Heat ceiling 55 — guards are on Aldric's payroll",
       "strategicHint": "Route accusations through clergy and commons — Aldric's merchant allies actively counter your market-quarter rumors."
     },
-    "exposedHeatOverride": 60.0,
+    "exposedHeatOverride": 55.0,
     "guildDefenseActive": true,
     "guildDefenseConfig": {
       "defenderNpcIds": ["sybil_oats", "rufus_bolt", "bess_wicker", "idris_kemp"],
@@ -1089,9 +1089,9 @@
     },
     "objectiveCard": {
       "mission": "Expose Guild Master Aldric Vane's embezzlement while protecting your patron Marta Coin.",
-      "winCondition": "Get Aldric Vane's reputation to 30 or below. Keep Marta Coin's reputation at 60 or above.",
-      "timeLimit": "You have 22 days.",
-      "danger": "Heat ceiling is 60 (not 80) — the guards are on Aldric's payroll. If Marta's reputation drops below 30, instant fail. Aldric's merchant allies actively defend him with praise rumors every 3 days.",
+      "winCondition": "Get Aldric Vane's reputation to 30 or below. Keep Marta Coin's reputation at 62 or above.",
+      "timeLimit": "You have 20 days.",
+      "danger": "Heat ceiling is 55 (not 80) — the guards are on Aldric's payroll. If Marta's reputation drops below 30, instant fail. Aldric's merchant allies actively defend him with praise rumors every 3 days.",
       "strategyHint": "The merchant quarter is Aldric's stronghold — his allies will actively counter your rumors there. Route accusations through the clergy chain (Aldous → Maren → Vera → Constance) and the commons (Nell, Greta, Old Hugh). Boost Marta through her connections to Sim Carter and Nell Picker.",
       "firstAction": "Observe the Chapel to find clergy NPCs disconnected from Aldric. Press R to craft an Accusation about Aldric (embezzlement) and whisper it to Finn Monk or Constance Widow — they have low loyalty and high connections outside the merchant quarter.",
       "goalVerb": "RUIN",
@@ -1217,17 +1217,17 @@
         "designNote": "Base values as balanced. No overrides applied."
       },
       "hard": {
-        "daysAllowedOverride": 18,
+        "daysAllowedOverride": 16,
         "credulityDelta": -0.10,
         "heatRateMultiplier": 1.30,
-        "exposedHeatOverride": 50.0,
-        "winAldricMax": 25,
-        "winMartaMin": 65,
-        "failMartaBelow": 35,
+        "exposedHeatOverride": 45.0,
+        "winAldricMax": 22,
+        "winMartaMin": 68,
+        "failMartaBelow": 38,
         "guildDefenseCooldownOverride": 2,
         "startingReputationOverrides": {
-          "aldric_vane": 60,
-          "marta_coin": 48
+          "aldric_vane": 63,
+          "marta_coin": 44
         },
         "personalityOverrides": [
           { "npcId": "aldric_vane", "loyalty": 0.95 },
