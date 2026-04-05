@@ -2,7 +2,7 @@
   {
     "scenarioId": "scenario_1",
     "title": "The Alderman's Ruin",
-    "description": "The alderman Edric Fenn controls the town through a web of loyal allies, informants, and fear — and the autumn tax assessment is twelve days away. Your patron's candidate loses another term unless Fenn is discredited before the rolls are signed. Thirty days to plant the right story and make sure it reaches the right ears.",
+    "description": "The alderman Edric Fenn controls the town through a web of loyal allies, informants, and fear. Your patron's candidate loses another term unless Fenn is discredited before the autumn tax rolls are signed. You have thirty days to plant the right story and make sure it reaches the right ears.",
     "daysAllowed": 30,
     "introText": "The stranger came with the harvest wagons — quiet as a loose coin in a full purse. Lord Edric Fenn has held the aldermanship for nine years, and the tax rolls are fat with his favor. The autumn assessment is twelve days off, and your patron grows impatient. A single rumor, well-placed, can bring down what nine years built.",
     "startingText": "A foreign factor has entered the town quietly, carrying letters of introduction that may — or may not — be genuine.\n\nLord Edric Fenn holds the aldermanship with an iron hand. In twelve days the autumn tax assessment begins. If Fenn is still in office, your patron's candidate loses another term.\n\nYou have thirty days. You have your wits. And you have a story that no one has heard yet.",
@@ -116,14 +116,14 @@
       "mission": "Drive away the rival Herb-Wife Alys using illness rumors.",
       "winCondition": "Get 7 or more NPCs to believe/spread/act on illness rumors about Alys.",
       "timeLimit": "You have 20 days.",
-      "danger": "Sister Maren is skeptical but watchful. If she rejects ANY illness rumor about Alys, you instantly fail.",
+      "danger": "Sister Maren is skeptical and watchful. If Maren rejects ANY illness rumor about Alys, you instantly fail.",
       "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle."
     }
   },
   {
     "scenarioId": "scenario_3",
     "title": "The Succession",
-    "description": "Lady Isolde Fenn wants her son Calder elevated — but Tomas Reeve blocks any clean path to power, and Lord Edric is not ready to step aside. You must raise one reputation and ruin another simultaneously, keeping Isolde's hands clean throughout. Twenty-five days, two targets, and one wrong twist away from becoming the story yourself.",
+    "description": "Lady Isolde Fenn wants her son Calder elevated — but Tomas Reeve blocks any clean path to power, and Lord Edric is not ready to step aside. You must raise one reputation and ruin another simultaneously, while a rival agent works against you. Twenty-five days, two targets — and if Calder's reputation drops below 40, you fail instantly.",
     "daysAllowed": 25,
     "introText": "Lady Isolde received you in the lesser hall, away from the servants. Her son Calder is twenty-two, quick, and capable — everything a future alderman should be. His only obstacle is Tomas Reeve, who has the favor of half the merchant quarter. The winter festival is twenty-five days away, and a rival is already working against you. It only takes one night to make or ruin a reputation — but it takes all twenty-five to manage two.",
     "startingText": "Lady Isolde Fenn has a problem: her son Calder is brilliant, charming, and twenty-two years old. Her husband is not ready to step aside.\n\nShe hired you to solve the first half. The second half solves itself, if Tomas Reeve falls far enough before the winter festival.\n\nTwenty-five days. Two reputations to manage. One wrong twist and Calder himself becomes the story.",
@@ -193,7 +193,7 @@
     "description": "An inquisitor has arrived with sealed orders and the weight of the Church behind him. Three townsfolk stand accused of heresy — and you owe each of them a debt that cannot be repaid in coin. Twenty days to keep their names clean, their reputations intact, and the inquisitor's stories from taking root.",
     "daysAllowed": 20,
     "introText": "Brother Cornelius arrived at vespers with three names on a writ and the Bishop's seal in red wax. By morning, the chapel steps were crowded with the fearful and the curious. Aldous Prior looked ill. Vera Midwife did not come to market. Finn Monk was seen packing a bag.\n\nYou know what happens when the Church names someone. The town does the rest.\n\nYou have twenty days. You have your wits. And you have a voice that can vouch for the innocent — if you spend it wisely.",
-    "startingText": "The Inquisitor arrived with vespers and a sealed writ.\n\nThree names: Aldous Prior, Vera Midwife, Finn Monk. The charges are vague — heresy, improper doctrine, unsanctioned healing. Vague enough to stick.\n\nYou owe these people. And in twenty days, the Inquisitor will present his findings to the Bishop.\n\nKeep their reputations above the mud. Vouch for them when the whispers get too loud. And pray the town listens to you more than it listens to him.",
+    "startingText": "This scenario is purely defensive. You are not attacking — you are protecting.\n\nThe Inquisitor arrived with vespers and a sealed writ. Three names: Aldous Prior, Vera Midwife, Finn Monk. The charges are vague — heresy, improper doctrine, unsanctioned healing. Vague enough to stick.\n\nYou owe these people. In twenty days, the Inquisitor will present his findings to the Bishop. Keep all three reputations above 50 by counter-spreading positive rumours. The Inquisitor will seed slander on a cooldown that accelerates — you must outpace him.",
     "victoryText": "Brother Cornelius left at dawn on the twenty-first day, his writ unsigned.\n\nThe Bishop's clerk recorded the outcome as 'insufficient evidence.' But you knew the truth — there had been plenty of evidence. It simply hadn't been believed.\n\nAldous Prior resumed his sermons. Vera Midwife reopened her door. Finn Monk stopped packing.\n\nThe town had chosen its own.",
     "failTexts": {
       "reputation_collapsed": "The crowd gathered at the chapel steps before Brother Cornelius had even finished his morning prayers.\n\nThey came with stories — some true, most not, all believed. By evening, the writ was signed.\n\nYou watched from the edge of the square as the accused were led away. You had tried. The town had chosen differently.",
@@ -246,7 +246,7 @@
       "mission": "Defend three accused townsfolk from the Inquisitor's slander.",
       "winCondition": "Keep Aldous Prior, Vera Midwife, and Finn Monk's reputations above 50.",
       "timeLimit": "You have 20 days.",
-      "danger": "Finn is the most vulnerable — credulous and disloyal, he absorbs slander easily. The Inquisitor is an AI opponent who actively spreads accusations.",
+      "danger": "Finn is the most vulnerable — credulous and easily swayed, he absorbs slander quickly. The Inquisitor is a relentless opponent who actively spreads accusations on a cooldown that accelerates over time.",
       "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera."
     }
   }

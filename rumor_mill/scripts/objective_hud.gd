@@ -141,9 +141,9 @@ func _build_metrics_row() -> void:
 	_metrics_row.add_child(_lbl_believers)
 
 	# Socially dead count
-	_lbl_rumors_active = _make_metric_label("Dead: 0")
+	_lbl_rumors_active = _make_metric_label("Pariahs: 0")
 	_lbl_rumors_active.add_theme_color_override("font_color", Color(0.90, 0.35, 0.25, 1.0))
-	_lbl_rumors_active.tooltip_text = "NPCs that are socially dead (reputation permanently frozen)"
+	_lbl_rumors_active.tooltip_text = "NPCs whose reputation has collapsed beyond recovery"
 	_metrics_row.add_child(_lbl_rumors_active)
 
 
@@ -182,7 +182,7 @@ func _refresh_metrics() -> void:
 	if _lbl_believers != null:
 		_lbl_believers.text = "Believers: %d" % _reputation_system.get_global_believer_count()
 	if _lbl_rumors_active != null:
-		_lbl_rumors_active.text = "Dead: %d" % dead_count
+		_lbl_rumors_active.text = "Pariahs: %d" % dead_count
 
 
 # ── Banner system (dawn bulletin + deadline warnings) ────────────────────────

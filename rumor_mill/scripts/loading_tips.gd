@@ -14,7 +14,7 @@ const MIN_DURATION_SEC := 2.0
 const TIPS: Array = [
 	"[b]Rumors travel through relationships.[/b]  Seed your story where the crowd gathers — the Tavern and Market Square carry whispers farthest and fastest.",
 	"[b]High Credulity means easy believers — but watch for high Loyalty.[/b]  A loyal NPC may defend your target instead of doubting them.",
-	"[b]Eavesdropping is risky.[/b]  Getting caught ends your run instantly. Save it for targets you've already softened through rumor.",
+	"[b]Eavesdropping is risky.[/b]  High-temperament NPCs may catch you listening, raising suspicion. In Scenario 1, getting caught fails the mission instantly.",
 	"[b]Watch the clock.[/b]  Each scenario has a hard deadline. A reputation just barely above the threshold on the final day is the same as failure.",
 	"[b]The right mouth matters more than many.[/b]  A highly Sociable NPC will carry your story further with fewer Whisper Tokens spent than a crowd of quiet listeners.",
 	"[b]Bribery silences skeptics — for a price.[/b]  In scenarios where it's available, use it on influential NPCs on the verge of rejecting your rumor.",

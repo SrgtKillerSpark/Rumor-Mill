@@ -447,6 +447,6 @@ func _build_tab_systems() -> VBoxContainer:
 
 	# Scenario Objectives
 	vbox.add_child(_make_body("Scenario Objectives"))
-	vbox.add_child(_make_body("  Each scenario has unique win and fail conditions. Check the Journal (J) → Objectives tab to review current goals and progress."))
+	vbox.add_child(_make_body("  Each scenario has unique win and fail conditions tied to NPC reputation thresholds or believer counts. Check the Journal (J) → Objectives tab for live progress.\n  • S1: Destroy one reputation  •  S2: Spread a specific rumor widely\n  • S3: Raise one reputation AND ruin another  •  S4: Defend three people (purely defensive)\n  Fail conditions vary: running out of time, being exposed, a key NPC rejecting your rumor, or a protected reputation collapsing."))
 
 	return vbox
