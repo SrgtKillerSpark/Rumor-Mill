@@ -1,6 +1,6 @@
 # Rumor Mill — Gameplay Mechanics Reference
 
-> Version: SPA art-pass 3 (post-SPA-99). All numbers reflect the latest balance tuning.
+> Version: SPA art-pass 3 (post-SPA-530). All numbers reflect the latest balance tuning.
 
 ---
 
@@ -476,7 +476,7 @@ In Scenario 3 ("The Succession"), an AI rival is working against you. It seeds i
 **Days 8–15 (Escalation):**
 - Alternates: PRAISE for Tomas / SCANDAL about Calder (intensity 3) every 2 days.
 
-**Days 16–25 (Metric-Driven):**
+**Days 16–27 (Metric-Driven):**
 - Calculates two gap values:
   - `calder_gap = calder_score − 40` (how far Calder is above his instant-fail floor)
   - `tomas_gap = 35 − tomas_score` (how far Tomas is below the win ceiling)
@@ -511,11 +511,11 @@ This is the tutorial scenario. Bribery is **disabled**.
 
 | Parameter | Value |
 |-----------|-------|
-| Time limit | **20 days** |
+| Time limit | **22 days** |
 | Goal | Spread illness rumors about Alys Herbwife |
 | **WIN** | ≥7 NPCs in BELIEVE/SPREAD/ACT for an illness rumor about Alys |
 | **FAIL — defender** | Sister Maren transitions to REJECT for any illness rumor about Alys (instant) |
-| **FAIL — timeout** | Day > 20 |
+| **FAIL — timeout** | Day > 22 |
 
 **Key info:** Alys has high temperament (0.65). Sister Maren is the main counter-intelligence risk — do not let illness rumors reach her, or keep her from reaching REJECT by ensuring she stays EVALUATING or BELIEVE. Bribery is **enabled** (2 charges).
 
@@ -525,15 +525,40 @@ This is the tutorial scenario. Bribery is **disabled**.
 
 | Parameter | Value |
 |-----------|-------|
-| Time limit | **25 days** |
+| Time limit | **27 days** |
 | Goal | Elevate Calder Fenn, tank Tomas Reeve |
 | **WIN** | `reputation(Calder Fenn) ≥ 75` AND `reputation(Tomas Reeve) ≤ 35` |
 | **FAIL — Calder collapses** | `reputation(Calder Fenn) < 40` (instant) |
-| **FAIL — timeout** | Day > 25 |
+| **FAIL — timeout** | Day > 27 |
 
-**Starting reputations:** Calder = 58, Tomas = 52.
+**Starting reputations:** Calder = 65, Tomas = 52.
 
-**Key info:** You must simultaneously run a positive campaign (PRAISE for Calder) and a negative one (ACCUSATION/SCANDAL for Tomas). The rival agent (see §13) actively counters both goals. Target-shift mutations are configured to **exclude Calder** as a possible shift target — your positive rumors about him won't accidentally become scandals. Bribery is **enabled** (2 charges).
+**Key info:** You must simultaneously run a positive campaign (PRAISE for Calder) and a negative one (ACCUSATION/SCANDAL for Tomas). The rival agent (see §13) actively counters both goals from day 1, with metric-driven targeting from day 16. Target-shift mutations are configured to **exclude Calder** as a possible shift target — your positive rumors about him won't accidentally become scandals. Bribery is **enabled** (2 charges).
+
+---
+
+### Scenario 4 — "The Holy Inquisition"
+
+| Parameter | Value |
+|-----------|-------|
+| Time limit | **20 days** |
+| Goal | Protect three accused townsfolk from the Inquisitor's slander |
+| **WIN** | All three protected NPCs above reputation 45 when day 20 ends |
+| **FAIL — reputation collapsed** | Any protected NPC drops below reputation 45 (instant) |
+| **FAIL — timeout** | Day 20 ends with any NPC at or below 45 |
+
+**Starting reputations:** Aldous Prior = 65, Vera Midwife = 65, Finn Monk = 70.
+
+**Protected NPCs:** `aldous_prior`, `vera_midwife`, `finn_monk`. These NPCs cannot be the subject of Target-Shift mutations.
+
+**The Inquisitor** seeds heresy/accusation/scandal rumors on a tightening cooldown:
+- Days 1–5: every 4 days (intensity 2)
+- Days 6–12: every 2 days (intensity 2–3)
+- Days 13+: every day (intensity 3–4)
+
+The Inquisitor always targets the protected NPC with the highest current reputation (to maximise impact). Claim variety cycles: heresy by default, scandal on day multiples of 5, accusation on day multiples of 3.
+
+**Key info:** This is a purely defensive scenario — you cannot win through aggression, only through continuous counter-rumor coverage. Finn Monk (low loyalty, higher credulity) is the most vulnerable; Aldous Prior (very high loyalty) is the most naturally resistant. Bribery is **disabled**. The 20-point buffer above the fail floor (65 vs 45) gives room to absorb 1–2 missed days, but late-game daily inquisitor pressure requires consistent PRAISE routing. Use the S4 HUD to identify the most threatened NPC each day.
 
 ---
 
@@ -575,5 +600,15 @@ This is the tutorial scenario. Bribery is **disabled**.
 | Reputation base score | 50 | Default; overridden per scenario |
 | Scenario 1 win threshold | Edric reputation < 30 | |
 | Scenario 2 win threshold | 7+ illness believers | |
+| Scenario 2 time limit | 22 days | |
 | Scenario 3 win threshold | Calder ≥75, Tomas ≤35 | |
 | Scenario 3 instant-fail floor | Calder < 40 | |
+| Scenario 3 time limit | 27 days | |
+| Scenario 3 starting rep — Calder | 65 | |
+| Scenario 3 starting rep — Tomas | 52 | |
+| Scenario 4 win threshold | All 3 protected NPCs above 45 at day 20 | |
+| Scenario 4 fail threshold | Any protected NPC drops below 45 | Instant fail |
+| Scenario 4 time limit | 20 days | |
+| Scenario 4 starting rep — Aldous Prior | 65 | |
+| Scenario 4 starting rep — Vera Midwife | 65 | |
+| Scenario 4 starting rep — Finn Monk | 70 | |

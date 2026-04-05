@@ -11,7 +11,7 @@
 ##         OR days elapsed >= days_allowed (timeout)
 ##
 ## Scenario 2 — The Plague Scare:
-##   WIN:  6+ NPCs in BELIEVE/SPREAD/ACT for illness rumors about alys_herbwife
+##   WIN:  7+ NPCs in BELIEVE/SPREAD/ACT for illness rumors about alys_herbwife
 ##   FAIL: maren_nun rejects illness rumors about alys_herbwife (contradicted)
 ##         OR days elapsed >= days_allowed (timeout)
 ##
@@ -88,7 +88,7 @@ func get_objective_card() -> Dictionary:
 func get_win_condition_line() -> String:
 	match _active_scenario:
 		1: return "Target: Edric Fenn reputation below 30"
-		2: return "Target: 6+ NPCs believing illness rumors"
+		2: return "Target: 7+ NPCs believing illness rumors"
 		3: return "Target: Calder rep ≥ 75, Tomas rep ≤ 35"
 		4: return "Protect: Aldous, Vera, Finn — keep all above 45"
 	return ""
@@ -99,7 +99,7 @@ func get_win_condition_line() -> String:
 func get_objective_one_liner() -> String:
 	match _active_scenario:
 		1: return "Ruin Lord Edric Fenn's reputation — bring it below 30 before the tax rolls are signed."
-		2: return "Spread the illness rumor to 6+ townspeople. Avoid Sister Maren rejecting it."
+		2: return "Spread the illness rumor to 7+ townspeople. Avoid Sister Maren rejecting it."
 		3: return "Raise Calder Fenn to 75+ reputation and drag Tomas Reeve to 35 or lower."
 		4: return "Keep Aldous Prior, Vera Midwife, and Finn Monk above 45 reputation for 20 days."
 	return _starting_text.substr(0, mini(_starting_text.find(".") + 1, 80))
@@ -137,17 +137,18 @@ const S1_WIN_EDRIC_BELOW   := 30
 const S1_EXPOSED_HEAT      := 80.0
 
 # Scenario 2 thresholds.
-# Win when 6+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
-# SPA-98: raised from 5 — 5 believers was trivially reachable in 3-4 days with ILL-01
-# (intensity=5). The real tension is avoiding Maren's contradiction, not the count.
-const S2_WIN_ILLNESS_MIN   := 6
+# Win when 7+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
+# SPA-98: raised from 5; SPA-530: raised from 6 — 6 believers was too easily reachable
+# in the first 3–4 days given the high-credulity merchant chain. 7 requires deliberate
+# routing through 2+ independent clusters and keeps tension alive into mid-game.
+const S2_WIN_ILLNESS_MIN   := 7
 # Ticks per in-game day (matches DayNightCycle default).
 const TICKS_PER_DAY        := 24
 
 # Scenario 3 thresholds.
 # SPA-98: eased from (Calder>=80, Tomas<=30) to (Calder>=75, Tomas<=35).
-# PRAISE claims have low intensity (1-2), so reaching +22 on Calder in 25 days
-# with 2 whispers/day was extremely difficult. Required gains now: +17 / -17.
+# SPA-530: Calder starting rep raised to 65 (was 58), days_allowed raised to 27 (was 25).
+# Required gains now: +10 (Calder) / -17 (Tomas) with the rival seeding every day from day 16.
 const S3_WIN_CALDER_MIN    := 75
 const S3_WIN_TOMAS_MAX     := 35
 const S3_FAIL_CALDER_BELOW := 40
