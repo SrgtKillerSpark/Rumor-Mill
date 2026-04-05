@@ -257,6 +257,9 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	if _day_night_ref != null and _day_night_ref.has_method("set_paused"):
 		_day_night_ref.set_paused(true)
 
+	# SPA-561: Brief fade-out before showing the end screen.
+	await TransitionManager.fade_out(0.4)
+
 	var won: bool = (state == ScenarioManager.ScenarioState.WON)
 	var sm: ScenarioManager = _world_ref.scenario_manager
 
@@ -302,6 +305,9 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	# Default to Results tab.
 	_show_tab_results()
 
+	# SPA-561: Fade the transition overlay back in so the end screen is revealed.
+	# The overlay was faded-out in the pre-show step above.
+	visible = true
 	# ── Entrance animation: fade in backdrop + scale panel ────────────────────
 	if _backdrop != null:
 		_backdrop.modulate.a = 0.0
@@ -309,7 +315,7 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_panel.modulate.a = 0.0
 		_panel.scale = Vector2(0.92, 0.92)
 		_panel.pivot_offset = Vector2(PANEL_W / 2.0, PANEL_H / 2.0)
-	visible = true
+	TransitionManager.fade_in(0.35)
 	var _enter_tw := create_tween().set_parallel(true) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	if _backdrop != null:
@@ -508,6 +514,8 @@ func _populate_stats(scenario_id: int, won: bool) -> void:
 ## Add one stat row (label + value) to _stats_container. Returns the value Label.
 func _add_stat_row(label_text: String, initial_value: String) -> Label:
 	var row := HBoxContainer.new()
+	# SPA-561: Start invisible for staggered reveal.
+	row.modulate.a = 0.0
 
 	var lbl := Label.new()
 	lbl.text = label_text
@@ -636,6 +644,8 @@ func _populate_npc_outcomes() -> void:
 			arrow_color = C_SCORE_NEU
 
 		var row := HBoxContainer.new()
+		# SPA-561: Start hidden for staggered reveal.
+		row.modulate.a = 0.0
 
 		var name_lbl := Label.new()
 		name_lbl.text = npc_name
@@ -656,6 +666,14 @@ func _populate_npc_outcomes() -> void:
 		row.add_child(arrow_lbl)
 
 		_npc_container.add_child(row)
+		# SPA-561: Staggered fade-in for NPC rows.
+		var npc_idx: int = _npc_container.get_child_count() - 1
+		var delay: float = 0.8 + npc_idx * 0.2
+		get_tree().create_timer(delay).timeout.connect(func() -> void:
+			if is_instance_valid(row):
+				var tw := row.create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+				tw.tween_property(row, "modulate:a", 1.0, 0.3)
+		)
 
 
 ## Start count-up tween for all numeric stat value labels.
@@ -666,21 +684,34 @@ func _start_count_up_tween() -> void:
 	var tw: Tween = create_tween()
 	tw.set_parallel(true)
 
+	# SPA-561: Staggered reveal — each stat row fades in 0.15s apart.
+	var idx := 0
 	for entry in _tween_targets:
 		var val_lbl: Label   = entry["label"] as Label
 		var target: int      = int(entry["target"])
 		var suffix: String   = str(entry["suffix"])
+		var row_node: Node   = val_lbl.get_parent() if is_instance_valid(val_lbl) else null
+		var stagger: float   = idx * 0.15
+		# Fade in the row.
+		if row_node != null:
+			tw.tween_property(row_node, "modulate:a", 1.0, 0.25) \
+				.set_delay(stagger) \
+				.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		# Count-up numbers after the row appears.
 		tw.tween_method(
 			func(v: float) -> void:
 				if is_instance_valid(val_lbl):
 					val_lbl.text = str(int(v)) + suffix,
-			0.0, float(target), 1.2
-		).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			0.0, float(target), 1.0
+		).set_delay(stagger + 0.15) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		idx += 1
 
 	# Reveal the bonus row (scenario 2: contradiction events) after tween.
 	if _bonus_lbl != null:
 		var bonus_ref: Node = _bonus_lbl
-		get_tree().create_timer(1.3).timeout.connect(func() -> void:
+		var bonus_delay: float = idx * 0.15 + 0.3
+		get_tree().create_timer(bonus_delay).timeout.connect(func() -> void:
 			if is_instance_valid(bonus_ref):
 				bonus_ref.modulate = Color.WHITE
 		)

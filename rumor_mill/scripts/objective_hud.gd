@@ -52,6 +52,10 @@ var _avg_rep_flash_tween: Tween = null
 var _day_counter_tween: Tween = null
 
 # ── Faction overview mini-panel ──────────────────────────────────────────────
+## SPA-561: Pulsing win progress bar tween when near completion.
+var _win_pulse_tween: Tween = null
+var _win_pulse_active: bool = false
+
 var _faction_panel: Panel = null
 var _faction_labels: Dictionary = {}  # faction_id → {mood: Label, bar: ColorRect}
 var _world_ref: Node2D = null
@@ -308,6 +312,33 @@ func _refresh_win_progress() -> void:
 		win_progress_bar.color = Color(0.50, 0.80, 0.20, 1.0)
 	else:
 		win_progress_bar.color = Color(0.85, 0.55, 0.10, 1.0)
+	# SPA-561: Pulse the win bar when progress >= 80% (near completion).
+	_update_win_pulse(prog)
+
+
+## SPA-561: Start or stop the pulsing glow on the win progress bar.
+func _update_win_pulse(prog: float) -> void:
+	if win_progress_bar == null:
+		return
+	if prog >= 0.80 and not _win_pulse_active:
+		_win_pulse_active = true
+		_start_win_pulse()
+	elif prog < 0.80 and _win_pulse_active:
+		_win_pulse_active = false
+		if _win_pulse_tween != null and _win_pulse_tween.is_valid():
+			_win_pulse_tween.kill()
+		win_progress_bar.modulate = Color.WHITE
+
+
+func _start_win_pulse() -> void:
+	if _win_pulse_tween != null and _win_pulse_tween.is_valid():
+		_win_pulse_tween.kill()
+	_win_pulse_tween = create_tween().set_loops() \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_win_pulse_tween.tween_property(win_progress_bar, "modulate",
+		Color(1.3, 1.3, 1.3, 1.0), 0.5)
+	_win_pulse_tween.tween_property(win_progress_bar, "modulate",
+		Color.WHITE, 0.5)
 
 
 ## Returns a plain-English "How am I doing?" assessment based on progress vs time.

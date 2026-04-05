@@ -137,15 +137,61 @@ func _unlock_requires_title(idx: int) -> String:
 
 # ── Phase switching ───────────────────────────────────────────────────────────
 
+## SPA-561: Active crossfade tween for phase transitions.
+var _phase_tween: Tween = null
+
 func _show_phase(p: Phase) -> void:
+	var old_phase := _phase
 	_phase = p
-	_panel_main.visible     = (p == Phase.MAIN)
-	_panel_select.visible   = (p == Phase.SELECT)
-	_panel_briefing.visible = (p == Phase.BRIEFING)
-	_panel_intro.visible    = (p == Phase.INTRO)
-	_panel_settings.visible = (p == Phase.SETTINGS)
-	_panel_credits.visible  = (p == Phase.CREDITS)
-	_panel_stats.visible    = (p == Phase.STATS)
+
+	# Map phases to their panel nodes.
+	var panels: Dictionary = {
+		Phase.MAIN:     _panel_main,
+		Phase.SELECT:   _panel_select,
+		Phase.BRIEFING: _panel_briefing,
+		Phase.INTRO:    _panel_intro,
+		Phase.SETTINGS: _panel_settings,
+		Phase.CREDITS:  _panel_credits,
+		Phase.STATS:    _panel_stats,
+	}
+
+	# Determine outgoing and incoming panels.
+	var outgoing: Control = panels.get(old_phase)
+	var incoming: Control = panels.get(p)
+
+	# Kill any in-progress phase tween.
+	if _phase_tween != null and _phase_tween.is_valid():
+		_phase_tween.kill()
+
+	# Hide all panels except outgoing (which we'll fade out) and incoming.
+	for phase_key in panels:
+		var panel: Control = panels[phase_key]
+		if panel == null:
+			continue
+		if phase_key != old_phase and phase_key != p:
+			panel.visible = false
+
+	# SPA-561: Crossfade between panels (0.2s total).
+	if outgoing != null and incoming != null and outgoing != incoming:
+		incoming.visible = true
+		incoming.modulate.a = 0.0
+		_phase_tween = create_tween().set_parallel(true) \
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_phase_tween.tween_property(outgoing, "modulate:a", 0.0, 0.15)
+		_phase_tween.tween_property(incoming, "modulate:a", 1.0, 0.2)
+		_phase_tween.chain().tween_callback(func() -> void:
+			outgoing.visible = false
+			outgoing.modulate.a = 1.0
+		)
+	else:
+		# First show or same panel — just make visible instantly.
+		for phase_key in panels:
+			var panel: Control = panels[phase_key]
+			if panel == null:
+				continue
+			panel.visible = (phase_key == p)
+			panel.modulate.a = 1.0
+
 	# Rebuild stats panel content each time it's shown so it reflects latest data.
 	if p == Phase.STATS:
 		_rebuild_stats_content()

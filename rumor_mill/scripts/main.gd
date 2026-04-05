@@ -44,6 +44,9 @@ var _ready_overlay: CanvasLayer = null
 # ── SPA-541: Persistent controls reference overlay ───────────────────────────
 var _controls_ref: CanvasLayer = null
 
+# ── SPA-560: Mid-game narrative event choice modal ───────────────────────────
+var _event_choice_modal: CanvasLayer = null
+
 # ── SPA-212: Analytics data collector ─────────────────────────────────────────
 var _analytics: ScenarioAnalytics = null
 
@@ -213,6 +216,7 @@ func _on_begin_game(scenario_id: String) -> void:
 		)
 	_init_journal()
 	_wire_rumor_events()
+	_init_event_choice_modal()
 	_init_objective_hud()
 	_init_speed_hud()
 	_init_npc_conversation_overlay()
@@ -441,6 +445,58 @@ func _on_socially_dead_triggered(_npc_id: String, npc_name: String, _tick: int) 
 		recon_hud.show_toast("%s is SOCIALLY DEAD — reputation permanently frozen" % npc_name, false)
 	if recon_hud != null and recon_hud.has_method("show_milestone"):
 		recon_hud.show_milestone("☠ %s — SOCIALLY DEAD" % npc_name, Color(0.85, 0.15, 0.15, 1.0))
+
+
+## SPA-560: Mid-game narrative event choice modal.
+func _init_event_choice_modal() -> void:
+	if world == null or world.mid_game_event_agent == null:
+		return
+	_event_choice_modal = preload("res://scripts/event_choice_modal.gd").new()
+	_event_choice_modal.name = "EventChoiceModal"
+	add_child(_event_choice_modal)
+
+	var agent: MidGameEventAgent = world.mid_game_event_agent
+	agent.event_presented.connect(_on_mid_game_event_presented)
+	_event_choice_modal.choice_made.connect(_on_mid_game_event_choice_made)
+	_event_choice_modal.dismissed.connect(_on_mid_game_event_dismissed)
+
+
+func _on_mid_game_event_presented(event_data: Dictionary) -> void:
+	if _event_choice_modal == null:
+		return
+	_event_choice_modal.present_event(event_data)
+	# Journal entry.
+	var event_name: String = str(event_data.get("name", "Event"))
+	if journal != null and journal.has_method("push_timeline_event"):
+		var tick: int = day_night.current_tick if day_night != null else 0
+		journal.push_timeline_event(tick, "[EVENT] %s" % event_name)
+	# Toast notification.
+	if recon_hud != null and recon_hud.has_method("show_milestone"):
+		recon_hud.show_milestone("Event: %s" % event_name, Color(0.92, 0.78, 0.12, 1.0))
+
+
+func _on_mid_game_event_choice_made(event_id: String, choice_index: int) -> void:
+	if world == null or world.mid_game_event_agent == null:
+		return
+	var agent: MidGameEventAgent = world.mid_game_event_agent
+	agent.resolve_choice(event_id, choice_index)
+	# The agent emits event_resolved with outcome text — show it in the modal.
+	# We connect this lazily to avoid permanent connection.
+	if not agent.event_resolved.is_connected(_on_mid_game_event_resolved):
+		agent.event_resolved.connect(_on_mid_game_event_resolved)
+
+
+func _on_mid_game_event_resolved(_event_id: String, _choice_index: int, outcome_text: String) -> void:
+	if _event_choice_modal != null:
+		_event_choice_modal.show_outcome(outcome_text)
+	# Journal entry for the outcome.
+	if journal != null and journal.has_method("push_timeline_event"):
+		var tick: int = day_night.current_tick if day_night != null else 0
+		journal.push_timeline_event(tick, "[OUTCOME] %s" % outcome_text.substr(0, 80))
+
+
+func _on_mid_game_event_dismissed() -> void:
+	pass  # Modal handles unpausing; nothing extra needed.
 
 
 func _init_objective_hud() -> void:

@@ -99,6 +99,12 @@ var _walkable: Array[Vector2i] = []
 var _flash_tween: Tween = null
 var _base_color: Color = Color.WHITE
 
+# ── SPA-561: Visual feedback state ──────────────────────────────────────────
+var _ripple_radius: float = 0.0
+var _ripple_alpha: float = 0.0
+var _ripple_tween: Tween = null
+var _emote_tween: Tween = null
+
 # ── Visuals ──────────────────────────────────────────────────────────────────
 # Faction row index in npc_sprites.png (rows 0-2)
 const FACTION_ROW := {
@@ -209,9 +215,16 @@ var _npc_dialogue_key:     String = ""
 var _idle_bubble_cooldown: int    = 0
 ## True while this NPC owns a visible bubble (prevents double-show).
 var _has_bubble:           bool   = false
+## Current hour of day (0-23), updated each tick for time-of-day dialogue selection.
+var _current_hour:         int    = 0
+## Ticks until this NPC next shows a scenario-gossip bubble.
+var _gossip_cooldown:      int    = 0
+## Ticks until this NPC next shows an NPC-chatter bubble when near another NPC.
+var _chatter_cooldown:     int    = 0
 
 
-## Load npc_dialogue.json once; subsequent calls are no-ops.
+## Load npc_dialogue.json (and npc_dialogue_extended.json) once; subsequent calls are no-ops.
+## Extended file adds time-of-day, scenario gossip, and chatter categories per NPC.
 static func _load_dialogue_db() -> void:
 	if _dialogue_loaded:
 		return
@@ -223,6 +236,18 @@ static func _load_dialogue_db() -> void:
 	f.close()
 	if parsed is Dictionary and parsed.has("npc_dialogue"):
 		_dialogue_data = parsed["npc_dialogue"]
+	# Merge extended dialogue (time-of-day, scenario gossip, chatter).
+	var ef := FileAccess.open("res://data/npc_dialogue_extended.json", FileAccess.READ)
+	if ef != null:
+		var ext: Variant = JSON.parse_string(ef.get_as_text())
+		ef.close()
+		if ext is Dictionary:
+			for npc_id in ext:
+				if _dialogue_data.has(npc_id):
+					var base: Dictionary = _dialogue_data[npc_id]
+					var additions: Dictionary = ext[npc_id]
+					for cat in additions:
+						base[cat] = additions[cat]
 	_dialogue_loaded = true
 
 
@@ -346,19 +371,40 @@ func init_from_data(
 	_npc_dialogue_key     = data.get("id", "")
 	_load_dialogue_db()
 	_idle_bubble_cooldown = randi_range(1, 50)
+	_gossip_cooldown      = randi_range(60, 120)
+	_chatter_cooldown     = randi_range(20, 50)
 
 
 # ── Per-tick entry point ─────────────────────────────────────────────────────
 
 func on_tick(tick: int) -> void:
+	_current_hour = tick % 24
 	_step_movement()
 	_process_rumor_slots(tick)
 	_tick_defender(tick)
 	# Idle ambient bubble — fires every 30-60 ticks, staggered per NPC.
+	# Prefers time-of-day variant (ambient_morning/evening/night) when available.
 	_idle_bubble_cooldown -= 1
 	if _idle_bubble_cooldown <= 0:
 		_idle_bubble_cooldown = randi_range(30, 60)
-		_show_dialogue_bubble("ambient")
+		var phase_cat := "ambient_" + _get_time_phase()
+		var npc_lines: Dictionary = _dialogue_data.get(_npc_dialogue_key, {})
+		if npc_lines.has(phase_cat) and not (npc_lines[phase_cat] as Array).is_empty():
+			_show_dialogue_bubble(phase_cat)
+		else:
+			_show_dialogue_bubble("ambient")
+	# Scenario gossip bubble — fires every 60-120 ticks.
+	_gossip_cooldown -= 1
+	if _gossip_cooldown <= 0:
+		_gossip_cooldown = randi_range(60, 120)
+		var sid: String = GameState.selected_scenario_id  # e.g. "scenario_1"
+		var short: String = sid.replace("scenario_", "s")   # -> "s1"
+		_show_dialogue_bubble("gossip_" + short)
+	# NPC chatter bubble — fires every 40-80 ticks when near another NPC.
+	_chatter_cooldown -= 1
+	if _chatter_cooldown <= 0:
+		_chatter_cooldown = randi_range(40, 80)
+		_try_chatter_bubble()
 	_tick_defense_modifiers()
 	_update_label()
 
@@ -759,6 +805,7 @@ func _spread_to_neighbours(
 
 		# Visual: show a floating speech bubble from this NPC toward the target.
 		_show_spread_bubble(other)
+		show_spread_ripple()  # SPA-561: expanding ring on rumor spread
 		other._show_whisper_received()
 		emit_signal("rumor_transmitted",
 			npc_data.get("name", "?"),
@@ -1159,6 +1206,8 @@ func _update_label() -> void:
 				wrid = rid
 				break
 		emit_signal("rumor_state_changed", short_name, state_str, wrid)
+		# SPA-561: Show emote icon for the new state.
+		show_state_emote(state_str)
 		# Show a reaction speech bubble matching the new state.
 		var cat := _state_to_dialogue_category(worst)
 		if cat != "":
@@ -1258,6 +1307,8 @@ func show_bribed_effect() -> void:
 func show_reputation_change(delta: int) -> void:
 	if delta == 0:
 		return
+	# SPA-561: Brief sprite colour flash on rep change.
+	flash_reputation(delta > 0)
 	var lbl := Label.new()
 	lbl.text = ("+" if delta > 0 else "") + str(delta)
 	lbl.add_theme_font_size_override("font_size", 12)
@@ -1304,6 +1355,31 @@ func _state_to_dialogue_category(state: Rumor.RumorState) -> String:
 		Rumor.RumorState.ACT:        return "act"
 		Rumor.RumorState.DEFENDING:  return "defending"
 	return ""
+
+
+## Returns the broad time-of-day phase for ambient dialogue selection.
+## morning: 05-11, day: 12-16, evening: 17-21, night: 22-04.
+func _get_time_phase() -> String:
+	if _current_hour >= 5 and _current_hour <= 11:
+		return "morning"
+	elif _current_hour >= 12 and _current_hour <= 16:
+		return "day"
+	elif _current_hour >= 17 and _current_hour <= 21:
+		return "evening"
+	else:
+		return "night"
+
+
+## Shows a chatter bubble when at least one other NPC is within 3 tiles.
+func _try_chatter_bubble() -> void:
+	for other in all_npcs_ref:
+		if other == self:
+			continue
+		var dist: int = abs(other.current_cell.x - current_cell.x) + \
+						abs(other.current_cell.y - current_cell.y)
+		if dist <= 3:
+			_show_dialogue_bubble("chatter")
+			return
 
 
 ## Spawns a parchment-style speech bubble above this NPC with a random line
@@ -1374,6 +1450,70 @@ func _on_bubble_finished(panel: PanelContainer) -> void:
 	_has_bubble     = false
 	if is_instance_valid(panel):
 		panel.queue_free()
+
+
+# ── SPA-561: Visual feedback effects ────────────────────────────────────────
+
+## Draw expanding ripple ring when a rumor spreads from this NPC.
+func _draw() -> void:
+	if _ripple_alpha > 0.01:
+		draw_arc(Vector2(0.0, -36.0), _ripple_radius, 0.0, TAU, 32,
+			Color(1.0, 0.85, 0.3, _ripple_alpha), 2.0, true)
+
+
+## Plays an expanding ripple ring (rumor spread visual).
+func show_spread_ripple() -> void:
+	_ripple_radius = 8.0
+	_ripple_alpha = 0.7
+	if _ripple_tween != null and _ripple_tween.is_valid():
+		_ripple_tween.kill()
+	_ripple_tween = create_tween().set_parallel(true) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_ripple_tween.tween_method(func(_v: float) -> void: queue_redraw(), 0.0, 1.0, 0.45)
+	_ripple_tween.tween_property(self, "_ripple_radius", 48.0, 0.45)
+	_ripple_tween.tween_property(self, "_ripple_alpha", 0.0, 0.45)
+
+
+## Brief colour flash on the NPC sprite when reputation changes.
+func flash_reputation(gained: bool) -> void:
+	if sprite == null:
+		return
+	var flash_color := Color(0.4, 1.0, 0.5, 1.0) if gained else Color(1.0, 0.3, 0.2, 1.0)
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	sprite.self_modulate = flash_color
+	_flash_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.35)
+
+
+## Shows a floating emote icon above the NPC on rumor state change.
+const STATE_EMOTES: Dictionary = {
+	"EVALUATING": "🤔",
+	"SPREADING":  "📢",
+	"ACTING":     "⚡",
+	"REJECTING":  "✋",
+	"DEFENDING":  "🛡️",
+}
+
+func show_state_emote(state_name: String) -> void:
+	var icon: String = STATE_EMOTES.get(state_name, "")
+	if icon.is_empty():
+		return
+	var lbl := Label.new()
+	lbl.text = icon
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.position = Vector2(12.0, -76.0)
+	lbl.modulate.a = 0.0
+	add_child(lbl)
+	if _emote_tween != null and _emote_tween.is_valid():
+		_emote_tween.kill()
+	_emote_tween = create_tween().set_parallel(true) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	lbl.scale = Vector2(0.5, 0.5)
+	_emote_tween.tween_property(lbl, "modulate:a", 1.0, 0.12)
+	_emote_tween.tween_property(lbl, "scale", Vector2.ONE, 0.2)
+	_emote_tween.chain().tween_property(lbl, "modulate:a", 0.0, 0.8).set_delay(1.0)
+	_emote_tween.chain().tween_callback(lbl.queue_free)
 
 
 # ── Click feedback ───────────────────────────────────────────────────────────
