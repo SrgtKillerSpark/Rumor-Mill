@@ -8,7 +8,7 @@
 ##   WIN:  reputation(edric_fenn) < 30
 ##
 ## Scenario 2 — The Plague Scare:
-##   WIN:  7+ NPCs in BELIEVE/SPREAD/ACT for illness rumors about alys_herbwife
+##   WIN:  6+ NPCs in BELIEVE/SPREAD/ACT for illness rumors about alys_herbwife
 ##   FAIL: maren_nun rejects illness rumors about alys_herbwife (contradicted)
 ##         OR days elapsed > days_allowed (timeout)
 ##
@@ -318,7 +318,7 @@ func get_scenario_1_progress(rep: ReputationSystem) -> Dictionary:
 func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_4_state != ScenarioState.ACTIVE:
 		return
-	# Fail: any protected NPC drops below 50.
+	# Fail: any protected NPC drops below 45.
 	for npc_id in S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 		if snap == null:
@@ -327,7 +327,7 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 			scenario_4_state = ScenarioState.FAILED
 			scenario_resolved.emit(4, ScenarioState.FAILED)
 			return
-	# Win: all 20 days survived AND all protected NPCs still above 50.
+	# Win: all 20 days survived AND all protected NPCs still above 45.
 	var current_day: int = current_tick / TICKS_PER_DAY + 1
 	if current_day > _days_allowed:
 		var all_above: bool = true
