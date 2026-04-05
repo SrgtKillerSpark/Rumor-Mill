@@ -118,9 +118,21 @@ func _open() -> void:
 
 
 func _close() -> void:
-	_is_open          = false
-	get_tree().paused = false
-	visible           = false
+	_is_open = false
+	if _open_tween != null and _open_tween.is_valid():
+		_open_tween.kill()
+	var tw := create_tween().set_parallel(true) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	if _bg_rect != null:
+		tw.tween_property(_bg_rect, "modulate:a", 0.0, 0.12)
+	if _center_panel != null:
+		tw.tween_property(_center_panel, "scale", Vector2(0.92, 0.92), 0.15)
+		tw.tween_property(_center_panel, "modulate:a", 0.0, 0.12)
+	tw.chain().tween_callback(func() -> void:
+		get_tree().paused = false
+		visible = false
+	)
 
 
 func _build_ui() -> void:
@@ -265,11 +277,37 @@ func _build_ui() -> void:
 	res_hover.border_color = C_BTN_BORDER
 	res_hover.set_content_margin_all(4)
 	_btn_resolution.add_theme_stylebox_override("hover", res_hover)
+	var res_pressed := StyleBoxFlat.new()
+	res_pressed.bg_color = C_BTN_PRESSED
+	res_pressed.set_border_width_all(1)
+	res_pressed.border_color = C_BTN_BORDER
+	res_pressed.set_content_margin_all(4)
+	_btn_resolution.add_theme_stylebox_override("pressed", res_pressed)
+	var res_focus := StyleBoxFlat.new()
+	res_focus.bg_color = C_BTN_HOVER
+	res_focus.set_border_width_all(2)
+	res_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)
+	res_focus.set_content_margin_all(4)
+	_btn_resolution.add_theme_stylebox_override("focus", res_focus)
+	_btn_resolution.pivot_offset = _btn_resolution.custom_minimum_size * 0.5
 	_btn_resolution.pressed.connect(func() -> void:
+		AudioManager.play_sfx("ui_click")
 		SettingsManager.resolution_index = (SettingsManager.resolution_index + 1) % SettingsManager.RESOLUTIONS.size()
 		SettingsManager.apply_display_settings()
 		SettingsManager.save_settings()
 		_btn_resolution.text = SettingsManager.get_resolution_label()
+		var tw := _btn_resolution.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_btn_resolution, "scale", Vector2(0.95, 0.95), 0.06)
+		tw.tween_property(_btn_resolution, "scale", Vector2.ONE, 0.10)
+	)
+	_btn_resolution.mouse_entered.connect(func() -> void:
+		AudioManager.play_sfx_pitched("ui_click", 2.0)
+		var tw := _btn_resolution.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_btn_resolution, "scale", Vector2(1.04, 1.04), 0.12)
+	)
+	_btn_resolution.mouse_exited.connect(func() -> void:
+		var tw := _btn_resolution.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_btn_resolution, "scale", Vector2.ONE, 0.10)
 	)
 	res_row.add_child(_btn_resolution)
 
@@ -305,11 +343,37 @@ func _build_ui() -> void:
 	wm_hover.border_color = C_BTN_BORDER
 	wm_hover.set_content_margin_all(4)
 	_btn_window_mode.add_theme_stylebox_override("hover", wm_hover)
+	var wm_pressed := StyleBoxFlat.new()
+	wm_pressed.bg_color = C_BTN_PRESSED
+	wm_pressed.set_border_width_all(1)
+	wm_pressed.border_color = C_BTN_BORDER
+	wm_pressed.set_content_margin_all(4)
+	_btn_window_mode.add_theme_stylebox_override("pressed", wm_pressed)
+	var wm_focus := StyleBoxFlat.new()
+	wm_focus.bg_color = C_BTN_HOVER
+	wm_focus.set_border_width_all(2)
+	wm_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)
+	wm_focus.set_content_margin_all(4)
+	_btn_window_mode.add_theme_stylebox_override("focus", wm_focus)
+	_btn_window_mode.pivot_offset = _btn_window_mode.custom_minimum_size * 0.5
 	_btn_window_mode.pressed.connect(func() -> void:
+		AudioManager.play_sfx("ui_click")
 		SettingsManager.window_mode = (SettingsManager.window_mode + 1) % 3
 		SettingsManager.apply_display_settings()
 		SettingsManager.save_settings()
 		_btn_window_mode.text = SettingsManager.get_window_mode_label()
+		var tw := _btn_window_mode.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_btn_window_mode, "scale", Vector2(0.95, 0.95), 0.06)
+		tw.tween_property(_btn_window_mode, "scale", Vector2.ONE, 0.10)
+	)
+	_btn_window_mode.mouse_entered.connect(func() -> void:
+		AudioManager.play_sfx_pitched("ui_click", 2.0)
+		var tw := _btn_window_mode.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_btn_window_mode, "scale", Vector2(1.04, 1.04), 0.12)
+	)
+	_btn_window_mode.mouse_exited.connect(func() -> void:
+		var tw := _btn_window_mode.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_btn_window_mode, "scale", Vector2.ONE, 0.10)
 	)
 	fs_row.add_child(_btn_window_mode)
 
