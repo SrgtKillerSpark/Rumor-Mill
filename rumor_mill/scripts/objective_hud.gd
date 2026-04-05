@@ -119,12 +119,12 @@ var _progress_milestones: Dictionary = {}
 var _goal_verb: String = ""
 var _goal_target: String = ""
 
-# ── Tier 3: Suggestion engine ───────────────────────────────────────────────
+# ── Tier 3: Suggestion engine (SPA-743) ─────────────────────────────────────
 var _suggestion_engine: SuggestionEngine = null
-var _tier3_label: Label = null
-var _tier3_tween: Tween = null
-## Last suggestion text — avoid re-animating the same text.
-var _last_suggestion: String = ""
+var _suggestion_toast:  SuggestionToast  = null
+## Cached budget counts for detecting player action via polling each tick.
+var _t3_last_obs:   int = -1
+var _t3_last_whisp: int = -1
 
 
 func _ready() -> void:
@@ -173,6 +173,13 @@ func setup_world(world: Node2D) -> void:
 		_suggestion_engine = SuggestionEngine.new()
 		_suggestion_engine.setup(world, _intel_store, _reputation_system,
 			_scenario_manager, _day_night)
+		_suggestion_engine.hint_ready.connect(_on_suggestion_hint_ready)
+		# Connect day signals so the engine resets its daily budget correctly.
+		if _day_night != null:
+			if _day_night.has_signal("day_changed"):
+				_day_night.day_changed.connect(_suggestion_engine._on_day_changed)
+			if _day_night.has_signal("day_transition_started"):
+				_day_night.day_transition_started.connect(_suggestion_engine._on_dawn)
 
 
 func _on_day_changed(_day: int) -> void:
@@ -1330,61 +1337,46 @@ func _refresh_mini_progress() -> void:
 		_mini_progress_label.add_theme_color_override("font_color", Color(0.60, 0.55, 0.45, 0.6))
 
 
-# ── Tier 3: Suggestion engine HUD slot ─────────────────────────────────────
-
-const C_SUGGESTION := Color(0.80, 0.90, 0.65, 1.0)
+# ── Tier 3: Suggestion toast (SPA-743) ─────────────────────────────────────
 
 func _build_tier3_suggestion() -> void:
 	if tier3_container == null:
 		return
-	_tier3_label = Label.new()
-	_tier3_label.text = ""
-	_tier3_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tier3_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tier3_label.add_theme_font_size_override("font_size", 12)
-	_tier3_label.add_theme_color_override("font_color", C_SUGGESTION)
-	_tier3_label.add_theme_constant_override("outline_size", 2)
-	_tier3_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
-	_tier3_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_tier3_label.visible = false
-	tier3_container.add_child(_tier3_label)
+	_suggestion_toast = SuggestionToast.new()
+	_suggestion_toast.visible = false
+	tier3_container.add_child(_suggestion_toast)
+	_suggestion_toast.hint_dismissed.connect(_on_hint_dismissed)
 
 
 func _refresh_tier3_suggestion() -> void:
 	# Only activate after tutorial nudges complete (phase >= 4).
 	if _nudge_phase < 4:
 		return
-	if _suggestion_engine == null or _tier3_label == null:
+	if _suggestion_engine == null:
 		return
+
+	# Detect player action by polling budget changes (inactivity reset).
+	if _intel_store != null:
+		var tick: int = _day_night.current_tick if _day_night != null and "current_tick" in _day_night else 0
+		var cur_obs:   int = _intel_store.recon_actions_remaining
+		var cur_whisp: int = _intel_store.whisper_tokens_remaining
+		if (_t3_last_obs >= 0 and cur_obs != _t3_last_obs) or \
+				(_t3_last_whisp >= 0 and cur_whisp != _t3_last_whisp):
+			_suggestion_engine.notify_player_action(tick)
+		_t3_last_obs   = cur_obs
+		_t3_last_whisp = cur_whisp
 
 	_suggestion_engine.refresh()
-	var text: String = _suggestion_engine.get_suggestion()
 
-	if text == _last_suggestion:
+
+## Called when hint_ready fires on the engine — shows the toast.
+func _on_suggestion_hint_ready(text: String) -> void:
+	if _suggestion_toast == null:
 		return
-	_last_suggestion = text
-
-	if text.is_empty():
-		_fade_tier3(false)
-		return
-
-	_tier3_label.text = "→ " + text
-	_fade_tier3(true)
+	_suggestion_toast.show_hint(text)
 
 
-func _fade_tier3(show: bool) -> void:
-	if _tier3_label == null:
-		return
-	if _tier3_tween != null and _tier3_tween.is_valid():
-		_tier3_tween.kill()
-	if show:
-		_tier3_label.visible = true
-		_tier3_label.modulate.a = 0.0
-		_tier3_tween = create_tween()
-		_tier3_tween.tween_property(_tier3_label, "modulate:a", 1.0, 0.3) \
-			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
-	else:
-		_tier3_tween = create_tween()
-		_tier3_tween.tween_property(_tier3_label, "modulate:a", 0.0, 0.3) \
-			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
-		_tier3_tween.tween_callback(func() -> void: _tier3_label.visible = false)
+## Called when the toast is dismissed — forward to engine for cooldown tracking.
+func _on_hint_dismissed(was_fast: bool) -> void:
+	if _suggestion_engine != null:
+		_suggestion_engine.notify_hint_dismissed(was_fast)

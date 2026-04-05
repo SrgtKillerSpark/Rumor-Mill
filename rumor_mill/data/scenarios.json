@@ -192,6 +192,10 @@
         ],
         "designNote": "Fewer days, skeptical NPCs, faster heat. Edric and Bram are harder to crack — requires precise rumor routing through low-loyalty intermediaries."
       }
+    },
+    "suggestion_overrides": {
+      "heat_spike_threshold": 60.0,
+      "category_priorities": []
     }
   },
   {
@@ -199,7 +203,7 @@
     "title": "The Plague Scare",
     "hookText": "A rival healer threatens your employer's livelihood. One whispered word — 'plague' — and the whole town will do your work for you. But whisper to the wrong person, and the Church will silence you instead.",
     "description": "A rival herb-wife has arrived with the autumn rains and is undercutting the midwife who pays your wages. Spread an illness rumor through enough of the townsfolk and she will pack her cart and leave before the market closes. But the Chapel watches, and Sister Maren will not stay silent if the story grows too bold.",
-    "daysAllowed": 24,
+    "daysAllowed": 22,
     "introText": "She came with the autumn rains and the smell of something sharp — wormwood, maybe, or something worse. Alys the Herb-Wife has set up her trestle by the chapel steps, and already three of Vera's regulars have crossed the square to her instead. Illness travels fast in this town. Faster still when someone gives it a name.",
     "startingText": "YOUR GOAL: Get 7 or more townspeople to believe illness rumors about Alys Herbwife.\n\nHOW: Observe the Market and Apothecary to find NPCs connected to Alys. Press R to craft an Illness rumor, then whisper it to a credulous, well-connected NPC. Watch believers accumulate in the Scenario HUD.\n\nWATCH OUT: If Sister Maren rejects ANY illness rumor about Alys, you have 2 days before you lose. Use the grace window to reach 7 believers or counter-seed doubt — but keep the rumor away from her circle. You have 24 days.\n\nAlys the Herb-Wife set up her stall near the Chapel — too near to the Midwife's usual customers. Illness rumors, in this town, spread fast.",
     "victoryText": "Alys the Herb-Wife packed her cart before dawn. She didn't say why.\n\nThree days later, Sister Maren declared publicly that the illness talk had been unfounded. But by then, the Herb-Wife was gone, and the Midwife's customers had come back.",
@@ -375,6 +379,10 @@
         ],
         "designNote": "Fewer days, 9 believers needed, and Maren is slightly more curious (higher credulity = she encounters more rumors, increasing rejection risk). Requires routing through 3+ independent clusters."
       }
+    },
+    "suggestion_overrides": {
+      "heat_spike_threshold": 60.0,
+      "category_priorities": ["illness", "claim_type"]
     }
   },
   {
@@ -575,6 +583,10 @@
         },
         "designNote": "Tighter win thresholds, earlier/stronger rival, Calder starts lower and Tomas starts higher. Requires near-perfect rumor routing on both fronts simultaneously."
       }
+    },
+    "suggestion_overrides": {
+      "heat_spike_threshold": 60.0,
+      "category_priorities": ["dual_target", "claim_type"]
     }
   },
   {
@@ -779,6 +791,10 @@
         },
         "designNote": "Lower starting reps, higher thresholds, faster/stronger inquisitor, fewer days. One missed defensive cycle can cascade into an instant fail. Requires triage."
       }
+    },
+    "suggestion_overrides": {
+      "heat_spike_threshold": 50.0,
+      "category_priorities": ["heat_warning", "claim_type"]
     }
   },
   {
@@ -988,6 +1004,10 @@
         },
         "designNote": "Edric starts stronger, Aldric weaker, Tomas higher. Fewer days, tighter thresholds, smaller endorsement bonus. Requires surgical precision across all three fronts and perfect timing around the endorsement."
       }
+    },
+    "suggestion_overrides": {
+      "heat_spike_threshold": 60.0,
+      "category_priorities": ["faction_momentum", "claim_type"]
     }
   },
   {
@@ -1216,6 +1236,10 @@
         ],
         "designNote": "Aldric starts stronger and better defended. Marta starts weaker. Tighter heat ceiling (50), faster guild defense (every 2 days), and 18-day deadline. Requires near-perfect routing through non-merchant channels and constant Marta-boosting."
       }
+    },
+    "suggestion_overrides": {
+      "heat_spike_threshold": 60.0,
+      "category_priorities": []
     }
   }
 ]

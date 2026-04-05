@@ -21,9 +21,9 @@
 ##         OR days elapsed >= days_allowed (timeout)
 ##
 ## Scenario 4 — The Holy Inquisition:
-##   WIN:  All 3 protected NPCs above reputation 45 when days elapsed >= days_allowed
-##   FAIL: Any protected NPC drops below reputation 40 (instant)
-##         OR days elapsed >= days_allowed with any NPC below 45
+##   WIN:  All 3 protected NPCs above reputation 48 when days elapsed >= days_allowed
+##   FAIL: Any protected NPC drops below reputation 42 (instant)
+##         OR days elapsed >= days_allowed with any NPC below 48
 ##
 ## Scenario 5 — The Election (SPA-605):
 ##   WIN:  reputation(aldric_vane) >= 65 AND highest among 3 candidates
@@ -33,9 +33,9 @@
 ##   EVENT: Day 15 — Prior Aldous endorses highest-rep candidate (+8 bonus)
 ##
 ## Scenario 6 — The Merchant's Debt (SPA-605):
-##   WIN:  reputation(aldric_vane) <= 30 AND reputation(marta_coin) >= 60
+##   WIN:  reputation(aldric_vane) <= 30 AND reputation(marta_coin) >= 62
 ##   FAIL: reputation(marta_coin) < 30 (instant)
-##         OR any NPC heat >= 60 (lower threshold — guards on payroll)
+##         OR any NPC heat >= 55 (lower threshold — guards on payroll)
 ##         OR days elapsed >= days_allowed (timeout)
 
 class_name ScenarioManager
@@ -50,10 +50,11 @@ var _starting_text:    String = ""
 var _victory_text:     String = ""
 var _fail_texts:       Dictionary = {}
 var _days_allowed:     int = 30
-var _active_scenario:  int = 0  # 1–6 — set by load_scenario_data
-var _objective_card:   Dictionary = {}
-var _milestone_toasts: Array = []
-var _strategic_brief:  Dictionary = {}
+var _active_scenario:       int        = 0  # 1–6 — set by load_scenario_data
+var _objective_card:        Dictionary = {}
+var _milestone_toasts:      Array      = []
+var _strategic_brief:       Dictionary = {}
+var _suggestion_overrides:  Dictionary = {}  # SPA-743: per-scenario hint tuning
 
 
 ## Load narrative fields from a scenario data dictionary (one entry from scenarios.json).
@@ -65,8 +66,9 @@ func load_scenario_data(data: Dictionary) -> void:
 	_fail_texts       = data.get("failTexts", {})
 	_objective_card   = data.get("objectiveCard", {})
 	_days_allowed     = int(data.get("daysAllowed", 30))
-	_milestone_toasts = data.get("milestoneToasts", [])
-	_strategic_brief  = data.get("strategicBrief", {})
+	_milestone_toasts      = data.get("milestoneToasts",     [])
+	_strategic_brief       = data.get("strategicBrief",      {})
+	_suggestion_overrides  = data.get("suggestion_overrides", {})
 	var sid: String   = data.get("scenarioId", "")
 	var parts := sid.split("_")
 	_active_scenario = int(parts[-1]) if parts.size() >= 2 else 0
@@ -101,6 +103,12 @@ func get_fail_text(reason: String) -> String:
 ## Returns the number of days the player has to complete this scenario.
 func get_days_allowed() -> int:
 	return _days_allowed
+
+
+## Returns per-scenario tuning overrides for the Tier 3 suggestion engine.
+## Keys: "heat_spike_threshold" (float), "category_priorities" (Array[String]).
+func get_suggestion_overrides() -> Dictionary:
+	return _suggestion_overrides
 
 
 ## Returns the NPC heat level that triggers an exposure fail for the active scenario.
@@ -171,9 +179,9 @@ func get_win_progress(rep: ReputationSystem, current_tick: int) -> float:
 			var tomas: ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
 			if edric == null or tomas == null:
 				return 0.0
-			# Aldric starts ~48, must reach 65.  Rivals start ~58/45, must drop below 45.
+			# Aldric starts ~45, must reach 65.  Rivals start ~58/45, must drop below 45.
 			var prog_aldric: float = clampf(
-				(aldric.score - 48.0) / (S5_WIN_ALDRIC_MIN - 48.0), 0.0, 1.0)
+				(aldric.score - 45.0) / (S5_WIN_ALDRIC_MIN - 45.0), 0.0, 1.0)
 			var prog_edric: float = clampf(
 				(58.0 - edric.score) / (58.0 - S5_WIN_RIVALS_MAX), 0.0, 1.0)
 			var prog_tomas: float = clampf(
@@ -185,11 +193,11 @@ func get_win_progress(rep: ReputationSystem, current_tick: int) -> float:
 			var s6_marta:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(MARTA_COIN_ID)
 			if s6_aldric == null or s6_marta == null:
 				return 0.0
-			# Aldric starts at 55, must drop to 30.  Marta starts at 52, must reach 60.
+			# Aldric starts at 55, must drop to 30.  Marta starts at 48, must reach 62.
 			var prog_aldric_down: float = clampf(
 				(55.0 - s6_aldric.score) / (55.0 - S6_WIN_ALDRIC_MAX), 0.0, 1.0)
 			var prog_marta_up: float = clampf(
-				(s6_marta.score - 52.0) / maxf(S6_WIN_MARTA_MIN - 52.0, 1.0), 0.0, 1.0)
+				(s6_marta.score - 48.0) / maxf(S6_WIN_MARTA_MIN - 48.0, 1.0), 0.0, 1.0)
 			return minf(prog_aldric_down, prog_marta_up)
 	return 0.0
 
@@ -200,9 +208,9 @@ func get_win_condition_line() -> String:
 		1: return "Target: Edric Fenn reputation below 30"
 		2: return "Target: 7+ NPCs believing illness rumors"
 		3: return "Target: Calder rep ≥ 75, Tomas rep ≤ 35"
-		4: return "Protect: Aldous, Vera, Finn — keep all above 45"
+		4: return "Protect: Aldous, Vera, Finn — keep all above 48"
 		5: return "Elect Aldric Vane: rep ≥ 65 & highest, rivals < 45"
-		6: return "Expose Aldric (rep ≤ 30), protect Marta (rep ≥ 60)"
+		6: return "Expose Aldric (rep ≤ 30), protect Marta (rep ≥ 62)"
 	return ""
 
 
@@ -215,7 +223,7 @@ func get_objective_one_liner() -> String:
 		3: return "Crown Calder, ruin Tomas — before the rival beats you"
 		4: return "Defend three innocents from the Inquisitor"
 		5: return "Get Aldric Vane elected — boost him to 65+ and undermine both rivals below 45."
-		6: return "Expose Aldric Vane's embezzlement (rep ≤ 30) while protecting Marta Coin (rep ≥ 60)."
+		6: return "Expose Aldric Vane's embezzlement (rep ≤ 30) while protecting Marta Coin (rep ≥ 62)."
 	return _starting_text.substr(0, mini(_starting_text.find(".") + 1, 80))
 
 
@@ -286,9 +294,11 @@ var S3_FAIL_CALDER_BELOW := 35
 # and makes the defensive challenge about sustained play, not knife-edge precision.
 # Starting reps raised in scenarios.json (Aldous 65→70, Vera 65→68, Finn 70→72).
 # Inquisitor daily phase pushed from day 13→15; late intensity reduced 4→3.
+# SPA-747: win 45→48, fail 40→42 — new HUD systems give near-perfect info, shrinking
+# the danger zone to restore defensive pressure.
 const S4_PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
-var S4_WIN_REP_MIN       := 45
-var S4_FAIL_REP_BELOW    := 40
+var S4_WIN_REP_MIN       := 48
+var S4_FAIL_REP_BELOW    := 42
 
 # Scenario 5 thresholds (The Election — SPA-605).
 # Three-way race: Aldric must reach 65+ and be highest; both rivals must be below 45.
@@ -306,10 +316,11 @@ var S5_ENDORSEMENT_BONUS: int = 8
 # Lower heat ceiling (60) — guards are on Aldric's payroll.
 # Instant fail if Marta drops below 30.
 # Vars (not const) so difficulty modifiers from scenarios.json can override them.
+# SPA-747: marta win 60→62, heat ceiling 60→55 — visible heat budget must be tighter.
 var S6_WIN_ALDRIC_MAX:   int   = 30
-var S6_WIN_MARTA_MIN:    int   = 60
+var S6_WIN_MARTA_MIN:    int   = 62
 var S6_FAIL_MARTA_BELOW: int   = 30
-var S6_EXPOSED_HEAT:     float = 60.0
+var S6_EXPOSED_HEAT:     float = 55.0
 
 enum ScenarioState { ACTIVE, WON, FAILED }
 
@@ -525,7 +536,7 @@ func get_scenario_1_progress(rep: ReputationSystem) -> Dictionary:
 func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_4_state != ScenarioState.ACTIVE:
 		return
-	# Fail: any protected NPC drops below 40 (instant fail).
+	# Fail: any protected NPC drops below 42 (instant fail).
 	for npc_id in S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 		if snap == null:
