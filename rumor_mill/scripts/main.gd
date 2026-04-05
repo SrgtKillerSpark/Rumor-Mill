@@ -769,6 +769,8 @@ func _init_context_banner() -> void:
 		"scenario_2": _opening_hint_id = "ctx_s2_opening"
 		"scenario_3": _opening_hint_id = "ctx_s3_opening"
 		"scenario_4": _opening_hint_id = "ctx_s4_opening"
+		"scenario_5": _opening_hint_id = "ctx_s5_opening"
+		"scenario_6": _opening_hint_id = "ctx_s6_opening"
 	if _opening_hint_id != "":
 		var _open_timer := get_tree().create_timer(4.0)  # tightened from 8 s
 		var _hint_id_copy: String = _opening_hint_id
@@ -787,6 +789,10 @@ func _init_context_banner() -> void:
 			_s_hints = ["ctx_s3_dual_targets", "ctx_s3_rival_intro", "ctx_s3_disrupt_tip"]
 		"scenario_4":
 			_s_hints = ["ctx_s4_defense_goal", "ctx_s4_inquisitor_info", "ctx_s4_prioritize_finn"]
+		"scenario_5":
+			_s_hints = ["ctx_s5_three_way_race", "ctx_s5_endorsement_tip"]
+		"scenario_6":
+			_s_hints = ["ctx_s6_heat_ceiling", "ctx_s6_protect_marta"]
 	var _delays: Array = [10.0, 16.0, 22.0]
 	for i in range(_s_hints.size()):
 		var _hint_id: String = _s_hints[i]
@@ -804,8 +810,9 @@ func _init_context_banner() -> void:
 	if world.intel_store != null:
 		world.intel_store.tokens_exhausted.connect(_on_ctx_tokens_exhausted)
 
-	# Heat warning hint (SPA-608): S1 only — fires once when heat first crosses 50.
-	if world.intel_store != null and world.active_scenario_id == "scenario_1":
+	# Heat warning hint (SPA-608): fires once when heat first crosses 50.
+	# S1 (ceiling 80) and S6 (ceiling 60) both benefit from an early warning.
+	if world.intel_store != null and world.active_scenario_id in ["scenario_1", "scenario_6"]:
 		world.intel_store.heat_warning.connect(_on_heat_warning)
 
 	# NPC state change hints: first SPREAD, ACT, or REJECT triggers.
@@ -833,6 +840,10 @@ func _init_tutorial_hud_s2s3s4() -> void:
 		_tutorial_hud.queue_tooltip("rival_agent")
 	if world.active_scenario_id == "scenario_4":
 		_tutorial_hud.queue_tooltip("inquisitor_agent")
+	if world.active_scenario_id == "scenario_5":
+		_tutorial_hud.queue_tooltip("election_race")
+	if world.active_scenario_id == "scenario_6":
+		_tutorial_hud.queue_tooltip("guild_defense")
 
 	# SPA-589: Deferred navigation tooltip — show after 10 s if not yet seen.
 	var _nav_timer := get_tree().create_timer(10.0)
@@ -1172,6 +1183,9 @@ func _on_ctx_day_changed(day: int) -> void:
 		_tutorial_banner.queue_hint("ctx_actions_refresh")
 	elif day == 3:
 		_tutorial_banner.queue_hint("ctx_check_journal")
+	# S5: endorsement approaches on day 13 — warn the player.
+	if day == 13 and world.active_scenario_id == "scenario_5":
+		_tutorial_banner.queue_hint("ctx_s5_endorsement_warning")
 	# Halfway warning: check if past 50% of days and progress is slow.
 	if not _ctx_halfway_fired and world.scenario_manager != null:
 		var total: int = world.scenario_manager.get_days_allowed()

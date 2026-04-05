@@ -14,6 +14,8 @@
 ##   "evidence_items"       — shown on first evidence discovery
 ##   "rival_agent"          — shown on Scenario 3 rival agent introduction
 ##   "inquisitor_agent"     — shown on Scenario 4 inquisitor introduction
+##   "election_race"        — shown on Scenario 5 three-way election introduction
+##   "guild_defense"        — shown on Scenario 6 guild defense introduction
 
 class_name TutorialSystem
 
@@ -143,6 +145,30 @@ const TOOLTIP_DATA: Dictionary = {
 			+ "• Counter with [b]Praise[/b] rumours and well-connected seed targets.\n"
 			+ "• Watch for clergy NPCs losing reputation — that signals an Inquisitor move.\n"
 			+ "Track Inquisitor activity in the [b]Scenario 4 HUD[/b]."
+		),
+	},
+	"election_race": {
+		"title": "A Three-Way Election",
+		"body":  (
+			"Three candidates compete for alderman: [b]Edric Fenn[/b], [b]Aldric Vane[/b],\n"
+			+ "and [b]Tomas Reeve[/b]. Your patron backs Aldric.\n"
+			+ "• [b]Boost Aldric[/b] to 65+ reputation — he must be the highest.\n"
+			+ "• [b]Drop both rivals[/b] below 45.\n"
+			+ "• On [b]day 15[/b], the Prior endorses the leader ([b]+8 rep[/b]).\n"
+			+ "• If Aldric drops below [b]30[/b], instant fail.\n"
+			+ "Track standings in the [b]Scenario 5 HUD[/b]."
+		),
+	},
+	"guild_defense": {
+		"title": "The Merchant's Debt",
+		"body":  (
+			"Expose [b]Aldric Vane[/b]'s embezzlement while protecting [b]Marta Coin[/b].\n"
+			+ "• Get Aldric's reputation to [b]30 or below[/b].\n"
+			+ "• Keep Marta at [b]60+ reputation[/b] (below 30 = instant fail).\n"
+			+ "• Heat ceiling is [b]60[/b] — the guards are on Aldric's payroll.\n"
+			+ "• Aldric's merchant allies [b]actively defend[/b] him with praise rumours.\n"
+			+ "• Route accusations through the [b]clergy and commons[/b] to bypass the guild.\n"
+			+ "Track progress in the [b]Scenario 6 HUD[/b]."
 		),
 	},
 }
@@ -455,6 +481,67 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			+ "Prioritize his reputation when multiple targets are threatened."
 		),
 		"auto_dismiss_secs": 9,
+	},
+	# ── Scenario 5: The Election onboarding banners ─────────────────────────
+	"ctx_s5_opening": {
+		"title": "Your First Move",
+		"body":  (
+			"Three candidates, one election. Press [b]R[/b] → [b]Praise Aldric Vane[/b] → whisper to [b]Sybil Oats[/b] in the Market.  "
+			+ "Then start seeding [b]Scandal[/b] against whichever rival is currently leading.  "
+			+ "[b]Day 15[/b]: the Prior endorses whoever leads — make sure it is Aldric."
+		),
+		"auto_dismiss_secs": 12,
+	},
+	"ctx_s5_three_way_race": {
+		"title": "Three-Way Race",
+		"body":  (
+			"Aldric must reach [b]65+ reputation[/b] AND be the highest of the three.  "
+			+ "Both [b]Edric Fenn[/b] and [b]Tomas Reeve[/b] must drop below [b]45[/b].  "
+			+ "If Aldric drops below [b]30[/b], instant fail."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s5_endorsement_tip": {
+		"title": "The Endorsement",
+		"body":  (
+			"On [b]day 15[/b], Prior Aldous endorses the candidate with the [b]highest reputation[/b] — a [b]+8 boost[/b].  "
+			+ "If Aldric is not leading by then, the endorsement goes to a rival and may cost you the election."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s5_endorsement_warning": {
+		"title": "Endorsement Approaching",
+		"body":  (
+			"The Prior's endorsement is [b]2 days away[/b].  "
+			+ "Check the Scenario HUD — if Aldric is not leading, focus everything on boosting him [b]now[/b]."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	# ── Scenario 6: The Merchant's Debt onboarding banners ───────────────
+	"ctx_s6_opening": {
+		"title": "Your First Move",
+		"body":  (
+			"The merchant quarter is hostile territory. Press [b]R[/b] → [b]Accusation[/b] against Aldric Vane → whisper to [b]Finn Monk[/b] or [b]Constance Widow[/b].  "
+			+ "Route rumors through the [b]clergy and commons[/b] — Aldric's merchant allies will block anything in their network."
+		),
+		"auto_dismiss_secs": 12,
+	},
+	"ctx_s6_heat_ceiling": {
+		"title": "Guards on Aldric's Payroll",
+		"body":  (
+			"The heat ceiling is [b]60[/b] in this scenario, not 80.  "
+			+ "Bram Guard exposes you earlier — vary your targets and wait between actions."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"ctx_s6_protect_marta": {
+		"title": "Protect Marta Coin",
+		"body":  (
+			"Keep [b]Marta Coin[/b] at [b]60+ reputation[/b] — she is your patron.  "
+			+ "If she drops below [b]30[/b], instant fail.  "
+			+ "Use [b]Praise[/b] rumors through her allies (Sim Carter, Nell Picker) to maintain her standing."
+		),
+		"auto_dismiss_secs": 10,
 	},
 	# ── Scenario 1: Heat / exposure warning ──────────────────────────────────
 	"ctx_heat_warning": {
