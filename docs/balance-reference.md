@@ -29,7 +29,7 @@ Edric's extremely low credulity makes direct rumor targeting ineffective. The in
 
 | Parameter | Value | Source |
 |-----------|-------|--------|
-| **Win condition** | >= 7 NPCs in BELIEVE/SPREAD/ACT for illness rumor about Alys Herbwife | `scenario_manager.gd` S2_WIN_ILLNESS_MIN |
+| **Win condition** | >= 6 NPCs in BELIEVE/SPREAD/ACT for illness rumor about Alys Herbwife | `scenario_manager.gd` S2_WIN_ILLNESS_MIN |
 | **Fail — Maren rejects** | Sister Maren transitions to REJECT for any illness rumor about Alys = instant fail | `has_illness_rejecter()` |
 | **Fail — timeout** | Day > 20 | `scenarios.json` daysAllowed |
 | **Bribery** | Enabled (2 charges) | |

@@ -127,7 +127,7 @@ const S1_WIN_EDRIC_BELOW   := 30
 # Win when 7+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
 # SPA-98: raised from 5 — 5 believers was trivially reachable in 3-4 days with ILL-01
 # (intensity=5). The real tension is avoiding Maren's contradiction, not the count.
-const S2_WIN_ILLNESS_MIN   := 7
+const S2_WIN_ILLNESS_MIN   := 6
 # Ticks per in-game day (matches DayNightCycle default).
 const TICKS_PER_DAY        := 24
 
