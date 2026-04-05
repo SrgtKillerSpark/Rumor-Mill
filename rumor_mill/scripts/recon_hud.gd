@@ -61,6 +61,14 @@ var _toast_slide_tween: Tween = null
 var _flash_rect:        ColorRect = null
 var _flash_tween:       Tween = null
 
+# ── SPA-724: Goal reminder strip ────────────────────────────────────────────
+var _goal_strip: Panel = null
+var _goal_label: Label = null
+var _goal_auto_hidden: bool = false  # true after player has taken enough actions
+
+# ── SPA-724: Auto-show hint state ───────────────────────────────────────────
+var _auto_hint_shown: bool = false
+
 # ── Milestone queue (SPA-713) ───────────────────────────────────────────────
 var _milestone_queue: Array = []  # [{text: String, color: Color}]
 var _milestone_showing: bool = false
@@ -556,6 +564,74 @@ func _on_feed_toggle() -> void:
 	_feed_collapsed = not _feed_collapsed
 	_feed_toggle_btn.text = "▲" if _feed_collapsed else "▼"
 	_feed_vbox.visible = not _feed_collapsed
+
+
+# ── SPA-724: Goal reminder strip ────────────────────────────────────────────
+
+## Build a compact goal strip below the counter panel showing the current objective.
+## Fades out after a few actions so it doesn't permanently clutter the HUD.
+func build_goal_strip(goal_text: String) -> void:
+	if _goal_strip != null:
+		return  # already built
+	_goal_strip = Panel.new()
+	_goal_strip.anchor_left  = 1.0
+	_goal_strip.anchor_right = 1.0
+	_goal_strip.anchor_top   = 0.0
+	_goal_strip.anchor_bottom = 0.0
+	# Position just below the counter panel.
+	var counter_bottom: float = $CounterPanel.offset_bottom + 4.0
+	_goal_strip.offset_left   = $CounterPanel.offset_left
+	_goal_strip.offset_right  = $CounterPanel.offset_right
+	_goal_strip.offset_top    = counter_bottom
+	_goal_strip.offset_bottom = counter_bottom + 28.0
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.04, 0.02, 0.88)
+	style.set_border_width_all(1)
+	style.border_color = Color(0.55, 0.38, 0.18, 0.5)
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(4)
+	_goal_strip.add_theme_stylebox_override("panel", style)
+	_goal_strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_goal_strip)
+
+	_goal_label = Label.new()
+	_goal_label.text = goal_text
+	_goal_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_goal_label.offset_left = 6
+	_goal_label.offset_right = -6
+	_goal_label.add_theme_font_size_override("font_size", 11)
+	_goal_label.add_theme_color_override("font_color", Color(0.90, 0.78, 0.45, 0.9))
+	_goal_label.add_theme_constant_override("outline_size", 1)
+	_goal_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	_goal_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_goal_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_goal_strip.add_child(_goal_label)
+
+
+## Fade out the goal strip once the player has enough context (called after N actions).
+func fade_goal_strip() -> void:
+	if _goal_strip == null or _goal_auto_hidden:
+		return
+	_goal_auto_hidden = true
+	var tw := create_tween()
+	tw.tween_property(_goal_strip, "modulate:a", 0.0, 1.5) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+	tw.tween_callback(func() -> void: _goal_strip.visible = false)
+
+
+# ── SPA-724: Auto-show contextual hint on game start ────────────────────────
+
+## Called by main.gd after ReadyOverlay is dismissed to show the first guidance
+## automatically without requiring the player to find and click "? What next".
+func auto_show_initial_hint() -> void:
+	if _auto_hint_shown:
+		return
+	_auto_hint_shown = true
+	# Delay slightly so the game world is visible first.
+	var timer := get_tree().create_timer(1.5)
+	timer.timeout.connect(func() -> void:
+		_on_hint_pressed()
+	)
 
 
 ## Push an action result into the feed. Called alongside show_toast.

@@ -41,6 +41,9 @@ var _end_screen: CanvasLayer = null
 # ── SPA-519: Day 1 ready overlay ─────────────────────────────────────────────
 var _ready_overlay: CanvasLayer = null
 
+# ── SPA-720: Pre-game strategic overview ─────────────────────────────────────
+var _strategic_overview: CanvasLayer = null
+
 # ── SPA-541: Persistent controls reference overlay ───────────────────────────
 var _controls_ref: CanvasLayer = null
 
@@ -80,6 +83,9 @@ var _recon_ctrl_ref: Node = null
 # ── SPA-629: Rumor Panel first-time tooltip walkthrough ──────────────────────
 var _rumor_panel_tooltip: CanvasLayer = null
 var _rumor_panel_tooltip_wired: bool  = false  # guard: only trigger once per session
+
+# ── SPA-724: Onboarding action counter for goal strip fade ──────────────────
+var _spa724_action_count: int = 0
 
 # ── Sprint 10: S1 banner hint gates ───────────────────────────────────────────
 var _banner_camera_gate:       bool = false  # set true after camera_moved fires
@@ -308,14 +314,8 @@ func _on_begin_game(scenario_id: String) -> void:
 		var speed_node := get_node_or_null("SpeedHUD")
 		if speed_node != null and speed_node.has_method("_set_speed"):
 			speed_node._set_speed(speed_node.Speed.PAUSE)
-		_ready_overlay = preload("res://scripts/ready_overlay.gd").new()
-		_ready_overlay.name = "ReadyOverlay"
-		add_child(_ready_overlay)
-		# SPA-537: pass objectiveCard data so the overlay shows a full mission briefing.
-		var _sm: ScenarioManager = world.scenario_manager
-		if _sm != null:
-			_ready_overlay.setup(_sm.get_objective_card(), _sm.get_title(), _sm.get_intro_text())
-		_ready_overlay.dismissed.connect(_on_ready_overlay_dismissed)
+		# SPA-720: Show Strategic Overview first, then ReadyOverlay on dismiss.
+		_show_strategic_overview()
 
 
 func _on_ready_overlay_dismissed() -> void:
@@ -329,6 +329,19 @@ func _on_ready_overlay_dismissed() -> void:
 	# SPA-627: Flash a one-time hint so the player knows O recalls this overlay.
 	if objective_hud != null and objective_hud.has_method("show_o_hotkey_hint"):
 		objective_hud.show_o_hotkey_hint()
+
+	# SPA-724: Auto-show contextual "What next" hint on game start so players
+	# aren't left guessing what to do in the first 60 seconds.
+	if recon_hud != null and recon_hud.has_method("auto_show_initial_hint"):
+		recon_hud.auto_show_initial_hint()
+	# SPA-724: Show compact goal reminder strip below the ReconHUD.
+	if recon_hud != null and recon_hud.has_method("build_goal_strip"):
+		var _sm2: ScenarioManager = world.scenario_manager
+		if _sm2 != null:
+			var card: Dictionary = _sm2.get_objective_card()
+			var goal_text: String = card.get("mission", "")
+			if goal_text != "":
+				recon_hud.build_goal_strip("GOAL: " + goal_text)
 
 	# SPA-626: S1 first-time player flow — camera pan + Market highlight + gated banner.
 	if world.active_scenario_id == "scenario_1":
@@ -1050,6 +1063,10 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 	# SPA-589: Notify visual affordances so they fade after enough actions.
 	if _visual_affordances != null and _visual_affordances.has_method("on_action_performed"):
 		_visual_affordances.on_action_performed()
+	# SPA-724: Fade goal strip after player has taken 3 successful actions.
+	_spa724_action_count += 1
+	if _spa724_action_count >= 3 and recon_hud != null and recon_hud.has_method("fade_goal_strip"):
+		recon_hud.fade_goal_strip()
 	# SPA-589: Show recon_actions tooltip on first successful action if not yet seen.
 	if _tutorial_hud != null and _tutorial_sys != null:
 		if not _tutorial_sys.has_seen("recon_actions"):

@@ -218,6 +218,10 @@ func _show_phase_2() -> void:
 		_add_labeled_line(_vbox, "TIME:", time_limit, C_BODY)
 		_add_day_bar()
 
+	# SPA-724: Faction color legend — teach players what the NPC dot colors mean.
+	_add_divider()
+	_add_faction_legend()
+
 	# Bottom spacer.
 	var bottom_spacer := Control.new()
 	bottom_spacer.custom_minimum_size = Vector2(0, 8)
@@ -322,6 +326,57 @@ func _add_core_loop_steps() -> void:
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	center.add_child(grid)
 	_vbox.add_child(center)
+
+
+## SPA-724: Compact faction color legend so players understand NPC dot colors.
+func _add_faction_legend() -> void:
+	var header := Label.new()
+	header.text = "NPC FACTIONS"
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header.add_theme_font_size_override("font_size", 11)
+	header.add_theme_color_override("font_color", C_PHASE_HEADER)
+	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_vbox.add_child(header)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 20)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var factions := [
+		["Merchant Guild", FactionPalette.badge_color("merchant")],
+		["Nobility",       FactionPalette.badge_color("noble")],
+		["The Church",     FactionPalette.badge_color("clergy")],
+	]
+	for entry in factions:
+		var item := HBoxContainer.new()
+		item.add_theme_constant_override("separation", 4)
+		item.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var dot := ColorRect.new()
+		dot.custom_minimum_size = Vector2(10, 10)
+		dot.size = Vector2(10, 10)
+		dot.color = entry[1]
+		dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		item.add_child(dot)
+		var lbl := Label.new()
+		lbl.text = entry[0]
+		lbl.add_theme_font_size_override("font_size", 12)
+		lbl.add_theme_color_override("font_color", entry[1])
+		lbl.add_theme_constant_override("outline_size", 1)
+		lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		item.add_child(lbl)
+		row.add_child(item)
+
+	_vbox.add_child(row)
+
+	var tip := Label.new()
+	tip.text = "Look for the colored dot next to each NPC's name."
+	tip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tip.add_theme_font_size_override("font_size", 11)
+	tip.add_theme_color_override("font_color", Color(0.65, 0.58, 0.42, 0.8))
+	tip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_vbox.add_child(tip)
 
 
 func _clear_card_content() -> void:

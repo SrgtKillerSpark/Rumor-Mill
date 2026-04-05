@@ -177,6 +177,9 @@ const _DEFENSE_PENALTY_CAP:   float  = 0.30
 ## Persistent shield icon shown above this NPC while it is in DEFENDING state.
 var _defending_icon: Label = null
 
+## Faction badge dot displayed next to name label (SPA-724).
+var _faction_badge: ColorRect = null
+
 # subject_npc_id → float (accumulated penalty applied to this NPC's credulity)
 var _defense_modifiers: Dictionary = {}
 # subject_npc_id → int (ticks remaining before penalty expires)
@@ -360,6 +363,28 @@ func _setup_sprite(faction: String) -> void:
 	sprite.play("idle_south")
 
 
+# ── Faction badge (SPA-724) ──────────────────────────────────────────────────
+
+## Build a small faction-colored dot to the left of the name label so players
+## can identify NPC faction affiliation at a glance.
+func _build_faction_badge(faction: String) -> void:
+	var badge := ColorRect.new()
+	badge.color = FactionPalette.badge_color(faction)
+	badge.custom_minimum_size = Vector2(6, 6)
+	badge.size = Vector2(6, 6)
+	# Position the dot just to the left of the name label, vertically centred.
+	badge.position = Vector2(name_label.position.x - 9, name_label.position.y + 7)
+	# Subtle dark outline via a slightly larger rect behind.
+	var outline := ColorRect.new()
+	outline.color = Color(0, 0, 0, 0.6)
+	outline.custom_minimum_size = Vector2(8, 8)
+	outline.size = Vector2(8, 8)
+	outline.position = Vector2(badge.position.x - 1, badge.position.y - 1)
+	add_child(outline)
+	add_child(badge)
+	_faction_badge = badge
+
+
 # ── Initialisation ───────────────────────────────────────────────────────────
 
 func _rebuild_npc_id_dict() -> void:
@@ -402,6 +427,7 @@ func init_from_data(
 	_faction = faction
 	_setup_sprite(faction)
 	name_label.text = data.get("name", "NPC")
+	_build_faction_badge(faction)
 
 	position = _cell_to_world(start_cell)
 	_advance_waypoint()
@@ -1254,8 +1280,13 @@ func _update_label() -> void:
 	var worst := get_worst_rumor_state()
 	var state_str := Rumor.state_name(worst)
 	var short_name: String = npc_data.get("name", "NPC")
+	# SPA-724: Show faction abbreviation when idle, rumor state when active.
+	var faction_abbr := {"merchant": "M", "noble": "N", "clergy": "C"}.get(_faction, "")
 	if rumor_slots.is_empty():
-		name_label.text = short_name
+		if faction_abbr != "":
+			name_label.text = "%s [%s]" % [short_name, faction_abbr]
+		else:
+			name_label.text = short_name
 	else:
 		name_label.text = "%s\n[%s]" % [short_name, state_str]
 
