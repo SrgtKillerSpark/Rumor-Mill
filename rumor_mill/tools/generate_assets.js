@@ -712,6 +712,22 @@ function makeBuildingTiles(nightMode = false) {
     leftFace (col, wH, ...c.MANOR_STONE);
     rightFace(col, wH, 170,158,136);          // slightly darker right face
     roofFace (col, wH, ...c.ROOF_SLATE);
+    // slate tile texture on roof face — horizontal courses with staggered joints
+    {
+      const rcx = col*64+32, rcy = 32-wH;
+      for (let ry = rcy-12; ry <= rcy+12; ry += 3) {
+        const t = Math.abs(ry - rcy) / 15;
+        const rxl = Math.ceil(rcx - 30*(1-t)) + 1;
+        const rxr = Math.floor(rcx + 30*(1-t)) - 1;
+        if (rxl >= rxr) continue;
+        cv.line(rxl, ry, rxr, ry, ...c.OUTLINE, 38);
+        const rowIndex = Math.round((ry - (rcy-12)) / 3);
+        const joff = (rowIndex % 2 === 0) ? 5 : 9;
+        for (let jx = rxl + joff; jx < rxr; jx += 8) cv.sp(jx, ry, ...c.STONE_D, 52);
+      }
+      cv.line(rcx-18, rcy-7, rcx+6, rcy+1,  ...c.STONE_L, 16);
+      cv.line(rcx-12, rcy-7, rcx+12, rcy+1, ...c.STONE_L, 12);
+    }
     outlineWalls(col, wH);
     const ox0=col*64;
     // arched window on left face (larger, with shutters)
@@ -786,6 +802,19 @@ function makeBuildingTiles(nightMode = false) {
     const ox=col*64;
     for (let ty=2; ty<=8; ty+=2)
       cv.line(ox+32-2+ty, 32-wH-15+ty, ox+32+2+ty, 32-wH-13+ty, ...c.THATCH_D, 80);
+    // thatch shingle coverage — horizontal courses across full roof top face
+    {
+      const rcx = col*64+32, rcy = 32-wH;
+      for (let ry = rcy-13; ry <= rcy+12; ry += 2) {
+        const t = Math.abs(ry - rcy) / 15;
+        const rxl = Math.ceil(rcx - 30*(1-t)) + 1;
+        const rxr = Math.floor(rcx + 30*(1-t)) - 1;
+        if (rxl >= rxr) continue;
+        cv.line(rxl, ry, rxr, ry, ...c.THATCH_D, 48);
+        if ((ry - rcy + 13) % 4 === 0)
+          for (let jx = rxl+2; jx < rxr-2; jx += 6) cv.sp(jx, ry, ...c.THATCH_L, 36);
+      }
+    }
     outlineWalls(col, wH);
     // timber beams on left face
     cv.line(ox+1,  32-wH, ox+1,  32,   ...c.WOOD_D);
@@ -863,6 +892,20 @@ function makeBuildingTiles(nightMode = false) {
     leftFace (col, wH, ...c.CHAPEL_STONE);
     rightFace(col, wH, 178,174,168);
     roofFace (col, wH, ...c.ROOF_SLATE);
+    // slate tile texture on chapel roof face
+    {
+      const rcx = col*64+32, rcy = 32-wH;
+      for (let ry = rcy-12; ry <= rcy+12; ry += 3) {
+        const t = Math.abs(ry - rcy) / 15;
+        const rxl = Math.ceil(rcx - 30*(1-t)) + 1;
+        const rxr = Math.floor(rcx + 30*(1-t)) - 1;
+        if (rxl >= rxr) continue;
+        cv.line(rxl, ry, rxr, ry, ...c.OUTLINE, 36);
+        const rowIndex = Math.round((ry - (rcy-12)) / 3);
+        const joff = (rowIndex % 2 === 0) ? 4 : 8;
+        for (let jx = rxl + joff; jx < rxr; jx += 8) cv.sp(jx, ry, ...c.STONE_D, 50);
+      }
+    }
     outlineWalls(col, wH);
     const ox=col*64;
     // spire (vertical protrusion)
@@ -1051,6 +1094,20 @@ function makeBuildingTiles(nightMode = false) {
     cv.fillRect(ox+57, 32-wH+3, 2, 7, ...c.WOOD_D);   // handle
     cv.fillRect(ox+55, 32-wH+3, 4, 3, ...c.STONE_M);  // head
     cv.line(ox+55, 32-wH+3, ox+58, 32-wH+3, ...c.OUTLINE);
+    // night: enhanced forge glow halo + wall darkening
+    if (nightMode) {
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox+1; nx < ox+30; nx++) cv.sp(nx, ny, 0, 0, 0, 20);
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox+33; nx < ox+62; nx++) cv.sp(nx, ny, 0, 0, 0, 16);
+      // forge opening: blazing at night — wider halo
+      for (let dy=-5; dy<=5; dy++) for (let dx=-5; dx<=5; dx++)
+        if (dx*dx+dy*dy<=25)
+          cv.sp(ox+8+dx, 32-wH+10+dy, ...c.FORGE, Math.max(0, 80-(dx*dx+dy*dy)*3));
+      cv.sp(ox+6, 32-wH+4, 255, 245, 80, 230);
+      cv.sp(ox+9, 32-wH+3, 255, 200, 60, 200);
+      cv.sp(ox+11, 32-wH+5, 255, 220, 80, 170);
+    }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -1062,6 +1119,19 @@ function makeBuildingTiles(nightMode = false) {
     leftFace (col, wH, ...c.PLASTER);
     rightFace(col, wH, 194, 174, 132);
     roofFace (col, wH, ...c.THATCH_D);
+    // thatch shingle coverage on mill roof top face
+    {
+      const rcx = col*64+32, rcy = 32-wH;
+      for (let ry = rcy-13; ry <= rcy+12; ry += 2) {
+        const t = Math.abs(ry - rcy) / 15;
+        const rxl = Math.ceil(rcx - 30*(1-t)) + 1;
+        const rxr = Math.floor(rcx + 30*(1-t)) - 1;
+        if (rxl >= rxr) continue;
+        cv.line(rxl, ry, rxr, ry, ...c.THATCH_D, 52);
+        if ((ry - rcy + 13) % 4 === 0)
+          for (let jx = rxl+2; jx < rxr-2; jx += 6) cv.sp(jx, ry, ...c.THATCH_L, 34);
+      }
+    }
     outlineWalls(col, wH);
     const ox=col*64;
     // mill-wheel on right side (circle approximation)
@@ -1075,6 +1145,32 @@ function makeBuildingTiles(nightMode = false) {
       cv.line(wox, woy, wox+Math.round(8*Math.cos(a)), woy+Math.round(8*Math.sin(a)), ...c.WOOD_D, 180);
     // small door
     cv.fillRect(ox+4, 32-7, 6, 7, ...c.WOOD_D);
+    // horizontal plank lines on left face
+    for (let py = 32-wH+2; py < 32; py += 3)
+      cv.line(ox+1, py, ox+30, py, ...c.PLASTER, 52);
+    // small window with warm glow (miller's lantern inside)
+    cv.fillRect(ox+14, 32-wH+3, 6, 5, 80, 100, 130);
+    cv.sp(ox+17, 32-wH+5, ...c.FORGE, 60);
+    cv.line(ox+14, 32-wH+3, ox+19, 32-wH+3, ...c.WOOD_M);
+    cv.line(ox+14, 32-wH+7, ox+19, 32-wH+7, ...c.WOOD_M);
+    cv.line(ox+14, 32-wH+3, ox+14, 32-wH+7, ...c.WOOD_M);
+    cv.line(ox+19, 32-wH+3, ox+19, 32-wH+7, ...c.WOOD_M);
+    // hanging mill sign (grain/wheat motif) — bracket from left face upper
+    cv.line(ox+22, 32-wH+2, ox+28, 32-wH+2, ...c.WOOD_D);
+    cv.line(ox+28, 32-wH+2, ox+28, 32-wH+8, ...c.WOOD_D);
+    cv.fillRect(ox+21, 32-wH+8, 9, 5, ...c.PARCH_L);
+    cv.sp(ox+25, 32-wH+10, ...c.THATCH_L, 180);
+    cv.sp(ox+26, 32-wH+10, ...c.THATCH_D, 130);
+    cv.sp(ox+24, 32-wH+10, ...c.THATCH_D, 100);
+    cv.line(ox+21, 32-wH+8,  ox+29, 32-wH+8,  ...c.OUTLINE);
+    cv.line(ox+21, 32-wH+12, ox+29, 32-wH+12, ...c.OUTLINE);
+    // night: window glow halo
+    if (nightMode) {
+      cv.fillRect(ox+14, 32-wH+3, 6, 5, 245, 195, 75);
+      for (let dy=-3; dy<=3; dy++) for (let dx=-3; dx<=3; dx++)
+        if (dx*dx+dy*dy<=9)
+          cv.sp(ox+17+dx, 32-wH+5+dy, 255, 200, 80, Math.max(0, 40-(dx*dx+dy*dy)*5));
+    }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -1086,6 +1182,19 @@ function makeBuildingTiles(nightMode = false) {
     leftFace (col, wH, ...c.WOOD_M);
     rightFace(col, wH, 112, 74, 36);
     roofFace (col, wH, ...c.THATCH_D);
+    // thatch shingle coverage on storage roof top face
+    {
+      const rcx = col*64+32, rcy = 32-wH;
+      for (let ry = rcy-13; ry <= rcy+12; ry += 2) {
+        const t = Math.abs(ry - rcy) / 15;
+        const rxl = Math.ceil(rcx - 30*(1-t)) + 1;
+        const rxr = Math.floor(rcx + 30*(1-t)) - 1;
+        if (rxl >= rxr) continue;
+        cv.line(rxl, ry, rxr, ry, ...c.THATCH_D, 52);
+        if ((ry - rcy + 13) % 4 === 0)
+          for (let jx = rxl+2; jx < rxr-2; jx += 6) cv.sp(jx, ry, ...c.THATCH_L, 34);
+      }
+    }
     outlineWalls(col, wH);
     const ox=col*64;
     // plank lines on left face
@@ -1127,6 +1236,20 @@ function makeBuildingTiles(nightMode = false) {
     leftFace (col, wH, ...c.STONE_L);
     rightFace(col, wH, 130, 124, 110);
     roofFace (col, wH, ...c.STONE_M);
+    // flagstone texture on tower roof top (stone parapet top surface)
+    {
+      const rcx = col*64+32, rcy = 32-wH;
+      for (let ry = rcy-12; ry <= rcy+12; ry += 4) {
+        const t = Math.abs(ry - rcy) / 15;
+        const rxl = Math.ceil(rcx - 30*(1-t)) + 1;
+        const rxr = Math.floor(rcx + 30*(1-t)) - 1;
+        if (rxl >= rxr) continue;
+        cv.line(rxl, ry, rxr, ry, ...c.STONE_D, 45);
+        const joff = (Math.round((ry - (rcy-12)) / 4) % 2 === 0) ? 6 : 12;
+        for (let jx = rxl + joff; jx < rxr; jx += 12) cv.sp(jx, ry, ...c.STONE_D, 60);
+      }
+      cv.line(rcx-14, rcy-5, rcx+10, rcy+3, ...c.STONE_L, 18);
+    }
     outlineWalls(col, wH);
     const ox=col*64;
     // battlements (merlons) along roof edge
@@ -1134,11 +1257,31 @@ function makeBuildingTiles(nightMode = false) {
       cv.fillRect(bx, 32-wH-4, 4, 4, ...c.STONE_L);
     for (let bx=ox+35; bx<ox+62; bx+=6)
       cv.fillRect(bx, 32-wH-4, 4, 4, ...c.STONE_L);
-    // arrow slit
+    // stone coursing on left face
+    for (let cy2 = 32-wH+5; cy2 < 32; cy2 += 4)
+      cv.line(ox+1, cy2, ox+30, cy2, ...c.STONE_D, 30);
+    // arrow slit on left face
     cv.fillRect(ox+12, 32-wH+5, 3, 8, 40, 36, 44);
-    // torch
+    cv.line(ox+11, 32-wH+4, ox+15, 32-wH+4, ...c.STONE_L, 70);  // slit lintel
+    // stone coursing on right face
+    for (let cy2 = 32-wH+5; cy2 < 32; cy2 += 4)
+      cv.line(ox+33, cy2, ox+62, cy2, ...c.STONE_D, 25);
+    // arrow slit on right face
+    cv.fillRect(ox+48, 32-wH+6, 3, 8, 40, 36, 44);
+    cv.line(ox+47, 32-wH+5, ox+51, 32-wH+5, ...c.STONE_L, 70);  // slit lintel
+    // torch bracket on left face + glow
     cv.sp(ox+24, 32-wH+2, ...c.FORGE, 200);
     cv.sp(ox+24, 32-wH+1, 255, 230, 120, 160);
+    // night: wall darkening + torch halo
+    if (nightMode) {
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox+1; nx < ox+30; nx++) cv.sp(nx, ny, 0, 0, 0, 22);
+      for (let ny = 32-wH+1; ny < 32; ny++)
+        for (let nx = ox+33; nx < ox+62; nx++) cv.sp(nx, ny, 0, 0, 0, 18);
+      for (let dy=-3; dy<=3; dy++) for (let dx=-3; dx<=3; dx++)
+        if (dx*dx+dy*dy<=9)
+          cv.sp(ox+24+dx, 32-wH+2+dy, ...c.FORGE, Math.max(0, 55-(dx*dx+dy*dy)*7));
+    }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -1150,15 +1293,42 @@ function makeBuildingTiles(nightMode = false) {
     leftFace (col, wH, ...c.MANOR_STONE);
     rightFace(col, wH, 168, 156, 132);
     roofFace (col, wH, ...c.ROOF_TILE);
+    // clay tile texture on roof face — horizontal courses with warm highlights
+    {
+      const rcx = col*64+32, rcy = 32-wH;
+      for (let ry = rcy-12; ry <= rcy+12; ry += 3) {
+        const t = Math.abs(ry - rcy) / 15;
+        const rxl = Math.ceil(rcx - 30*(1-t)) + 1;
+        const rxr = Math.floor(rcx + 30*(1-t)) - 1;
+        if (rxl >= rxr) continue;
+        cv.line(rxl, ry, rxr, ry, ...c.OUTLINE, 42);
+        cv.line(rxl, ry-1, rxr, ry-1, 180, 90, 65, 16);  // warm tile ridge highlight
+        const joff = (Math.round((ry - (rcy-12)) / 3) % 2 === 0) ? 4 : 8;
+        for (let jx = rxl + joff; jx < rxr; jx += 8) cv.sp(jx, ry, ...c.WOOD_D, 48);
+      }
+    }
     outlineWalls(col, wH);
     const ox=col*64;
     // columns on left face
     cv.line(ox+6,  32-wH, ox+6,  32, ...c.CHAPEL_STONE);
     cv.line(ox+12, 32-wH, ox+12, 32, ...c.CHAPEL_STONE);
     cv.line(ox+18, 32-wH, ox+18, 32, ...c.CHAPEL_STONE);
+    // stone coursing on left face
+    for (let cy2 = 32-wH+5; cy2 < 32; cy2 += 4)
+      cv.line(ox+1, cy2, ox+30, cy2, ...c.STONE_D, 28);
     // arched door
     cv.fillRect(ox+8, 32-9, 7, 9, 50, 44, 60);
     cv.sp(ox+11, 32-9, 50, 44, 60);
+    // stone coursing on right face
+    for (let cy2 = 32-wH+5; cy2 < 32; cy2 += 4)
+      cv.line(ox+33, cy2, ox+62, cy2, ...c.STONE_D, 22);
+    // arched window on right face
+    cv.fillRect(ox+44, 32-wH+5, 6, 9, 80, 100, 150);
+    cv.sp(ox+47, 32-wH+5, 80, 100, 150);                   // arch cap
+    cv.line(ox+44, 32-wH+5,  ox+49, 32-wH+5,  ...c.STONE_D);
+    cv.line(ox+44, 32-wH+5,  ox+44, 32-wH+13, ...c.STONE_D);
+    cv.line(ox+49, 32-wH+5,  ox+49, 32-wH+13, ...c.STONE_D);
+    cv.line(ox+44, 32-wH+13, ox+49, 32-wH+13, ...c.STONE_D);
     // flag on roof
     cv.line(ox+58, 32-wH-10, ox+58, 32-wH, ...c.WOOD_M);
     cv.fillRect(ox+50, 32-wH-10, 9, 6, ...c.FLAG_R);
