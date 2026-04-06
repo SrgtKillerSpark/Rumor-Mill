@@ -310,6 +310,12 @@ var _tween_targets: Array = []
 # ── Re-entry guard — prevents duplicate UI from double signal emission ────────
 var _resolving: bool = false
 
+# ── SPA-784: Track outcome for arrow coloring ─────────────────────────────────
+var _last_outcome_won: bool = false
+var _arrow_labels: Array = []   # Label refs for animated pulse
+var _btn_pulse_tween: Tween = null
+var _what_went_wrong_lbl: Label = null
+
 
 func _ready() -> void:
 	layer = 30
@@ -341,6 +347,8 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	await TransitionManager.fade_out(0.4)
 
 	var won: bool = (state == ScenarioManager.ScenarioState.WON)
+	_last_outcome_won = won
+	_arrow_labels.clear()
 	var sm: ScenarioManager = _world_ref.scenario_manager
 
 	_current_scenario_id = _world_ref.active_scenario_id if "active_scenario_id" in _world_ref else ""
@@ -382,10 +390,16 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_next.modulate = Color.WHITE
 		_btn_next.disabled = false
 		_btn_next.focus_mode = Control.FOCUS_ALL
+		# SPA-784: Pulsing glow on Next Scenario button for victory.
+		_start_btn_pulse()
 	else:
 		_btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		_btn_next.disabled = true
 		_btn_next.focus_mode = Control.FOCUS_NONE
+
+	# ── SPA-784: "What went wrong" one-liner for defeat ──────────────────────
+	if not won:
+		_show_what_went_wrong(scenario_id, _infer_fail_reason(scenario_id))
 
 	# Default to Results tab.
 	_show_tab_results()
@@ -409,8 +423,13 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_enter_tw.tween_property(_panel, "modulate:a", 1.0, 0.4)
 		_enter_tw.tween_property(_panel, "scale", Vector2.ONE, 0.4)
 
-	# Set keyboard focus on the first action button.
-	if _btn_again != null:
+	# SPA-784: Defeat makes Try Again prominent; victory focuses Play Again.
+	if not won and _btn_again != null:
+		# Enlarge Try Again button for defeat to draw attention.
+		_btn_again.add_theme_font_size_override("font_size", 18)
+		_btn_again.custom_minimum_size = Vector2(180, 48)
+		_btn_again.call_deferred("grab_focus")
+	elif _btn_again != null:
 		_btn_again.call_deferred("grab_focus")
 
 	# ── Count-up tween (start after entrance completes) ───────────────────────
@@ -764,15 +783,25 @@ func _populate_npc_outcomes() -> void:
 		var score := snap.score
 		var arrow_text: String
 		var arrow_color: Color
-		if score > 60:
-			arrow_text  = "▲"
-			arrow_color = C_SCORE_WIN
-		elif score < 40:
-			arrow_text  = "▼"
+		if not _last_outcome_won:
+			# SPA-784: Defeat — all arrows are red to emphasize failure.
+			if score > 60:
+				arrow_text  = "▲"
+			elif score < 40:
+				arrow_text  = "▼"
+			else:
+				arrow_text  = "—"
 			arrow_color = C_SCORE_FAIL
 		else:
-			arrow_text  = "—"
-			arrow_color = C_SCORE_NEU
+			if score > 60:
+				arrow_text  = "▲"
+				arrow_color = C_SCORE_WIN
+			elif score < 40:
+				arrow_text  = "▼"
+				arrow_color = C_SCORE_FAIL
+			else:
+				arrow_text  = "—"
+				arrow_color = C_SCORE_NEU
 
 		var row := HBoxContainer.new()
 		# SPA-561: Start hidden for staggered reveal.
@@ -795,6 +824,7 @@ func _populate_npc_outcomes() -> void:
 		arrow_lbl.text = "  " + arrow_text
 		arrow_lbl.add_theme_color_override("font_color", arrow_color)
 		row.add_child(arrow_lbl)
+		_arrow_labels.append(arrow_lbl)
 
 		_npc_container.add_child(row)
 		# SPA-561: Staggered fade-in for NPC rows.
@@ -815,14 +845,14 @@ func _start_count_up_tween() -> void:
 	var tw: Tween = create_tween()
 	tw.set_parallel(true)
 
-	# SPA-561: Staggered reveal — each stat row fades in 0.15s apart.
+	# SPA-784: 300 ms staggered reveal — each stat row fades in 0.3 s apart.
 	var idx := 0
 	for entry in _tween_targets:
 		var val_lbl: Label   = entry["label"] as Label
 		var target: int      = int(entry["target"])
 		var suffix: String   = str(entry["suffix"])
 		var row_node: Node   = val_lbl.get_parent() if is_instance_valid(val_lbl) else null
-		var stagger: float   = idx * 0.15
+		var stagger: float   = idx * 0.3
 		# Fade in the row.
 		if row_node != null:
 			tw.tween_property(row_node, "modulate:a", 1.0, 0.25) \
@@ -834,18 +864,24 @@ func _start_count_up_tween() -> void:
 				if is_instance_valid(val_lbl):
 					val_lbl.text = str(int(v)) + suffix,
 			0.0, float(target), 1.0
-		).set_delay(stagger + 0.15) \
+		).set_delay(stagger + 0.2) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		idx += 1
 
 	# Reveal the bonus row (scenario 2: contradiction events) after tween.
 	if _bonus_lbl != null:
 		var bonus_ref: Node = _bonus_lbl
-		var bonus_delay: float = idx * 0.15 + 0.3
+		var bonus_delay: float = idx * 0.3 + 0.3
 		get_tree().create_timer(bonus_delay).timeout.connect(func() -> void:
 			if is_instance_valid(bonus_ref):
 				bonus_ref.modulate = Color.WHITE
 		)
+
+	# SPA-784: Start arrow pulse animations after stats are revealed.
+	var arrow_delay: float = idx * 0.3 + 0.5
+	get_tree().create_timer(arrow_delay).timeout.connect(func() -> void:
+		_start_arrow_animations()
+	)
 
 
 ## Returns the next scenario's string id, or "" if there is none.
@@ -1540,6 +1576,73 @@ func _dismiss_feedback_prompt() -> void:
 	# Return keyboard focus to the first action button.
 	if _btn_again != null:
 		_btn_again.call_deferred("grab_focus")
+
+
+# ── SPA-784: Animated reputation arrows ─────────────────────────────────────
+
+## Bounce-pulse each arrow label to draw attention to reputation changes.
+func _start_arrow_animations() -> void:
+	for i in range(_arrow_labels.size()):
+		var arrow: Label = _arrow_labels[i]
+		if not is_instance_valid(arrow):
+			continue
+		# Small scale bounce with stagger.
+		var delay := i * 0.15
+		arrow.pivot_offset = arrow.size * 0.5
+		var tw := create_tween()
+		tw.tween_property(arrow, "scale", Vector2(1.4, 1.4), 0.15) \
+			.set_delay(delay) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(arrow, "scale", Vector2.ONE, 0.2) \
+			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+# ── SPA-784: Pulsing Next Scenario button ───────────────────────────────────
+
+func _start_btn_pulse() -> void:
+	if _btn_next == null or _btn_next.disabled:
+		return
+	if _btn_pulse_tween != null:
+		_btn_pulse_tween.kill()
+	_btn_pulse_tween = create_tween().set_loops()
+	_btn_pulse_tween.tween_property(_btn_next, "modulate",
+		Color(1.2, 1.1, 0.8, 1.0), 0.8) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_btn_pulse_tween.tween_property(_btn_next, "modulate",
+		Color.WHITE, 0.8) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+# ── SPA-784: "What went wrong" defeat one-liner ────────────────────────────
+
+const WHAT_WENT_WRONG := {
+	"exposed":             "You were identified — the rumor lost its anonymity.",
+	"timeout":             "You ran out of time before the story could take hold.",
+	"contradicted":        "A credible voice contradicted the rumor publicly.",
+	"calder_implicated":   "Calder became the target of your own narrative.",
+	"aldric_destroyed":    "Aldric's reputation collapsed under your campaign.",
+	"marta_silenced":      "Marta was turned into the villain of her own story.",
+	"reputation_collapsed": "A protected NPC's reputation fell below the threshold.",
+}
+
+
+func _show_what_went_wrong(scenario_id: int, fail_reason: String) -> void:
+	if _what_went_wrong_lbl != null:
+		_what_went_wrong_lbl.queue_free()
+	var text: String = WHAT_WENT_WRONG.get(fail_reason, "Your scheme unravelled.")
+	_what_went_wrong_lbl = Label.new()
+	_what_went_wrong_lbl.text = text
+	_what_went_wrong_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_what_went_wrong_lbl.add_theme_font_size_override("font_size", 13)
+	_what_went_wrong_lbl.add_theme_color_override("font_color", C_FAIL)
+	_what_went_wrong_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# Insert below the stats cards, above the button row.
+	# The stats/npc cards are in _results_container; its parent is the main vbox.
+	if _results_container != null and _results_container.get_parent() != null:
+		var vbox := _results_container.get_parent()
+		var idx_after: int = _results_container.get_index() + 1
+		vbox.add_child(_what_went_wrong_lbl)
+		vbox.move_child(_what_went_wrong_lbl, idx_after)
 
 
 # ── Button handlers ───────────────────────────────────────────────────────────

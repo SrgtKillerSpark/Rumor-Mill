@@ -118,6 +118,10 @@ var _ctx_act_fired:      bool = false
 var _ctx_reject_fired:   bool = false
 var _ctx_tokens_fired:   bool = false
 var _ctx_heat_warn_fired: bool = false  # SPA-608: heat warning hint (S1 only)
+
+# ── SPA-788: First-time reward moment guards ──────────────────────────────────
+var _reward_first_spread_fired: bool = false
+var _reward_first_belief_fired: bool = false
 var _ctx_halfway_fired:  bool = false
 var _banner_eavesdrop_count:    int  = 0      # counts eavesdrop actions for social graph trigger
 
@@ -876,11 +880,19 @@ func _on_rumor_seeded_for_planning(
 
 
 ## Connect world.rumor_event → journal timeline and social graph overlay.
+## Also wires per-NPC SPA-788 reward-moment signals (once per session).
 func _wire_rumor_events() -> void:
 	if world == null:
 		return
 	world.rumor_event.connect(_on_rumor_event)
 	world.socially_dead_triggered.connect(_on_socially_dead_triggered)
+	# SPA-788: first-spread and first-belief-flip reward moments.
+	if "npcs" in world:
+		for npc in world.npcs:
+			if npc.has_signal("rumor_transmitted"):
+				npc.rumor_transmitted.connect(_on_first_rumor_transmitted)
+			if npc.has_signal("rumor_state_changed"):
+				npc.rumor_state_changed.connect(_on_first_belief_flip)
 
 
 ## Relay world rumor events into the Journal timeline and overlay.
@@ -1787,6 +1799,12 @@ func _init_end_screen() -> void:
 	add_child(_end_screen)
 	_end_screen.setup(world, day_night, _analytics)
 
+	# SPA-784: Feedback sequence (runs before end screen appears).
+	_feedback_seq = preload("res://scripts/feedback_sequence.gd").new()
+	_feedback_seq.name = "FeedbackSequence"
+	add_child(_feedback_seq)
+	_feedback_seq.setup(camera, day_night, world)
+
 
 # ── Sprint 7: Audio ────────────────────────────────────────────────────────────
 
@@ -1959,20 +1977,31 @@ func _on_new_day_auto_save(day: int) -> void:
 		push_warning("[Main] Auto-save failed on day %d: %s" % [day, err])
 
 
-## Relay scenario_resolved to AudioManager win/fail stings.
+## Relay scenario_resolved to feedback sequence (SPA-784) + AudioManager stings.
 ## Also persists scenario completion via ProgressData (SPA-137).
 func _on_scenario_resolved_audio(scenario_id: int, state: ScenarioManager.ScenarioState) -> void:
 	if state == ScenarioManager.ScenarioState.WON:
-		AudioManager.on_win()
-		AudioManager.play_sfx("reputation_up")
-		_camera_shake(6.0, 0.5)
-		_play_win_celebration()
 		# Persist the win so the main menu can unlock subsequent scenarios.
 		var active_id: String = world.active_scenario_id if "active_scenario_id" in world else ("scenario_%d" % scenario_id)
 		ProgressData.mark_completed(active_id)
+		# SPA-784: Full victory feedback sequence (audio, vignette, particles,
+		# banner, iris-out are handled inside the sequence).
+		if _feedback_seq != null:
+			_feedback_seq.play_victory(scenario_id)
+		else:
+			# Fallback if feedback sequence is not available.
+			AudioManager.on_win()
+			AudioManager.play_sfx("reputation_up")
+			_camera_shake(6.0, 0.5)
+			_play_win_celebration()
 	elif state == ScenarioManager.ScenarioState.FAILED:
-		AudioManager.on_fail()
-		_camera_shake(15.0, 0.6)
+		# SPA-784: Full defeat feedback sequence (shudder, desaturation,
+		# vignette, banner, hard cut are handled inside the sequence).
+		if _feedback_seq != null:
+			_feedback_seq.play_defeat(scenario_id)
+		else:
+			AudioManager.on_fail()
+			_camera_shake(15.0, 0.6)
 
 
 # ── SPA-272: Achievement hooks ────────────────────────────────────────────────
