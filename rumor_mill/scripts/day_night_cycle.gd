@@ -44,6 +44,8 @@ var _day_obj_label:     Label     = null
 var _day_obj_tween:     Tween     = null
 ## Set by World after ScenarioManager is ready. Called with no args; returns String.
 var objective_text_provider: Callable
+## SPA-786: Total days allowed (set from main.gd via setup_days_allowed).
+var days_allowed: int = 30
 
 # ── Directional shadow gradient (SPA-586) ─────────────────────────────────────
 # A subtle full-screen gradient that shifts direction as the sun moves:
@@ -156,9 +158,19 @@ func _play_day_transition_flash() -> void:
 	_day_flash_tween.tween_property(_day_flash_rect, "color:a", 0.0,  0.55) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
 
-	# Day number banner — fades in over the flash, then fades out.
+	# Day number banner — SPA-786: "Day X of Y" with color-coded remaining days.
 	if _day_banner_label != null:
-		_day_banner_label.text = "Day %d" % current_day
+		_day_banner_label.text = "Day %d of %d" % [current_day, days_allowed]
+		# Colour the banner text by urgency: dark ink → amber → red.
+		var day_frac: float = clampf(float(current_day - 1) / float(max(days_allowed - 1, 1)), 0.0, 1.0)
+		var banner_color: Color
+		if day_frac >= 0.75:
+			banner_color = Color(0.75, 0.15, 0.05, 1.0)  # deep red
+		elif day_frac >= 0.50:
+			banner_color = Color(0.70, 0.45, 0.05, 1.0)  # amber
+		else:
+			banner_color = Color(0.22, 0.12, 0.04, 1.0)  # default dark ink
+		_day_banner_label.add_theme_color_override("font_color", banner_color)
 		_day_banner_label.modulate.a = 0.0
 		_day_banner_tween = create_tween()
 		_day_banner_tween.tween_property(_day_banner_label, "modulate:a", 1.0, 0.30) \

@@ -245,12 +245,52 @@ func _pulse_day_counter() -> void:
 	if _day_counter_tween != null and _day_counter_tween.is_valid():
 		_day_counter_tween.kill()
 		day_label.scale = Vector2.ONE
+		day_label.rotation = 0.0
 	day_label.pivot_offset = day_label.size / 2.0
 	_day_counter_tween = create_tween()
-	_day_counter_tween.tween_property(day_label, "scale", Vector2(1.2, 1.2), 0.2) \
+
+	# SPA-786: Quill-scratch animation — slight rotation wobble + scale pop.
+	_day_counter_tween.tween_property(day_label, "rotation", deg_to_rad(-2.0), 0.06) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	_day_counter_tween.tween_property(day_label, "rotation", deg_to_rad(1.5), 0.06) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	_day_counter_tween.tween_property(day_label, "rotation", 0.0, 0.08) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+	_day_counter_tween.parallel().tween_property(day_label, "scale", Vector2(1.2, 1.2), 0.12) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	_day_counter_tween.tween_property(day_label, "scale", Vector2(1.0, 1.0), 0.2) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+
+	# SPA-786: Amber/red urgency pulse at 50%/75% days used.
+	_apply_day_urgency_pulse()
+
+
+## SPA-786: Flash the day counter amber at 50% or red at 75% days used.
+var _urgency_pulse_tween: Tween = null
+
+func _apply_day_urgency_pulse() -> void:
+	if day_label == null or _day_night == null:
+		return
+	var current_day: int = _day_night.current_day
+	var fraction: float = clampf(float(current_day - 1) / float(max(_days_allowed - 1, 1)), 0.0, 1.0)
+	if fraction < 0.50:
+		return  # no urgency pulse in early game
+	var pulse_color: Color
+	if fraction >= 0.75:
+		pulse_color = Color(0.95, 0.25, 0.15, 1.0)  # red
+	else:
+		pulse_color = Color(1.0, 0.75, 0.15, 1.0)    # amber
+	if _urgency_pulse_tween != null and _urgency_pulse_tween.is_valid():
+		_urgency_pulse_tween.kill()
+	var orig_color: Color = day_label.get_theme_color("font_color")
+	_urgency_pulse_tween = create_tween().set_loops(3) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_urgency_pulse_tween.tween_method(func(c: Color) -> void:
+		day_label.add_theme_color_override("font_color", c)
+	, orig_color, pulse_color, 0.2)
+	_urgency_pulse_tween.tween_method(func(c: Color) -> void:
+		day_label.add_theme_color_override("font_color", c)
+	, pulse_color, orig_color, 0.2)
 
 
 func _on_tick(_tick: int) -> void:
@@ -581,6 +621,24 @@ func _start_win_pulse() -> void:
 		Color(1.3, 1.3, 1.3, 1.0), 0.5)
 	_win_pulse_tween.tween_property(win_progress_bar, "modulate",
 		Color.WHITE, 0.5)
+
+
+## SPA-786: Flash the win progress label text to highlight a milestone moment.
+func flash_win_progress() -> void:
+	if win_progress_lbl == null:
+		return
+	var orig_color: Color = win_progress_lbl.get_theme_color("font_color")
+	var flash_color := Color(1.0, 0.95, 0.55, 1.0)  # bright gold flash
+	var tw := create_tween()
+	win_progress_lbl.add_theme_color_override("font_color", flash_color)
+	win_progress_lbl.pivot_offset = win_progress_lbl.size / 2.0
+	tw.tween_property(win_progress_lbl, "scale", Vector2(1.15, 1.15), 0.15) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tw.tween_property(win_progress_lbl, "scale", Vector2(1.0, 1.0), 0.2) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.parallel().tween_method(func(c: Color) -> void:
+		win_progress_lbl.add_theme_color_override("font_color", c)
+	, flash_color, orig_color, 0.6)
 
 
 # ── Milestone label (persistent, updates at 25/50/75%) ─────────────────────

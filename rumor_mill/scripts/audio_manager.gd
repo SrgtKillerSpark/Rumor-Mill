@@ -117,6 +117,11 @@ var _ticks_per_day: int = 24
 ## Non-empty when a location interior is open and overrides the ambient layer.
 var _location_ambient: String = ""
 
+## SPA-786: Late-game tension shift — dB bias applied to morning/evening music.
+var _late_game_active: bool = false
+const LATE_GAME_MORNING_BIAS := -2.0   # morning_calm gets quieter
+const LATE_GAME_EVENING_BIAS :=  2.0   # evening_tension gets louder
+
 ## Preloaded stream cache: name → AudioStream (or null if file absent).
 var _music_cache: Dictionary = {}
 var _sfx_cache:   Dictionary = {}
@@ -471,6 +476,24 @@ func _apply_phase_music(hour: int) -> void:
 		"night":   "night_suspense",
 	}
 	play_music(phase_tracks[new_phase], true)
+	# SPA-786: Apply late-game volume bias after crossfade starts.
+	_apply_phase_volume_bias()
+
+
+## SPA-786: Adjust the active music player volume based on late-game tension bias.
+func _apply_phase_volume_bias() -> void:
+	if not _late_game_active:
+		return
+	var bias: float = 0.0
+	match _current_music:
+		"morning_calm":    bias = LATE_GAME_MORNING_BIAS
+		"evening_tension": bias = LATE_GAME_EVENING_BIAS
+		_: return
+	var active_player := _music_player_a if _music_active_a else _music_player_b
+	# Gently tween to the biased volume so it doesn't pop.
+	var target_db: float = _music_volume_db + bias
+	var tw := create_tween()
+	tw.tween_property(active_player, "volume_db", target_db, 1.0)
 
 
 func _on_day_changed(_day: int) -> void:
@@ -485,3 +508,13 @@ func on_rumor_fail() -> void:
 ## Called when an NPC reaches the socially-dead threshold (reputation collapse).
 func on_socially_dead(_npc_id: String, _npc_name: String, _tick: int) -> void:
 	play_sfx("reputation_down")
+
+
+## SPA-786: Enable late-game tension audio shift (called from main.gd on day change).
+## After 75% days used: morning_calm -2dB, evening_tension +2dB.
+func set_late_game_tension(enabled: bool) -> void:
+	if enabled == _late_game_active:
+		return
+	_late_game_active = enabled
+	# Re-apply volume bias to the currently playing music if it's a phase track.
+	_apply_phase_volume_bias()

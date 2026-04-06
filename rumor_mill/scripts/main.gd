@@ -38,6 +38,9 @@ var _tutorial_banner: CanvasLayer = null   # S1 only
 # ── Sprint 6: end screen (created programmatically) ───────────────────────────
 var _end_screen: CanvasLayer = null
 
+# ── SPA-784: Victory/defeat feedback sequence ────────────────────────────────
+var _feedback_seq: CanvasLayer = null
+
 # ── SPA-519: Day 1 ready overlay ─────────────────────────────────────────────
 var _ready_overlay: CanvasLayer = null
 
@@ -245,6 +248,9 @@ func _on_begin_game(scenario_id: String) -> void:
 	# ── Wire game systems ─────────────────────────────────────────────────────
 	# Drive NPC ticks from the day/night cycle.
 	day_night.game_tick.connect(world.on_game_tick)
+	# SPA-786: Pass total days to day/night cycle for dawn banner display.
+	if world.scenario_manager != null:
+		day_night.days_allowed = world.scenario_manager.get_days_allowed()
 
 	if debug_overlay != null and debug_overlay.has_method("set_world"):
 		debug_overlay.set_world(world)
@@ -268,7 +274,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_milestone_notifier.name = "MilestoneNotifier"
 	add_child(_milestone_notifier)
 	if _milestone_notifier.has_method("setup"):
-		_milestone_notifier.setup(journal, world.intel_store)
+		_milestone_notifier.setup(journal, world.intel_store, objective_hud)
 	# Wire milestone tracker callback to the new notifier.
 	if world.milestone_tracker != null and _milestone_notifier != null:
 		var _sid: int = int(scenario_id.trim_prefix("scenario_"))
@@ -1566,6 +1572,11 @@ func _on_ctx_day_changed(day: int) -> void:
 		if day > total / 2:
 			_ctx_halfway_fired = true
 			_tutorial_banner.queue_hint("ctx_halfway_warning")
+	# SPA-786: Late-game audio tension shift at 75% days used.
+	if world.scenario_manager != null:
+		var total_days: int = world.scenario_manager.get_days_allowed()
+		var frac: float = clampf(float(day - 1) / float(max(total_days - 1, 1)), 0.0, 1.0)
+		AudioManager.set_late_game_tension(frac >= 0.75)
 
 
 func _on_ctx_rumor_state_changed(

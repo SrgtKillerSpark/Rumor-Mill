@@ -36,6 +36,17 @@ const VW            := 1280
 const PARTICLE_CNT  := 28
 const AUTO_DISMISS  := 4.0   # seconds before fade-out begins
 
+# ── Particle scaling by progress threshold (SPA-786) ─────────────────────────
+# Maps progress-toast milestone IDs to scaled particle counts.
+const PROGRESS_PARTICLE_MAP: Dictionary = {
+	"progress_toast_25": 28,
+	"progress_toast_50": 40,
+	"progress_toast_75": 60,
+}
+
+# ── Golden vignette flash (SPA-786) ──────────────────────────────────────────
+const C_VIGNETTE := Color(0.92, 0.78, 0.18, 0.45)  # translucent gold
+
 # ── State ─────────────────────────────────────────────────────────────────────
 
 var _journal_ref:    CanvasLayer      = null
@@ -45,17 +56,23 @@ var _queue:          Array            = []   ## Array[Dictionary] {text, color, 
 var _showing:        bool             = false
 var _popup_root:     Control          = null
 var _dismiss_tween:  Tween            = null
+var _vignette_rect:  ColorRect        = null  ## SPA-786: golden vignette overlay
+var _vignette_tween: Tween            = null
+## Optional reference to ObjectiveHUD for flashing progress text (SPA-786).
+var _objective_hud:  CanvasLayer      = null
 
 
 func _ready() -> void:
 	layer = 18
 	_load_milestones_json()
+	_build_vignette_overlay()
 
 
 ## Called from main.gd after journal and world systems are ready.
-func setup(journal: CanvasLayer, intel_store: PlayerIntelStore) -> void:
-	_journal_ref = journal
-	_intel_ref   = intel_store
+func setup(journal: CanvasLayer, intel_store: PlayerIntelStore, obj_hud: CanvasLayer = null) -> void:
+	_journal_ref    = journal
+	_intel_ref      = intel_store
+	_objective_hud  = obj_hud
 
 
 ## Callback for MilestoneTracker.setup().  Signature: (text, color, id).
@@ -109,8 +126,15 @@ func _display_popup(text: String, color: Color, milestone_id: String) -> void:
 	_popup_root = _build_popup(text, color, reward_text)
 	add_child(_popup_root)
 
-	# ── Celebration particles ───────────────────────────────────────────────
-	_spawn_particles(color)
+	# ── Celebration particles (SPA-786: scaled by progress milestone) ──────
+	var particle_count: int = PROGRESS_PARTICLE_MAP.get(milestone_id, PARTICLE_CNT)
+	_spawn_particles(color, particle_count)
+
+	# ── Golden vignette flash on screen edges (SPA-786) ────────────────────
+	_flash_vignette()
+
+	# ── Flash objective card progress text (SPA-786) ───────────────────────
+	_flash_objective_progress()
 
 	# ── Animate in: fade + slide down from slightly above ──────────────────
 	var target_y: float = float(POPUP_Y)
@@ -249,13 +273,13 @@ func _build_popup(text: String, color: Color, reward_text: String) -> Control:
 
 # ── Particle effect ───────────────────────────────────────────────────────────
 
-func _spawn_particles(color: Color) -> void:
+func _spawn_particles(color: Color, count: int = PARTICLE_CNT) -> void:
 	var particles := CPUParticles2D.new()
 	# Emit from the top-center of the popup card.
 	particles.position         = Vector2(float(VW) / 2.0, float(POPUP_Y) + float(POPUP_H_BASE) / 2.0)
 	particles.emitting         = true
 	particles.one_shot         = true
-	particles.amount           = PARTICLE_CNT
+	particles.amount           = count
 	particles.lifetime         = 1.6
 	particles.explosiveness    = 0.88
 	particles.spread           = 130.0
@@ -272,6 +296,59 @@ func _spawn_particles(color: Color) -> void:
 		if is_instance_valid(particles):
 			particles.queue_free()
 	)
+
+
+# ── Golden vignette flash (SPA-786) ──────────────────────────────────────────
+
+func _build_vignette_overlay() -> void:
+	# A full-screen ColorRect with a radial-vignette shader for golden edge flash.
+	_vignette_rect = ColorRect.new()
+	_vignette_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_vignette_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var shader := Shader.new()
+	shader.code = """
+shader_type canvas_item;
+
+uniform float u_alpha : hint_range(0.0, 1.0) = 0.0;
+uniform vec4  u_color : source_color = vec4(0.92, 0.78, 0.18, 0.45);
+
+void fragment() {
+	vec2 uv = UV * 2.0 - 1.0;
+	float dist = length(uv);
+	float edge = smoothstep(0.5, 1.2, dist);
+	COLOR = vec4(u_color.rgb, edge * u_alpha * u_color.a);
+}
+"""
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	mat.set_shader_parameter("u_alpha", 0.0)
+	mat.set_shader_parameter("u_color", C_VIGNETTE)
+	_vignette_rect.material = mat
+	add_child(_vignette_rect)
+
+
+func _flash_vignette() -> void:
+	if _vignette_rect == null or _vignette_rect.material == null:
+		return
+	if _vignette_tween != null and _vignette_tween.is_valid():
+		_vignette_tween.kill()
+	var mat: ShaderMaterial = _vignette_rect.material as ShaderMaterial
+	_vignette_tween = create_tween()
+	_vignette_tween.tween_method(func(v: float) -> void:
+		mat.set_shader_parameter("u_alpha", v)
+	, 0.0, 1.0, 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	_vignette_tween.tween_method(func(v: float) -> void:
+		mat.set_shader_parameter("u_alpha", v)
+	, 1.0, 0.0, 0.4).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+
+
+# ── Objective progress flash (SPA-786) ───────────────────────────────────────
+
+func _flash_objective_progress() -> void:
+	if _objective_hud == null:
+		return
+	if _objective_hud.has_method("flash_win_progress"):
+		_objective_hud.flash_win_progress()
 
 
 # ── JSON loading ──────────────────────────────────────────────────────────────
