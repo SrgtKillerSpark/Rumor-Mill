@@ -97,6 +97,27 @@ func force_hide() -> void:
 	_hide()
 
 
+## SPA-788: Temporarily display a custom symbol and colour for duration seconds,
+## then snap back to the NPC's actual current state via refresh().
+## Used for one-shot reward feedback (e.g. belief-flip conviction flash).
+func show_override(symbol: String, color: Color, duration: float) -> void:
+	if _label == null:
+		return
+	_label.text = symbol
+	_label.add_theme_color_override("font_color", color)
+	if not _is_showing:
+		if _visible_count >= MAX_VISIBLE:
+			return  # cap full — skip tween so no ghost bubble forms
+		_visible_count += 1
+		_is_showing = true
+	if _tween:
+		_tween.kill()
+	_tween = create_tween()
+	_tween.tween_property(_label, "modulate:a", 1.0, 0.15).set_ease(Tween.EASE_OUT)
+	_tween.tween_interval(duration)
+	_tween.tween_callback(func() -> void: refresh(_current_state))
+
+
 # ── Private helpers ──────────────────────────────────────────────────────────
 
 func _show() -> void:
