@@ -186,7 +186,28 @@ func notify_rival_acted(day: int, claim_type: String, subject_id: String) -> voi
 	var tween := create_tween()
 	tween.tween_property(_rival_lbl, "modulate:a", 0.25, 0.12)
 	tween.tween_property(_rival_lbl, "modulate:a", 1.0, 0.30)
+	# SPA-805: Red ripple VFX on the target NPC to make rival activity visible.
+	_spawn_rival_ripple(subject_id)
 	_update_disrupt_button()
+
+
+## SPA-805: Spawn a red expanding ring at the NPC the rival just targeted.
+func _spawn_rival_ripple(subject_id: String) -> void:
+	if _world_ref == null:
+		return
+	var npc_pos := Vector2.ZERO
+	var found := false
+	for npc in _world_ref.npcs:
+		if npc.npc_data.get("id", "") == subject_id:
+			npc_pos = npc.global_position
+			found = true
+			break
+	if not found:
+		return
+	var fx := preload("res://scripts/rumor_ripple_vfx.gd").new()
+	fx.accent_color = Color(0.95, 0.15, 0.15, 0.80)  # red for rival threat
+	_world_ref.add_child(fx)
+	fx.global_position = npc_pos
 
 
 ## Called by rival_agent.rival_disrupted signal.

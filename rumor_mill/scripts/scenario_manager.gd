@@ -376,6 +376,10 @@ signal scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioState)
 ## threshold: 0.75 or 0.90.  days_remaining: int.
 signal deadline_warning(threshold: float, days_remaining: int)
 
+## SPA-805: Emitted once in S1 when Edric's reputation first drops below 48.
+## Triggers the "First Blood" celebration in main.gd.
+signal s1_first_blood
+
 ## SPA-592: Emitted the first time Maren rejects the illness rumor, starting the grace window.
 ## days_remaining: how many days the player has to reach 7 believers before the fail fires.
 signal s2_maren_grace_started(days_remaining: int)
@@ -396,6 +400,9 @@ var scenario_6_state: ScenarioState = ScenarioState.ACTIVE
 
 ## Tracks which deadline thresholds have already fired (0.75, 0.90).
 var _deadline_warnings_fired: Dictionary = {}
+
+## SPA-805: True once s1_first_blood has fired (Edric rep first drops below 48).
+var _s1_first_blood_fired: bool = false
 
 ## Number of times this scenario has been retried by the player.
 ## Set by main.gd at game-start from PlayerStats (SPA-335).
@@ -474,6 +481,10 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 	var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
 	if snap == null:
 		return
+	# SPA-805: "First Blood" celebration — first time Edric's rep cracks below 48.
+	if not _s1_first_blood_fired and snap.score < 48:
+		_s1_first_blood_fired = true
+		s1_first_blood.emit()
 	if snap.score < S1_WIN_EDRIC_BELOW:
 		scenario_1_state = ScenarioState.WON
 		scenario_resolved.emit(1, ScenarioState.WON)

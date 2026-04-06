@@ -679,6 +679,24 @@ func _start_win_pulse() -> void:
 		Color.WHITE, 0.5)
 
 
+## SPA-805: Brief green flash on the Believers counter when the player seeds a rumor.
+## Called from main.gd._on_rumor_seeded() to give immediate "action landed" feedback.
+func pulse_believers_counter() -> void:
+	if _lbl_believers == null:
+		return
+	_lbl_believers.pivot_offset = _lbl_believers.size / 2.0
+	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_lbl_believers, "scale", Vector2(1.2, 1.2), 0.12)
+	tw.tween_property(_lbl_believers, "scale", Vector2(1.0, 1.0), 0.18) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.parallel().tween_method(
+		func(c: Color) -> void: _lbl_believers.add_theme_color_override("font_color", c),
+		Color(0.20, 1.00, 0.40, 1.0),   # bright green flash
+		Color(0.345, 0.580, 0.769, 1.0),  # back to WATER_L blue
+		0.40
+	)
+
+
 ## SPA-786: Flash the win progress label text to highlight a milestone moment.
 func flash_win_progress() -> void:
 	if win_progress_lbl == null:

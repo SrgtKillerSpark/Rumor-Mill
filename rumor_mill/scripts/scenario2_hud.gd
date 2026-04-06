@@ -29,6 +29,9 @@ var _rejecters_lbl:     Label     = null
 var _maren_warning_lbl: Label     = null
 var _escalation_lbl:    Label     = null
 
+## SPA-805: pip row — filled ● / empty ○ circles showing believer progress.
+var _pip_lbl: Label = null
+
 ## SPA-592: Maren's direct social-graph neighbours (NPC id → edge weight).
 ## Populated in _on_setup_extra; used to flag seed-target risk in the believers list.
 var _maren_neighbours: Dictionary = {}
@@ -84,6 +87,17 @@ func _build_ui() -> void:
 	_bar_bg = bar_pair[0]
 	_bar    = bar_pair[1]
 	bar_hbox.add_child(_bar_bg)
+
+	# SPA-805: Pip row — ● filled / ○ empty circles showing believer count at a glance.
+	_pip_lbl = Label.new()
+	_pip_lbl.add_theme_font_size_override("font_size", 13)
+	_pip_lbl.add_theme_color_override("font_color", C_ILLNESS)
+	_pip_lbl.add_theme_constant_override("outline_size", 2)
+	_pip_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_pip_lbl.text = "○○○○○○○"
+	_pip_lbl.tooltip_text = "Each circle = one believer. Filled ● = believes; empty ○ = not yet."
+	_pip_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	count_vbox.add_child(_pip_lbl)
 
 	# NPC name columns.
 	var names_vbox := VBoxContainer.new()
@@ -204,6 +218,16 @@ func _refresh() -> void:
 		_rejecters_lbl.visible = true
 	else:
 		_rejecters_lbl.visible = false
+
+	# SPA-805: Update pip display (● filled, ○ empty) for believer count.
+	if _pip_lbl != null:
+		var filled: int = mini(count, threshold)
+		var pip_str := ""
+		for i in threshold:
+			pip_str += "●" if i < filled else "○"
+		_pip_lbl.text = pip_str
+		_pip_lbl.add_theme_color_override("font_color",
+			C_WIN if count >= threshold else C_ILLNESS)
 
 	_update_days_remaining(sm)
 	_update_result_label(state,

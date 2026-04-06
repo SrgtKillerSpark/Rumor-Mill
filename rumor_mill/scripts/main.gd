@@ -503,6 +503,9 @@ func _init_s1_onboarding_flow() -> void:
 	if _visual_affordances != null and _visual_affordances.has_method("highlight_single_target"):
 		_visual_affordances.highlight_single_target(market_world_pos)
 
+	# SPA-805: Second highlight on the Manor (Edric's building) — subtle gold pulse for 2 days.
+	_init_s1_manor_highlight()
+
 	# 3. Persistent gated banner — stays until first Recon Action.
 	if _tutorial_banner != null:
 		_tutorial_banner.queue_hint("hint_s1_investigate_gate")
@@ -519,6 +522,55 @@ func _init_s1_onboarding_flow() -> void:
 		_recon_ctrl_ref, journal, rumor_panel, world
 	)
 	_tutorial_ctrl.start()
+
+
+# ── SPA-805: S1 manor golden-pulse affordance (Edric's building, days 1–2) ────
+
+## Create a soft golden diamond highlight on the Manor building for days 1–2 of S1.
+## Cleared automatically on day 3 or when the scenario resolves.
+func _init_s1_manor_highlight() -> void:
+	if world == null or _recon_ctrl_ref == null:
+		return
+	var manor_cell: Vector2i = world._building_entries.get("manor", Vector2i(8, 14))
+	var manor_pos := Vector2.ZERO
+	if _recon_ctrl_ref.has_method("_cell_to_world"):
+		manor_pos = _recon_ctrl_ref._cell_to_world(manor_cell)
+	if manor_pos == Vector2.ZERO:
+		return
+	# Build a slightly smaller diamond than the Market highlight, in a distinct gold.
+	var poly := Polygon2D.new()
+	poly.polygon = PackedVector2Array([
+		Vector2(0.0,  -22.0),
+		Vector2(34.0,   0.0),
+		Vector2(0.0,   22.0),
+		Vector2(-34.0,  0.0),
+	])
+	poly.color    = Color(1.00, 0.80, 0.12, 0.22)  # warm gold, softer than Market highlight
+	poly.name     = "S1ManorHighlight"
+	poly.position = manor_pos
+	poly.z_index  = 1
+	world.add_child(poly)
+	_s1_manor_highlight = poly
+	# Slow sine-wave pulse via looping tween.
+	var pulse_tw := poly.create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	pulse_tw.tween_property(poly, "modulate:a", 0.35, 1.2)
+	pulse_tw.tween_property(poly, "modulate:a", 1.0,  1.2)
+	# Auto-clear on day 3.
+	if day_night != null and day_night.has_signal("day_changed"):
+		var _clear_manor := func(day: int) -> void:
+			if day >= 3:
+				_clear_s1_manor_highlight()
+		day_night.day_changed.connect(_clear_manor)
+
+
+## Pulse the manor highlight each frame (called via a simple _process override is not
+## available on main.gd, so we reuse the existing game_tick signal instead).
+func _clear_s1_manor_highlight() -> void:
+	if _s1_manor_highlight != null and is_instance_valid(_s1_manor_highlight):
+		var tw := create_tween()
+		tw.tween_property(_s1_manor_highlight, "modulate:a", 0.0, 0.8)
+		tw.tween_callback(_s1_manor_highlight.queue_free)
+	_s1_manor_highlight = null
 
 
 # ── SPA-758: Onboarding waypoint marker system ──────────────────────────────
@@ -855,6 +907,35 @@ func _on_rumor_seeded(
 		recon_hud.show_toast(toast_msg, true)
 	if recon_hud != null and recon_hud.has_method("push_feed_entry"):
 		recon_hud.push_feed_entry(toast_msg, true)
+
+
+## SPA-805: Spawn expanding ring VFX at the seed target NPC's world position.
+## Looks up the NPC by display name among world.npcs.
+func _spawn_seed_ripple(seed_target_name: String) -> void:
+	if world == null:
+		return
+	var npc_pos := Vector2.ZERO
+	var found := false
+	for npc in world.npcs:
+		var nid: String = npc.npc_data.get("id", "")
+		if nid.replace("_", " ").capitalize() == seed_target_name:
+			npc_pos = npc.global_position
+			found = true
+			break
+	if not found:
+		return
+	var fx := preload("res://scripts/rumor_ripple_vfx.gd").new()
+	world.add_child(fx)
+	fx.global_position = npc_pos
+
+
+## SPA-805: Called when scenario_manager emits s1_first_blood (Edric rep < 48).
+func _on_s1_first_blood() -> void:
+	if _milestone_notifier != null and _milestone_notifier.has_method("show_milestone"):
+		_milestone_notifier.show_milestone(
+			"First Blood — Edric's reputation cracks!",
+			Color(0.92, 0.45, 0.12, 1.0)
+		)
 
 
 ## Called when the player bribes an NPC; logs the event to the journal timeline.
@@ -1209,6 +1290,10 @@ func _init_scenario1_hud() -> void:
 	add_child(hud)
 	if hud.has_method("setup"):
 		hud.setup(world, day_night)
+	# SPA-805: Wire the "First Blood" milestone signal.
+	if world.scenario_manager != null and world.scenario_manager.has_signal("s1_first_blood"):
+		if not world.scenario_manager.s1_first_blood.is_connected(_on_s1_first_blood):
+			world.scenario_manager.s1_first_blood.connect(_on_s1_first_blood)
 
 
 func _init_scenario2_hud() -> void:
