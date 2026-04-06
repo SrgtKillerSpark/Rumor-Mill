@@ -456,13 +456,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		var lc_world_pos: Vector2 = viewport.get_canvas_transform().affine_inverse() * screen_pos
 		var lc_npc := _hit_test_npc(lc_world_pos)
 		if lc_npc != null:
+			lc_npc.call("flash_click")
 			if _follow_npc == lc_npc:
 				# Re-click same NPC clears follow.
+				_follow_npc.call("set_selected", false)
 				_follow_npc = null
 				_follow_ticks_remaining = 0
 			else:
+				if _follow_npc != null and is_instance_valid(_follow_npc):
+					_follow_npc.call("set_selected", false)
 				_follow_npc = lc_npc
 				_follow_ticks_remaining = 3
+				_follow_npc.call("set_selected", true)
 			get_viewport().set_input_as_handled()
 			return
 

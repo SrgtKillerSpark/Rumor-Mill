@@ -100,6 +100,8 @@ var _pathfinder: AstarPathfinder = null
 var _walkable: Array[Vector2i] = []
 var _flash_tween: Tween = null
 var _base_color: Color = Color.WHITE
+## Gold diamond ring drawn under the NPC while it is the player's selected/followed target.
+var _selection_ring: Polygon2D = null
 
 # ── SPA-561: Visual feedback state ──────────────────────────────────────────
 var _ripple_radius: float = 0.0
@@ -1353,6 +1355,29 @@ func set_hover(hovered: bool) -> void:
 			sprite.modulate = STATE_TINT.get(worst, Color.WHITE)
 
 
+# ── Selection ring ───────────────────────────────────────────────────────────
+
+## Shows or hides the gold diamond selection ring drawn under the NPC.
+## Called by recon_controller when the player left-clicks (follows) or unselects.
+func set_selected(selected: bool) -> void:
+	if selected:
+		if _selection_ring != null and is_instance_valid(_selection_ring):
+			return  # already showing
+		var ring := Polygon2D.new()
+		ring.polygon = PackedVector2Array([
+			Vector2(0, -18), Vector2(24, 0), Vector2(0, 18), Vector2(-24, 0)
+		])
+		ring.color = Color(1.0, 0.85, 0.20, 0.60)
+		ring.position = Vector2(0, 8)
+		ring.z_index = -1
+		add_child(ring)
+		_selection_ring = ring
+	else:
+		if _selection_ring != null and is_instance_valid(_selection_ring):
+			_selection_ring.queue_free()
+		_selection_ring = null
+
+
 # ── Heat shimmer (per-frame) ─────────────────────────────────────────────────
 
 ## Returns the raw heat value for this NPC (0.0 if heat is disabled).
@@ -1652,15 +1677,16 @@ func show_state_emote(state_name: String) -> void:
 
 # ── Click feedback ───────────────────────────────────────────────────────────
 
-## Brief highlight flash when the player clicks to observe/eavesdrop this NPC.
+## Brief highlight flash when the player clicks to select/interact with this NPC.
+## Immediately sets self_modulate to a bright gold-white burst, then tweens back.
 func flash_click() -> void:
 	if sprite == null:
 		return
 	if _flash_tween:
 		_flash_tween.kill()
+	sprite.self_modulate = Color(2.0, 1.8, 0.8, 1.0)
 	_flash_tween = create_tween()
-	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.08)
-	_flash_tween.tween_property(sprite, "self_modulate", _base_color,  0.20)
+	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.28)
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────
