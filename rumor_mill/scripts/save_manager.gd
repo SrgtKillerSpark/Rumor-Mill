@@ -429,9 +429,10 @@ static func _serialize_rival_agent(ra: RivalAgent) -> Dictionary:
 	if ra == null:
 		return {}
 	return {
-		"active":         ra._active,
-		"last_seed_day":  ra._last_seed_day,
-		"alternate_flag": ra._alternate_flag,
+		"active":          ra._active,
+		"last_seed_day":   ra._last_seed_day,
+		"alternate_flag":  ra._alternate_flag,
+		"cooldown_offset": ra.cooldown_offset,
 	}
 
 
@@ -439,9 +440,10 @@ static func _serialize_inquisitor_agent(ia: InquisitorAgent) -> Dictionary:
 	if ia == null:
 		return {}
 	return {
-		"active":        ia._active,
-		"last_seed_day": ia._last_seed_day,
-		"target_index":  ia._target_index,
+		"active":          ia._active,
+		"last_seed_day":   ia._last_seed_day,
+		"target_index":    ia._target_index,
+		"cooldown_offset": ia.cooldown_offset,
 	}
 
 
@@ -654,6 +656,7 @@ static func _restore_rival_agent(ra: RivalAgent, d: Dictionary) -> void:
 	ra._active         = bool(d.get("active", false))
 	ra._last_seed_day  = int(d.get("last_seed_day", 0))
 	ra._alternate_flag = bool(d.get("alternate_flag", false))
+	ra.cooldown_offset = int(d.get("cooldown_offset", 0))
 
 
 static func _restore_inquisitor_agent(ia: InquisitorAgent, d: Dictionary) -> void:
@@ -662,6 +665,7 @@ static func _restore_inquisitor_agent(ia: InquisitorAgent, d: Dictionary) -> voi
 	ia._active        = bool(d.get("active", false))
 	ia._last_seed_day = int(d.get("last_seed_day", 0))
 	ia._target_index  = int(d.get("target_index", 0))
+	ia.cooldown_offset = int(d.get("cooldown_offset", 0))
 
 
 static func _restore_s4_faction_shift_agent(agent: S4FactionShiftAgent, d: Dictionary) -> void:
