@@ -44,6 +44,9 @@ var _feedback_seq: CanvasLayer = null
 # ── SPA-519: Day 1 ready overlay ─────────────────────────────────────────────
 var _ready_overlay: CanvasLayer = null
 
+# ── SPA-812: Mission Card shown after ready overlay ───────────────────────────
+var _mission_card: CanvasLayer = null
+
 # ── SPA-720: Pre-game strategic overview ─────────────────────────────────────
 var _strategic_overview: CanvasLayer = null
 
@@ -440,6 +443,15 @@ func _on_ready_overlay_dismissed() -> void:
 			var goal_text: String = card.get("mission", "")
 			if goal_text != "":
 				recon_hud.build_goal_strip("GOAL: " + goal_text)
+
+	# SPA-812: Show non-blocking Mission Card overlay for 8 seconds.
+	var _sm_mc: ScenarioManager = world.scenario_manager if world != null else null
+	if _sm_mc != null:
+		_mission_card = preload("res://scripts/mission_card.gd").new()
+		_mission_card.name = "MissionCard"
+		add_child(_mission_card)
+		_mission_card.setup(_sm_mc.get_objective_card())
+		_mission_card.dismissed.connect(func() -> void: _mission_card = null)
 
 	# SPA-626: S1 first-time player flow — camera pan + Market highlight + gated banner.
 	if world.active_scenario_id == "scenario_1":
