@@ -56,6 +56,9 @@ var _event_choice_modal: CanvasLayer = null
 # ── SPA-589: Visual affordances for new players ──────────────────────────────
 var _visual_affordances: CanvasLayer = null
 
+# ── SPA-806: Thought bubble legend overlay ──────────────────────────────────
+var _thought_legend: CanvasLayer = null
+
 # ── SPA-768: Interactive tutorial controller (step-gated S1 tutorial) ────────
 var _tutorial_ctrl: TutorialController = null
 
@@ -66,6 +69,9 @@ var _waypoint_step:  int    = 0      # 0=inactive, 1=market, 2=eavesdrop pair, 3
 
 # ── SPA-709: Milestone reward notification popup ──────────────────────────────
 var _milestone_notifier: CanvasLayer = null
+
+# ── SPA-805: S1 manor golden-pulse highlight (day 1–2 building affordance) ────
+var _s1_manor_highlight: Polygon2D = null
 
 # ── SPA-769: HUD tooltip overlay and context controls panel ──────────────────
 var _hud_tooltip: CanvasLayer = null
@@ -830,6 +836,11 @@ func _on_rumor_seeded(
 ) -> void:
 	AudioManager.on_rumor_seeded(rumor_id, subject_name, claim_id, seed_target_name)
 	_camera_shake(5.0, 0.3)
+	# SPA-805: Ripple VFX on the seed target NPC.
+	_spawn_seed_ripple(seed_target_name)
+	# SPA-805: Pulse the Believers counter on the objective HUD.
+	if objective_hud != null and objective_hud.has_method("pulse_believers_counter"):
+		objective_hud.pulse_believers_counter()
 	if journal != null and journal.has_method("push_timeline_event"):
 		var _seed_tick: int = day_night.current_tick if day_night != null else 0
 		journal.push_timeline_event(
@@ -1265,6 +1276,7 @@ func _init_tutorial_system() -> void:
 	_init_idle_hints()
 	_init_controls_reference()
 	_init_help_reminder()
+	_init_thought_legend()
 
 
 ## All scenarios except S1: non-blocking contextual hint banner for day-gated tips.
@@ -1896,6 +1908,26 @@ func _init_help_reminder() -> void:
 			tw.tween_property(panel, "modulate:a", 0.0, 1.5)
 			tw.tween_callback(panel.queue_free)
 	)
+
+
+## SPA-806: Thought bubble symbol legend — bottom-right, above help reminder.
+func _init_thought_legend() -> void:
+	_thought_legend = preload("res://scripts/thought_bubble_legend.gd").new()
+	_thought_legend.name = "ThoughtBubbleLegend"
+	add_child(_thought_legend)
+
+	# Determine if the player has completed any scenario (returning player).
+	var is_returning: bool = false
+	for sc_id in ["scenario_1", "scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6"]:
+		for diff in ["apprentice", "master", "spymaster"]:
+			var stats: Dictionary = PlayerStats.get_scenario_stats(sc_id, diff)
+			if stats.get("games_played", 0) > 0:
+				is_returning = true
+				break
+		if is_returning:
+			break
+
+	_thought_legend.setup(day_night, is_returning)
 
 
 ## Evidence tutorial trigger — fires once when compatible evidence is first shown (S2/S3).

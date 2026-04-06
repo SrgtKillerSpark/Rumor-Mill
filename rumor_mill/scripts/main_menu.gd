@@ -70,6 +70,16 @@ const SCENARIO_DIFFICULTY := {
 	"scenario_6": "Master",
 }
 
+# SPA-806: One-line difficulty descriptors shown below the difficulty badge.
+const SCENARIO_DESCRIPTOR := {
+	"scenario_1": "Single target, generous timeline. Learn the basics.",
+	"scenario_2": "New mechanic: epidemic spread. One NPC can end your run.",
+	"scenario_3": "Two targets + a rival agent working against you.",
+	"scenario_4": "Pure defense — protect three allies from escalating attacks.",
+	"scenario_5": "Three-way race with a timed endorsement event.",
+	"scenario_6": "Stealth mode — guards are on the enemy payroll.",
+}
+
 enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS }
 
 # ── State ─────────────────────────────────────────────────────────────────────
@@ -124,6 +134,7 @@ var _briefing_days:      Label      = null
 var _briefing_body:      RichTextLabel = null
 var _btn_begin:          Button     = null
 var _briefing_objective: RichTextLabel = null
+var _briefing_portrait_frame: Panel = null  # SPA-806: target portrait in objective card
 var _difficulty_buttons: Dictionary = {}   # preset_id → Button
 
 # Intro-phase refs
@@ -637,6 +648,15 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	desc_rtl.add_theme_color_override("default_color", C_MUTED if locked else C_BODY)
 	inner.add_child(desc_rtl)
 
+	# SPA-806: Difficulty descriptor — one-line summary below the hook text.
+	var descriptor: String = SCENARIO_DESCRIPTOR.get(sc_id, "")
+	if descriptor != "" and not locked:
+		var desc_lbl := Label.new()
+		desc_lbl.text = descriptor
+		desc_lbl.add_theme_font_size_override("font_size", 11)
+		desc_lbl.add_theme_color_override("font_color", accent_color.lerp(C_MUTED, 0.35))
+		inner.add_child(desc_lbl)
+
 	# Locked message row — hidden until the card is pressed while locked.
 	if locked:
 		var lock_row := HBoxContainer.new()
@@ -778,16 +798,36 @@ func _build_briefing_panel() -> void:
 
 	vbox.add_child(_separator())
 
-	# Objective card
+	# SPA-806: Objective card with optional target portrait.
+	var obj_row := HBoxContainer.new()
+	obj_row.add_theme_constant_override("separation", 10)
+
+	# Portrait frame (hidden by default; shown when target NPC exists).
+	_briefing_portrait_frame = Panel.new()
+	_briefing_portrait_frame.custom_minimum_size = Vector2(64, 96)
+	var pf_style := StyleBoxFlat.new()
+	pf_style.bg_color = Color(0.05, 0.04, 0.03, 1.0)
+	pf_style.border_color = C_CARD_BORDER
+	pf_style.set_border_width_all(1)
+	pf_style.set_corner_radius_all(4)
+	pf_style.set_content_margin_all(0)
+	_briefing_portrait_frame.add_theme_stylebox_override("panel", pf_style)
+	_briefing_portrait_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_briefing_portrait_frame.visible = false
+	obj_row.add_child(_briefing_portrait_frame)
+
 	_briefing_objective = RichTextLabel.new()
 	_briefing_objective.custom_minimum_size = Vector2(0, 100)
+	_briefing_objective.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing_objective.fit_content = false
 	_briefing_objective.scroll_active = true
 	_briefing_objective.bbcode_enabled = true
 	_briefing_objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_briefing_objective.add_theme_font_size_override("normal_font_size", 12)
 	_briefing_objective.add_theme_color_override("default_color", C_HEADING)
-	vbox.add_child(_briefing_objective)
+	obj_row.add_child(_briefing_objective)
+
+	vbox.add_child(obj_row)
 
 	vbox.add_child(_separator())
 
@@ -843,6 +883,8 @@ func _populate_objective_card() -> void:
 	var card: Dictionary = _selected_scenario.get("objectiveCard", {})
 	if card.is_empty():
 		_briefing_objective.text = ""
+		if _briefing_portrait_frame != null:
+			_briefing_portrait_frame.visible = false
 		return
 	var bbcode: String = "[b][color=#ebc80c]YOUR MISSION:[/color][/b] %s\n" % card.get("mission", "")
 	bbcode += "[b]Goal:[/b] %s\n" % card.get("winCondition", "")
@@ -853,6 +895,99 @@ func _populate_objective_card() -> void:
 	if first_action != "":
 		bbcode += "\n[color=#f4a63a][b]YOUR FIRST MOVE:[/b] %s[/color]" % first_action
 	_briefing_objective.text = bbcode
+
+	# SPA-806: Show target portrait next to mission card.
+	_populate_briefing_portrait()
+
+
+# SPA-806: Sprite sheet constants (mirrors strategic_overview.gd / npc.gd).
+const _PORTRAIT_SPRITE_W := 64
+const _PORTRAIT_SPRITE_H := 96
+const _PORTRAIT_IDLE_S_COL := 0
+const _PORTRAIT_FACTION_ROW := {"merchant": 0, "noble": 1, "clergy": 2}
+const _PORTRAIT_ARCHETYPE_ROW := {
+	"guard_civic": 3, "tavern_staff": 5, "scholar": 6, "elder": 7, "spy": 8,
+}
+const _PORTRAIT_COMMONER_ROLES := [
+	"Craftsman", "Mill Operator", "Storage Keeper", "Transport Worker",
+	"Merchant's Wife", "Traveling Merchant",
+]
+const _PORTRAIT_BODY_ROW_OFFSET := 9
+const _PORTRAIT_CLOTHING_BASE := {"merchant": 27, "noble": 30, "clergy": 33}
+
+
+func _populate_briefing_portrait() -> void:
+	if _briefing_portrait_frame == null:
+		return
+	# Clear previous portrait children.
+	for child in _briefing_portrait_frame.get_children():
+		child.queue_free()
+
+	var brief: Dictionary = _selected_scenario.get("strategicBrief", {})
+	var target_id: String = brief.get("targetNpcId", "")
+	if target_id == "":
+		_briefing_portrait_frame.visible = false
+		return
+
+	# Look up NPC data from npcs.json (already loaded by _load_scenarios).
+	var npc: Dictionary = _find_npc_data(target_id)
+	if npc.is_empty():
+		_briefing_portrait_frame.visible = false
+		return
+
+	var npc_texture: Texture2D = load("res://assets/textures/npc_sprites.png")
+	if npc_texture == null:
+		_briefing_portrait_frame.visible = false
+		return
+
+	var faction:      String = npc.get("faction", "merchant")
+	var archetype:    String = npc.get("archetype", "")
+	var role:         String = npc.get("role", "")
+	var body_type:    int    = clampi(int(npc.get("body_type", 0)), 0, 2)
+	var clothing_var: int    = clampi(int(npc.get("clothing_var", 0)), 0, 3)
+	var row: int = 0
+
+	if _PORTRAIT_ARCHETYPE_ROW.has(archetype):
+		row = _PORTRAIT_ARCHETYPE_ROW[archetype] + body_type * _PORTRAIT_BODY_ROW_OFFSET
+	elif role in _PORTRAIT_COMMONER_ROLES:
+		row = 4 + body_type * _PORTRAIT_BODY_ROW_OFFSET
+	elif clothing_var > 0 and _PORTRAIT_CLOTHING_BASE.has(faction):
+		row = _PORTRAIT_CLOTHING_BASE[faction] + (clothing_var - 1)
+	else:
+		row = _PORTRAIT_FACTION_ROW.get(faction, 0) + body_type * _PORTRAIT_BODY_ROW_OFFSET
+
+	var region := Rect2(
+		float(_PORTRAIT_IDLE_S_COL * _PORTRAIT_SPRITE_W),
+		float(row * _PORTRAIT_SPRITE_H),
+		float(_PORTRAIT_SPRITE_W),
+		float(_PORTRAIT_SPRITE_H)
+	)
+	var atlas := AtlasTexture.new()
+	atlas.atlas  = npc_texture
+	atlas.region = region
+
+	var portrait := TextureRect.new()
+	portrait.texture      = atlas
+	portrait.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.set_anchors_preset(Control.PRESET_FULL_RECT)
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_briefing_portrait_frame.add_child(portrait)
+	_briefing_portrait_frame.visible = true
+
+
+func _find_npc_data(npc_id: String) -> Dictionary:
+	var file := FileAccess.open("res://data/npcs.json", FileAccess.READ)
+	if file == null:
+		return {}
+	var json := JSON.new()
+	if json.parse(file.get_as_text()) != OK:
+		return {}
+	var npcs: Array = json.data if json.data is Array else []
+	for npc: Dictionary in npcs:
+		if npc.get("id", "") == npc_id:
+			return npc
+	return {}
 
 
 func _update_briefing_days() -> void:

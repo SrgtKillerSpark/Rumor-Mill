@@ -414,7 +414,7 @@ const HINT_DATA: Dictionary = {
 			"You've been hired to destroy [b]Edric Fenn's[/b] reputation.\n"
 			+ "Follow the steps to complete your first assignment."
 		),
-		"auto_dismiss_secs": 3,
+		"auto_dismiss_secs": 5,  # SPA-806: extended from 3 s for readability.
 	},
 	"gtut_camera": {
 		"title": "Move the Camera",
