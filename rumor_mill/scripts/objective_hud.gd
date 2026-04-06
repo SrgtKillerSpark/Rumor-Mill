@@ -152,6 +152,8 @@ func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: Reput
 	_goal_target = card.get("goalTarget", "")
 	_progress_milestones = card.get("progressMilestones", {})
 	_refresh()
+	_setup_tooltips()
+	_enhance_visual_hierarchy()
 	if day_night.has_signal("day_changed"):
 		day_night.day_changed.connect(_on_day_changed)
 	if day_night.has_signal("game_tick"):
@@ -180,6 +182,51 @@ func setup_world(world: Node2D) -> void:
 				_day_night.day_changed.connect(_suggestion_engine._on_day_changed)
 			if _day_night.has_signal("day_transition_started"):
 				_day_night.day_transition_started.connect(_suggestion_engine._on_dawn)
+
+
+## SPA-769: Set tooltip_text on scene-defined HUD controls using tooltips.json keys.
+func _setup_tooltips() -> void:
+	if day_label != null:
+		day_label.tooltip_text = "Day Counter\nThe current day and time of day. Red means you are behind on your goal."
+		day_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if day_max_label != null:
+		day_max_label.tooltip_text = "Day Counter\nThe current day and time of day. Red means you are behind on your goal."
+		day_max_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if days_remaining_lbl != null:
+		days_remaining_lbl.tooltip_text = "Day Counter\nThe current day and time of day. Red means you are behind on your goal."
+		days_remaining_lbl.mouse_filter = Control.MOUSE_FILTER_STOP
+	if progress_bg != null:
+		progress_bg.tooltip_text = "Day Progress\nHow far through today you are. The bar drains as you take actions."
+		progress_bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	if win_progress_lbl != null:
+		win_progress_lbl.tooltip_text = "Win Progress\nHow close you are to winning the scenario. Reach 100% before the days run out."
+		win_progress_lbl.mouse_filter = Control.MOUSE_FILTER_STOP
+	if goal_label != null:
+		goal_label.tooltip_text = "Scenario Goal\nYour objective for this run. Spread the right rumors to shift beliefs toward your goal."
+		goal_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if milestone_label != null:
+		milestone_label.tooltip_text = "Progress Milestone\nA notable marker on the road to victory."
+		milestone_label.mouse_filter = Control.MOUSE_FILTER_STOP
+
+
+## SPA-769: Improve visual hierarchy — ensure key HUD controls accept mouse for tooltips.
+func _enhance_visual_hierarchy() -> void:
+	# Make the day row container pass mouse events through to children.
+	var day_row: HBoxContainer = $Panel/VBox/DayRow
+	if day_row != null:
+		day_row.mouse_filter = Control.MOUSE_FILTER_PASS
+	# Ensure the main panel passes mouse for tooltip hit-testing.
+	var panel: Panel = $Panel
+	if panel != null:
+		panel.mouse_filter = Control.MOUSE_FILTER_PASS
+	var vbox: VBoxContainer = $Panel/VBox
+	if vbox != null:
+		vbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	# Win progress BG should be hoverable for tooltip.
+	var win_bg: ColorRect = $Panel/VBox/WinProgressBG
+	if win_bg != null:
+		win_bg.mouse_filter = Control.MOUSE_FILTER_STOP
+		win_bg.tooltip_text = "Win Progress\nHow close you are to winning the scenario. Reach 100% before the days run out."
 
 
 func _on_day_changed(_day: int) -> void:
@@ -1383,3 +1430,55 @@ func _on_suggestion_hint_ready(text: String) -> void:
 func _on_hint_dismissed(was_fast: bool) -> void:
 	if _suggestion_engine != null:
 		_suggestion_engine.notify_hint_dismissed(was_fast)
+
+
+# ── SPA-767: Tooltips for ObjectiveHUD elements ─────────────────────────────
+
+func _setup_tooltips() -> void:
+	# Day counter row — explain what the day tracker means.
+	var day_row: HBoxContainer = $Panel/VBox/DayRow
+	day_row.tooltip_text = "Day Counter\nShows the current day and time. Days remaining until your deadline are shown to the right.\nThe color shifts from green to red as the deadline approaches."
+	day_row.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	# Goal label — explain the current objective.
+	goal_label.tooltip_text = "Current Objective\nYour primary goal for this scenario. Complete it before the deadline to win."
+	goal_label.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	# Win progress bar — explain what the green bar tracks.
+	var win_bg: ColorRect = $Panel/VBox/WinProgressBG
+	win_bg.tooltip_text = "Win Progress\nTracks how close you are to achieving your objective.\nFill the bar to complete your goal."
+	win_bg.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	# Tempo/day progress bar — explain the day timeline.
+	var tempo_bg: ColorRect = $Panel/VBox/DayProgressBG
+	tempo_bg.tooltip_text = "Day Timeline\nShows the time of day. Actions happen in real-time as the day progresses.\nResources refresh at dawn."
+	tempo_bg.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	# Milestone label.
+	milestone_label.tooltip_text = "Milestone\nShows your current progress milestone. Reaching milestones unlocks new narrative events."
+	milestone_label.mouse_filter = Control.MOUSE_FILTER_PASS
+
+
+# ── SPA-767: Visual hierarchy enhancements ───────────────────────────────────
+
+func _enhance_visual_hierarchy() -> void:
+	# Make the goal label visually dominant — larger, bolder, with glow.
+	goal_label.add_theme_font_size_override("font_size", 18)
+	goal_label.add_theme_constant_override("outline_size", 3)
+	goal_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+
+	# Add a subtle left accent bar to the main panel for visual weight.
+	var panel: Panel = $Panel
+	var accent := ColorRect.new()
+	accent.color = Color(0.92, 0.78, 0.12, 0.75)  # gold accent
+	accent.anchor_left = 0.0
+	accent.anchor_top = 0.0
+	accent.anchor_right = 0.0
+	accent.anchor_bottom = 1.0
+	accent.offset_right = 3.0
+	accent.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(accent)
+
+	# Emphasize the win progress bar with a brighter border.
+	var win_bg: ColorRect = $Panel/VBox/WinProgressBG
+	win_bg.custom_minimum_size.y = 14.0  # slightly taller for prominence

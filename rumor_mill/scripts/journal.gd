@@ -217,12 +217,23 @@ func _build_sidebar() -> void:
 	for child in _sidebar.get_children():
 		child.queue_free()
 
+	# SPA-769: Tooltip text for journal tab buttons.
+	var _tab_tooltips: Array = [
+		"Rumors\nAll rumors you have seeded. Track their spread and filter by status.",
+		"Intelligence\nObservations and eavesdropping data collected through recon actions.",
+		"Factions\nThe three town factions and how your rumors are shifting their influence.",
+		"Timeline\nA chronological log of events, rumors seeded, and NPC state changes.",
+		"Objectives\nYour scenario win and fail conditions, with current progress.",
+		"Milestones\nNotable achievements unlocked during this run.",
+	]
 	for i in range(SECTION_LABELS.size()):
 		var btn := Button.new()
 		btn.text                  = SECTION_LABELS[i]
 		btn.toggle_mode           = false
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.add_theme_font_size_override("font_size", 13)
+		if i < _tab_tooltips.size():
+			btn.tooltip_text = _tab_tooltips[i]
 		_apply_tab_style(btn, i == int(_current_section))
 		var sec: Section = i as Section
 		btn.pressed.connect(_on_tab_pressed.bind(sec))

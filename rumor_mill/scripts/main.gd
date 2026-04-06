@@ -64,6 +64,10 @@ var _waypoint_step:  int    = 0      # 0=inactive, 1=market, 2=eavesdrop pair, 3
 # ── SPA-709: Milestone reward notification popup ──────────────────────────────
 var _milestone_notifier: CanvasLayer = null
 
+# ── SPA-769: HUD tooltip overlay and context controls panel ──────────────────
+var _hud_tooltip: CanvasLayer = null
+var _context_controls: CanvasLayer = null
+
 # ── SPA-589: Story recap overlay (shown on save load) ─────────────────────────
 var _story_recap: CanvasLayer = null
 
@@ -279,6 +283,8 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_achievement_hooks()
 	_init_pause_menu()
 	_init_npc_tooltip()
+	_init_hud_tooltip()
+	_init_context_controls_panel()
 	_init_visual_affordances()
 	day_night.day_changed.connect(_on_new_day_auto_save)
 	PlayerStats.start_session()  # SPA-273: begin timing this play session
@@ -1894,6 +1900,29 @@ func _init_npc_tooltip() -> void:
 	bldg_tooltip.name = "BuildingTooltip"
 	add_child(bldg_tooltip)
 	bldg_tooltip.setup(world)
+
+
+## SPA-769: HUD tooltip overlay — reads tooltip_text from hovered Controls.
+func _init_hud_tooltip() -> void:
+	_hud_tooltip = preload("res://scripts/hud_tooltip.gd").new()
+	_hud_tooltip.name = "HudTooltip"
+	add_child(_hud_tooltip)
+
+
+## SPA-767: Context-aware controls panel — replaces static ControlsPanel.
+func _init_context_controls_panel() -> void:
+	# Hide the static ControlsPanel from the scene tree.
+	var hud_node: CanvasLayer = $HUD
+	if hud_node != null:
+		var static_panel: Panel = hud_node.get_node_or_null("ControlsPanel")
+		if static_panel != null:
+			static_panel.visible = false
+
+	_context_controls = preload("res://scripts/context_controls_panel.gd").new()
+	_context_controls.name = "ContextControlsPanel"
+	add_child(_context_controls)
+	if _controls_ref != null:
+		_context_controls.setup(_controls_ref)
 
 
 ## Auto-save to slot 0 at the start of each new day (SPA-220).

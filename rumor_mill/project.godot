@@ -29,6 +29,7 @@ GameState="*res://scripts/game_state.gd"
 AchievementManager="*res://scripts/achievement_manager.gd"
 PlayerStats="*res://scripts/player_stats.gd"
 TransitionManager="*res://scripts/transition_manager.gd"
+TooltipManager="*res://scripts/tooltip_manager.gd"
 
 [debug]
 

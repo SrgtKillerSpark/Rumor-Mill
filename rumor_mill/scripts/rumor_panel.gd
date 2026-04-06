@@ -22,6 +22,10 @@ signal evidence_first_shown
 ## Emitted the first time the player reaches the Seed Target panel (panel 3).
 ## Used by the tutorial hint system to trigger HINT-07 (hint_seed_target).
 signal panel_seed_shown
+## SPA-775: Guided tutorial gates.
+signal panel_opened                        ## panel becomes visible (any open)
+signal subject_selected(npc_id: String)    ## player clicked "Select as Subject"
+signal claim_selected(claim_id: String)    ## player clicked "Select Claim"
 
 # Panel index constants.
 const PANEL_SUBJECT   := 0
@@ -209,6 +213,7 @@ func toggle() -> void:
 		AudioManager.play_sfx("rumor_panel_open")
 		_open_panel(PANEL_SUBJECT)
 		panel.visible = true
+		panel_opened.emit()  # SPA-775: guided tutorial gate
 		# Slide in from left.
 		panel.modulate.a = 0.0
 		var target_x: float = panel.position.x
@@ -239,6 +244,8 @@ func _build_dynamic_panels() -> void:
 	_whisper_bar = Label.new()
 	_whisper_bar.add_theme_font_size_override("font_size", 12)
 	_whisper_bar.add_theme_color_override("font_color", C_GOLD)
+	_whisper_bar.tooltip_text = "Whisper Tokens Remaining\nHow many times you can seed rumors today. Replenishes at dawn."
+	_whisper_bar.mouse_filter = Control.MOUSE_FILTER_STOP
 	_whisper_bar.visible = false
 	vbox.add_child(_whisper_bar)
 
@@ -295,6 +302,14 @@ func _open_panel(idx: int) -> void:
 	_current_panel = idx
 	title_label.text = TITLES[idx]
 	hint_label.text  = HINTS[idx]
+	# SPA-769: Set step-specific tooltip on the title label.
+	var _step_tooltips: Array = [
+		"Subject Selection\nChoose which NPC this rumor targets. Their faction and reputation affect spread.",
+		"Claim Type\nThe kind of rumor you are spreading. Intensity and mutability affect how it travels.",
+		"Seed Target\nThe first NPC to hear the rumor. Well-connected NPCs spread it farther.",
+	]
+	if idx < _step_tooltips.size():
+		title_label.tooltip_text = _step_tooltips[idx]
 
 	# Show / hide content areas.
 	_p1_scroll.visible = (idx == PANEL_SUBJECT)
@@ -502,6 +517,7 @@ func _build_subject_entry(
 		_selected_claim_id = ""  # reset downstream selections
 		_selected_seed_npc = ""
 		_rebuild_subject_list()
+		subject_selected.emit(captured_id)  # SPA-775
 	)
 	vbox.add_child(btn)
 
@@ -616,6 +632,7 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 		_selected_seed_npc = ""
 		_selected_evidence_item = null  # new claim may change compatible evidence
 		_rebuild_claim_list()
+		claim_selected.emit(captured_id)  # SPA-775
 	)
 	vbox.add_child(btn)
 
