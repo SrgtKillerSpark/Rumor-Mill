@@ -1,0 +1,86 @@
+{
+	"hud_day": {
+		"title": "Day Counter",
+		"body": "The current day and time of day. Red means you are behind on your goal. Each day has 16 ticks of action before dawn."
+	},
+	"hud_day_progress": {
+		"title": "Day Progress",
+		"body": "How far through today you are. The bar drains as you take actions. When it empties, the day ends and actions refresh at dawn."
+	},
+	"hud_win_progress": {
+		"title": "Win Progress",
+		"body": "How close you are to winning the scenario. Reach 100% before the days run out. Spread rumors to shift NPC beliefs and push the town toward your goal."
+	},
+	"hud_goal": {
+		"title": "Scenario Goal",
+		"body": "Your objective for this run. Spreading the right rumors to the right NPCs will shift faction power and beliefs toward your goal."
+	},
+	"hud_milestone": {
+		"title": "Progress Milestone",
+		"body": "A notable marker on the road to victory. Milestones appear when your rumors have had a meaningful impact on the town."
+	},
+	"recon_actions": {
+		"title": "Recon Actions",
+		"body": "Actions you can spend today to observe NPCs and locations. Each action reveals information useful for crafting rumors. Refreshes every dawn."
+	},
+	"recon_whispers": {
+		"title": "Whisper Tokens",
+		"body": "Tokens spent to seed rumors. Each seeding costs 1 token. Whisper to well-connected NPCs for faster spread. Refreshes every dawn."
+	},
+	"recon_favors": {
+		"title": "Favors",
+		"body": "Favors earned through successful actions and spent on bribes. Bribing NPCs can shift their beliefs or protect your rumors from rejection."
+	},
+	"recon_heat": {
+		"title": "Heat (Suspicion)",
+		"body": "How suspicious the town is of your activities. High heat makes NPCs more likely to reject your rumors. Lay low to let it cool."
+	},
+	"rumor_subject_panel": {
+		"title": "1 / 3 — Subject Selection",
+		"body": "Choose which NPC this rumor targets. Their faction and reputation affect how quickly the rumor spreads and how believable it sounds to others."
+	},
+	"rumor_claim_panel": {
+		"title": "2 / 3 — Claim Type",
+		"body": "The kind of rumor you are spreading. Intensity determines how fast it spreads and how much it shocks the listener. Mutability controls how much NPCs distort it as it travels."
+	},
+	"rumor_seed_panel": {
+		"title": "3 / 3 — Seed Target",
+		"body": "The first NPC to hear the rumor. Well-connected NPCs spread it to more people. Seeding costs 1 Whisper Token — choose your messenger wisely."
+	},
+	"rumor_whisper_bar": {
+		"title": "Whisper Tokens Remaining",
+		"body": "How many times you can seed rumors today. Each seed costs 1 token. All tokens replenish at dawn."
+	},
+	"rumor_claim_intensity": {
+		"title": "Intensity",
+		"body": "How shocking the claim is. Higher intensity spreads faster and is harder to ignore, but strong claims may be dismissed as unbelievable by skeptical NPCs."
+	},
+	"rumor_claim_mutability": {
+		"title": "Mutability",
+		"body": "How much NPCs distort the rumor as it passes between them. High mutability means the story changes significantly by the time it reaches its target."
+	},
+	"journal_rumors": {
+		"title": "Rumors",
+		"body": "All rumors you have seeded. Track their spread state, how many NPCs believe them, and filter or sort by status. New activity is highlighted."
+	},
+	"journal_intelligence": {
+		"title": "Intelligence",
+		"body": "Observations and eavesdropping data collected through recon actions. Attach evidence to rumors to boost their believability when you seed them."
+	},
+	"journal_factions": {
+		"title": "Factions",
+		"body": "The three town factions — Merchant, Noble, and Clergy. Shows each faction's current mood and how your rumors are shifting their influence."
+	},
+	"journal_timeline": {
+		"title": "Timeline",
+		"body": "A chronological log of events, rumors seeded, and NPC state changes. Useful for spotting patterns and planning your next move."
+	},
+	"journal_objectives": {
+		"title": "Objectives",
+		"body": "Your scenario win and fail conditions, with current progress toward each. Check here if you are unsure what to focus on."
+	},
+	"journal_milestones": {
+		"title": "Milestones",
+		"body": "Notable achievements unlocked during this run. Each milestone marks a meaningful turning point in how the town's gossip network has shifted."
+	}
+}
