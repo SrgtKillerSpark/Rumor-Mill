@@ -702,7 +702,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 	"ctx_s5_endorsement_tip": {
 		"title": "The Endorsement",
 		"body":  (
-			"On [b]day 15[/b], Prior Aldous endorses the candidate with the [b]highest reputation[/b] — a [b]+8 boost[/b].  "
+			"On [b]day 13[/b], Prior Aldous endorses the candidate with the [b]highest reputation[/b] — a [b]+8 boost[/b].  "
 			+ "If Aldric is not leading by then, the endorsement goes to a rival and may cost you the election."
 		),
 		"auto_dismiss_secs": 10,

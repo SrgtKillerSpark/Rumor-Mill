@@ -302,13 +302,13 @@ var S4_FAIL_REP_BELOW    := 42
 
 # Scenario 5 thresholds (The Election — SPA-605).
 # Three-way race: Aldric must reach 65+ and be highest; both rivals must be below 45.
-# Instant fail if Aldric drops below 30. Day 15 endorsement by Prior Aldous (+8 to leader).
+# Instant fail if Aldric drops below 30. Endorsement day loaded from scenarios.json (+8 to leader).
 # Vars (not const) so difficulty modifiers from scenarios.json can override them.
 const S5_CANDIDATE_IDS: Array[String] = ["edric_fenn", "aldric_vane", "tomas_reeve"]
 var S5_WIN_ALDRIC_MIN:    int = 65
 var S5_WIN_RIVALS_MAX:    int = 45
 var S5_FAIL_ALDRIC_BELOW: int = 30
-const S5_ENDORSEMENT_DAY:       int = 15
+var S5_ENDORSEMENT_DAY:       int = 13
 var S5_ENDORSEMENT_BONUS: int = 8
 
 # Scenario 6 thresholds (The Merchant's Debt — SPA-605).
@@ -363,7 +363,7 @@ var calder_score_start: int = -1
 ## Calder's score at the moment the scenario resolved (set in _check_scenario_3).
 var calder_score_final: int = -1
 
-## Scenario 5 only: whether the day-15 endorsement has already fired.
+## Scenario 5 only: whether the endorsement has already fired.
 var _s5_endorsement_fired: bool = false
 ## Scenario 5 only: which candidate received the endorsement (empty = not yet).
 var s5_endorsed_candidate: String = ""
@@ -620,7 +620,7 @@ func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 	if aldric == null or edric == null or tomas == null:
 		return
 
-	# Day 15 endorsement: Prior Aldous endorses the candidate with the highest rep.
+	# Endorsement: Prior Aldous endorses the candidate with the highest rep.
 	if not _s5_endorsement_fired and current_day >= S5_ENDORSEMENT_DAY:
 		_s5_endorsement_fired = true
 		var best_id: String = ALDRIC_VANE_ID

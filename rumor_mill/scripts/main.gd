@@ -938,6 +938,147 @@ func _on_rumor_event(message: String, tick: int) -> void:
 			recon_hud.show_milestone("%s rejected the rumor" % npc_name, Color(0.85, 0.40, 0.30, 1.0))
 
 
+## SPA-788 Moment 1: fires once the first time any NPC-to-NPC rumor transmission occurs.
+## Layered audio motif + gossip-line particles + parchment toast + brief camera nudge.
+func _on_first_rumor_transmitted(from_name: String, to_name: String, _rumor_id: String) -> void:
+	if _reward_first_spread_fired:
+		return
+	_reward_first_spread_fired = true
+
+	# Audio: 2-note descending minor-third whisper motif (semitone ratio 2^(-3/12) ≈ 0.841).
+	AudioManager.play_sfx_pitched("whisper", 1.0)
+	get_tree().create_timer(0.28).timeout.connect(
+		func() -> void: AudioManager.play_sfx_pitched("whisper", 0.841), CONNECT_ONE_SHOT
+	)
+
+	# Visual: gossip-line particle trail from spreader to receiver.
+	var from_pos := Vector2.ZERO
+	var to_pos   := Vector2.ZERO
+	if world != null and "npcs" in world:
+		for npc in world.npcs:
+			var nm: String = npc.npc_data.get("name", "")
+			if nm == from_name:
+				from_pos = npc.global_position
+			if nm == to_name:
+				to_pos = npc.global_position
+	if from_pos != Vector2.ZERO and to_pos != Vector2.ZERO:
+		_spawn_gossip_line_particles(from_pos, to_pos)
+
+	# UI: parchment-styled toast.
+	_show_parchment_toast("Your words have found new lips.", 3.0)
+
+	# Feel: brief camera nudge (120 ms).
+	_camera_shake(3.5, 0.12)
+
+
+## SPA-788 Moment 2: fires once when any NPC first transitions to BELIEVE / SPREAD / ACT.
+## Conviction audio chime + dark vignette flash + thought-bubble override + milestone popup
+## + belief-shaken walk penalty for the rest of the day.
+func _on_first_belief_flip(npc_name: String, new_state_name: String, _rumor_id: String) -> void:
+	if _reward_first_belief_fired:
+		return
+	if new_state_name != "BELIEVE" and new_state_name != "SPREAD" and new_state_name != "ACT":
+		return
+	_reward_first_belief_fired = true
+
+	# Audio: reputation_down pitched down 2 semitones (2^(-2/12) ≈ 0.891) + conviction chime.
+	AudioManager.play_sfx_pitched("reputation_down", 0.891)
+	AudioManager.play_sfx("milestone_chime")
+
+	# Visual: NPC dark-vignette flash + thought-bubble conviction override.
+	if world != null and "npcs" in world:
+		for npc in world.npcs:
+			if npc.npc_data.get("name", "") == npc_name:
+				if npc.has_method("flash_belief_vignette"):
+					npc.flash_belief_vignette()
+				if npc.has_method("set_belief_shaken"):
+					npc.set_belief_shaken(true)
+				var bubble: Node = npc.get("_thought_bubble")
+				if bubble != null and bubble.has_method("show_override"):
+					bubble.show_override("!", Color(0.40, 1.00, 0.50, 1.0), 2.0)
+				break
+
+	# UI: milestone popup, green-coded — fires exactly once per session.
+	if _milestone_notifier != null and _milestone_notifier.has_method("show_milestone"):
+		_milestone_notifier.show_milestone(
+			"A townsfolk has become a true believer.",
+			Color(0.50, 1.00, 0.55, 1.0),
+			"first_belief_flip"
+		)
+
+
+## SPA-788: Spawns a world-space CPUParticles2D trail between two NPC positions.
+## Uses a direction + velocity range so particles fly from spreader toward receiver.
+func _spawn_gossip_line_particles(from_pos: Vector2, to_pos: Vector2) -> void:
+	if world == null:
+		return
+	var dir    := (to_pos - from_pos).normalized()
+	var dist   := from_pos.distance_to(to_pos)
+	var travel_time := 0.8  # seconds — matches lifetime
+
+	var particles := CPUParticles2D.new()
+	particles.name = "GossipLineParticles"
+	particles.global_position          = from_pos
+	particles.z_index                  = 10
+	particles.emitting                 = true
+	particles.one_shot                 = true
+	particles.amount                   = 18
+	particles.lifetime                 = travel_time
+	particles.explosiveness            = 0.0
+	particles.spread                   = 8.0
+	particles.direction                = dir
+	particles.initial_velocity_min     = dist / travel_time * 0.85
+	particles.initial_velocity_max     = dist / travel_time * 1.10
+	particles.color                    = Color(0.95, 0.78, 0.30, 0.72)  # thin gold thread
+	particles.scale_amount_min         = 1.5
+	particles.scale_amount_max         = 3.0
+	world.add_child(particles)
+	get_tree().create_timer(travel_time + 0.25).timeout.connect(
+		func() -> void:
+			if is_instance_valid(particles):
+				particles.queue_free(),
+		CONNECT_ONE_SHOT
+	)
+
+
+## SPA-788: Shows a warm parchment-coloured floating toast for duration seconds.
+## Created as a transient CanvasLayer (layer 19) that removes itself when done.
+func _show_parchment_toast(text: String, duration: float) -> void:
+	var cl := CanvasLayer.new()
+	cl.name  = "ParchmentToast"
+	cl.layer = 19
+	add_child(cl)
+
+	var panel := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.70, 0.56, 0.28, 0.92)  # warm parchment
+	style.set_corner_radius_all(5)
+	style.content_margin_left   = 12.0
+	style.content_margin_right  = 12.0
+	style.content_margin_top    = 7.0
+	style.content_margin_bottom = 7.0
+	panel.add_theme_stylebox_override("panel", style)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	panel.offset_top = 76.0
+	cl.add_child(panel)
+
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_color_override("font_color", Color(0.16, 0.09, 0.04, 1.0))  # dark ink
+	lbl.add_theme_constant_override("outline_size", 1)
+	lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.25))
+	panel.add_child(lbl)
+
+	panel.modulate.a = 0.0
+	var tween := cl.create_tween()
+	tween.tween_property(panel, "modulate:a", 1.0, 0.35) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_interval(duration)
+	tween.tween_property(panel, "modulate:a", 0.0, 0.40).set_ease(Tween.EASE_IN)
+	tween.tween_callback(cl.queue_free)
+
+
 ## Show a HUD toast + milestone when an NPC first becomes SOCIALLY_DEAD.
 func _on_socially_dead_triggered(_npc_id: String, npc_name: String, _tick: int) -> void:
 	if recon_hud != null and recon_hud.has_method("show_toast"):
@@ -1575,9 +1716,11 @@ func _on_ctx_day_changed(day: int) -> void:
 		_tutorial_banner.queue_hint("ctx_actions_refresh")
 	elif day == 3:
 		_tutorial_banner.queue_hint("ctx_check_journal")
-	# S5: endorsement approaches on day 13 — warn the player.
-	if day == 13 and world.active_scenario_id == "scenario_5":
-		_tutorial_banner.queue_hint("ctx_s5_endorsement_warning")
+	# S5: endorsement approaches — warn the player 2 days before.
+	if world.active_scenario_id == "scenario_5" and world.scenario_manager != null:
+		var _endorse_day: int = world.scenario_manager.S5_ENDORSEMENT_DAY
+		if day == _endorse_day - 2:
+			_tutorial_banner.queue_hint("ctx_s5_endorsement_warning")
 	# Halfway warning: check if past 50% of days and progress is slow.
 	if not _ctx_halfway_fired and world.scenario_manager != null:
 		var total: int = world.scenario_manager.get_days_allowed()

@@ -148,8 +148,9 @@ func _build_ui() -> void:
 	_endorse_lbl = Label.new()
 	_endorse_lbl.add_theme_font_size_override("font_size", 12)
 	_endorse_lbl.add_theme_color_override("font_color", Color(0.65, 0.55, 0.45, 0.80))
-	_endorse_lbl.text = "Endorsement: day 15 (pending)"
-	_endorse_lbl.tooltip_text = "On day 15, Prior Aldous endorses the candidate with the highest reputation — granting a +8 bonus. Make sure Aldric leads by then."
+	var _e_day: int = ScenarioManager.S5_ENDORSEMENT_DAY if ScenarioManager != null else 13
+	_endorse_lbl.text = "Endorsement: day %d (pending)" % _e_day
+	_endorse_lbl.tooltip_text = "On day %d, Prior Aldous endorses the candidate with the highest reputation — granting a +%d bonus. Make sure Aldric leads by then." % [_e_day, ScenarioManager.S5_ENDORSEMENT_BONUS if ScenarioManager != null else 8]
 	_endorse_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_endorse_lbl)
 

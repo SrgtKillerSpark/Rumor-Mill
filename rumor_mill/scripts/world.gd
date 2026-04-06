@@ -683,6 +683,10 @@ func _apply_active_scenario() -> void:
 	# 4. Narrative text into scenario manager.
 	if scenario_manager != null:
 		scenario_manager.load_scenario_data(scenario_data)
+		# SPA-791: load endorsement day from scenarios.json (data-driven).
+		var _endorsement: Dictionary = scenario_data.get("endorsement", {})
+		if _endorsement.has("triggerDay"):
+			scenario_manager.S5_ENDORSEMENT_DAY = int(_endorsement["triggerDay"])
 		# SPA-684: feed objective text into the day-change cinematic.
 		if day_night != null:
 			day_night.objective_text_provider = func() -> String:
@@ -782,6 +786,8 @@ func _apply_active_scenario() -> void:
 			scenario_manager.S5_FAIL_ALDRIC_BELOW = int(_scen_diff_mods["failAldricBelow"])
 		if _scen_diff_mods.has("endorsementBonusOverride"):
 			scenario_manager.S5_ENDORSEMENT_BONUS = int(_scen_diff_mods["endorsementBonusOverride"])
+		if _scen_diff_mods.has("endorsementDayOverride"):
+			scenario_manager.S5_ENDORSEMENT_DAY = int(_scen_diff_mods["endorsementDayOverride"])
 		if _scen_diff_mods.has("daysAllowedOverride"):
 			scenario_manager.override_days_allowed(int(_scen_diff_mods["daysAllowedOverride"]))
 
