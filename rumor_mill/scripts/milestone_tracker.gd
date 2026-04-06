@@ -78,6 +78,8 @@ func _eval_s1(_current_tick: int) -> void:
 	# Reputation crossing key thresholds (descending).
 	if score <= 60:
 		_fire("s1_rep_60", "Whispers take hold — Edric's standing is shaken", C_PROGRESS)
+	if score <= 55:
+		_fire("s1_rep_55", "The cracks deepen — Edric's allies grow uneasy", C_PROGRESS)
 	if score <= 50:
 		_fire("s1_rep_50", "The town doubts Lord Fenn", C_PROGRESS)
 	if score <= 40:

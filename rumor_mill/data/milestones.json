@@ -1,6 +1,7 @@
 {
 	"milestones": {
 		"s1_rep_60":       {},
+		"s1_rep_55":       { "reward": { "type": "whisper_token", "amount": 1 } },
 		"s1_rep_50":       {},
 		"s1_rep_40":       {},
 		"s1_rep_35":       { "reward": { "type": "whisper_token", "amount": 1 } },
@@ -10,12 +11,12 @@
 		"s2_believers_2":      {},
 		"s2_believers_4":      {},
 		"s2_believers_5":      { "reward": { "type": "whisper_token", "amount": 1 } },
-		"s2_maren_suspicious": {},
+		"s2_maren_suspicious": { "reward": { "type": "bribe_charge", "amount": 1 } },
 
 		"s3_calder_60":     {},
 		"s3_calder_70":     { "reward": { "type": "whisper_token", "amount": 1 } },
 		"s3_tomas_45":      {},
-		"s3_tomas_38":      {},
+		"s3_tomas_38":      { "reward": { "type": "bribe_charge", "amount": 1 } },
 		"s3_calder_danger": {},
 
 		"s4_day5_safe":   { "reward": { "type": "whisper_token", "amount": 1 } },
@@ -26,9 +27,9 @@
 
 		"s5_aldric_55":        {},
 		"s5_aldric_60":        {},
-		"s5_edric_50":         {},
+		"s5_edric_50":         { "reward": { "type": "whisper_token", "amount": 1 } },
 		"s5_tomas_40":         {},
-		"s5_endorsement_soon": {},
+		"s5_endorsement_soon": { "reward": { "type": "bribe_charge", "amount": 1 } },
 		"s5_aldric_danger":    {},
 		"s5_rivals_strong":    {},
 
