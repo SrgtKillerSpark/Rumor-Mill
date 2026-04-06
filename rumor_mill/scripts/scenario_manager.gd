@@ -240,7 +240,7 @@ func set_intel_store(store: PlayerIntelStore) -> void:
 ## Returns the current in-game day (1-based) derived from the tick counter.
 ## All scenario resolution checks use this formula, so HUDs should too.
 func get_current_day(current_tick: int) -> int:
-	return current_tick / TICKS_PER_DAY + 1
+	return current_tick / ticks_per_day + 1
 
 
 # NPC IDs used for win/fail checks.
@@ -272,8 +272,8 @@ var s2_win_illness_min: int = S2_WIN_ILLNESS_MIN_DEFAULT
 # SPA-592: days of grace after Maren first rejects before triggering the instant fail.
 # Prevents silent propagation chains from ending the scenario without player agency.
 const S2_MAREN_GRACE_DAYS  := 2
-# Ticks per in-game day (matches DayNightCycle default).
-const TICKS_PER_DAY        := 24
+# Ticks per in-game day (matches DayNightCycle default; overridden by world.gd on scenario load).
+var ticks_per_day: int = 24
 
 # Scenario 3 thresholds.
 # SPA-98: eased from (Calder>=80, Tomas<=30) to (Calder>=75, Tomas<=35).
@@ -393,7 +393,7 @@ func evaluate(rep: ReputationSystem, current_tick: int) -> void:
 func get_time_fraction(current_tick: int) -> float:
 	if _days_allowed <= 1:
 		return 1.0
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	var current_day: int = current_tick / ticks_per_day + 1
 	return clampf(float(current_day - 1) / float(_days_allowed - 1), 0.0, 1.0)
 
 
@@ -404,7 +404,7 @@ func is_final_quarter(current_tick: int) -> bool:
 
 ## Check and emit deadline warning signals at 75% and 90% thresholds.
 func _check_deadline_warnings(current_tick: int) -> void:
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	var current_day: int = current_tick / ticks_per_day + 1
 	var fraction := get_time_fraction(current_tick)
 	var days_remaining: int = maxi(_days_allowed - current_day, 0)
 	for threshold_pct: int in [75, 90]:
@@ -442,7 +442,7 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 				scenario_resolved.emit(1, ScenarioState.FAILED)
 				return
 	# Timeout fail: day limit exceeded (> gives the player the full last day; get_time_fraction is clamped at 1.0).
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		scenario_1_state = ScenarioState.FAILED
 		scenario_resolved.emit(1, ScenarioState.FAILED)
@@ -464,12 +464,12 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 		if _s2_maren_first_reject_tick == -1:
 			_s2_maren_first_reject_tick = current_tick
 			s2_maren_grace_started.emit(S2_MAREN_GRACE_DAYS)
-		elif current_tick >= _s2_maren_first_reject_tick + TICKS_PER_DAY * S2_MAREN_GRACE_DAYS:
+		elif current_tick >= _s2_maren_first_reject_tick + ticks_per_day * S2_MAREN_GRACE_DAYS:
 			scenario_2_state = ScenarioState.FAILED
 			scenario_resolved.emit(2, ScenarioState.FAILED)
 			return
 	# Timeout fail: day limit exceeded (> gives the player the full last day; get_time_fraction is clamped at 1.0).
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		scenario_2_state = ScenarioState.FAILED
 		scenario_resolved.emit(2, ScenarioState.FAILED)
@@ -481,7 +481,7 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 
 	# Timeout must be checked before the null guard so a missing NPC cannot
 	# prevent the scenario from ever resolving.
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		scenario_3_state = ScenarioState.FAILED
 		scenario_resolved.emit(3, ScenarioState.FAILED)
@@ -548,7 +548,7 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 			scenario_resolved.emit(4, ScenarioState.FAILED)
 			return
 	# Deadline reached: resolve win or fail (> gives the player the full last day; get_time_fraction is clamped at 1.0).
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		var all_above: bool = true
 		for npc_id in S4_PROTECTED_NPC_IDS:
@@ -605,7 +605,7 @@ func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_5_state != ScenarioState.ACTIVE:
 		return
 
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	var current_day: int = current_tick / ticks_per_day + 1
 
 	# Timeout must be checked before the null guard so a missing NPC cannot
 	# prevent the scenario from ever resolving.
@@ -684,7 +684,7 @@ func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 
 	# Timeout must be checked before the null guard so a missing NPC cannot
 	# prevent the scenario from ever resolving.
-	var current_day: int = current_tick / TICKS_PER_DAY + 1
+	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		scenario_6_state = ScenarioState.FAILED
 		scenario_resolved.emit(6, ScenarioState.FAILED)

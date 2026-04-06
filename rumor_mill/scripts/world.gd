@@ -689,8 +689,12 @@ func _apply_active_scenario() -> void:
 				return scenario_manager.get_objective_one_liner()
 
 	# 4b. SPA-757: Per-scenario tick compression (e.g. 16 ticks/day for S1).
+	# SPA-790: Also sync ScenarioManager so day calculations stay in step with DayNightCycle.
 	if day_night != null and scenario_data.has("ticksPerDay"):
-		day_night.ticks_per_day = int(scenario_data["ticksPerDay"])
+		var tpd := int(scenario_data["ticksPerDay"])
+		day_night.ticks_per_day = tpd
+		if scenario_manager != null:
+			scenario_manager.ticks_per_day = tpd
 
 	# 5. Propagation engine mutation filters.
 	if propagation_engine != null:
