@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * generate_assets.js — Art Pass 9 pixel-art generator for Rumor Mill (SPA-507)
+ * generate_assets.js — Art Pass 18 pixel-art generator for Rumor Mill (SPA-809)
  *
  * Produces all textures needed:
  *   assets/textures/tiles_ground.png      (768×32 — 12 ground variants: void, grass_base, grass_dark, grass_sparse, grass_dense, grass_floral, dirt_muddy, dirt_packed, grass_dirt_blend, stone_smooth, stone_cracked, stone_cobble)
@@ -955,16 +955,16 @@ function makeBuildingTiles(nightMode = false) {
     }
     outlineWalls(col, wH);
     const ox=col*64;
-    // spire (vertical protrusion)
+    // spire — taller and narrower for distinct chapel silhouette (SPA-809)
     cv.fillPoly([
-      [ox+30, 32-wH-14], [ox+34, 32-wH-14],
+      [ox+31, 32-wH-20], [ox+33, 32-wH-20],
       [ox+36, 32-wH-2],  [ox+28, 32-wH-2],
     ], ...c.ROOF_SLATE);
-    cv.line(ox+28, 32-wH-2, ox+30, 32-wH-14, ...c.OUTLINE);
-    cv.line(ox+34, 32-wH-14, ox+36, 32-wH-2, ...c.OUTLINE);
+    cv.line(ox+28, 32-wH-2, ox+31, 32-wH-20, ...c.OUTLINE);
+    cv.line(ox+33, 32-wH-20, ox+36, 32-wH-2, ...c.OUTLINE);
     // cross on spire
-    cv.line(ox+32, 32-wH-14, ox+32, 32-wH-8, ...c.CHAPEL_STONE);
-    cv.line(ox+29, 32-wH-11, ox+35, 32-wH-11, ...c.CHAPEL_STONE);
+    cv.line(ox+32, 32-wH-20, ox+32, 32-wH-8, ...c.CHAPEL_STONE);
+    cv.line(ox+29, 32-wH-14, ox+35, 32-wH-14, ...c.CHAPEL_STONE);
     // gothic window with stained glass color sections
     cv.fillRect(ox+6, 32-wH+4, 5, 9, 80, 108, 160);      // base blue
     cv.sp(ox+7, 32-wH+5, ...c.MERCH_T, 200);              // gold pane top
@@ -989,10 +989,18 @@ function makeBuildingTiles(nightMode = false) {
     // bell silhouette at spire base (tiny bell shape inside spire)
     cv.fillRect(ox+30, 32-wH-5, 4, 3, ...c.STONE_M);
     cv.line(ox+30, 32-wH-5, ox+33, 32-wH-5, ...c.STONE_D);
-    // finial on spire top (small diamond gem tip)
-    cv.sp(ox+32, 32-wH-15, ...c.CHAPEL_STONE);
-    cv.sp(ox+31, 32-wH-14, ...c.CHAPEL_STONE);
-    cv.sp(ox+33, 32-wH-14, ...c.CHAPEL_STONE);
+    // finial on spire top (small diamond gem tip) — raised to new spire peak (SPA-809)
+    cv.sp(ox+32, 32-wH-21, ...c.CHAPEL_STONE);
+    cv.sp(ox+31, 32-wH-20, ...c.CHAPEL_STONE);
+    cv.sp(ox+33, 32-wH-20, ...c.CHAPEL_STONE);
+    // second gothic nave window — implies two bays, making chapel read longer (SPA-809)
+    cv.fillRect(ox+16, 32-wH+4, 4, 8, 80, 108, 160);
+    cv.sp(ox+17, 32-wH+5, ...c.MERCH_T, 180);
+    cv.sp(ox+18, 32-wH+7, ...c.FLAG_R, 130);
+    cv.line(ox+16, 32-wH+4,  ox+19, 32-wH+4,  ...c.STONE_D);
+    cv.line(ox+16, 32-wH+4,  ox+16, 32-wH+11, ...c.STONE_D);
+    cv.line(ox+19, 32-wH+4,  ox+19, 32-wH+11, ...c.STONE_D);
+    cv.line(ox+16, 32-wH+11, ox+19, 32-wH+11, ...c.STONE_D);
     // window tracery divider on left face (adds Gothic feel)
     cv.line(ox+8, 32-wH+4, ox+8, 32-wH+12, ...c.STONE_D, 90);
     // night: candlelight behind stained glass — warm halo on both windows (SPA-523)
@@ -1141,6 +1149,15 @@ function makeBuildingTiles(nightMode = false) {
     cv.fillRect(ox+57, 32-wH+3, 2, 7, ...c.WOOD_D);   // handle
     cv.fillRect(ox+55, 32-wH+3, 4, 3, ...c.STONE_M);  // head
     cv.line(ox+55, 32-wH+3, ox+58, 32-wH+3, ...c.OUTLINE);
+    // right-face doorway arch — forge glow visible from street (SPA-809)
+    cv.fillRect(ox+34, 32-wH+7, 7, 9, 24, 16, 8);         // dark interior
+    cv.sp(ox+37, 32-wH+7, 24, 16, 8);                      // arch cap
+    cv.line(ox+34, 32-wH+7, ox+41, 32-wH+7, ...c.STONE_D); // lintel
+    cv.line(ox+34, 32-wH+7, ox+34, 32,       ...c.STONE_D); // left jamb
+    cv.line(ox+41, 32-wH+7, ox+41, 32,       ...c.STONE_D); // right jamb
+    // subtle daytime warmth spilling through doorway
+    cv.sp(ox+37, 32-wH+12, ...c.FORGE, 50);
+    cv.sp(ox+38, 32-wH+13, ...c.FORGE, 30);
     // hanging blacksmith sign (bracket from left face — anvil silhouette icon)
     cv.line(ox+16, 32-wH+2, ox+23, 32-wH+2, ...c.WOOD_D);  // bracket arm
     cv.line(ox+23, 32-wH+2, ox+23, 32-wH+9, ...c.WOOD_D);  // chain
@@ -1164,6 +1181,12 @@ function makeBuildingTiles(nightMode = false) {
       cv.sp(ox+6, 32-wH+4, 255, 245, 80, 230);
       cv.sp(ox+9, 32-wH+3, 255, 200, 60, 200);
       cv.sp(ox+11, 32-wH+5, 255, 220, 80, 170);
+      // right-face doorway: intense forge bleed onto street at night (SPA-809)
+      for (let dy=-4; dy<=4; dy++) for (let dx=-4; dx<=4; dx++)
+        if (dx*dx+dy*dy<=16)
+          cv.sp(ox+37+dx, 32-wH+12+dy, ...c.FORGE, Math.max(0, 65-(dx*dx+dy*dy)*5));
+      cv.sp(ox+35, 32-wH+9, 255, 230, 80, 180);
+      cv.sp(ox+39, 32-wH+8, 255, 190, 60, 140);
     }
   }
 
@@ -1434,32 +1457,37 @@ function makeBuildingTiles(nightMode = false) {
 
   // 6: MILL — large waterwheel on left face, breaks roofline above ────────────
   // Scaled: roofline at y=28 (64-36), left face left-edge at x=769.
+  // SPA-809: wheel radius increased 18→24, shifted left for prominence.
   {
     const ox6 = 6*128;                      // 768
-    const wwcx = ox6+22, wwcy = 42;         // wheel center: (790, 42)
-    const wwr = 18;                          // wheel radius
-    // Outer rim
-    for (let a=0; a<Math.PI*2; a+=0.05)
+    const wwcx = ox6+18, wwcy = 42;         // wheel center shifted slightly left
+    const wwr = 24;                          // larger wheel radius (was 18)
+    // Outer rim (2-pixel thick for solidity)
+    for (let a=0; a<Math.PI*2; a+=0.04)
       cv2.sp(wwcx+Math.round(wwr*Math.cos(a)), wwcy+Math.round(wwr*Math.sin(a)), ...c.WOOD_D);
+    for (let a=0; a<Math.PI*2; a+=0.05)
+      cv2.sp(wwcx+Math.round((wwr-1)*Math.cos(a)), wwcy+Math.round((wwr-1)*Math.sin(a)), ...c.WOOD_D);
     // Inner rim
-    for (let a=0; a<Math.PI*2; a+=0.07)
-      cv2.sp(wwcx+Math.round((wwr-3)*Math.cos(a)), wwcy+Math.round((wwr-3)*Math.sin(a)), ...c.WOOD_M);
+    for (let a=0; a<Math.PI*2; a+=0.06)
+      cv2.sp(wwcx+Math.round((wwr-4)*Math.cos(a)), wwcy+Math.round((wwr-4)*Math.sin(a)), ...c.WOOD_M);
     // 8 spokes
     for (let a=0; a<Math.PI*2; a+=Math.PI/4)
       cv2.line(wwcx, wwcy, wwcx+Math.round((wwr-2)*Math.cos(a)), wwcy+Math.round((wwr-2)*Math.sin(a)), ...c.WOOD_D);
-    // Hub
-    cv2.fillRect(wwcx-3, wwcy-3, 6, 6, ...c.WOOD_D);
-    cv2.fillRect(wwcx-1, wwcy-1, 2, 2, ...c.STONE_L);
-    // 8 paddle boards on rim
+    // Hub (larger)
+    cv2.fillRect(wwcx-4, wwcy-4, 8, 8, ...c.WOOD_D);
+    cv2.fillRect(wwcx-2, wwcy-2, 4, 4, ...c.STONE_L);
+    cv2.sp(wwcx, wwcy, ...c.STONE_M);
+    // 8 paddle boards on rim (wider for visibility)
     for (let a=0; a<Math.PI*2; a+=Math.PI/4) {
       const px=wwcx+Math.round(wwr*Math.cos(a)), py=wwcy+Math.round(wwr*Math.sin(a));
-      cv2.fillRect(px-3, py-2, 6, 4, ...c.WOOD_M);
+      cv2.fillRect(px-4, py-3, 8, 5, ...c.WOOD_M);
+      cv2.line(px-4, py-3, px+3, py-3, ...c.OUTLINE, 80);
     }
     // Axle beam from hub to wall
-    cv2.fillRect(wwcx, wwcy-1, ox6+38-wwcx, 2, ...c.WOOD_M);
+    cv2.fillRect(wwcx, wwcy-1, ox6+40-wwcx, 3, ...c.WOOD_M);
     // Millrace (water channel beneath wheel at ground level)
-    cv2.fillRect(ox6, 62, wwcx-ox6+8, 2, ...c.WATER_D);
-    cv2.line(ox6, 62, wwcx+6, 62, ...c.WATER_L, 140);
+    cv2.fillRect(ox6, 62, wwcx-ox6+12, 3, ...c.WATER_D);
+    cv2.line(ox6, 62, wwcx+8, 62, ...c.WATER_L, 140);
   }
 
   // 7: STORAGE — loading crane arm breaking right-face roof edge ──────────────
@@ -1579,52 +1607,115 @@ function makeBuildingTiles(nightMode = false) {
     cv2.fillRect(cx0+19, vaneTopY+13, 4, 4, ...c.STONE_L);
     cv2.sp(cx0+20, vaneTopY+14, ...c.STONE_M);
     cv2.line(cx0+19, vaneTopY+13, cx0+22, vaneTopY+13, ...c.OUTLINE);
+    // Secondary right-wing tower — L-shaped footprint (SPA-809)
+    // Drawn on the right-back side: narrower and shorter than main body.
+    {
+      const wcx=cx0+32, wcy=64, wHw=14, wHh=7, wngWH=40;
+      // Wing left face
+      cv2.fillPoly([
+        [wcx-wHw, wcy-wngWH], [wcx,      wcy-wngWH-wHh],
+        [wcx,     wcy-wHh],   [wcx-wHw,  wcy],
+      ], ...c.MANOR_STONE);
+      // Wing right face (slightly darker)
+      cv2.fillPoly([
+        [wcx,     wcy-wngWH-wHh], [wcx+wHw, wcy-wngWH],
+        [wcx+wHw, wcy],           [wcx,     wcy-wHh],
+      ], 160, 148, 126);
+      // Wing roof top face
+      cv2.fillPoly([
+        [wcx-wHw, wcy-wngWH], [wcx,     wcy-wngWH-wHh],
+        [wcx+wHw, wcy-wngWH], [wcx,     wcy-wngWH+wHh],
+      ], ...c.ROOF_SLATE);
+      // Wing outlines
+      cv2.line(wcx-wHw, wcy-wngWH, wcx,     wcy-wngWH-wHh, ...c.OUTLINE);
+      cv2.line(wcx,     wcy-wngWH-wHh, wcx+wHw, wcy-wngWH, ...c.OUTLINE);
+      cv2.line(wcx+wHw, wcy-wngWH, wcx+wHw, wcy,           ...c.OUTLINE);
+      cv2.line(wcx-wHw, wcy-wngWH, wcx-wHw, wcy,           ...c.OUTLINE);
+      cv2.line(wcx,     wcy-wngWH-wHh, wcx, wcy-wHh,       ...c.OUTLINE);
+      // Small window on wing right face
+      cv2.fillRect(wcx+2, wcy-wngWH+8, 5, 7, 80, 100, 140);
+      cv2.line(wcx+2, wcy-wngWH+8, wcx+7, wcy-wngWH+8, ...c.STONE_D);
+    }
   }
 
   // 9: TOWN HALL — central clock tower / bell tower breaking the ridgeline ───
   // Scaled: town hall roof top at y=12 (64-52).
+  // SPA-809: tower widened (twr_w 20→28) + pointed spire cap for unambiguous height.
   {
     const ox9 = 9*128, cx9 = ox9+64;
     const thTopY = 12;  // roof top in 128px space
-    const twr_w = 20;   // tower half-width
+    const twr_w = 28;   // wider tower half-width (was 20)
     // Tower shaft (centred on building peak)
     cv2.fillPoly([
-      [cx9-twr_w, thTopY-8],  [cx9, thTopY-8-10],
-      [cx9+twr_w, thTopY-8],  [cx9, thTopY-8+10],
+      [cx9-twr_w, thTopY-8],  [cx9, thTopY-8-14],
+      [cx9+twr_w, thTopY-8],  [cx9, thTopY-8+14],
     ], ...c.MANOR_STONE);                // tower top face (flat iso diamond)
     cv2.fillPoly([
-      [cx9-twr_w, thTopY-8], [cx9, thTopY-8+10],
-      [cx9, thTopY+10],      [cx9-twr_w, thTopY],
+      [cx9-twr_w, thTopY-8], [cx9, thTopY-8+14],
+      [cx9, thTopY+14],      [cx9-twr_w, thTopY],
     ], ...c.MANOR_STONE);                // tower left face
     cv2.fillPoly([
-      [cx9, thTopY-8+10], [cx9+twr_w, thTopY-8],
-      [cx9+twr_w, thTopY], [cx9, thTopY+10],
-    ], 168, 158, 138);                   // tower right face (slightly darker)
+      [cx9, thTopY-8+14], [cx9+twr_w, thTopY-8],
+      [cx9+twr_w, thTopY], [cx9, thTopY+14],
+    ], 162, 152, 132);                   // tower right face (slightly darker)
     // Tower outline
-    cv2.line(cx9-twr_w, thTopY-8,  cx9, thTopY-8-10, ...c.OUTLINE);
-    cv2.line(cx9, thTopY-8-10, cx9+twr_w, thTopY-8, ...c.OUTLINE);
+    cv2.line(cx9-twr_w, thTopY-8,  cx9, thTopY-8-14, ...c.OUTLINE);
+    cv2.line(cx9, thTopY-8-14, cx9+twr_w, thTopY-8, ...c.OUTLINE);
     cv2.line(cx9-twr_w, thTopY-8,  cx9-twr_w, thTopY, ...c.OUTLINE);
     cv2.line(cx9+twr_w, thTopY-8,  cx9+twr_w, thTopY, ...c.OUTLINE);
-    // Clock face on left-face of tower (round frame + hands)
-    const clkX = cx9-10, clkY = thTopY-2;
-    cv2.fillRect(clkX-5, clkY-5, 10, 10, ...c.CHAPEL_STONE);
-    cv2.line(clkX-6, clkY-5, clkX+4, clkY-5, ...c.OUTLINE);   // clock frame
-    cv2.line(clkX-6, clkY+4, clkX+4, clkY+4, ...c.OUTLINE);
-    cv2.line(clkX-6, clkY-5, clkX-6, clkY+4, ...c.OUTLINE);
-    cv2.line(clkX+4, clkY-5, clkX+4, clkY+4, ...c.OUTLINE);
-    cv2.sp(clkX-1, clkY, ...c.INK, 140);  // clock center
-    cv2.line(clkX-1, clkY, clkX-1, clkY-3, ...c.INK, 120);  // 12 o'clock hand
-    cv2.line(clkX-1, clkY, clkX+2, clkY+1, ...c.INK, 90);   // 3 o'clock hand
+    // Stone coursing on tower left face
+    for (let ey=thTopY-6; ey<thTopY+2; ey+=5)
+      cv2.line(cx9-twr_w+2, ey, cx9-2, ey, ...c.STONE_D, 30);
+    // Clock face on left-face of tower (larger, more readable)
+    const clkX = cx9-14, clkY = thTopY-2;
+    cv2.fillRect(clkX-6, clkY-6, 12, 12, ...c.CHAPEL_STONE);
+    cv2.line(clkX-7, clkY-6, clkX+5, clkY-6, ...c.OUTLINE);   // clock frame top
+    cv2.line(clkX-7, clkY+5, clkX+5, clkY+5, ...c.OUTLINE);   // clock frame bottom
+    cv2.line(clkX-7, clkY-6, clkX-7, clkY+5, ...c.OUTLINE);   // clock frame left
+    cv2.line(clkX+5, clkY-6, clkX+5, clkY+5, ...c.OUTLINE);   // clock frame right
+    cv2.sp(clkX-1, clkY, ...c.INK, 150);  // clock center
+    cv2.line(clkX-1, clkY, clkX-1, clkY-4, ...c.INK, 130);  // 12 o'clock hand
+    cv2.line(clkX-1, clkY, clkX+3, clkY+1, ...c.INK, 100);  // 3 o'clock hand
     // Bell arch at top of tower
-    cv2.fillRect(cx9-6, thTopY-8-8, 12, 6, ...c.ROOF_SLATE);
-    cv2.sp(cx9, thTopY-8-8, ...c.STONE_L);  // arch highlight
-    cv2.line(cx9-7, thTopY-8-9, cx9+6, thTopY-8-9, ...c.OUTLINE);
-    // Flag / civic banner on tower peak
-    cv2.line(cx9, thTopY-8-10, cx9, thTopY-8-20, ...c.WOOD_M);
-    cv2.fillRect(cx9, thTopY-8-20, 10, 7, ...c.FLAG_R);
-    cv2.sp(cx9+4, thTopY-8-17, ...c.PARCH_L, 160);  // heraldic detail
-    cv2.line(cx9, thTopY-8-20, cx9+9, thTopY-8-20, ...c.OUTLINE);
-    cv2.line(cx9, thTopY-8-13, cx9+9, thTopY-8-13, ...c.OUTLINE);
+    cv2.fillRect(cx9-8, thTopY-8-10, 16, 8, ...c.ROOF_SLATE);
+    cv2.sp(cx9, thTopY-8-10, ...c.STONE_L);  // arch highlight
+    cv2.line(cx9-9, thTopY-8-11, cx9+8, thTopY-8-11, ...c.OUTLINE);
+    // Pointed spire above bell arch — makes tower unambiguously the tallest (SPA-809)
+    cv2.fillPoly([
+      [cx9-4, thTopY-8-10], [cx9+4, thTopY-8-10],
+      [cx9,   thTopY-8-26],
+    ], ...c.ROOF_SLATE);
+    cv2.line(cx9-4, thTopY-8-10, cx9, thTopY-8-26, ...c.OUTLINE);
+    cv2.line(cx9+4, thTopY-8-10, cx9, thTopY-8-26, ...c.OUTLINE);
+    // Spire highlight (light catches left edge)
+    cv2.line(cx9-2, thTopY-8-12, cx9, thTopY-8-24, ...c.STONE_L, 60);
+    // Flag / civic banner on spire peak
+    cv2.line(cx9, thTopY-8-26, cx9, thTopY-8-38, ...c.WOOD_M);
+    cv2.fillRect(cx9, thTopY-8-38, 12, 8, ...c.FLAG_R);
+    cv2.sp(cx9+5, thTopY-8-34, ...c.PARCH_L, 160);  // heraldic detail
+    cv2.line(cx9,    thTopY-8-38, cx9+11, thTopY-8-38, ...c.OUTLINE);
+    cv2.line(cx9,    thTopY-8-30, cx9+11, thTopY-8-30, ...c.OUTLINE);
+  }
+
+  // 5: BLACKSMITH — prominent chimney smoke rising above roofline (SPA-809) ───
+  // Scaled: roofline at y=32, chimney top at y=18, chimney centre x≈654.
+  {
+    const ox5 = 5*128;
+    const chx = ox5+14;   // chimney x centre in 128px (~654)
+    // Dense smoke column above chimney top — clearly visible above roofline (y=32)
+    cv2.sp(chx,    16, ...c.STONE_L, 200);
+    cv2.sp(chx-1,  14, ...c.STONE_L, 170);
+    cv2.sp(chx+1,  12, ...c.STONE_M, 140);
+    cv2.sp(chx-2,  10, ...c.STONE_L, 110);
+    cv2.sp(chx+1,   8, ...c.STONE_L,  85);
+    cv2.sp(chx-1,   6, ...c.STONE_M,  60);
+    cv2.sp(chx+2,   4, ...c.STONE_L,  40);
+    cv2.sp(chx-1,   2, ...c.STONE_L,  22);
+    // Smoke body (wider puffs at mid-rise)
+    cv2.sp(chx+1,  14, ...c.STONE_L, 120);
+    cv2.sp(chx-2,  12, ...c.STONE_M,  90);
+    cv2.sp(chx+2,  10, ...c.STONE_L,  70);
+    cv2.sp(chx-1,   8, ...c.STONE_M,  50);
   }
 
   // 3: MARKET — tall pennant poles with colored flags ────────────────────────
