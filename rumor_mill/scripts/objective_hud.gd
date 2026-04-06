@@ -300,6 +300,7 @@ func _on_tick(_tick: int) -> void:
 	_refresh_midgame_nudge()
 	_refresh_mini_progress()
 	_refresh_tier3_suggestion()
+	_check_failure_proximity()
 
 
 func _refresh() -> void:
@@ -1540,3 +1541,97 @@ func _enhance_visual_hierarchy() -> void:
 	# Emphasize the win progress bar with a brighter border.
 	var win_bg: ColorRect = $Panel/VBox/WinProgressBG
 	win_bg.custom_minimum_size.y = 14.0  # slightly taller for prominence
+
+
+# ── SPA-797: Failure proximity warning system ────────────────────────────────
+# Shows urgent banner when approaching instant-fail thresholds so players
+# are not blindsided by sudden game-over conditions.
+
+## Tracks which fail-warning keys have already fired this day to avoid spam.
+var _fail_warn_fired: Dictionary = {}
+## Reset fired warnings each new day.
+var _fail_warn_last_day: int = -1
+
+func _check_failure_proximity() -> void:
+	if _scenario_manager == null or _reputation_system == null or _world_ref == null:
+		return
+	var current_day: int = _day_night.current_day if _day_night != null else 1
+	if current_day != _fail_warn_last_day:
+		_fail_warn_fired.clear()
+		_fail_warn_last_day = current_day
+
+	var sid: String = _world_ref.active_scenario_id if "active_scenario_id" in _world_ref else ""
+	match sid:
+		"scenario_1":
+			# S1: NPC heat >= 80 is instant fail. Warn at 65+.
+			if _intel_store != null:
+				for npc_id in _intel_store.heat:
+					var heat: float = _intel_store.heat[npc_id]
+					if heat >= 65.0 and not _fail_warn_fired.has("s1_heat_%s" % npc_id):
+						var npc_name: String = npc_id.replace("_", " ").capitalize()
+						_show_banner("DANGER: %s's suspicion is rising! (Heat: %d/80)" % [npc_name, int(heat)],
+							C_DAY_CRITICAL, 5.0)
+						_fail_warn_fired["s1_heat_%s" % npc_id] = true
+		"scenario_3":
+			# S3: Calder < 35 is instant fail. Warn at 42.
+			var calder_snap: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot("calder_fenn")
+			if calder_snap != null and calder_snap.score <= 42 and not _fail_warn_fired.has("s3_calder"):
+				_show_banner("DANGER: Calder Fenn's reputation is collapsing! (%d — fails below %d)" % [
+					calder_snap.score, _scenario_manager.S3_FAIL_CALDER_BELOW], C_DAY_CRITICAL, 5.0)
+				_fail_warn_fired["s3_calder"] = true
+		"scenario_4":
+			# S4: Any protected NPC < 42 is instant fail. Warn at 47.
+			for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+				var snap: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot(npc_id)
+				if snap != null and snap.score <= 47 and not _fail_warn_fired.has("s4_%s" % npc_id):
+					var display_name: String = npc_id.split("_")[0].capitalize()
+					_show_banner("DANGER: %s is in the danger zone! (%d — fails below %d)" % [
+						display_name, snap.score, _scenario_manager.S4_FAIL_REP_BELOW], C_DAY_CRITICAL, 5.0)
+					_fail_warn_fired["s4_%s" % npc_id] = true
+		"scenario_5":
+			# S5: Aldric < 30 is instant fail. Warn at 38.
+			var aldric_snap: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot("aldric_vane")
+			if aldric_snap != null and aldric_snap.score <= 38 and not _fail_warn_fired.has("s5_aldric"):
+				_show_banner("DANGER: Aldric Vane is losing support! (%d — fails below %d)" % [
+					aldric_snap.score, _scenario_manager.S5_FAIL_ALDRIC_BELOW], C_DAY_CRITICAL, 5.0)
+				_fail_warn_fired["s5_aldric"] = true
+		"scenario_6":
+			# S6: Marta < 30 instant fail. Warn at 38. Heat >= 55 instant fail. Warn at 45.
+			var marta_snap: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot("marta_coin")
+			if marta_snap != null and marta_snap.score <= 38 and not _fail_warn_fired.has("s6_marta"):
+				_show_banner("DANGER: Marta Coin's reputation is dropping! (%d — fails below %d)" % [
+					marta_snap.score, _scenario_manager.S6_FAIL_MARTA_BELOW], C_DAY_CRITICAL, 5.0)
+				_fail_warn_fired["s6_marta"] = true
+			if _intel_store != null:
+				var player_heat: float = _intel_store.get_heat("player") if _intel_store.has_method("get_heat") else 0.0
+				if player_heat >= 45.0 and not _fail_warn_fired.has("s6_heat"):
+					_show_banner("DANGER: Your exposure is dangerously high! (Heat: %d/%d)" % [
+						int(player_heat), int(_scenario_manager.S6_EXPOSED_HEAT)], C_DAY_CRITICAL, 5.0)
+					_fail_warn_fired["s6_heat"] = true
+
+
+# ── SPA-797: Objective entrance animation ────────────────────────────────────
+# Draws player attention to the objective HUD when the game first starts.
+
+var _entrance_played: bool = false
+
+func play_entrance_animation() -> void:
+	if _entrance_played:
+		return
+	_entrance_played = true
+	var panel: Panel = $Panel
+	if panel == null:
+		return
+	# Start transparent and slightly above, slide down and fade in.
+	panel.modulate.a = 0.0
+	panel.position.y -= 20.0
+	var tw := create_tween()
+	tw.tween_property(panel, "modulate:a", 1.0, 0.6) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	tw.parallel().tween_property(panel, "position:y", panel.position.y + 20.0, 0.6) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	# After settling, pulse the goal label gold to draw the eye.
+	tw.tween_interval(0.3)
+	tw.tween_method(func(c: Color) -> void:
+		goal_label.add_theme_color_override("font_color", c)
+	, Color(1.0, 0.95, 0.55, 1.0), Color(0.92, 0.78, 0.12, 1.0), 0.8)

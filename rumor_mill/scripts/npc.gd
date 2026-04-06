@@ -309,10 +309,16 @@ func _exit_tree() -> void:
 
 
 func _on_hover_enter() -> void:
+	Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+	if sprite != null:
+		sprite.modulate = Color(1.25, 1.25, 1.25, 1.0)
 	npc_hovered.emit(self)
 
 
 func _on_hover_exit() -> void:
+	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+	if sprite != null:
+		sprite.modulate = Color.WHITE
 	npc_unhovered.emit()
 
 
@@ -1645,6 +1651,26 @@ func flash_reputation(gained: bool) -> void:
 	sprite.self_modulate = flash_color
 	_flash_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.35)
+
+
+## SPA-788: Dark vignette border flash when this NPC first flips to belief.
+## Plunges sprite to near-black then fades back — signals a conviction shift.
+func flash_belief_vignette() -> void:
+	if sprite == null:
+		return
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	sprite.self_modulate = Color(0.12, 0.12, 0.18, 1.0)  # dark vignette
+	_flash_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.55)
+
+
+## SPA-788: Apply / remove the belief-shaken speed penalty (0.72× for rest of day).
+## Skipped for GUARD_CIVIC — their pace is owned by TownMoodController.
+func set_belief_shaken(shaken: bool) -> void:
+	if archetype == NpcSchedule.ScheduleArchetype.GUARD_CIVIC:
+		return
+	mood_speed_scale = 0.72 if shaken else 1.0
 
 
 ## Shows a floating emote icon above the NPC on rumor state change.

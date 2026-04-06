@@ -245,6 +245,8 @@ func _on_begin_game(scenario_id: String) -> void:
 	# Restore HUD visibility.
 	recon_hud.visible            = true
 	objective_hud.visible        = true
+	if objective_hud.has_method("play_entrance_animation"):
+		objective_hud.play_entrance_animation()
 	rumor_panel.visible          = false  # closed by default; opened via R key
 	journal.visible              = false  # closed by default; opened via J key
 	social_graph_overlay.visible = false  # closed by default; opened via G key
