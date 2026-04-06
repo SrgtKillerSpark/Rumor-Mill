@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-## tutorial_banner.gd — Scenario 1 non-blocking contextual hint banner.
+## tutorial_banner.gd — Non-blocking contextual hint banner (all scenarios).
 ##
 ## Procedurally-built CanvasLayer (layer 19) that displays one hint at a time
 ## from a queue.  Unlike TutorialHUD this banner does NOT block input — the game
@@ -23,6 +23,10 @@ extends CanvasLayer
 ##   add_child(tutorial_banner)
 ##   tutorial_banner.setup(tutorial_system_instance)
 ##   tutorial_banner.queue_hint("hint_camera")
+
+## Emitted when any hint finishes dismissing (auto or manual).
+## TutorialController connects to this to auto-advance non-action-gated steps.
+signal hint_dismissed(hint_id: String)
 
 # ── Palette ───────────────────────────────────────────────────────────────────
 
@@ -245,6 +249,7 @@ func _slide_out_dismiss() -> void:
 
 
 func _finish_dismiss() -> void:
+	var _dismissed_id := _active_id
 	if _tutorial_sys != null and _active_id != "":
 		_tutorial_sys.mark_seen(_active_id)
 	_active_id   = ""
@@ -253,6 +258,8 @@ func _finish_dismiss() -> void:
 	_container.modulate.a = 1.0
 	visible          = false
 	_hovered         = false
+	if _dismissed_id != "":
+		hint_dismissed.emit(_dismissed_id)
 	if not _suppressed:
 		_show_next()
 

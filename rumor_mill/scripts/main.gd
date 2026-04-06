@@ -456,6 +456,9 @@ func _on_ready_overlay_dismissed() -> void:
 	# SPA-626: S1 first-time player flow — camera pan + Market highlight + gated banner.
 	if world.active_scenario_id == "scenario_1":
 		_init_s1_onboarding_flow()
+	else:
+		# SPA-804: S2-S6 — short "What's New" TutorialController sequence.
+		_init_sx_onboarding_flow(world.active_scenario_id)
 
 
 ## SPA-720: Attach a subtle amber crest marker above the primary target NPC for 60 seconds.
@@ -532,6 +535,22 @@ func _init_s1_onboarding_flow() -> void:
 	_tutorial_ctrl.setup(
 		_tutorial_sys, _tutorial_banner, camera,
 		_recon_ctrl_ref, journal, rumor_panel, world
+	)
+	_tutorial_ctrl.start()
+
+
+## SPA-804: S2-S6 "What's New" banner sequence via TutorialController.
+## Called from _on_ready_overlay_dismissed() for non-S1 scenarios.
+func _init_sx_onboarding_flow(scenario_id: String) -> void:
+	if _tutorial_sys == null or _tutorial_banner == null:
+		return
+	_tutorial_ctrl = preload("res://scripts/tutorial_controller.gd").new()
+	_tutorial_ctrl.name = "TutorialController"
+	add_child(_tutorial_ctrl)
+	_tutorial_ctrl.setup(
+		_tutorial_sys, _tutorial_banner, camera,
+		_recon_ctrl_ref, journal, rumor_panel, world,
+		scenario_id
 	)
 	_tutorial_ctrl.start()
 
@@ -1367,7 +1386,8 @@ func _init_tutorial_system() -> void:
 	if world.active_scenario_id == "scenario_1":
 		_init_tutorial_banner_s1()
 	else:
-		_init_tutorial_hud_s2s3s4()
+		# SPA-804: S2-S6 use non-blocking TutorialBanner only — blocking TutorialHUD
+		# removed.  TutorialController for S2-S6 is started after the ready overlay.
 		_init_context_banner()
 
 	_init_idle_hints()
@@ -1448,7 +1468,8 @@ func _init_context_banner() -> void:
 		rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed_banner)
 
 
-## S2 / S3 / S4: blocking modal tooltip overlay.
+## SPA-804 DEPRECATED — no longer called.  S2-S6 now use TutorialBanner via
+## _init_sx_onboarding_flow().  Kept to avoid breaking any tool-generated refs.
 func _init_tutorial_hud_s2s3s4() -> void:
 	_tutorial_hud = preload("res://scripts/tutorial_hud.gd").new()
 	_tutorial_hud.name = "TutorialHUD"
@@ -1607,8 +1628,9 @@ func _on_player_exposed() -> void:
 		world.scenario_manager.on_player_exposed()
 
 
-## Connected to recon_ctrl.action_performed — fires observe / eavesdrop tooltips
-## for S2/S3 modal system; also drives S1 banner gates.
+## Connected to recon_ctrl.action_performed — drives S1 banner gates.
+## SPA-804: S2/S3 modal tooltip calls removed; blocking TutorialHUD replaced by
+## non-blocking TutorialBanner driven by TutorialController.
 func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 	if not success:
 		return
@@ -1619,19 +1641,6 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 	_spa724_action_count += 1
 	if _spa724_action_count >= 3 and recon_hud != null and recon_hud.has_method("fade_goal_strip"):
 		recon_hud.fade_goal_strip()
-	# SPA-589: Show recon_actions tooltip on first successful action if not yet seen.
-	if _tutorial_hud != null and _tutorial_sys != null:
-		if not _tutorial_sys.has_seen("recon_actions"):
-			_tutorial_hud.queue_tooltip("recon_actions")
-
-	# S2/S3 modal tooltips.
-	if _tutorial_hud != null:
-		if not _observe_tooltip_fired and message.begins_with("Observed"):
-			_observe_tooltip_fired = true
-			_tutorial_hud.queue_tooltip("observe")
-		elif not _eavesdrop_tooltip_fired and message.begins_with("Eavesdropped"):
-			_eavesdrop_tooltip_fired = true
-			_tutorial_hud.queue_tooltip("eavesdrop")
 
 	# SPA-626: Clear the Market highlight and dismiss the gated banner on first recon action.
 	if not _banner_s1_market_cleared:

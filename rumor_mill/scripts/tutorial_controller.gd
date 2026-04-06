@@ -1,12 +1,13 @@
 extends Node
 
-## tutorial_controller.gd — Guided first-5-minutes tutorial for Scenario 1 (SPA-775).
+## tutorial_controller.gd — Guided onboarding tutorial for all scenarios (SPA-775, SPA-804).
 ##
-## Drives new players through the core gameplay loop in 12 ordered steps matching
-## the SPA-766 design doc.  Each step shows a TutorialBanner hint and blocks
-## progression until the designated action gate fires.
+## Scenario 1 (12 steps): full action-gated tutorial for first-time players.
+## Scenarios 2-6 (2-3 steps each): short "What's New" banner sequence showing
+## the unique mechanic for that scenario.  Steps auto-advance when each banner
+## dismisses (no blocking).
 ##
-## Step sequence:
+## S1 Step sequence:
 ##   0  gtut_opening          — cinematic intro banner (auto 3 s)
 ##   1  gtut_camera           — gate: camera_moved
 ##   2  gtut_find_building    — gate: read_the_room (building right-clicked)
@@ -20,15 +21,17 @@ extends Node
 ##   10 gtut_watch_spread     — gate: NPC reaches BELIEVE state
 ##   11 gtut_complete         — auto-dismiss 8 s, confetti, tutorial ends
 ##
-## When guided_tutorial_active is true, non-guided contextual hints are suppressed
-## so the player sees only the 12-step sequence.
+## S2-S6 steps are short auto-dismiss sequences; see STEPS_S2..STEPS_S6 below.
 ##
-## Usage from main.gd (unchanged API):
+## When guided_tutorial_active is true, non-guided contextual hints are suppressed
+## so the player sees only the step sequence.
+##
+## Usage from main.gd:
 ##   var tc := preload("res://scripts/tutorial_controller.gd").new()
 ##   tc.name = "TutorialController"
 ##   add_child(tc)
 ##   tc.setup(tutorial_sys, tutorial_banner, camera, recon_ctrl, journal,
-##            rumor_panel, world)
+##            rumor_panel, world, "scenario_2")
 ##   tc.start()
 
 class_name TutorialController
@@ -38,7 +41,8 @@ signal tutorial_skipped
 
 # ── Step definitions ─────────────────────────────────────────────────────────
 
-const STEPS: Array = [
+## Scenario 1 — 12-step action-gated tutorial.
+const STEPS_S1: Array = [
 	{ "id": "gtut_opening",          "hint": "gtut_opening" },
 	{ "id": "gtut_camera",           "hint": "gtut_camera" },
 	{ "id": "gtut_find_building",    "hint": "gtut_find_building" },
@@ -52,6 +56,42 @@ const STEPS: Array = [
 	{ "id": "gtut_watch_spread",     "hint": "gtut_watch_spread" },
 	{ "id": "gtut_complete",         "hint": "gtut_complete" },
 ]
+
+## Scenario 2 — Plague Scare: mechanic shift + Maren warning (3 steps).
+const STEPS_S2: Array = [
+	{ "id": "wtut_s2_mechanic_shift", "hint": "wtut_s2_mechanic_shift" },
+	{ "id": "wtut_s2_whats_new",      "hint": "wtut_s2_whats_new" },
+	{ "id": "ctx_s2_maren_warning",   "hint": "ctx_s2_maren_warning" },
+]
+
+## Scenario 3 — Succession: two targets + rival agent (3 steps).
+const STEPS_S3: Array = [
+	{ "id": "wtut_s3_whats_new",   "hint": "wtut_s3_whats_new" },
+	{ "id": "ctx_s3_dual_targets", "hint": "ctx_s3_dual_targets" },
+	{ "id": "ctx_s3_rival_intro",  "hint": "ctx_s3_rival_intro" },
+]
+
+## Scenario 4 — Holy Inquisition: defense goal + inquisitor (3 steps).
+const STEPS_S4: Array = [
+	{ "id": "wtut_s4_whats_new",        "hint": "wtut_s4_whats_new" },
+	{ "id": "ctx_s4_defense_goal",      "hint": "ctx_s4_defense_goal" },
+	{ "id": "ctx_s4_inquisitor_info",   "hint": "ctx_s4_inquisitor_info" },
+]
+
+## Scenario 5 — Election: three-way race (2 steps).
+const STEPS_S5: Array = [
+	{ "id": "wtut_s5_whats_new",      "hint": "wtut_s5_whats_new" },
+	{ "id": "ctx_s5_three_way_race",  "hint": "ctx_s5_three_way_race" },
+]
+
+## Scenario 6 — Merchant's Debt: heat ceiling + protect Marta (2 steps).
+const STEPS_S6: Array = [
+	{ "id": "wtut_s6_whats_new",   "hint": "wtut_s6_whats_new" },
+	{ "id": "ctx_s6_heat_ceiling", "hint": "ctx_s6_heat_ceiling" },
+]
+
+## Legacy alias — external callers that referenced STEPS still work.
+const STEPS: Array = STEPS_S1
 
 const STEP_OPENING          := 0
 const STEP_CAMERA           := 1
@@ -71,8 +111,11 @@ const STEP_COMPLETE         := 11
 var _current_step: int = -1
 var _active: bool = false
 var _skipped: bool = false
-## When true the player is in the guided 12-step tutorial and non-guided
-## contextual hints are suppressed.
+var _scenario_id: String = "scenario_1"
+## Active step array — set by setup() based on scenario_id.
+var _steps: Array = []
+## When true the player is in the guided tutorial and non-guided
+## contextual hints are suppressed.  Only true during S1 (12-step gated tutorial).
 var guided_tutorial_active: bool = false
 
 # ── External references ───────────────────────────────────────────────────────
@@ -103,6 +146,8 @@ var _toast_tween:     Tween          = null
 
 
 ## Wire all external dependencies.  Must be called before start().
+## scenario_id selects the step sequence: "scenario_1" (default) = 12-step gated
+## tutorial; "scenario_2".."scenario_6" = short What's-New auto-dismiss sequence.
 func setup(
 		tutorial_sys: TutorialSystem,
 		tutorial_banner: Node,
@@ -110,7 +155,8 @@ func setup(
 		recon_ctrl: Node,
 		journal_node: CanvasLayer,
 		rumor_panel_node: CanvasLayer,
-		world_node: Node2D
+		world_node: Node2D,
+		scenario_id: String = "scenario_1"
 ) -> void:
 	_tutorial_sys    = tutorial_sys
 	_tutorial_banner = tutorial_banner
@@ -119,14 +165,31 @@ func setup(
 	_journal         = journal_node
 	_rumor_panel     = rumor_panel_node
 	_world           = world_node
+	_scenario_id     = scenario_id
+
+	match _scenario_id:
+		"scenario_2": _steps = STEPS_S2
+		"scenario_3": _steps = STEPS_S3
+		"scenario_4": _steps = STEPS_S4
+		"scenario_5": _steps = STEPS_S5
+		"scenario_6": _steps = STEPS_S6
+		_:            _steps = STEPS_S1
+
+	# Connect banner's hint_dismissed for auto-advance of non-action-gated steps.
+	if _tutorial_banner != null and _tutorial_banner.has_signal("hint_dismissed"):
+		if not _tutorial_banner.hint_dismissed.is_connected(_on_banner_hint_dismissed):
+			_tutorial_banner.hint_dismissed.connect(_on_banner_hint_dismissed)
+
 	_build_toast()
 
 
 ## Begin the interactive tutorial.
+## S2-S6 always begin immediately (no skip dialog — the sequence is short and
+## informational only, so returning players benefit from it too).
 func start() -> void:
 	if _tutorial_sys == null or _tutorial_banner == null:
 		return
-	if SaveManager.has_any_save():
+	if _scenario_id == "scenario_1" and SaveManager.has_any_save():
 		_show_skip_option()
 	else:
 		_begin_tutorial()
@@ -137,8 +200,8 @@ func skip() -> void:
 	_skipped = true
 	_active = false
 	guided_tutorial_active = false
-	_current_step = STEPS.size()
-	for step_def in STEPS:
+	_current_step = _steps.size()
+	for step_def in _steps:
 		if _tutorial_sys != null:
 			_tutorial_sys.mark_seen(step_def["id"])
 	_clear_highlight()
@@ -278,7 +341,8 @@ func _on_skip_tutorial() -> void:
 
 func _begin_tutorial() -> void:
 	_active = true
-	guided_tutorial_active = true
+	# Only suppress contextual hints during the full S1 gated tutorial.
+	guided_tutorial_active = (_scenario_id == "scenario_1")
 	_current_step = -1
 	_connect_signals()
 	_advance_step()
@@ -288,14 +352,14 @@ func _advance_step() -> void:
 	if not _active:
 		return
 	_current_step += 1
-	if _current_step >= STEPS.size():
+	if _current_step >= _steps.size():
 		_finish_tutorial()
 		return
 	_show_step(_current_step)
 
 
 func _show_step(step_idx: int) -> void:
-	var step_def: Dictionary = STEPS[step_idx]
+	var step_def: Dictionary = _steps[step_idx]
 	var step_id: String = step_def["id"]
 
 	if _tutorial_sys != null and _tutorial_sys.has_seen(step_id):
@@ -336,9 +400,9 @@ func _finish_tutorial() -> void:
 
 
 func _complete_current_step() -> void:
-	if not _active or _current_step < 0 or _current_step >= STEPS.size():
+	if not _active or _current_step < 0 or _current_step >= _steps.size():
 		return
-	var step_def: Dictionary = STEPS[_current_step]
+	var step_def: Dictionary = _steps[_current_step]
 	if _tutorial_sys != null:
 		_tutorial_sys.mark_seen(step_def["id"])
 	if _tutorial_banner != null and _tutorial_banner.has_method("dismiss_hint"):
@@ -350,6 +414,21 @@ func _complete_current_step() -> void:
 		_celebrate_first_believe()
 
 	_advance_step()
+
+
+## Auto-advance handler connected to TutorialBanner.hint_dismissed.
+## When a banner hint has no action_gate (auto-dismiss or manual X), the
+## controller advances to the next step once the hint finishes dismissing.
+## Action-gated S1 steps are handled by their own signal handlers and call
+## _complete_current_step() directly, which already advances; by the time
+## _finish_dismiss() fires for those, _current_step has moved on so the
+## check below will not match and will not double-advance.
+func _on_banner_hint_dismissed(hint_id: String) -> void:
+	if not _active or _current_step < 0 or _current_step >= _steps.size():
+		return
+	var step_def: Dictionary = _steps[_current_step]
+	if step_def["hint"] == hint_id:
+		_advance_step()
 
 
 # ── Highlight system ─────────────────────────────────────────────────────────
@@ -523,6 +602,10 @@ func _connect_signals() -> void:
 
 
 func _disconnect_all() -> void:
+	if _tutorial_banner != null and _tutorial_banner.has_signal("hint_dismissed"):
+		if _tutorial_banner.hint_dismissed.is_connected(_on_banner_hint_dismissed):
+			_tutorial_banner.hint_dismissed.disconnect(_on_banner_hint_dismissed)
+
 	if _connected_camera and _camera != null and _camera.has_signal("camera_moved"):
 		if _camera.camera_moved.is_connected(_on_tc_camera_moved):
 			_camera.camera_moved.disconnect(_on_tc_camera_moved)

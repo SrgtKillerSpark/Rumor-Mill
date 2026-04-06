@@ -741,6 +741,60 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 10,
 	},
+	# ── SPA-804: What's New banners for S2-S6 (driven by TutorialController) ────
+	# Shown on first load of each scenario to highlight what is mechanically new.
+	"wtut_s2_mechanic_shift": {
+		"title": "Mechanic Shift",
+		"body":  (
+			"Scenario 2 is different: you are [b]spreading illness[/b], not scandal.  "
+			+ "Seed illness rumours about [b]Alys Herbwife[/b].  "
+			+ "Watch the [b]believer count[/b] in the Scenario HUD — that is your win condition, not a reputation bar."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"wtut_s2_whats_new": {
+		"title": "What's New — Plague Scare",
+		"body":  (
+			"You need [b]7 NPCs to believe[/b] the illness rumour before time runs out.  "
+			+ "Credulous NPCs like merchants accept it faster.  "
+			+ "The critical hazard: [b]Sister Maren[/b] — if she ever rejects an illness claim, the scenario fails instantly."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"wtut_s3_whats_new": {
+		"title": "What's New — Succession Crisis",
+		"body":  (
+			"Two targets this time: [b]raise Calder Fenn[/b] to 75+ and [b]drop Tomas Reeve[/b] to 35 or below.  "
+			+ "A rival agent works against you — check the Scenario HUD for their latest move and counter it."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"wtut_s4_whats_new": {
+		"title": "What's New — Holy Inquisition",
+		"body":  (
+			"This scenario is [b]purely defensive[/b] — you protect, not attack.  "
+			+ "An Inquisitor is targeting three people with slander.  "
+			+ "Counter every accusation with [b]Praise[/b] rumours to keep reputations above 45."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"wtut_s5_whats_new": {
+		"title": "What's New — The Election",
+		"body":  (
+			"A [b]three-way race[/b]: Aldric needs 65+ reputation AND must be the highest of the three.  "
+			+ "[b]Day 15[/b] brings a Prior endorsement (+8 rep) to whoever is leading — make sure it is Aldric."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"wtut_s6_whats_new": {
+		"title": "What's New — Merchant's Debt",
+		"body":  (
+			"The heat ceiling is [b]60[/b] — guards are on Aldric's payroll.  "
+			+ "Route accusations through [b]clergy and commons[/b] to bypass the merchant guild.  "
+			+ "Also keep [b]Marta Coin[/b] above 60 reputation — she is your patron."
+		),
+		"auto_dismiss_secs": 10,
+	},
 	# ── Scenario 1: Heat / exposure warning ──────────────────────────────────
 	"ctx_heat_warning": {
 		"title": "You Are Drawing Attention",
