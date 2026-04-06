@@ -448,11 +448,17 @@ func _build_subject_entry(
 	var header := HBoxContainer.new()
 	vbox.add_child(header)
 
-	var swatch := ColorRect.new()
-	swatch.custom_minimum_size = Vector2(14, 14)
-	swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	swatch.color = _faction_color(faction)
-	header.add_child(swatch)
+	var swatch_panel := Panel.new()
+	swatch_panel.custom_minimum_size = Vector2(18, 18)
+	swatch_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var _sw_col := _faction_color(faction)
+	var _sw_style := StyleBoxFlat.new()
+	_sw_style.bg_color = _sw_col
+	_sw_style.set_corner_radius_all(3)
+	_sw_style.set_border_width_all(1)
+	_sw_style.border_color = Color(_sw_col.r * 0.6, _sw_col.g * 0.6, _sw_col.b * 0.6, 0.8)
+	swatch_panel.add_theme_stylebox_override("panel", _sw_style)
+	header.add_child(swatch_panel)
 
 	var name_lbl := Label.new()
 	name_lbl.text = "  " + npc_name
@@ -732,11 +738,17 @@ func _build_seed_entry(
 	var header := HBoxContainer.new()
 	vbox.add_child(header)
 
-	var swatch := ColorRect.new()
-	swatch.custom_minimum_size = Vector2(14, 14)
-	swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	swatch.color = _faction_color(faction)
-	header.add_child(swatch)
+	var swatch_panel := Panel.new()
+	swatch_panel.custom_minimum_size = Vector2(18, 18)
+	swatch_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var _sw_col := _faction_color(faction)
+	var _sw_style := StyleBoxFlat.new()
+	_sw_style.bg_color = _sw_col
+	_sw_style.set_corner_radius_all(3)
+	_sw_style.set_border_width_all(1)
+	_sw_style.border_color = Color(_sw_col.r * 0.6, _sw_col.g * 0.6, _sw_col.b * 0.6, 0.8)
+	swatch_panel.add_theme_stylebox_override("panel", _sw_style)
+	header.add_child(swatch_panel)
 
 	var name_lbl := Label.new()
 	name_lbl.text = "  " + npc_name + "  [" + faction.capitalize() + "]"

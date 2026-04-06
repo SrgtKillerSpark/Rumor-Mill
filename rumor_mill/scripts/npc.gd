@@ -380,15 +380,15 @@ func _setup_sprite(faction: String) -> void:
 func _build_faction_badge(faction: String) -> void:
 	var badge := ColorRect.new()
 	badge.color = FactionPalette.badge_color(faction)
-	badge.custom_minimum_size = Vector2(6, 6)
-	badge.size = Vector2(6, 6)
+	badge.custom_minimum_size = Vector2(8, 8)
+	badge.size = Vector2(8, 8)
 	# Position the dot just to the left of the name label, vertically centred.
-	badge.position = Vector2(name_label.position.x - 9, name_label.position.y + 7)
+	badge.position = Vector2(name_label.position.x - 11, name_label.position.y + 6)
 	# Subtle dark outline via a slightly larger rect behind.
 	var outline := ColorRect.new()
 	outline.color = Color(0, 0, 0, 0.6)
-	outline.custom_minimum_size = Vector2(8, 8)
-	outline.size = Vector2(8, 8)
+	outline.custom_minimum_size = Vector2(10, 10)
+	outline.size = Vector2(10, 10)
 	outline.position = Vector2(badge.position.x - 1, badge.position.y - 1)
 	add_child(outline)
 	add_child(badge)

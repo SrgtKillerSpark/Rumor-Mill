@@ -1063,10 +1063,14 @@ func _build_faction_panel() -> void:
 	_faction_panel.offset_top = panel.offset_bottom + 2
 	_faction_panel.offset_bottom = panel.offset_bottom + 64
 
-	var bg := ColorRect.new()
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.10, 0.07, 0.05, 0.88)
-	_faction_panel.add_child(bg)
+	# Panel background with subtle border.
+	var fp_style := StyleBoxFlat.new()
+	fp_style.bg_color = Color(0.10, 0.07, 0.05, 0.90)
+	fp_style.set_border_width_all(1)
+	fp_style.border_color = Color(0.55, 0.38, 0.18, 0.50)
+	fp_style.border_width_top = 2
+	fp_style.set_corner_radius_all(1)
+	_faction_panel.add_theme_stylebox_override("panel", fp_style)
 
 	var hbox := HBoxContainer.new()
 	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1074,7 +1078,7 @@ func _build_faction_panel() -> void:
 	hbox.offset_top = 4.0
 	hbox.offset_right = -8.0
 	hbox.offset_bottom = -4.0
-	hbox.add_theme_constant_override("separation", 12)
+	hbox.add_theme_constant_override("separation", 14)
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	_faction_panel.add_child(hbox)
 
@@ -1087,41 +1091,49 @@ func _build_faction_panel() -> void:
 	for faction_id in ["merchant", "noble", "clergy"]:
 		var info: Dictionary = FACTIONS[faction_id]
 		var col := VBoxContainer.new()
-		col.add_theme_constant_override("separation", 2)
+		col.add_theme_constant_override("separation", 3)
 		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-		# Faction name label
+		# Faction name label — bolder for hierarchy.
 		var name_lbl := Label.new()
 		name_lbl.text = info["name"]
 		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name_lbl.add_theme_font_size_override("font_size", 12)
+		name_lbl.add_theme_font_size_override("font_size", 13)
 		name_lbl.add_theme_color_override("font_color", info["color"])
 		name_lbl.add_theme_constant_override("outline_size", 2)
-		name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+		name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 		col.add_child(name_lbl)
 
 		# Mood label
 		var mood_lbl := Label.new()
 		mood_lbl.text = "Calm"
 		mood_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		mood_lbl.add_theme_font_size_override("font_size", 12)
+		mood_lbl.add_theme_font_size_override("font_size", 11)
 		mood_lbl.add_theme_color_override("font_color", Color(0.70, 0.65, 0.50, 1.0))
 		mood_lbl.add_theme_constant_override("outline_size", 2)
 		mood_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 		col.add_child(mood_lbl)
 
-		# Influence bar background
-		var bar_bg := ColorRect.new()
-		bar_bg.custom_minimum_size = Vector2(0, 6)
-		bar_bg.color = Color(0.20, 0.15, 0.08, 1.0)
-		col.add_child(bar_bg)
+		# Influence bar — taller with faction-tinted border ring.
+		var bar_panel := Panel.new()
+		bar_panel.custom_minimum_size = Vector2(0, 8)
+		var bar_style := StyleBoxFlat.new()
+		bar_style.bg_color = Color(0.20, 0.15, 0.08, 1.0)
+		bar_style.set_corner_radius_all(2)
+		bar_style.set_border_width_all(1)
+		bar_style.border_color = Color(info["color"].r, info["color"].g, info["color"].b, 0.25)
+		bar_panel.add_theme_stylebox_override("panel", bar_style)
+		col.add_child(bar_panel)
 
 		# Influence bar fill
 		var bar_fill := ColorRect.new()
 		bar_fill.anchor_bottom = 1.0
 		bar_fill.anchor_right = 0.0
+		bar_fill.offset_left = 1.0
+		bar_fill.offset_top = 1.0
+		bar_fill.offset_bottom = -1.0
 		bar_fill.color = info["color"]
-		bar_bg.add_child(bar_fill)
+		bar_panel.add_child(bar_fill)
 
 		_faction_labels[faction_id] = {"mood": mood_lbl, "bar": bar_fill}
 		hbox.add_child(col)

@@ -31,7 +31,7 @@ const PIP_EMPTY_ACTION  := Color(0.30, 0.22, 0.12, 1.0)  # dark
 const PIP_FULL_WHISPER  := Color(0.345, 0.580, 0.769, 1.0) # WATER_L (#5894C4)
 const PIP_EMPTY_WHISPER := Color(0.15, 0.20, 0.28, 1.0)  # dark blue
 
-const PIP_SIZE := Vector2(16, 16)
+const PIP_SIZE := Vector2(20, 20)
 
 # Heat meter colours
 const C_HEAT_LOW    := Color(0.30, 0.75, 0.35, 1.0)  # green — safe
@@ -296,14 +296,14 @@ func _advance_milestone_queue() -> void:
 
 func _build_count_labels() -> void:
 	_action_count_label = Label.new()
-	_action_count_label.add_theme_font_size_override("font_size", 14)
+	_action_count_label.add_theme_font_size_override("font_size", 16)
 	_action_count_label.add_theme_color_override("font_color", PIP_FULL_ACTION)
 	_action_count_label.add_theme_constant_override("outline_size", 3)
 	_action_count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	action_pips_row.get_parent().add_child(_action_count_label)
 
 	_whisper_count_label = Label.new()
-	_whisper_count_label.add_theme_font_size_override("font_size", 14)
+	_whisper_count_label.add_theme_font_size_override("font_size", 16)
 	_whisper_count_label.add_theme_color_override("font_color", PIP_FULL_WHISPER)
 	_whisper_count_label.add_theme_constant_override("outline_size", 3)
 	_whisper_count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
@@ -375,12 +375,12 @@ func _build_heat_meter() -> void:
 
 	# Bar background
 	var bar_bg := Panel.new()
-	bar_bg.custom_minimum_size = Vector2(90, 12)
+	bar_bg.custom_minimum_size = Vector2(96, 14)
 	var bar_style := StyleBoxFlat.new()
 	bar_style.bg_color = C_HEAT_BG
 	bar_style.set_corner_radius_all(3)
 	bar_style.set_border_width_all(1)
-	bar_style.border_color = Color(0.35, 0.25, 0.12, 0.5)
+	bar_style.border_color = Color(0.40, 0.28, 0.14, 0.6)
 	bar_bg.add_theme_stylebox_override("panel", bar_style)
 	_heat_row.add_child(bar_bg)
 
@@ -888,7 +888,9 @@ func _build_pips(
 		pip.custom_minimum_size = PIP_SIZE
 		var style := StyleBoxFlat.new()
 		style.bg_color = full_color if i < remaining else empty_color
-		style.set_corner_radius_all(7)
+		style.set_corner_radius_all(9)
+		style.set_border_width_all(1)
+		style.border_color = Color(full_color.r, full_color.g, full_color.b, 0.45) if i < remaining else Color(full_color.r, full_color.g, full_color.b, 0.20)
 		pip.add_theme_stylebox_override("panel", style)
 		container.add_child(pip)
 
