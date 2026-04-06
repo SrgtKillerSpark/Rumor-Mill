@@ -3423,8 +3423,11 @@ function makeNPCPortraits() {
       body, trim, hatStyle, hat, hatTrim,
       female = false, elder = false, archetype = 'commoner',
       expression = 'neutral', skinTone = null,
+      hairColor = null, beard = false, scar = false,
+      eyeColorOverride = null,
     } = opts;
     const skinBase = skinTone || c.SKIN;
+    const hairCol = hairColor || c.HAIR;  // per-NPC hair / brow colour (Art Pass 17)
 
     // ── parchment background — SPA-703 illuminated manuscript upgrade ────────
     // Faction-tinted background: subtle coloured velvet/cloth feel for body area
@@ -3545,46 +3548,47 @@ function makeNPCPortraits() {
     // ── eyebrows ─────────────────────────────────────────────────────────────
     if (archetype === 'noble') {
       // high arched brows — slightly thinner, elevated
-      cv.fillRect(hx+4, hy+4, 5, 1, ...c.HAIR, 200);
-      cv.sp(hx+3, hy+5, ...c.HAIR, 100);
-      cv.sp(hx+9, hy+4, ...c.HAIR, 80);  // arch peak
-      cv.fillRect(hx+12, hy+4, 5, 1, ...c.HAIR, 200);
-      cv.sp(hx+11, hy+5, ...c.HAIR, 80);
-      cv.sp(hx+17, hy+4, ...c.HAIR, 100);
-    } else if (archetype === 'guard') {
+      cv.fillRect(hx+4, hy+4, 5, 1, ...hairCol, 200);
+      cv.sp(hx+3, hy+5, ...hairCol, 100);
+      cv.sp(hx+9, hy+4, ...hairCol, 80);  // arch peak
+      cv.fillRect(hx+12, hy+4, 5, 1, ...hairCol, 200);
+      cv.sp(hx+11, hy+5, ...hairCol, 80);
+      cv.sp(hx+17, hy+4, ...hairCol, 100);
+    } else if (archetype === 'guard' || archetype === 'captain') {
       // heavy, flat brows — stern expression
-      cv.fillRect(hx+3, hy+5, 7, 2, ...c.HAIR, 200);
-      cv.sp(hx+2, hy+6, ...c.HAIR, 140);
-      cv.fillRect(hx+11, hy+5, 7, 2, ...c.HAIR, 200);
-      cv.sp(hx+18, hy+6, ...c.HAIR, 140);
+      cv.fillRect(hx+3, hy+5, 7, 2, ...hairCol, 200);
+      cv.sp(hx+2, hy+6, ...hairCol, 140);
+      cv.fillRect(hx+11, hy+5, 7, 2, ...hairCol, 200);
+      cv.sp(hx+18, hy+6, ...hairCol, 140);
       // inner brow pinch (furrowed)
       cv.sp(hx+9,  hy+5, ...c.OUTLINE, 50);
       cv.sp(hx+11, hy+5, ...c.OUTLINE, 50);
     } else if (archetype === 'commoner') {
       // low, slightly drooping outer corners — tired look
-      cv.fillRect(hx+4, hy+5, 5, 2, ...c.HAIR, 170);
-      cv.sp(hx+3, hy+6, ...c.HAIR, 100);
-      cv.sp(hx+8, hy+6, ...c.HAIR, 80);  // outer droop
-      cv.fillRect(hx+12, hy+5, 5, 2, ...c.HAIR, 170);
-      cv.sp(hx+16, hy+6, ...c.HAIR, 80); // outer droop
-      cv.sp(hx+17, hy+6, ...c.HAIR, 100);
+      cv.fillRect(hx+4, hy+5, 5, 2, ...hairCol, 170);
+      cv.sp(hx+3, hy+6, ...hairCol, 100);
+      cv.sp(hx+8, hy+6, ...hairCol, 80);  // outer droop
+      cv.fillRect(hx+12, hy+5, 5, 2, ...hairCol, 170);
+      cv.sp(hx+16, hy+6, ...hairCol, 80); // outer droop
+      cv.sp(hx+17, hy+6, ...hairCol, 100);
     } else {
       // default: standard brows
-      cv.fillRect(hx+4, hy+5, 5, 2, ...c.HAIR, 180);
-      cv.sp(hx+3, hy+6, ...c.HAIR, 120);
-      cv.fillRect(hx+12, hy+5, 5, 2, ...c.HAIR, 180);
-      cv.sp(hx+17, hy+6, ...c.HAIR, 120);
+      cv.fillRect(hx+4, hy+5, 5, 2, ...hairCol, 180);
+      cv.sp(hx+3, hy+6, ...hairCol, 120);
+      cv.fillRect(hx+12, hy+5, 5, 2, ...hairCol, 180);
+      cv.sp(hx+17, hy+6, ...hairCol, 120);
     }
 
     // ── eyes — whites, iris, pupil, catch-light ───────────────────────────────
     // Left eye socket
     cv.fillRect(hx+3, hy+8, 7, 4, ...c.SKIN_HI, 180);   // white area
     cv.fillRect(hx+4, hy+8, 5, 3, [200,200,200], 255);   // brighter whites
-    // Iris (colored by archetype)
-    const irisColor = archetype === 'noble'   ? [60, 80, 120] :
-                      archetype === 'clergy'  ? [70, 90, 70]  :
-                      archetype === 'merchant'? [80, 60, 30]  :
-                                               [50, 45, 40];
+    // Iris (overridable per-NPC; fallback derived from archetype — Art Pass 17)
+    const irisColor = eyeColorOverride ||
+                      (archetype === 'noble'   ? [60, 80, 120] :
+                       archetype === 'clergy'  ? [70, 90, 70]  :
+                       archetype === 'merchant'? [80, 60, 30]  :
+                                                [50, 45, 40]);
     cv.fillRect(hx+5, hy+8, 3, 3, ...irisColor);
     cv.sp(hx+6, hy+9, ...c.OUTLINE);                     // pupil
     cv.sp(hx+5, hy+8, 220, 220, 220, 180);               // catch-light
@@ -3667,11 +3671,12 @@ function makeNPCPortraits() {
       const elderSkin = [196, 168, 138];  // slightly greyer/paler skin tone
       cv.fillRect(hx+1, hy+12, 18, 8, ...elderSkin, 40);  // age tint
       if (!female) {
-        // stubble / short beard
-        cv.fillRect(hx+5, hy+18, 11, 4, ...c.HAIR, 65);
-        cv.fillRect(hx+7, hy+17, 7, 2, ...c.HAIR, 45);
-        cv.sp(hx+5, hy+16, ...c.HAIR, 35);
-        cv.sp(hx+15, hy+16, ...c.HAIR, 35);
+        // stubble / short beard (using hairCol faded to grey)
+        const elderBeardCol = [Math.min(hairCol[0]+60,200), Math.min(hairCol[1]+60,190), Math.min(hairCol[2]+60,180)];
+        cv.fillRect(hx+5, hy+18, 11, 4, ...elderBeardCol, 65);
+        cv.fillRect(hx+7, hy+17, 7, 2, ...elderBeardCol, 45);
+        cv.sp(hx+5, hy+16, ...elderBeardCol, 35);
+        cv.sp(hx+15, hy+16, ...elderBeardCol, 35);
       }
       // forehead creases
       cv.line(hx+4, hy+3, hx+9, hy+3, ...c.SKIN_SH, 45);
@@ -3688,13 +3693,29 @@ function makeNPCPortraits() {
     }
     // female: side-hair drapes (fuller flow)
     if (female) {
-      cv.fillRect(hx-3, hy+3, 4, 24, ...c.HAIR);
-      cv.fillRect(hx-4, hy+5, 2, 20, ...c.HAIR, 180);   // outer flow
-      cv.fillRect(hx+20, hy+3, 4, 24, ...c.HAIR);
-      cv.fillRect(hx+22, hy+5, 2, 20, ...c.HAIR, 180);
-      // hair highlight (sheen on the part)
-      cv.fillRect(hx-2, hy+3, 1, 12, [90, 64, 42], 180);
-      cv.fillRect(hx+21, hy+3, 1, 12, [90, 64, 42], 180);
+      cv.fillRect(hx-3, hy+3, 4, 24, ...hairCol);
+      cv.fillRect(hx-4, hy+5, 2, 20, ...hairCol, 180);   // outer flow
+      cv.fillRect(hx+20, hy+3, 4, 24, ...hairCol);
+      cv.fillRect(hx+22, hy+5, 2, 20, ...hairCol, 180);
+      // hair highlight (sheen on the part — brighten hairCol slightly)
+      const hairHi = [Math.min(hairCol[0]+30,255), Math.min(hairCol[1]+22,255), Math.min(hairCol[2]+14,255)];
+      cv.fillRect(hx-2, hy+3, 1, 12, ...hairHi, 180);
+      cv.fillRect(hx+21, hy+3, 1, 12, ...hairHi, 180);
+    }
+    // non-elder beard (Art Pass 17 — per-NPC character variety)
+    if (beard && !elder && !female) {
+      cv.fillRect(hx+5, hy+17, 11, 5, ...hairCol, 70);    // chin/jaw beard
+      cv.fillRect(hx+7, hy+16, 7, 2, ...hairCol, 50);     // moustache shadow
+      cv.sp(hx+4, hy+17, ...hairCol, 55);
+      cv.sp(hx+16, hy+17, ...hairCol, 55);
+      cv.sp(hx+5, hy+20, ...hairCol, 45);
+      cv.sp(hx+15, hy+20, ...hairCol, 45);
+    }
+    // scar (Art Pass 17 — gives battle-worn / rough characters unique reads)
+    if (scar) {
+      cv.line(hx+14, hy+7, hx+17, hy+13, ...c.SKIN_SH, 130);
+      cv.sp(hx+15, hy+8, ...c.SKIN_SH, 90);
+      cv.sp(hx+15, hy+11, ...c.SKIN_SH, 70);
     }
     // head outline — ink-weight, slightly softer at rounded corners
     cv.line(hx+1,  hy,    hx+19, hy,    ...c.OUTLINE);   // top (skip corners)
@@ -3937,41 +3958,43 @@ function makeNPCPortraits() {
   };
 
   // ── 30 individual NPC portrait configs (portrait_id 0–29, matching npcs.json order) ──
-  // body/trim = faction palette; hat/hatTrim = headwear palette
+  // Art Pass 17: added hairColor, beard, scar, eyeColorOverride for per-NPC individuality.
+  // Hair tokens: [28,22,18]=near-black  c.HAIR=[60,42,28]=dark-brown  [90,68,42]=med-brown
+  //              [126,88,48]=auburn     [160,130,58]=blonde
   const NPC_PORTRAIT_CONFIGS = [
     // ─── Merchant faction (0–10) ────────────────────────────────────────────
-    { body: c.MERCH_B,  trim: c.MERCH_T,  hatStyle: 'wide',        hat: c.WOOD_D,   hatTrim: c.MERCH_T,  archetype: 'merchant',  expression: 'smirk'  }, // 0  Aldric Vane — Guild Master
-    { body: c.WOOD_M,   trim: c.PLASTER,  hatStyle: 'scarf',       hat: c.PLASTER,  hatTrim: c.DIRT_M,   archetype: 'tavern',    female: true          }, // 1  Sybil Oats  — Tavern Keeper
-    { body: c.DIRT_M,   trim: c.DIRT_D,   hatStyle: 'cap',         hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'craftsman'                        }, // 2  Oswin Tanner — Craftsman
-    { body: c.MERCH_B,  trim: c.MERCH_T,  hatStyle: 'scarf',       hat: c.MERCH_T,  hatTrim: c.MERCH_B,  archetype: 'merchant',  female: true          }, // 3  Marta Coin  — Market Trader
-    { body: c.STONE_D,  trim: c.STONE_M,  hatStyle: 'bare',        hat: c.HAIR,     hatTrim: c.STONE_M,  archetype: 'craftsman', expression: 'stern'   }, // 4  Rufus Bolt  — Blacksmith
-    { body: c.WOOD_M,   trim: c.PLASTER,  hatStyle: 'scarf',       hat: c.PLASTER,  hatTrim: c.WOOD_D,   archetype: 'tavern',    female: true, expression: 'smirk' }, // 5  Nell Picker — Tavern Barmaid
-    { body: c.DIRT_M,   trim: c.DIRT_D,   hatStyle: 'pilgrim_hat', hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'commoner'                         }, // 6  Cob Farrow  — Traveling Merchant
-    { body: c.WOOD_M,   trim: c.DIRT_M,   hatStyle: 'cap',         hat: c.PLASTER,  hatTrim: c.DIRT_M,   archetype: 'craftsman'                        }, // 7  Idris Kemp  — Mill Operator
-    { body: c.STONE_M,  trim: c.STONE_D,  hatStyle: 'coif',        hat: c.PARCH_L,  hatTrim: c.STONE_M,  archetype: 'commoner',  female: true, expression: 'stern' }, // 8  Bess Wicker — Storage Keeper
-    { body: c.DIRT_M,   trim: c.THATCH_D, hatStyle: 'cap',         hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'commoner'                         }, // 9  Sim Carter  — Transport Worker
-    { body: c.MERCH_B,  trim: c.MERCH_T,  hatStyle: 'veil',        hat: c.PARCH_L,  hatTrim: c.MERCH_T,  archetype: 'merchant',  female: true          }, // 10 Greta Flint — Merchant's Wife
+    { body: c.MERCH_B,  trim: c.MERCH_T,  hatStyle: 'wide',        hat: c.WOOD_D,   hatTrim: c.MERCH_T,  archetype: 'merchant',  expression: 'smirk',  hairColor: [28,22,18],   eyeColorOverride: [70,55,30]  }, // 0  Aldric Vane   — Guild Master (black hair, amber eyes, sharp)
+    { body: c.WOOD_M,   trim: c.PLASTER,  hatStyle: 'scarf',       hat: c.PLASTER,  hatTrim: c.DIRT_M,   archetype: 'tavern',    female: true,         hairColor: [126,88,48]  }, // 1  Sybil Oats    — Tavern Keeper (auburn)
+    { body: c.DIRT_M,   trim: c.DIRT_D,   hatStyle: 'cap',         hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'craftsman', beard: true,          hairColor: [90,68,42]   }, // 2  Oswin Tanner  — Craftsman (medium brown, beard)
+    { body: c.MERCH_B,  trim: c.MERCH_T,  hatStyle: 'scarf',       hat: c.MERCH_T,  hatTrim: c.MERCH_B,  archetype: 'merchant',  female: true,         hairColor: [28,22,18]   }, // 3  Marta Coin    — Market Trader (black hair)
+    { body: c.STONE_D,  trim: c.STONE_M,  hatStyle: 'bare',        hat: [28,22,18], hatTrim: c.STONE_M,  archetype: 'craftsman', expression: 'stern',  hairColor: [28,22,18],  beard: true, scar: true }, // 4  Rufus Bolt    — Blacksmith (black hair, beard, scar)
+    { body: c.WOOD_M,   trim: c.PLASTER,  hatStyle: 'scarf',       hat: c.PLASTER,  hatTrim: c.WOOD_D,   archetype: 'tavern',    female: true, expression: 'smirk', hairColor: [160,130,58] }, // 5  Nell Picker   — Tavern Barmaid (blonde)
+    { body: c.DIRT_M,   trim: c.DIRT_D,   hatStyle: 'pilgrim_hat', hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'commoner',  beard: true,          hairColor: [90,68,42]   }, // 6  Cob Farrow    — Traveling Merchant (med brown, beard)
+    { body: c.WOOD_M,   trim: c.DIRT_M,   hatStyle: 'cap',         hat: c.PLASTER,  hatTrim: c.DIRT_M,   archetype: 'craftsman',                       hairColor: [160,130,58] }, // 7  Idris Kemp    — Mill Operator (blonde)
+    { body: c.STONE_M,  trim: c.STONE_D,  hatStyle: 'coif',        hat: c.PARCH_L,  hatTrim: c.STONE_M,  archetype: 'commoner',  female: true, expression: 'stern' }, // 8  Bess Wicker   — Storage Keeper (default dark brown)
+    { body: c.DIRT_M,   trim: c.THATCH_D, hatStyle: 'cap',         hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'commoner',  beard: true,          hairColor: [28,22,18]   }, // 9  Sim Carter    — Transport Worker (black, beard)
+    { body: c.MERCH_B,  trim: c.MERCH_T,  hatStyle: 'veil',        hat: c.PARCH_L,  hatTrim: c.MERCH_T,  archetype: 'merchant',  female: true,         hairColor: [160,130,58] }, // 10 Greta Flint  — Merchant's Wife (blonde)
     // ─── Noble faction (11–19) ──────────────────────────────────────────────
-    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'coronet',       hat: c.NOBLE_T,  hatTrim: c.PARCH_L,  archetype: 'noble',   elder: true           }, // 11 Edric Fenn   — Alderman
-    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'veil',          hat: c.PARCH_L,  hatTrim: c.NOBLE_T,  archetype: 'noble',   female: true          }, // 12 Isolde Fenn  — Alderman's Wife
-    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'feathered_cap', hat: c.NOBLE_B,  hatTrim: c.NOBLE_T,  archetype: 'noble',   expression: 'smirk'   }, // 13 Calder Fenn  — Alderman's Son
-    { body: c.STONE_M,  trim: c.STONE_L,  hatStyle: 'helm',          hat: c.STONE_M,  hatTrim: c.STONE_L,  archetype: 'captain', expression: 'stern'   }, // 14 Bram Guard   — Guard Captain
-    { body: c.STONE_M,  trim: c.STONE_D,  hatStyle: 'helm',          hat: c.STONE_M,  hatTrim: c.STONE_D,  archetype: 'guard'                          }, // 15 Wynn Gate    — Town Guard
-    { body: c.STONE_D,  trim: c.STONE_M,  hatStyle: 'helm',          hat: c.STONE_D,  hatTrim: c.STONE_M,  archetype: 'guard',   expression: 'worried' }, // 16 Pell Gate    — Town Guard
-    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'coif',          hat: c.PARCH_L,  hatTrim: c.NOBLE_T,  archetype: 'scholar', female: true          }, // 17 Annit Scribe — Clerk
-    { body: c.NOBLE_B,  trim: c.STONE_M,  hatStyle: 'cap',           hat: c.STONE_D,  hatTrim: c.NOBLE_T,  archetype: 'noble',   expression: 'stern'   }, // 18 Tomas Reeve  — Tax Collector
-    { body: c.NOBLE_B,  trim: c.STONE_M,  hatStyle: 'hood',          hat: c.STONE_M,  hatTrim: c.PARCH_D,  archetype: 'noble',   elder: true           }, // 19 Old Hugh     — Retired Steward
+    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'coronet',       hat: c.NOBLE_T,  hatTrim: c.PARCH_L,  archetype: 'noble',   elder: true                                    }, // 11 Edric Fenn   — Alderman (elder grey)
+    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'veil',          hat: c.PARCH_L,  hatTrim: c.NOBLE_T,  archetype: 'noble',   female: true,         hairColor: [90,68,42]   }, // 12 Isolde Fenn  — Alderman's Wife (med brown)
+    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'feathered_cap', hat: c.NOBLE_B,  hatTrim: c.NOBLE_T,  archetype: 'noble',   expression: 'smirk',  hairColor: [126,88,48]  }, // 13 Calder Fenn  — Alderman's Son (auburn, vain)
+    { body: c.STONE_M,  trim: c.STONE_L,  hatStyle: 'helm',          hat: c.STONE_M,  hatTrim: c.STONE_L,  archetype: 'captain', expression: 'stern',  hairColor: [28,22,18],  scar: true }, // 14 Bram Guard   — Guard Captain (black hair, scar)
+    { body: c.STONE_M,  trim: c.STONE_D,  hatStyle: 'helm',          hat: c.STONE_M,  hatTrim: c.STONE_D,  archetype: 'guard',                         hairColor: [90,68,42]   }, // 15 Wynn Gate    — Town Guard (medium brown)
+    { body: c.STONE_D,  trim: c.STONE_M,  hatStyle: 'helm',          hat: c.STONE_D,  hatTrim: c.STONE_M,  archetype: 'guard',   expression: 'worried', hairColor: [126,88,48] }, // 16 Pell Gate    — Town Guard (auburn, nervous)
+    { body: c.NOBLE_B,  trim: c.NOBLE_T,  hatStyle: 'coif',          hat: c.PARCH_L,  hatTrim: c.NOBLE_T,  archetype: 'scholar', female: true,         hairColor: [90,68,42],  eyeColorOverride: [70,90,70] }, // 17 Annit Scribe — Clerk (med brown, green eyes)
+    { body: c.NOBLE_B,  trim: c.STONE_M,  hatStyle: 'cap',           hat: c.STONE_D,  hatTrim: c.NOBLE_T,  archetype: 'noble',   expression: 'stern',  hairColor: [28,22,18]   }, // 18 Tomas Reeve  — Tax Collector (black hair, cold)
+    { body: c.NOBLE_B,  trim: c.STONE_M,  hatStyle: 'hood',          hat: c.STONE_M,  hatTrim: c.PARCH_D,  archetype: 'noble',   elder: true                                    }, // 19 Old Hugh     — Retired Steward (elder grey)
     // ─── Clergy faction (20–29) ─────────────────────────────────────────────
-    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'mitre',         hat: c.PARCH_L,  hatTrim: c.MERCH_T,  archetype: 'clergy',  elder: true           }, // 20 Aldous Prior    — Head Priest
-    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'wimple',        hat: c.PARCH_L,  hatTrim: c.CLERGY_T, archetype: 'clergy',  female: true          }, // 21 Maren Nun       — Nun/Healer
-    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'bare',          hat: c.HAIR,     hatTrim: c.CLERGY_T, archetype: 'clergy',  expression: 'worried' }, // 22 Finn Monk       — Young Monk
-    { body: c.PLASTER,  trim: c.DIRT_M,   hatStyle: 'scarf',         hat: c.DIRT_M,   hatTrim: c.PLASTER,  archetype: 'commoner',female: true          }, // 23 Vera Midwife    — Folk Healer
+    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'mitre',         hat: c.PARCH_L,  hatTrim: c.MERCH_T,  archetype: 'clergy',  elder: true                                    }, // 20 Aldous Prior    — Head Priest (elder)
+    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'wimple',        hat: c.PARCH_L,  hatTrim: c.CLERGY_T, archetype: 'clergy',  female: true,         hairColor: [90,68,42]   }, // 21 Maren Nun       — Nun/Healer (medium brown)
+    { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'bare',          hat: [160,130,58],hatTrim: c.CLERGY_T,archetype: 'clergy',  expression: 'worried', hairColor: [160,130,58] }, // 22 Finn Monk       — Young Monk (blonde, anxious)
+    { body: c.PLASTER,  trim: c.DIRT_M,   hatStyle: 'scarf',         hat: c.DIRT_M,   hatTrim: c.PLASTER,  archetype: 'commoner',female: true,         hairColor: [126,88,48]  }, // 23 Vera Midwife    — Folk Healer (auburn)
     { body: c.CLERGY_B, trim: c.CLERGY_T, hatStyle: 'wimple',        hat: c.PARCH_L,  hatTrim: c.STONE_M,  archetype: 'clergy',  elder: true, female: true, expression: 'devout' }, // 24 Old Piety  — Devout Elder
-    { body: c.STONE_M,  trim: c.CLERGY_B, hatStyle: 'hood',          hat: c.STONE_D,  hatTrim: c.CLERGY_T, archetype: 'clergy'                         }, // 25 Jude Bellringer — Chapel Worker
-    { body: c.STONE_D,  trim: c.CLERGY_T, hatStyle: 'veil',          hat: c.INK,      hatTrim: c.STONE_D,  archetype: 'commoner',female: true, expression: 'worried' }, // 26 Constance Widow
-    { body: c.DIRT_M,   trim: c.DIRT_D,   hatStyle: 'pilgrim_hat',   hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'commoner'                       }, // 27 Thomas Pilgrim  — Traveler
-    { body: c.GRASS_D,  trim: c.GRASS_M,  hatStyle: 'bare',          hat: c.GRASS_M,  hatTrim: c.DIRT_M,   archetype: 'commoner',female: true          }, // 28 Alys Herbwife   — Herbalist
-    { body: c.STONE_D,  trim: c.STONE_M,  hatStyle: 'bare',          hat: c.HAIR,     hatTrim: c.STONE_D,  archetype: 'craftsman',expression: 'stern', skinTone: c.SKIN_SH }, // 29 Denny Gravedigger
+    { body: c.STONE_M,  trim: c.CLERGY_B, hatStyle: 'hood',          hat: c.STONE_D,  hatTrim: c.CLERGY_T, archetype: 'clergy',  beard: true,          hairColor: [90,68,42]   }, // 25 Jude Bellringer — Chapel Worker (med brown, beard)
+    { body: c.STONE_D,  trim: c.CLERGY_T, hatStyle: 'veil',          hat: c.INK,      hatTrim: c.STONE_D,  archetype: 'commoner',female: true, expression: 'worried', hairColor: [28,22,18] }, // 26 Constance Widow (black hair, grief)
+    { body: c.DIRT_M,   trim: c.DIRT_D,   hatStyle: 'pilgrim_hat',   hat: c.THATCH_D, hatTrim: c.DIRT_D,   archetype: 'commoner',beard: true,          hairColor: [90,68,42]   }, // 27 Thomas Pilgrim  — Traveler (med brown, beard)
+    { body: c.GRASS_D,  trim: c.GRASS_M,  hatStyle: 'bare',          hat: [126,88,48], hatTrim: c.DIRT_M, archetype: 'commoner', female: true, hairColor: [126,88,48] }, // 28 Alys Herbwife   — Herbalist (auburn)
+    { body: c.STONE_D,  trim: c.STONE_M,  hatStyle: 'bare',          hat: [28,22,18], hatTrim: c.STONE_D,  archetype: 'craftsman',expression: 'stern', skinTone: c.SKIN_SH, hairColor: [28,22,18], beard: true, scar: true }, // 29 Denny Gravedigger (black, beard, scar, tanned)
   ];
 
   // Draw all 30 portraits in a 6-column × 5-row grid
@@ -4747,7 +4770,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 16 (SPA-765): NPC body shading, face catch-lights, hat depth, tavern plaster cracks\n');
+console.log('\nRumor Mill — Art Pass 17 (SPA-798): NPC portrait individuality — per-NPC hair colour, beards, scars, eye colour override\n');
 
 write('assets/textures/tiles_ground.png',           makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',        makeRoadDirt());

@@ -1,6 +1,14 @@
-# Rumor Mill — Art Style Guide (Art Pass 16 / SPA-765)
+# Rumor Mill — Art Style Guide (Art Pass 17 / SPA-798)
 
 **Visual target:** Pentiment × Dwarf Fortress × illuminated manuscript.
+
+### Art Pass 17 changes (SPA-798)
+
+- **Per-NPC portrait individuality:** All 30 NPCs now carry distinct `hairColor`, `beard`, `scar`, and `eyeColorOverride` values in the generator config. Four hair-colour variants: near-black `[28,22,18]`, dark brown `c.HAIR`, medium brown `[90,68,42]`, auburn `[126,88,48]`, blonde `[160,130,58]`. Elder beard colour fades from the NPC's own hairColor to grey rather than always using the shared `HAIR` token.
+- **Beard rendering:** Non-elder male NPCs can carry a full chin beard (Oswin Tanner, Rufus Bolt, Cob Farrow, Sim Carter, Jude Bellringer, Thomas Pilgrim, Denny Gravedigger). Distinct from the elder stub.
+- **Scar rendering:** Rufus Bolt (blacksmith), Bram Guard (captain), and Denny Gravedigger carry a right-cheek scar line for rough/battle-worn reads.
+- **Eye-colour override:** Aldric Vane (amber merchant eyes) and Annit Scribe (green scholar eyes) use `eyeColorOverride` for unique iris tones.
+- **Female hair sheen:** Highlight stripe now derives from the NPC's own hairColor rather than the hardcoded `[90,64,42]` constant.
 Desaturated naturals, ink-line silhouettes, warm parchment UI.
 No gradients. No glows (except forge). Limited palette per zone.
 
