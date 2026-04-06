@@ -256,13 +256,13 @@
     "strategicBrief": {
       "targetNpcId": "alys_herbwife",
       "repStart": 65,
-      "goalLabel": "8 or more believers",
+      "goalLabel": "7 or more believers",
       "primaryConstraint": "Maren Nun — one rejection triggers a 2-day grace window",
       "strategicHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected."
     },
     "objectiveCard": {
-      "mission": "The herbwife Alys knows too much. Convince eight townspeople she carries plague — before the nun Maren sees through the lie.",
-      "winCondition": "8 or more townspeople must believe the illness rumor about Alys.",
+      "mission": "The herbwife Alys knows too much. Convince seven townspeople she carries plague — before the nun Maren sees through the lie.",
+      "winCondition": "7 or more townspeople must believe the illness rumor about Alys.",
       "timeLimit": "You have 20 days.",
       "danger": "Sister Maren is skeptical and watchful. If Maren rejects ANY illness rumor about Alys, a 2-day grace window begins — fail to recover and you lose.",
       "strategyHint": "Seed illness rumors through the merchant quarter — Sybil, Nell, and Greta are credulous and well-connected. Keep the rumor away from Maren's social circle.",

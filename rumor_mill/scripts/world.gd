@@ -738,7 +738,7 @@ func _apply_active_scenario() -> void:
 	var _diff_key_map := {"apprentice": "easy", "master": "normal", "spymaster": "hard"}
 	var _scen_diff_key: String = _diff_key_map.get(GameState.selected_difficulty, "normal")
 	var _scen_diff_mods: Dictionary = scenario_data.get("difficultyModifiers", {}).get(_scen_diff_key, {})
-	if scenario_manager != null and _scen_diff_mods.has("winBelieversOverride"):
+	if scenario_manager != null and active_scenario_id == "scenario_2" and _scen_diff_mods.has("winBelieversOverride"):
 		scenario_manager.s2_win_illness_min = int(_scen_diff_mods["winBelieversOverride"])
 
 	# 7c. Scenario 1 difficulty overrides (SPA-691).
