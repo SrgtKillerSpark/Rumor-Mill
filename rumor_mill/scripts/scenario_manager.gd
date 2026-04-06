@@ -227,6 +227,50 @@ func get_objective_one_liner() -> String:
 	return _starting_text.substr(0, mini(_starting_text.find(".") + 1, 80))
 
 
+## Returns a concrete, numbers-first goal line for the HUD headline.
+## Updated every tick so the player always sees live progress.
+## Format examples: "Edric Fenn rep → below 30 (currently 47)"
+func get_concrete_goal_text(rep: ReputationSystem, current_tick: int) -> String:
+	match _active_scenario:
+		1:
+			var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
+			var score: int = snap.score if snap != null else S1_EDRIC_START_SCORE
+			return "Edric Fenn rep → below %d (currently %d)" % [S1_WIN_EDRIC_BELOW, score]
+		2:
+			var count: int = rep.get_illness_believer_count(ALYS_HERBWIFE_ID)
+			return "Illness believers → %d+ (currently %d/%d)" % [s2_win_illness_min, count, s2_win_illness_min]
+		3:
+			var calder: ReputationSystem.ReputationSnapshot = rep.get_snapshot(CALDER_FENN_ID)
+			var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
+			var cs: int = calder.score if calder != null else 50
+			var ts: int = tomas.score  if tomas  != null else 50
+			return "Calder → %d+ (%d) | Tomas → ≤%d (%d)" % [S3_WIN_CALDER_MIN, cs, S3_WIN_TOMAS_MAX, ts]
+		4:
+			var current_day: int = current_tick / ticks_per_day + 1
+			var parts: PackedStringArray = PackedStringArray()
+			for npc_id in S4_PROTECTED_NPC_IDS:
+				var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
+				var score: int = snap.score if snap != null else 50
+				var display_name: String = npc_id.split("_")[0].capitalize()
+				parts.append("%s: %d" % [display_name, score])
+			return "Keep all above %d (%s) Day %d/%d" % [S4_WIN_REP_MIN, ", ".join(parts), mini(current_day, _days_allowed), _days_allowed]
+		5:
+			var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
+			var edric:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
+			var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
+			var as_: int = aldric.score if aldric != null else 48
+			var es: int  = edric.score  if edric  != null else 58
+			var ts: int  = tomas.score  if tomas  != null else 45
+			return "Aldric → %d+ (%d) | Edric → <%d (%d) | Tomas → <%d (%d)" % [S5_WIN_ALDRIC_MIN, as_, S5_WIN_RIVALS_MAX, es, S5_WIN_RIVALS_MAX, ts]
+		6:
+			var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ALDRIC_VANE_ID)
+			var marta:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(MARTA_COIN_ID)
+			var as_: int = aldric.score if aldric != null else 55
+			var ms: int  = marta.score  if marta  != null else 52
+			return "Aldric → ≤%d (%d) | Marta → %d+ (%d)" % [S6_WIN_ALDRIC_MAX, as_, S6_WIN_MARTA_MIN, ms]
+	return ""
+
+
 ## Override the days allowed (e.g. applied by difficulty modifiers after load).
 func override_days_allowed(new_days: int) -> void:
 	_days_allowed = new_days

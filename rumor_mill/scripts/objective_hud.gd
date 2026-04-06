@@ -118,6 +118,8 @@ var _progress_milestones: Dictionary = {}
 ## Cached goalVerb and goalTarget from objectiveCard.
 var _goal_verb: String = ""
 var _goal_target: String = ""
+## SPA-803: Smaller subtitle label showing flavor text below the concrete goal numbers.
+var _goal_flavor_label: Label = null
 
 # ── Tier 3: Suggestion engine (SPA-743) ─────────────────────────────────────
 var _suggestion_engine: SuggestionEngine = null
@@ -130,6 +132,7 @@ var _t3_last_whisp: int = -1
 func _ready() -> void:
 	layer = 4
 	_build_nudge_label()
+	_build_goal_flavor_label()
 	_build_o_hint_label()
 	_build_win_target_label()
 	_build_banner()
@@ -295,6 +298,7 @@ func _apply_day_urgency_pulse() -> void:
 
 func _on_tick(_tick: int) -> void:
 	_refresh_time()
+	_refresh_goal_label()
 	_refresh_nudge()
 	_refresh_win_target()
 	_refresh_midgame_nudge()
@@ -307,12 +311,10 @@ func _refresh() -> void:
 	if _scenario_manager == null:
 		return
 
-	# Tier 1: Goal verb headline — e.g. "DESTROY Edric Fenn's reputation"
-	if _goal_verb.is_empty():
-		# Fallback to legacy one-liner if no goalVerb set.
-		goal_label.text = _scenario_manager.get_objective_one_liner()
-	else:
-		goal_label.text = "%s %s" % [_goal_verb, _goal_target]
+	# Tier 1: Concrete numbers headline — e.g. "Edric Fenn rep → below 30 (currently 47)"
+	# SPA-803: Show live win-condition numbers in goal_label, flavor text as subtitle.
+	_refresh_goal_label()
+	_refresh_goal_flavor()
 
 	# Days remaining with tempo colour in DayRow.
 	var current_day: int = _day_night.current_day if _day_night != null else 1
@@ -328,6 +330,54 @@ func _refresh() -> void:
 	_refresh_tempo_indicator()
 	_refresh_faction_panel()
 	_refresh_mini_progress()
+
+
+# ── SPA-803: Concrete goal headline + flavor subtitle ─────────────────────
+
+## Refresh goal_label with live concrete numbers from scenario_manager.
+func _refresh_goal_label() -> void:
+	if _scenario_manager == null or _reputation_system == null:
+		return
+	var tick: int = 0
+	if _day_night != null and "current_tick" in _day_night:
+		tick = _day_night.current_tick
+	var concrete: String = _scenario_manager.get_concrete_goal_text(_reputation_system, tick)
+	if not concrete.is_empty():
+		goal_label.text = concrete
+	elif not _goal_verb.is_empty():
+		goal_label.text = "%s %s" % [_goal_verb, _goal_target]
+	else:
+		goal_label.text = _scenario_manager.get_objective_one_liner()
+
+
+## Build the flavor subtitle label (one-time, called from setup flow).
+func _build_goal_flavor_label() -> void:
+	if _goal_flavor_label != null:
+		return
+	var vbox: VBoxContainer = $Panel/VBox
+	_goal_flavor_label = Label.new()
+	_goal_flavor_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_goal_flavor_label.add_theme_font_size_override("font_size", 11)
+	_goal_flavor_label.add_theme_color_override("font_color", Color(0.75, 0.65, 0.45, 0.85))
+	_goal_flavor_label.add_theme_constant_override("outline_size", 2)
+	_goal_flavor_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_goal_flavor_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(_goal_flavor_label)
+	# Insert right after GoalLabel.
+	vbox.move_child(_goal_flavor_label, goal_label.get_index() + 1)
+
+
+## Set the flavor subtitle text from the objective card data.
+func _refresh_goal_flavor() -> void:
+	if _goal_flavor_label == null:
+		_build_goal_flavor_label()
+	if _goal_flavor_label == null:
+		return
+	if not _goal_verb.is_empty():
+		_goal_flavor_label.text = "%s %s" % [_goal_verb, _goal_target]
+	else:
+		_goal_flavor_label.text = _scenario_manager.get_objective_one_liner() if _scenario_manager != null else ""
+	_goal_flavor_label.visible = not _goal_flavor_label.text.is_empty()
 
 
 # ── Context-sensitive nudge (SPA-520) ───────────────────────────────────────
@@ -370,8 +420,11 @@ func _build_o_hint_label() -> void:
 	_o_hint_label.add_theme_color_override("font_color", Color(0.70, 0.65, 0.50, 0.40))
 	_o_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(_o_hint_label)
-	# Insert right after ObjectiveLabel.
-	vbox.move_child(_o_hint_label, goal_label.get_index() + 1)
+	# Insert right after GoalLabel (and after goal flavor subtitle if present).
+	var hint_idx: int = goal_label.get_index() + 1
+	if _goal_flavor_label != null:
+		hint_idx = _goal_flavor_label.get_index() + 1
+	vbox.move_child(_o_hint_label, hint_idx)
 
 
 ## SPA-627: One-time flash banner shown after the initial briefing overlay is dismissed.
@@ -393,8 +446,10 @@ func _build_win_target_label() -> void:
 	_win_target_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
 	_win_target_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(_win_target_label)
-	# Insert right after GoalLabel (and after the O-hint if present).
+	# Insert right after GoalLabel (and after flavor subtitle / O-hint if present).
 	var insert_idx: int = goal_label.get_index() + 1
+	if _goal_flavor_label != null:
+		insert_idx = _goal_flavor_label.get_index() + 1
 	if _o_hint_label != null:
 		insert_idx = _o_hint_label.get_index() + 1
 	vbox.move_child(_win_target_label, insert_idx)
