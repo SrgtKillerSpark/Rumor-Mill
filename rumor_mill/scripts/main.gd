@@ -171,6 +171,22 @@ func _ready() -> void:
 	_main_menu.begin_game.connect(_on_begin_game)
 
 
+## SPA-767: Update context controls panel mode based on which panels are open.
+func _process(_delta: float) -> void:
+	if _context_controls == null or not _game_started:
+		return
+	var mode: int = 0  # EXPLORE
+	if rumor_panel.visible:
+		mode = 1  # RUMOR_PANEL
+	elif journal.visible:
+		mode = 2  # JOURNAL
+	elif social_graph_overlay.visible:
+		mode = 3  # SOCIAL_GRAPH
+	elif day_night != null and day_night.has_method("is_paused") and day_night.is_paused():
+		mode = 4  # PAUSED
+	_context_controls.set_mode(mode)
+
+
 ## SPA-518: H hotkey replays the most recent tutorial hint banner.
 func _unhandled_input(event: InputEvent) -> void:
 	if not _game_started:

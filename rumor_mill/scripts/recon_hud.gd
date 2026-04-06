@@ -114,6 +114,7 @@ func _ready() -> void:
 	_build_hint_button()
 	_build_flash_overlay()
 	_build_feed_panel()
+	_setup_recon_tooltips()
 
 
 func setup(intel_store: PlayerIntelStore, rumor_panel: CanvasLayer) -> void:
@@ -913,3 +914,44 @@ func _update_pips(
 			var tw := pip.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			tw.tween_property(pip, "scale", Vector2(1.5, 1.5), 0.08)
 			tw.tween_property(pip, "scale", Vector2.ONE, 0.18)
+
+
+# ── SPA-767: Recon HUD tooltips & visual indicators ─────────────────────────
+
+func _setup_recon_tooltips() -> void:
+	# Counter panel overall tooltip.
+	var counter_panel: Panel = $CounterPanel
+	counter_panel.tooltip_text = "Recon Resources\nYour daily action and whisper token budget.\nResources refresh at the start of each new day."
+	counter_panel.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	# Heat meter tooltip (set dynamically, but provide a default).
+	if _heat_row != null:
+		_heat_row.tooltip_text = "Town Suspicion\nHow suspicious the townsfolk are of your activities.\nHigh heat reduces rumor believability and can trigger exposure."
+		_heat_row.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	# Feed panel tooltip.
+	if _feed_panel != null:
+		_feed_panel.tooltip_text = "Recent Actions\nYour last few recon actions and their results.\nClick an entry to filter the Journal to that event."
+
+	# Key hints row.
+	var key_hint_row: HBoxContainer = $CounterPanel/VBox/KeyHintRow
+	key_hint_row.tooltip_text = "Quick Actions\nKeyboard shortcuts to open game panels.\nR: Rumor crafting | J: Journal | G: Social Graph | F1: Help"
+	key_hint_row.mouse_filter = Control.MOUSE_FILTER_PASS
+
+
+## SPA-767: Update heat meter tooltip with live values for richer context.
+func _update_heat_tooltip(heat_val: int) -> void:
+	if _heat_row == null:
+		return
+	var severity := "Safe"
+	var effect := "No effect on rumor believability."
+	if heat_val > 75:
+		severity = "CRITICAL"
+		effect = "Severe penalty to believability. Risk of exposure!"
+	elif heat_val > 50:
+		severity = "Danger"
+		effect = "-30% rumor believability."
+	elif heat_val > 25:
+		severity = "Caution"
+		effect = "-15% rumor believability."
+	_heat_row.tooltip_text = "Town Suspicion: %d/100 (%s)\n%s\nReduce heat by using Favors (bribes) or waiting." % [heat_val, severity, effect]
