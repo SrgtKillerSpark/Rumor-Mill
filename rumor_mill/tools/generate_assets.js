@@ -900,6 +900,12 @@ function makeBuildingTiles(nightMode = false) {
     // X-brace diagonal beams on left face (cross the vertical timbers)
     cv.line(ox+1, 32-wH+6, ox+20, 32,     ...c.WOOD_D, 60);
     cv.line(ox+20, 32-wH+6, ox+1, 32,     ...c.WOOD_D, 60);
+    // plaster crack hairlines (aged wall texture — deterministic irregular lines)
+    cv.line(ox+3,  32-wH+8,  ox+5,  32-wH+11, ...c.STONE_D, 22);
+    cv.line(ox+14, 32-wH+10, ox+12, 32-wH+14, ...c.STONE_D, 18);
+    cv.line(ox+17, 32-wH+3,  ox+19, 32-wH+7,  ...c.STONE_D, 15);
+    cv.sp(ox+4,  32-wH+9,  ...c.STONE_D, 30);  // crack node
+    cv.sp(ox+13, 32-wH+12, ...c.STONE_D, 25);  // crack node
     // candlelight silhouette inside window (seated patron)
     cv.sp(ox+14, 32-wH+5, 30, 20, 10, 60);
     // night: warm tavern window glow — brighter amber, wider halo (SPA-523)
@@ -1733,24 +1739,37 @@ function makeNPCSprites() {
     // ── head (8×8, centred at x=16) ──
     const hx = ox+12, hy = oy+2+dy;
     cv.fillRect(hx, hy, 8, 8, ...c.SKIN);
-    // cheek highlight (top-left catch-light)
+    // forehead / brow catch-light (top-left key light)
     cv.sp(hx+1, hy+1, ...c.SKIN_HI);
-    // eyebrows
-    cv.sp(hx+2, hy+2, ...c.HAIR, 180);
-    cv.sp(hx+5, hy+2, ...c.HAIR, 180);
-    // eyes
+    cv.sp(hx+2, hy+1, ...c.SKIN_HI, 70);
+    // right-cheek shadow (depth from left-source lighting)
+    cv.sp(hx+6, hy+4, ...c.SKIN_SH, 70);
+    // eyebrows — stronger 2-pixel definition with inner fade
+    cv.sp(hx+2, hy+2, ...c.HAIR, 210);
+    cv.sp(hx+3, hy+2, ...c.HAIR, 120);
+    cv.sp(hx+5, hy+2, ...c.HAIR, 210);
+    cv.sp(hx+6, hy+2, ...c.HAIR, 120);
+    // eyes: iris + inner catch-light
     cv.sp(hx+2, hy+3, ...c.HAIR);
     cv.sp(hx+5, hy+3, ...c.HAIR);
     // eye whites (1px each side of iris gives depth)
     cv.sp(hx+1, hy+3, ...c.SKIN_HI, 120);
     cv.sp(hx+4, hy+3, ...c.SKIN_HI, 80);
+    cv.sp(hx+7, hy+3, ...c.SKIN_HI, 80);
+    // iris catch-lights (tiny highlight inside each eye)
+    cv.sp(hx+2, hy+3, 255, 255, 255, 55);
+    cv.sp(hx+5, hy+3, 255, 255, 255, 55);
     // nose (subtle shadow at centre-lower face)
     cv.sp(hx+3, hy+5, ...c.SKIN_SH);
+    cv.sp(hx+4, hy+5, ...c.SKIN_SH, 55);
     // mouth (2-pixel line with slight curve)
     cv.sp(hx+2, hy+6, ...c.SKIN_SH, 160);
     cv.sp(hx+3, hy+7, ...c.OUTLINE, 100);
     cv.sp(hx+4, hy+7, ...c.OUTLINE, 100);
     cv.sp(hx+5, hy+6, ...c.SKIN_SH, 160);
+    // jaw shadow (subtle chin definition)
+    cv.sp(hx+2, hy+7, ...c.SKIN_SH, 45);
+    cv.sp(hx+5, hy+7, ...c.SKIN_SH, 45);
     // outline
     cv.line(hx,   hy,   hx+7, hy,   ...c.OUTLINE);
     cv.line(hx,   hy,   hx,   hy+7, ...c.OUTLINE);
@@ -1762,17 +1781,27 @@ function makeNPCSprites() {
       // Merchant: extra-wide felt hat with feather quill — distinctive wide silhouette
       cv.fillRect(hx-3, hy-1, 14, 3, ...hat);           // wide brim (14px vs base 10px)
       cv.line(hx-3, hy-1, hx+10, hy-1, ...c.OUTLINE);
+      // brim underside shadow (left-source light makes underside darker)
+      cv.line(hx-2, hy+1, hx+10, hy+1, ...c.OUTLINE, 40);
       cv.fillRect(hx+1, hy-5, 6, 5, ...hat);             // crown
       cv.fillRect(hx+2, hy-6, 4, 2, ...hatrim);          // hat band
       cv.line(hx+1, hy-5, hx+6, hy-5, ...c.OUTLINE);
-      // feather quill on right side of crown
-      cv.sp(hx+7, hy-5, ...c.CANVAS, 200);
-      cv.sp(hx+8, hy-6, ...c.CANVAS, 180);
-      cv.sp(hx+8, hy-7, ...c.PARCH_L, 130);
+      // crown right-side shadow (3D depth)
+      cv.fillRect(hx+5, hy-4, 2, 4, ...c.OUTLINE, 35);
+      // top highlight on crown
+      cv.line(hx+2, hy-5, hx+4, hy-5, 255, 255, 255, 20);
+      // feather quill on right side of crown (longer arc, more visible)
+      cv.sp(hx+7, hy-5, ...c.CANVAS, 210);
+      cv.sp(hx+8, hy-6, ...c.CANVAS, 190);
+      cv.sp(hx+9, hy-7, ...c.CANVAS, 160);
+      cv.sp(hx+8, hy-7, ...c.PARCH_L, 140);
+      cv.sp(hx+9, hy-8, ...c.PARCH_L, 100);
     } else if (hatStyle === 'coronet') {
       // Noble: 3-spike coronet — narrow band base, vertical spikes, gem tips
       cv.fillRect(hx, hy-2, 8, 3, ...hat);               // base crown band
       cv.line(hx, hy-2, hx+7, hy-2, ...c.OUTLINE);
+      // band highlight (goldwork on coronet)
+      cv.line(hx+1, hy-2, hx+6, hy-2, ...hatrim, 60);
       // left spike
       cv.fillRect(hx+1, hy-5, 2, 4, ...hat);
       cv.line(hx+1, hy-5, hx+2, hy-5, ...c.OUTLINE);
@@ -1782,15 +1811,25 @@ function makeNPCSprites() {
       // right spike
       cv.fillRect(hx+5, hy-5, 2, 4, ...hat);
       cv.line(hx+5, hy-5, hx+6, hy-5, ...c.OUTLINE);
-      // gem at each spike tip (hatrim = NOBLE_T silver)
+      // gem at each spike tip (hatrim = NOBLE_T silver) + catch-light
       cv.sp(hx+1, hy-5, ...hatrim);
+      cv.sp(hx+1, hy-6, 255, 255, 255, 130);
       cv.sp(hx+3, hy-7, ...hatrim);
+      cv.sp(hx+3, hy-8, 255, 255, 255, 150);
       cv.sp(hx+6, hy-5, ...hatrim);
+      cv.sp(hx+6, hy-6, 255, 255, 255, 130);
     } else if (hatStyle === 'hood') {
       // Clergy: wide draped hood — soft crown extends past head width, side drapes to shoulders
       cv.fillRect(hx-2, hy-3, 12, 5, ...hat);            // hood crown (wider than head)
       cv.fillRect(hx-2, hy+2, 3, 7, ...hat);             // left side drape
       cv.fillRect(hx+7, hy+2, 3, 7, ...hat);             // right side drape
+      // hood depth: right-side shadow on crown
+      cv.fillRect(hx+7, hy-2, 2, 4, ...c.OUTLINE, 30);
+      // fabric fold lines on drapes (vertical texture)
+      cv.line(hx-1, hy+3, hx-1, hy+7, ...c.OUTLINE, 25);
+      cv.line(hx+8, hy+3, hx+8, hy+7, ...c.OUTLINE, 25);
+      // crown top highlight
+      cv.line(hx-1, hy-2, hx+8, hy-2, 255, 255, 255, 18);
       cv.line(hx-2, hy-3, hx+9, hy-3, ...c.OUTLINE);
       cv.line(hx-2, hy-3, hx-2, hy+8, ...c.OUTLINE);
       cv.line(hx+9, hy-3, hx+9, hy+8, ...c.OUTLINE);
@@ -1798,9 +1837,13 @@ function makeNPCSprites() {
       // Default hat (generic fallback)
       cv.fillRect(hx-1, hy-1, 10, 3, ...hat);
       cv.line(hx-1, hy-1, hx+8, hy-1, ...c.OUTLINE);
+      // brim underside shadow
+      cv.line(hx, hy+1, hx+7, hy+1, ...c.OUTLINE, 35);
       cv.fillRect(hx+1, hy-4, 6, 4, ...hat);
       cv.fillRect(hx+2, hy-5, 4, 2, ...hatrim);
       cv.line(hx+1, hy-4, hx+6, hy-4, ...c.OUTLINE);
+      // crown right-side shadow
+      cv.fillRect(hx+5, hy-3, 2, 3, ...c.OUTLINE, 30);
     }
 
     // ── body / torso (10×14) ─────────────────────────────────────────────────
@@ -1808,11 +1851,18 @@ function makeNPCSprites() {
     cv.fillRect(bx, by, 10, 14, ...body);
     // belt / trim stripe
     cv.fillRect(bx, by+6, 10, 2, ...trim);
-    // right-side body shadow (3D volume — receding face)
+    // right-side body shadow — two-layer gradient (heavy outer, soft inner)
     cv.fillRect(bx+8, by+1, 2, 12, ...c.OUTLINE, 55);
-    // left shoulder highlight (catch-light)
+    cv.fillRect(bx+7, by+2, 1, 10, ...c.OUTLINE, 22);
+    // upper chest / left-shoulder key-light highlight
+    cv.fillRect(bx+1, by,   5, 2, 255, 255, 255, 28);
+    cv.fillRect(bx+1, by+2, 3, 1, 255, 255, 255, 14);
     cv.sp(bx+1, by+1, 255, 255, 255, 18);
-    cv.sp(bx+1, by+2, 255, 255, 255, 10);
+    // cloth seam texture (horizontal stitching lines at 1/3 and 2/3 body height)
+    cv.line(bx+1, by+4,  bx+6, by+4,  ...c.OUTLINE, 18);
+    cv.line(bx+1, by+9,  bx+6, by+9,  ...c.OUTLINE, 18);
+    // bottom hem shadow (weight of fabric)
+    cv.line(bx+1, by+12, bx+8, by+12, ...c.OUTLINE, 25);
     // outline
     cv.line(bx,    by,    bx+9,  by,    ...c.OUTLINE);
     cv.line(bx,    by,    bx,    by+13, ...c.OUTLINE);
@@ -4697,7 +4747,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 15 (SPA-686): NPC body types (slim/stocky), 9 clothing variant rows, blacksmith sign\n');
+console.log('\nRumor Mill — Art Pass 16 (SPA-765): NPC body shading, face catch-lights, hat depth, tavern plaster cracks\n');
 
 write('assets/textures/tiles_ground.png',           makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',        makeRoadDirt());

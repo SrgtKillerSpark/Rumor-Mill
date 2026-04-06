@@ -1,8 +1,17 @@
-# Rumor Mill — Art Style Guide (Art Pass 13 / SPA-703)
+# Rumor Mill — Art Style Guide (Art Pass 16 / SPA-765)
 
 **Visual target:** Pentiment × Dwarf Fortress × illuminated manuscript.
 Desaturated naturals, ink-line silhouettes, warm parchment UI.
 No gradients. No glows (except forge). Limited palette per zone.
+
+### Art Pass 16 changes (SPA-765)
+
+- **NPC body shading** upgraded from single-layer right shadow to 3-zone model: top chest key-light band (white, alpha 28/14), cloth seam lines at 1/3 and 2/3 body height (OUTLINE, alpha 18), bottom hem shadow (OUTLINE, alpha 25), plus soft inner shadow layer (alpha 22) alongside the hard outer shadow (alpha 55).
+- **NPC face** improved: forehead catch-light widened to 2px; right-cheek shadow added (SKIN_SH, alpha 70); eyebrows thickened to 2-pixel inner-fade pairs (210/120 alpha); iris catch-lights added inside each eye (white, alpha 55); nose widened to 2px; jaw shadow pixels added at mouth corners.
+- **Merchant hat** depth added: brim underside shadow (OUTLINE, alpha 40); crown right-side shadow (alpha 35); top highlight line (white, alpha 20); feather quill extended to 5-pixel arc (3 CANVAS + 2 PARCH_L).
+- **Noble coronet** refined: gold band highlight stripe; gem catch-light pixels (white, alpha 130/150) above each spike tip.
+- **Clergy hood** depth added: right-side crown shadow (OUTLINE, alpha 30); vertical fabric fold lines on drapes (alpha 25); top crown highlight (white, alpha 18).
+- **Tavern plaster** aged: 3 hairline crack lines + 2 crack-node pixels added to left wall face (STONE_D, alpha 15–30).
 
 ### Art Pass 13 changes (SPA-703)
 
