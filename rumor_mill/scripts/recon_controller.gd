@@ -62,6 +62,9 @@ signal building_first_hovered
 ## Used by the tutorial hint system to trigger HINT-04 (hint_eavesdrop).
 signal valid_eavesdrop_hovered
 
+## SPA-775: Emitted when the Read the Room popup opens for a building.
+signal read_the_room_shown(location_id: String)
+
 var _world_ref:       Node2D           = null
 var _intel_store:     PlayerIntelStore = null
 
@@ -890,6 +893,7 @@ func _on_game_tick(tick: int) -> void:
 ## Read the Room — right-click building shows a free ambient occupant list.
 ## No intel is logged, no action is consumed.
 func _show_read_the_room(location_id: String, screen_pos: Vector2) -> void:
+	read_the_room_shown.emit(location_id)  # SPA-775
 	_dismiss_action_popup()
 
 	# Find NPCs whose schedule location matches this building.

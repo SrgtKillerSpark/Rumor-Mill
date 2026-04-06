@@ -171,6 +171,96 @@ const TOOLTIP_DATA: Dictionary = {
 			+ "Track progress in the [b]Scenario 6 HUD[/b]."
 		),
 	},
+	# ── SPA-775: HUD first-encounter tooltips (shown once on first interaction) ──
+	"hud_objective": {
+		"title": "Your Mission",
+		"body":  (
+			"This shows your current objective and progress.\n"
+			+ "The coloured bar fills as you get closer to winning.\n"
+			+ "Watch the tempo indicator — [b]green[/b] means you're ahead of schedule, "
+			+ "[b]red[/b] means you need to hurry."
+		),
+	},
+	"hud_recon_counter": {
+		"title": "Recon Actions",
+		"body":  (
+			"You get [b]3 Recon Actions[/b] per day.\n"
+			+ "Observing a building or eavesdropping on an NPC each costs 1 action.\n"
+			+ "Actions refresh at dawn. Spend them wisely — "
+			+ "you can't get more until tomorrow."
+		),
+	},
+	"hud_whisper_tokens": {
+		"title": "Whisper Tokens",
+		"body":  (
+			"You get [b]2 Whisper Tokens[/b] per day.\n"
+			+ "Each token lets you seed one rumour into an NPC's ear.\n"
+			+ "Choose your targets carefully — [b]credulous[/b] NPCs believe faster, "
+			+ "[b]well-connected[/b] NPCs spread wider."
+		),
+	},
+	"hud_day_counter": {
+		"title": "Time",
+		"body":  (
+			"Each day has [b]16 ticks[/b].\n"
+			+ "NPCs move, talk, and spread rumours automatically.\n"
+			+ "At dawn, your actions and tokens refresh.\n"
+			+ "You can also press the [b]End Day[/b] button to skip ahead."
+		),
+	},
+	"hud_npc_info": {
+		"title": "NPC Info",
+		"body":  (
+			"Hover over any NPC to see their name, reputation, and heat level.\n"
+			+ "[b]Heat[/b] rises when you interact with them — if it hits 80, you're exposed!\n"
+			+ "Left-click to follow them around."
+		),
+	},
+	"hud_rumor_panel": {
+		"title": "The Rumour Panel",
+		"body":  (
+			"This is where you craft and launch rumours in 3 steps:\n"
+			+ "  1. [b]Pick a Subject[/b] — whose reputation you're targeting\n"
+			+ "  2. [b]Pick a Claim[/b] — Scandal, Praise, Accusation…\n"
+			+ "  3. [b]Seed it to an NPC[/b] — they whisper it to others\n"
+			+ "Evidence items boost believability when attached at seeding."
+		),
+	},
+	"hud_journal": {
+		"title": "Your Journal",
+		"body":  (
+			"Everything you've learned from observing and eavesdropping is recorded here.\n"
+			+ "Use this intel to plan your next rumour — "
+			+ "who knows who, who's credulous, who's well-connected."
+		),
+	},
+	"hud_heat_warning": {
+		"title": "Heat Warning",
+		"body":  (
+			"An NPC is getting suspicious!\n"
+			+ "Heat builds when you eavesdrop nearby.\n"
+			+ "If any NPC's heat reaches [b]80[/b], you're exposed and the scenario fails.\n"
+			+ "Back off and target someone else."
+		),
+	},
+	"hud_evidence_item": {
+		"title": "Evidence Found!",
+		"body":  (
+			"Evidence items make your rumours more believable.\n"
+			+ "Attach them when crafting a rumour for a bonus to propagation speed:\n"
+			+ "  • [b]Forged Documents[/b] +20%\n"
+			+ "  • [b]Incriminating Artifacts[/b] +25%\n"
+			+ "  • [b]Witness Accounts[/b] +15%"
+		),
+	},
+	"hud_end_day_button": {
+		"title": "End Day Early",
+		"body":  (
+			"Already spent your actions? Press this to skip to the next dawn.\n"
+			+ "Rumours keep spreading overnight, so sometimes the best move is to "
+			+ "plant your seeds and let time do the work."
+		),
+	},
 }
 
 ## ── Scenario 1 non-blocking hint banner data ──────────────────────────────────
@@ -316,6 +406,111 @@ const HINT_DATA: Dictionary = {
 			+ "Pause to plan your next move without wasting daylight."
 		),
 		"auto_dismiss_secs": 7,
+	},
+	# ── SPA-775: Guided 12-step tutorial hint entries (Scenario 1 first play) ──
+	"gtut_opening": {
+		"title": "The Alderman's Ruin",
+		"body":  (
+			"You've been hired to destroy [b]Edric Fenn's[/b] reputation.\n"
+			+ "Follow the steps to complete your first assignment."
+		),
+		"auto_dismiss_secs": 3,
+	},
+	"gtut_camera": {
+		"title": "Move the Camera",
+		"body":  (
+			"Use [b]WASD[/b] or drag with middle mouse to look around the town.  "
+			+ "Move the camera now to continue."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "camera_moved",
+	},
+	"gtut_find_building": {
+		"title": "Find a Building",
+		"body":  (
+			"[b]Right-click a building[/b] to read the room and see who's inside.  "
+			+ "The nearest building has a gold outline."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "read_the_room",
+	},
+	"gtut_observe": {
+		"title": "Observe",
+		"body":  (
+			"Good! Now click [b]Observe (1 Recon)[/b] to gather intel on the people here."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "observe",
+	},
+	"gtut_check_intel": {
+		"title": "Check Your Intel",
+		"body":  (
+			"Intel gathered! Press [b]J[/b] to open your Journal and see what you learned."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "journal_opened",
+	},
+	"gtut_find_target": {
+		"title": "Find a Target",
+		"body":  (
+			"You need a target for your rumour.  "
+			+ "Close the Journal and [b]right-click an NPC[/b] to eavesdrop.  "
+			+ "A highlighted NPC is nearby."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "eavesdrop",
+	},
+	"gtut_eavesdrop_result": {
+		"title": "Eavesdrop Result",
+		"body":  (
+			"You overheard a conversation! You now know their relationship to Edric.  "
+			+ "Press [b]R[/b] to open the Rumour Panel."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "rumor_panel_opened",
+	},
+	"gtut_craft_subject": {
+		"title": "Step 1 of 3: Pick a Subject",
+		"body":  (
+			"Choose [b]Edric Fenn[/b] as your target."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "rumor_subject_selected",
+	},
+	"gtut_craft_claim": {
+		"title": "Step 2 of 3: Pick a Claim",
+		"body":  (
+			"Try [b]Scandal[/b] to damage his reputation.  "
+			+ "Higher intensity claims spread faster."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "rumor_claim_selected",
+	},
+	"gtut_craft_seed": {
+		"title": "Step 3 of 3: Choose a Seed Target",
+		"body":  (
+			"Pick someone [b]credulous[/b] (gullible) — they'll believe it faster.  "
+			+ "Seed your rumour now."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "rumor_seeded",
+	},
+	"gtut_watch_spread": {
+		"title": "Watch It Spread",
+		"body":  (
+			"[b]Rumour planted![/b] Watch the NPC's state change from Unaware to Evaluating.  "
+			+ "If they believe it, they'll start spreading it to others."
+		),
+		"auto_dismiss_secs": 999,
+		"action_gate": "npc_state_changed_to_believe",
+	},
+	"gtut_complete": {
+		"title": "It's Working!",
+		"body":  (
+			"Your rumour is spreading. Keep gathering intel, crafting rumours, and watching Edric's reputation fall.  "
+			+ "You have [b]30 days[/b]. Press [b]H[/b] anytime for help."
+		),
+		"auto_dismiss_secs": 8,
 	},
 }
 

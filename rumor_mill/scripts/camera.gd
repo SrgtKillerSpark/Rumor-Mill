@@ -108,6 +108,20 @@ func pan_to_target(target_pos: Vector2, duration: float = 2.0) -> void:
 	_pan_tween.tween_property(self, "position", target_pos, duration)
 
 
+## SPA-775: Briefly ease to target_pos, hold for hold_secs, then release camera.
+## Does NOT lock the camera — the player can still pan during or after.
+func brief_focus(target_pos: Vector2, hold_secs: float = 0.3) -> void:
+	if _pan_tween != null:
+		_pan_tween.kill()
+	var origin := position
+	_pan_tween = create_tween()
+	_pan_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_pan_tween.tween_property(self, "position", target_pos, 0.3)
+	_pan_tween.tween_interval(hold_secs)
+	_pan_tween.tween_property(self, "position", origin, 0.3) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+
+
 ## Trigger a screen shake.  Safe to call mid-shake — restarts with new params.
 ## intensity: max pixel offset per step.  duration: total shake time in seconds.
 func shake_screen(intensity: float = 8.0, duration: float = 0.4) -> void:
