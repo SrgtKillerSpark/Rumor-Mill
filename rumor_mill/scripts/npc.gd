@@ -228,7 +228,8 @@ var _last_worst_state: Rumor.RumorState = Rumor.RumorState.UNAWARE
 # Hover tint applied directly to sprite.modulate while this NPC is hovered.
 # Keeping it on the sprite (not the parent modulate) prevents compounding with
 # the parent node's modulate, which would muddy state colours.
-const NPC_HOVER_TINT := Color(1.5, 1.3, 0.5, 1.0)
+## SPA-777: Cool cyan-white tint — visually distinct from the gold selection ring.
+const NPC_HOVER_TINT := Color(1.0, 1.6, 1.8, 1.0)
 var _hovered: bool = false
 
 # ── Heat shimmer state ───────────────────────────────────────────────────────
@@ -901,6 +902,7 @@ func _spread_to_neighbours(
 		_show_spread_bubble(other)
 		show_spread_ripple()  # SPA-561: expanding ring on rumor spread
 		other._show_whisper_received()
+		other.show_rumor_received_glow()  # SPA-777: cyan glow flash on receiver
 		emit_signal("rumor_transmitted",
 			npc_data.get("name", "?"),
 			other.npc_data.get("name", "?"),
@@ -1687,6 +1689,40 @@ func flash_click() -> void:
 	sprite.self_modulate = Color(2.0, 1.8, 0.8, 1.0)
 	_flash_tween = create_tween()
 	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.28)
+
+
+## SPA-777: Shows a brief name + faction label above the NPC when the player clicks it.
+## Floats upward and fades after ~1.5 s.
+func show_name_popup() -> void:
+	var npc_name: String = npc_data.get("name", "?")
+	var faction:  String = npc_data.get("faction", "")
+	var text: String = npc_name if faction.is_empty() else "%s\n[%s]" % [npc_name, faction.capitalize()]
+
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.add_theme_color_override("font_color", Color(1.0, 0.95, 0.75, 1.0))
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.position = Vector2(-32.0, -88.0)
+	add_child(lbl)
+
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position", lbl.position + Vector2(0.0, -16.0), 1.5)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.5).set_delay(0.5)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
+## SPA-777: Brief cyan glow flash on the sprite when this NPC receives a new rumor.
+## Signals to the player that information has spread to this target.
+func show_rumor_received_glow() -> void:
+	if sprite == null:
+		return
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	sprite.self_modulate = Color(0.6, 2.0, 1.8, 1.0)
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.50)
 
 
 # ── Utility ──────────────────────────────────────────────────────────────────

@@ -457,6 +457,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var lc_npc := _hit_test_npc(lc_world_pos)
 		if lc_npc != null:
 			lc_npc.call("flash_click")
+			lc_npc.call("show_name_popup")  # SPA-777: brief name + faction label on click
 			if _follow_npc == lc_npc:
 				# Re-click same NPC clears follow.
 				_follow_npc.call("set_selected", false)
