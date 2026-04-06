@@ -640,12 +640,12 @@ func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 		if aldric == null or edric == null or tomas == null:
 			return
 
-	# WIN: Aldric >= 65, highest of all three, both rivals <= 45.
+	# WIN: Aldric >= 65, highest of all three, both rivals strictly below 45.
 	if (aldric.score >= S5_WIN_ALDRIC_MIN
 			and aldric.score > edric.score
 			and aldric.score > tomas.score
-			and edric.score <= S5_WIN_RIVALS_MAX
-			and tomas.score <= S5_WIN_RIVALS_MAX):
+			and edric.score < S5_WIN_RIVALS_MAX
+			and tomas.score < S5_WIN_RIVALS_MAX):
 		scenario_5_state = ScenarioState.WON
 		scenario_resolved.emit(5, ScenarioState.WON)
 		return
