@@ -606,9 +606,9 @@ The Inquisitor always targets the protected NPC with the highest current reputat
 | Scenario 3 time limit | 25 days | |
 | Scenario 3 starting rep — Calder | 65 | |
 | Scenario 3 starting rep — Tomas | 52 | |
-| Scenario 4 win threshold | All 3 protected NPCs above 45 at day 20 | |
-| Scenario 4 fail threshold | Any protected NPC drops below 45 | Instant fail |
+| Scenario 4 win threshold | All 3 protected NPCs ≥48 at day 20 | |
+| Scenario 4 fail threshold | Any protected NPC drops below 40 | Instant fail |
 | Scenario 4 time limit | 20 days | |
-| Scenario 4 starting rep — Aldous Prior | 65 | |
-| Scenario 4 starting rep — Vera Midwife | 65 | |
-| Scenario 4 starting rep — Finn Monk | 70 | |
+| Scenario 4 starting rep — Aldous Prior | 70 | |
+| Scenario 4 starting rep — Vera Midwife | 68 | |
+| Scenario 4 starting rep — Finn Monk | 68 | |
