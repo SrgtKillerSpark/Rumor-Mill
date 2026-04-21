@@ -1015,14 +1015,18 @@ func _wire_rumor_events() -> void:
 ## Relay world rumor events into the Journal timeline and overlay.
 ## Also fire milestone HUD effects for the most impactful events.
 func _on_rumor_event(message: String, tick: int) -> void:
+	# SPA-848: diagnostic lines are embedded after "\n" — split to keep journal entry clean.
+	var parts := message.split("\n", false, 1)
+	var main_msg := parts[0]
+	var diagnostic := parts[1] if parts.size() > 1 else ""
 	if journal != null and journal.has_method("push_timeline_event"):
-		journal.push_timeline_event(tick, message)
+		journal.push_timeline_event(tick, main_msg, diagnostic)
 	if social_graph_overlay != null and social_graph_overlay.has_method("on_rumor_event"):
-		social_graph_overlay.on_rumor_event(message)
+		social_graph_overlay.on_rumor_event(main_msg)
 	# SPA-827: Cause-and-effect toast + feed entry + ripple VFX on each NPC-to-NPC spread.
 	# Format: "FromName whispered to ToName [id]"
-	if message.contains("whispered to"):
-		var wt_parts := message.split(" whispered to ", false)
+	if main_msg.contains("whispered to"):
+		var wt_parts := main_msg.split(" whispered to ", false)
 		if wt_parts.size() >= 2:
 			var from_name := wt_parts[0].strip_edges()
 			var to_part := wt_parts[1].split(" [", false)
@@ -1059,20 +1063,20 @@ func _on_rumor_event(message: String, tick: int) -> void:
 
 	# Milestone visual feedback for key state-change events.
 	if recon_hud != null and recon_hud.has_method("show_milestone"):
-		if message.contains("→ Believe"):
-			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
+		if main_msg.contains("→ Believe"):
+			var npc_name := main_msg.split(" →")[0].strip_edges() if " →" in main_msg else "NPC"
 			recon_hud.show_milestone("%s is convinced!" % npc_name, Color(0.50, 1.00, 0.55, 1.0))
 			# SPA-827: Golden flash to reinforce the belief moment — clear cause-and-effect signal.
 			if recon_hud.has_method("show_action_flash"):
 				recon_hud.show_action_flash(true)
-		elif message.contains("→ Spread"):
-			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
+		elif main_msg.contains("→ Spread"):
+			var npc_name := main_msg.split(" →")[0].strip_edges() if " →" in main_msg else "NPC"
 			recon_hud.show_milestone("%s is spreading the word!" % npc_name, Color(0.40, 0.85, 1.00, 1.0))
-		elif message.contains("→ Act"):
-			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
+		elif main_msg.contains("→ Act"):
+			var npc_name := main_msg.split(" →")[0].strip_edges() if " →" in main_msg else "NPC"
 			recon_hud.show_milestone("%s takes action!" % npc_name, Color(1.00, 0.85, 0.20, 1.0))
-		elif message.contains("→ Reject"):
-			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
+		elif main_msg.contains("→ Reject"):
+			var npc_name := main_msg.split(" →")[0].strip_edges() if " →" in main_msg else "NPC"
 			recon_hud.show_milestone("%s rejected the rumor" % npc_name, Color(0.85, 0.40, 0.30, 1.0))
 
 

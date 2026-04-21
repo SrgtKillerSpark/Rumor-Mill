@@ -28,7 +28,7 @@ extends Node2D
 signal first_npc_became_evaluating
 
 ## Emitted whenever this NPC's worst rumor state changes (for journal + overlay).
-signal rumor_state_changed(npc_name: String, new_state_name: String, rumor_id: String)
+signal rumor_state_changed(npc_name: String, new_state_name: String, rumor_id: String, diagnostic: String)
 
 ## Emitted when this NPC successfully transmits a rumor to another NPC.
 signal rumor_transmitted(from_name: String, to_name: String, rumor_id: String)
@@ -95,6 +95,9 @@ var rumor_slots: Dictionary = {}
 ## get_worst_rumor_state() uses this to skip recomputation when nothing changed.
 var _worst_state_dirty: bool = true
 var _worst_state_cache: Rumor.RumorState = Rumor.RumorState.UNAWARE
+## Diagnostic reason strings for terminal rumor states, keyed by rumor_id.
+## Populated when a slot enters EXPIRED or CONTRADICTED; read in _update_label().
+var _slot_diagnostics: Dictionary = {}
 
 var _pathfinder: AstarPathfinder = null
 var _walkable: Array[Vector2i] = []
@@ -675,6 +678,7 @@ func _process_rumor_slots(tick: int) -> void:
 				Rumor.RumorState.REJECT, Rumor.RumorState.ACT, Rumor.RumorState.EXPIRED]:
 			slot.state = Rumor.RumorState.EXPIRED
 			slot.ticks_in_state = 0
+			_slot_diagnostics[rid] = "Shelf-life elapsed after %d ticks" % slot.rumor.shelf_life_ticks
 			_worst_state_dirty = true
 			continue
 
@@ -720,6 +724,12 @@ func _process_rumor_slots(tick: int) -> void:
 			if newest.state != Rumor.RumorState.CONTRADICTED:
 				newest.state = Rumor.RumorState.CONTRADICTED
 				newest.ticks_in_state = 0
+				var subj_name := sid
+				var subj_node = _npc_id_dict.get(sid, null)
+				if subj_node != null:
+					subj_name = subj_node.npc_data.get("name", sid)
+				_slot_diagnostics[newest.rumor.id] = \
+					"Contradicted: opposing claims about %s cancel out" % subj_name
 				_worst_state_dirty = true
 
 
@@ -774,7 +784,7 @@ func _tick_evaluating(
 			_defender_target_npc_id = subject_id
 			_defender_ticks_remaining = _DEFENDER_DURATION
 			_show_defending_icon()
-			emit_signal("rumor_state_changed", npc_name, "DEFENDING", rid)
+			emit_signal("rumor_state_changed", npc_name, "DEFENDING", rid, "")
 		_record_rumor_history(rumor, subject_id, "rejected", tick)
 		_apply_credulity_modifier(_CREDULITY_REJECT_PENALTY)
 
@@ -1324,7 +1334,7 @@ func _update_label() -> void:
 			if rumor_slots[rid].state == worst:
 				wrid = rid
 				break
-		emit_signal("rumor_state_changed", short_name, state_str, wrid)
+		emit_signal("rumor_state_changed", short_name, state_str, wrid, _slot_diagnostics.get(wrid, ""))
 		# SPA-561: Show emote icon for the new state.
 		show_state_emote(state_str)
 		# SPA-751: Sprite scale bounce on high-impact belief transitions.

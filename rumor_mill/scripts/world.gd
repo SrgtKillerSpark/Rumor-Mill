@@ -1158,11 +1158,13 @@ func vouch_for_npc(voucher_npc_id: String, subject_npc_id: String) -> bool:
 
 # ── NPC event → rumor_event aggregation ─────────────────────────────────────
 
-func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id: String) -> void:
+func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id: String, diagnostic: String) -> void:
 	var tick: int = day_night.current_tick if day_night != null else 0
 	var msg := "%s → %s" % [npc_name, state_name]
 	if not rumor_id.is_empty():
 		msg += " (%s)" % rumor_id
+	if not diagnostic.is_empty():
+		msg += "\n" + diagnostic
 	emit_signal("rumor_event", msg, tick)
 
 

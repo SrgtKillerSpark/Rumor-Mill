@@ -1334,6 +1334,16 @@ func _build_timeline_section() -> void:
 		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", C_BODY)
 		_content_vbox.add_child(lbl)
+		var diag: String = ev.get("diagnostic", "")
+		if not diag.is_empty():
+			var diag_lbl := RichTextLabel.new()
+			diag_lbl.bbcode_enabled = true
+			diag_lbl.fit_content    = true
+			diag_lbl.scroll_active = false
+			diag_lbl.text = "    [i]%s[/i]" % diag
+			diag_lbl.add_theme_font_size_override("normal_font_size", 11)
+			diag_lbl.add_theme_color_override("default_color", C_SUBKEY)
+			_content_vbox.add_child(diag_lbl)
 
 
 # ── Section 5: Objectives ─────────────────────────────────────────────────────
@@ -1911,8 +1921,9 @@ func _stop_dot_pulse() -> void:
 
 ## Called by scenario or world systems to record a named timeline event.
 ## Events are buffered in _pending_events and flushed to _timeline_log at tick-end.
-func push_timeline_event(tick: int, message: String) -> void:
-	_pending_events.append({"tick": tick, "message": message})
+## Optional diagnostic is rendered as italic subtext below the main event line (SPA-848).
+func push_timeline_event(tick: int, message: String, diagnostic: String = "") -> void:
+	_pending_events.append({"tick": tick, "message": message, "diagnostic": diagnostic})
 	if not _is_open and tick > _last_opened_tick:
 		_notification_pending = true
 		_show_notification_dot()
