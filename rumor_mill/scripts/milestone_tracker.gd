@@ -245,7 +245,7 @@ func _eval_s6(_current_tick: int) -> void:
 
 # ── Progress toasts (configurable per scenario via scenarios.json) ─────────
 
-## Fires toast notifications at 25%, 50%, and 75% progress toward the win condition.
+## Fires toast notifications at 10% progress intervals toward the win condition.
 ## Thresholds and messages are loaded from the milestoneToasts array in scenarios.json.
 ## Each toast fires exactly once per session via the _fired guard.
 func _eval_progress_toasts(current_tick: int) -> void:

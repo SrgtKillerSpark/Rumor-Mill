@@ -76,9 +76,17 @@
       }
     },
     "milestoneToasts": [
+      { "threshold": 0.10, "message": "The first whispers take hold..." },
+      { "threshold": 0.20, "message": "Word is spreading through the market." },
       { "threshold": 0.25, "message": "The whispers are taking hold — Edric's name is tarnished." },
+      { "threshold": 0.30, "message": "More tongues are wagging. Edric feels it." },
+      { "threshold": 0.40, "message": "His allies grow uneasy." },
       { "threshold": 0.50, "message": "His reputation is cracking. Keep pushing." },
-      { "threshold": 0.75, "message": "Almost there — one more push and Edric falls." }
+      { "threshold": 0.60, "message": "The town is turning against him." },
+      { "threshold": 0.70, "message": "Edric's supporters are abandoning ship." },
+      { "threshold": 0.75, "message": "Almost there — one more push and Edric falls." },
+      { "threshold": 0.80, "message": "He's nearly finished. Don't stop now." },
+      { "threshold": 0.90, "message": "The end is in sight — deliver the final blow." }
     ],
     "midGameEvents": [
       {
@@ -276,9 +284,17 @@
       }
     },
     "milestoneToasts": [
+      { "threshold": 0.10, "message": "Uneasy glances — the fear has begun." },
+      { "threshold": 0.20, "message": "People are talking. The rumor takes root." },
       { "threshold": 0.25, "message": "Fear spreads — the lie finds its first believers." },
+      { "threshold": 0.30, "message": "Three now believe. The seed germinates." },
+      { "threshold": 0.40, "message": "The sickness story grows with each retelling." },
       { "threshold": 0.50, "message": "Halfway there. The plague scare is real to them." },
-      { "threshold": 0.75, "message": "Almost enough — one more voice and panic takes hold." }
+      { "threshold": 0.60, "message": "More than half the town eyes Alys with dread." },
+      { "threshold": 0.70, "message": "Panic is becoming contagious." },
+      { "threshold": 0.75, "message": "Almost enough — one more voice and panic takes hold." },
+      { "threshold": 0.80, "message": "The crowd's fear is nearly unstoppable." },
+      { "threshold": 0.90, "message": "One last push — let the hysteria crest." }
     ],
     "midGameEvents": [
       {
@@ -469,9 +485,17 @@
       }
     },
     "milestoneToasts": [
+      { "threshold": 0.10, "message": "Seeds of doubt take root." },
+      { "threshold": 0.20, "message": "Calder's name is spoken more favourably." },
       { "threshold": 0.25, "message": "The ground shifts — Calder rises as Tomas stumbles." },
+      { "threshold": 0.30, "message": "Tomas loses another supporter." },
+      { "threshold": 0.40, "message": "The gap widens. Keep pressing." },
       { "threshold": 0.50, "message": "The scales are tipping. Stay the course." },
-      { "threshold": 0.75, "message": "Victory is close — finish what you started." }
+      { "threshold": 0.60, "message": "Calder's lead grows undeniable." },
+      { "threshold": 0.70, "message": "Tomas scrambles for allies he no longer has." },
+      { "threshold": 0.75, "message": "Victory is close — finish what you started." },
+      { "threshold": 0.80, "message": "The succession is nearly decided." },
+      { "threshold": 0.90, "message": "One final stroke — seal Calder's ascendancy." }
     ],
     "midGameEvents": [
       {
@@ -669,9 +693,17 @@
       }
     },
     "milestoneToasts": [
+      { "threshold": 0.10, "message": "The Inquisitor's eye turns elsewhere — for now." },
+      { "threshold": 0.20, "message": "Two days survived. Stay vigilant." },
       { "threshold": 0.25, "message": "A quarter done — your charges still stand. Hold the line." },
+      { "threshold": 0.30, "message": "Three in ten days withstood. Keep the shields up." },
+      { "threshold": 0.40, "message": "The charges are holding. Don't let your guard down." },
       { "threshold": 0.50, "message": "Halfway through the fire. The Inquisitor hasn't broken through." },
-      { "threshold": 0.75, "message": "Three-quarters survived. Don't falter now." }
+      { "threshold": 0.60, "message": "More than halfway. The tide may be turning." },
+      { "threshold": 0.70, "message": "The Inquisitor grows frustrated." },
+      { "threshold": 0.75, "message": "Three-quarters survived. Don't falter now." },
+      { "threshold": 0.80, "message": "Almost safe — hold formation for the final stretch." },
+      { "threshold": 0.90, "message": "The ordeal is nearly over. One last push." }
     ],
     "midGameEvents": [
       {
@@ -885,9 +917,17 @@
       }
     },
     "milestoneToasts": [
+      { "threshold": 0.10, "message": "Aldric's name stirs interest at the market." },
+      { "threshold": 0.20, "message": "The early whispers favour Aldric." },
       { "threshold": 0.25, "message": "The campaign is gaining traction — Aldric's name is on every tongue." },
+      { "threshold": 0.30, "message": "Momentum builds. The rivals take notice." },
+      { "threshold": 0.40, "message": "Aldric is pulling ahead. Press every advantage." },
       { "threshold": 0.50, "message": "Aldric is making his move — keep the pressure on both rivals." },
-      { "threshold": 0.75, "message": "Victory is within reach — close out the election." }
+      { "threshold": 0.60, "message": "The election begins to feel like his to lose." },
+      { "threshold": 0.70, "message": "Edric and Tomas scramble for ground." },
+      { "threshold": 0.75, "message": "Victory is within reach — close out the election." },
+      { "threshold": 0.80, "message": "The crowd chants Aldric's name." },
+      { "threshold": 0.90, "message": "One final push — the Council vote is near." }
     ],
     "midGameEvents": [
       {
@@ -1104,9 +1144,17 @@
       }
     },
     "milestoneToasts": [
+      { "threshold": 0.10, "message": "A ledger discrepancy is mentioned in hushed tones." },
+      { "threshold": 0.20, "message": "The story of missing silver is gaining credence." },
       { "threshold": 0.25, "message": "The first cracks appear — whispers of missing silver spread." },
+      { "threshold": 0.30, "message": "Aldric's confidence falters under scrutiny." },
+      { "threshold": 0.40, "message": "Doubt spreads among the guild merchants." },
       { "threshold": 0.50, "message": "Halfway there. Aldric's allies are starting to doubt him." },
-      { "threshold": 0.75, "message": "The guild is turning — one final push and the truth wins." }
+      { "threshold": 0.60, "message": "The guild debates Aldric's fitness openly." },
+      { "threshold": 0.70, "message": "Marta gains ground as Aldric's story unravels." },
+      { "threshold": 0.75, "message": "The guild is turning — one final push and the truth wins." },
+      { "threshold": 0.80, "message": "Aldric is nearly exposed. Don't let up." },
+      { "threshold": 0.90, "message": "The reckoning is at hand — finish the reversal." }
     ],
     "midGameEvents": [
       {
