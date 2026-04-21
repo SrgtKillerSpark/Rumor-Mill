@@ -207,11 +207,30 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 		return "Save file is corrupted (invalid JSON)."
 
 	var ver: int = int(parsed.get("version", 0))
-	if ver != SAVE_VERSION:
-		return "Save version mismatch (file=%d, game=%d). Cannot load." % [
+	if ver > SAVE_VERSION:
+		return "Save version %d is newer than game version %d. Update the game to load this save." % [
 			ver, SAVE_VERSION]
+	if ver < SAVE_VERSION:
+		var migration_err := _migrate_save_data(parsed, ver)
+		if migration_err != "":
+			return migration_err
 
 	_pending_load_data = parsed
+	return ""
+
+
+## Migrates save data from an older version in-place.
+## Returns "" on success or a human-readable error string if migration fails.
+static func _migrate_save_data(data: Dictionary, from_version: int) -> String:
+	# v0 saves (missing version field) have the same structure as v1.
+	# Stamp the version so future migrations can rely on it being present.
+	if from_version == 0:
+		push_warning("save_manager: save has no version field — treating as v0, migrating to v%d" % SAVE_VERSION)
+		data["version"] = SAVE_VERSION
+	# Future migration steps go here as SAVE_VERSION increases, e.g.:
+	# if from_version <= 1:
+	#     # add new fields introduced in v2
+	#     data["new_field"] = default_value
 	return ""
 
 
@@ -537,7 +556,11 @@ static func _restore_npc_slots(
 		var npc_id: String = npc.npc_data.get("id", "")
 		if not d.has(npc_id):
 			continue
-		var npc_data: Dictionary = d[npc_id]
+		var _npc_raw: Variant = d[npc_id]
+		if not _npc_raw is Dictionary:
+			push_error("save_manager: npc_slots[%s] is not a Dictionary — skipped" % npc_id)
+			continue
+		var npc_data: Dictionary = _npc_raw
 		# Support new format (slots nested under "slots" key) and legacy flat format.
 		var slot_data: Dictionary = npc_data.get("slots", npc_data) as Dictionary
 		npc.rumor_slots.clear()
@@ -611,6 +634,9 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 
 	store.evidence_inventory.clear()
 	for ed in d.get("evidence_inventory", []):
+		if not ed is Dictionary:
+			push_error("save_manager: evidence_inventory entry is not a Dictionary — skipped")
+			continue
 		var item := PlayerIntelStore.EvidenceItem.new(
 			ed.get("type", ""),
 			float(ed.get("believability_bonus", 0.0)),
