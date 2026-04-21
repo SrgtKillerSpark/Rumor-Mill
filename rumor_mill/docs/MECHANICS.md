@@ -577,3 +577,8 @@ This is the tutorial scenario. Bribery is **disabled**.
 | Scenario 2 win threshold | 7+ illness believers | |
 | Scenario 3 win threshold | Calder ≥75, Tomas ≤35 | |
 | Scenario 3 instant-fail floor | Calder < 40 | |
+| Scenario 4 win threshold | All 3 protected NPCs ≥45 after day 20 | |
+| Scenario 4 fail threshold | Any protected NPC <45 (instant) | |
+| Scenario 4 Aldous starting rep | 60 | |
+| Scenario 4 Vera starting rep | 60 | |
+| Scenario 4 Finn starting rep | 65 | |
