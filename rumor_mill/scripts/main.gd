@@ -1027,31 +1027,52 @@ func _on_rumor_event(message: String, tick: int) -> void:
 		journal.push_timeline_event(tick, message)
 	if social_graph_overlay != null and social_graph_overlay.has_method("on_rumor_event"):
 		social_graph_overlay.on_rumor_event(message)
-	# Toast notification when a rumor reaches a new NPC (named, not generic).
-	if recon_hud != null and message.contains("whispered to") and recon_hud.has_method("show_toast"):
-		# Format: "FromName whispered to ToName [id]"
+	# SPA-827: Cause-and-effect toast + feed entry + ripple VFX on each NPC-to-NPC spread.
+	# Format: "FromName whispered to ToName [id]"
+	if message.contains("whispered to"):
 		var wt_parts := message.split(" whispered to ", false)
 		if wt_parts.size() >= 2:
+			var from_name := wt_parts[0].strip_edges()
 			var to_part := wt_parts[1].split(" [", false)
 			var to_name := to_part[0].strip_edges()
 			var to_role := ""
+			var to_npc_pos := Vector2.ZERO
 			if world != null:
 				for npc in world.npcs:
 					if npc.npc_data.get("name", "") == to_name:
 						to_role = npc.npc_data.get("role", "")
+						to_npc_pos = npc.global_position
 						break
+			# Toast: show FROM → TO so the chain of cause-and-effect is explicit.
+			var from_first := from_name.split(" ")[0]
+			var to_first   := to_name.split(" ")[0]
 			var toast_msg: String
 			if to_role != "":
-				toast_msg = "Rumor reached %s the %s!" % [to_name.split(" ")[0], to_role]
+				toast_msg = "%s → %s the %s — rumor spreads!" % [from_first, to_first, to_role]
 			else:
-				toast_msg = "Rumor reached %s!" % to_name.split(" ")[0]
-			recon_hud.show_toast(toast_msg, true)
+				toast_msg = "%s → %s — rumor spreads!" % [from_first, to_first]
+			if recon_hud != null:
+				if recon_hud.has_method("show_toast"):
+					recon_hud.show_toast(toast_msg, true)
+				# Feed entry so the spread chain is visible in Recent Actions.
+				if recon_hud.has_method("push_feed_entry"):
+					recon_hud.push_feed_entry("%s told %s" % [from_first, to_first], true)
+			# Ripple VFX at the receiving NPC's world position.
+			# Blue-tinted (vs. gold at seed) so the player can distinguish origin from spread.
+			if to_npc_pos != Vector2.ZERO and world != null:
+				var fx := preload("res://scripts/rumor_ripple_vfx.gd").new()
+				fx.accent_color = Color(0.45, 0.80, 1.0, 0.75)
+				world.add_child(fx)
+				fx.global_position = to_npc_pos
 
 	# Milestone visual feedback for key state-change events.
 	if recon_hud != null and recon_hud.has_method("show_milestone"):
 		if message.contains("→ Believe"):
 			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
 			recon_hud.show_milestone("%s is convinced!" % npc_name, Color(0.50, 1.00, 0.55, 1.0))
+			# SPA-827: Golden flash to reinforce the belief moment — clear cause-and-effect signal.
+			if recon_hud.has_method("show_action_flash"):
+				recon_hud.show_action_flash(true)
 		elif message.contains("→ Spread"):
 			var npc_name := message.split(" →")[0].strip_edges() if " →" in message else "NPC"
 			recon_hud.show_milestone("%s is spreading the word!" % npc_name, Color(0.40, 0.85, 1.00, 1.0))

@@ -117,6 +117,8 @@ var _steps: Array = []
 ## When true the player is in the guided tutorial and non-guided
 ## contextual hints are suppressed.  Only true during S1 (12-step gated tutorial).
 var guided_tutorial_active: bool = false
+## Name of the NPC the player just seeded a rumor on (for celebration pan).
+var _last_seed_target_name: String = ""
 
 # ── External references ───────────────────────────────────────────────────────
 
@@ -409,6 +411,10 @@ func _complete_current_step() -> void:
 		_tutorial_banner.dismiss_hint(step_def["hint"])
 	_clear_highlight()
 
+	# Juice on step 9: first rumor seeded — toast + camera pan to target NPC.
+	if _current_step == STEP_CRAFT_SEED:
+		_celebrate_first_rumor()
+
 	# Juice on step 10: first NPC believes — brief camera focus + toast.
 	if _current_step == STEP_WATCH_SPREAD:
 		_celebrate_first_believe()
@@ -494,6 +500,20 @@ func _show_toast(text: String, duration: float = 2.0) -> void:
 	_toast_tween.tween_property(_toast_label, "modulate:a", 1.0, 0.25)
 	_toast_tween.tween_interval(duration)
 	_toast_tween.tween_property(_toast_label, "modulate:a", 0.0, 0.5)
+
+
+# ── Celebration (step 9: first rumor seeded) ──────────────────────────────────
+
+func _celebrate_first_rumor() -> void:
+	var target_label := _last_seed_target_name if _last_seed_target_name != "" else "NPC"
+	_show_toast("Rumor planted! Watch %s's thought bubble..." % target_label, 3.0)
+	# Camera pan to the target NPC so the player sees the rumor arrive.
+	if _camera != null and _world != null and _last_seed_target_name != "":
+		for npc in _world.npcs:
+			if npc.npc_data.get("name", "") == _last_seed_target_name:
+				if _camera.has_method("pan_to_target"):
+					_camera.pan_to_target(npc.global_position, 1.2)
+				break
 
 
 # ── Celebration (step 10: first NPC believes) ─────────────────────────────────
@@ -701,8 +721,9 @@ func _on_tc_claim_selected(_claim_id: String) -> void:
 		_complete_current_step()
 
 
-func _on_tc_rumor_seeded(_rumor_id: String, _subject: String, _claim: String, _target: String) -> void:
+func _on_tc_rumor_seeded(_rumor_id: String, _subject: String, _claim: String, target_name: String) -> void:
 	if _current_step == STEP_CRAFT_SEED:
+		_last_seed_target_name = target_name
 		_complete_current_step()
 
 
