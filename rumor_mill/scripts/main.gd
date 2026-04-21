@@ -1098,7 +1098,7 @@ func _on_rumor_event(message: String, tick: int) -> void:
 
 ## SPA-788 Moment 1: fires once the first time any NPC-to-NPC rumor transmission occurs.
 ## Layered audio motif + gossip-line particles + parchment toast + brief camera nudge.
-func _on_first_rumor_transmitted(from_name: String, to_name: String, _rumor_id: String) -> void:
+func _on_first_rumor_transmitted(from_name: String, to_name: String, _rumor_id: String, _outcome: String) -> void:
 	if _reward_first_spread_fired:
 		return
 	_reward_first_spread_fired = true

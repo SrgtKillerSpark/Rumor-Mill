@@ -1189,7 +1189,7 @@ func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id:
 			emit_signal("cascade_triggered", rumor_id, believers.size())
 
 
-func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: String) -> void:
+func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: String, outcome: String) -> void:
 	AudioManager.play_sfx("whisper")
 	var cam := get_viewport().get_camera_2d()
 	if cam != null and cam.has_method("shake_screen"):
@@ -1205,6 +1205,39 @@ func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: Str
 			and to_name == _maren_display_name \
 			and scenario_manager.s2_maren_carrier_name.is_empty():
 		scenario_manager.s2_maren_carrier_name = from_name
+	# SPA-854: draw a brief colored line between the two NPCs on the town map.
+	var from_pos := Vector2.ZERO
+	var to_pos   := Vector2.ZERO
+	for npc in npcs:
+		var nm: String = npc.npc_data.get("name", "")
+		if nm == from_name:
+			from_pos = npc.global_position
+		elif nm == to_name:
+			to_pos = npc.global_position
+	if from_pos != Vector2.ZERO and to_pos != Vector2.ZERO:
+		var line_color: Color
+		match outcome:
+			"believed":
+				line_color = Color(0.2, 0.9, 0.35, 0.9)
+			"rejected":
+				line_color = Color(1.0, 0.25, 0.2, 0.9)
+			_:
+				line_color = Color(0.92, 0.72, 0.18, 0.85)
+		_spawn_pulse_line(from_pos, to_pos, line_color)
+
+
+## SPA-854: spawns a Line2D between two world-space positions that fades out over ~1 second.
+func _spawn_pulse_line(from_pos: Vector2, to_pos: Vector2, line_color: Color) -> void:
+	var line := Line2D.new()
+	line.add_point(from_pos)
+	line.add_point(to_pos)
+	line.width = 3.0
+	line.default_color = line_color
+	line.z_index = 10
+	add_child(line)
+	var tw := create_tween()
+	tw.tween_property(line, "modulate:a", 0.0, 1.0)
+	tw.tween_callback(line.queue_free)
 
 
 func _on_npc_suspicion_danger(_npc_name: String) -> void:

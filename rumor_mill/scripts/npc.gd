@@ -31,7 +31,9 @@ signal first_npc_became_evaluating
 signal rumor_state_changed(npc_name: String, new_state_name: String, rumor_id: String, diagnostic: String)
 
 ## Emitted when this NPC successfully transmits a rumor to another NPC.
-signal rumor_transmitted(from_name: String, to_name: String, rumor_id: String)
+## outcome: "believed" (receiver already in BELIEVE/SPREAD/ACT), "rejected" (receiver in
+## REJECT/CONTRADICTED), or "evaluating" (receiver newly processing the rumor).
+signal rumor_transmitted(from_name: String, to_name: String, rumor_id: String, outcome: String)
 
 ## Emitted when this NPC enters ACT state and mutates a social graph edge.
 signal graph_edge_mutated(actor_name: String, subject_name: String, delta: float)
@@ -917,10 +919,19 @@ func _spread_to_neighbours(
 		show_spread_ripple()  # SPA-561: expanding ring on rumor spread
 		other._show_whisper_received()
 		other.show_rumor_received_glow()  # SPA-777: cyan glow flash on receiver
+		# SPA-854: determine receiver's current slot state to color the pulse line.
+		var _pulse_outcome := "evaluating"
+		if other.rumor_slots.has(spread_rumor.id):
+			var _rstate: int = other.rumor_slots[spread_rumor.id].state
+			if _rstate in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+				_pulse_outcome = "believed"
+			elif _rstate in [Rumor.RumorState.REJECT, Rumor.RumorState.CONTRADICTED]:
+				_pulse_outcome = "rejected"
 		emit_signal("rumor_transmitted",
 			npc_data.get("name", "?"),
 			other.npc_data.get("name", "?"),
-			spread_rumor.id)
+			spread_rumor.id,
+			_pulse_outcome)
 
 	return spread_happened
 

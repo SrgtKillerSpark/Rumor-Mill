@@ -101,7 +101,7 @@ func _sample_day(day: int) -> void:
 	})
 
 
-func _on_rumor_transmitted(from_name: String, to_name: String, _rumor_id: String) -> void:
+func _on_rumor_transmitted(from_name: String, to_name: String, _rumor_id: String, _outcome: String) -> void:
 	if not _npc_transmission.has(from_name):
 		_npc_transmission[from_name] = { "spread_count": 0, "received_count": 0 }
 	_npc_transmission[from_name]["spread_count"] += 1
