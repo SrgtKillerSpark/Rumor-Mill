@@ -220,6 +220,32 @@ const SUMMARY_TEXT := {
 	},
 }
 
+# ── SPA-840: Next-scenario tease copy ────────────────────────────────────────
+# Shown on victory screens when a next scenario exists.  Keyed by current
+# scenario string id.  Each line hints at the mechanic shift ahead without
+# spoiling the outcome.
+const NEXT_SCENARIO_TEASE: Dictionary = {
+	"scenario_1": (
+		"In your next mission, you will need to convince 7 people of a lie"
+		+ " — and one powerful voice is already preparing to contradict you."
+	),
+	"scenario_2": (
+		"Next: manage two reputations at once while a rival works against you in the shadows."
+	),
+	"scenario_3": (
+		"Your next challenge: defend instead of attack."
+		+ " Three lives are in the inquisitor's crosshairs — only your whispers can protect them."
+	),
+	"scenario_4": (
+		"Ahead: the same town, an open election, and two candidates fighting for one chain of office."
+		+ " You must choose who rises."
+	),
+	"scenario_5": (
+		"Your final test: the Guild itself."
+		+ " One corrupt master, one loyal ally, and twenty days before the ledger is sealed."
+	),
+}
+
 # Universal fallback summaries for conditions not defined per-scenario.
 const SUMMARY_FALLBACK := {
 	"timeout": (
@@ -268,6 +294,9 @@ var _bonus_lbl:        Control        = null   # bonus stat label or row to reve
 var _btn_again:        Button         = null
 var _btn_next:         Button         = null
 var _btn_main_menu:    Button         = null
+
+# ── SPA-840: Next-scenario tease label ───────────────────────────────────────
+var _tease_lbl:        RichTextLabel  = null
 
 # ── SPA-212: Analytics tab ───────────────────────────────────────────────────
 var _tab_results:      Button         = null
@@ -396,6 +425,18 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		_btn_next.disabled = true
 		_btn_next.focus_mode = Control.FOCUS_NONE
+
+	# ── SPA-840: Cross-scenario tease ─────────────────────────────────────────
+	if _tease_lbl != null:
+		if won and not next_id.is_empty():
+			var tease: String = NEXT_SCENARIO_TEASE.get(_current_scenario_id, "")
+			if not tease.is_empty():
+				_tease_lbl.text = "[center][color=#998877]" + tease + "[/color][/center]"
+				_tease_lbl.visible = true
+			else:
+				_tease_lbl.visible = false
+		else:
+			_tease_lbl.visible = false
 
 	# ── SPA-784: "What went wrong" one-liner for defeat ──────────────────────
 	if not won:
@@ -956,6 +997,17 @@ func _build_ui() -> void:
 	vbox.add_child(_narrative_lbl)
 
 	vbox.add_child(_make_separator())
+
+	# ── SPA-840: Next-scenario tease (hidden until victory) ───────────────────
+	_tease_lbl = RichTextLabel.new()
+	_tease_lbl.custom_minimum_size = Vector2(0, 28)
+	_tease_lbl.fit_content = true
+	_tease_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tease_lbl.bbcode_enabled = true
+	_tease_lbl.add_theme_color_override("default_color", C_MUTED)
+	_tease_lbl.add_theme_font_size_override("normal_font_size", 13)
+	_tease_lbl.visible = false
+	vbox.add_child(_tease_lbl)
 
 	# ── SPA-212: Tab bar (Results / Replay) ───────────────────────────────────
 	var tab_row := HBoxContainer.new()
