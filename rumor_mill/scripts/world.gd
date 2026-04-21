@@ -9,6 +9,8 @@ extends Node2D
 signal rumor_event(message: String, tick: int)
 ## Emitted once per NPC the first tick their SOCIALLY_DEAD flag becomes true.
 signal socially_dead_triggered(npc_id: String, npc_name: String, tick: int)
+## SPA-850: Emitted when 3+ NPCs transition to BELIEVE for the same rumor in one day.
+signal cascade_triggered(rumor_id: String, believer_count: int)
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -105,6 +107,12 @@ var scenario_manager:  ScenarioManager  = null
 
 ## NPC ids for which socially_dead_triggered has already been emitted this session.
 var _socially_dead_ids: Dictionary = {}
+
+## SPA-850: daily cascade tracker — rumor_id → Array of NPC names that believed today.
+## Reset each dawn in _on_day_changed(). Fires cascade_triggered at 3+ per rumor.
+var _daily_believe_counts: Dictionary = {}
+## Set of rumor_ids that already fired cascade this day (prevents re-fire).
+var _daily_cascade_fired: Dictionary = {}
 
 ## SPA-592: cached display name of the Sister Maren NPC for carrier tracking.
 var _maren_display_name: String = ""
@@ -601,6 +609,9 @@ func _init_town_mood_controller() -> void:
 
 
 func _on_day_changed(_day: int) -> void:
+	# SPA-850: reset daily cascade tracker at dawn.
+	_daily_believe_counts.clear()
+	_daily_cascade_fired.clear()
 	if intel_store != null:
 		intel_store.replenish()
 	if rival_agent != null and scenario_manager != null:
@@ -1166,6 +1177,16 @@ func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id:
 	if not diagnostic.is_empty():
 		msg += "\n" + diagnostic
 	emit_signal("rumor_event", msg, tick)
+	# SPA-850: track daily BELIEVE transitions for cascade detection.
+	if state_name == "BELIEVE" and not rumor_id.is_empty():
+		if not _daily_believe_counts.has(rumor_id):
+			_daily_believe_counts[rumor_id] = []
+		var believers: Array = _daily_believe_counts[rumor_id]
+		if npc_name not in believers:
+			believers.append(npc_name)
+		if believers.size() >= 3 and not _daily_cascade_fired.has(rumor_id):
+			_daily_cascade_fired[rumor_id] = true
+			emit_signal("cascade_triggered", rumor_id, believers.size())
 
 
 func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: String) -> void:

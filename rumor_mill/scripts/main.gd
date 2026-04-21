@@ -1003,6 +1003,9 @@ func _wire_rumor_events() -> void:
 		return
 	world.rumor_event.connect(_on_rumor_event)
 	world.socially_dead_triggered.connect(_on_socially_dead_triggered)
+	# SPA-850: cascade celebration when 3+ NPCs believe same rumor in one day.
+	if world.has_signal("cascade_triggered"):
+		world.cascade_triggered.connect(_on_cascade_triggered)
 	# SPA-788: first-spread and first-belief-flip reward moments.
 	if "npcs" in world:
 		for npc in world.npcs:
@@ -1147,6 +1150,37 @@ func _on_first_belief_flip(npc_name: String, new_state_name: String, _rumor_id: 
 			Color(0.50, 1.00, 0.55, 1.0),
 			"first_belief_flip"
 		)
+
+
+## SPA-850: Cascade celebration — 3+ NPCs believed the same rumor in one day.
+## Shows "RUMOR WILDFIRE" milestone popup with amber particles and audio burst.
+func _on_cascade_triggered(rumor_id: String, believer_count: int) -> void:
+	# Audio burst: milestone chime + pitched-up reputation_up for excitement.
+	AudioManager.play_sfx("milestone_chime")
+	AudioManager.play_sfx_pitched("reputation_up", 1.12)
+
+	# Milestone popup — amber/orange color, scaled particle count by believer count.
+	var text := "RUMOR WILDFIRE — %d new believers!" % believer_count
+	if _milestone_notifier != null and _milestone_notifier.has_method("show_milestone"):
+		_milestone_notifier.show_milestone(
+			text,
+			Color(1.00, 0.75, 0.20, 1.0),
+			""
+		)
+
+	# Toast in recon HUD for the activity feed.
+	if recon_hud != null and recon_hud.has_method("show_toast"):
+		recon_hud.show_toast(text, true)
+
+	# Journal log so the cascade is visible in the timeline.
+	if journal != null and journal.has_method("push_timeline_event"):
+		var tick: int = 0
+		if world != null and world.day_night != null:
+			tick = world.day_night.current_tick
+		journal.push_timeline_event(tick, text)
+
+	# Camera shake for visceral feedback.
+	_camera_shake(5.0, 0.18)
 
 
 ## SPA-788: Spawns a world-space CPUParticles2D trail between two NPC positions.
