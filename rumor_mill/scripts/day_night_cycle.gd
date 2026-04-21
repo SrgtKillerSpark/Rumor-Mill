@@ -42,6 +42,8 @@ var _day_banner_label:  Label     = null
 var _day_banner_tween:  Tween     = null
 var _day_obj_label:     Label     = null
 var _day_obj_tween:     Tween     = null
+## True while the cinematic day-transition overlay is animating (tick timer paused).
+var _transition_paused: bool = false
 ## Set by World after ScenarioManager is ready. Called with no args; returns String.
 var objective_text_provider: Callable
 ## SPA-786: Total days allowed (set from main.gd via setup_days_allowed).
@@ -82,7 +84,7 @@ func _build_day_flash_overlay() -> void:
 	add_child(layer)
 
 	_day_flash_rect = ColorRect.new()
-	_day_flash_rect.color = Color(0.95, 0.90, 0.60, 0.0)  # warm parchment, fully transparent
+	_day_flash_rect.color = Color(0.06, 0.07, 0.18, 0.0)  # midnight blue, fully transparent
 	_day_flash_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_day_flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_day_flash_rect)
@@ -100,10 +102,10 @@ func _build_day_flash_overlay() -> void:
 	_day_banner_label.offset_top    = -30.0
 	_day_banner_label.offset_bottom =  30.0
 	_day_banner_label.add_theme_font_size_override("font_size", 28)
-	# Dark ink on the warm flash — reads as medieval manuscript.
-	_day_banner_label.add_theme_color_override("font_color", Color(0.22, 0.12, 0.04, 1.0))
+	# Warm parchment on the midnight overlay — reads as a cinematic title card.
+	_day_banner_label.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65, 1.0))
 	_day_banner_label.add_theme_constant_override("outline_size", 2)
-	_day_banner_label.add_theme_color_override("font_outline_color", Color(0.95, 0.85, 0.55, 0.5))
+	_day_banner_label.add_theme_color_override("font_outline_color", Color(0.80, 0.55, 0.20, 0.6))
 	_day_banner_label.modulate.a = 0.0
 	_day_banner_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_day_banner_label)
@@ -120,9 +122,9 @@ func _build_day_flash_overlay() -> void:
 	_day_obj_label.offset_top    =  14.0
 	_day_obj_label.offset_bottom =  40.0
 	_day_obj_label.add_theme_font_size_override("font_size", 13)
-	_day_obj_label.add_theme_color_override("font_color", Color(0.30, 0.18, 0.06, 1.0))
+	_day_obj_label.add_theme_color_override("font_color", Color(0.78, 0.68, 0.48, 1.0))
 	_day_obj_label.add_theme_constant_override("outline_size", 1)
-	_day_obj_label.add_theme_color_override("font_outline_color", Color(0.95, 0.85, 0.55, 0.4))
+	_day_obj_label.add_theme_color_override("font_outline_color", Color(0.80, 0.55, 0.20, 0.4))
 	_day_obj_label.modulate.a = 0.0
 	_day_obj_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_day_obj_label)
@@ -151,12 +153,21 @@ func _play_day_transition_flash() -> void:
 	if _day_banner_tween != null and _day_banner_tween.is_valid():
 		_day_banner_tween.kill()
 
-	# Warm parchment flash — fade in then out.
+	# Cinematic fade-to-midnight title card: fade in → hold → fade out.
+	# The tick timer is paused during the hold so gameplay freezes gracefully.
+	_transition_paused = true
+	tick_timer.stop()
+	_day_flash_rect.color = Color(0.06, 0.07, 0.18, 0.0)  # ensure midnight blue, reset alpha
 	_day_flash_tween = create_tween()
-	_day_flash_tween.tween_property(_day_flash_rect, "color:a", 0.30, 0.25) \
+	_day_flash_tween.tween_property(_day_flash_rect, "color:a", 0.82, 0.60) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
-	_day_flash_tween.tween_property(_day_flash_rect, "color:a", 0.0,  0.55) \
+	_day_flash_tween.tween_interval(0.90)   # hold — banner and time label are fully visible
+	_day_flash_tween.tween_property(_day_flash_rect, "color:a", 0.0, 0.80) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+	_day_flash_tween.tween_callback(func() -> void:
+		_transition_paused = false
+		tick_timer.start()
+	)
 
 	# Day number banner — SPA-786: "Day X of Y" with color-coded remaining days.
 	if _day_banner_label != null:
@@ -165,36 +176,38 @@ func _play_day_transition_flash() -> void:
 		var day_frac: float = clampf(float(current_day - 1) / float(max(days_allowed - 1, 1)), 0.0, 1.0)
 		var banner_color: Color
 		if day_frac >= 0.75:
-			banner_color = Color(0.75, 0.15, 0.05, 1.0)  # deep red
+			banner_color = Color(1.00, 0.35, 0.15, 1.0)  # blood orange — urgent on dark bg
 		elif day_frac >= 0.50:
-			banner_color = Color(0.70, 0.45, 0.05, 1.0)  # amber
+			banner_color = Color(1.00, 0.75, 0.20, 1.0)  # amber — warning on dark bg
 		else:
-			banner_color = Color(0.22, 0.12, 0.04, 1.0)  # default dark ink
+			banner_color = Color(0.95, 0.88, 0.65, 1.0)  # warm parchment — calm on dark bg
 		_day_banner_label.add_theme_color_override("font_color", banner_color)
 		_day_banner_label.modulate.a = 0.0
 		_day_banner_tween = create_tween()
-		_day_banner_tween.tween_property(_day_banner_label, "modulate:a", 1.0, 0.30) \
+		_day_banner_tween.tween_property(_day_banner_label, "modulate:a", 1.0, 0.45) \
 			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
-		_day_banner_tween.tween_interval(0.20)
-		_day_banner_tween.tween_property(_day_banner_label, "modulate:a", 0.0, 0.55) \
+		_day_banner_tween.tween_interval(0.70)
+		_day_banner_tween.tween_property(_day_banner_label, "modulate:a", 0.0, 0.60) \
 			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
 
-	# Scenario objective reminder — same timing as the day banner.
+	# Time-of-day indicator + scenario objective — always shown during the cinematic.
 	if _day_obj_label != null:
-		var obj_text := ""
+		# Always prefix with a dawn marker; append objective beneath if available.
+		var dawn_text := "~ Dawn ~"
 		if objective_text_provider.is_valid():
-			obj_text = objective_text_provider.call()
-		if not obj_text.is_empty():
-			if _day_obj_tween != null and _day_obj_tween.is_valid():
-				_day_obj_tween.kill()
-			_day_obj_label.text = obj_text
-			_day_obj_label.modulate.a = 0.0
-			_day_obj_tween = create_tween()
-			_day_obj_tween.tween_property(_day_obj_label, "modulate:a", 1.0, 0.30) \
-				.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
-			_day_obj_tween.tween_interval(0.20)
-			_day_obj_tween.tween_property(_day_obj_label, "modulate:a", 0.0, 0.55) \
-				.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+			var obj := objective_text_provider.call()
+			if not obj.is_empty():
+				dawn_text = dawn_text + "\n" + obj
+		if _day_obj_tween != null and _day_obj_tween.is_valid():
+			_day_obj_tween.kill()
+		_day_obj_label.text = dawn_text
+		_day_obj_label.modulate.a = 0.0
+		_day_obj_tween = create_tween()
+		_day_obj_tween.tween_property(_day_obj_label, "modulate:a", 1.0, 0.45) \
+			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+		_day_obj_tween.tween_interval(0.70)
+		_day_obj_tween.tween_property(_day_obj_label, "modulate:a", 0.0, 0.60) \
+			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
 
 
 func _apply_time_of_day(hour: int) -> void:
@@ -239,10 +252,11 @@ func _update_time_label() -> void:
 
 
 ## Pause / resume the tick loop (e.g. when the game is paused).
+## Resume is a no-op if the day-transition cinematic is still animating.
 func set_paused(paused: bool) -> void:
 	if paused:
 		tick_timer.stop()
-	else:
+	elif not _transition_paused:
 		tick_timer.start()
 
 
