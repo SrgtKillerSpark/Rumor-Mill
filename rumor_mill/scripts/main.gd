@@ -67,6 +67,9 @@ var _waypoint_step:  int    = 0      # 0=inactive, 1=market, 2=eavesdrop pair, 3
 # ── SPA-709: Milestone reward notification popup ──────────────────────────────
 var _milestone_notifier: CanvasLayer = null
 
+# ── SPA-850: Cascade celebration overlay ("RUMOR WILDFIRE") ──────────────────
+var _cascade_celebration: CanvasLayer = null
+
 # ── SPA-805: S1 manor golden-pulse highlight (day 1–2 building affordance) ────
 var _s1_manor_highlight: Polygon2D = null
 
@@ -294,6 +297,10 @@ func _on_begin_game(scenario_id: String) -> void:
 			world.intel_store,
 			_milestone_notifier.show_milestone
 		)
+	# SPA-850: Cascade celebration overlay — created after journal/world are ready.
+	_cascade_celebration = preload("res://scripts/cascade_celebration.gd").new()
+	_cascade_celebration.name = "CascadeCelebration"
+	add_child(_cascade_celebration)
 	_wire_rumor_events()
 	_init_event_choice_modal()
 	_init_objective_hud()
@@ -1013,6 +1020,12 @@ func _wire_rumor_events() -> void:
 				npc.rumor_transmitted.connect(_on_first_rumor_transmitted)
 			if npc.has_signal("rumor_state_changed"):
 				npc.rumor_state_changed.connect(_on_first_belief_flip)
+
+
+## SPA-850: Show "RUMOR WILDFIRE" celebration when 3+ NPCs believe in one day.
+func _on_cascade_triggered(_rumor_id: String, believer_count: int) -> void:
+	if _cascade_celebration != null and _cascade_celebration.has_method("show_cascade"):
+		_cascade_celebration.show_cascade(believer_count)
 
 
 ## Relay world rumor events into the Journal timeline and overlay.
