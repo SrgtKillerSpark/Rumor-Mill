@@ -1,51 +1,75 @@
 {
 	"hud_day": {
 		"title": "Day Counter",
-		"body": "The current day and time of day. Red means you are behind on your goal. Each day has 16 ticks of action before dawn."
+		"body": "What: The current day out of your total deadline.\nRed text means you are behind schedule.\nTip: Use speed controls (Space/1/3) to manage time."
 	},
 	"hud_day_progress": {
 		"title": "Day Progress",
-		"body": "How far through today you are. The bar drains as you take actions. When it empties, the day ends and actions refresh at dawn."
+		"body": "What: How far through today you are.\nEach tick advances time — actions and events consume ticks.\nWhen the bar empties, the day ends and resources refresh at dawn."
 	},
 	"hud_win_progress": {
 		"title": "Win Progress",
-		"body": "How close you are to winning the scenario. Reach 100% before the days run out. Spread rumors to shift NPC beliefs and push the town toward your goal."
+		"body": "What: How close you are to winning the scenario.\nHow to increase: Spread rumors that shift NPC beliefs toward your goal.\nReach 100% before the deadline to win."
 	},
 	"hud_goal": {
 		"title": "Scenario Goal",
-		"body": "Your objective for this run. Spreading the right rumors to the right NPCs will shift faction power and beliefs toward your goal."
+		"body": "What: Your primary objective for this run.\nHow to achieve: Craft and spread rumors that target the right NPCs.\nCheck the Journal (J) for detailed progress tracking."
 	},
 	"hud_milestone": {
 		"title": "Progress Milestone",
-		"body": "A notable marker on the road to victory. Milestones appear when your rumors have had a meaningful impact on the town."
+		"body": "What: A notable achievement on the road to victory.\nMilestones appear when your rumors have meaningful impact on the town."
 	},
 	"recon_actions": {
 		"title": "Recon Actions",
-		"body": "Actions you can spend today to observe NPCs and locations. Each action reveals information useful for crafting rumors. Refreshes every dawn."
+		"body": "What: Your daily budget for gathering intelligence.\nHow to use: Right-click buildings to Observe, NPCs to Eavesdrop.\nRefresh: All actions replenish at dawn each day."
 	},
 	"recon_whispers": {
 		"title": "Whisper Tokens",
-		"body": "Tokens spent to seed rumors. Each seeding costs 1 token. Whisper to well-connected NPCs for faster spread. Refreshes every dawn."
+		"body": "What: Tokens spent to seed rumors into the town.\nHow to use: Press R to craft a rumor, then choose a seed target.\nRefresh: All tokens replenish at dawn each day."
 	},
 	"recon_favors": {
 		"title": "Favors",
-		"body": "Favors earned through successful actions and spent on bribes. Bribing NPCs can shift their beliefs or protect your rumors from rejection."
+		"body": "What: Tokens earned through successful recon actions.\nHow to use: Bribe NPCs to reduce their suspicion of you.\nEarn more: Complete recon actions successfully."
 	},
 	"recon_heat": {
 		"title": "Heat (Suspicion)",
-		"body": "How suspicious the town is of your activities. High heat makes NPCs more likely to reject your rumors. Lay low to let it cool."
+		"body": "What: How suspicious NPCs are of your activities.\nEffect: High heat makes NPCs reject your rumors (-15% at 50, -30% at 75).\nReduce it: Use Favors to bribe NPCs, or lay low and wait."
+	},
+	"speed_pause": {
+		"title": "Pause (Space)",
+		"body": "What: Freezes all game time.\nUse this to plan your next move without time pressure.\nPress Space again or click 1x/3x to resume."
+	},
+	"speed_normal": {
+		"title": "Normal Speed (1)",
+		"body": "What: Standard game speed — 1 tick per second.\nGood for observing rumor spread and NPC behavior in real time."
+	},
+	"speed_fast": {
+		"title": "Fast Speed (3)",
+		"body": "What: Triple game speed — 3 ticks per second.\nUseful when waiting for rumors to spread or resources to refresh."
+	},
+	"speed_end_day": {
+		"title": "End Day (E)",
+		"body": "What: Skips immediately to the next dawn.\nAvailable when all actions and whispers are spent.\nUse this to avoid waiting when you have nothing left to do today."
+	},
+	"controls_panel": {
+		"title": "Controls",
+		"body": "WASD: Pan camera | Scroll: Zoom\nR: Open Rumor Crafting | J: Open Journal\nG: Social Graph | F1: Help / Tutorial\nRight-click: Interact with NPCs and buildings"
+	},
+	"social_graph": {
+		"title": "Social Graph (G)",
+		"body": "What: A visual map of NPC relationships.\nHow to use: Find well-connected NPCs for faster rumor spread.\nTip: Allied NPCs pass rumors more willingly than rivals."
 	},
 	"rumor_subject_panel": {
 		"title": "1 / 3 — Subject Selection",
-		"body": "Choose which NPC this rumor targets. Their faction and reputation affect how quickly the rumor spreads and how believable it sounds to others."
+		"body": "What: Choose which NPC this rumor targets.\nTheir faction and reputation affect spread speed and believability.\nTip: Target NPCs central to your win condition."
 	},
 	"rumor_claim_panel": {
 		"title": "2 / 3 — Claim Type",
-		"body": "The kind of rumor you are spreading. Intensity determines how fast it spreads and how much it shocks the listener. Mutability controls how much NPCs distort it as it travels."
+		"body": "What: The kind of rumor you are spreading.\nIntensity: How fast it spreads (high = faster but riskier).\nMutability: How much NPCs distort it as it travels."
 	},
 	"rumor_seed_panel": {
 		"title": "3 / 3 — Seed Target",
-		"body": "The first NPC to hear the rumor. Well-connected NPCs spread it to more people. Seeding costs 1 Whisper Token — choose your messenger wisely."
+		"body": "What: The first NPC to hear the rumor.\nWell-connected NPCs spread it to more people.\nCosts 1 Whisper Token — choose your messenger wisely."
 	},
 	"rumor_whisper_bar": {
 		"title": "Whisper Tokens Remaining",
@@ -53,34 +77,42 @@
 	},
 	"rumor_claim_intensity": {
 		"title": "Intensity",
-		"body": "How shocking the claim is. Higher intensity spreads faster and is harder to ignore, but strong claims may be dismissed as unbelievable by skeptical NPCs."
+		"body": "What: How shocking the claim is.\nHigh intensity spreads faster but may be dismissed by skeptical NPCs.\nTip: Match intensity to your target's credulity."
 	},
 	"rumor_claim_mutability": {
 		"title": "Mutability",
-		"body": "How much NPCs distort the rumor as it passes between them. High mutability means the story changes significantly by the time it reaches its target."
+		"body": "What: How much NPCs distort the rumor as it passes between them.\nHigh mutability means the story changes significantly by the time it reaches its target."
 	},
 	"journal_rumors": {
 		"title": "Rumors",
-		"body": "All rumors you have seeded. Track their spread state, how many NPCs believe them, and filter or sort by status. New activity is highlighted."
+		"body": "What: All rumors you have seeded.\nTrack spread state, believer count, and filter by status.\nNew activity is highlighted for easy scanning."
 	},
 	"journal_intelligence": {
 		"title": "Intelligence",
-		"body": "Observations and eavesdropping data collected through recon actions. Attach evidence to rumors to boost their believability when you seed them."
+		"body": "What: Observations and eavesdropping data from recon actions.\nHow to use: Attach evidence to rumors to boost believability.\nGather more by right-clicking NPCs and buildings."
 	},
 	"journal_factions": {
 		"title": "Factions",
-		"body": "The three town factions — Merchant, Noble, and Clergy. Shows each faction's current mood and how your rumors are shifting their influence."
+		"body": "What: The three town factions — Merchant, Noble, and Clergy.\nShows each faction's current mood and how your rumors shift their influence."
 	},
 	"journal_timeline": {
 		"title": "Timeline",
-		"body": "A chronological log of events, rumors seeded, and NPC state changes. Useful for spotting patterns and planning your next move."
+		"body": "What: A chronological log of events, rumors, and NPC state changes.\nUseful for spotting patterns and planning your next move."
 	},
 	"journal_objectives": {
 		"title": "Objectives",
-		"body": "Your scenario win and fail conditions, with current progress toward each. Check here if you are unsure what to focus on."
+		"body": "What: Your scenario win and fail conditions with current progress.\nCheck here if you are unsure what to focus on."
 	},
 	"journal_milestones": {
 		"title": "Milestones",
-		"body": "Notable achievements unlocked during this run. Each milestone marks a meaningful turning point in how the town's gossip network has shifted."
+		"body": "What: Notable achievements unlocked during this run.\nEach milestone marks a meaningful turning point in the town's gossip network."
+	},
+	"feed_panel": {
+		"title": "Recent Actions",
+		"body": "What: A log of your last few recon actions and their outcomes.\nClick an entry to jump to that event in the Journal Timeline.\nClears when a new time-of-day phase begins."
+	},
+	"hint_button": {
+		"title": "What Next? (?)",
+		"body": "What: Context-aware guidance based on your current game state.\nShows a suggestion for what to do next.\nGreat for new players or when you feel stuck."
 	}
 }

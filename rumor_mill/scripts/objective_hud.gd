@@ -202,28 +202,54 @@ func setup_world(world: Node2D) -> void:
 				_day_night.day_transition_started.connect(_suggestion_engine._on_dawn)
 
 
-## SPA-769: Set tooltip_text on scene-defined HUD controls using tooltips.json keys.
+## SPA-769/870: Set tooltip_text on scene-defined HUD controls (what/how/why format).
 func _setup_tooltips() -> void:
+	var day_tip := (
+		"Day Counter\n"
+		+ "What: The current day out of your total deadline.\n"
+		+ "Red text means you are behind schedule.\n"
+		+ "Tip: Use the speed controls (Space/1/3) to manage time."
+	)
 	if day_label != null:
-		day_label.tooltip_text = "Day Counter\nThe current day and time of day. Red means you are behind on your goal."
+		day_label.tooltip_text = day_tip
 		day_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	if day_max_label != null:
-		day_max_label.tooltip_text = "Day Counter\nThe current day and time of day. Red means you are behind on your goal."
+		day_max_label.tooltip_text = day_tip
 		day_max_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	if days_remaining_lbl != null:
-		days_remaining_lbl.tooltip_text = "Day Counter\nThe current day and time of day. Red means you are behind on your goal."
+		days_remaining_lbl.tooltip_text = day_tip
 		days_remaining_lbl.mouse_filter = Control.MOUSE_FILTER_STOP
 	if progress_bg != null:
-		progress_bg.tooltip_text = "Day Progress\nHow far through today you are. The bar drains as you take actions."
+		progress_bg.tooltip_text = (
+			"Day Progress\n"
+			+ "What: How far through today you are.\n"
+			+ "Each tick advances time — actions and events consume ticks.\n"
+			+ "When the bar empties, the day ends and resources refresh at dawn."
+		)
 		progress_bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	if win_progress_lbl != null:
-		win_progress_lbl.tooltip_text = "Win Progress\nHow close you are to winning the scenario. Reach 100% before the days run out."
+		win_progress_lbl.tooltip_text = (
+			"Win Progress\n"
+			+ "What: How close you are to winning the scenario.\n"
+			+ "How to increase: Spread rumors that shift NPC beliefs toward your goal.\n"
+			+ "Reach 100% before the deadline to win."
+		)
 		win_progress_lbl.mouse_filter = Control.MOUSE_FILTER_STOP
 	if goal_label != null:
-		goal_label.tooltip_text = "Scenario Goal\nYour objective for this run. Spread the right rumors to shift beliefs toward your goal."
+		goal_label.tooltip_text = (
+			"Scenario Goal\n"
+			+ "What: Your primary objective for this run.\n"
+			+ "How to achieve: Craft and spread rumors that target the right NPCs.\n"
+			+ "Check the Journal (J) for detailed progress tracking."
+		)
 		goal_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	if milestone_label != null:
-		milestone_label.tooltip_text = "Progress Milestone\nA notable marker on the road to victory."
+		milestone_label.tooltip_text = (
+			"Progress Milestone\n"
+			+ "What: A notable achievement on the road to victory.\n"
+			+ "Milestones appear when your rumors have meaningful impact.\n"
+			+ "Check Journal > Milestones for your full achievement history."
+		)
 		milestone_label.mouse_filter = Control.MOUSE_FILTER_STOP
 
 
@@ -244,7 +270,12 @@ func _enhance_visual_hierarchy() -> void:
 	var win_bg: ColorRect = $Panel/VBox/WinProgressBG
 	if win_bg != null:
 		win_bg.mouse_filter = Control.MOUSE_FILTER_STOP
-		win_bg.tooltip_text = "Win Progress\nHow close you are to winning the scenario. Reach 100% before the days run out."
+		win_bg.tooltip_text = (
+			"Win Progress\n"
+			+ "What: How close you are to winning the scenario.\n"
+			+ "How to increase: Spread rumors that shift NPC beliefs toward your goal.\n"
+			+ "Reach 100% before the deadline to win."
+		)
 
 
 func _on_day_changed(_day: int) -> void:

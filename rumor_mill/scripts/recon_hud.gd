@@ -851,16 +851,29 @@ func _refresh_pips() -> void:
 		if _old_whisper >= 0:
 			_spawn_pip_delta(whispers - _old_whisper, false)
 
-	# Update row tooltips so hovering the pip area explains the resource.
-	action_pips_row.get_parent().tooltip_text = "Recon Actions: %d / %d remaining\nRight-click buildings to Observe, NPCs to Eavesdrop.\nRefreshes at dawn each day." % [remaining, max_val]
-	whisper_pips_row.get_parent().tooltip_text = "Whisper Tokens: %d / %d remaining\nPress R to craft and seed a rumor.\nRefreshes at dawn each day." % [whispers, max_w]
+	# SPA-870: First-time resource change callouts for new players.
+	_check_first_time_callouts(_last_action_rem, remaining, _last_whisper_rem, whispers)
+
+	# Update row tooltips so hovering the pip area explains the resource (SPA-870 enhanced).
+	action_pips_row.get_parent().tooltip_text = (
+		"Recon Actions: %d / %d remaining\n"
+		+ "What: Your daily budget for gathering intelligence.\n"
+		+ "How to use: Right-click buildings to Observe, NPCs to Eavesdrop.\n"
+		+ "Refresh: All actions replenish at dawn each day."
+	) % [remaining, max_val]
+	whisper_pips_row.get_parent().tooltip_text = (
+		"Whisper Tokens: %d / %d remaining\n"
+		+ "What: Tokens spent to seed rumors into the town.\n"
+		+ "How to use: Press R to craft a rumor, then choose a seed target.\n"
+		+ "Refresh: All tokens replenish at dawn each day."
+	) % [whispers, max_w]
 	action_pips_row.get_parent().mouse_filter = Control.MOUSE_FILTER_PASS
 	whisper_pips_row.get_parent().mouse_filter = Control.MOUSE_FILTER_PASS
 
 	# Show dawn refresh hint when all actions and whispers are spent.
 	if _dawn_label != null:
 		if remaining == 0 and whispers == 0:
-			_dawn_label.text = "☀ Actions refresh at dawn"
+			_dawn_label.text = "☀ Actions refresh at dawn — speed up time or plan your next move"
 			_dawn_label.visible = true
 		else:
 			_dawn_label.visible = false
@@ -874,13 +887,21 @@ func _refresh_pips() -> void:
 	# Heat meter.
 	_refresh_heat()
 
-	# Favors row.
+	# Favors row (SPA-870: enhanced tooltip with what/how/why).
 	var show_favors: bool = _intel_store_ref.heat_enabled or favors > 0
 	if favors_row != null:
 		favors_row.visible = show_favors
 		if show_favors:
 			favors_label.text = str(favors)
-			favors_row.tooltip_text = "Favors: %d available (bribe NPCs to reduce suspicion)" % favors
+			favors_row.tooltip_text = (
+				"Favors: %d available\n"
+				+ "What: Tokens earned through successful actions.\n"
+				+ "How to use: Bribe NPCs to reduce their suspicion of you.\n"
+				+ "Earn more: Complete recon actions successfully."
+			) % favors
+
+	# SPA-870: Update key hint availability (grey out unavailable actions).
+	_refresh_key_hint_availability()
 
 
 # ── "What should I do?" hint button ──────────────────────────────────────────
@@ -1107,23 +1128,42 @@ func _update_pips(
 # ── SPA-767: Recon HUD tooltips & visual indicators ─────────────────────────
 
 func _setup_recon_tooltips() -> void:
-	# Counter panel overall tooltip.
+	# Counter panel overall tooltip (SPA-870: what/how/why format).
 	var counter_panel: Panel = $CounterPanel
-	counter_panel.tooltip_text = "Recon Resources\nYour daily action and whisper token budget.\nResources refresh at the start of each new day."
+	counter_panel.tooltip_text = (
+		"Recon Resources\n"
+		+ "What: Your daily budget of Actions and Whisper Tokens.\n"
+		+ "Actions let you gather intel; Whispers let you seed rumors.\n"
+		+ "All resources refresh at the start of each new day."
+	)
 	counter_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	# Heat meter tooltip (set dynamically, but provide a default).
 	if _heat_row != null:
-		_heat_row.tooltip_text = "Town Suspicion\nHow suspicious the townsfolk are of your activities.\nHigh heat reduces rumor believability and can trigger exposure."
+		_heat_row.tooltip_text = (
+			"Town Suspicion\n"
+			+ "What: How suspicious NPCs are of your activities.\n"
+			+ "Effect: High heat makes NPCs reject your rumors.\n"
+			+ "Reduce it: Use Favors to bribe NPCs, or lay low and wait."
+		)
 		_heat_row.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	# Feed panel tooltip.
 	if _feed_panel != null:
-		_feed_panel.tooltip_text = "Recent Actions\nYour last few recon actions and their results.\nClick an entry to filter the Journal to that event."
+		_feed_panel.tooltip_text = (
+			"Recent Actions\n"
+			+ "What: A log of your last few recon actions and their results.\n"
+			+ "Tip: Click an entry to filter the Journal to that event."
+		)
 
 	# Key hints row.
 	var key_hint_row: HBoxContainer = $CounterPanel/VBox/KeyHintRow
-	key_hint_row.tooltip_text = "Quick Actions\nKeyboard shortcuts to open game panels.\nR: Rumor crafting | J: Journal | G: Social Graph | F1: Help"
+	key_hint_row.tooltip_text = (
+		"Quick Actions\n"
+		+ "Keyboard shortcuts to open game panels.\n"
+		+ "R: Rumor crafting | J: Journal | G: Social Graph | F1: Help\n"
+		+ "Greyed-out shortcuts require resources you don't currently have."
+	)
 	key_hint_row.mouse_filter = Control.MOUSE_FILTER_PASS
 
 
