@@ -1740,6 +1740,7 @@ func show_state_emote(state_name: String) -> void:
 
 ## Brief highlight flash when the player clicks to select/interact with this NPC.
 ## Immediately sets self_modulate to a bright gold-white burst, then tweens back.
+## SPA-869: Also plays a quick scale pulse (1.0 → 1.1 → 1.0 over 0.15 s).
 func flash_click() -> void:
 	if sprite == null:
 		return
@@ -1748,6 +1749,13 @@ func flash_click() -> void:
 	sprite.self_modulate = Color(2.0, 1.8, 0.8, 1.0)
 	_flash_tween = create_tween()
 	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.28)
+	# Scale pulse independent of the colour tween so both run simultaneously.
+	sprite.scale = Vector2.ONE
+	var _sp := create_tween()
+	_sp.tween_property(sprite, "scale", Vector2(1.1, 1.1), 0.075) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_sp.tween_property(sprite, "scale", Vector2.ONE, 0.075) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
 
 ## SPA-777: Shows a brief name + faction label above the NPC when the player clicks it.

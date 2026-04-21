@@ -11,6 +11,8 @@ signal game_tick(tick: int)
 signal day_changed(day: int)
 ## Emitted at the start of the day transition flash so HUDs can react.
 signal day_transition_started(day: int)
+## Emitted when the named time-of-day phase changes (Morning/Afternoon/Evening/Night).
+signal phase_changed(phase_name: String)
 
 @export var tick_duration_seconds: float = 1.0   ## Real seconds between ticks
 @export var ticks_per_day: int = 24              ## Ticks that make one full day
@@ -44,6 +46,11 @@ var _day_obj_label:     Label     = null
 var _day_obj_tween:     Tween     = null
 ## True while the cinematic day-transition overlay is animating (tick timer paused).
 var _transition_paused: bool = false
+## SPA-869: Phase transition overlay nodes.
+var _phase_label:       Label = null
+var _phase_label_tween: Tween = null
+## Tracks the current named phase so we only fire on real transitions.
+var _current_phase_name: String = ""
 ## Set by World after ScenarioManager is ready. Called with no args; returns String.
 var objective_text_provider: Callable
 ## SPA-786: Total days allowed (set from main.gd via setup_days_allowed).
@@ -110,6 +117,27 @@ func _build_day_flash_overlay() -> void:
 	_day_banner_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_day_banner_label)
 
+	# SPA-869: Phase label — shown on sub-day phase transitions (Morning/Afternoon/Evening/Night).
+	# Sits above the day banner vertically so it doesn't overlap.
+	_phase_label = Label.new()
+	_phase_label.set_anchors_preset(Control.PRESET_CENTER)
+	_phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_phase_label.anchor_left   = 0.5
+	_phase_label.anchor_right  = 0.5
+	_phase_label.anchor_top    = 0.18
+	_phase_label.anchor_bottom = 0.18
+	_phase_label.offset_left   = -120.0
+	_phase_label.offset_right  =  120.0
+	_phase_label.offset_top    = -18.0
+	_phase_label.offset_bottom =  18.0
+	_phase_label.add_theme_font_size_override("font_size", 20)
+	_phase_label.add_theme_color_override("font_color", Color(0.95, 0.92, 0.75, 1.0))
+	_phase_label.add_theme_constant_override("outline_size", 2)
+	_phase_label.add_theme_color_override("font_outline_color", Color(0.10, 0.08, 0.04, 0.8))
+	_phase_label.modulate.a = 0.0
+	_phase_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(_phase_label)
+
 	# Scenario objective reminder — fades in below the day number.
 	_day_obj_label = Label.new()
 	_day_obj_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -138,6 +166,13 @@ func _on_tick_timer_timeout() -> void:
 		emit_signal("day_transition_started", current_day)
 		emit_signal("day_changed", current_day)
 		_play_day_transition_flash()
+	else:
+		# SPA-869: Check for sub-day phase transitions.
+		var new_phase := _get_phase_name(hour_of_day)
+		if new_phase != _current_phase_name:
+			_current_phase_name = new_phase
+			emit_signal("phase_changed", new_phase)
+			_play_phase_transition(new_phase)
 	emit_signal("game_tick", current_tick)
 	_apply_time_of_day(hour_of_day)
 	_update_shadow_direction(hour_of_day)
@@ -349,3 +384,37 @@ func _update_shadow_direction(hour: int) -> void:
 	_shadow_mat.set_shader_parameter("u_sun_x",    sun_x)
 	_shadow_mat.set_shader_parameter("u_strength", strength)
 	_shadow_mat.set_shader_parameter("u_warm",     warm)
+
+
+# ── SPA-869: Sub-day phase transition overlay ─────────────────────────────────
+
+## Returns the named phase for the given hour-of-day.
+## Boundaries mirror audio_manager.gd plus an Afternoon split at noon.
+func _get_phase_name(hour: int) -> String:
+	if hour >= 20:
+		return "Night"
+	elif hour >= 16:
+		return "Evening"
+	elif hour >= 12:
+		return "Afternoon"
+	elif hour >= 6:
+		return "Morning"
+	else:
+		return "Night"
+
+
+## Play a non-blocking phase label fade-in → hold → fade-out (0.3 + 0.6 + 0.3 s).
+func _play_phase_transition(phase_name: String) -> void:
+	if _phase_label == null:
+		return
+	if _phase_label_tween != null and _phase_label_tween.is_valid():
+		_phase_label_tween.kill()
+	_phase_label.text = phase_name
+	_phase_label.modulate.a = 0.0
+	_phase_label_tween = create_tween()
+	_phase_label_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_phase_label_tween.tween_property(_phase_label, "modulate:a", 1.0, 0.3) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	_phase_label_tween.tween_interval(0.6)
+	_phase_label_tween.tween_property(_phase_label, "modulate:a", 0.0, 0.3) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
