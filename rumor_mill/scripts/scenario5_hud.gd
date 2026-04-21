@@ -41,6 +41,14 @@ var _prev_aldric_score: int = -1
 var _prev_edric_score:  int = -1
 var _prev_tomas_score:  int = -1
 
+# ── S5 Endorsement Campaign verb ─────────────────────────────────────────────
+## Spend 1 recon to stage a public appearance for Aldric (+4 rep boost, 3-day cooldown).
+const CAMPAIGN_REP_BOOST:  int = 4
+const CAMPAIGN_COOLDOWN:   int = 3  # days between appearances
+var _campaign_btn:       Button = null
+var _campaign_lbl:       Label  = null
+var _campaign_last_day:  int    = -999  # day the last appearance was staged
+
 
 func _scenario_number() -> int:
 	return 5
@@ -171,6 +179,22 @@ func _build_ui() -> void:
 	_endorse_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_endorse_lbl)
 
+	# ── Endorsement Campaign verb ────────────────────────────────────────────
+	_campaign_btn = Button.new()
+	_campaign_btn.text = "Stage Appearance"
+	_campaign_btn.tooltip_text = "Spend 1 recon action to stage a public appearance for Aldric (+%d reputation). %d-day cooldown between appearances." % [CAMPAIGN_REP_BOOST, CAMPAIGN_COOLDOWN]
+	_campaign_btn.add_theme_font_size_override("font_size", 12)
+	_campaign_btn.disabled = true
+	_campaign_btn.pressed.connect(_on_campaign_pressed)
+	right_vbox.add_child(_campaign_btn)
+
+	_campaign_lbl = Label.new()
+	_campaign_lbl.add_theme_font_size_override("font_size", 11)
+	_campaign_lbl.add_theme_color_override("font_color", Color(0.55, 0.85, 0.45, 0.90))
+	_campaign_lbl.text = ""
+	_campaign_lbl.visible = false
+	right_vbox.add_child(_campaign_lbl)
+
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
 
@@ -268,6 +292,50 @@ func _refresh() -> void:
 	_update_result_label(state,
 		"VICTORY — Aldric Vane wins the election",
 		"FAILED — The election is lost")
+	_update_campaign_button()
+
+
+# ── Endorsement Campaign verb ─────────────────────────────────────────────────
+
+## Sync the Stage Appearance button enabled state each refresh.
+func _update_campaign_button() -> void:
+	if _campaign_btn == null or _world_ref == null:
+		return
+	var intel: PlayerIntelStore = _world_ref.get("intel_store")
+	var sm: ScenarioManager = _world_ref.get("scenario_manager")
+	var has_recon: bool = intel != null and intel.recon_actions_remaining > 0
+	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) if sm != null and _day_night_ref != null else 0
+	var cooldown_clear: bool = current_day - _campaign_last_day >= CAMPAIGN_COOLDOWN
+	_campaign_btn.disabled = not (has_recon and cooldown_clear)
+	if has_recon and not cooldown_clear:
+		var days_left: int = CAMPAIGN_COOLDOWN - (current_day - _campaign_last_day)
+		_campaign_btn.tooltip_text = "Cooldown: %d day%s remaining before next appearance." % [days_left, "s" if days_left != 1 else ""]
+	else:
+		_campaign_btn.tooltip_text = "Spend 1 recon action to stage a public appearance for Aldric (+%d reputation). %d-day cooldown." % [CAMPAIGN_REP_BOOST, CAMPAIGN_COOLDOWN]
+
+
+## Player clicked "Stage Appearance" — spend 1 recon and boost Aldric's reputation.
+func _on_campaign_pressed() -> void:
+	if _world_ref == null:
+		return
+	var intel: PlayerIntelStore = _world_ref.get("intel_store")
+	var rep: ReputationSystem = _world_ref.get("reputation_system")
+	var sm: ScenarioManager = _world_ref.get("scenario_manager")
+	if intel == null or rep == null or sm == null:
+		return
+	if not intel.try_spend_action():
+		return
+	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) if _day_night_ref != null else 0
+	_campaign_last_day = current_day
+	rep.apply_score_delta(ScenarioManager.ALDRIC_VANE_ID, CAMPAIGN_REP_BOOST)
+	if _campaign_lbl != null:
+		_campaign_lbl.text = "Day %d: Aldric rallied the crowd (+%d rep)" % [current_day, CAMPAIGN_REP_BOOST]
+		_campaign_lbl.visible = true
+		_campaign_lbl.add_theme_color_override("font_color", Color(0.55, 0.85, 0.45, 0.90))
+		var tween := create_tween()
+		tween.tween_property(_campaign_lbl, "modulate:a", 0.20, 0.10)
+		tween.tween_property(_campaign_lbl, "modulate:a", 1.0, 0.25)
+	_update_campaign_button()
 
 
 # ── Endorsement event ────────────────────────────────────────────────────────

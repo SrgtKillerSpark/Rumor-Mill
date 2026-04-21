@@ -684,7 +684,7 @@
       "danger": "Finn is the most vulnerable — impressionable and wavering in loyalty, he absorbs slander more readily than the others. The Inquisitor is a relentless opponent who actively spreads accusations on a cooldown that accelerates over time.",
       "strategyHint": "This is defensive. Counter-spread positive character-witness rumors faster than the Inquisitor. Prioritize protecting Finn Monk — then Vera.",
       "firstAction": "Check the Scenario HUD to see who is closest to 48. Press R, choose the most threatened NPC as the subject, select Praise as the claim, and whisper it to their strongest ally.",
-      "goalVerb": "PROTECT",
+      "goalVerb": "SHIELD",
       "goalTarget": "the accused from the Inquisitor",
       "progressMilestones": {
         "0.25": "Shields holding",
@@ -908,7 +908,7 @@
       "danger": "If Aldric drops below 30, instant fail. The Prior endorses whoever leads on day 13 — a +8 boost that could decide the race.",
       "strategyHint": "Three-front war. Boost Aldric through the merchant chain (Sybil, Nell, Greta). Undermine Edric through his weaker noble ties (Annit, Old Hugh). Undermine Tomas through his common-folk connections (Sim, Constance). Time everything around the day-13 endorsement.",
       "firstAction": "Observe the Market to find Aldric's merchant allies. Press R to craft a Praise rumor about Aldric and whisper it to Sybil Oats — she is the most connected merchant. Then start seeding Scandal rumors against whichever rival is currently leading.",
-      "goalVerb": "ELECT",
+      "goalVerb": "CAMPAIGN",
       "goalTarget": "Aldric as the new Alderman",
       "progressMilestones": {
         "0.25": "Campaign begun",
@@ -1135,7 +1135,7 @@
       "danger": "Heat ceiling is 55 (not 80) — the guards are on Aldric's payroll. If Marta's reputation drops below 30, instant fail. Aldric's merchant allies actively defend him with praise rumors every 3 days.",
       "strategyHint": "The merchant quarter is Aldric's stronghold — his allies will actively counter your rumors there. Route accusations through the clergy chain (Aldous → Maren → Vera → Constance) and the commons (Nell, Greta, Old Hugh). Boost Marta through her connections to Sim Carter and Nell Picker.",
       "firstAction": "Observe the Chapel to find clergy NPCs disconnected from Aldric. Press R to craft an Accusation about Aldric (embezzlement) and whisper it to Finn Monk or Constance Widow — they have low loyalty and high connections outside the merchant quarter.",
-      "goalVerb": "RUIN",
+      "goalVerb": "EXPOSE",
       "goalTarget": "the Merchant and elevate Marta",
       "progressMilestones": {
         "0.25": "Foundations shaking",

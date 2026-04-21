@@ -35,6 +35,10 @@ var _faction_shift_lbl: Label      = null
 var _inquisitor_tween:  Tween      = null
 var _faction_shift_tween: Tween    = null
 
+# ── S4 Anonymous Tip verb ─────────────────────────────────────────────────────
+var _anon_tip_btn: Button = null
+var _anon_tip_lbl: Label  = null
+
 
 func _scenario_number() -> int:
 	return 4
@@ -44,6 +48,7 @@ func _on_setup_extra(world: Node2D) -> void:
 	var inquisitor = world.get("inquisitor_agent") if world != null else null
 	if inquisitor != null:
 		inquisitor.inquisitor_acted.connect(notify_inquisitor_acted)
+		inquisitor.tip_deflected.connect(_on_tip_deflected)
 	var shift_agent = world.get("s4_faction_shift_agent") if world != null else null
 	if shift_agent != null:
 		shift_agent.faction_shift_occurred.connect(notify_faction_shift)
@@ -147,6 +152,22 @@ func _build_ui() -> void:
 	_faction_shift_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_faction_shift_lbl)
 
+	# ── Anonymous Tip verb ───────────────────────────────────────────────────
+	_anon_tip_btn = Button.new()
+	_anon_tip_btn.text = "Anonymous Tip"
+	_anon_tip_btn.tooltip_text = "Spend 1 whisper token to shield the most threatened accused from the Inquisitor's next attack. The tip poisons the well — rumors about that NPC won't stick this cycle."
+	_anon_tip_btn.add_theme_font_size_override("font_size", 12)
+	_anon_tip_btn.disabled = true
+	_anon_tip_btn.pressed.connect(_on_anon_tip_pressed)
+	right_vbox.add_child(_anon_tip_btn)
+
+	_anon_tip_lbl = Label.new()
+	_anon_tip_lbl.add_theme_font_size_override("font_size", 11)
+	_anon_tip_lbl.add_theme_color_override("font_color", Color(0.45, 0.85, 0.65, 0.90))
+	_anon_tip_lbl.text = ""
+	_anon_tip_lbl.visible = false
+	right_vbox.add_child(_anon_tip_lbl)
+
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
 
@@ -181,6 +202,7 @@ func _refresh() -> void:
 	_update_result_label(state,
 		"VICTORY — The accused are safe",
 		"FAILED — The inquisitor prevails")
+	_update_anon_tip_button()
 
 
 # ── Inquisitor activity ──────────────────────────────────────────────────────
@@ -212,3 +234,71 @@ func notify_faction_shift(day: int, _event_type: String, description: String) ->
 	_faction_shift_tween = create_tween()
 	_faction_shift_tween.tween_property(_faction_shift_lbl, "modulate:a", 0.25, 0.12)
 	_faction_shift_tween.tween_property(_faction_shift_lbl, "modulate:a", 1.0, 0.30)
+
+
+# ── Anonymous Tip verb ────────────────────────────────────────────────────────
+
+## Sync the Anonymous Tip button enabled state each refresh.
+func _update_anon_tip_button() -> void:
+	if _anon_tip_btn == null or _world_ref == null:
+		return
+	var intel: PlayerIntelStore = _world_ref.get("intel_store")
+	var inquisitor = _world_ref.get("inquisitor_agent")
+	var has_whisper: bool = intel != null and intel.whisper_tokens_remaining > 0
+	var inquisitor_active: bool = inquisitor != null and inquisitor._active
+	_anon_tip_btn.disabled = not (has_whisper and inquisitor_active)
+	if intel != null:
+		_anon_tip_btn.tooltip_text = "Spend 1 whisper token (%d remaining) to shield the most threatened accused from the Inquisitor's next attack." % intel.whisper_tokens_remaining
+
+
+## Player clicked "Anonymous Tip" — spend 1 whisper token and shield most-threatened NPC.
+func _on_anon_tip_pressed() -> void:
+	if _world_ref == null:
+		return
+	var intel: PlayerIntelStore = _world_ref.get("intel_store")
+	var inquisitor = _world_ref.get("inquisitor_agent")
+	var rep: ReputationSystem = _world_ref.get("reputation_system")
+	if intel == null or inquisitor == null:
+		return
+	if not intel.try_spend_whisper():
+		return
+	# Shield the protected NPC with the lowest current reputation (most at risk).
+	var target_id: String = _pick_most_threatened_npc(rep)
+	inquisitor.apply_anonymous_tip(target_id)
+	var display := NPC_DISPLAY_NAMES.get(target_id, _display_name(target_id))
+	if _anon_tip_lbl != null:
+		_anon_tip_lbl.text = "Shield active: %s" % display
+		_anon_tip_lbl.visible = true
+		_anon_tip_lbl.add_theme_color_override("font_color", Color(0.45, 0.85, 0.65, 0.90))
+		var tween := create_tween()
+		tween.tween_property(_anon_tip_lbl, "modulate:a", 0.25, 0.10)
+		tween.tween_property(_anon_tip_lbl, "modulate:a", 1.0, 0.25)
+	_update_anon_tip_button()
+
+
+## Returns the protected NPC id with the lowest reputation (most at risk from inquisitor).
+func _pick_most_threatened_npc(rep: ReputationSystem) -> String:
+	var worst_id: String = ScenarioManager.S4_PROTECTED_NPC_IDS[0]
+	var worst_score: int = 100
+	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id) if rep != null else null
+		var score: int = snap.score if snap != null else 50
+		if score < worst_score:
+			worst_score = score
+			worst_id = npc_id
+	return worst_id
+
+
+## Called by inquisitor_agent.tip_deflected — update feedback label.
+func _on_tip_deflected(day: int, npc_id: String) -> void:
+	var display := NPC_DISPLAY_NAMES.get(npc_id, _display_name(npc_id))
+	if _anon_tip_lbl != null:
+		_anon_tip_lbl.text = "Day %d: Tip deflected attack on %s!" % [day, display]
+		_anon_tip_lbl.visible = true
+		_anon_tip_lbl.add_theme_color_override("font_color", Color(0.90, 0.80, 0.20, 1.0))
+		var tween := create_tween()
+		tween.tween_property(_anon_tip_lbl, "modulate:a", 0.20, 0.10)
+		tween.tween_property(_anon_tip_lbl, "modulate:a", 1.0, 0.25)
+	if _inquisitor_lbl != null:
+		_inquisitor_lbl.text = "Inquisitor: Day %d — TIP blocked attack on %s" % [day, display]
+		_inquisitor_lbl.add_theme_color_override("font_color", Color(0.45, 0.85, 0.65, 1.0))
