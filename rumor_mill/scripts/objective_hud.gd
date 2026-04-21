@@ -130,6 +130,12 @@ var _t3_last_whisp: int = -1
 ## SPA-837: NPC id → score from last _refresh_win_target(); detects live rep changes.
 var _last_target_scores: Dictionary = {}
 
+# ── SPA-838: Daily action/whisper budget counter ─────────────────────────────
+var _lbl_budget: Label = null
+var _budget_flash_tween: Tween = null
+## Last polled action count; -1 = not yet initialised.
+var _budget_last_actions: int = -1
+
 
 func _ready() -> void:
 	layer = 4
@@ -137,6 +143,7 @@ func _ready() -> void:
 	_build_goal_flavor_label()
 	_build_o_hint_label()
 	_build_win_target_label()
+	_build_budget_label()
 	_build_banner()
 	_build_metrics_row()
 	_build_midgame_nudge()
@@ -303,6 +310,7 @@ func _on_tick(_tick: int) -> void:
 	_refresh_goal_label()
 	_refresh_nudge()
 	_refresh_win_target()
+	_refresh_budget_label()
 	_refresh_midgame_nudge()
 	_refresh_mini_progress()
 	_refresh_tier3_suggestion()
@@ -326,6 +334,7 @@ func _refresh() -> void:
 	_refresh_time()
 	_refresh_nudge()
 	_refresh_win_target()
+	_refresh_budget_label()
 	_refresh_metrics()
 	_refresh_win_progress()
 	_refresh_milestone_label()
@@ -380,6 +389,69 @@ func _refresh_goal_flavor() -> void:
 	else:
 		_goal_flavor_label.text = _scenario_manager.get_objective_one_liner() if _scenario_manager != null else ""
 	_goal_flavor_label.visible = not _goal_flavor_label.text.is_empty()
+
+
+# ── SPA-838: Daily action/whisper budget counter ─────────────────────────────
+
+## Build the persistent budget label showing "X actions | Y whispers" below the
+## objective area.  Inserted after _win_target_label in the VBox.
+func _build_budget_label() -> void:
+	var vbox: VBoxContainer = $Panel/VBox
+	_lbl_budget = Label.new()
+	_lbl_budget.text = ""
+	_lbl_budget.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_lbl_budget.add_theme_font_size_override("font_size", 13)
+	_lbl_budget.add_theme_color_override("font_color", Color(0.85, 0.75, 0.45, 1.0))
+	_lbl_budget.add_theme_constant_override("outline_size", 2)
+	_lbl_budget.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
+	_lbl_budget.tooltip_text = "Daily budget — actions and whispers refresh at dawn"
+	_lbl_budget.mouse_filter = Control.MOUSE_FILTER_STOP
+	vbox.add_child(_lbl_budget)
+	# Position right after _win_target_label (or closest earlier sibling).
+	var insert_idx: int = goal_label.get_index() + 1
+	if _goal_flavor_label != null:
+		insert_idx = _goal_flavor_label.get_index() + 1
+	if _o_hint_label != null:
+		insert_idx = _o_hint_label.get_index() + 1
+	if _win_target_label != null:
+		insert_idx = _win_target_label.get_index() + 1
+	vbox.move_child(_lbl_budget, insert_idx)
+
+
+## Refresh the budget label text.  On Day 1, flash gold when an action is spent.
+func _refresh_budget_label() -> void:
+	if _lbl_budget == null or _intel_store == null:
+		return
+	var actions: int  = _intel_store.recon_actions_remaining
+	var whispers: int = _intel_store.whisper_tokens_remaining
+	# Detect first action spend on Day 1 and flash.
+	var day: int = _day_night.current_day if _day_night != null else 1
+	if day == 1 and _budget_last_actions > 0 and actions < _budget_last_actions:
+		_flash_budget_label(actions)
+	else:
+		_lbl_budget.text = "%d actions | %d whispers" % [actions, whispers]
+	_budget_last_actions = actions
+
+
+## Brief gold flash on the budget label, then revert to the standard counter.
+func _flash_budget_label(actions_remaining: int) -> void:
+	if _lbl_budget == null:
+		return
+	if _budget_flash_tween != null and _budget_flash_tween.is_valid():
+		_budget_flash_tween.kill()
+		_lbl_budget.self_modulate = Color.WHITE
+	_lbl_budget.text = "%d actions remaining today" % actions_remaining
+	_budget_flash_tween = create_tween()
+	_budget_flash_tween.tween_property(_lbl_budget, "self_modulate",
+		Color(1.0, 0.85, 0.15, 1.0), 0.1).set_ease(Tween.EASE_OUT)
+	_budget_flash_tween.tween_property(_lbl_budget, "self_modulate",
+		Color.WHITE, 1.2).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+	# Restore full counter text after flash.
+	_budget_flash_tween.tween_callback(func() -> void:
+		if _lbl_budget != null and _intel_store != null:
+			_lbl_budget.text = "%d actions | %d whispers" % [
+				_intel_store.recon_actions_remaining,
+				_intel_store.whisper_tokens_remaining])
 
 
 # ── Context-sensitive nudge (SPA-520) ───────────────────────────────────────
