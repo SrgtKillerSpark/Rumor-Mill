@@ -113,11 +113,28 @@ func get_suggestion_overrides() -> Dictionary:
 
 ## Returns the NPC heat level that triggers an exposure fail for the active scenario.
 ## Returns -1.0 for scenarios where heat does not cause a direct failure (S2, S3, S4, S5).
+## Respects a temporary override set by apply_heat_ceiling_override().
 func get_heat_ceiling() -> float:
+	if _heat_ceiling_override >= 0.0:
+		return _heat_ceiling_override
 	match _active_scenario:
 		1: return S1_EXPOSED_HEAT
 		6: return S6_EXPOSED_HEAT
 		_: return -1.0
+
+
+## S6 mid-game event: temporarily raise the heat ceiling for duration_days.
+## Called by MidGameEventAgent when the player chooses the guard captain's price.
+func apply_heat_ceiling_override(new_ceiling: float, duration_days: int, current_day: int) -> void:
+	_heat_ceiling_override = new_ceiling
+	_heat_ceiling_override_expires_day = current_day + duration_days
+
+
+## Called each day from World._on_day_changed() to expire the override.
+func tick_heat_ceiling_override(current_day: int) -> void:
+	if _heat_ceiling_override >= 0.0 and current_day >= _heat_ceiling_override_expires_day:
+		_heat_ceiling_override = -1.0
+		_heat_ceiling_override_expires_day = -1
 
 
 ## Returns the objective card dictionary with keys: mission, winCondition, timeLimit, danger, strategyHint.
@@ -365,6 +382,11 @@ var S6_WIN_ALDRIC_MAX:   int   = 30
 var S6_WIN_MARTA_MIN:    int   = 62
 var S6_FAIL_MARTA_BELOW: int   = 30
 var S6_EXPOSED_HEAT:     float = 55.0
+
+## S6 mid-game event: temporary heat ceiling override (s6_guard_captains_price).
+## -1.0 means inactive.
+var _heat_ceiling_override:      float = -1.0
+var _heat_ceiling_override_expires_day: int   = -1
 
 enum ScenarioState { ACTIVE, WON, FAILED }
 

@@ -303,18 +303,21 @@ func _update_campaign_button() -> void:
 		return
 	var intel: PlayerIntelStore = _world_ref.get("intel_store")
 	var sm: ScenarioManager = _world_ref.get("scenario_manager")
+	var has_free: bool = intel != null and intel.free_campaign_charges > 0
 	var has_recon: bool = intel != null and intel.recon_actions_remaining > 0
 	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) if sm != null and _day_night_ref != null else 0
 	var cooldown_clear: bool = current_day - _campaign_last_day >= CAMPAIGN_COOLDOWN
-	_campaign_btn.disabled = not (has_recon and cooldown_clear)
-	if has_recon and not cooldown_clear:
+	_campaign_btn.disabled = not (has_free or (has_recon and cooldown_clear))
+	if has_free:
+		_campaign_btn.tooltip_text = "Free appearance available (no recon cost, cooldown bypassed). +%d reputation for Aldric." % CAMPAIGN_REP_BOOST
+	elif has_recon and not cooldown_clear:
 		var days_left: int = CAMPAIGN_COOLDOWN - (current_day - _campaign_last_day)
 		_campaign_btn.tooltip_text = "Cooldown: %d day%s remaining before next appearance." % [days_left, "s" if days_left != 1 else ""]
 	else:
 		_campaign_btn.tooltip_text = "Spend 1 recon action to stage a public appearance for Aldric (+%d reputation). %d-day cooldown." % [CAMPAIGN_REP_BOOST, CAMPAIGN_COOLDOWN]
 
 
-## Player clicked "Stage Appearance" — spend 1 recon and boost Aldric's reputation.
+## Player clicked "Stage Appearance" — spend 1 recon (or a free charge) and boost Aldric's reputation.
 func _on_campaign_pressed() -> void:
 	if _world_ref == null:
 		return
@@ -323,10 +326,18 @@ func _on_campaign_pressed() -> void:
 	var sm: ScenarioManager = _world_ref.get("scenario_manager")
 	if intel == null or rep == null or sm == null:
 		return
-	if not intel.try_spend_action():
-		return
+	# Consume a free charge (bypasses cooldown and recon cost) if available,
+	# otherwise use the normal recon action path.
+	var used_free: bool = false
+	if intel.free_campaign_charges > 0:
+		intel.free_campaign_charges -= 1
+		used_free = true
+	else:
+		if not intel.try_spend_action():
+			return
 	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) if _day_night_ref != null else 0
-	_campaign_last_day = current_day
+	if not used_free:
+		_campaign_last_day = current_day
 	rep.apply_score_delta(ScenarioManager.ALDRIC_VANE_ID, CAMPAIGN_REP_BOOST)
 	if _campaign_lbl != null:
 		_campaign_lbl.text = "Day %d: Aldric rallied the crowd (+%d rep)" % [current_day, CAMPAIGN_REP_BOOST]

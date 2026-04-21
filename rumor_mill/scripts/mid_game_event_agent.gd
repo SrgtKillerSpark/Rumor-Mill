@@ -53,6 +53,10 @@ var rival_agent_ref = null       # RivalAgent (S3)
 var inquisitor_agent_ref = null  # InquisitorAgent (S4)
 var illness_agent_ref = null     # IllnessEscalationAgent (S2)
 
+## Pending delayed rumor injections from decision events.
+## Each entry: { claimType, subjectNpcId, intensity, triggerDay, triggerCondition }
+var _delayed_rumors: Array = []
+
 
 func load_events(events: Array) -> void:
 	_events = events
@@ -75,6 +79,9 @@ func tick(current_day: int, world: Node) -> void:
 			rival_agent_ref.cooldown_offset += amt
 			rival_agent_ref.remove_meta("intensity_revert_day")
 			rival_agent_ref.remove_meta("intensity_revert_amount")
+
+	# Process delayed rumor injections (e.g. s3_forgers_offer forgery discovered).
+	_tick_delayed_rumors(current_day, world)
 
 	# Don't present a new event while one is pending player choice.
 	if not _pending_event.is_empty():
@@ -148,9 +155,10 @@ func get_pending_event() -> Dictionary:
 ## Serialise state for save/load.
 func to_data() -> Dictionary:
 	return {
-		"resolved_ids":  _resolved_ids.duplicate(),
-		"rolled_days":   _rolled_days.duplicate(),
-		"pending_event": _pending_event.duplicate(),
+		"resolved_ids":   _resolved_ids.duplicate(),
+		"rolled_days":    _rolled_days.duplicate(),
+		"pending_event":  _pending_event.duplicate(),
+		"delayed_rumors": _delayed_rumors.duplicate(true),
 	}
 
 
@@ -159,6 +167,7 @@ func restore_from_data(d: Dictionary) -> void:
 	_resolved_ids  = d.get("resolved_ids", {}).duplicate()
 	_rolled_days   = d.get("rolled_days", {}).duplicate()
 	_pending_event = d.get("pending_event", {}).duplicate()
+	_delayed_rumors = d.get("delayed_rumors", []).duplicate(true)
 
 
 # ---------------------------------------------------------------------------
@@ -255,6 +264,49 @@ func _apply_effects(effects: Dictionary) -> void:
 		inquisitor_agent_ref.set_meta("focus_target_id", focus_id)
 		inquisitor_agent_ref.set_meta("focus_until_day",
 			_get_current_day() + int(focus.get("durationDays", 3)))
+
+	# Free quarantine charges (S2): int.
+	var free_quarantine: int = int(effects.get("freeQuarantineCharges", 0))
+	if free_quarantine > 0 and _world != null and _world.intel_store != null:
+		_world.intel_store.free_quarantine_charges += free_quarantine
+
+	# Bonus disrupt charges (S3): int.
+	var bonus_disrupt: int = int(effects.get("bonusDisruptCharges", 0))
+	if bonus_disrupt > 0 and rival_agent_ref != null:
+		rival_agent_ref.disrupt_charges_remaining += bonus_disrupt
+
+	# Delayed rumor injection (S3): { claimType, subjectNpcId, intensity, triggerDay, triggerCondition }
+	var delayed: Dictionary = effects.get("delayedRumor", {})
+	if not delayed.is_empty():
+		_delayed_rumors.append(delayed.duplicate())
+
+	# Recon action cost (S4): int — deduct recon actions immediately.
+	var recon_cost: int = int(effects.get("reconActionCost", 0))
+	if recon_cost > 0 and _world != null and _world.intel_store != null:
+		_world.intel_store.recon_actions_remaining = \
+			maxi(0, _world.intel_store.recon_actions_remaining - recon_cost)
+
+	# Free campaign charges (S5): int.
+	var free_campaign: int = int(effects.get("freeCampaignCharges", 0))
+	if free_campaign > 0 and _world != null and _world.intel_store != null:
+		_world.intel_store.free_campaign_charges += free_campaign
+
+	# Bonus expose uses (S6): int.
+	var bonus_expose: int = int(effects.get("bonusExposeCharges", 0))
+	if bonus_expose > 0 and _world != null and _world.intel_store != null:
+		_world.intel_store.bonus_expose_uses += bonus_expose
+
+	# Heat ceiling override (S6): { newCeiling, durationDays }
+	var heat_override: Dictionary = effects.get("heatCeilingOverride", {})
+	if not heat_override.is_empty() and _world != null and _world.scenario_manager != null:
+		_world.scenario_manager.apply_heat_ceiling_override(
+			float(heat_override.get("newCeiling", 70)),
+			int(heat_override.get("durationDays", 4)),
+			_get_current_day())
+
+	# Consume all bribe charges (S6): bool.
+	if effects.get("consumeAllBribeCharges", false) and _world != null and _world.intel_store != null:
+		_world.intel_store.bribe_charges = 0
 
 
 # ---------------------------------------------------------------------------
@@ -424,6 +476,48 @@ func _resolve_npc_id(raw_id: String) -> String:
 			return protected_ids[2] if protected_ids.size() > 2 else ""
 
 	return raw_id
+
+
+## Process any pending delayed rumors whose trigger day has arrived.
+## Checks the optional triggerCondition before injecting.
+func _tick_delayed_rumors(current_day: int, world: Node) -> void:
+	if _delayed_rumors.is_empty():
+		return
+	_world = world
+	var fired: Array = []
+	for dr in _delayed_rumors:
+		var trigger_day: int = int(dr.get("triggerDay", -1))
+		if trigger_day < 0 or current_day < trigger_day:
+			continue
+		# Past trigger day — check condition then fire or discard.
+		fired.append(dr)
+		if not _check_delayed_condition(dr.get("triggerCondition", {})):
+			continue
+		var inject: Dictionary = {
+			"claimType":    str(dr.get("claimType", "scandal")),
+			"subjectNpcId": str(dr.get("subjectNpcId", "")),
+			"intensity":    int(dr.get("intensity", 3)),
+		}
+		_apply_inject_rumor(inject)
+	for dr in fired:
+		_delayed_rumors.erase(dr)
+
+
+## Returns true if the condition is met (or there is no condition).
+func _check_delayed_condition(cond: Dictionary) -> bool:
+	if cond.is_empty():
+		return true
+	var ctype: String = str(cond.get("type", ""))
+	match ctype:
+		"rep_above":
+			if _world == null or _world.reputation_system == null:
+				return true
+			var npc_id: String = _resolve_npc_id(str(cond.get("npcId", "")))
+			var threshold: int = int(cond.get("threshold", 0))
+			var snap = _world.reputation_system.get_snapshot(npc_id)
+			return snap != null and snap.score > threshold
+		_:
+			return true
 
 
 func _get_protected_by_score(ids: Array, want_lowest: bool) -> String:

@@ -52,6 +52,18 @@ var evidence_inventory: Array = []
 ## Running total of evidence items consumed this run (for end-screen stats).
 var evidence_used_count: int = 0
 
+## Mid-game event bonus charge pools — granted by decision events, consumed by
+## the relevant scenario-specific verb actions.
+
+## S2: free quarantine uses (no Recon Action or Whisper Token cost).
+var free_quarantine_charges: int = 0
+
+## S5: free Stage Appearance uses (no Recon Action cost, ignores cooldown).
+var free_campaign_charges: int = 0
+
+## S6: bonus Release Evidence uses added on top of BLACKMAIL_MAX_USES.
+var bonus_expose_uses: int = 0
+
 
 # ---------------------------------------------------------------------------
 # LocationIntel — snapshot of which NPCs were at a location during one tick.

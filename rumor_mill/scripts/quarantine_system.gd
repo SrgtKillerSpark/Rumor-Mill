@@ -66,15 +66,19 @@ func try_quarantine(building_name: String, intel_store: PlayerIntelStore, curren
 	# SPA-874: per-building cooldown check.
 	if is_on_cooldown(building_name, current_tick):
 		return false
-	# Need 1 recon action + 1 whisper token.
-	if intel_store.recon_actions_remaining < QUARANTINE_RECON_COST:
-		return false
-	if intel_store.whisper_tokens_remaining < QUARANTINE_WHISPER_COST:
-		return false
-	if not intel_store.try_spend_action():
-		return false
-	if not intel_store.try_spend_whisper():
-		return false  # shouldn't happen after the checks above
+	# Use a free charge (granted by s2_infected_cart decision event) if available,
+	# otherwise require the normal 1 Recon Action + 1 Whisper Token cost.
+	if intel_store.free_quarantine_charges > 0:
+		intel_store.free_quarantine_charges -= 1
+	else:
+		if intel_store.recon_actions_remaining < QUARANTINE_RECON_COST:
+			return false
+		if intel_store.whisper_tokens_remaining < QUARANTINE_WHISPER_COST:
+			return false
+		if not intel_store.try_spend_action():
+			return false
+		if not intel_store.try_spend_whisper():
+			return false  # shouldn't happen after the checks above
 	var expires := current_tick + QUARANTINE_DURATION_TICKS
 	_quarantined[building_name] = expires
 	building_quarantined.emit(building_name, expires)

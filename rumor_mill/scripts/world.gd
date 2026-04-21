@@ -641,6 +641,8 @@ func _on_day_changed(_day: int) -> void:
 		guild_defense_agent.tick(_day, self)
 	if mid_game_event_agent != null:
 		mid_game_event_agent.tick(_day, self)
+	if scenario_manager != null:
+		scenario_manager.tick_heat_ceiling_override(_day)
 	if faction_event_system != null:
 		faction_event_system.on_day_changed(_day)
 

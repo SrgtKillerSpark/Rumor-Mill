@@ -229,11 +229,13 @@ func _update_blackmail_button() -> void:
 	if _blackmail_btn == null or _world_ref == null:
 		return
 	var intel: PlayerIntelStore = _world_ref.get("intel_store")
-	var uses_left: int = BLACKMAIL_MAX_USES - _blackmail_uses
+	var bonus_uses: int = intel.bonus_expose_uses if intel != null else 0
+	var effective_max: int = BLACKMAIL_MAX_USES + bonus_uses
+	var uses_left: int = effective_max - _blackmail_uses
 	var has_whispers: bool = intel != null and intel.whisper_tokens_remaining >= BLACKMAIL_WHISPER_COST
 	_blackmail_btn.disabled = not (has_whispers and uses_left > 0)
 	var whispers: int = intel.whisper_tokens_remaining if intel != null else 0
-	_blackmail_btn.tooltip_text = "Leak blackmail evidence (%d rep on Aldric, +%.0f heat). Costs %d whisper tokens (%d available). %d/%d uses remaining." % [BLACKMAIL_REP_HIT, BLACKMAIL_HEAT_ADD, BLACKMAIL_WHISPER_COST, whispers, uses_left, BLACKMAIL_MAX_USES]
+	_blackmail_btn.tooltip_text = "Leak blackmail evidence (%d rep on Aldric, +%.0f heat). Costs %d whisper tokens (%d available). %d/%d uses remaining." % [BLACKMAIL_REP_HIT, BLACKMAIL_HEAT_ADD, BLACKMAIL_WHISPER_COST, whispers, uses_left, effective_max]
 
 
 ## Player clicked "Release Evidence" — spend whisper tokens, hit Aldric's rep, raise heat.
@@ -245,7 +247,8 @@ func _on_blackmail_pressed() -> void:
 	var sm: ScenarioManager = _world_ref.get("scenario_manager")
 	if intel == null or rep == null or sm == null:
 		return
-	if _blackmail_uses >= BLACKMAIL_MAX_USES:
+	var effective_max: int = BLACKMAIL_MAX_USES + intel.bonus_expose_uses
+	if _blackmail_uses >= effective_max:
 		return
 	# Spend 2 whisper tokens.
 	if not intel.try_spend_whisper():
@@ -261,9 +264,9 @@ func _on_blackmail_pressed() -> void:
 	for heat_npc_id in BLACKMAIL_HEAT_NPCS:
 		intel.add_heat(heat_npc_id, BLACKMAIL_HEAT_ADD)
 	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) if _day_night_ref != null else 0
-	var uses_left: int = BLACKMAIL_MAX_USES - _blackmail_uses
+	var uses_left: int = effective_max - _blackmail_uses
 	if _blackmail_lbl != null:
-		_blackmail_lbl.text = "Day %d: Evidence released! Aldric %d rep. Heat spiking. (%d use%s left)" % [current_day, BLACKMAIL_REP_HIT, uses_left, "s" if uses_left != 1 else ""]
+		_blackmail_lbl.text = "Day %d: Evidence released! Aldric %d rep. Heat spiking. (%d/%d uses left)" % [current_day, BLACKMAIL_REP_HIT, uses_left, effective_max]
 		_blackmail_lbl.visible = true
 		_blackmail_lbl.add_theme_color_override("font_color", Color(0.90, 0.45, 0.10, 1.0))
 		var tween := create_tween()

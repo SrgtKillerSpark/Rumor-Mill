@@ -375,6 +375,65 @@
             }
           }
         ]
+      },
+      {
+        "id": "s2_infected_cart",
+        "name": "The Infected Cart",
+        "dayWindowStart": 9,
+        "dayWindowEnd": 11,
+        "probability": 0.65,
+        "description": "A merchant cart arrives at the Market loaded with spoiled grain. Flies buzz around it. The townsfolk are already nervous — this could be the spark you need, or a distraction from your real targets.",
+        "choices": [
+          {
+            "label": "Blame Alys — say she sold tainted remedies to the merchant",
+            "outcomeText": "You catch the nearest stall-keeper's eye and murmur, just loud enough: 'The carter says he bought a remedy from Alys three days ago. Look at him now.' The words travel faster than the flies. A believer joins the ranks — and Maren's attention sharpens.",
+            "effects": {
+              "instantBelievers": { "subjectNpcId": "alys_herbwife", "count": 1, "pool": "credulous_market" },
+              "heatChanges": [{ "npcId": "alys_herbwife", "delta": 10.0 }],
+              "personalityChanges": [{ "npcId": "maren_nun", "trait": "temperament", "delta": 0.10 }]
+            }
+          },
+          {
+            "label": "Use the cart as proof — quarantine is justified",
+            "outcomeText": "You walk the square with quiet authority, pointing at the cart: 'This is why the Herbwife's quarter needs to be sealed off.' The crowd nods. A free quarantine charge is yours — and the market buzzes with fresh credulity.",
+            "effects": {
+              "freeQuarantineCharges": 1,
+              "credulityChanges": [
+                { "npcId": "nell_picker", "delta": 0.08 },
+                { "npcId": "cob_farrow", "delta": 0.08 },
+                { "npcId": "sim_carter", "delta": 0.08 }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s2_herbwife_apprentice",
+        "name": "The Herbwife's Apprentice",
+        "dayWindowStart": 15,
+        "dayWindowEnd": 17,
+        "probability": 0.60,
+        "description": "A young apprentice of Alys shows up at the Tavern, coughing and pale. She claims Alys sent her to buy supplies — but the townsfolk are eyeing her nervously.",
+        "choices": [
+          {
+            "label": "Spread word the apprentice is proof Alys carries plague",
+            "outcomeText": "You let the coughing do your work, adding just one detail: 'Alys herself looked ill when I passed her stall this morning.' Two more tavern regulars decide they believe. The illness agent's hand reaches further than ever.",
+            "effects": {
+              "instantBelievers": { "subjectNpcId": "alys_herbwife", "count": 2, "pool": "credulous_market" },
+              "illnessEscalationCooldownDelta": -1,
+              "heatChanges": [{ "npcId": "alys_herbwife", "delta": 8.0 }]
+            }
+          },
+          {
+            "label": "Quietly isolate the apprentice — use her as leverage over Alys",
+            "outcomeText": "You pull the girl aside, whisper a few careful words, and let her go. She will not speak against Alys publicly — but Alys will hear what you said, and it will cost her nerve. You have bought yourself extra recon time.",
+            "effects": {
+              "bonusReconActions": 2,
+              "bonusReconDays": 2,
+              "personalityChanges": [{ "npcId": "alys_herbwife", "trait": "loyalty", "delta": -0.15 }]
+            }
+          }
+        ]
       }
     ],
     "difficultyModifiers": {
@@ -575,6 +634,71 @@
             "outcomeText": "Lady Isolde sends wine and an apology within the hour. The merchant is mollified. More importantly, the rival's planned attack is delayed — Isolde's intervention has shifted the conversation.",
             "effects": {
               "rivalCooldownBonus": 3
+            }
+          }
+        ]
+      },
+      {
+        "id": "s3_forgers_offer",
+        "name": "The Forger's Offer",
+        "dayWindowStart": 8,
+        "dayWindowEnd": 10,
+        "probability": 0.65,
+        "description": "Annit Scribe approaches you in the shadows near the Guild Hall. She can forge a letter of endorsement from a respected noble — but if it is discovered, Calder's reputation will be destroyed.",
+        "choices": [
+          {
+            "label": "Accept the forgery — use it to boost Calder immediately",
+            "outcomeText": "Annit's hand is steady. The letter circulates through the noble quarter by evening. Calder's name rises. But if the forgery surfaces later, there will be consequences — the story will find its way back.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "calder_fenn", "delta": 6 }],
+              "personalityChanges": [{ "npcId": "annit_scribe", "trait": "loyalty", "delta": 0.15 }],
+              "delayedRumor": {
+                "claimType": "scandal",
+                "subjectNpcId": "calder_fenn",
+                "intensity": 3,
+                "triggerDay": 16,
+                "triggerCondition": { "type": "rep_above", "npcId": "calder_fenn", "threshold": 70 }
+              }
+            }
+          },
+          {
+            "label": "Refuse — but ask Annit to spy on the rival instead",
+            "outcomeText": "You decline the forgery but hand Annit a different job. She knows the rival's circles. Two days later, you have enough intelligence to disrupt the rival twice over — and the charges are yours to spend.",
+            "effects": {
+              "bonusDisruptCharges": 2,
+              "bonusReconActions": 1,
+              "bonusReconDays": 3
+            }
+          }
+        ]
+      },
+      {
+        "id": "s3_tavern_brawl",
+        "name": "The Tavern Brawl",
+        "dayWindowStart": 17,
+        "dayWindowEnd": 19,
+        "probability": 0.60,
+        "description": "A drunken argument between Calder and Tomas supporters erupts at the Tavern. Chairs fly. The guards are called. Both factions are furious — and the town is watching.",
+        "choices": [
+          {
+            "label": "Frame Tomas's supporters as the aggressors",
+            "outcomeText": "You are at the Tavern door when the brawl starts. Your version reaches the Guard Captain first: 'It was Tomas's men — unprovoked.' The story sticks. Tomas's reputation takes a hard blow, but his supporters are now furious, and the rival doubles down.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -5 }],
+              "heatChanges": [{ "npcId": "tomas_reeve", "delta": 12.0 }],
+              "rivalIntensityBonus": { "delta": 1, "durationDays": 4 }
+            }
+          },
+          {
+            "label": "Have Calder publicly break up the fight — show leadership",
+            "outcomeText": "Calder steps between the brawlers and raises his voice. The fight stops. The crowd sees exactly what you want them to see: a future alderman who keeps his head while others swing their fists.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "calder_fenn", "delta": 4 }],
+              "personalityChanges": [
+                { "npcId": "rufus_bolt", "trait": "loyalty", "delta": 0.10 },
+                { "npcId": "bess_wicker", "trait": "loyalty", "delta": 0.10 }
+              ],
+              "rivalCooldownBonus": 1
             }
           }
         ]
@@ -787,6 +911,67 @@
               "inquisitorCooldownDelta": 2,
               "reputationChanges": [{ "npcId": "__weakest_protected__", "delta": 2 }],
               "heatChanges": [{ "npcId": "aldous_prior", "delta": 8.0 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s4_confession_box",
+        "name": "The Confession Box",
+        "dayWindowStart": 8,
+        "dayWindowEnd": 10,
+        "probability": 0.70,
+        "description": "The Inquisitor has set up a confession box in the Chapel — townsfolk are encouraged to report heretical behaviour. Two NPCs are planning to confess what they have heard. If those confessions reach the Inquisitor, the accused will face intensified scrutiny.",
+        "choices": [
+          {
+            "label": "Intercept the confessors — convince them the accused are innocent",
+            "outcomeText": "You catch the pair before they reach the chapel door. Your words are calm and certain: the accused are good people, the charges are fabricated, confession will only hurt the innocent. They leave without confessing. Two reputations steady.",
+            "effects": {
+              "reputationChanges": [
+                { "npcId": "__weakest_protected__", "delta": 4 },
+                { "npcId": "__other_protected_1__", "delta": 2 }
+              ],
+              "inquisitorCooldownDelta": -1
+            }
+          },
+          {
+            "label": "Poison the confession box — plant false confessions implicating the Inquisitor's own allies",
+            "outcomeText": "You slip forged notes into the box before dawn — names from Brother Cornelius's own circle, accusations vague enough to need investigation. He spends two days chasing shadows among his own people. The accused breathe easier.",
+            "effects": {
+              "inquisitorCooldownDelta": 2,
+              "heatChanges": [{ "npcId": "aldous_prior", "delta": 10.0 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s4_martyrs_gambit",
+        "name": "The Martyr's Gambit",
+        "dayWindowStart": 13,
+        "dayWindowEnd": 15,
+        "probability": 0.65,
+        "description": "The weakest accused has publicly declared they will submit to the Inquisitor's questioning to prove their innocence. The town is moved — but if the questioning goes poorly, their reputation could collapse.",
+        "choices": [
+          {
+            "label": "Coach them before the questioning — prepare their defense",
+            "outcomeText": "You spend the morning going over every question Cornelius is likely to ask. By the time they walk into the chapel, they are ready. The questioning goes well. Their reputation rises — but it cost you recon time you will not get back.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "__weakest_protected__", "delta": 6 }],
+              "personalityChanges": [{ "npcId": "__weakest_protected__", "trait": "loyalty", "delta": 0.20 }],
+              "reconActionCost": 2
+            }
+          },
+          {
+            "label": "Let them go — but spread word they faced the Inquisitor bravely",
+            "outcomeText": "You do not interfere. The questioning is difficult but they survive it. Before the day is out, you are in three conversations at once, describing their courage in the chapel. The story spreads. A praise rumor takes root on its own.",
+            "effects": {
+              "reputationChanges": [
+                { "npcId": "__weakest_protected__", "delta": 3 },
+                { "npcId": "aldous_prior", "delta": 1 },
+                { "npcId": "vera_midwife", "delta": 1 },
+                { "npcId": "finn_monk", "delta": 1 }
+              ],
+              "injectRumor": { "claimType": "praise", "subjectNpcId": "__weakest_protected__", "intensity": 2, "targetFaction": "commons" }
             }
           }
         ]
@@ -1011,6 +1196,70 @@
               "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -5 }],
               "heatChanges": [{ "npcId": "bram_guard", "delta": 10.0 }],
               "personalityChanges": [{ "npcId": "old_hugh", "trait": "credulity", "delta": -0.15 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s5_smear_pamphlet",
+        "name": "The Smear Pamphlet",
+        "dayWindowStart": 7,
+        "dayWindowEnd": 9,
+        "probability": 0.65,
+        "description": "A stack of pamphlets appears at the Guild Hall — crude drawings mocking Aldric as a greedy social climber. Edric's supporters are distributing them.",
+        "choices": [
+          {
+            "label": "Destroy the pamphlets and campaign against Edric's dirty tactics",
+            "outcomeText": "You gather the pamphlets before most of the guild hall has seen them, then spend the afternoon in conversation: 'Edric's people are handing out filth because they have nothing real to say.' Edric's reputation suffers — and you have a free appearance in the bank.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -4 }],
+              "heatChanges": [{ "npcId": "edric_fenn", "delta": 8.0 }],
+              "freeCampaignCharges": 1
+            }
+          },
+          {
+            "label": "Show the pamphlets to the townsfolk — let them see Edric's desperation",
+            "outcomeText": "You carry one pamphlet into the Tavern and set it on the table. 'Look what Edric's people are doing.' The room reads it in silence. Some are offended on Aldric's behalf. The credulity of the undecided tilts your way.",
+            "effects": {
+              "reputationChanges": [
+                { "npcId": "aldric_vane", "delta": 3 },
+                { "npcId": "edric_fenn", "delta": -2 }
+              ],
+              "credulityChanges": [
+                { "npcId": "nell_picker", "delta": 0.08 },
+                { "npcId": "sim_carter", "delta": 0.08 },
+                { "npcId": "constance_widow", "delta": 0.08 }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s5_endorsement_gambit",
+        "name": "The Endorsement Gambit",
+        "dayWindowStart": 11,
+        "dayWindowEnd": 12,
+        "probability": 0.75,
+        "description": "Two days before Aldous Prior's endorsement, you learn Tomas Reeve is planning a dramatic public speech at the Chapel — a last-ditch effort to sway the Prior.",
+        "choices": [
+          {
+            "label": "Sabotage the speech — pay a heckler to disrupt Tomas",
+            "outcomeText": "A persistent question from the back of the crowd ruins Tomas's rhythm. He loses the thread, stumbles over his own record, and finishes to quiet applause. Aldous Prior watches with a flat expression. Tomas's credibility takes a hard blow.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -5 }],
+              "heatChanges": [{ "npcId": "tomas_reeve", "delta": 10.0 }],
+              "personalityChanges": [{ "npcId": "aldous_prior", "trait": "temperament", "delta": 0.10 }]
+            }
+          },
+          {
+            "label": "Counter-program — organise Aldric's own speech at the Market",
+            "outcomeText": "While Tomas speaks at the Chapel, Aldric speaks at the Market. Two audiences, two messages. The merchant crowd is Aldric's — he knows them, and they know him. His reputation rises. The merchants who will sway the Prior's thinking have been reached.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "aldric_vane", "delta": 4 }],
+              "personalityChanges": [
+                { "npcId": "sybil_oats", "trait": "loyalty", "delta": 0.10 },
+                { "npcId": "rufus_bolt", "trait": "loyalty", "delta": 0.10 }
+              ]
             }
           }
         ]
@@ -1245,6 +1494,67 @@
                 { "npcId": "rufus_bolt", "trait": "loyalty", "delta": -0.15 }
               ],
               "heatChanges": [{ "npcId": "bram_guard", "delta": 8.0 }]
+            }
+          }
+        ]
+      },
+      {
+        "id": "s6_whistleblower",
+        "name": "The Whistleblower",
+        "dayWindowStart": 10,
+        "dayWindowEnd": 12,
+        "probability": 0.65,
+        "description": "Bess Wicker, a guild bookkeeper, approaches you nervously. She has access to Aldric's real ledger — the one showing the embezzlement. But she is terrified. If Aldric finds out she talked, she is finished.",
+        "choices": [
+          {
+            "label": "Take the ledger — use it to expose Aldric's inner circle",
+            "outcomeText": "You take the ledger and Bess steps back into shadow. The numbers are exactly what you needed. Two more uses of your evidence are yours — but Bess will not spread anti-Aldric rumors now. She is protecting herself.",
+            "effects": {
+              "bonusExposeCharges": 2,
+              "personalityChanges": [{ "npcId": "bess_wicker", "trait": "loyalty", "delta": -0.20 }],
+              "heatChanges": [{ "npcId": "bess_wicker", "delta": 6.0 }]
+            }
+          },
+          {
+            "label": "Protect Bess — have her leak information gradually through trusted channels",
+            "outcomeText": "You tell Bess to stay quiet and stay safe. Instead of ledger pages, you leave with names — guild members who already doubt Aldric. Rufus Bolt and Idris Kemp are more receptive than they were yesterday. And Aldric takes a small, deniable hit.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "aldric_vane", "delta": -3 }],
+              "credulityChanges": [
+                { "npcId": "rufus_bolt", "delta": 0.10 },
+                { "npcId": "idris_kemp", "delta": 0.10 }
+              ],
+              "bonusReconActions": 1,
+              "bonusReconDays": 3
+            }
+          }
+        ]
+      },
+      {
+        "id": "s6_guard_captains_price",
+        "name": "The Guard Captain's Price",
+        "dayWindowStart": 15,
+        "dayWindowEnd": 17,
+        "probability": 0.60,
+        "description": "The guard captain who enforces Aldric's low heat ceiling approaches you with an offer. He knows what Aldric has done — and for a price, he will look the other way. But his loyalty is fragile.",
+        "choices": [
+          {
+            "label": "Pay the captain — raise the heat ceiling temporarily",
+            "outcomeText": "You pass a purse under the table. The captain pockets it without looking at you. For the next four days, the ceiling on what you can risk rises significantly — a window to act aggressively before it closes again.",
+            "effects": {
+              "heatCeilingOverride": { "newCeiling": 70, "durationDays": 4 },
+              "consumeAllBribeCharges": true
+            }
+          },
+          {
+            "label": "Decline — but ask the captain to deliver a message to Marta's supporters",
+            "outcomeText": "You let him keep his coin and ask a simpler favour: carry word that Marta Coin is holding firm. He shrugs and walks toward the commons. Two of her neighbours begin saying her name with a little more certainty.",
+            "effects": {
+              "reputationChanges": [{ "npcId": "marta_coin", "delta": 5 }],
+              "personalityChanges": [
+                { "npcId": "sim_carter", "trait": "loyalty", "delta": 0.10 },
+                { "npcId": "nell_picker", "trait": "loyalty", "delta": 0.10 }
+              ]
             }
           }
         ]
