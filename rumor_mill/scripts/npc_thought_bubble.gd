@@ -6,6 +6,7 @@
 ##   - Only shows for on-screen NPCs (viewport rect check).
 ##   - Global cap of MAX_VISIBLE simultaneous bubbles.
 ##   - Prioritizes closest NPCs by natural first-come-first-served ordering.
+class_name NpcThoughtBubble
 extends Node2D
 
 const MAX_VISIBLE: int = 5
