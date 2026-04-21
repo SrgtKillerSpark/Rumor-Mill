@@ -669,6 +669,40 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 	badge_label.add_theme_color_override("font_color", status_color)
 	card_vbox.add_child(badge_label)
 
+	# Chain badge — shown when this rumor is part of an active chain with another live rumor.
+	if _world_ref != null and _world_ref.propagation_engine != null:
+		var chain_ct: PropagationEngine.ChainType = _world_ref.propagation_engine.get_chain_type(rid)
+		if chain_ct != PropagationEngine.ChainType.NONE:
+			var chain_color: Color
+			var chain_text:  String
+			match chain_ct:
+				PropagationEngine.ChainType.ESCALATION:
+					chain_color = Color(0.92, 0.22, 0.18, 1.0)
+					chain_text  = "Escalation"
+				PropagationEngine.ChainType.CONTRADICTION:
+					chain_color = Color(0.90, 0.50, 0.15, 1.0)
+					chain_text  = "Contradiction"
+				PropagationEngine.ChainType.SAME_TYPE:
+					chain_color = Color(0.60, 0.60, 0.55, 1.0)
+					chain_text  = "Echo"
+			var chain_row := HBoxContainer.new()
+			chain_row.add_theme_constant_override("separation", 4)
+			var chain_panel := PanelContainer.new()
+			var chain_style := StyleBoxFlat.new()
+			chain_style.bg_color     = Color(chain_color.r * 0.25, chain_color.g * 0.25, chain_color.b * 0.25, 0.85)
+			chain_style.border_color = chain_color
+			chain_style.set_border_width_all(1)
+			chain_style.set_corner_radius_all(3)
+			chain_style.set_content_margin_all(3)
+			chain_panel.add_theme_stylebox_override("panel", chain_style)
+			var chain_lbl := Label.new()
+			chain_lbl.text = chain_text
+			chain_lbl.add_theme_font_size_override("font_size", 11)
+			chain_lbl.add_theme_color_override("font_color", chain_color)
+			chain_panel.add_child(chain_lbl)
+			chain_row.add_child(chain_panel)
+			card_vbox.add_child(chain_row)
+
 	# Shelf life decay bar — thin bar showing ticks elapsed vs total shelf life.
 	if rumor.shelf_life_ticks > 0:
 		var shelf_bar := ProgressBar.new()

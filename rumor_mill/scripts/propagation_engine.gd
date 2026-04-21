@@ -345,6 +345,33 @@ func apply_chain_bonus(rumor: Rumor, chain_info: Dictionary) -> ChainType:
 	return ct
 
 
+## Returns the current ChainType for an existing live rumor by checking other
+## active rumors about the same subject. ESCALATION takes priority.
+## Returns NONE if the rumor is not live or has no chain partners.
+func get_chain_type(rumor_id: String) -> ChainType:
+	if not live_rumors.has(rumor_id):
+		return ChainType.NONE
+	var r: Rumor = live_rumors[rumor_id]
+	var best: ChainType = ChainType.NONE
+	for rid in live_rumors:
+		if rid == rumor_id:
+			continue
+		var other: Rumor = live_rumors[rid]
+		if other.subject_npc_id != r.subject_npc_id:
+			continue
+		# Escalation: other is the precursor and this rumor is the escalation target.
+		if ESCALATION_PAIRS.has(other.claim_type) and ESCALATION_PAIRS[other.claim_type] == r.claim_type:
+			return ChainType.ESCALATION
+		# Contradiction: opposite sentiment active on same subject.
+		if Rumor.is_positive_claim(other.claim_type) != Rumor.is_positive_claim(r.claim_type):
+			if best != ChainType.ESCALATION:
+				best = ChainType.CONTRADICTION
+		# Same-type: identical claim active on same subject.
+		elif other.claim_type == r.claim_type and best == ChainType.NONE:
+			best = ChainType.SAME_TYPE
+	return best
+
+
 ## Human-readable chain type name for UI display.
 static func chain_type_name(ct: ChainType) -> String:
 	match ct:

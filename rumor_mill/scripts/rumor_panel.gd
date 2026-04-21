@@ -1028,42 +1028,54 @@ func _detect_current_chain() -> Dictionary:
 	return _world_ref.propagation_engine.detect_chain(_selected_subject, claim_type)
 
 
-## Builds the chain indicator banner at the top of Panel 3's seed list.
+## Builds a compact chain-type badge at the top of Panel 3's seed list.
 func _add_chain_indicator(chain_type: PropagationEngine.ChainType) -> void:
-	var banner := PanelContainer.new()
-	var style := StyleBoxFlat.new()
+	var badge_color: Color
+	var badge_text:  String
+	var desc_text:   String
 	match chain_type:
 		PropagationEngine.ChainType.SAME_TYPE:
-			style.bg_color = C_CHAIN_SAME_BG
+			badge_color = Color(0.60, 0.60, 0.55, 1.0)
+			badge_text  = "Echo"
+			desc_text   = "Same-Type Chain: +15% believability, +1 intensity"
 		PropagationEngine.ChainType.ESCALATION:
-			style.bg_color = C_CHAIN_ESCALATION_BG
+			badge_color = Color(0.92, 0.22, 0.18, 1.0)
+			badge_text  = "Escalation"
+			desc_text   = "Escalation Chain: +25% believability, -50% mutation"
 		PropagationEngine.ChainType.CONTRADICTION:
-			style.bg_color = C_CHAIN_CONTRADICTION_BG
-	style.set_corner_radius_all(4)
-	banner.add_theme_stylebox_override("panel", style)
+			badge_color = Color(0.90, 0.50, 0.15, 1.0)
+			badge_text  = "Contradiction"
+			desc_text   = "Contradiction Chain: faster CONTRADICTED, -10% believability"
 
-	var hbox := HBoxContainer.new()
-	banner.add_child(hbox)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	_seed_list.add_child(row)
 
-	var icon_lbl := Label.new()
-	icon_lbl.text = " [CHAIN] "
-	icon_lbl.add_theme_font_size_override("font_size", 13)
-	icon_lbl.add_theme_color_override("font_color", C_CHAIN_ICON)
-	hbox.add_child(icon_lbl)
+	# Compact colored badge panel.
+	var badge_panel := PanelContainer.new()
+	var badge_style := StyleBoxFlat.new()
+	badge_style.bg_color     = Color(badge_color.r * 0.25, badge_color.g * 0.25, badge_color.b * 0.25, 0.90)
+	badge_style.border_color = badge_color
+	badge_style.set_border_width_all(1)
+	badge_style.set_corner_radius_all(3)
+	badge_style.set_content_margin_all(4)
+	badge_panel.add_theme_stylebox_override("panel", badge_style)
+	badge_panel.tooltip_text = desc_text
 
+	var badge_lbl := Label.new()
+	badge_lbl.text = badge_text
+	badge_lbl.add_theme_font_size_override("font_size", 12)
+	badge_lbl.add_theme_color_override("font_color", badge_color)
+	badge_panel.add_child(badge_lbl)
+	row.add_child(badge_panel)
+
+	# Inline description text.
 	var desc_lbl := Label.new()
-	desc_lbl.add_theme_font_size_override("font_size", 12)
+	desc_lbl.text = desc_text
+	desc_lbl.add_theme_font_size_override("font_size", 11)
 	desc_lbl.add_theme_color_override("font_color", C_CHAIN_DESC)
-	match chain_type:
-		PropagationEngine.ChainType.SAME_TYPE:
-			desc_lbl.text = "Same-Type Chain: +15% believability, +1 intensity"
-		PropagationEngine.ChainType.ESCALATION:
-			desc_lbl.text = "Escalation Chain: +25% believability, -50% mutation"
-		PropagationEngine.ChainType.CONTRADICTION:
-			desc_lbl.text = "Contradiction Chain: faster CONTRADICTED, -10% believability"
-	hbox.add_child(desc_lbl)
-
-	_seed_list.add_child(banner)
+	desc_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(desc_lbl)
 
 
 ## Builds and inserts the evidence attachment sub-section at the top of _seed_list.
