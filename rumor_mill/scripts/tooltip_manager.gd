@@ -7,7 +7,7 @@ extends CanvasLayer
 ##
 ## API:
 ##   TooltipManager.show_at(key: String)  — show tooltip for the given key
-##   TooltipManager.hide()                — fade the tooltip out
+##   TooltipManager.hide_tooltip()         — fade the tooltip out
 
 # ── Palette (parchment / medieval aesthetic) ──────────────────────────────────
 const C_BG     := Color(0.10, 0.07, 0.05, 0.93)
@@ -59,7 +59,7 @@ func show_at(key: String) -> void:
 
 
 ## Hide the currently visible tooltip.
-func hide() -> void:
+func hide_tooltip() -> void:
 	_visible_flag = false
 	_fade_to(0.0)
 
