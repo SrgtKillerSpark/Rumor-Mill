@@ -948,8 +948,8 @@
       {
         "id": "s5_the_final_rally",
         "name": "The Final Rally",
-        "dayWindowStart": 22,
-        "dayWindowEnd": 24,
+        "dayWindowStart": 18,
+        "dayWindowEnd": 21,
         "probability": 0.70,
         "description": "The election is days away. Tomas Reeve has called a gathering at the well — a last appeal to the common folk. Edric is countering with a feast at the Manor. Aldric has nothing planned. This is the moment to seize.",
         "choices": [
