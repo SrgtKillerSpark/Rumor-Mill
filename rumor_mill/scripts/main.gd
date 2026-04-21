@@ -74,6 +74,11 @@ var _s1_manor_highlight: Polygon2D = null
 var _hud_tooltip: CanvasLayer = null
 var _context_controls: CanvasLayer = null
 
+# ── SPA-872: NPC quick-info panel and Tab NPC cycling ─────────────────────────
+var _npc_info_panel: CanvasLayer = null
+var _tab_npc_index:  int         = -1   # current index into _tab_npc_list
+var _tab_npc_list:   Array       = []   # sorted list of NPC nodes for Tab cycling
+
 # ── SPA-589: Story recap overlay (shown on save load) ─────────────────────────
 var _story_recap: CanvasLayer = null
 
@@ -197,18 +202,63 @@ func _process(_delta: float) -> void:
 	_context_controls.set_mode(mode)
 
 
-## SPA-518: H hotkey replays the most recent tutorial hint banner.
+## SPA-518/SPA-872: Keyboard shortcuts for panels and NPC cycling.
 func _unhandled_input(event: InputEvent) -> void:
 	if not _game_started:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_H:
-			if _tutorial_banner != null and _tutorial_banner.has_method("replay_hint"):
-				_tutorial_banner.replay_hint()
+		match event.keycode:
+			KEY_H:
+				if _tutorial_banner != null and _tutorial_banner.has_method("replay_hint"):
+					_tutorial_banner.replay_hint()
+					get_viewport().set_input_as_handled()
+			KEY_O:
+				_show_objective_recall()
 				get_viewport().set_input_as_handled()
-		elif event.keycode == KEY_O:
-			_show_objective_recall()
-			get_viewport().set_input_as_handled()
+			KEY_M:
+				# M mirrors G: toggle the Social Graph / Map overview.
+				if social_graph_overlay != null and social_graph_overlay.has_method("_toggle_overlay"):
+					social_graph_overlay._toggle_overlay()
+					get_viewport().set_input_as_handled()
+			KEY_TAB:
+				# Tab cycles through NPCs in the current world and shows the info panel.
+				_cycle_npc(1)
+				get_viewport().set_input_as_handled()
+			KEY_ESCAPE:
+				# Centralised Esc: close whichever panel is topmost.
+				if _npc_info_panel != null and _npc_info_panel.visible:
+					_npc_info_panel.hide_panel()
+					get_viewport().set_input_as_handled()
+				elif rumor_panel != null and rumor_panel.visible and rumor_panel.has_method("toggle"):
+					rumor_panel.toggle()
+					get_viewport().set_input_as_handled()
+
+
+## SPA-872: Cycle through NPCs in the world using Tab.
+## direction: +1 = forward, -1 = backward.
+func _cycle_npc(direction: int) -> void:
+	if world == null:
+		return
+	var npc_container: Node = world.get_node_or_null("NPCContainer")
+	if npc_container == null:
+		return
+	# Rebuild NPC list each cycle so it stays current.
+	_tab_npc_list = npc_container.get_children().filter(
+		func(n: Node) -> bool: return n is Node2D and n.has_method("get_worst_rumor_state")
+	)
+	if _tab_npc_list.is_empty():
+		return
+	_tab_npc_index = (_tab_npc_index + direction) % _tab_npc_list.size()
+	if _tab_npc_index < 0:
+		_tab_npc_index = _tab_npc_list.size() - 1
+	var npc: Node2D = _tab_npc_list[_tab_npc_index]
+	# Pan camera toward the selected NPC.
+	if camera != null:
+		var tw := camera.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.tween_property(camera, "position", npc.global_position, 0.4)
+	# Show the NPC info panel.
+	if _npc_info_panel != null:
+		_npc_info_panel.show_npc(npc)
 
 
 ## Called when the player clicks Begin on the scenario intro screen.
@@ -317,6 +367,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_hud_tooltip()
 	_init_context_controls_panel()
 	_init_visual_affordances()
+	_init_npc_info_panel()
 	day_night.day_changed.connect(_on_new_day_auto_save)
 	PlayerStats.start_session()  # SPA-273: begin timing this play session
 
@@ -2357,6 +2408,41 @@ func _init_context_controls_panel() -> void:
 	add_child(_context_controls)
 	if _controls_ref != null:
 		_context_controls.setup(_controls_ref)
+
+
+## SPA-872: NPC quick-info panel (shown on Tab cycle or NPC selection).
+func _init_npc_info_panel() -> void:
+	_npc_info_panel = preload("res://scripts/npc_info_panel.gd").new()
+	_npc_info_panel.name = "NpcInfoPanel"
+	add_child(_npc_info_panel)
+	if world != null and world.intel_store != null:
+		_npc_info_panel.setup(world, world.intel_store)
+	# Wire action_requested so the panel can trigger recon/rumor actions.
+	_npc_info_panel.action_requested.connect(_on_npc_info_action)
+
+
+## Handle action shortcuts triggered from the NPC info panel.
+func _on_npc_info_action(action_key: String, npc: Node2D) -> void:
+	match action_key:
+		"eavesdrop":
+			# Right-click on the NPC is the canonical path; here we programmatically
+			# open the dialogue panel if it exists and pre-select eavesdrop.
+			if _npc_info_panel != null:
+				_npc_info_panel.hide_panel()
+			var recon_ctrl: Node = get_node_or_null("World/ReconController")
+			if recon_ctrl != null and recon_ctrl.has_method("_try_eavesdrop"):
+				recon_ctrl._try_eavesdrop(npc)
+		"bribe":
+			if _npc_info_panel != null:
+				_npc_info_panel.hide_panel()
+			var recon_ctrl: Node = get_node_or_null("World/ReconController")
+			if recon_ctrl != null and recon_ctrl.has_method("_try_bribe"):
+				recon_ctrl._try_bribe(npc)
+		"seed":
+			# Open the rumor panel — player picks seed target from there.
+			if rumor_panel != null and rumor_panel.has_method("toggle"):
+				if not rumor_panel.visible:
+					rumor_panel.toggle()
 
 
 ## Auto-save to slot 0 at the start of each new day (SPA-220).

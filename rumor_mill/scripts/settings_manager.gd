@@ -30,6 +30,14 @@ const DEFAULT_UI_SCALE           := 1.0    ## 1.0 = 100%, range 0.75–1.5
 ## Available UI scale presets.
 const UI_SCALE_PRESETS := [0.75, 0.85, 1.0, 1.15, 1.25, 1.5]
 
+## Text size presets (Small/Medium/Large) — each maps to a UI_SCALE_PRESETS index.
+const TEXT_SIZE_LABELS := ["Small", "Medium", "Large"]
+const TEXT_SIZE_SCALE_INDICES := [0, 2, 4]  ## maps to 0.75, 1.0, 1.25
+
+## Game speed presets: tick_duration_seconds for 0.5×, 1×, 2× gameplay speed.
+const GAME_SPEED_LABELS  := ["0.5×", "1×", "2×"]
+const GAME_SPEED_PRESETS := [2.0, 1.0, 0.5]
+
 ## Window scale presets — multiplier of base 1280×720 viewport for windowed mode.
 const WINDOW_SCALE_PRESETS := [1.0, 1.5, 2.0]
 
@@ -60,6 +68,8 @@ var window_mode:         int   = DEFAULT_WINDOW_MODE
 var ui_scale:            float = DEFAULT_UI_SCALE
 var ui_scale_index:      int   = 2   ## index into UI_SCALE_PRESETS (default 1.0)
 var window_scale_index:  int   = 0   ## index into WINDOW_SCALE_PRESETS (default 1x)
+var text_size_index:     int   = 1   ## index into TEXT_SIZE_LABELS (0=Small, 1=Medium, 2=Large)
+var game_speed_index:    int   = 1   ## index into GAME_SPEED_PRESETS (0=0.5×, 1=1×, 2=2×)
 var dismissed_tooltips:  Dictionary = {}  ## Persistent tooltip dismissal tracking (tooltip_id → true).
 
 
@@ -106,6 +116,14 @@ func load_settings() -> void:
 	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
 	window_scale_index = cfg.get_value(SECTION, "window_scale_index", 0)
 	window_scale_index = clampi(window_scale_index, 0, WINDOW_SCALE_PRESETS.size() - 1)
+	text_size_index = cfg.get_value(SECTION, "text_size_index", 1)
+	text_size_index = clampi(text_size_index, 0, TEXT_SIZE_LABELS.size() - 1)
+	# Sync ui_scale to text_size selection if it was persisted.
+	ui_scale_index = TEXT_SIZE_SCALE_INDICES[text_size_index]
+	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
+	game_speed_index = cfg.get_value(SECTION, "game_speed_index", 1)
+	game_speed_index = clampi(game_speed_index, 0, GAME_SPEED_PRESETS.size() - 1)
+	game_speed = GAME_SPEED_PRESETS[game_speed_index]
 	dismissed_tooltips = cfg.get_value(SECTION, "dismissed_tooltips", {})
 
 
@@ -121,6 +139,8 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "window_mode",       window_mode)
 	cfg.set_value(SECTION, "ui_scale_index",    ui_scale_index)
 	cfg.set_value(SECTION, "window_scale_index", window_scale_index)
+	cfg.set_value(SECTION, "text_size_index",   text_size_index)
+	cfg.set_value(SECTION, "game_speed_index",  game_speed_index)
 	cfg.set_value(SECTION, "dismissed_tooltips", dismissed_tooltips)
 	cfg.save(SAVE_PATH)
 
@@ -187,6 +207,23 @@ func get_window_scale_label() -> String:
 	if scale == int(scale):
 		return "%dx" % int(scale)
 	return "%.1fx" % scale
+
+
+## Get the display label for the current text size preset.
+func get_text_size_label() -> String:
+	return TEXT_SIZE_LABELS[clampi(text_size_index, 0, TEXT_SIZE_LABELS.size() - 1)]
+
+
+## Set text size index and sync ui_scale to the mapped preset.
+func set_text_size_index(idx: int) -> void:
+	text_size_index = clampi(idx, 0, TEXT_SIZE_LABELS.size() - 1)
+	ui_scale_index  = TEXT_SIZE_SCALE_INDICES[text_size_index]
+	ui_scale        = UI_SCALE_PRESETS[ui_scale_index]
+
+
+## Get the display label for the current game speed preset.
+func get_game_speed_label() -> String:
+	return GAME_SPEED_LABELS[clampi(game_speed_index, 0, GAME_SPEED_LABELS.size() - 1)]
 
 
 ## Get the display label for the current window mode.

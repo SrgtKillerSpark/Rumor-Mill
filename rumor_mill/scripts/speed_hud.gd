@@ -65,6 +65,24 @@ func _set_speed(s: Speed) -> void:
 	_apply_speed()
 
 
+## Called by settings_menu when the game speed setting changes at runtime.
+## Maps SettingsManager.game_speed (tick_duration_seconds) to the closest Speed enum.
+func _apply_speed_from_settings() -> void:
+	var dur: float = SettingsManager.game_speed
+	if dur >= 1.5:
+		_set_speed(Speed.PAUSE if _speed == Speed.PAUSE else Speed.NORMAL)
+		# For 0.5× (slow), set custom tick duration without changing the button state.
+		if _day_night != null and _speed != Speed.PAUSE:
+			_day_night.set_paused(false)
+			_day_night.tick_duration_seconds = dur
+			_day_night.tick_timer.wait_time   = dur
+			_day_night.tick_timer.start()
+	elif dur <= 0.6:
+		_set_speed(Speed.FAST)
+	else:
+		_set_speed(Speed.NORMAL)
+
+
 func _apply_speed() -> void:
 	if _day_night == null:
 		return

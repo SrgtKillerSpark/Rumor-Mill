@@ -22,6 +22,8 @@ var _btn_resolution:   Button = null
 var _btn_window_mode:  Button = null
 var _btn_ui_scale:     Button = null
 var _btn_window_scale: Button = null
+var _btn_text_size:    Button = null
+var _btn_game_speed:   Button = null
 var _slider_master:    HSlider = null
 var _slider_music:     HSlider = null
 var _slider_ambient:   HSlider = null
@@ -71,17 +73,17 @@ func _build_ui() -> void:
 	overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(overlay)
 
-	# Centred panel 420 x 560.
+	# Centred panel 420 x 650 (expanded to fit Gameplay section).
 	var panel := Panel.new()
-	panel.custom_minimum_size = Vector2(420, 560)
+	panel.custom_minimum_size = Vector2(420, 650)
 	panel.set_anchor(SIDE_LEFT,   0.5)
 	panel.set_anchor(SIDE_RIGHT,  0.5)
 	panel.set_anchor(SIDE_TOP,    0.5)
 	panel.set_anchor(SIDE_BOTTOM, 0.5)
 	panel.set_offset(SIDE_LEFT,  -210)
 	panel.set_offset(SIDE_RIGHT,  210)
-	panel.set_offset(SIDE_TOP,   -280)
-	panel.set_offset(SIDE_BOTTOM, 280)
+	panel.set_offset(SIDE_TOP,   -325)
+	panel.set_offset(SIDE_BOTTOM, 325)
 	panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	var style := StyleBoxFlat.new()
 	style.bg_color = C_PANEL_BG
@@ -187,6 +189,24 @@ func _build_ui() -> void:
 	sfx_row.add_child(_lbl_sfx_val)
 	vbox.add_child(sfx_row)
 
+	# ── Gameplay section ──────────────────────────────────────────────────────
+	vbox.add_child(_make_section_label("Gameplay"))
+	vbox.add_child(_make_separator())
+
+	# Text size row.
+	var text_size_row := _make_setting_row("Text Size")
+	_btn_text_size = _make_cycle_button(SettingsManager.get_text_size_label())
+	_btn_text_size.pressed.connect(_on_text_size_cycle)
+	text_size_row.add_child(_btn_text_size)
+	vbox.add_child(text_size_row)
+
+	# Game speed row.
+	var speed_row := _make_setting_row("Game Speed")
+	_btn_game_speed = _make_cycle_button(SettingsManager.get_game_speed_label())
+	_btn_game_speed.pressed.connect(_on_game_speed_cycle)
+	speed_row.add_child(_btn_game_speed)
+	vbox.add_child(speed_row)
+
 	# ── Controls section ──────────────────────────────────────────────────────
 	vbox.add_child(_make_section_label("Controls"))
 	vbox.add_child(_make_separator())
@@ -208,6 +228,7 @@ func _build_ui() -> void:
 	var focus_list: Array[Control] = [
 		_btn_resolution, _btn_window_mode, _btn_window_scale, _btn_ui_scale,
 		_slider_master, _slider_music, _slider_ambient, _slider_sfx,
+		_btn_text_size, _btn_game_speed,
 		_btn_controls, btn_back,
 	]
 	for i in focus_list.size():
@@ -406,6 +427,8 @@ func _sync_from_settings() -> void:
 	_lbl_music_val.text   = str(int(SettingsManager.music_volume))
 	_lbl_ambient_val.text = str(int(SettingsManager.ambient_volume))
 	_lbl_sfx_val.text     = str(int(SettingsManager.sfx_volume))
+	_btn_text_size.text   = SettingsManager.get_text_size_label()
+	_btn_game_speed.text  = SettingsManager.get_game_speed_label()
 
 
 # ── Callbacks ─────────────────────────────────────────────────────────────────
@@ -487,3 +510,29 @@ func _on_controls_pressed() -> void:
 	var ref: Node = get_tree().root.find_child("ControlsReference", true, false)
 	if ref != null and ref.has_method("toggle"):
 		ref.toggle()
+
+
+func _on_text_size_cycle() -> void:
+	AudioManager.play_sfx("ui_click")
+	SettingsManager.set_text_size_index((SettingsManager.text_size_index + 1) % SettingsManager.TEXT_SIZE_LABELS.size())
+	SettingsManager.apply_ui_scale()
+	SettingsManager.save_settings()
+	_btn_text_size.text = SettingsManager.get_text_size_label()
+	var tw := _btn_text_size.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_btn_text_size, "scale", Vector2(0.95, 0.95), 0.06)
+	tw.tween_property(_btn_text_size, "scale", Vector2.ONE, 0.10)
+
+
+func _on_game_speed_cycle() -> void:
+	AudioManager.play_sfx("ui_click")
+	SettingsManager.game_speed_index = (SettingsManager.game_speed_index + 1) % SettingsManager.GAME_SPEED_PRESETS.size()
+	SettingsManager.game_speed = SettingsManager.GAME_SPEED_PRESETS[SettingsManager.game_speed_index]
+	SettingsManager.save_settings()
+	_btn_game_speed.text = SettingsManager.get_game_speed_label()
+	# Apply to the running SpeedHUD if the game is active.
+	var speed_node: Node = get_tree().root.find_child("SpeedHUD", true, false)
+	if speed_node != null and speed_node.has_method("_apply_speed_from_settings"):
+		speed_node._apply_speed_from_settings()
+	var tw := _btn_game_speed.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_btn_game_speed, "scale", Vector2(0.95, 0.95), 0.06)
+	tw.tween_property(_btn_game_speed, "scale", Vector2.ONE, 0.10)
