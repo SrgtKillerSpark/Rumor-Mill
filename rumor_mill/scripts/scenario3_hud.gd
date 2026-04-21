@@ -134,8 +134,12 @@ func _build_ui() -> void:
 	right_vbox.add_child(_rival_lbl)
 
 	_disrupt_btn = Button.new()
-	_disrupt_btn.text = "Disrupt Rival"
-	_disrupt_btn.tooltip_text = "Spend 1 recon action to slow the rival agent for 3 days. Requires the rival to have acted at least once."
+	_disrupt_btn.text = "Disrupt Rival (3)"
+	_disrupt_btn.tooltip_text = (
+		"Spend 1 Recon Action to slow the rival for 3 days (delays their next counter-rumor)."
+		+ " Requires the rival to have acted at least once."
+		+ " Limited to 3 charges per scenario — use them wisely in the later phases."
+	)
 	_disrupt_btn.add_theme_font_size_override("font_size", 12)
 	_disrupt_btn.disabled = true
 	_disrupt_btn.pressed.connect(_on_disrupt_pressed)
@@ -256,7 +260,7 @@ func notify_rival_disrupted(day: int) -> void:
 
 # ── Disrupt button ────────────────────────────────────────────────────────────
 
-## Sync the Disrupt button enabled state each refresh.
+## Sync the Disrupt button enabled state and charge counter each refresh.
 func _update_disrupt_button() -> void:
 	if _disrupt_btn == null or _world_ref == null:
 		return
@@ -265,6 +269,9 @@ func _update_disrupt_button() -> void:
 	var can_disrupt: bool = rival != null and rival.can_be_disrupted()
 	var has_actions: bool = intel != null and intel.recon_actions_remaining > 0
 	_disrupt_btn.disabled = not (can_disrupt and has_actions)
+	# SPA-874: show remaining charges in the button label.
+	var charges: int = rival.disrupt_charges_remaining if rival != null else 0
+	_disrupt_btn.text = "Disrupt Rival (%d)" % charges
 
 
 ## Player clicked "Disrupt Rival" — spend 1 recon action and apply disruption.

@@ -65,6 +65,9 @@ var social_graph_ref: SocialGraph = null
 var propagation_engine_ref: PropagationEngine = null
 ## SPA-868: quarantine system ref — set by World for S2.
 var quarantine_ref: QuarantineSystem = null
+## SPA-874: buildings with 3+ illness believers that non-believers should avoid.
+## Updated by World each day; keys are location codes, value is always true.
+var illness_hotspot_buildings: Dictionary = {}
 
 # ── Schedule archetype ───────────────────────────────────────────────────────
 var archetype: NpcSchedule.ScheduleArchetype = NpcSchedule.ScheduleArchetype.INDEPENDENT
@@ -506,6 +509,14 @@ func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> 
 		archetype, slot, work_location, tick_overrides, day_pattern_overrides, day
 	)
 	location_code = _reroute_if_avoided(location_code)
+	# SPA-874: Outside NPCs avoid quarantined buildings — reroute to previous location.
+	if quarantine_ref != null and quarantine_ref.is_quarantined(location_code) \
+			and location_code != current_location_code:
+		location_code = current_location_code if not current_location_code.is_empty() else "home"
+	# SPA-874: Non-believers avoid illness hotspot buildings (3+ believers present).
+	if illness_hotspot_buildings.has(location_code) and location_code != current_location_code \
+			and not _believes_illness():
+		location_code = current_location_code if not current_location_code.is_empty() else "home"
 	current_location_code = location_code
 
 	# Visual schedule clarity (SPA-586): dim NPC when indoors/asleep at home
@@ -547,6 +558,9 @@ func _is_schedule_overridden() -> bool:
 func _step_movement() -> void:
 	if _is_moving:
 		return
+	# SPA-874: Chapel NPCs stop moving while the chapel is quarantined.
+	if _is_chapel_frozen():
+		return
 
 	if _path.is_empty():
 		_advance_waypoint()
@@ -564,6 +578,9 @@ func _step_movement() -> void:
 ## making NPCs look like they're milling about rather than frozen in place.
 func _maybe_micro_wander() -> void:
 	if _is_schedule_overridden():
+		return
+	# SPA-874: Chapel NPCs stop micro-wandering while the chapel is quarantined.
+	if _is_chapel_frozen():
 		return
 	if _micro_wander_cooldown > 0:
 		_micro_wander_cooldown -= 1
@@ -1242,6 +1259,28 @@ func _update_schedule_avoidance(rumor: Rumor) -> void:
 	if _avoided_subject_ids.has(subject_id):
 		return
 	_avoided_subject_ids.append(subject_id)
+
+
+## SPA-874: Returns true if this NPC currently believes (or is spreading/acting on)
+## any illness rumor, making hotspot avoidance not apply to them.
+func _believes_illness() -> bool:
+	for slot in rumor_slots.values():
+		if slot.rumor == null:
+			continue
+		if slot.rumor.claim_type == Rumor.ClaimType.ILLNESS \
+				and slot.state in [Rumor.RumorState.BELIEVE,
+								   Rumor.RumorState.SPREAD,
+								   Rumor.RumorState.ACT]:
+			return true
+	return false
+
+
+## SPA-874: Returns true when the chapel is quarantined and this NPC is inside it.
+## Chapel NPCs freeze in place (no movement, no micro-wander) while sealed.
+func _is_chapel_frozen() -> bool:
+	return quarantine_ref != null \
+		and quarantine_ref.is_quarantined("chapel") \
+		and current_location_code == "chapel"
 
 
 ## If location_code is the work-location of any avoided subject, return "home".

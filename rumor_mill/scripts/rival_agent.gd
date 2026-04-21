@@ -24,6 +24,8 @@ const CALDER_FENN_ID := "calder_fenn"
 
 ## Number of extra cooldown days added while a disruption is active.
 const DISRUPTION_COOLDOWN_BONUS := 3
+## SPA-874: Maximum disruption uses per scenario (charges are NOT dawn-refreshed).
+const MAX_DISRUPT_CHARGES := 3
 
 var _active: bool = false
 var _last_seed_day: int = 0
@@ -31,6 +33,8 @@ var _alternate_flag: bool = false  # flips each seed during days 8–15
 
 ## Days remaining on the current disruption effect (0 = no disruption).
 var _disruption_days_remaining: int = 0
+## SPA-874: Remaining one-time disruption charges for this scenario run.
+var disrupt_charges_remaining: int = MAX_DISRUPT_CHARGES
 
 ## Difficulty modifier applied to every cooldown tier (positive = slower rival).
 ## Set by World._apply_active_scenario() before activate() is called.
@@ -51,6 +55,7 @@ func activate() -> void:
 	_disruption_days_remaining = 0
 	_next_degrade_target_id = ""
 	last_action_description = ""
+	disrupt_charges_remaining = MAX_DISRUPT_CHARGES  # SPA-874: reset charges on scenario start
 
 
 ## Called once per in-game day from World._on_day_changed().
@@ -93,22 +98,22 @@ func _get_cooldown(day: int) -> int:
 
 ## Apply a counter-intel disruption that slows the rival for DISRUPTION_COOLDOWN_BONUS days.
 ## Costs the caller one recon action (checked and spent by the caller before calling this).
-## Returns false if a disruption is already active or the rival hasn't acted yet.
+## Returns false if a disruption is already active, the rival hasn't acted yet, or no
+## charges remain (SPA-874: limited to MAX_DISRUPT_CHARGES uses per scenario).
 func apply_disruption(current_day: int) -> bool:
-	if not _active:
+	if not can_be_disrupted():
 		return false
-	if _last_seed_day == 0:
-		return false  # Rival hasn't acted yet — nothing concrete to disrupt
-	if _disruption_days_remaining > 0:
-		return false  # Already disrupted; wait for it to expire
+	disrupt_charges_remaining -= 1  # SPA-874: consume one charge
 	_disruption_days_remaining = DISRUPTION_COOLDOWN_BONUS
 	rival_disrupted.emit(current_day)
 	return true
 
 
 ## Returns true when the rival can currently be disrupted by the player.
+## SPA-874: Also requires at least one charge remaining.
 func can_be_disrupted() -> bool:
-	return _active and _last_seed_day > 0 and _disruption_days_remaining <= 0
+	return _active and _last_seed_day > 0 and _disruption_days_remaining <= 0 \
+		and disrupt_charges_remaining > 0
 
 
 func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -> void:

@@ -144,6 +144,9 @@ var guild_defense_agent: GuildDefenseAgent = null
 var quarantine_system: QuarantineSystem = null
 ## Visual overlays for quarantined buildings (SPA-868).
 var _quarantine_overlays: Dictionary = {}  # building_name → Sprite2D/ColorRect node
+## SPA-874: Buildings where 3+ NPCs believe the illness rumor — non-believers avoid these.
+## Rebuilt at dawn each day and pushed to all NPCs.
+var _illness_hotspot_buildings: Dictionary = {}  # building_name → true
 
 ## Mid-game narrative event agent — data-driven branching events (all scenarios).
 var mid_game_event_agent: MidGameEventAgent = null
@@ -624,6 +627,8 @@ func _on_day_changed(_day: int) -> void:
 	_daily_cascade_fired.clear()
 	if intel_store != null:
 		intel_store.replenish()
+	# SPA-874: Recompute illness hotspot buildings and push to NPCs.
+	_update_illness_hotspots()
 	if rival_agent != null and scenario_manager != null:
 		rival_agent.tick(_day, self, scenario_manager)
 	if inquisitor_agent != null and scenario_manager != null:
@@ -1598,6 +1603,45 @@ func _init_chimney_smoke() -> void:
 		add_child(emitter)
 
 
+# ── SPA-874: Illness hotspot detection ──────────────────────────────────────
+
+## Rebuild the set of illness hotspot buildings (buildings where 3+ NPCs currently
+## believe the illness rumor) and push the updated set to all NPCs.
+## Called at dawn each day so NPC schedule routing can avoid hotspots.
+func _update_illness_hotspots() -> void:
+	# Count illness believers per building.
+	var counts: Dictionary = {}
+	for npc in npcs:
+		if npc.current_location_code.is_empty() or npc.current_location_code == "home":
+			continue
+		if _npc_believes_illness(npc):
+			var loc: String = npc.current_location_code
+			counts[loc] = counts.get(loc, 0) + 1
+
+	_illness_hotspot_buildings.clear()
+	for loc in counts:
+		if counts[loc] >= 3:
+			_illness_hotspot_buildings[loc] = true
+
+	# Push updated hotspot dict to all NPCs (shallow copy; NPCs must not mutate it).
+	for npc in npcs:
+		npc.illness_hotspot_buildings = _illness_hotspot_buildings
+
+
+## Returns true if the given NPC currently believes (or is spreading/acting on)
+## any illness claim — used to determine who contributes to a building's hotspot count.
+func _npc_believes_illness(npc: Node2D) -> bool:
+	for slot in npc.rumor_slots.values():
+		if slot.rumor == null:
+			continue
+		if slot.rumor.claim_type == Rumor.ClaimType.ILLNESS \
+				and slot.state in [Rumor.RumorState.BELIEVE,
+								   Rumor.RumorState.SPREAD,
+								   Rumor.RumorState.ACT]:
+			return true
+	return false
+
+
 # ── SPA-868: Quarantine zone visual overlays & helpers ──────────────────────
 
 ## Returns true if the NPC's current location is inside a quarantined building.
@@ -1642,8 +1686,8 @@ func _on_building_quarantined(building_name: String, expires_tick: int) -> void:
 
 	var tick: int = day_night.current_tick if day_night != null else 0
 	emit_signal("rumor_event",
-		"[QUARANTINE] %s is now quarantined — no rumor spread for %d ticks." % [
-			building_name.replace("_", " ").capitalize(), QuarantineSystem.QUARANTINE_DURATION_TICKS],
+		"[QUARANTINE] %s is now quarantined for 2 days. Outside NPCs will avoid the area." % [
+			building_name.replace("_", " ").capitalize()],
 		tick)
 
 

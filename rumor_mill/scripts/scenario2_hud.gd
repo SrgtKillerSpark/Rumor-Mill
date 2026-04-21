@@ -192,8 +192,12 @@ func _build_ui() -> void:
 	q_vbox.add_child(_quarantine_dropdown)
 
 	_quarantine_btn = Button.new()
-	_quarantine_btn.text = "Quarantine (2W)"
-	_quarantine_btn.tooltip_text = "Spend 2 Whisper tokens to quarantine the selected building. NPCs inside cannot spread or be interacted with for 3 ticks."
+	_quarantine_btn.text = "Quarantine (1R+1W)"
+	_quarantine_btn.tooltip_text = (
+		"Spend 1 Recon Action + 1 Whisper Token to quarantine the selected building for 2 days."
+		+ " Outside NPCs will avoid the area. Chapel NPCs freeze in place."
+		+ " Only one active quarantine at a time; 3-day cooldown per building after expiry."
+	)
 	_quarantine_btn.add_theme_font_size_override("font_size", 11)
 	_quarantine_btn.disabled = true
 	_quarantine_btn.pressed.connect(_on_quarantine_pressed)
@@ -317,15 +321,27 @@ func _update_quarantine_button() -> void:
 	if q_sys == null or not q_sys.is_active():
 		_quarantine_btn.disabled = true
 		return
-	var has_tokens: bool = intel != null and intel.whisper_tokens_remaining >= QuarantineSystem.QUARANTINE_COST
+	# SPA-874: Requires 1 Recon Action + 1 Whisper Token.
+	var has_recon: bool = intel != null and intel.recon_actions_remaining >= QuarantineSystem.QUARANTINE_RECON_COST
+	var has_whisper: bool = intel != null and intel.whisper_tokens_remaining >= QuarantineSystem.QUARANTINE_WHISPER_COST
 	var selected_building: String = _get_selected_building()
 	var already_quarantined: bool = not selected_building.is_empty() and q_sys.is_quarantined(selected_building)
-	_quarantine_btn.disabled = not has_tokens or already_quarantined or selected_building.is_empty()
+	# SPA-874: Block when another quarantine is already active or on cooldown.
+	var another_active: bool = not q_sys.get_quarantined_buildings().is_empty() and not already_quarantined
+	var tick: int = _day_night_ref.current_tick if _day_night_ref != null else 0
+	var on_cooldown: bool = not selected_building.is_empty() and q_sys.is_on_cooldown(selected_building, tick)
+	_quarantine_btn.disabled = not has_recon or not has_whisper or already_quarantined \
+		or selected_building.is_empty() or another_active or on_cooldown
 
-	# Update status label for active quarantines.
+	# Update status label for active quarantines and cooldowns.
 	var active: Array = q_sys.get_quarantined_buildings()
 	if active.is_empty():
-		_quarantine_status_lbl.visible = false
+		# SPA-874: show cooldown hint when selected building is on cooldown.
+		if on_cooldown:
+			_quarantine_status_lbl.text = "%s: 3-day cooldown" % selected_building.replace("_", " ").capitalize()
+			_quarantine_status_lbl.visible = true
+		else:
+			_quarantine_status_lbl.visible = false
 	else:
 		var names: Array = []
 		for b in active:
