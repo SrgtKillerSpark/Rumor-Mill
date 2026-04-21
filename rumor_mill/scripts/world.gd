@@ -114,6 +114,11 @@ var _daily_believe_counts: Dictionary = {}
 ## Set of rumor_ids that already fired cascade this day (prevents re-fire).
 var _daily_cascade_fired: Dictionary = {}
 
+## SPA-852: state snapshot taken at dusk (day→night transition) each day.
+## Keys: believer_count_by_rumor, target_reputation_score, active_rumor_states.
+## Read by daily_planning_overlay.gd to compute overnight deltas at dawn.
+var _dusk_snapshot: Dictionary = {}
+
 ## SPA-592: cached display name of the Sister Maren NPC for carrier tracking.
 var _maren_display_name: String = ""
 
@@ -630,6 +635,52 @@ func _on_day_changed(_day: int) -> void:
 		faction_event_system.on_day_changed(_day)
 
 
+## SPA-852: capture believer counts, target reputation, and rumor states at dusk.
+## Called once per day when the day→night transition fires in on_game_tick().
+func _take_dusk_snapshot() -> void:
+	# believer_count_by_rumor: rumor_id → count of NPCs in BELIEVE/SPREAD/ACT.
+	var believer_count_by_rumor: Dictionary = {}
+	for npc in npcs:
+		for slot in npc.rumor_slots.values():
+			if slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+				var rid: String = slot.rumor.id if slot.rumor != null else ""
+				if not rid.is_empty():
+					believer_count_by_rumor[rid] = believer_count_by_rumor.get(rid, 0) + 1
+
+	# target_reputation_score: primary scenario target NPC's current score.
+	var target_rep_score: int = -1
+	if scenario_manager != null and reputation_system != null:
+		var brief: Dictionary = scenario_manager.get_strategic_brief()
+		var target_id: String = brief.get("targetNpcId", "")
+		if not target_id.is_empty():
+			var snap: ReputationSystem.ReputationSnapshot = reputation_system.get_snapshot(target_id)
+			if snap != null:
+				target_rep_score = snap.score
+
+	# active_rumor_states: highest-priority state per unique rumor id.
+	# Priority: spreading > stalled > expired.
+	var active_rumor_states: Dictionary = {}
+	for npc in npcs:
+		for slot in npc.rumor_slots.values():
+			var rid: String = slot.rumor.id if slot.rumor != null else ""
+			if rid.is_empty():
+				continue
+			if slot.state in [Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+				active_rumor_states[rid] = "spreading"
+			elif slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.EVALUATING]:
+				if active_rumor_states.get(rid, "") != "spreading":
+					active_rumor_states[rid] = "stalled"
+			elif slot.state in [Rumor.RumorState.EXPIRED, Rumor.RumorState.CONTRADICTED]:
+				if not active_rumor_states.has(rid):
+					active_rumor_states[rid] = "expired"
+
+	_dusk_snapshot = {
+		"believer_count_by_rumor": believer_count_by_rumor,
+		"target_reputation_score": target_rep_score,
+		"active_rumor_states": active_rumor_states,
+	}
+
+
 # ── Scenario data loader ─────────────────────────────────────────────────────
 
 ## Loads scenarios.json, finds the entry matching active_scenario_id, and applies:
@@ -941,6 +992,8 @@ func on_game_tick(tick: int) -> void:
 	if night_now != _is_night:
 		_is_night = night_now
 		_update_building_night(_is_night)
+		if _is_night:  # SPA-852: snapshot state at dusk for overnight bulletin
+			_take_dusk_snapshot()
 
 	# ── Visual polish: particles + weather (SPA-586). ──
 	if _ambient_particles != null:

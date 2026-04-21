@@ -348,6 +348,72 @@ func _gather_overnight_events() -> Array[String]:
 		lines.append("- %d NPC%s rejected your rumor" % [
 			rejectors, "" if rejectors == 1 else "s"])
 
+	# SPA-852: overnight stat rows from dusk snapshot.
+	var dusk_snap: Dictionary = _world._dusk_snapshot if "_dusk_snapshot" in _world else {}
+	var world_npcs: Array = _world.npcs if "npcs" in _world else []
+
+	# 1. Overnight believer count: delta between dusk and dawn.
+	if not dusk_snap.is_empty():
+		var dusk_counts: Dictionary = dusk_snap.get("believer_count_by_rumor", {})
+		var dusk_total: int = 0
+		for rid in dusk_counts:
+			dusk_total += int(dusk_counts[rid])
+		var dawn_total := 0
+		for npc in world_npcs:
+			for slot in npc.rumor_slots.values():
+				if slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+					dawn_total += 1
+		var delta_b: int = dawn_total - dusk_total
+		if delta_b > 0:
+			lines.append("- +%d new believer%s overnight" % [delta_b, "s" if delta_b != 1 else ""])
+		elif delta_b < 0:
+			lines.append("- %d fewer believer%s overnight" % [abs(delta_b), "s" if abs(delta_b) != 1 else ""])
+
+	# 2. Reputation delta for the scenario target NPC.
+	var rep_sys: ReputationSystem = _world.reputation_system if "reputation_system" in _world else null
+	var scen_mgr: ScenarioManager = _world.scenario_manager if "scenario_manager" in _world else null
+	if rep_sys != null and scen_mgr != null and not dusk_snap.is_empty():
+		var dusk_target_rep: int = int(dusk_snap.get("target_reputation_score", -1))
+		if dusk_target_rep >= 0:
+			var brief: Dictionary = scen_mgr.get_strategic_brief()
+			var target_id: String = brief.get("targetNpcId", "")
+			if not target_id.is_empty():
+				var snap_now: ReputationSystem.ReputationSnapshot = rep_sys.get_snapshot(target_id)
+				if snap_now != null:
+					var rep_now: int = snap_now.score
+					var rep_delta: int = rep_now - dusk_target_rep
+					var target_name: String = target_id.replace("_", " ").capitalize()
+					var delta_sign: String = "+" if rep_delta >= 0 else ""
+					lines.append("- %s reputation: %d → %d (%s%d)" % [
+						target_name, dusk_target_rep, rep_now, delta_sign, rep_delta])
+
+	# 3. Spread summary: count unique rumors by highest-priority state.
+	var rumor_state_map: Dictionary = {}
+	for npc in world_npcs:
+		for slot in npc.rumor_slots.values():
+			var rid: String = slot.rumor.id if slot.rumor != null else ""
+			if rid.is_empty():
+				continue
+			if slot.state in [Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+				rumor_state_map[rid] = "spreading"
+			elif slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.EVALUATING]:
+				if rumor_state_map.get(rid, "") != "spreading":
+					rumor_state_map[rid] = "stalled"
+			elif slot.state in [Rumor.RumorState.EXPIRED, Rumor.RumorState.CONTRADICTED]:
+				if not rumor_state_map.has(rid):
+					rumor_state_map[rid] = "expired"
+	var n_spreading := 0
+	var n_stalled := 0
+	var n_expired := 0
+	for rid in rumor_state_map:
+		match rumor_state_map[rid]:
+			"spreading": n_spreading += 1
+			"stalled":   n_stalled += 1
+			"expired":   n_expired += 1
+	if n_spreading > 0 or n_stalled > 0 or n_expired > 0:
+		lines.append("- Rumors active: %d spreading, %d stalled, %d expired" % [
+			n_spreading, n_stalled, n_expired])
+
 	return lines
 
 
