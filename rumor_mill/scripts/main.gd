@@ -41,14 +41,11 @@ var _end_screen: CanvasLayer = null
 # ── SPA-784: Victory/defeat feedback sequence ────────────────────────────────
 var _feedback_seq: CanvasLayer = null
 
-# ── SPA-519: Day 1 ready overlay ─────────────────────────────────────────────
+# ── SPA-519: Day 1 ready overlay (recall mode only) ──────────────────────────
 var _ready_overlay: CanvasLayer = null
 
-# ── SPA-812: Mission Card shown after ready overlay ───────────────────────────
-var _mission_card: CanvasLayer = null
-
-# ── SPA-720: Pre-game strategic overview ─────────────────────────────────────
-var _strategic_overview: CanvasLayer = null
+# ── SPA-836: Consolidated Mission Briefing screen ────────────────────────────
+var _mission_briefing: CanvasLayer = null
 
 # ── SPA-541: Persistent controls reference overlay ───────────────────────────
 var _controls_ref: CanvasLayer = null
@@ -365,21 +362,21 @@ func _on_begin_game(scenario_id: String) -> void:
 		var speed_node := get_node_or_null("SpeedHUD")
 		if speed_node != null and speed_node.has_method("_set_speed"):
 			speed_node._set_speed(speed_node.Speed.PAUSE)
-		# SPA-720: Show Strategic Overview first, then ReadyOverlay on dismiss.
-		_show_strategic_overview()
+		# SPA-836: Show single Mission Briefing screen.
+		_show_mission_briefing()
 
 
-## SPA-720: Show the Strategic Overview screen (pre-game intelligence brief).
-## Finds the target NPC data from world.npcs and passes it to the overlay.
-func _show_strategic_overview() -> void:
+## SPA-836: Show the consolidated Mission Briefing screen.
+## Merges Strategic Overview + ReadyOverlay + MissionCard into one screen.
+func _show_mission_briefing() -> void:
 	var sm: ScenarioManager = world.scenario_manager if world != null else null
 	if sm == null:
-		_show_ready_overlay()
+		_on_mission_briefing_dismissed()
 		return
+
 	var brief: Dictionary = sm.get_strategic_brief()
-	if brief.is_empty():
-		_show_ready_overlay()
-		return
+	var objective_card: Dictionary = sm.get_objective_card()
+
 	# Find the target NPC's raw data dict from the spawned NPC list.
 	var target_id: String = brief.get("targetNpcId", "")
 	var npc_data: Dictionary = {}
@@ -388,31 +385,22 @@ func _show_strategic_overview() -> void:
 			if npc.npc_data.get("id", "") == target_id:
 				npc_data = npc.npc_data
 				break
-	_strategic_overview = preload("res://scripts/strategic_overview.gd").new()
-	_strategic_overview.name = "StrategicOverview"
-	add_child(_strategic_overview)
-	_strategic_overview.setup(brief, npc_data)
-	_strategic_overview.dismissed.connect(_on_strategic_overview_dismissed)
+
+	_mission_briefing = preload("res://scripts/mission_briefing.gd").new()
+	_mission_briefing.name = "MissionBriefing"
+	add_child(_mission_briefing)
+	_mission_briefing.setup(
+		sm.get_objective_one_liner(),
+		sm.get_win_condition_line(),
+		objective_card,
+		brief,
+		npc_data
+	)
+	_mission_briefing.dismissed.connect(_on_mission_briefing_dismissed)
 
 
-func _on_strategic_overview_dismissed() -> void:
-	_strategic_overview = null
-	_show_ready_overlay()
-
-
-## Shows the ReadyOverlay briefing card. Called after StrategicOverview dismisses.
-func _show_ready_overlay() -> void:
-	_ready_overlay = preload("res://scripts/ready_overlay.gd").new()
-	_ready_overlay.name = "ReadyOverlay"
-	add_child(_ready_overlay)
-	var _sm: ScenarioManager = world.scenario_manager if world != null else null
-	if _sm != null:
-		_ready_overlay.setup(_sm.get_objective_card(), _sm.get_title(), _sm.get_intro_text())
-	_ready_overlay.dismissed.connect(_on_ready_overlay_dismissed)
-
-
-func _on_ready_overlay_dismissed() -> void:
-	_ready_overlay = null
+func _on_mission_briefing_dismissed() -> void:
+	_mission_briefing = null
 	# Resume normal speed via SpeedHUD so button state stays in sync.
 	var speed_node := get_node_or_null("SpeedHUD")
 	if speed_node != null and speed_node.has_method("_set_speed"):
@@ -443,15 +431,6 @@ func _on_ready_overlay_dismissed() -> void:
 			var goal_text: String = card.get("mission", "")
 			if goal_text != "":
 				recon_hud.build_goal_strip("GOAL: " + goal_text)
-
-	# SPA-812: Show non-blocking Mission Card overlay for 8 seconds.
-	var _sm_mc: ScenarioManager = world.scenario_manager if world != null else null
-	if _sm_mc != null:
-		_mission_card = preload("res://scripts/mission_card.gd").new()
-		_mission_card.name = "MissionCard"
-		add_child(_mission_card)
-		_mission_card.setup(_sm_mc.get_objective_card())
-		_mission_card.dismissed.connect(func() -> void: _mission_card = null)
 
 	# SPA-626: S1 first-time player flow — camera pan + Market highlight + gated banner.
 	if world.active_scenario_id == "scenario_1":
