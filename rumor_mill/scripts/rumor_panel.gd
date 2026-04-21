@@ -767,9 +767,13 @@ func _build_seed_entry(
 		header.add_child(rec_badge)
 
 	# Estimates with numeric percentages.
-	var spread_est:  float = _estimate_spread(npc_node)
-	var belief_est:  float = _estimate_believability(npc_id)
-	var belief_pct:  int   = roundi(belief_est * 100.0)
+	var spread_result := _estimate_spread(npc_node)
+	var belief_result := _estimate_believability(npc_id, npc_name)
+	var spread_est:    float  = spread_result["value"]
+	var spread_reason: String = spread_result["reason"]
+	var belief_est:    float  = belief_result["value"]
+	var belief_reason: String = belief_result["reason"]
+	var belief_pct:    int    = roundi(belief_est * 100.0)
 
 	# Spread estimate row.
 	var spread_row := HBoxContainer.new()
@@ -829,6 +833,21 @@ func _build_seed_entry(
 	hint_lbl.add_theme_font_size_override("font_size", 12)
 	hint_lbl.add_theme_color_override("font_color", hint_color)
 	spread_row.add_child(hint_lbl)
+
+	# SPA-849: 1-line forecast reasons below the stats row.
+	var reason_row := HBoxContainer.new()
+	reason_row.add_theme_constant_override("separation", 14)
+	vbox.add_child(reason_row)
+	var spread_reason_lbl := Label.new()
+	spread_reason_lbl.text = "    " + spread_reason
+	spread_reason_lbl.add_theme_font_size_override("font_size", 11)
+	spread_reason_lbl.add_theme_color_override("font_color", Color(0.70, 0.82, 0.70, 0.80))
+	reason_row.add_child(spread_reason_lbl)
+	var belief_reason_lbl := Label.new()
+	belief_reason_lbl.text = belief_reason
+	belief_reason_lbl.add_theme_font_size_override("font_size", 11)
+	belief_reason_lbl.add_theme_color_override("font_color", Color(0.70, 0.76, 0.90, 0.80))
+	reason_row.add_child(belief_reason_lbl)
 
 	# Heat warning indicator: shown when the NPC's heat is suppressing the estimate.
 	if _intel_store_ref != null and _intel_store_ref.heat_enabled:
@@ -907,11 +926,13 @@ func _try_confirm_seed() -> void:
 
 ## Rough spread estimate: count of NPCs within the 8-tile spread radius,
 ## weighted by their average sociability.
-func _estimate_spread(seed_npc: Node2D) -> float:
+## Returns {value: float, reason: String} — reason cites the dominant spread factor.
+func _estimate_spread(seed_npc: Node2D) -> Dictionary:
 	if _world_ref == null:
-		return 0.0
+		return {"value": 0.0, "reason": "No world data"}
 	const SPREAD_RADIUS := 8
 	var count: float = 0.0
+	var high_soc: int = 0
 	for npc in _world_ref.npcs:
 		if npc == seed_npc:
 			continue
@@ -920,13 +941,24 @@ func _estimate_spread(seed_npc: Node2D) -> float:
 		if dist <= SPREAD_RADIUS:
 			var soc: float = float(npc.npc_data.get("sociability", 0.5))
 			count += soc
-	return count
+			if soc >= 0.7:
+				high_soc += 1
+	var reason: String
+	if count >= 4.0:
+		reason = "Social hub — wide reach" if high_soc >= 2 else "Crowded area — wide reach"
+	elif count >= 2.0:
+		reason = "Some neighbors nearby"
+	else:
+		reason = "Sparse area — low reach"
+	return {"value": count, "reason": reason}
 
 
 ## Believability estimate: claim base + same-faction bonus, adjusted for heat modifier.
 ## Mirrors the heat_modifier path in propagation_engine.calc_beta so the displayed
 ## percentage matches actual adoption probability (fixes SPA-594).
-func _estimate_believability(seed_npc_id: String) -> float:
+## Returns {value: float, reason: String} — reason cites the dominant believability factor.
+## npc_name is optional; when supplied it personalises the reason line (SPA-849).
+func _estimate_believability(seed_npc_id: String, npc_name: String = "") -> Dictionary:
 	var claim_intensity: int = 3
 	if _world_ref != null:
 		for c in _world_ref.get_claims():
@@ -939,20 +971,39 @@ func _estimate_believability(seed_npc_id: String) -> float:
 	# Same-faction bonus mirrors NPC credulity logic in npc.gd.
 	var subj_faction: String = _get_npc_faction(_selected_subject)
 	var seed_faction: String = _get_npc_faction(seed_npc_id)
-	if not subj_faction.is_empty() and subj_faction == seed_faction:
+	var same_faction: bool = not subj_faction.is_empty() and subj_faction == seed_faction
+	if same_faction:
 		base += 0.15
 
 	# Heat modifier mirrors propagation_engine.calc_beta:
 	#   heat >= 75 → effective credulity -0.30
 	#   heat >= 50 → effective credulity -0.15
+	var heat_penalty: float = 0.0
 	if _intel_store_ref != null and _intel_store_ref.heat_enabled:
 		var heat_val: float = _intel_store_ref.get_heat(seed_npc_id)
 		if heat_val >= 75.0:
 			base -= 0.30
+			heat_penalty = 0.30
 		elif heat_val >= 50.0:
 			base -= 0.15
+			heat_penalty = 0.15
 
-	return clampf(base, 0.0, 1.0)
+	var label: String = npc_name if not npc_name.is_empty() else "NPC"
+	var reason: String
+	if heat_penalty >= 0.30:
+		reason = "%s — under scrutiny" % label
+	elif heat_penalty >= 0.15:
+		reason = "Moderate heat — belief reduced"
+	elif same_faction:
+		reason = "%s shares %s ties" % [label, seed_faction.capitalize()]
+	elif claim_intensity >= 4:
+		reason = "Strong claim — high credibility"
+	elif claim_intensity <= 2:
+		reason = "Weak claim — low believability"
+	else:
+		reason = "No shared bonds — base belief"
+
+	return {"value": clampf(base, 0.0, 1.0), "reason": reason}
 
 
 # ── Evidence helpers ──────────────────────────────────────────────────────────
