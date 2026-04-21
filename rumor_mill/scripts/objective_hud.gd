@@ -127,6 +127,8 @@ var _suggestion_toast:  SuggestionToast  = null
 ## Cached budget counts for detecting player action via polling each tick.
 var _t3_last_obs:   int = -1
 var _t3_last_whisp: int = -1
+## SPA-837: NPC id → score from last _refresh_win_target(); detects live rep changes.
+var _last_target_scores: Dictionary = {}
 
 
 func _ready() -> void:
@@ -463,12 +465,14 @@ func _refresh_win_target() -> void:
 		return
 	var sid: String = _world_ref.active_scenario_id if "active_scenario_id" in _world_ref else ""
 	var text: String = ""
+	var cur_scores: Dictionary = {}
 	match sid:
 		"scenario_1":
 			var p: Dictionary = _scenario_manager.get_scenario_1_progress(_reputation_system)
 			var score: int = p.get("edric_score", 50)
 			var threshold: int = p.get("win_threshold", 30)
 			text = "Edric Fenn: %d/100 — need < %d" % [score, threshold]
+			cur_scores["edric_fenn"] = score
 		"scenario_2":
 			var p: Dictionary = _scenario_manager.get_scenario_2_progress(_reputation_system)
 			var count: int = p.get("illness_believer_count", 0)
@@ -485,6 +489,8 @@ func _refresh_win_target() -> void:
 			var calder_target: int = p.get("calder_win_target", 75)
 			var tomas_target: int = p.get("tomas_win_target", 35)
 			text = "Calder: %d/%d | Tomas: %d/%d" % [calder, calder_target, tomas, tomas_target]
+			cur_scores["calder_fenn"] = calder
+			cur_scores["tomas_reeve"] = tomas
 		"scenario_4":
 			var p: Dictionary = _scenario_manager.get_scenario_4_progress(_reputation_system)
 			var scores: Dictionary = p.get("protected_scores", {})
@@ -494,6 +500,7 @@ func _refresh_win_target() -> void:
 				var npc_score: int = scores.get(npc_id, 50)
 				var display_name: String = npc_id.split("_")[0].capitalize()
 				parts.append("%s: %d" % [display_name, npc_score])
+				cur_scores[npc_id] = npc_score
 			text = "%s — all need > %d" % [" | ".join(parts), threshold]
 		"scenario_5":
 			var p: Dictionary = _scenario_manager.get_scenario_5_progress(_reputation_system)
@@ -501,13 +508,53 @@ func _refresh_win_target() -> void:
 			var edric: int = p.get("edric_score", 58)
 			var tomas: int = p.get("tomas_score", 45)
 			text = "Aldric: %d | Edric: %d | Tomas: %d — need 65+ & rivals < 45" % [aldric, edric, tomas]
+			cur_scores["aldric_vane"] = aldric
+			cur_scores["edric_fenn"]  = edric
+			cur_scores["tomas_reeve"] = tomas
 		"scenario_6":
 			var p: Dictionary = _scenario_manager.get_scenario_6_progress(_reputation_system)
 			var aldric: int = p.get("aldric_score", 55)
 			var marta: int = p.get("marta_score", 52)
 			text = "Aldric: %d | Marta: %d — need ≤ 30 & ≥ 60" % [aldric, marta]
+			cur_scores["aldric_vane"] = aldric
+			cur_scores["marta_coin"]  = marta
+	if not cur_scores.is_empty():
+		_check_target_rep_change(cur_scores)
 	_win_target_label.text = text
 	_win_target_label.visible = not text.is_empty()
+
+
+## SPA-837: Show a toast when any scenario target NPC's rep shifts by >=2 points.
+## Fires the largest single change detected; seeds baseline silently on first call.
+func _check_target_rep_change(cur_scores: Dictionary) -> void:
+	if _suggestion_toast == null:
+		return
+	# First call — seed the baseline without toasting.
+	if _last_target_scores.is_empty():
+		_last_target_scores = cur_scores.duplicate()
+		return
+	# Find the NPC with the largest absolute change this refresh.
+	var best_npc_id:    String = ""
+	var best_delta:     int    = 0
+	var best_new_score: int    = 0
+	for npc_id in cur_scores:
+		if not _last_target_scores.has(npc_id):
+			continue
+		var delta: int = cur_scores[npc_id] - _last_target_scores[npc_id]
+		if abs(delta) > abs(best_delta):
+			best_delta      = delta
+			best_npc_id     = npc_id
+			best_new_score  = cur_scores[npc_id]
+	# Always advance the snapshot so the next tick starts from the current values.
+	_last_target_scores = cur_scores.duplicate()
+	if abs(best_delta) < 2:
+		return
+	var npc_name:  String = best_npc_id.replace("_", " ").capitalize()
+	var direction: String = "dropped to" if best_delta < 0 else "rose to"
+	var sign:      String = "+" if best_delta > 0 else ""
+	_suggestion_toast.show_hint(
+		"%s reputation %s %d (%s%d)" % [npc_name, direction, best_new_score, sign, best_delta]
+	)
 
 
 func _refresh_nudge() -> void:
