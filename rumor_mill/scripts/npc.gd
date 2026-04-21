@@ -310,15 +310,13 @@ func _exit_tree() -> void:
 
 func _on_hover_enter() -> void:
 	Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
-	if sprite != null:
-		sprite.modulate = Color(1.25, 1.25, 1.25, 1.0)
+	set_hover(true)
 	npc_hovered.emit(self)
 
 
 func _on_hover_exit() -> void:
 	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
-	if sprite != null:
-		sprite.modulate = Color.WHITE
+	set_hover(false)
 	npc_unhovered.emit()
 
 
@@ -1355,6 +1353,10 @@ func set_hover(hovered: bool) -> void:
 		return
 	if _hovered:
 		sprite.modulate = NPC_HOVER_TINT
+		# Brief scale pulse for tactile hover feedback.
+		var _hw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		_hw.tween_property(sprite, "scale", Vector2(1.08, 1.08), 0.10)
+		_hw.tween_property(sprite, "scale", Vector2.ONE, 0.15)
 	else:
 		# If heat shimmer is active _process() will take over next frame.
 		# Otherwise restore the state tint immediately.

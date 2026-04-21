@@ -17,7 +17,7 @@ extends Node
 
 const EAVESDROP_RANGE_TILES := 3      ## Max tile distance for "in conversation"
 const EAVESDROP_FAIL_CHANCE  := 0.20  ## Probability of detection when temperament > 0.7
-const NPC_HIT_RADIUS_PX      := 40.0  ## World-space hit radius around NPC centre (scaled for 2x sprites)
+const NPC_HIT_RADIUS_PX      := 52.0  ## World-space hit radius around NPC centre (scaled for 2x sprites)
 const BUILDING_HIT_TILES     := 2     ## Grid-cell radius for location hit-test
 
 ## Highlight colour applied to a hovered NPC's modulate.
@@ -461,6 +461,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if lc_npc != null:
 			lc_npc.call("flash_click")
 			lc_npc.call("show_name_popup")  # SPA-777: brief name + faction label on click
+			AudioManager.play_sfx("ui_click")
 			if _follow_npc == lc_npc:
 				# Re-click same NPC clears follow.
 				_follow_npc.call("set_selected", false)
@@ -488,6 +489,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	# NPC hit-test takes priority over location hit-test.
 	var clicked_npc := _hit_test_npc(world_pos)
 	if clicked_npc != null:
+		clicked_npc.call("flash_click")  # SPA-826: visual pop on right-click
+		AudioManager.play_sfx("ui_click")
 		# SPA-683: show the conversation dialogue panel instead of a direct action.
 		if _dialogue_panel != null:
 			_dialogue_panel.show_for_npc(clicked_npc, screen_pos)

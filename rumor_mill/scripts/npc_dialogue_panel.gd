@@ -155,8 +155,14 @@ func show_for_npc(npc: Node2D, screen_pos: Vector2) -> void:
 	var sz      := _panel.size
 	pos.x = clampf(pos.x, 4.0, vp_size.x - sz.x - 4.0)
 	pos.y = clampf(pos.y, 4.0, vp_size.y - sz.y - 4.0)
-	_panel.position = pos
-	_panel.visible  = true
+	# Entrance animation: fade in + slight upward slide for a smooth open feel.
+	_panel.modulate.a = 0.0
+	_panel.position   = pos + Vector2(0.0, 10.0)
+	_panel.visible    = true
+	var _open_tw := _panel.create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_open_tw.set_parallel(true)
+	_open_tw.tween_property(_panel, "modulate:a", 1.0, 0.18)
+	_open_tw.tween_property(_panel, "position", pos, 0.18)
 
 
 ## Hide the panel without emitting dismissed.
