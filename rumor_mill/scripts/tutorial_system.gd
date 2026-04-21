@@ -407,90 +407,49 @@ const HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 7,
 	},
-	# ── SPA-775: Guided 12-step tutorial hint entries (Scenario 1 first play) ──
+	# ── SPA-835: Guided 7-step tutorial hint entries (Scenario 1 first play) ───
 	"gtut_opening": {
 		"title": "The Alderman's Ruin",
 		"body":  (
 			"You've been hired to destroy [b]Edric Fenn's[/b] reputation.\n"
 			+ "Follow the steps to complete your first assignment."
 		),
-		"auto_dismiss_secs": 5,  # SPA-806: extended from 3 s for readability.
+		"auto_dismiss_secs": 5,
 	},
-	"gtut_camera": {
-		"title": "Move the Camera",
+	"gtut_explore": {
+		"title": "Explore the Town",
 		"body":  (
-			"Use [b]WASD[/b] or drag with middle mouse to look around the town.  "
-			+ "Move the camera now to continue."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "camera_moved",
-	},
-	"gtut_find_building": {
-		"title": "Find a Building",
-		"body":  (
-			"[b]Right-click a building[/b] to read the room and see who's inside.  "
+			"Pan around with [b]WASD[/b] or middle-mouse drag, then "
+			+ "[b]right-click a building[/b] to see who's inside.  "
 			+ "The nearest building has a gold outline."
 		),
 		"auto_dismiss_secs": 999,
 		"action_gate": "read_the_room",
 	},
-	"gtut_observe": {
-		"title": "Observe",
+	"gtut_observe_intel": {
+		"title": "Observe & Check Intel",
 		"body":  (
-			"Good! Now click [b]Observe (1 Recon)[/b] to gather intel on the people here."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "observe",
-	},
-	"gtut_check_intel": {
-		"title": "Check Your Intel",
-		"body":  (
-			"Intel gathered! Press [b]J[/b] to open your Journal and see what you learned."
+			"Click [b]Observe (1 Recon)[/b] to gather intel, then press "
+			+ "[b]J[/b] to open your Journal and review what you learned."
 		),
 		"auto_dismiss_secs": 999,
 		"action_gate": "journal_opened",
 	},
-	"gtut_find_target": {
-		"title": "Find a Target",
+	"gtut_eavesdrop": {
+		"title": "Eavesdrop on an NPC",
 		"body":  (
-			"You need a target for your rumour.  "
-			+ "Close the Journal and [b]right-click an NPC[/b] to eavesdrop.  "
-			+ "A highlighted NPC is nearby."
+			"Close the Journal and [b]right-click a nearby NPC[/b] to eavesdrop.  "
+			+ "A highlighted NPC is nearby — learn their relationship to Edric."
 		),
 		"auto_dismiss_secs": 999,
 		"action_gate": "eavesdrop",
 	},
-	"gtut_eavesdrop_result": {
-		"title": "Eavesdrop Result",
+	"gtut_craft_rumor": {
+		"title": "Craft & Seed a Rumour",
 		"body":  (
-			"You overheard a conversation! You now know their relationship to Edric.  "
-			+ "Press [b]R[/b] to open the Rumour Panel."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "rumor_panel_opened",
-	},
-	"gtut_craft_subject": {
-		"title": "Step 1 of 3: Pick a Subject",
-		"body":  (
-			"Choose [b]Edric Fenn[/b] as your target."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "rumor_subject_selected",
-	},
-	"gtut_craft_claim": {
-		"title": "Step 2 of 3: Pick a Claim",
-		"body":  (
-			"Try [b]Scandal[/b] to damage his reputation.  "
-			+ "Higher intensity claims spread faster."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "rumor_claim_selected",
-	},
-	"gtut_craft_seed": {
-		"title": "Step 3 of 3: Choose a Seed Target",
-		"body":  (
-			"Pick someone [b]credulous[/b] (gullible) — they'll believe it faster.  "
-			+ "Seed your rumour now."
+			"Press [b]R[/b] to open the Rumour Panel.  "
+			+ "Pick [b]Edric Fenn[/b] as subject, choose a claim like [b]Scandal[/b], "
+			+ "then seed it on someone [b]credulous[/b]."
 		),
 		"auto_dismiss_secs": 999,
 		"action_gate": "rumor_seeded",
@@ -507,7 +466,8 @@ const HINT_DATA: Dictionary = {
 	"gtut_complete": {
 		"title": "It's Working!",
 		"body":  (
-			"Your rumour is spreading. Keep gathering intel, crafting rumours, and watching Edric's reputation fall.  "
+			"Your rumour is spreading. Keep gathering intel, crafting rumours, "
+			+ "and watching Edric's reputation fall.  "
 			+ "You have [b]30 days[/b]. Press [b]H[/b] anytime for help."
 		),
 		"auto_dismiss_secs": 8,

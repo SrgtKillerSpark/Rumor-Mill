@@ -1,25 +1,23 @@
 extends Node
 
-## tutorial_controller.gd — Guided onboarding tutorial for all scenarios (SPA-775, SPA-804).
+## tutorial_controller.gd — Guided onboarding tutorial for all scenarios
+## (SPA-775, SPA-804, SPA-835).
 ##
-## Scenario 1 (12 steps): full action-gated tutorial for first-time players.
+## Scenario 1 (7 steps): streamlined action-gated tutorial for first-time
+## players.  Merged from the original 12-step sequence to reduce checkbox
+## fatigue while preserving the core Observe → Eavesdrop → Craft → Spread loop.
 ## Scenarios 2-6 (2-3 steps each): short "What's New" banner sequence showing
 ## the unique mechanic for that scenario.  Steps auto-advance when each banner
 ## dismisses (no blocking).
 ##
-## S1 Step sequence:
-##   0  gtut_opening          — cinematic intro banner (auto 3 s)
-##   1  gtut_camera           — gate: camera_moved
-##   2  gtut_find_building    — gate: read_the_room (building right-clicked)
-##   3  gtut_observe          — gate: observe action
-##   4  gtut_check_intel      — gate: journal opened
-##   5  gtut_find_target      — gate: eavesdrop action
-##   6  gtut_eavesdrop_result — gate: rumor_panel opened
-##   7  gtut_craft_subject    — gate: subject_selected signal
-##   8  gtut_craft_claim      — gate: claim_selected signal
-##   9  gtut_craft_seed       — gate: rumor_seeded signal
-##   10 gtut_watch_spread     — gate: NPC reaches BELIEVE state
-##   11 gtut_complete         — auto-dismiss 8 s, confetti, tutorial ends
+## S1 Step sequence (SPA-835):
+##   0  gtut_opening        — cinematic intro banner (auto 3 s)
+##   1  gtut_explore         — gate: read_the_room_shown (pan + right-click)
+##   2  gtut_observe_intel   — gate: journal opened (observe + check journal)
+##   3  gtut_eavesdrop       — gate: eavesdrop action
+##   4  gtut_craft_rumor     — gate: rumor_seeded (subject + claim + seed)
+##   5  gtut_watch_spread    — gate: NPC reaches BELIEVE state
+##   6  gtut_complete        — auto-dismiss 8 s, confetti, tutorial ends
 ##
 ## S2-S6 steps are short auto-dismiss sequences; see STEPS_S2..STEPS_S6 below.
 ##
@@ -41,20 +39,15 @@ signal tutorial_skipped
 
 # ── Step definitions ─────────────────────────────────────────────────────────
 
-## Scenario 1 — 12-step action-gated tutorial.
+## Scenario 1 — 7-step action-gated tutorial (SPA-835).
 const STEPS_S1: Array = [
-	{ "id": "gtut_opening",          "hint": "gtut_opening" },
-	{ "id": "gtut_camera",           "hint": "gtut_camera" },
-	{ "id": "gtut_find_building",    "hint": "gtut_find_building" },
-	{ "id": "gtut_observe",          "hint": "gtut_observe" },
-	{ "id": "gtut_check_intel",      "hint": "gtut_check_intel" },
-	{ "id": "gtut_find_target",      "hint": "gtut_find_target" },
-	{ "id": "gtut_eavesdrop_result", "hint": "gtut_eavesdrop_result" },
-	{ "id": "gtut_craft_subject",    "hint": "gtut_craft_subject" },
-	{ "id": "gtut_craft_claim",      "hint": "gtut_craft_claim" },
-	{ "id": "gtut_craft_seed",       "hint": "gtut_craft_seed" },
-	{ "id": "gtut_watch_spread",     "hint": "gtut_watch_spread" },
-	{ "id": "gtut_complete",         "hint": "gtut_complete" },
+	{ "id": "gtut_opening",        "hint": "gtut_opening" },
+	{ "id": "gtut_explore",        "hint": "gtut_explore" },
+	{ "id": "gtut_observe_intel",  "hint": "gtut_observe_intel" },
+	{ "id": "gtut_eavesdrop",      "hint": "gtut_eavesdrop" },
+	{ "id": "gtut_craft_rumor",    "hint": "gtut_craft_rumor" },
+	{ "id": "gtut_watch_spread",   "hint": "gtut_watch_spread" },
+	{ "id": "gtut_complete",       "hint": "gtut_complete" },
 ]
 
 ## Scenario 2 — Plague Scare: mechanic shift + Maren warning (3 steps).
@@ -93,18 +86,13 @@ const STEPS_S6: Array = [
 ## Legacy alias — external callers that referenced STEPS still work.
 const STEPS: Array = STEPS_S1
 
-const STEP_OPENING          := 0
-const STEP_CAMERA           := 1
-const STEP_FIND_BUILDING    := 2
-const STEP_OBSERVE          := 3
-const STEP_CHECK_INTEL      := 4
-const STEP_FIND_TARGET      := 5
-const STEP_EAVESDROP_RESULT := 6
-const STEP_CRAFT_SUBJECT    := 7
-const STEP_CRAFT_CLAIM      := 8
-const STEP_CRAFT_SEED       := 9
-const STEP_WATCH_SPREAD     := 10
-const STEP_COMPLETE         := 11
+const STEP_OPENING       := 0
+const STEP_EXPLORE       := 1
+const STEP_OBSERVE_INTEL := 2
+const STEP_EAVESDROP     := 3
+const STEP_CRAFT_RUMOR   := 4
+const STEP_WATCH_SPREAD  := 5
+const STEP_COMPLETE      := 6
 
 # ── State ────────────────────────────────────────────────────────────────────
 
@@ -115,7 +103,7 @@ var _scenario_id: String = "scenario_1"
 ## Active step array — set by setup() based on scenario_id.
 var _steps: Array = []
 ## When true the player is in the guided tutorial and non-guided
-## contextual hints are suppressed.  Only true during S1 (12-step gated tutorial).
+## contextual hints are suppressed.  Only true during S1 (7-step gated tutorial).
 var guided_tutorial_active: bool = false
 ## Name of the NPC the player just seeded a rumor on (for celebration pan).
 var _last_seed_target_name: String = ""
@@ -148,7 +136,7 @@ var _toast_tween:     Tween          = null
 
 
 ## Wire all external dependencies.  Must be called before start().
-## scenario_id selects the step sequence: "scenario_1" (default) = 12-step gated
+## scenario_id selects the step sequence: "scenario_1" (default) = 7-step gated
 ## tutorial; "scenario_2".."scenario_6" = short What's-New auto-dismiss sequence.
 func setup(
 		tutorial_sys: TutorialSystem,
@@ -377,13 +365,13 @@ func _show_step(step_idx: int) -> void:
 func _apply_step_highlights(step_idx: int) -> void:
 	_clear_highlight()
 	match step_idx:
-		STEP_FIND_BUILDING:
+		STEP_EXPLORE:
 			# Highlight the closest building (use first world building if available).
 			if _world != null and _world.get("buildings") != null:
 				var buildings: Array = _world.buildings
 				if not buildings.is_empty():
 					set_tutorial_highlight(buildings[0])
-		STEP_FIND_TARGET:
+		STEP_EAVESDROP:
 			# Highlight the first NPC in the world as the eavesdrop target.
 			if _world != null and _world.get("npcs") != null:
 				var npcs: Array = _world.npcs
@@ -411,11 +399,11 @@ func _complete_current_step() -> void:
 		_tutorial_banner.dismiss_hint(step_def["hint"])
 	_clear_highlight()
 
-	# Juice on step 9: first rumor seeded — toast + camera pan to target NPC.
-	if _current_step == STEP_CRAFT_SEED:
+	# Juice on step 4: first rumor seeded — toast + camera pan to target NPC.
+	if _current_step == STEP_CRAFT_RUMOR:
 		_celebrate_first_rumor()
 
-	# Juice on step 10: first NPC believes — brief camera focus + toast.
+	# Juice on step 5: first NPC believes — brief camera focus + toast.
 	if _current_step == STEP_WATCH_SPREAD:
 		_celebrate_first_believe()
 
@@ -502,7 +490,7 @@ func _show_toast(text: String, duration: float = 2.0) -> void:
 	_toast_tween.tween_property(_toast_label, "modulate:a", 0.0, 0.5)
 
 
-# ── Celebration (step 9: first rumor seeded) ──────────────────────────────────
+# ── Celebration (step 4: first rumor seeded) ──────────────────────────────────
 
 func _celebrate_first_rumor() -> void:
 	var target_label := _last_seed_target_name if _last_seed_target_name != "" else "NPC"
@@ -516,7 +504,7 @@ func _celebrate_first_rumor() -> void:
 				break
 
 
-# ── Celebration (step 10: first NPC believes) ─────────────────────────────────
+# ── Celebration (step 5: first NPC believes) ─────────────────────────────────
 
 func _celebrate_first_believe() -> void:
 	_show_toast("They believe it!", 2.5)
@@ -555,65 +543,38 @@ func _spawn_celebrate_particles() -> void:
 
 # ── Signal connections ───────────────────────────────────────────────────────
 
-var _connected_camera:        bool = false
-var _connected_recon:         bool = false
 var _connected_read_the_room: bool = false
+var _connected_recon:         bool = false
 var _connected_journal:       bool = false
-var _connected_panel_opened:  bool = false
-var _connected_subject:       bool = false
-var _connected_claim:         bool = false
 var _connected_rumor_seeded:  bool = false
 var _connected_npc_states:    bool = false
 
 
 func _connect_signals() -> void:
-	# Step 1: camera moved.
-	if _camera != null and _camera.has_signal("camera_moved") and not _connected_camera:
-		_camera.camera_moved.connect(_on_tc_camera_moved)
-		_connected_camera = true
-
-	# Step 2: read the room.
+	# Step 1 (explore): right-click a building to read the room.
 	if _recon_ctrl != null and _recon_ctrl.has_signal("read_the_room_shown") \
 			and not _connected_read_the_room:
 		_recon_ctrl.read_the_room_shown.connect(_on_tc_read_the_room)
 		_connected_read_the_room = true
 
-	# Step 3: observe action.
+	# Step 2 (observe_intel): journal opened after observing.
+	if _journal != null and not _connected_journal:
+		_journal.visibility_changed.connect(_on_tc_journal_visibility)
+		_connected_journal = true
+
+	# Step 3 (eavesdrop): eavesdrop action performed.
 	if _recon_ctrl != null and _recon_ctrl.has_signal("action_performed") \
 			and not _connected_recon:
 		_recon_ctrl.action_performed.connect(_on_tc_recon_action)
 		_connected_recon = true
 
-	# Step 4: journal opened.
-	if _journal != null and not _connected_journal:
-		_journal.visibility_changed.connect(_on_tc_journal_visibility)
-		_connected_journal = true
-
-	# Step 6: rumor panel opened.
-	if _rumor_panel != null and _rumor_panel.has_signal("panel_opened") \
-			and not _connected_panel_opened:
-		_rumor_panel.panel_opened.connect(_on_tc_panel_opened)
-		_connected_panel_opened = true
-
-	# Step 7: subject selected.
-	if _rumor_panel != null and _rumor_panel.has_signal("subject_selected") \
-			and not _connected_subject:
-		_rumor_panel.subject_selected.connect(_on_tc_subject_selected)
-		_connected_subject = true
-
-	# Step 8: claim selected.
-	if _rumor_panel != null and _rumor_panel.has_signal("claim_selected") \
-			and not _connected_claim:
-		_rumor_panel.claim_selected.connect(_on_tc_claim_selected)
-		_connected_claim = true
-
-	# Step 9: rumor seeded.
+	# Step 4 (craft_rumor): rumor seeded (covers subject + claim + seed).
 	if _rumor_panel != null and _rumor_panel.has_signal("rumor_seeded") \
 			and not _connected_rumor_seeded:
 		_rumor_panel.rumor_seeded.connect(_on_tc_rumor_seeded)
 		_connected_rumor_seeded = true
 
-	# Step 10: NPC reaches BELIEVE.
+	# Step 5 (watch_spread): NPC reaches BELIEVE.
 	if _world != null and not _connected_npc_states:
 		for npc in _world.npcs:
 			if npc.has_signal("rumor_state_changed"):
@@ -626,45 +587,22 @@ func _disconnect_all() -> void:
 		if _tutorial_banner.hint_dismissed.is_connected(_on_banner_hint_dismissed):
 			_tutorial_banner.hint_dismissed.disconnect(_on_banner_hint_dismissed)
 
-	if _connected_camera and _camera != null and _camera.has_signal("camera_moved"):
-		if _camera.camera_moved.is_connected(_on_tc_camera_moved):
-			_camera.camera_moved.disconnect(_on_tc_camera_moved)
-	_connected_camera = false
-
 	if _connected_read_the_room and _recon_ctrl != null \
 			and _recon_ctrl.has_signal("read_the_room_shown"):
 		if _recon_ctrl.read_the_room_shown.is_connected(_on_tc_read_the_room):
 			_recon_ctrl.read_the_room_shown.disconnect(_on_tc_read_the_room)
 	_connected_read_the_room = false
 
-	if _connected_recon and _recon_ctrl != null \
-			and _recon_ctrl.has_signal("action_performed"):
-		if _recon_ctrl.action_performed.is_connected(_on_tc_recon_action):
-			_recon_ctrl.action_performed.disconnect(_on_tc_recon_action)
-	_connected_recon = false
-
 	if _connected_journal and _journal != null:
 		if _journal.visibility_changed.is_connected(_on_tc_journal_visibility):
 			_journal.visibility_changed.disconnect(_on_tc_journal_visibility)
 	_connected_journal = false
 
-	if _connected_panel_opened and _rumor_panel != null \
-			and _rumor_panel.has_signal("panel_opened"):
-		if _rumor_panel.panel_opened.is_connected(_on_tc_panel_opened):
-			_rumor_panel.panel_opened.disconnect(_on_tc_panel_opened)
-	_connected_panel_opened = false
-
-	if _connected_subject and _rumor_panel != null \
-			and _rumor_panel.has_signal("subject_selected"):
-		if _rumor_panel.subject_selected.is_connected(_on_tc_subject_selected):
-			_rumor_panel.subject_selected.disconnect(_on_tc_subject_selected)
-	_connected_subject = false
-
-	if _connected_claim and _rumor_panel != null \
-			and _rumor_panel.has_signal("claim_selected"):
-		if _rumor_panel.claim_selected.is_connected(_on_tc_claim_selected):
-			_rumor_panel.claim_selected.disconnect(_on_tc_claim_selected)
-	_connected_claim = false
+	if _connected_recon and _recon_ctrl != null \
+			and _recon_ctrl.has_signal("action_performed"):
+		if _recon_ctrl.action_performed.is_connected(_on_tc_recon_action):
+			_recon_ctrl.action_performed.disconnect(_on_tc_recon_action)
+	_connected_recon = false
 
 	if _connected_rumor_seeded and _rumor_panel != null \
 			and _rumor_panel.has_signal("rumor_seeded"):
@@ -682,47 +620,25 @@ func _disconnect_all() -> void:
 
 # ── Signal handlers ──────────────────────────────────────────────────────────
 
-func _on_tc_camera_moved() -> void:
-	if _current_step == STEP_CAMERA:
+func _on_tc_read_the_room(_location_id: String) -> void:
+	if _current_step == STEP_EXPLORE:
 		_complete_current_step()
 
 
-func _on_tc_read_the_room(_location_id: String) -> void:
-	if _current_step == STEP_FIND_BUILDING:
+func _on_tc_journal_visibility() -> void:
+	if _current_step == STEP_OBSERVE_INTEL and _journal != null and _journal.visible:
 		_complete_current_step()
 
 
 func _on_tc_recon_action(message: String, success: bool) -> void:
 	if not success:
 		return
-	if _current_step == STEP_OBSERVE and message.begins_with("Observed"):
-		_complete_current_step()
-	elif _current_step == STEP_FIND_TARGET and message.begins_with("Eavesdrop"):
-		_complete_current_step()
-
-
-func _on_tc_journal_visibility() -> void:
-	if _current_step == STEP_CHECK_INTEL and _journal != null and _journal.visible:
-		_complete_current_step()
-
-
-func _on_tc_panel_opened() -> void:
-	if _current_step == STEP_EAVESDROP_RESULT:
-		_complete_current_step()
-
-
-func _on_tc_subject_selected(_npc_id: String) -> void:
-	if _current_step == STEP_CRAFT_SUBJECT:
-		_complete_current_step()
-
-
-func _on_tc_claim_selected(_claim_id: String) -> void:
-	if _current_step == STEP_CRAFT_CLAIM:
+	if _current_step == STEP_EAVESDROP and message.begins_with("Eavesdrop"):
 		_complete_current_step()
 
 
 func _on_tc_rumor_seeded(_rumor_id: String, _subject: String, _claim: String, target_name: String) -> void:
-	if _current_step == STEP_CRAFT_SEED:
+	if _current_step == STEP_CRAFT_RUMOR:
 		_last_seed_target_name = target_name
 		_complete_current_step()
 
