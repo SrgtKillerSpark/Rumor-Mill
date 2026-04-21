@@ -13,6 +13,7 @@ const C_KEY_DESC := Color(0.80, 0.72, 0.56, 1.0)
 
 const BINDINGS := [
 	["WASD / Arrows", "Pan camera"],
+	["Mouse Edge", "Edge pan"],
 	["Mouse Wheel", "Zoom in / out"],
 	["Middle Drag", "Free pan"],
 	["Right-click building", "Observe location"],
