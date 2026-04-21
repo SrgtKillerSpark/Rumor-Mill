@@ -41,10 +41,7 @@ var _end_screen: CanvasLayer = null
 # ── SPA-784: Victory/defeat feedback sequence ────────────────────────────────
 var _feedback_seq: CanvasLayer = null
 
-# ── SPA-519: Day 1 ready overlay (recall mode only) ──────────────────────────
-var _ready_overlay: CanvasLayer = null
-
-# ── SPA-836: Consolidated Mission Briefing screen ────────────────────────────
+# ── SPA-841: Consolidated Mission Briefing screen (game-start + recall) ──────
 var _mission_briefing: CanvasLayer = null
 
 # ── SPA-541: Persistent controls reference overlay ───────────────────────────
@@ -362,11 +359,11 @@ func _on_begin_game(scenario_id: String) -> void:
 		var speed_node := get_node_or_null("SpeedHUD")
 		if speed_node != null and speed_node.has_method("_set_speed"):
 			speed_node._set_speed(speed_node.Speed.PAUSE)
-		# SPA-836: Show single Mission Briefing screen.
+		# SPA-841: Show single Mission Briefing screen.
 		_show_mission_briefing()
 
 
-## SPA-836: Show the consolidated Mission Briefing screen.
+## SPA-841: Show the consolidated Mission Briefing screen.
 ## Merges Strategic Overview + ReadyOverlay + MissionCard into one screen.
 func _show_mission_briefing() -> void:
 	var sm: ScenarioManager = world.scenario_manager if world != null else null
@@ -481,7 +478,7 @@ func _start_target_npc_marker(npc_id: String) -> void:
 
 
 ## SPA-626: Camera auto-pan to Market, single-target highlight, and persistent gated banner.
-## Called from _on_ready_overlay_dismissed() when scenario_1 is active.
+## Called from _on_mission_briefing_dismissed() when scenario_1 is active.
 func _init_s1_onboarding_flow() -> void:
 	# Resolve Market building world-space position via the building entry cell.
 	var market_cell: Vector2i = world._building_entries.get("market", Vector2i(12, 30))
@@ -519,7 +516,7 @@ func _init_s1_onboarding_flow() -> void:
 
 
 ## SPA-804: S2-S6 "What's New" banner sequence via TutorialController.
-## Called from _on_ready_overlay_dismissed() for non-S1 scenarios.
+## Called from _on_mission_briefing_dismissed() for non-S1 scenarios.
 func _init_sx_onboarding_flow(scenario_id: String) -> void:
 	if _tutorial_sys == null or _tutorial_banner == null:
 		return
@@ -728,9 +725,9 @@ func _create_waypoint_marker(pos: Vector2, text: String) -> Node2D:
 	return root
 
 
-## SPA-627: Show the briefing card mid-game (read-only). Blocked during active dialogs.
+## SPA-841: Show the Mission Briefing mid-game in recall mode. Blocked during active dialogs.
 func _show_objective_recall() -> void:
-	if _ready_overlay != null:
+	if _mission_briefing != null:
 		return
 	if _event_choice_modal != null and _event_choice_modal.visible:
 		return
@@ -742,16 +739,32 @@ func _show_objective_recall() -> void:
 		speed_node._set_speed(speed_node.Speed.PAUSE)
 	else:
 		day_night.set_paused(true)
-	_ready_overlay = preload("res://scripts/ready_overlay.gd").new()
-	_ready_overlay.name = "ReadyOverlayRecall"
-	add_child(_ready_overlay)
-	_ready_overlay.setup_recall(sm.get_objective_card(), sm.get_title(), sm.get_intro_text())
-	_ready_overlay.dismissed.connect(_on_recall_overlay_dismissed)
+
+	var brief: Dictionary = sm.get_strategic_brief()
+	var target_id: String = brief.get("targetNpcId", "")
+	var npc_data: Dictionary = {}
+	if target_id != "" and world != null:
+		for npc in world.npcs:
+			if npc.npc_data.get("id", "") == target_id:
+				npc_data = npc.npc_data
+				break
+
+	_mission_briefing = preload("res://scripts/mission_briefing.gd").new()
+	_mission_briefing.name = "MissionBriefingRecall"
+	add_child(_mission_briefing)
+	_mission_briefing.setup_recall(
+		sm.get_objective_one_liner(),
+		sm.get_win_condition_line(),
+		sm.get_objective_card(),
+		brief,
+		npc_data
+	)
+	_mission_briefing.dismissed.connect(_on_recall_briefing_dismissed)
 
 
-## SPA-627: Dismiss callback for player-triggered recall overlay.
-func _on_recall_overlay_dismissed() -> void:
-	_ready_overlay = null
+## SPA-841: Dismiss callback for player-triggered recall briefing.
+func _on_recall_briefing_dismissed() -> void:
+	_mission_briefing = null
 	var speed_node := get_node_or_null("SpeedHUD")
 	if speed_node != null and speed_node.has_method("_set_speed"):
 		speed_node._set_speed(speed_node.Speed.NORMAL)
