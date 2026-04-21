@@ -130,6 +130,10 @@ var _t3_last_whisp: int = -1
 ## SPA-837: NPC id → score from last _refresh_win_target(); detects live rep changes.
 var _last_target_scores: Dictionary = {}
 
+# ── SPA-859: First-time objective callout ────────────────────────────────────
+const CALLOUT_TOOLTIP_ID := "objective_hud_first_time"
+var _callout_overlay: CanvasLayer = null
+
 # ── SPA-838: Daily action/whisper budget counter ─────────────────────────────
 var _lbl_budget: Label = null
 var _budget_flash_tween: Tween = null
@@ -176,6 +180,8 @@ func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: Reput
 		scenario_manager.deadline_warning.connect(_on_deadline_warning)
 	# Capture initial reputation scores for the first dawn comparison.
 	_snapshot_dawn_scores()
+	# SPA-859: Show first-time callout pointing to the objective display.
+	_show_first_time_callout()
 
 
 ## Called by main.gd to provide world reference for faction overview.
@@ -1693,6 +1699,112 @@ func _on_suggestion_hint_ready(text: String) -> void:
 func _on_hint_dismissed(was_fast: bool) -> void:
 	if _suggestion_engine != null:
 		_suggestion_engine.notify_hint_dismissed(was_fast)
+
+
+# ── SPA-859: First-time objective callout ────────────────────────────────────
+## Shows a prominent callout overlay once per install, pointing the player at
+## the objective panel so they understand what they are supposed to do.
+
+func _show_first_time_callout() -> void:
+	if SettingsManager.dismissed_tooltips.get(CALLOUT_TOOLTIP_ID, false):
+		return
+	# Defer by one frame so the HUD has laid out.
+	call_deferred("_build_callout_overlay")
+
+
+func _build_callout_overlay() -> void:
+	_callout_overlay = CanvasLayer.new()
+	_callout_overlay.layer = 15  # above HUD (4), below pause menu (20)
+	_callout_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_callout_overlay)
+
+	# Dim the rest of the screen.
+	var dim := ColorRect.new()
+	dim.color = Color(0.0, 0.0, 0.0, 0.45)
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	_callout_overlay.add_child(dim)
+
+	# Callout card positioned just below the objective panel (top-left area).
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(320, 0)
+	card.anchor_left = 0.0
+	card.anchor_top = 0.0
+	card.offset_left = 16.0
+	card.offset_top = 200.0
+	card.offset_right = 336.0
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.10, 0.07, 0.04, 0.95)
+	style.border_color = Color(0.92, 0.78, 0.12, 1.0)
+	style.set_border_width_all(2)
+	style.set_content_margin_all(14)
+	style.set_corner_radius_all(6)
+	card.add_theme_stylebox_override("panel", style)
+	_callout_overlay.add_child(card)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	card.add_child(vbox)
+
+	# Arrow pointing up toward the HUD panel.
+	var arrow := Label.new()
+	arrow.text = "▲  YOUR OBJECTIVE  ▲"
+	arrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	arrow.add_theme_font_size_override("font_size", 14)
+	arrow.add_theme_color_override("font_color", Color(0.92, 0.78, 0.12, 1.0))
+	vbox.add_child(arrow)
+
+	var body := Label.new()
+	body.text = "This panel shows your current mission target,\ndays remaining, and progress toward winning.\nKeep an eye on it — complete your objective\nbefore the deadline runs out!"
+	body.add_theme_font_size_override("font_size", 12)
+	body.add_theme_color_override("font_color", Color(0.82, 0.75, 0.60, 1.0))
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(body)
+
+	var btn := Button.new()
+	btn.text = "Got it!"
+	btn.custom_minimum_size = Vector2(100, 32)
+	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn.add_theme_font_size_override("font_size", 13)
+	btn.add_theme_color_override("font_color", Color(0.95, 0.91, 0.80, 1.0))
+	btn.process_mode = Node.PROCESS_MODE_ALWAYS
+	var btn_style := StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.30, 0.18, 0.07, 1.0)
+	btn_style.border_color = Color(0.55, 0.38, 0.18, 1.0)
+	btn_style.set_border_width_all(1)
+	btn_style.set_content_margin_all(6)
+	btn_style.set_corner_radius_all(3)
+	btn.add_theme_stylebox_override("normal", btn_style)
+	var btn_hover := StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.50, 0.30, 0.10, 1.0)
+	btn_hover.border_color = Color(0.55, 0.38, 0.18, 1.0)
+	btn_hover.set_border_width_all(1)
+	btn_hover.set_content_margin_all(6)
+	btn_hover.set_corner_radius_all(3)
+	btn.add_theme_stylebox_override("hover", btn_hover)
+	btn.pressed.connect(_on_callout_dismissed)
+	vbox.add_child(btn)
+
+	# Also dismiss on clicking the dim overlay.
+	dim.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed:
+			_on_callout_dismissed()
+	)
+
+	# Pulse the arrow label.
+	var tw := arrow.create_tween().set_loops()
+	tw.tween_property(arrow, "modulate:a", 0.4, 0.6).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(arrow, "modulate:a", 1.0, 0.6).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
+
+func _on_callout_dismissed() -> void:
+	if _callout_overlay != null:
+		_callout_overlay.queue_free()
+		_callout_overlay = null
+	SettingsManager.dismissed_tooltips[CALLOUT_TOOLTIP_ID] = true
+	SettingsManager.save_settings()
 
 
 # ── SPA-767: Tooltips for ObjectiveHUD elements ─────────────────────────────

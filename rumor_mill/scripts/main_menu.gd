@@ -127,6 +127,7 @@ var _lbl_sfx_val:        Label      = null
 var _lbl_speed_val:      Label      = null
 var _btn_resolution:     Button     = null
 var _btn_window_mode:    Button     = null
+var _btn_window_scale:   Button     = null
 var _btn_ui_scale:       Button     = null
 
 # Briefing-phase refs
@@ -1326,6 +1327,61 @@ func _build_settings_panel() -> void:
 	_btn_window_mode.pressed.connect(_on_window_mode_cycle)
 	fs_row.add_child(_btn_window_mode)
 
+	# Window scale cycle button (1x / 1.5x / 2x — windowed mode size)
+	var ws_row := HBoxContainer.new()
+	ws_row.add_theme_constant_override("separation", 8)
+	vbox.add_child(ws_row)
+
+	var ws_name := Label.new()
+	ws_name.text = "Window Scale:"
+	ws_name.custom_minimum_size = Vector2(80, 0)
+	ws_name.add_theme_font_size_override("font_size", 13)
+	ws_name.add_theme_color_override("font_color", C_BODY)
+	ws_row.add_child(ws_name)
+
+	_btn_window_scale = Button.new()
+	_btn_window_scale.text = SettingsManager.get_window_scale_label()
+	_btn_window_scale.custom_minimum_size = Vector2(120, 30)
+	_btn_window_scale.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_btn_window_scale.add_theme_font_size_override("font_size", 13)
+	_btn_window_scale.add_theme_color_override("font_color", C_BTN_TEXT)
+	var ws_normal := StyleBoxFlat.new()
+	ws_normal.bg_color = C_BTN_NORMAL
+	ws_normal.set_border_width_all(1)
+	ws_normal.border_color = C_PANEL_BORDER
+	ws_normal.set_content_margin_all(4)
+	var ws_hover := StyleBoxFlat.new()
+	ws_hover.bg_color = C_BTN_HOVER
+	ws_hover.set_border_width_all(1)
+	ws_hover.border_color = C_PANEL_BORDER
+	ws_hover.set_content_margin_all(4)
+	var ws_focus := StyleBoxFlat.new()
+	ws_focus.bg_color = C_BTN_HOVER
+	ws_focus.set_border_width_all(2)
+	ws_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)
+	ws_focus.set_content_margin_all(4)
+	var ws_pressed := StyleBoxFlat.new()
+	ws_pressed.bg_color = Color(0.22, 0.13, 0.05, 1.0)
+	ws_pressed.set_border_width_all(1)
+	ws_pressed.border_color = C_PANEL_BORDER
+	ws_pressed.set_content_margin_all(4)
+	_btn_window_scale.add_theme_stylebox_override("normal", ws_normal)
+	_btn_window_scale.add_theme_stylebox_override("hover", ws_hover)
+	_btn_window_scale.add_theme_stylebox_override("pressed", ws_pressed)
+	_btn_window_scale.add_theme_stylebox_override("focus", ws_focus)
+	_btn_window_scale.pivot_offset = _btn_window_scale.custom_minimum_size * 0.5
+	_btn_window_scale.mouse_entered.connect(func() -> void:
+		AudioManager.play_sfx_pitched("ui_click", 2.0)
+		var tw := _btn_window_scale.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_btn_window_scale, "scale", Vector2(1.04, 1.04), 0.12)
+	)
+	_btn_window_scale.mouse_exited.connect(func() -> void:
+		var tw := _btn_window_scale.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_btn_window_scale, "scale", Vector2.ONE, 0.10)
+	)
+	_btn_window_scale.pressed.connect(_on_window_scale_cycle)
+	ws_row.add_child(_btn_window_scale)
+
 	# UI scale cycle button
 	var sc_row := HBoxContainer.new()
 	sc_row.add_theme_constant_override("separation", 8)
@@ -1560,6 +1616,17 @@ func _on_window_mode_cycle() -> void:
 	var tw := _btn_window_mode.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(_btn_window_mode, "scale", Vector2(0.95, 0.95), 0.06)
 	tw.tween_property(_btn_window_mode, "scale", Vector2.ONE, 0.10)
+
+
+func _on_window_scale_cycle() -> void:
+	AudioManager.play_sfx("ui_click")
+	SettingsManager.window_scale_index = (SettingsManager.window_scale_index + 1) % SettingsManager.WINDOW_SCALE_PRESETS.size()
+	SettingsManager.apply_display_settings()
+	SettingsManager.save_settings()
+	_btn_window_scale.text = SettingsManager.get_window_scale_label()
+	var tw := _btn_window_scale.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_btn_window_scale, "scale", Vector2(0.95, 0.95), 0.06)
+	tw.tween_property(_btn_window_scale, "scale", Vector2.ONE, 0.10)
 
 
 func _on_ui_scale_cycle() -> void:

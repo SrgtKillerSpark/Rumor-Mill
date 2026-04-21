@@ -30,6 +30,9 @@ const DEFAULT_UI_SCALE           := 1.0    ## 1.0 = 100%, range 0.75–1.5
 ## Available UI scale presets.
 const UI_SCALE_PRESETS := [0.75, 0.85, 1.0, 1.15, 1.25, 1.5]
 
+## Window scale presets — multiplier of base 1280×720 viewport for windowed mode.
+const WINDOW_SCALE_PRESETS := [1.0, 1.5, 2.0]
+
 ## Window mode constants.
 const WINDOW_WINDOWED   := 0   ## Regular window with title bar and decorations.
 const WINDOW_BORDERLESS := 1   ## Borderless fullscreen (windowed fullscreen).
@@ -56,6 +59,7 @@ var resolution_index:    int   = DEFAULT_RESOLUTION_INDEX
 var window_mode:         int   = DEFAULT_WINDOW_MODE
 var ui_scale:            float = DEFAULT_UI_SCALE
 var ui_scale_index:      int   = 2   ## index into UI_SCALE_PRESETS (default 1.0)
+var window_scale_index:  int   = 0   ## index into WINDOW_SCALE_PRESETS (default 1x)
 var dismissed_tooltips:  Dictionary = {}  ## Persistent tooltip dismissal tracking (tooltip_id → true).
 
 
@@ -100,6 +104,8 @@ func load_settings() -> void:
 	ui_scale_index = cfg.get_value(SECTION, "ui_scale_index", 2)
 	ui_scale_index = clampi(ui_scale_index, 0, UI_SCALE_PRESETS.size() - 1)
 	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
+	window_scale_index = cfg.get_value(SECTION, "window_scale_index", 0)
+	window_scale_index = clampi(window_scale_index, 0, WINDOW_SCALE_PRESETS.size() - 1)
 	dismissed_tooltips = cfg.get_value(SECTION, "dismissed_tooltips", {})
 
 
@@ -114,6 +120,7 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "resolution_index",  resolution_index)
 	cfg.set_value(SECTION, "window_mode",       window_mode)
 	cfg.set_value(SECTION, "ui_scale_index",    ui_scale_index)
+	cfg.set_value(SECTION, "window_scale_index", window_scale_index)
 	cfg.set_value(SECTION, "dismissed_tooltips", dismissed_tooltips)
 	cfg.save(SAVE_PATH)
 
@@ -139,14 +146,15 @@ func apply_display_settings() -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		_:  # WINDOW_WINDOWED
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+			# Window scale overrides resolution in windowed mode.
+			var scale: float = WINDOW_SCALE_PRESETS[clampi(window_scale_index, 0, WINDOW_SCALE_PRESETS.size() - 1)]
+			var target := Vector2i(int(1280.0 * scale), int(720.0 * scale))
 			var screen_size := DisplayServer.screen_get_size()
-			if res.x < 1280 or res.y < 720 or res.x > screen_size.x or res.y > screen_size.y:
-				push_warning("SettingsManager: invalid resolution %s, clamping." % str(res))
-				res.x = clampi(res.x, 1280, screen_size.x)
-				res.y = clampi(res.y, 720, screen_size.y)
-			DisplayServer.window_set_size(res)
+			target.x = clampi(target.x, 1280, screen_size.x)
+			target.y = clampi(target.y, 720, screen_size.y)
+			DisplayServer.window_set_size(target)
 			# Centre window on screen.
-			var win_pos := Vector2i((screen_size.x - res.x) / 2, (screen_size.y - res.y) / 2)
+			var win_pos := Vector2i((screen_size.x - target.x) / 2, (screen_size.y - target.y) / 2)
 			DisplayServer.window_set_position(win_pos)
 
 
@@ -171,6 +179,14 @@ func get_resolution_label() -> String:
 	if res == DisplayServer.screen_get_size() and res not in BASE_RESOLUTIONS:
 		label += " (Native)"
 	return label
+
+
+## Get the label for the current window scale preset.
+func get_window_scale_label() -> String:
+	var scale: float = WINDOW_SCALE_PRESETS[clampi(window_scale_index, 0, WINDOW_SCALE_PRESETS.size() - 1)]
+	if scale == int(scale):
+		return "%dx" % int(scale)
+	return "%.1fx" % scale
 
 
 ## Get the display label for the current window mode.

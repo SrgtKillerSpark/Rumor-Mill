@@ -21,6 +21,7 @@ const C_BTN_BORDER := Color(0.55, 0.38, 0.18, 1.0)
 var _btn_resolution:   Button = null
 var _btn_window_mode:  Button = null
 var _btn_ui_scale:     Button = null
+var _btn_window_scale: Button = null
 var _slider_master:    HSlider = null
 var _slider_music:     HSlider = null
 var _slider_ambient:   HSlider = null
@@ -132,6 +133,13 @@ func _build_ui() -> void:
 	wm_row.add_child(_btn_window_mode)
 	vbox.add_child(wm_row)
 
+	# Window scale row.
+	var ws_row := _make_setting_row("Window Scale")
+	_btn_window_scale = _make_cycle_button(SettingsManager.get_window_scale_label())
+	_btn_window_scale.pressed.connect(_on_window_scale_cycle)
+	ws_row.add_child(_btn_window_scale)
+	vbox.add_child(ws_row)
+
 	# UI scale row.
 	var scale_row := _make_setting_row("UI Scale")
 	_btn_ui_scale = _make_cycle_button(SettingsManager.get_ui_scale_label())
@@ -198,7 +206,7 @@ func _build_ui() -> void:
 
 	# ── Focus chain (Tab / Arrow navigation) ──────────────────────────────────
 	var focus_list: Array[Control] = [
-		_btn_resolution, _btn_window_mode, _btn_ui_scale,
+		_btn_resolution, _btn_window_mode, _btn_window_scale, _btn_ui_scale,
 		_slider_master, _slider_music, _slider_ambient, _slider_sfx,
 		_btn_controls, btn_back,
 	]
@@ -386,9 +394,10 @@ func _make_action_button(text: String) -> Button:
 # ── Sync UI ← SettingsManager ────────────────────────────────────────────────
 
 func _sync_from_settings() -> void:
-	_btn_resolution.text  = SettingsManager.get_resolution_label()
-	_btn_window_mode.text = SettingsManager.get_window_mode_label()
-	_btn_ui_scale.text    = SettingsManager.get_ui_scale_label()
+	_btn_resolution.text    = SettingsManager.get_resolution_label()
+	_btn_window_mode.text   = SettingsManager.get_window_mode_label()
+	_btn_window_scale.text  = SettingsManager.get_window_scale_label()
+	_btn_ui_scale.text      = SettingsManager.get_ui_scale_label()
 	_slider_master.set_value_no_signal(SettingsManager.master_volume)
 	_slider_music.set_value_no_signal(SettingsManager.music_volume)
 	_slider_ambient.set_value_no_signal(SettingsManager.ambient_volume)
@@ -421,6 +430,17 @@ func _on_window_mode_cycle() -> void:
 	var tw := _btn_window_mode.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(_btn_window_mode, "scale", Vector2(0.95, 0.95), 0.06)
 	tw.tween_property(_btn_window_mode, "scale", Vector2.ONE, 0.10)
+
+
+func _on_window_scale_cycle() -> void:
+	AudioManager.play_sfx("ui_click")
+	SettingsManager.window_scale_index = (SettingsManager.window_scale_index + 1) % SettingsManager.WINDOW_SCALE_PRESETS.size()
+	SettingsManager.apply_display_settings()
+	SettingsManager.save_settings()
+	_btn_window_scale.text = SettingsManager.get_window_scale_label()
+	var tw := _btn_window_scale.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_btn_window_scale, "scale", Vector2(0.95, 0.95), 0.06)
+	tw.tween_property(_btn_window_scale, "scale", Vector2.ONE, 0.10)
 
 
 func _on_ui_scale_cycle() -> void:
