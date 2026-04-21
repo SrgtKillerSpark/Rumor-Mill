@@ -36,6 +36,11 @@ var _pip_lbl: Label = null
 ## Populated in _on_setup_extra; used to flag seed-target risk in the believers list.
 var _maren_neighbours: Dictionary = {}
 
+## SPA-868: Quarantine mechanic UI elements.
+var _quarantine_btn:   Button       = null
+var _quarantine_dropdown: OptionButton = null
+var _quarantine_status_lbl: Label   = null
+
 
 func _scenario_number() -> int:
 	return 2
@@ -51,6 +56,11 @@ func _on_setup_extra(world: Node2D) -> void:
 	# SPA-592: connect to grace-window signal so the HUD can show the countdown warning.
 	if world != null and world.get("scenario_manager") != null:
 		world.scenario_manager.s2_maren_grace_started.connect(_on_maren_grace_started)
+	# SPA-868: populate quarantine building dropdown.
+	if world != null and _quarantine_dropdown != null:
+		var q_sys = world.get("quarantine_system")
+		if q_sys != null and q_sys.is_active():
+			_populate_quarantine_dropdown(world)
 
 
 # ── UI construction ──────────────────────────────────────────────────────────
@@ -164,6 +174,38 @@ func _build_ui() -> void:
 	_escalation_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_escalation_lbl)
 
+	# SPA-868: Quarantine mechanic controls.
+	var q_vbox := VBoxContainer.new()
+	q_vbox.add_theme_constant_override("separation", 2)
+	hbox.add_child(q_vbox)
+
+	var q_title := Label.new()
+	q_title.text = "Quarantine Zone"
+	q_title.add_theme_font_size_override("font_size", 12)
+	q_title.add_theme_color_override("font_color", C_HEADING)
+	q_vbox.add_child(q_title)
+
+	_quarantine_dropdown = OptionButton.new()
+	_quarantine_dropdown.add_theme_font_size_override("font_size", 11)
+	_quarantine_dropdown.tooltip_text = "Select a building to quarantine. Costs 2 Whisper tokens."
+	_quarantine_dropdown.custom_minimum_size = Vector2(110, 0)
+	q_vbox.add_child(_quarantine_dropdown)
+
+	_quarantine_btn = Button.new()
+	_quarantine_btn.text = "Quarantine (2W)"
+	_quarantine_btn.tooltip_text = "Spend 2 Whisper tokens to quarantine the selected building. NPCs inside cannot spread or be interacted with for 3 ticks."
+	_quarantine_btn.add_theme_font_size_override("font_size", 11)
+	_quarantine_btn.disabled = true
+	_quarantine_btn.pressed.connect(_on_quarantine_pressed)
+	q_vbox.add_child(_quarantine_btn)
+
+	_quarantine_status_lbl = Label.new()
+	_quarantine_status_lbl.add_theme_font_size_override("font_size", 11)
+	_quarantine_status_lbl.add_theme_color_override("font_color", Color(0.95, 0.30, 0.20, 0.90))
+	_quarantine_status_lbl.text = ""
+	_quarantine_status_lbl.visible = false
+	q_vbox.add_child(_quarantine_status_lbl)
+
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
 
@@ -233,6 +275,7 @@ func _refresh() -> void:
 	_update_result_label(state,
 		"VICTORY — The plague scare spreads",
 		"FAILED — The truth prevails")
+	_update_quarantine_button()
 
 
 # ── Escalation activity ───────────────────────────────────────────────────────
@@ -249,6 +292,75 @@ func notify_illness_escalated(day: int, _claim_type: String, _subject_id: String
 
 
 # ── SPA-592: Grace window warning ─────────────────────────────────────────────
+
+# ── SPA-868: Quarantine mechanic ──────────────────────────────────────────────
+
+## Populate the building dropdown from the world's building entries.
+func _populate_quarantine_dropdown(world: Node2D) -> void:
+	if _quarantine_dropdown == null:
+		return
+	_quarantine_dropdown.clear()
+	var building_names: Array = ["tavern", "market", "chapel", "manor", "blacksmith",
+		"mill", "storage", "guardpost", "town_hall", "well"]
+	for bname in building_names:
+		if world._building_entries.has(bname):
+			_quarantine_dropdown.add_item(bname.replace("_", " ").capitalize())
+			_quarantine_dropdown.set_item_metadata(_quarantine_dropdown.item_count - 1, bname)
+
+
+## Update quarantine button enabled state each refresh.
+func _update_quarantine_button() -> void:
+	if _quarantine_btn == null or _world_ref == null:
+		return
+	var q_sys = _world_ref.get("quarantine_system")
+	var intel = _world_ref.get("intel_store")
+	if q_sys == null or not q_sys.is_active():
+		_quarantine_btn.disabled = true
+		return
+	var has_tokens: bool = intel != null and intel.whisper_tokens_remaining >= QuarantineSystem.QUARANTINE_COST
+	var selected_building: String = _get_selected_building()
+	var already_quarantined: bool = not selected_building.is_empty() and q_sys.is_quarantined(selected_building)
+	_quarantine_btn.disabled = not has_tokens or already_quarantined or selected_building.is_empty()
+
+	# Update status label for active quarantines.
+	var active: Array = q_sys.get_quarantined_buildings()
+	if active.is_empty():
+		_quarantine_status_lbl.visible = false
+	else:
+		var names: Array = []
+		for b in active:
+			names.append(b.replace("_", " ").capitalize())
+		_quarantine_status_lbl.text = "Active: " + ", ".join(names)
+		_quarantine_status_lbl.visible = true
+
+
+## Get the internal building name from the currently selected dropdown item.
+func _get_selected_building() -> String:
+	if _quarantine_dropdown == null or _quarantine_dropdown.item_count == 0:
+		return ""
+	var idx: int = _quarantine_dropdown.selected
+	if idx < 0:
+		return ""
+	return _quarantine_dropdown.get_item_metadata(idx)
+
+
+## Player clicked "Quarantine" — spend 2 whisper tokens and quarantine the building.
+func _on_quarantine_pressed() -> void:
+	if _world_ref == null:
+		return
+	var q_sys = _world_ref.get("quarantine_system")
+	var intel: PlayerIntelStore = _world_ref.get("intel_store")
+	if q_sys == null or intel == null:
+		return
+	var building_name: String = _get_selected_building()
+	if building_name.is_empty():
+		return
+	var tick: int = 0
+	if _day_night_ref != null:
+		tick = _day_night_ref.current_tick
+	q_sys.try_quarantine(building_name, intel, tick)
+	_update_quarantine_button()
+
 
 ## Called when Maren first rejects, starting the 2-day grace window.
 func _on_maren_grace_started(days_remaining: int) -> void:

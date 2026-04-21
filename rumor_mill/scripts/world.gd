@@ -140,6 +140,11 @@ var s4_faction_shift_agent: S4FactionShiftAgent = null
 ## Guild defense agent — only active in Scenario 6.
 var guild_defense_agent: GuildDefenseAgent = null
 
+## Quarantine system — only active in Scenario 2 (SPA-868).
+var quarantine_system: QuarantineSystem = null
+## Visual overlays for quarantined buildings (SPA-868).
+var _quarantine_overlays: Dictionary = {}  # building_name → Sprite2D/ColorRect node
+
 ## Mid-game narrative event agent — data-driven branching events (all scenarios).
 var mid_game_event_agent: MidGameEventAgent = null
 
@@ -890,6 +895,9 @@ func _apply_active_scenario() -> void:
 	rival_agent.cooldown_offset = int(diff_mods.get("rival_cooldown_offset", 0))
 	if active_scenario_id == "scenario_3":
 		rival_agent.activate()
+		# SPA-868: Wire rival signals to rumor_event for Journal timeline.
+		rival_agent.rival_acted.connect(_on_rival_acted_journal)
+		rival_agent.belief_degraded.connect(_on_rival_belief_degraded_journal)
 
 	# 9. Inquisitor agent — only active in Scenario 4.
 	inquisitor_agent = InquisitorAgent.new()
@@ -925,6 +933,16 @@ func _apply_active_scenario() -> void:
 		if _scen_diff_mods.has("guildDefenseCooldownOverride"):
 			guild_defense_agent.cooldown_days = int(_scen_diff_mods["guildDefenseCooldownOverride"])
 		guild_defense_agent.activate()
+
+	# 11c. Quarantine system — only active in Scenario 2 (SPA-868).
+	quarantine_system = QuarantineSystem.new()
+	if active_scenario_id == "scenario_2":
+		quarantine_system.activate()
+		quarantine_system.building_quarantined.connect(_on_building_quarantined)
+		quarantine_system.quarantine_expired.connect(_on_quarantine_expired)
+		# Give every NPC a reference so spread logic can check quarantine status.
+		for npc in npcs:
+			npc.quarantine_ref = quarantine_system
 
 	# 12. Milestone tracker — created here; callback wired from main.gd after recon_hud is ready.
 	milestone_tracker = MilestoneTracker.new()
@@ -1055,6 +1073,10 @@ func on_game_tick(tick: int) -> void:
 		npc.update_tick_schedule(schedule_slot, current_day, _gathering_points)
 		npc.on_tick(tick)
 
+	# ── SPA-868: Quarantine system tick — expire quarantines. ──
+	if quarantine_system != null:
+		quarantine_system.tick(tick)
+
 	# ── SPA-695: Town mood environmental effects. ──
 	if town_mood_controller != null:
 		town_mood_controller.on_game_tick(tick)
@@ -1115,6 +1137,16 @@ func seed_rumor_from_player(
 			intel_store.whisper_tokens_remaining + 1,
 			intel_store.max_daily_whispers)
 		return ""
+
+	# SPA-868: block interaction with NPCs in quarantined buildings.
+	if quarantine_system != null and quarantine_system.is_active():
+		var target_loc: String = seed_target_npc.current_location_code if "current_location_code" in seed_target_npc else ""
+		if quarantine_system.is_quarantined(target_loc):
+			push_warning("World.seed_rumor_from_player: target NPC is in quarantined building '%s'" % target_loc)
+			intel_store.whisper_tokens_remaining = mini(
+				intel_store.whisper_tokens_remaining + 1,
+				intel_store.max_daily_whispers)
+			return ""
 
 	# Find the claim template.
 	var claim_template: Dictionary = {}
@@ -1312,6 +1344,32 @@ func _on_npc_graph_edge_mutated(actor_name: String, subject_name: String, delta:
 	else:
 		msg = "%s holds %s in higher regard" % [actor_name, subject_name]
 	emit_signal("rumor_event", msg, tick)
+
+
+# ── SPA-868: Rival agent → Journal timeline events ──────────────────────────
+
+func _on_rival_acted_journal(day: int, claim_type: String, subject_id: String) -> void:
+	var tick: int = day_night.current_tick if day_night != null else 0
+	var subject_name: String = subject_id
+	for npc in npcs:
+		if npc.npc_data.get("id", "") == subject_id:
+			subject_name = npc.npc_data.get("name", subject_id)
+			break
+	emit_signal("rumor_event",
+		"[RIVAL] Day %d — seeded %s rumor about %s" % [day, claim_type.capitalize(), subject_name],
+		tick)
+
+
+func _on_rival_belief_degraded_journal(day: int, npc_id: String, _old_state: int, _new_state: int) -> void:
+	var tick: int = day_night.current_tick if day_night != null else 0
+	var npc_name: String = npc_id
+	for npc in npcs:
+		if npc.npc_data.get("id", "") == npc_id:
+			npc_name = npc.npc_data.get("name", npc_id)
+			break
+	emit_signal("rumor_event",
+		"[RIVAL] Day %d — undermined %s's belief" % [day, npc_name],
+		tick)
 
 
 # ── Public API: inject_rumor ─────────────────────────────────────────────────
@@ -1538,3 +1596,66 @@ func _init_chimney_smoke() -> void:
 		grad.set_color(1, Color(0.72, 0.69, 0.63, 0.0))
 		emitter.color_ramp = grad
 		add_child(emitter)
+
+
+# ── SPA-868: Quarantine zone visual overlays & helpers ──────────────────────
+
+## Returns true if the NPC's current location is inside a quarantined building.
+func is_npc_quarantined(npc: Node2D) -> bool:
+	if quarantine_system == null or not quarantine_system.is_active():
+		return false
+	var loc: String = npc.current_location_code if "current_location_code" in npc else ""
+	return quarantine_system.is_quarantined(loc)
+
+
+## Called when a building is quarantined — add a red X overlay.
+func _on_building_quarantined(building_name: String, expires_tick: int) -> void:
+	if not _building_entries.has(building_name):
+		return
+	var entry: Vector2i = _building_entries[building_name]
+	var wx: float = (entry.x - entry.y) * (TILE_SIZE.x / 2.0)
+	var wy: float = (entry.x + entry.y) * (TILE_SIZE.y / 2.0)
+
+	# Red X label overlay above the building.
+	var overlay := Label.new()
+	overlay.name = "QuarantineOverlay_" + building_name
+	overlay.text = "✕ QUARANTINED"
+	overlay.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	overlay.add_theme_font_size_override("font_size", 14)
+	overlay.add_theme_color_override("font_color", Color(0.95, 0.15, 0.10, 0.95))
+	overlay.add_theme_constant_override("outline_size", 3)
+	overlay.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+	overlay.size = Vector2(120, 20)
+	overlay.position = Vector2(wx - 60.0, wy - 88.0)
+	overlay.z_index = 15
+	add_child(overlay)
+	_quarantine_overlays[building_name] = overlay
+
+	# Tint the building tile red-ish (darken + hue shift).
+	# Find the building in the building layer and modulate.
+	for b in buildings:
+		if b["name"] == building_name:
+			var anchor := Vector2i(b["x"], b["y"])
+			building_layer.set_cell(anchor, SRC_BUILDING,
+				building_layer.get_cell_atlas_coords(anchor))
+			break
+
+	var tick: int = day_night.current_tick if day_night != null else 0
+	emit_signal("rumor_event",
+		"[QUARANTINE] %s is now quarantined — no rumor spread for %d ticks." % [
+			building_name.replace("_", " ").capitalize(), QuarantineSystem.QUARANTINE_DURATION_TICKS],
+		tick)
+
+
+## Called when a quarantine expires — remove the overlay.
+func _on_quarantine_expired(building_name: String) -> void:
+	if _quarantine_overlays.has(building_name):
+		var overlay: Node = _quarantine_overlays[building_name]
+		if overlay != null and is_instance_valid(overlay):
+			overlay.queue_free()
+		_quarantine_overlays.erase(building_name)
+
+	var tick: int = day_night.current_tick if day_night != null else 0
+	emit_signal("rumor_event",
+		"[QUARANTINE LIFTED] %s is no longer quarantined." % building_name.replace("_", " ").capitalize(),
+		tick)

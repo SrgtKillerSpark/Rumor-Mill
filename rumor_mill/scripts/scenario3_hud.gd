@@ -24,6 +24,11 @@ var _tomas_bar:        ColorRect = null
 var _tomas_bar_bg:     ColorRect = null
 var _rival_lbl:        Label     = null
 var _disrupt_btn:      Button    = null
+## SPA-868: Scout rival button and scouted target display.
+var _scout_btn:        Button    = null
+var _scout_lbl:        Label     = null
+## SPA-868: Belief degradation activity label.
+var _degrade_lbl:      Label     = null
 
 
 func _scenario_number() -> int:
@@ -35,6 +40,8 @@ func _on_setup_extra(world: Node2D) -> void:
 	if rival != null:
 		rival.rival_acted.connect(notify_rival_acted)
 		rival.rival_disrupted.connect(notify_rival_disrupted)
+		# SPA-868: belief degradation notification.
+		rival.belief_degraded.connect(notify_belief_degraded)
 
 
 # ── UI construction ──────────────────────────────────────────────────────────
@@ -134,6 +141,30 @@ func _build_ui() -> void:
 	_disrupt_btn.pressed.connect(_on_disrupt_pressed)
 	right_vbox.add_child(_disrupt_btn)
 
+	# SPA-868: Scout rival button — spend 1 recon to discover next degradation target.
+	_scout_btn = Button.new()
+	_scout_btn.text = "Scout Rival"
+	_scout_btn.tooltip_text = "Spend 1 Recon action to discover which NPC the rival will undermine next."
+	_scout_btn.add_theme_font_size_override("font_size", 12)
+	_scout_btn.disabled = true
+	_scout_btn.pressed.connect(_on_scout_pressed)
+	right_vbox.add_child(_scout_btn)
+
+	_scout_lbl = Label.new()
+	_scout_lbl.add_theme_font_size_override("font_size", 11)
+	_scout_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.90, 0.90))
+	_scout_lbl.text = ""
+	_scout_lbl.visible = false
+	right_vbox.add_child(_scout_lbl)
+
+	# SPA-868: Belief degradation activity display.
+	_degrade_lbl = Label.new()
+	_degrade_lbl.add_theme_font_size_override("font_size", 11)
+	_degrade_lbl.add_theme_color_override("font_color", Color(0.85, 0.45, 0.20, 0.85))
+	_degrade_lbl.text = ""
+	_degrade_lbl.visible = false
+	right_vbox.add_child(_degrade_lbl)
+
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
 
@@ -165,6 +196,7 @@ func _refresh() -> void:
 	_update_days_remaining(sm)
 	_update_result_label(state, "\u2713 VICTORY", "\u2717 FAILED")
 	_update_disrupt_button()
+	_update_scout_button()
 
 
 func _bar_color_for_score(score: int, higher_is_better: bool, win_target: int) -> Color:
@@ -251,3 +283,57 @@ func _on_disrupt_pressed() -> void:
 		current_day = _day_night_ref.current_tick / (sm.ticks_per_day if sm != null else 24) + 1
 	rival.apply_disruption(current_day)
 	_update_disrupt_button()
+
+
+# ── SPA-868: Scout rival ─────────────────────────────────────────────────────
+
+## Sync the Scout button enabled state each refresh.
+func _update_scout_button() -> void:
+	if _scout_btn == null or _world_ref == null:
+		return
+	var rival = _world_ref.get("rival_agent")
+	var intel = _world_ref.get("intel_store")
+	var has_actions: bool = intel != null and intel.recon_actions_remaining > 0
+	var rival_active: bool = rival != null and rival._active
+	_scout_btn.disabled = not (rival_active and has_actions)
+
+
+## Player clicked "Scout Rival" — spend 1 recon action to discover next target.
+func _on_scout_pressed() -> void:
+	if _world_ref == null:
+		return
+	var rival = _world_ref.get("rival_agent")
+	var intel: PlayerIntelStore = _world_ref.get("intel_store")
+	if rival == null or intel == null:
+		return
+	if not intel.try_spend_action():
+		return
+	var current_day: int = 0
+	if _day_night_ref != null:
+		var sm: ScenarioManager = _world_ref.get("scenario_manager")
+		current_day = _day_night_ref.current_tick / (sm.ticks_per_day if sm != null else 24) + 1
+	var target_id: String = rival.scout_next_target(current_day)
+	if target_id.is_empty():
+		_scout_lbl.text = "Scout: no target found"
+	else:
+		_scout_lbl.text = "Next target: %s" % _display_name(target_id)
+	_scout_lbl.visible = true
+	# Flash the reveal.
+	var tween := create_tween()
+	tween.tween_property(_scout_lbl, "modulate:a", 0.25, 0.10)
+	tween.tween_property(_scout_lbl, "modulate:a", 1.0, 0.25)
+	_update_scout_button()
+
+
+# ── SPA-868: Belief degradation notification ─────────────────────────────────
+
+## Called by rival_agent.belief_degraded signal.
+func notify_belief_degraded(day: int, npc_id: String, _old_state: int, _new_state: int) -> void:
+	if _degrade_lbl == null:
+		return
+	_degrade_lbl.text = "Rival undermined %s (Day %d)" % [_display_name(npc_id), day]
+	_degrade_lbl.visible = true
+	_degrade_lbl.add_theme_color_override("font_color", Color(0.85, 0.45, 0.20, 0.90))
+	var tween := create_tween()
+	tween.tween_property(_degrade_lbl, "modulate:a", 0.25, 0.12)
+	tween.tween_property(_degrade_lbl, "modulate:a", 1.0, 0.30)

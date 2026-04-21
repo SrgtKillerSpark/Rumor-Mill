@@ -63,6 +63,8 @@ var _npc_id_dict: Dictionary = {}
 var _walkable_sample: Array[Vector2i] = []
 var social_graph_ref: SocialGraph = null
 var propagation_engine_ref: PropagationEngine = null
+## SPA-868: quarantine system ref — set by World for S2.
+var quarantine_ref: QuarantineSystem = null
 
 # ── Schedule archetype ───────────────────────────────────────────────────────
 var archetype: NpcSchedule.ScheduleArchetype = NpcSchedule.ScheduleArchetype.INDEPENDENT
@@ -849,6 +851,10 @@ func _spread_to_neighbours(
 	if all_npcs_ref.is_empty():
 		return false
 
+	# SPA-868: NPCs inside quarantined buildings cannot spread rumors.
+	if quarantine_ref != null and quarantine_ref.is_quarantined(current_location_code):
+		return false
+
 	var npc_id: String = npc_data.get("id", "")
 	var neighbours: Dictionary = {}
 	if social_graph_ref != null:
@@ -864,6 +870,10 @@ func _spread_to_neighbours(
 		var delta: Vector2i = current_cell - (other.current_cell as Vector2i)
 		var dist_manhattan: int = absi(delta.x) + absi(delta.y)
 		if dist_manhattan > SPREAD_RADIUS:
+			continue
+
+		# SPA-868: skip targets inside quarantined buildings.
+		if quarantine_ref != null and quarantine_ref.is_quarantined(other.current_location_code):
 			continue
 
 		# Skip if already in a non-receptive state.
