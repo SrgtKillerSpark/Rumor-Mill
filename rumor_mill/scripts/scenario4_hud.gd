@@ -54,14 +54,27 @@ func _on_setup_extra(world: Node2D) -> void:
 func _build_ui() -> void:
 	var hbox := _make_panel("Scenario4Panel", 78, 14)
 
-	# Title.
+	# Title + defense badge.
+	var title_vbox := VBoxContainer.new()
+	title_vbox.add_theme_constant_override("separation", 2)
+	hbox.add_child(title_vbox)
+
 	var title_lbl := Label.new()
 	title_lbl.text = "Scenario 4:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	title_lbl.tooltip_text = "The Holy Inquisition — keep all three accused above 45 reputation for 20 days. Below 40 = instant fail."
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
-	hbox.add_child(title_lbl)
+	title_vbox.add_child(title_lbl)
+
+	# Shield badge — sky-blue accent marking this as a defense scenario.
+	var shield_badge := Label.new()
+	shield_badge.text = "\u26E8 DEFEND"
+	shield_badge.add_theme_font_size_override("font_size", 11)
+	shield_badge.add_theme_color_override("font_color", C_DEFEND)
+	shield_badge.tooltip_text = "Defense scenario: protect the accused from the Inquisitor's accusations."
+	shield_badge.mouse_filter = Control.MOUSE_FILTER_PASS
+	title_vbox.add_child(shield_badge)
 
 	# NPC tracks.
 	const NPC_TOOLTIPS := {
@@ -87,6 +100,8 @@ func _build_ui() -> void:
 			"Reputation bar — green means safe (>=45), red means failing (<45).")
 		var bar_bg: ColorRect = bar_pair[0]
 		var bar:    ColorRect = bar_pair[1]
+		# Blue accent: tint background with C_DEFEND to mark this as a defense track.
+		bar_bg.color = Color(C_DEFEND.r, C_DEFEND.g, C_DEFEND.b, 0.18)
 		vbox.add_child(bar_bg)
 		_bar_bgs[npc_id] = bar_bg
 		_bars[npc_id]    = bar
