@@ -275,6 +275,15 @@ function makeGroundTiles() {
         }
       }
     }
+    // Art Pass 18 (SPA-858): prominent grass blade strokes — readable at game zoom
+    for (const [bx,by] of [
+      [cx-20,cy-2],[cx-12,cy+3],[cx-5,cy-5],[cx+3,cy+5],[cx+11,cy-1],
+      [cx+17,cy+4],[cx-16,cy+6],[cx+8,cy-4],[cx-8,cy+7],[cx+20,cy+1],
+    ]) {
+      if (Math.abs(bx-cx)/31 + Math.abs(by-cy)/15 > 0.80) continue;
+      cv.line(bx, by, bx+1, by-2, ...c.GRASS_L, 180);
+      cv.sp(bx+1, by-2, ...c.GRASS_L, 130);
+    }
     isoTopRim(cv, ...c.GRASS_L, 130, cx, cy);
     isoBottomRim(cv, ...c.GRASS_D, 90, cx, cy);
     outlineIso(cv, ...c.GRASS_D, cx, cy);
@@ -584,12 +593,14 @@ function makeRoadDirt() {
   cv.isoNoise(32, 16, 31, 15, ...c.DIRT_D, 10, 0.14);
 
   // deep wheel-rut pair — shadow + highlight edge for 3D groove
-  cv.line(18, 10, 42, 22, ...c.DIRT_D, 200);
-  cv.line(19, 10, 43, 22, ...c.DIRT_D, 140);
-  cv.line(20, 10, 44, 22, ...c.DIRT_L, 80);  // highlight rim
-  cv.line(24, 13, 48, 25, ...c.DIRT_D, 180);
-  cv.line(25, 13, 49, 25, ...c.DIRT_D, 110);
-  cv.line(26, 13, 50, 25, ...c.DIRT_L, 60);  // highlight rim
+  cv.line(18, 10, 42, 22, ...c.DIRT_D, 220);  // Art Pass 18: deeper rut shadow
+  cv.line(19, 10, 43, 22, ...c.DIRT_D, 160);
+  cv.line(20, 10, 44, 22, ...c.DIRT_L, 100); // highlight rim — brighter catch-light
+  cv.sp(17, 10, ...c.DIRT_D, 130);           // rut start shadow pixel
+  cv.line(24, 13, 48, 25, ...c.DIRT_D, 200); // second rut deeper
+  cv.line(25, 13, 49, 25, ...c.DIRT_D, 130);
+  cv.line(26, 13, 50, 25, ...c.DIRT_L, 80);  // highlight rim
+  cv.sp(23, 13, ...c.DIRT_D, 120);           // rut start shadow pixel
 
   // dried mud crack network (thin DIRT_D lines radiating from rut centre)
   cv.line(28, 14, 24, 12, ...c.DIRT_D, 100);
@@ -3960,6 +3971,13 @@ function makeNPCPortraits() {
     // Shoulder shaping — slight highlight on left shoulder
     cv.fillRect(tx+1, ty, 8, 4, ...body, 220);            // left shoulder
     cv.fillRect(tx, ty, 5, 3, ...body, 180);
+    // Art Pass 18 (SPA-858): 3-zone torso shading — key-light, seam lines, hem shadow
+    cv.fillRect(tx+2, ty+1, 38, 3, 255, 255, 255, 28);   // top chest key-light band
+    cv.fillRect(tx+3, ty+2, 36, 1, 255, 255, 255, 14);   // inner key-light soften
+    cv.line(tx+2, ty+11, tx+39, ty+11, ...c.OUTLINE, 18); // cloth seam at 1/3 body height
+    cv.line(tx+2, ty+22, tx+39, ty+22, ...c.OUTLINE, 18); // cloth seam at 2/3 body height
+    cv.fillRect(tx+2, ty+30, 38, 3, ...c.OUTLINE, 25);   // hem shadow at tunic base
+    cv.fillRect(tx+3, ty+31, 36, 1, ...c.OUTLINE, 12);   // inner hem soften
     // V-neck collar (deeper than before, shows shirt)
     cv.fillPoly([[tx+15, ty], [tx+27, ty], [tx+21, ty+12]], ...c.PARCH_L);
     cv.fillPoly([[tx+17, ty], [tx+25, ty], [tx+21, ty+7]], ...c.SKIN, 200);
@@ -4327,6 +4345,13 @@ function makePropsAtlas() {
     cv.sp(cx+1,  cy+5,  ...c.STONE_L);
     // central latch on front face
     cv.sp(cx, cy-2, ...c.STONE_L);
+    // Art Pass 18 (SPA-858): battle-worn crate — dent, scuff, and splintered plank edge
+    cv.sp(cx-8, cy-13, ...c.WOOD_D, 160);  // top-face dent/gouge
+    cv.sp(cx-9, cy-12, ...c.WOOD_D, 100);
+    cv.sp(cx+4, cy-9,  ...c.WOOD_M, 140);  // lighter scrape mark on top
+    cv.line(cx-6, cy-3, cx-3, cy-1, ...c.WOOD_D, 130); // scuff on left face
+    cv.sp(cx-5, cy+1, ...c.WOOD_D, 90);   // shadow under scuff
+    cv.sp(cx+6, cy-7, ...c.WOOD_L, 70);   // splinter catch-light right face
   }
 
   // ── 1: BARREL ─────────────────────────────────────────────────────────────
@@ -4349,6 +4374,11 @@ function makePropsAtlas() {
     // moisture/age stain on lower barrel
     cv.sp(cx-3, cy+2, ...c.WOOD_D, 80);
     cv.sp(cx+2, cy+3, ...c.WOOD_D, 60);
+    // Art Pass 18 (SPA-858): deep age staining and liquid seep marks
+    cv.sp(cx-4, cy+1, ...c.WOOD_D, 110);   // stain halo left
+    cv.sp(cx-2, cy+4, ...c.WOOD_D, 95);    // drip line
+    cv.sp(cx+3, cy+4, ...c.WOOD_D, 80);    // drip right
+    cv.line(cx-1, cy-1, cx+1, cy+3, ...c.WOOD_D, 50);  // seep crack on right face
     // bung hole dot
     cv.sp(cx-1, cy-4, ...c.STONE_M);
   }
@@ -4861,7 +4891,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 17 (SPA-798): NPC portrait individuality — per-NPC hair colour, beards, scars, eye colour override\n');
+console.log('\nRumor Mill — Art Pass 18 (SPA-858): art quality polish — 3-zone torso shading, grass blade marks, deeper road ruts, worn prop detail\n');
 
 write('assets/textures/tiles_ground.png',           makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',        makeRoadDirt());
