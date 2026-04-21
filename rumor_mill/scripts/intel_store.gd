@@ -4,6 +4,9 @@
 
 class_name PlayerIntelStore
 
+## Emitted on every successful whisper token spend.
+signal whisper_spent
+
 ## Emitted once per spend when whisper_tokens_remaining drops to 0.
 signal tokens_exhausted
 
@@ -137,6 +140,7 @@ func try_spend_whisper() -> bool:
 	if whisper_tokens_remaining <= 0:
 		return false
 	whisper_tokens_remaining -= 1
+	whisper_spent.emit()
 	if whisper_tokens_remaining == 0:
 		tokens_exhausted.emit()
 	return true
