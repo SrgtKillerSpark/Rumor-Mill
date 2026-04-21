@@ -342,7 +342,7 @@ var S3_FAIL_CALDER_BELOW := 35
 # the danger zone to restore defensive pressure.
 const S4_PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
 var S4_WIN_REP_MIN       := 48
-var S4_FAIL_REP_BELOW    := 42
+var S4_FAIL_REP_BELOW    := 40
 
 # Scenario 5 thresholds (The Election — SPA-605).
 # Three-way race: Aldric must reach 65+ and be highest; both rivals must be below 45.
@@ -593,7 +593,7 @@ func get_scenario_1_progress(rep: ReputationSystem) -> Dictionary:
 func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_4_state != ScenarioState.ACTIVE:
 		return
-	# Fail: any protected NPC drops below 42 (instant fail).
+	# Fail: any protected NPC drops below 40 (instant fail).
 	for npc_id in S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 		if snap == null:
