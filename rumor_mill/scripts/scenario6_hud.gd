@@ -17,6 +17,10 @@ extends BaseScenarioHud
 const BAR_WIDTH  := 130
 const BAR_HEIGHT := 10
 
+# Heat-bar colours — spec: yellow below 40, orange@40, red@50.
+const C_HEAT_YELLOW := Color(0.95, 0.85, 0.10, 1.0)
+const C_HEAT_ORANGE := Color(0.90, 0.50, 0.05, 1.0)
+
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _aldric_score_lbl: Label     = null
 var _marta_score_lbl:  Label     = null
@@ -172,14 +176,15 @@ func _refresh() -> void:
 		_marta_bar.color = C_FAIL
 
 	# Heat bar: lower is better, ceiling at 60.
+	# Spec thresholds: yellow@30, orange@40, red@50.
 	var heat_ratio: float = clamp(max_heat / heat_ceil, 0.0, 1.0) if heat_ceil > 0 else 0.0
 	_heat_bar.custom_minimum_size.x = BAR_WIDTH * heat_ratio
-	if max_heat < heat_ceil * 0.5:
-		_heat_bar.color = C_WIN
-	elif max_heat < heat_ceil * 0.8:
-		_heat_bar.color = C_NEUTRAL
-	else:
+	if max_heat >= 50.0:
 		_heat_bar.color = C_FAIL
+	elif max_heat >= 40.0:
+		_heat_bar.color = C_HEAT_ORANGE
+	else:
+		_heat_bar.color = C_HEAT_YELLOW
 
 	_update_days_remaining(sm)
 	_update_result_label(state,
