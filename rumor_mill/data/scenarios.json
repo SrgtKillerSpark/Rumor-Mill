@@ -390,7 +390,7 @@
     "scenarioId": "scenario_3",
     "title": "The Succession",
     "hookText": "Two targets. One to elevate, one to destroy. A rival agent is already working against you. This is a war fought with whispers — and you are fighting on two fronts.",
-    "description": "Lady Isolde Fenn wants her son Calder elevated — but Tomas Reeve blocks any clean path to power, and Lord Edric is not ready to step aside. You must raise one reputation and ruin another simultaneously, while a rival agent works against you. Twenty-seven days, two targets — and if Calder's reputation drops below 35, you fail instantly.",
+    "description": "Lady Isolde Fenn wants her son Calder elevated — but Tomas Reeve blocks any clean path to power, and Lord Edric is not ready to step aside. You must raise one reputation and ruin another simultaneously, while a rival agent works against you. Twenty-five days, two targets — and if Calder's reputation drops below 35, you fail instantly.",
     "daysAllowed": 25,
     "introText": "Lady Isolde received you in the lesser hall, away from the servants. Her son Calder is twenty-two, quick, and capable — everything a future alderman should be. His only obstacle is Tomas Reeve, who has the favor of half the merchant quarter. The winter festival is twenty-five days away, and a rival is already working against you. It only takes one night to make or ruin a reputation — but it takes all twenty-five to manage two.",
     "startingText": "YOUR GOAL: Raise Calder Fenn's reputation to 75+ AND drop Tomas Reeve's reputation to 35 or below.\n\nHOW: Use Praise rumors to boost Calder through his allies. Use Scandal rumors to tear down Tomas through the merchant quarter. Press R to craft rumors. You fight on two fronts simultaneously.\n\nWATCH OUT: If Calder's reputation drops below 35, you lose instantly. A rival agent is actively working against you — praising Tomas and scandalizing Calder. You have 25 days.\n\nLady Isolde hired you to elevate her son. Tomas Reeve blocks any clean path to power. One wrong twist and Calder himself becomes the story.",
@@ -456,7 +456,7 @@
     "objectiveCard": {
       "mission": "The old lord is dying. Put Calder on the seat by building his name and tearing down Tomas — but a rival whisperer works against you.",
       "winCondition": "Raise Calder's reputation to 75+ and drop Tomas's reputation to 35 or below.",
-      "timeLimit": "You have 27 days.",
+      "timeLimit": "You have 25 days.",
       "danger": "If Calder's reputation drops below 35, instant fail. A rival agent is actively working against you.",
       "strategyHint": "Two-front war. Spread positive rumors about Calder through his allies while seeding accusations against Tomas through the merchant quarter. Tomas has weak loyalties — rumors stick.",
       "firstAction": "Observe a building to find Calder's allies. Press R to craft a Praise rumor about Calder and whisper it to a well-connected NPC. Then craft a Scandal about Tomas and seed it through the merchants.",
