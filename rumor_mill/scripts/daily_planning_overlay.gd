@@ -428,14 +428,14 @@ func _get_priority_def(pid: String) -> Dictionary:
 
 func _evaluate_priorities() -> void:
 	var completed_count := 0
+	var count: int = 0
 	for pid in _current_day_priorities:
 		var pdef: Dictionary = _get_priority_def(pid)
 		if pdef.is_empty():
 			continue
 		var key: String = pdef.eval_key
-		var count: int = _day_counters.get(key, 0)
+		count = _day_counters.get(key, 0)
 		if key == "any_action":
-			# "Wait and observe" succeeds if the player performed at least one action.
 			count = _day_counters.get("observe_count", 0) + _day_counters.get("eavesdrop_count", 0) + _day_counters.get("bribe_count", 0)
 		if count > 0:
 			completed_count += 1
@@ -446,20 +446,21 @@ func _evaluate_priorities() -> void:
 		var tier2: VBoxContainer = _objective_hud.get_node_or_null("Panel/VBox/Tier2Container")
 		if tier2 != null:
 			var idx := 0
+			var label_count: int = 0
 			for child in tier2.get_children():
 				if child is Label and idx < _current_day_priorities.size():
-					var pid: String = _current_day_priorities[idx]
-					var pdef: Dictionary = _get_priority_def(pid)
-					var key: String = pdef.get("eval_key", "")
-					var count: int = _day_counters.get(key, 0)
-					if key == "any_action":
-						count = _day_counters.get("observe_count", 0) + _day_counters.get("eavesdrop_count", 0) + _day_counters.get("bribe_count", 0)
-					if count > 0:
+					var label_pid: String = _current_day_priorities[idx]
+					var label_pdef: Dictionary = _get_priority_def(label_pid)
+					var label_key: String = label_pdef.get("eval_key", "")
+					label_count = _day_counters.get(label_key, 0)
+					if label_key == "any_action":
+						label_count = _day_counters.get("observe_count", 0) + _day_counters.get("eavesdrop_count", 0) + _day_counters.get("bribe_count", 0)
+					if label_count > 0:
 						child.add_theme_color_override("font_color", Color(0.30, 0.85, 0.35, 0.9))
-						child.text = "✓ " + pdef.label
+						child.text = "✓ " + label_pdef.label
 					else:
 						child.add_theme_color_override("font_color", Color(0.55, 0.40, 0.30, 0.7))
-						child.text = "✗ " + pdef.label
+						child.text = "✗ " + label_pdef.label
 					idx += 1
 
 
