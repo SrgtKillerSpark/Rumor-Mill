@@ -719,16 +719,24 @@ func _refresh_pips() -> void:
 		_last_action_max = max_val
 		_last_action_rem = remaining
 	elif remaining != _last_action_rem:
+		var _old_action := _last_action_rem
 		_update_pips(action_pips_row, remaining, PIP_FULL_ACTION, PIP_EMPTY_ACTION)
 		_last_action_rem = remaining
+		# SPA-861: Floating delta label near the action counter.
+		if _old_action >= 0:
+			_spawn_pip_delta(remaining - _old_action, true)
 
 	if max_w != _last_whisper_max:
 		_build_pips(whisper_pips_row, whispers, max_w, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 		_last_whisper_max = max_w
 		_last_whisper_rem = whispers
 	elif whispers != _last_whisper_rem:
+		var _old_whisper := _last_whisper_rem
 		_update_pips(whisper_pips_row, whispers, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 		_last_whisper_rem = whispers
+		# SPA-861: Floating delta label near the whisper counter.
+		if _old_whisper >= 0:
+			_spawn_pip_delta(whispers - _old_whisper, false)
 
 	# Update row tooltips so hovering the pip area explains the resource.
 	action_pips_row.get_parent().tooltip_text = "Recon Actions: %d / %d remaining\nRight-click buildings to Observe, NPCs to Eavesdrop.\nRefreshes at dawn each day." % [remaining, max_val]
@@ -874,6 +882,43 @@ func _generate_contextual_hint() -> String:
 		return "Use your remaining %d action%s to Observe buildings or Eavesdrop on conversations. More intel means better rumor targeting." % [actions, "" if actions == 1 else "s"]
 
 	return "Check your Journal (J) for objectives and progress. Open the Social Graph (G) to find the strongest paths to your target."
+
+
+## SPA-861: Spawn a floating "+N" or "−N" label near the pip row for the given resource.
+## is_action=true → Recon Actions (amber), false → Whisper Tokens (blue).
+## Positive delta (dawn refresh) shows green; negative delta (spent) shows the resource colour.
+func _spawn_pip_delta(delta: int, is_action: bool) -> void:
+	if delta == 0:
+		return
+	var lbl := Label.new()
+	var sign := "+" if delta > 0 else ""
+	lbl.text = "%s%d" % [sign, delta]
+	lbl.add_theme_font_size_override("font_size", 17)
+	lbl.add_theme_constant_override("outline_size", 2)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
+	var color: Color
+	if delta > 0:
+		color = Color(0.45, 1.00, 0.55, 1.0)  # green for refreshed tokens
+	elif is_action:
+		color = Color(0.95, 0.60, 0.15, 1.0)  # amber for spent action
+	else:
+		color = Color(0.45, 0.65, 0.90, 1.0)  # steel blue for spent whisper
+	lbl.add_theme_color_override("font_color", color)
+
+	# Position near the relevant pip row using its screen position.
+	var source_row: HBoxContainer = action_pips_row if is_action else whisper_pips_row
+	var row_pos: Vector2 = source_row.global_position
+	var spawn_x: float = row_pos.x + source_row.size.x * 0.5 - 8.0
+	var spawn_y: float = row_pos.y - 2.0
+	lbl.position = Vector2(spawn_x, spawn_y)
+	add_child(lbl)
+
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(lbl, "position",
+		Vector2(spawn_x + randf_range(-6.0, 6.0), spawn_y - 38.0), 0.85) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.85).set_delay(0.30)
+	tw.chain().tween_callback(lbl.queue_free)
 
 
 ## Rebuild pip children entirely (when max changes).

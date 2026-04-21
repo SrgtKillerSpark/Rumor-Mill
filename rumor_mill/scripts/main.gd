@@ -911,6 +911,8 @@ func _on_rumor_seeded(
 ) -> void:
 	AudioManager.on_rumor_seeded(rumor_id, subject_name, claim_id, seed_target_name)
 	_camera_shake(5.0, 0.3)
+	# SPA-861: Screen-space whisper-glyph burst from the HUD area.
+	_spawn_rumor_seed_burst()
 	# SPA-805: Ripple VFX on the seed target NPC.
 	_spawn_seed_ripple(seed_target_name)
 	# SPA-805: Pulse the Believers counter on the objective HUD.
@@ -950,6 +952,45 @@ func _spawn_seed_ripple(seed_target_name: String) -> void:
 	var fx := preload("res://scripts/rumor_ripple_vfx.gd").new()
 	world.add_child(fx)
 	fx.global_position = npc_pos
+
+
+## SPA-861: Brief screen-space whisper-glyph burst confirming rumor seeding.
+## 12 small glyphs fan outward from the bottom-left counter area and fade.
+func _spawn_rumor_seed_burst() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 20
+	add_child(layer)
+	var vp_size := get_viewport().get_visible_rect().size
+	# Origin near the whisper pip counter (top-left HUD panel area).
+	var origin := Vector2(140.0, 80.0)
+	const GLYPHS: Array = ["✦", "~", "✧", "…", "✦", "~", "✧", "…", "✦", "~", "✧", "…"]
+	const C_WHISPER := Color(0.55, 0.75, 1.0, 1.0)
+	const C_GOLD    := Color(0.92, 0.78, 0.22, 1.0)
+	for i in GLYPHS.size():
+		var lbl := Label.new()
+		lbl.text = GLYPHS[i]
+		lbl.add_theme_font_size_override("font_size", randi_range(11, 18))
+		var col: Color = C_WHISPER if i % 2 == 0 else C_GOLD
+		col.a = randf_range(0.75, 1.0)
+		lbl.add_theme_color_override("font_color", col)
+		lbl.add_theme_constant_override("outline_size", 1)
+		lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+		lbl.position = origin + Vector2(randf_range(-18.0, 18.0), randf_range(-10.0, 10.0))
+		layer.add_child(lbl)
+		var angle := randf_range(-TAU * 0.4, 0.0)   # fan upward and sideways
+		var dist  := randf_range(55.0, 120.0)
+		var travel := Vector2(cos(angle), sin(angle)) * dist
+		var delay  := randf_range(0.0, 0.15)
+		var dur    := randf_range(0.55, 0.90)
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(lbl, "position", lbl.position + travel, dur) \
+			.set_delay(delay).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tw.tween_property(lbl, "modulate:a", 0.0, dur * 0.8) \
+			.set_delay(delay + dur * 0.25)
+	get_tree().create_timer(1.5).timeout.connect(func() -> void:
+		if is_instance_valid(layer):
+			layer.queue_free()
+	)
 
 
 ## SPA-805: Called when scenario_manager emits s1_first_blood (Edric rep < 48).

@@ -1353,6 +1353,15 @@ func _update_label() -> void:
 			var _sb := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			_sb.tween_property(sprite, "scale", Vector2(1.18, 1.18), 0.12)
 			_sb.tween_property(sprite, "scale", Vector2.ONE, 0.22)
+		# SPA-861: Conviction flash — thought bubble override for key transitions.
+		if _thought_bubble != null:
+			match worst:
+				Rumor.RumorState.BELIEVE:
+					_thought_bubble.show_override("✓", Color(0.40, 1.00, 0.50, 1.0), 1.4)
+				Rumor.RumorState.ACT:
+					_thought_bubble.show_override("!!", Color(1.00, 0.40, 0.90, 1.0), 1.2)
+				Rumor.RumorState.REJECT:
+					_thought_bubble.show_override("✗", Color(0.80, 0.55, 0.55, 1.0), 1.0)
 		# Show a reaction speech bubble matching the new state.
 		var cat := _state_to_dialogue_category(worst)
 		if cat != "":
@@ -1699,6 +1708,7 @@ func set_belief_shaken(shaken: bool) -> void:
 ## Shows a floating emote icon above the NPC on rumor state change.
 const STATE_EMOTES: Dictionary = {
 	"EVALUATING": "🤔",
+	"BELIEVE":    "💡",   # SPA-861: conviction pop when NPC first believes
 	"SPREAD":     "📢",
 	"ACT":        "⚡",
 	"REJECT":     "✋",
