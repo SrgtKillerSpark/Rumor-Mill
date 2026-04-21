@@ -36,6 +36,11 @@ var _tomas_bar:        ColorRect = null
 var _tomas_bar_bg:     ColorRect = null
 var _endorse_lbl:      Label     = null
 
+# ── Momentum tracking ────────────────────────────────────────────────────────
+var _prev_aldric_score: int = -1
+var _prev_edric_score:  int = -1
+var _prev_tomas_score:  int = -1
+
 
 func _scenario_number() -> int:
 	return 5
@@ -44,6 +49,18 @@ func _scenario_number() -> int:
 func _on_setup_extra(world: Node2D) -> void:
 	if world != null and "scenario_manager" in world and world.scenario_manager != null:
 		world.scenario_manager.endorsement_triggered.connect(_on_endorsement)
+
+
+## Returns a momentum arrow string based on current vs previous score.
+## Returns "" on the first call (no prior data), "↑" if rising, "↓" if falling, "→" if flat.
+func _momentum_arrow(current: int, prev: int) -> String:
+	if prev < 0:
+		return ""
+	if current > prev:
+		return " ↑"
+	elif current < prev:
+		return " ↓"
+	return " →"
 
 
 # ── UI construction ──────────────────────────────────────────────────────────
@@ -170,9 +187,39 @@ func _refresh() -> void:
 	var tomas_score:  int = progress["tomas_score"]
 	var state             = progress["state"]
 
-	_aldric_score_lbl.text = "Aldric Vane   Rep: %d / 100   Target: %d+" % [aldric_score, progress["win_aldric_min"]]
-	_edric_score_lbl.text  = "Edric Fenn    Rep: %d / 100   Target: <%d" % [edric_score, progress["win_rivals_max"]]
-	_tomas_score_lbl.text  = "Tomas Reeve   Rep: %d / 100   Target: <%d" % [tomas_score, progress["win_rivals_max"]]
+	# ── Leaderboard ranks ────────────────────────────────────────────────────
+	# Sort candidates descending by score to assign 1st/2nd/3rd positions.
+	var ranked: Array = [
+		["aldric_vane", aldric_score],
+		["edric_fenn",  edric_score],
+		["tomas_reeve", tomas_score],
+	]
+	ranked.sort_custom(func(a: Array, b: Array) -> bool: return a[1] > b[1])
+	var aldric_rank: int = 0
+	var edric_rank:  int = 0
+	var tomas_rank:  int = 0
+	for i: int in ranked.size():
+		match ranked[i][0]:
+			"aldric_vane": aldric_rank = i + 1
+			"edric_fenn":  edric_rank  = i + 1
+			"tomas_reeve": tomas_rank  = i + 1
+	const RANK_LABEL: Array = ["", "1st", "2nd", "3rd"]
+
+	# ── Score labels with rank prefix and momentum arrow suffix ──────────────
+	_aldric_score_lbl.text = "%s  Aldric Vane   Rep: %d / 100   Target: %d+%s" % [
+		RANK_LABEL[aldric_rank], aldric_score, progress["win_aldric_min"],
+		_momentum_arrow(aldric_score, _prev_aldric_score)]
+	_edric_score_lbl.text  = "%s  Edric Fenn    Rep: %d / 100   Target: <%d%s" % [
+		RANK_LABEL[edric_rank],  edric_score,  progress["win_rivals_max"],
+		_momentum_arrow(edric_score, _prev_edric_score)]
+	_tomas_score_lbl.text  = "%s  Tomas Reeve   Rep: %d / 100   Target: <%d%s" % [
+		RANK_LABEL[tomas_rank],  tomas_score,  progress["win_rivals_max"],
+		_momentum_arrow(tomas_score, _prev_tomas_score)]
+
+	# ── Save scores for next tick's momentum calculation ─────────────────────
+	_prev_aldric_score = aldric_score
+	_prev_edric_score  = edric_score
+	_prev_tomas_score  = tomas_score
 
 	# Aldric bar: higher is better, target 65.
 	_aldric_bar.custom_minimum_size.x = BAR_WIDTH * clamp(float(aldric_score) / 100.0, 0.0, 1.0)
@@ -197,14 +244,25 @@ func _refresh() -> void:
 	else:
 		_tomas_bar.color = C_FAIL
 
-	# Endorsement status.
+	# ── Endorsement: countdown or result ─────────────────────────────────────
 	if progress["endorsement_fired"]:
 		var endorsed: String = NPC_DISPLAY_NAMES.get(progress["endorsed_candidate"], progress["endorsed_candidate"])
-		_endorse_lbl.text = "Endorsed: %s (+%d)" % [endorsed, ScenarioManager.S5_ENDORSEMENT_BONUS]
+		_endorse_lbl.text = "Endorsed: %s (+%d)" % [endorsed, sm.S5_ENDORSEMENT_BONUS]
 		if progress["endorsed_candidate"] == ScenarioManager.ALDRIC_VANE_ID:
 			_endorse_lbl.add_theme_color_override("font_color", C_WIN)
 		else:
 			_endorse_lbl.add_theme_color_override("font_color", C_FAIL)
+	else:
+		var current_day: int = sm.get_current_day(_day_night_ref.current_tick) \
+			if _day_night_ref != null else 1
+		var days_until: int = sm.S5_ENDORSEMENT_DAY - current_day
+		if days_until > 0:
+			_endorse_lbl.text = "Endorsement: day %d (in %d day%s)" % [
+				sm.S5_ENDORSEMENT_DAY, days_until, "s" if days_until != 1 else ""]
+		elif days_until == 0:
+			_endorse_lbl.text = "Endorsement: today!"
+		else:
+			_endorse_lbl.text = "Endorsement: day %d (pending)" % sm.S5_ENDORSEMENT_DAY
 
 	_update_days_remaining(sm)
 	_update_result_label(state,
