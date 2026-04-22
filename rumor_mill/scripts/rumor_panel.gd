@@ -160,6 +160,9 @@ var _evidence_tutorial_fired: bool        = false
 var _panel_seed_shown_fired:  bool        = false  # guard for panel_seed_shown signal
 var _seed_recommended_shown: bool        = false  # SPA-758: guard for one-time "Recommended" badge
 
+# SPA-894: Confirm-pending glow tween for decision tension.
+var _confirm_glow_tween: Tween = null
+
 # Spread prediction overlay — draw node + hovered seed NPC.
 var _spread_draw_node:  Node2D = null
 var _hover_seed_npc_id: String = ""
@@ -324,6 +327,7 @@ func _open_panel(idx: int) -> void:
 
 	# Next/Confirm button.  Reset confirmation state on any panel change.
 	_confirm_pending  = false
+	_stop_confirm_glow()
 	_btn_next.visible = true
 	if idx == PANEL_SEED:
 		_btn_next.text = "Confirm & Seed"
@@ -374,20 +378,52 @@ func _on_next_pressed() -> void:
 			_open_panel(PANEL_SEED)
 		PANEL_SEED:
 			if not _confirm_pending:
-				# First press — validate selection and show a summary for review.
+				# First press — validate selection and show a risk/reward summary.
 				if _selected_seed_npc.is_empty():
 					_flash_status("Select a seed target first.")
 					return
 				var tokens: int = _intel_store_ref.whisper_tokens_remaining if _intel_store_ref != null else 0
 				var subj_name := _get_npc_name(_selected_subject)
 				var seed_name := _get_npc_name(_selected_seed_npc)
-				_flash_status(
-					"Seed [%s] about %s → whisper to %s?\nWhisper tokens remaining: %d.\nClick 'Confirm & Seed' once more to proceed." % [
-						_selected_claim_id, subj_name, seed_name, tokens
-					]
-				)
+
+				# SPA-894: Build risk/reward summary for decision tension.
+				var seed_node: Node2D = null
+				for npc in _world_ref.npcs:
+					if npc.npc_data.get("id", "") == _selected_seed_npc:
+						seed_node = npc
+						break
+				var spread_est: float = 0.0
+				var belief_est: float = 0.0
+				if seed_node != null:
+					spread_est = _estimate_spread(seed_node)["value"]
+					belief_est = _estimate_believability(_selected_seed_npc, seed_name)["value"]
+				var heat_risk := "None"
+				var heat_color := "low"
+				if _intel_store_ref != null and _intel_store_ref.heat_enabled:
+					var cur_heat: float = _intel_store_ref.get_heat(_selected_seed_npc)
+					if cur_heat >= 50.0:
+						heat_risk = "HIGH — suspicion will rise"
+						heat_color = "high"
+					elif cur_heat >= 25.0:
+						heat_risk = "Moderate — some suspicion"
+						heat_color = "med"
+					else:
+						heat_risk = "Low"
+				var summary := (
+					"▸ REWARD: ~%d NPCs reached, %d%% believability\n"
+					+ "▸ RISK: Heat %s | Tokens after: %d\n"
+					+ "▸ Target: %s about %s → whisper to %s\n"
+					+ "\nClick 'Confirm & Seed' once more to commit."
+				) % [
+					roundi(spread_est), roundi(belief_est * 100.0),
+					heat_risk, tokens - 1,
+					_selected_claim_id, subj_name, seed_name,
+				]
+				_flash_status(summary)
 				_confirm_pending  = true
 				_btn_next.text    = "Confirm & Seed ✓"
+				# SPA-894: Pulse the confirm button to heighten tension.
+				_start_confirm_glow()
 			else:
 				_try_confirm_seed()
 
@@ -395,6 +431,30 @@ func _on_next_pressed() -> void:
 func _flash_status(msg: String) -> void:
 	_status_label.text = msg
 	_status_label.visible = true
+
+
+## SPA-894: Looping glow pulse on the Confirm button while _confirm_pending is true.
+func _start_confirm_glow() -> void:
+	if _btn_next == null:
+		return
+	_stop_confirm_glow()
+	_confirm_glow_tween = create_tween().set_loops()
+	var bright := Color(0.95, 0.78, 0.20, 1.0)
+	var dim    := Color(0.65, 0.45, 0.12, 1.0)
+	_confirm_glow_tween.tween_property(
+		_btn_next, "theme_override_colors/font_color", bright, 0.5
+	).set_trans(Tween.TRANS_SINE)
+	_confirm_glow_tween.tween_property(
+		_btn_next, "theme_override_colors/font_color", dim, 0.5
+	).set_trans(Tween.TRANS_SINE)
+
+
+func _stop_confirm_glow() -> void:
+	if _confirm_glow_tween != null and _confirm_glow_tween.is_valid():
+		_confirm_glow_tween.kill()
+		_confirm_glow_tween = null
+	if _btn_next != null:
+		_btn_next.add_theme_color_override("font_color", C_BTN_TEXT)
 
 
 # ── Panel 1: Subject list ─────────────────────────────────────────────────────
@@ -868,6 +928,7 @@ func _build_seed_entry(
 	btn.pressed.connect(func():
 		_selected_seed_npc = captured_id
 		_confirm_pending   = false
+		_stop_confirm_glow()
 		_btn_next.text     = "Confirm & Seed"
 		_rebuild_seed_list()
 	)

@@ -101,6 +101,12 @@ var _last_whisper_rem:  int   = -1
 ## SPA-869: Track previous heat value for floating delta labels.
 var _last_heat_val:     float = -1.0
 
+# SPA-894: Low-resource warning pulse state.
+var _low_action_warned:  bool = false
+var _low_whisper_warned: bool = false
+var _low_pulse_tween_action:  Tween = null
+var _low_pulse_tween_whisper: Tween = null
+
 # ── Recent Actions feed ──────────────────────────────────────────────────────
 const FEED_MAX_ENTRIES := 5
 
@@ -900,6 +906,9 @@ func _refresh_pips() -> void:
 				+ "Earn more: Complete recon actions successfully."
 			) % favors
 
+	# SPA-894: Low-resource warning pulse when down to last token.
+	_check_low_resource_warning(remaining, whispers)
+
 	# SPA-870: Update key hint availability (grey out unavailable actions).
 	_refresh_key_hint_availability()
 
@@ -1081,6 +1090,51 @@ func _spawn_heat_delta(delta: int) -> void:
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	htw.tween_property(lbl, "modulate:a", 0.0, 0.80).set_delay(0.25)
 	htw.chain().tween_callback(lbl.queue_free)
+
+
+## SPA-894: Pulse the last remaining pip when a resource drops to 1, warning
+## the player that their next action will exhaust the resource.
+func _check_low_resource_warning(actions: int, whispers: int) -> void:
+	# Action pips — trigger once when dropping to exactly 1.
+	if actions == 1 and not _low_action_warned:
+		_low_action_warned = true
+		_pulse_last_pip(action_pips_row, PIP_FULL_ACTION, true)
+	elif actions != 1:
+		_low_action_warned = false
+		if _low_pulse_tween_action != null and _low_pulse_tween_action.is_valid():
+			_low_pulse_tween_action.kill()
+
+	# Whisper pips — same logic.
+	if whispers == 1 and not _low_whisper_warned:
+		_low_whisper_warned = true
+		_pulse_last_pip(whisper_pips_row, PIP_FULL_WHISPER, false)
+	elif whispers != 1:
+		_low_whisper_warned = false
+		if _low_pulse_tween_whisper != null and _low_pulse_tween_whisper.is_valid():
+			_low_pulse_tween_whisper.kill()
+
+
+func _pulse_last_pip(container: HBoxContainer, accent: Color, is_action: bool) -> void:
+	# Find the last filled pip and pulse it.
+	var pips := container.get_children()
+	var target_pip: Panel = null
+	for i in pips.size():
+		var style := (pips[i] as Panel).get_theme_stylebox("panel") as StyleBoxFlat
+		if style != null and style.bg_color == accent:
+			target_pip = pips[i] as Panel
+	if target_pip == null:
+		return
+	target_pip.pivot_offset = PIP_SIZE * 0.5
+	var tw := create_tween().set_loops(3)
+	tw.tween_property(target_pip, "scale", Vector2(1.35, 1.35), 0.25) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(target_pip, "scale", Vector2(1.0, 1.0), 0.25) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.finished.connect(func() -> void: target_pip.scale = Vector2.ONE)
+	if is_action:
+		_low_pulse_tween_action = tw
+	else:
+		_low_pulse_tween_whisper = tw
 
 
 ## Rebuild pip children entirely (when max changes).

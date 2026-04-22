@@ -57,6 +57,9 @@ var _slide_tween: Tween = null
 var _btn_glow_tween: Tween = null
 var _nudge_label: Label = null  # "Select at least one priority" nudge
 var _skip_btn: Button = null    # Explicit "Skip Planning" button
+# SPA-894: Dawn header sunrise sweep tween.
+var _sunrise_tween: Tween = null
+var _phase_label: Label = null  # time-of-day indicator
 
 # ── Audio preloads (optional; gracefully skipped if missing) ─────────────────
 var _sfx_checkbox: AudioStreamPlayer = null
@@ -95,6 +98,9 @@ func _ready() -> void:
 
 	# Build explicit Skip Planning button next to SkipLabel hint.
 	_build_skip_button()
+
+	# SPA-894: Phase indicator label below dawn header.
+	_build_phase_label()
 
 	# Lightweight click sound for checkbox toggling.
 	_build_checkbox_sfx()
@@ -182,6 +188,9 @@ func _show_overlay(day: int) -> void:
 		_slide_tween = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		_slide_tween.tween_property(_planning_panel, "anchor_top", target_top, 0.4)
 		_slide_tween.parallel().tween_property(_planning_panel, "anchor_bottom", 1.0, 0.4)
+
+	# SPA-894: Sunrise colour sweep on the dawn header for visual warmth.
+	_animate_sunrise_header(day)
 
 
 func _hide_overlay() -> void:
@@ -649,3 +658,51 @@ func apply_load_data(data: Dictionary) -> void:
 	# Restore HUD display of loaded priorities.
 	if not _current_day_priorities.is_empty():
 		_push_priorities_to_hud()
+
+
+# ── SPA-894: Dawn header sunrise sweep ──────────────────────────────────────
+
+## Animate the dawn header text colour from a cool night-blue through warm
+## sunrise amber, creating a smooth "sun rising" feel when the overlay appears.
+func _animate_sunrise_header(day: int) -> void:
+	if _dawn_header == null:
+		return
+	if _sunrise_tween != null and _sunrise_tween.is_valid():
+		_sunrise_tween.kill()
+	# Start with a dim night-sky blue.
+	var night_color := Color(0.40, 0.50, 0.70, 1.0)
+	var dawn_color  := Color(0.95, 0.75, 0.30, 1.0)  # warm gold
+	_dawn_header.add_theme_color_override("font_color", night_color)
+	_sunrise_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_sunrise_tween.tween_property(
+		_dawn_header, "theme_override_colors/font_color", dawn_color, 1.2
+	)
+
+	# Update phase label with the current day.
+	if _phase_label != null:
+		_phase_label.text = "☀ Morning Phase — Plan your approach for Day %d" % day
+		_phase_label.modulate.a = 0.0
+		var ptw := create_tween()
+		ptw.tween_interval(0.4)
+		ptw.tween_property(_phase_label, "modulate:a", 1.0, 0.5) \
+			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+
+## Build a compact phase-of-day indicator label below the dawn header.
+func _build_phase_label() -> void:
+	if _dawn_header == null:
+		return
+	_phase_label = Label.new()
+	_phase_label.text = ""
+	_phase_label.add_theme_font_size_override("font_size", 12)
+	_phase_label.add_theme_color_override("font_color", Color(0.80, 0.68, 0.40, 0.85))
+	_phase_label.add_theme_constant_override("outline_size", 1)
+	_phase_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	_phase_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_phase_label.modulate.a = 0.0
+	# Insert right after the dawn header in the left column.
+	var left_col: VBoxContainer = _dawn_header.get_parent()
+	if left_col != null:
+		var idx := _dawn_header.get_index() + 1
+		left_col.add_child(_phase_label)
+		left_col.move_child(_phase_label, idx)

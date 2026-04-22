@@ -37,10 +37,24 @@ const STATE_COLOR: Dictionary = {
 	Rumor.RumorState.DEFENDING:    Color(0.40, 0.80, 1.00, 1.0),
 }
 
+## State name hints shown briefly on state change (SPA-894).
+const STATE_HINT: Dictionary = {
+	Rumor.RumorState.EVALUATING:   "Thinking",
+	Rumor.RumorState.BELIEVE:      "Believes",
+	Rumor.RumorState.SPREAD:       "Spreading",
+	Rumor.RumorState.ACT:          "Acting!",
+	Rumor.RumorState.REJECT:       "Rejected",
+	Rumor.RumorState.CONTRADICTED: "Conflicted",
+	Rumor.RumorState.DEFENDING:    "Defending",
+}
+
 ## Global count of currently visible thought bubbles across all NPC instances.
 static var _visible_count: int = 0
 
 var _label: Label = null
+var _badge_bg: Panel = null  # SPA-894: background badge for contrast
+var _hint_label: Label = null  # SPA-894: brief state-name hint
+var _hint_tween: Tween = null
 var _tween: Tween = null
 ## True while this bubble holds one of the MAX_VISIBLE slots.
 var _is_showing: bool = false
@@ -48,16 +62,43 @@ var _current_state: Rumor.RumorState = Rumor.RumorState.UNAWARE
 
 
 func _ready() -> void:
+	# SPA-894: Background badge for contrast against any world background.
+	_badge_bg = Panel.new()
+	_badge_bg.custom_minimum_size = Vector2(24, 24)
+	_badge_bg.position = Vector2(-12.0, -120.0)
+	_badge_bg.size = Vector2(24.0, 24.0)
+	var badge_style := StyleBoxFlat.new()
+	badge_style.bg_color = Color(0.05, 0.03, 0.02, 0.75)
+	badge_style.set_corner_radius_all(12)
+	badge_style.set_border_width_all(1)
+	badge_style.border_color = Color(0.55, 0.38, 0.18, 0.50)
+	_badge_bg.add_theme_stylebox_override("panel", badge_style)
+	_badge_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_badge_bg.modulate.a = 0.0
+	add_child(_badge_bg)
+
 	_label = Label.new()
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label.add_theme_font_size_override("font_size", 13)
-	_label.add_theme_constant_override("outline_size", 2)
-	_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
+	_label.add_theme_font_size_override("font_size", 15)
+	_label.add_theme_constant_override("outline_size", 3)
+	_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.90))
 	# Position above the NPC sprite (sprite is 96 px tall; add 16 px clearance).
-	_label.position = Vector2(-10.0, -116.0)
-	_label.size = Vector2(20.0, 18.0)
+	_label.position = Vector2(-10.0, -118.0)
+	_label.size = Vector2(20.0, 22.0)
 	_label.modulate.a = 0.0
 	add_child(_label)
+
+	# SPA-894: Brief state-name hint that fades in/out on state change.
+	_hint_label = Label.new()
+	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint_label.add_theme_font_size_override("font_size", 10)
+	_hint_label.add_theme_constant_override("outline_size", 2)
+	_hint_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
+	_hint_label.position = Vector2(-30.0, -98.0)
+	_hint_label.size = Vector2(60.0, 14.0)
+	_hint_label.modulate.a = 0.0
+	_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_hint_label)
 
 
 func _exit_tree() -> void:
@@ -80,7 +121,15 @@ func refresh(state: Rumor.RumorState) -> void:
 	# Update label text and colour whenever state changes.
 	if state_changed:
 		_label.text = sym
-		_label.add_theme_color_override("font_color", STATE_COLOR.get(state, Color.WHITE))
+		var state_col: Color = STATE_COLOR.get(state, Color.WHITE)
+		_label.add_theme_color_override("font_color", state_col)
+		# SPA-894: Tint badge border to match state colour.
+		if _badge_bg != null:
+			var bs: StyleBoxFlat = _badge_bg.get_theme_stylebox("panel") as StyleBoxFlat
+			if bs != null:
+				bs.border_color = Color(state_col.r, state_col.g, state_col.b, 0.55)
+		# SPA-894: Flash brief state-name hint.
+		_show_state_hint(state)
 
 	# Decide whether to show based on on-screen status and global cap.
 	if _is_on_screen():
@@ -128,8 +177,10 @@ func _show() -> void:
 	_visible_count += 1
 	if _tween:
 		_tween.kill()
-	_tween = create_tween()
+	_tween = create_tween().set_parallel(true)
 	_tween.tween_property(_label, "modulate:a", 1.0, 0.25).set_ease(Tween.EASE_OUT)
+	if _badge_bg != null:
+		_tween.tween_property(_badge_bg, "modulate:a", 1.0, 0.25).set_ease(Tween.EASE_OUT)
 
 
 func _hide() -> void:
@@ -139,8 +190,10 @@ func _hide() -> void:
 	_visible_count = maxi(_visible_count - 1, 0)
 	if _tween:
 		_tween.kill()
-	_tween = create_tween()
+	_tween = create_tween().set_parallel(true)
 	_tween.tween_property(_label, "modulate:a", 0.0, 0.25).set_ease(Tween.EASE_IN)
+	if _badge_bg != null:
+		_tween.tween_property(_badge_bg, "modulate:a", 0.0, 0.25).set_ease(Tween.EASE_IN)
 
 
 func _pulse() -> void:
@@ -149,6 +202,24 @@ func _pulse() -> void:
 	_tween = create_tween()
 	_tween.tween_property(_label, "modulate:a", 0.3, 0.08)
 	_tween.tween_property(_label, "modulate:a", 1.0, 0.18)
+
+
+## SPA-894: Show a brief state-name label below the symbol for immediate readability.
+func _show_state_hint(state: Rumor.RumorState) -> void:
+	if _hint_label == null:
+		return
+	var hint_text: String = STATE_HINT.get(state, "")
+	if hint_text.is_empty():
+		return
+	_hint_label.text = hint_text
+	_hint_label.add_theme_color_override("font_color", STATE_COLOR.get(state, Color.WHITE))
+	if _hint_tween != null and _hint_tween.is_valid():
+		_hint_tween.kill()
+	_hint_label.modulate.a = 0.0
+	_hint_tween = create_tween()
+	_hint_tween.tween_property(_hint_label, "modulate:a", 1.0, 0.15).set_ease(Tween.EASE_OUT)
+	_hint_tween.tween_interval(1.5)
+	_hint_tween.tween_property(_hint_label, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
 
 
 ## Returns true when this node's world position is within the visible viewport.
