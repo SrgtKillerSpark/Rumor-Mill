@@ -350,7 +350,7 @@
         "id": "s2_chapel_vigil",
         "name": "The Chapel Vigil",
         "dayWindowStart": 18,
-        "dayWindowEnd": 22,
+        "dayWindowEnd": 20,
         "probability": 0.55,
         "description": "Sister Maren has called a chapel vigil to pray for the health of the town. The clergy gather at vespers and the pews are full. This is dangerous — Maren is paying close attention to every whisper. But the vigil has also drawn the devout away from the market, where your work is easier.",
         "choices": [
@@ -1470,7 +1470,7 @@
         "id": "s6_the_guild_vote",
         "name": "The Guild Vote",
         "dayWindowStart": 18,
-        "dayWindowEnd": 21,
+        "dayWindowEnd": 20,
         "probability": 0.65,
         "description": "Marta has enough support to force a confidence vote on the Guild Master's accounts. But Aldric's defenders are mobilising — Sybil and Rufus are calling in every favour they are owed. The vote could go either way.",
         "choices": [
