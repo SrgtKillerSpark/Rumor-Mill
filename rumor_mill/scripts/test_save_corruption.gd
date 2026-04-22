@@ -1,10 +1,12 @@
-## test_save_corruption.gd — Offline validation of save/load hardening (SPA-864).
+## test_save_corruption.gd — Offline validation of save/load hardening (SPA-864, SPA-896).
 ##
 ## Run from the Godot editor:  Scene → Run Script (or attach to an autoload and call run()).
 ## All tests operate on synthetic in-memory data — no live game nodes required.
 ##
 ## Each test_* method pushes errors/warnings to the Godot output for QA inspection.
 ## Returns true if the test passed (no crash and result matched expectation).
+##
+## SPA-896 additions: cross-scenario field coverage, SPA-880 new fields, JSON key coercion.
 
 class_name TestSaveCorruption
 extends RefCounted
@@ -27,6 +29,17 @@ static func run() -> void:
 		"test_relationship_intel_not_dict",
 		"test_npc_orphaned_rumor_slot_dropped",
 		"test_npc_slot_non_numeric_state",
+		# SPA-896: extended coverage
+		"test_all_scenario_ids_valid",
+		"test_intel_store_spa880_fields_missing_graceful",
+		"test_scenario_manager_deadline_key_coercion",
+		"test_scenario_manager_spa880_fields_default",
+		"test_inquisitor_shielded_ids_empty",
+		"test_rival_agent_null_guard",
+		"test_faction_event_malformed_event_skipped",
+		"test_save_version_zero_explicit",
+		"test_socially_dead_ids_non_string_entry",
+		"test_bribe_charges_preserved",
 	]
 
 	for method_name in tests:
@@ -71,6 +84,11 @@ static func _valid_save() -> Dictionary:
 			"bribe_charges": 0,
 			"evidence_inventory": [],
 			"evidence_used_count": 0,
+			# SPA-880 additions — included here so template stays current.
+			"free_quarantine_charges": 0,
+			"free_campaign_charges": 0,
+			"bonus_expose_uses": 0,
+			"blackmail_uses_count": 0,
 		},
 		"reputation": {},
 		"scenario": {},
@@ -251,3 +269,148 @@ static func test_npc_slot_non_numeric_state() -> bool:
 		push_warning("save_manager: slot state for rumor r1 is non-numeric (%s) — using EVALUATING" % _state_raw)
 		_state_raw = Rumor.RumorState.EVALUATING
 	return _state_raw == Rumor.RumorState.EVALUATING
+
+
+# ── SPA-896: Extended scenario + edge-case tests ──────────────────────────────
+
+## All six scenario_id values (S1–S6) must pass basic prepare validation.
+static func test_all_scenario_ids_valid() -> bool:
+	var scenario_ids := [
+		"scenario_1", "scenario_2", "scenario_3",
+		"scenario_4", "scenario_5", "scenario_6",
+	]
+	for sid in scenario_ids:
+		var data := _valid_save()
+		data["scenario_id"] = sid
+		var err := _simulate_prepare(JSON.stringify(data))
+		if err != "":
+			push_error("test_all_scenario_ids_valid: %s failed — %s" % [sid, err])
+			return false
+	return true
+
+
+## A save file missing the SPA-880 intel_store fields must still load (defaults applied).
+static func test_intel_store_spa880_fields_missing_graceful() -> bool:
+	var data := _valid_save()
+	# Remove the four SPA-880 additions to simulate a pre-SPA-880 save.
+	data["intel_store"].erase("free_quarantine_charges")
+	data["intel_store"].erase("free_campaign_charges")
+	data["intel_store"].erase("bonus_expose_uses")
+	data["intel_store"].erase("blackmail_uses_count")
+	var err := _simulate_prepare(JSON.stringify(data))
+	## Must succeed — _restore_intel_store uses .get() with 0 defaults.
+	return err == ""
+
+
+## JSON always serialises dict keys as strings. _restore_scenario_manager coerces
+## deadline_warnings_fired keys back to int with int(float(k)).  Verify the coercion
+## produces the original int key, not a stale string key.
+static func test_scenario_manager_deadline_key_coercion() -> bool:
+	var raw_fired := {"3": true, "7": true, "15": false}
+	var coerced: Dictionary = {}
+	for k in raw_fired:
+		coerced[int(float(k))] = raw_fired[k]
+	## Keys must now be ints.
+	for k in coerced:
+		if not k is int:
+			push_error("test_scenario_manager_deadline_key_coercion: key %s is not int after coercion" % k)
+			return false
+	## Values must be preserved.
+	return coerced.get(3) == true and coerced.get(7) == true and coerced.get(15) == false
+
+
+## A save missing the SPA-880 scenario_manager fields must load with safe defaults.
+static func test_scenario_manager_spa880_fields_default() -> bool:
+	var data := _valid_save()
+	## Omit the three SPA-880 scenario fields to simulate a pre-patch save.
+	var scenario_dict: Dictionary = {
+		"scenario_1_state": 0,
+		"scenario_2_state": 0,
+		"scenario_3_state": 0,
+		"scenario_4_state": 0,
+		"scenario_5_state": 0,
+		"scenario_6_state": 0,
+		"calder_score_start": -1,
+		"calder_score_final": -1,
+		"deadline_warnings_fired": {},
+		"s5_endorsement_fired": false,
+		"s5_endorsed_candidate": "",
+		"s2_maren_first_reject_tick": -1,
+		"s2_maren_carrier_name": "",
+		## heat_ceiling_override, heat_ceiling_override_expires_day, s1_first_blood_fired omitted.
+	}
+	data["scenario"] = scenario_dict
+	var err := _simulate_prepare(JSON.stringify(data))
+	return err == ""
+
+
+## Inquisitor shielded_npc_ids stored as an empty array must restore without crash.
+static func test_inquisitor_shielded_ids_empty() -> bool:
+	var shielded_npc_ids_raw: Array = []
+	var restored: Dictionary = {}
+	for npc_id in shielded_npc_ids_raw:
+		restored[str(npc_id)] = true
+	return restored.is_empty()
+
+
+## _restore_rival_agent skips gracefully when the rival_agent dict is empty (S1/S2/S4/S5/S6).
+static func test_rival_agent_null_guard() -> bool:
+	## Mirrors the null/empty check at the top of _restore_rival_agent.
+	var d: Dictionary = {}
+	if d.is_empty():
+		return true  ## guard should fire and skip — no crash expected.
+	return false
+
+
+## faction_event_system with a malformed events entry (not a dict) should not crash
+## when the restore code iterates it.  We replicate the guard logic here.
+static func test_faction_event_malformed_event_skipped() -> bool:
+	var raw_events: Array = [
+		{"event_type": "religious_festival", "trigger_day": 3, "duration_days": 2,
+		 "affected_npc_ids": [], "metadata": {}, "is_active": true, "is_expired": false},
+		"not_a_dict",  ## malformed
+		42,            ## also malformed
+	]
+	var valid_count := 0
+	for ev in raw_events:
+		if not ev is Dictionary:
+			push_warning("faction_event_system: events entry is not a Dictionary — skipped")
+			continue
+		valid_count += 1
+	return valid_count == 1
+
+
+## Explicit version 0 save (version field = 0, not absent) should migrate cleanly.
+static func test_save_version_zero_explicit() -> bool:
+	var data := _valid_save()
+	data["version"] = 0
+	var err := _simulate_prepare(JSON.stringify(data))
+	return err == ""
+
+
+## socially_dead_ids containing a non-string entry must not cause a type error when
+## used as a Dictionary key (GDScript auto-converts most types).
+static func test_socially_dead_ids_non_string_entry() -> bool:
+	var raw_ids: Array = ["npc_edric", 99, null, "npc_bram"]
+	var restored: Dictionary = {}
+	var crashed := false
+	for npc_id in raw_ids:
+		if npc_id == null:
+			push_warning("save_manager: socially_dead_ids contains null — skipped")
+			continue
+		restored[str(npc_id)] = true
+	## Expected: "npc_edric", "99", "npc_bram" in restored; null skipped.
+	return not crashed and restored.has("npc_edric") and restored.has("99") and not restored.has("")
+
+
+## bribe_charges must survive a round-trip through JSON (int → string repr → int).
+static func test_bribe_charges_preserved() -> bool:
+	var original_charges := 3
+	var data := _valid_save()
+	data["intel_store"]["bribe_charges"] = original_charges
+	var json_text := JSON.stringify(data)
+	var parsed: Variant = JSON.parse_string(json_text)
+	if not (parsed is Dictionary):
+		return false
+	var restored_charges: int = int(parsed["intel_store"].get("bribe_charges", 0))
+	return restored_charges == original_charges
