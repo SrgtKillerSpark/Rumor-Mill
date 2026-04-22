@@ -41,9 +41,8 @@ const BLACKMAIL_HEAT_ADD:     float = 22.0
 const BLACKMAIL_MAX_USES:     int   = 2
 ## NPCs whose heat rises when evidence leaks (Aldric's merchant defenders).
 const BLACKMAIL_HEAT_NPCS: Array[String] = ["sybil_oats", "rufus_bolt"]
-var _blackmail_btn:   Button = null
-var _blackmail_lbl:   Label  = null
-var _blackmail_uses:  int    = 0
+var _blackmail_btn: Button = null
+var _blackmail_lbl: Label  = null
 
 
 func _scenario_number() -> int:
@@ -60,7 +59,7 @@ func _build_ui() -> void:
 	title_lbl.text = "Scenario 6:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
-	title_lbl.tooltip_text = "The Merchant's Debt — expose Aldric Vane (rep ≤ 30) while protecting Marta Coin (rep ≥ 60). Heat ceiling is 60."
+	title_lbl.tooltip_text = "The Merchant's Debt — expose Aldric Vane (rep ≤ 30) while protecting Marta Coin (rep ≥ 62). Heat ceiling is 55."
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
 
@@ -93,13 +92,13 @@ func _build_ui() -> void:
 	_marta_score_lbl.add_theme_font_size_override("font_size", 11)
 	_marta_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_marta_score_lbl.text = "Marta Coin  Rep: 52 / 100  Target: 60+"
-	_marta_score_lbl.tooltip_text = "Marta Coin's reputation. Win condition: keep at 60 or above. Below 30 = instant fail (she's been silenced)."
+	_marta_score_lbl.tooltip_text = "Marta Coin's reputation. Win condition: keep at 62 or above. Below 30 = instant fail (she's been silenced)."
 	_marta_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_text_outline(_marta_score_lbl)
 	marta_vbox.add_child(_marta_score_lbl)
 
 	var marta_pair := _make_progress_bar(BAR_WIDTH, BAR_HEIGHT,
-		"Marta's reputation. Grows with Praise rumors. Must stay at 60+ to win. Below 30 = instant fail.")
+		"Marta's reputation. Grows with Praise rumors. Must stay at 62+ to win. Below 30 = instant fail.")
 	_marta_bar_bg = marta_pair[0]
 	_marta_bar    = marta_pair[1]
 	marta_vbox.add_child(_marta_bar_bg)
@@ -112,14 +111,14 @@ func _build_ui() -> void:
 	_heat_lbl = Label.new()
 	_heat_lbl.add_theme_font_size_override("font_size", 11)
 	_heat_lbl.add_theme_color_override("font_color", C_BODY)
-	_heat_lbl.text = "Heat: 0 / 60"
-	_heat_lbl.tooltip_text = "Your suspicion level. Guards are on Aldric's payroll — exposure threshold is 60 (not the usual 80). Keep it low."
+	_heat_lbl.text = "Heat: 0 / 55"
+	_heat_lbl.tooltip_text = "Your suspicion level. Guards are on Aldric's payroll — exposure threshold is 55 (not the usual 80). Keep it low."
 	_heat_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_text_outline(_heat_lbl)
 	heat_vbox.add_child(_heat_lbl)
 
 	var heat_pair := _make_progress_bar(BAR_WIDTH, BAR_HEIGHT,
-		"Heat gauge. At 60, the Guard Captain exposes you. Route rumors through non-merchant channels to stay hidden.")
+		"Heat gauge. At 55, the Guard Captain exposes you. Route rumors through non-merchant channels to stay hidden.")
 	_heat_bar_bg = heat_pair[0]
 	_heat_bar    = heat_pair[1]
 	heat_vbox.add_child(_heat_bar_bg)
@@ -146,7 +145,7 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "Aldric: \u226430 | Marta: 60+ | Heat: <60"
+	legend_lbl.text = "Aldric: \u226430 | Marta: 62+ | Heat: <55"
 	right_vbox.add_child(legend_lbl)
 
 	# ── Blackmail Evidence verb ──────────────────────────────────────────────
@@ -229,9 +228,8 @@ func _update_blackmail_button() -> void:
 	if _blackmail_btn == null or _world_ref == null:
 		return
 	var intel: PlayerIntelStore = _world_ref.get("intel_store")
-	var bonus_uses: int = intel.bonus_expose_uses if intel != null else 0
-	var effective_max: int = BLACKMAIL_MAX_USES + bonus_uses
-	var uses_left: int = effective_max - _blackmail_uses
+	var effective_max: int = BLACKMAIL_MAX_USES + (intel.bonus_expose_uses if intel != null else 0)
+	var uses_left: int = effective_max - (intel.blackmail_uses_count if intel != null else 0)
 	var has_whispers: bool = intel != null and intel.whisper_tokens_remaining >= BLACKMAIL_WHISPER_COST
 	_blackmail_btn.disabled = not (has_whispers and uses_left > 0)
 	var whispers: int = intel.whisper_tokens_remaining if intel != null else 0
@@ -248,7 +246,7 @@ func _on_blackmail_pressed() -> void:
 	if intel == null or rep == null or sm == null:
 		return
 	var effective_max: int = BLACKMAIL_MAX_USES + intel.bonus_expose_uses
-	if _blackmail_uses >= effective_max:
+	if intel.blackmail_uses_count >= effective_max:
 		return
 	# Spend 2 whisper tokens.
 	if not intel.try_spend_whisper():
@@ -257,14 +255,14 @@ func _on_blackmail_pressed() -> void:
 		# Refund the first token if we couldn't spend the second.
 		intel.whisper_tokens_remaining += 1
 		return
-	_blackmail_uses += 1
+	intel.blackmail_uses_count += 1
 	# Apply big reputation damage to Aldric.
 	rep.apply_score_delta(ScenarioManager.ALDRIC_VANE_ID, BLACKMAIL_REP_HIT)
 	# Apply heat to Aldric's merchant defenders — they notice the source of the leak.
 	for heat_npc_id in BLACKMAIL_HEAT_NPCS:
 		intel.add_heat(heat_npc_id, BLACKMAIL_HEAT_ADD)
 	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) if _day_night_ref != null else 0
-	var uses_left: int = effective_max - _blackmail_uses
+	var uses_left: int = effective_max - intel.blackmail_uses_count
 	if _blackmail_lbl != null:
 		_blackmail_lbl.text = "Day %d: Evidence released! Aldric %d rep. Heat spiking. (%d/%d uses left)" % [current_day, BLACKMAIL_REP_HIT, uses_left, effective_max]
 		_blackmail_lbl.visible = true

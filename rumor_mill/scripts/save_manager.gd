@@ -412,6 +412,10 @@ static func _serialize_intel_store(store: PlayerIntelStore) -> Dictionary:
 		"bribe_charges":            store.bribe_charges,
 		"evidence_inventory":       evidence,
 		"evidence_used_count":      store.evidence_used_count,
+		"free_quarantine_charges":  store.free_quarantine_charges,
+		"free_campaign_charges":    store.free_campaign_charges,
+		"bonus_expose_uses":        store.bonus_expose_uses,
+		"blackmail_uses_count":     store.blackmail_uses_count,
 	}
 
 
@@ -439,8 +443,11 @@ static func _serialize_scenario_manager(sm: ScenarioManager) -> Dictionary:
 		"deadline_warnings_fired": sm._deadline_warnings_fired.duplicate(),
 		"s5_endorsement_fired":    sm._s5_endorsement_fired,
 		"s5_endorsed_candidate":   sm.s5_endorsed_candidate,
-		"s2_maren_first_reject_tick": sm._s2_maren_first_reject_tick,
-		"s2_maren_carrier_name":  sm.s2_maren_carrier_name,
+		"s2_maren_first_reject_tick":        sm._s2_maren_first_reject_tick,
+		"s2_maren_carrier_name":             sm.s2_maren_carrier_name,
+		"heat_ceiling_override":             sm._heat_ceiling_override,
+		"heat_ceiling_override_expires_day": sm._heat_ceiling_override_expires_day,
+		"s1_first_blood_fired":              sm._s1_first_blood_fired,
 	}
 
 
@@ -448,10 +455,11 @@ static func _serialize_rival_agent(ra: RivalAgent) -> Dictionary:
 	if ra == null:
 		return {}
 	return {
-		"active":          ra._active,
-		"last_seed_day":   ra._last_seed_day,
-		"alternate_flag":  ra._alternate_flag,
-		"cooldown_offset": ra.cooldown_offset,
+		"active":                    ra._active,
+		"last_seed_day":             ra._last_seed_day,
+		"alternate_flag":            ra._alternate_flag,
+		"cooldown_offset":           ra.cooldown_offset,
+		"disrupt_charges_remaining": ra.disrupt_charges_remaining,
 	}
 
 
@@ -459,10 +467,11 @@ static func _serialize_inquisitor_agent(ia: InquisitorAgent) -> Dictionary:
 	if ia == null:
 		return {}
 	return {
-		"active":          ia._active,
-		"last_seed_day":   ia._last_seed_day,
-		"target_index":    ia._target_index,
-		"cooldown_offset": ia.cooldown_offset,
+		"active":            ia._active,
+		"last_seed_day":     ia._last_seed_day,
+		"target_index":      ia._target_index,
+		"cooldown_offset":   ia.cooldown_offset,
+		"shielded_npc_ids":  ia._shielded_npc_ids.keys(),
 	}
 
 
@@ -600,6 +609,10 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 	store.heat_enabled             = bool(d.get("heat_enabled", false))
 	store.bribe_charges            = int(d.get("bribe_charges", 0))
 	store.evidence_used_count      = int(d.get("evidence_used_count", 0))
+	store.free_quarantine_charges  = int(d.get("free_quarantine_charges", 0))
+	store.free_campaign_charges    = int(d.get("free_campaign_charges", 0))
+	store.bonus_expose_uses        = int(d.get("bonus_expose_uses", 0))
+	store.blackmail_uses_count     = int(d.get("blackmail_uses_count", 0))
 
 	store.location_intel.clear()
 	for loc_id in d.get("location_intel", {}):
@@ -672,26 +685,33 @@ static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> voi
 	sm._deadline_warnings_fired = _fired
 	sm._s5_endorsement_fired       = bool(d.get("s5_endorsement_fired", false))
 	sm.s5_endorsed_candidate       = str(d.get("s5_endorsed_candidate", ""))
-	sm._s2_maren_first_reject_tick = int(d.get("s2_maren_first_reject_tick", -1))
-	sm.s2_maren_carrier_name       = str(d.get("s2_maren_carrier_name", ""))
+	sm._s2_maren_first_reject_tick          = int(d.get("s2_maren_first_reject_tick", -1))
+	sm.s2_maren_carrier_name               = str(d.get("s2_maren_carrier_name", ""))
+	sm._heat_ceiling_override              = float(d.get("heat_ceiling_override", -1.0))
+	sm._heat_ceiling_override_expires_day  = int(d.get("heat_ceiling_override_expires_day", -1))
+	sm._s1_first_blood_fired               = bool(d.get("s1_first_blood_fired", false))
 
 
 static func _restore_rival_agent(ra: RivalAgent, d: Dictionary) -> void:
 	if ra == null or d.is_empty():
 		return
-	ra._active         = bool(d.get("active", false))
-	ra._last_seed_day  = int(d.get("last_seed_day", 0))
-	ra._alternate_flag = bool(d.get("alternate_flag", false))
-	ra.cooldown_offset = int(d.get("cooldown_offset", 0))
+	ra._active                    = bool(d.get("active", false))
+	ra._last_seed_day             = int(d.get("last_seed_day", 0))
+	ra._alternate_flag            = bool(d.get("alternate_flag", false))
+	ra.cooldown_offset            = int(d.get("cooldown_offset", 0))
+	ra.disrupt_charges_remaining  = int(d.get("disrupt_charges_remaining", RivalAgent.MAX_DISRUPT_CHARGES))
 
 
 static func _restore_inquisitor_agent(ia: InquisitorAgent, d: Dictionary) -> void:
 	if ia == null or d.is_empty():
 		return
-	ia._active        = bool(d.get("active", false))
-	ia._last_seed_day = int(d.get("last_seed_day", 0))
-	ia._target_index  = int(d.get("target_index", 0))
+	ia._active         = bool(d.get("active", false))
+	ia._last_seed_day  = int(d.get("last_seed_day", 0))
+	ia._target_index   = int(d.get("target_index", 0))
 	ia.cooldown_offset = int(d.get("cooldown_offset", 0))
+	ia._shielded_npc_ids.clear()
+	for npc_id in d.get("shielded_npc_ids", []):
+		ia._shielded_npc_ids[str(npc_id)] = true
 
 
 static func _restore_s4_faction_shift_agent(agent: S4FactionShiftAgent, d: Dictionary) -> void:

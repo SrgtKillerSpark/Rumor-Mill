@@ -768,9 +768,11 @@ func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 		return
 
 	# FAIL (exposure): heat ceiling in S6 (guards on Aldric's payroll).
+	# Uses get_heat_ceiling() so the s6_guard_captains_price override is respected.
 	if _intel_store != null:
+		var _s6_ceiling: float = get_heat_ceiling()
 		for npc_id in _intel_store.heat:
-			if _intel_store.heat[npc_id] >= S6_EXPOSED_HEAT:
+			if _intel_store.heat[npc_id] >= _s6_ceiling:
 				scenario_6_state = ScenarioState.FAILED
 				scenario_resolved.emit(6, ScenarioState.FAILED)
 				return
@@ -807,7 +809,7 @@ func get_scenario_6_progress(rep: ReputationSystem) -> Dictionary:
 		"win_aldric_max":   S6_WIN_ALDRIC_MAX,
 		"win_marta_min":    S6_WIN_MARTA_MIN,
 		"fail_marta_below": S6_FAIL_MARTA_BELOW,
-		"heat_ceiling":     S6_EXPOSED_HEAT,
+		"heat_ceiling":     get_heat_ceiling(),
 		"max_heat":         current_heat,
 		"state":            scenario_6_state,
 	}

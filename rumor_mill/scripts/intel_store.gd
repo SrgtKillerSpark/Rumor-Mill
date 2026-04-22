@@ -64,6 +64,10 @@ var free_campaign_charges: int = 0
 ## S6: bonus Release Evidence uses added on top of BLACKMAIL_MAX_USES.
 var bonus_expose_uses: int = 0
 
+## S6: number of times Release Evidence has been used this run.
+## Persisted so save/load cannot bypass the per-run cap.
+var blackmail_uses_count: int = 0
+
 
 # ---------------------------------------------------------------------------
 # LocationIntel — snapshot of which NPCs were at a location during one tick.
