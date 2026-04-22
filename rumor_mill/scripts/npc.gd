@@ -1096,6 +1096,37 @@ func _start_act_behavior(rumor: Rumor, tick: int) -> void:
 		emit_signal("graph_edge_mutated", npc_data.get("name", ""), subject_name, delta)
 
 
+## Returns the top-n most likely first-hop spread targets for this NPC,
+## ranked by estimated β (transmission probability).
+## Used by the UI to show a "likely spread path" preview after seeding.
+func get_spread_preview(n: int = 3) -> Array[Dictionary]:
+	if social_graph_ref == null or all_npcs_ref.is_empty():
+		return []
+	var npc_id: String = npc_data.get("id", "")
+	var spreader_faction: String = npc_data.get("faction", "")
+	# Fetch more than n so we can filter invalid entries and still return n.
+	var top: Array = social_graph_ref.get_top_neighbours(npc_id, n + 3)
+	var result: Array[Dictionary] = []
+	for pair in top:
+		var tid: String  = pair[0]
+		var weight: float = pair[1]
+		var other_node = _npc_id_dict.get(tid, null)
+		if other_node == null:
+			continue
+		var t_credulity: float  = float(other_node.npc_data.get("credulity", 0.5))
+		var t_faction:   String = other_node.npc_data.get("faction", "")
+		var faction_mod := 1.2 if t_faction == spreader_faction else 1.0
+		var beta_est: float = _sociability * t_credulity * weight * faction_mod * 1.8
+		result.append({
+			"name":    other_node.npc_data.get("name", "?"),
+			"faction": t_faction,
+			"beta":    beta_est,
+		})
+		if result.size() >= n:
+			break
+	return result
+
+
 ## Pulsing ⚡ label above the NPC for ~2 seconds — signals ACT state onset.
 func _show_act_icon() -> void:
 	var lbl := Label.new()

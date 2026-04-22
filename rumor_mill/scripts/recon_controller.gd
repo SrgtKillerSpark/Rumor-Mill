@@ -572,6 +572,23 @@ func _try_observe(location_id: String) -> void:
 		_intel_store.recon_actions_remaining
 	]
 
+	# Annotate belief states of observed NPCs for actionable intel.
+	var bribe_targets: Array[String]   = []
+	var active_spreaders: Array[String] = []
+	var active_states := [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]
+	for npc in _world_ref.npcs:
+		if (npc.current_cell - entry_cell).length() <= 4:
+			var s := npc.get_worst_rumor_state()
+			var nname: String = npc.npc_data.get("name", "?")
+			if s == Rumor.RumorState.EVALUATING:
+				bribe_targets.append(nname)
+			elif s in active_states:
+				active_spreaders.append(nname)
+	if not bribe_targets.is_empty():
+		msg += "\n  ◆ Bribe opportunity: %s (evaluating)" % ", ".join(bribe_targets)
+	if not active_spreaders.is_empty():
+		msg += "\n  ◈ Already spreading: %s" % ", ".join(active_spreaders)
+
 	# Evidence acquisition.
 	if forged_doc:
 		var ev := PlayerIntelStore.EvidenceItem.new(

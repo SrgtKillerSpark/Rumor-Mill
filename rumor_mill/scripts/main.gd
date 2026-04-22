@@ -981,8 +981,34 @@ func _on_rumor_seeded(
 	var toast_msg := "Whispered to %s — [%s] about %s" % [seed_target_name, claim_id, subject_name]
 	if recon_hud != null and recon_hud.has_method("show_toast"):
 		recon_hud.show_toast(toast_msg, true)
+	# Build spread-path preview from seed target's social graph.
+	var spread_line := _build_spread_preview(seed_target_name)
+	var feed_msg := toast_msg if spread_line.is_empty() else toast_msg + "\n" + spread_line
 	if recon_hud != null and recon_hud.has_method("push_feed_entry"):
-		recon_hud.push_feed_entry(toast_msg, true)
+		recon_hud.push_feed_entry(feed_msg, true)
+
+
+## SPA-885: Builds a short "likely spread path" hint string for the feed entry
+## after the player seeds a rumor. Looks up the seed target NPC and calls
+## get_spread_preview() to rank top-3 transmission targets.
+func _build_spread_preview(seed_target_name: String) -> String:
+	if world == null:
+		return ""
+	var seed_npc: Node2D = null
+	for npc in world.npcs:
+		var nid: String = npc.npc_data.get("id", "")
+		if nid.replace("_", " ").capitalize() == seed_target_name:
+			seed_npc = npc
+			break
+	if seed_npc == null or not seed_npc.has_method("get_spread_preview"):
+		return ""
+	var preview: Array = seed_npc.get_spread_preview(3)
+	if preview.is_empty():
+		return ""
+	var names: Array[String] = []
+	for entry in preview:
+		names.append(entry.get("name", "?"))
+	return "  → May reach: %s" % ", ".join(names)
 
 
 ## SPA-805: Spawn expanding ring VFX at the seed target NPC's world position.

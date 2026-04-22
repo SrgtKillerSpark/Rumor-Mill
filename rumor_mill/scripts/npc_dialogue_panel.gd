@@ -361,14 +361,29 @@ func _rebuild_panel(npc: Node2D) -> void:
 	div.custom_minimum_size = Vector2(0.0, 1.0)
 	vbox.add_child(div)
 
-	# ── Greeting line ─────────────────────────────────────────────────────────
+	# ── Greeting line (state-aware: prefer belief/spread/act lines when active) ─
+	var worst_state := npc.get_worst_rumor_state()
 	var greeting_lbl := Label.new()
-	greeting_lbl.text = '"%s"' % _pick_greeting(npc_id, faction)
+	greeting_lbl.text = '"%s"' % _pick_greeting(npc_id, faction, worst_state)
 	greeting_lbl.add_theme_font_size_override("font_size", 11)
 	greeting_lbl.add_theme_color_override("font_color", C_GREETING)
 	greeting_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	greeting_lbl.custom_minimum_size = Vector2(PANEL_W - 20.0, 0.0)
 	vbox.add_child(greeting_lbl)
+
+	# ── Belief state hint ─────────────────────────────────────────────────────
+	var belief_hint := _belief_state_hint(worst_state)
+	if not belief_hint.is_empty():
+		var hint_lbl := Label.new()
+		hint_lbl.text = belief_hint
+		hint_lbl.add_theme_font_size_override("font_size", 10)
+		hint_lbl.add_theme_color_override("font_color", Color(0.58, 0.50, 0.32, 0.82))
+		hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		hint_lbl.custom_minimum_size = Vector2(PANEL_W - 20.0, 0.0)
+		vbox.add_child(hint_lbl)
+
+	# ── Social connections ────────────────────────────────────────────────────
+	_build_social_context(npc, vbox)
 
 	# ── Second divider ────────────────────────────────────────────────────────
 	var div2 := ColorRect.new()
@@ -492,16 +507,89 @@ func _make_portrait_texture(col: int, row: int) -> AtlasTexture:
 
 # ── Greeting picker ───────────────────────────────────────────────────────────
 
-func _pick_greeting(npc_id: String, faction: String) -> String:
-	# Prefer the NPC's own ambient lines from npc_dialogue.json.
+func _pick_greeting(npc_id: String, faction: String, state: Rumor.RumorState = Rumor.RumorState.UNAWARE) -> String:
 	if _dialogue_data.has(npc_id):
-		var ambient = _dialogue_data[npc_id].get("ambient", [])
+		# Prefer state-specific lines when the NPC has an active belief.
+		var state_cat := _state_to_dialogue_category(state)
+		if not state_cat.is_empty():
+			var state_lines: Array = _dialogue_data[npc_id].get(state_cat, [])
+			if state_lines.size() > 0:
+				return state_lines[randi() % state_lines.size()]
+		var ambient: Array = _dialogue_data[npc_id].get("ambient", [])
 		if ambient.size() > 0:
 			return ambient[randi() % ambient.size()]
 
 	# Fall back to faction-generic lines.
 	var lines: Array = FALLBACK_GREETINGS.get(faction, FALLBACK_DEFAULT)
 	return lines[randi() % lines.size()]
+
+
+## Maps a rumor state to the npc_dialogue.json category used for that state.
+## Returns empty string for states with no dedicated dialogue (UNAWARE, EXPIRED).
+func _state_to_dialogue_category(state: Rumor.RumorState) -> String:
+	match state:
+		Rumor.RumorState.EVALUATING:  return "hear"
+		Rumor.RumorState.BELIEVE:     return "believe"
+		Rumor.RumorState.SPREAD:      return "spread"
+		Rumor.RumorState.ACT:         return "act"
+		Rumor.RumorState.REJECT:      return "reject"
+		Rumor.RumorState.DEFENDING:   return "defending"
+	return ""
+
+
+## Returns a short ambient context line reflecting the NPC's current belief state.
+## Shown below the greeting to give the player social-body-language cues.
+func _belief_state_hint(state: Rumor.RumorState) -> String:
+	match state:
+		Rumor.RumorState.EVALUATING:
+			return "[ Weighing something heard recently... ]"
+		Rumor.RumorState.BELIEVE:
+			return "[ Carries conviction — has formed an opinion. ]"
+		Rumor.RumorState.SPREAD:
+			return "[ Leaning close, eager to share a word. ]"
+		Rumor.RumorState.ACT:
+			return "[ Tension in their posture — ready to act. ]"
+		Rumor.RumorState.REJECT:
+			return "[ Guarded and dismissive today. ]"
+		Rumor.RumorState.DEFENDING:
+			return "[ Standing firm, protective of someone. ]"
+		Rumor.RumorState.CONTRADICTED:
+			return "[ Visibly unsettled — conflicting stories. ]"
+	return ""
+
+
+## Builds a small "Known associates" subsection from the NPC's social graph edges.
+func _build_social_context(npc: Node2D, vbox: VBoxContainer) -> void:
+	if npc.social_graph_ref == null:
+		return
+	var npc_id: String = npc.npc_data.get("id", "")
+	var top: Array = npc.social_graph_ref.get_top_neighbours(npc_id, 2)
+	if top.is_empty():
+		return
+
+	# Build id→name lookup from world npcs.
+	var name_by_id: Dictionary = {}
+	if _world_ref != null:
+		for other in _world_ref.npcs:
+			name_by_id[other.npc_data.get("id", "")] = other.npc_data.get("name", "?")
+
+	var section_lbl := Label.new()
+	section_lbl.text = "Known associates:"
+	section_lbl.add_theme_font_size_override("font_size", 9)
+	section_lbl.add_theme_color_override("font_color", Color(0.52, 0.45, 0.30, 0.78))
+	vbox.add_child(section_lbl)
+
+	for pair in top:
+		var other_id: String = pair[0]
+		var weight: float    = pair[1]
+		var other_name: String = name_by_id.get(other_id, "Unknown")
+		var bars   := clampi(roundi(weight * 3.0), 1, 3)
+		var bar_str := "▪".repeat(bars) + "·".repeat(3 - bars)
+		var row_lbl := Label.new()
+		row_lbl.text = "  %s %s" % [bar_str, other_name]
+		row_lbl.add_theme_font_size_override("font_size", 10)
+		row_lbl.add_theme_color_override("font_color", Color(0.72, 0.65, 0.48, 1.0))
+		vbox.add_child(row_lbl)
 
 
 # ── Conversation partner check (mirrors recon_controller) ─────────────────────
