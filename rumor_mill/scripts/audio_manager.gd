@@ -25,6 +25,7 @@ extends Node
 ##   AudioManager.on_rumor_fail()
 ##   AudioManager.on_recon_action(message, success)
 ##   AudioManager.on_bribe_executed(npc_name, tick)
+##   AudioManager.on_heat_warning()
 ##   AudioManager.on_win()
 ##   AudioManager.on_fail()
 ##   AudioManager.on_socially_dead(npc_id, npc_name, tick)
@@ -97,6 +98,7 @@ const SFX_FILES: Dictionary = {
 	"reputation_down":    "sfx/reputation_down.wav",
 	"bribe_coin":         "sfx/bribe_coin.wav",
 	"milestone_chime":    "sfx/reputation_up.wav",  ## distinct key — swap wav once asset exists
+	"heat_warning":       "sfx/rumor_fail.wav",     ## placeholder — swap wav once dedicated asset exists
 }
 
 # ── State ──────────────────────────────────────────────────────────────────────
@@ -429,6 +431,12 @@ func on_recon_action(message: String, success: bool) -> void:
 ## Called when the player successfully bribes an NPC.
 func on_bribe_executed(_npc_name: String, _tick: int) -> void:
 	play_sfx("bribe_coin")
+
+
+## Called when any NPC's heat first crosses the warning threshold (SPA-888).
+## Pitched down for an ominous tension cue.
+func on_heat_warning() -> void:
+	play_sfx_pitched("heat_warning", 0.85)
 
 
 ## Called when win condition is reached.

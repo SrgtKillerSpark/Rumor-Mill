@@ -2057,13 +2057,15 @@ func _on_ctx_tokens_exhausted() -> void:
 	_tutorial_banner.queue_hint("ctx_out_of_tokens")
 
 
-## Fires once in S1 when any NPC's heat first crosses 50 (SPA-608).
-## Warns the player before the hard fail at 80.
+## Fires once in S1/S6 when any NPC's heat first crosses 50 (SPA-608, SPA-888).
+## Warns the player before the hard fail at 80/60.
 func _on_heat_warning() -> void:
-	if _ctx_heat_warn_fired or _tutorial_banner == null:
+	if _ctx_heat_warn_fired:
 		return
 	_ctx_heat_warn_fired = true
-	_tutorial_banner.queue_hint("ctx_heat_warning")
+	AudioManager.on_heat_warning()
+	if _tutorial_banner != null:
+		_tutorial_banner.queue_hint("ctx_heat_warning")
 
 
 ## ── SPA-487: Idle-detection hint system ──────────────────────────────────────
