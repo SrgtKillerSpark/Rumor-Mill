@@ -179,6 +179,11 @@ var _is_night: bool = false
 var _ambient_particles: Node = null
 var _weather_system:    Node = null
 
+## Art Pass 20: prop cell positions for ambient effect anchoring (SPA-882).
+## Populated in _place_props(); consumed by _init_torch_flicker().
+var _torch_cell_positions:  Array[Vector2i] = []
+var _candle_cell_positions: Array[Vector2i] = []
+
 ## Reputation change indicators (SPA-599): npc_id → last emitted score.
 ## Compared each tick against the new snapshot; shows floating +/- when delta ≥ threshold.
 var _prev_rep_scores: Dictionary = {}
@@ -232,6 +237,8 @@ func _ready() -> void:
 	_init_ambient_particles()
 	_init_weather_system()
 	_init_chimney_smoke()
+	_init_torch_flicker()    # SPA-882: flame particles above torch/candle props
+	_init_ambient_signs()    # SPA-882: swaying sign animations at tavern and market
 
 
 func _exit_tree() -> void:
@@ -325,11 +332,22 @@ func _place_buildings() -> void:
 		building_layer.set_cell(anchor, SRC_BUILDING, atlas_coord)
 
 		# Floating building name label above the tile.
+		# SPA-882: faction-tinted color communicates building affiliation at a glance.
+		var _label_color: Color
+		match b["name"]:
+			"manor", "guardpost", "town_hall":
+				_label_color = Color(0.95, 0.42, 0.42)   # Noble — crimson
+			"market", "blacksmith", "mill", "storage":
+				_label_color = Color(0.55, 0.78, 1.00)   # Merchant — blue
+			"chapel":
+				_label_color = Color(0.98, 0.94, 0.72)   # Clergy — gold/cream
+			_:
+				_label_color = Color(1.00, 0.88, 0.60)   # Neutral (tavern, well) — amber
 		var label := Label.new()
 		label.text = b["name"].replace("_", " ").capitalize()
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.add_theme_font_size_override("font_size", 12)
-		label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+		label.add_theme_color_override("font_color", _label_color)
 		label.add_theme_constant_override("outline_size", 2)
 		label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
 		label.size = Vector2(80, 16)
@@ -343,7 +361,7 @@ func _place_buildings() -> void:
 # Prop placement rules per building type — which props appear nearby (SPA-434 / SPA-526).
 const BUILDING_PROPS := {
 	"tavern":     [ATLAS_BARREL, ATLAS_BARREL, ATLAS_CRATE, ATLAS_SIGN, ATLAS_LANTERN_POST, ATLAS_WOODPILE],
-	"market":     [ATLAS_CRATE, ATLAS_CRATE, ATLAS_BARREL, ATLAS_CART, ATLAS_NOTICE_BOARD],
+	"market":     [ATLAS_MARKET_STALL, ATLAS_MARKET_STALL, ATLAS_CRATE, ATLAS_BARREL, ATLAS_CART, ATLAS_NOTICE_BOARD],
 	"manor":      [ATLAS_FLOWER_POT, ATLAS_FLOWER_POT, ATLAS_FENCE, ATLAS_OAK_TREE, ATLAS_GARDEN_BED, ATLAS_IRON_TORCH],
 	"chapel":     [ATLAS_FLOWER_POT, ATLAS_CHAPEL_CANDLE, ATLAS_GARDEN_BED, ATLAS_NOTICE_BOARD],
 	"blacksmith": [ATLAS_BARREL, ATLAS_CRATE, ATLAS_CART, ATLAS_WOODPILE],
@@ -403,6 +421,11 @@ func _place_props() -> void:
 			occupied[cell] = true
 			candidates.remove_at(idx)
 			placed += 1
+			# SPA-882: track torch and candle positions for ambient flicker emitters.
+			if prop_atlas == ATLAS_IRON_TORCH:
+				_torch_cell_positions.append(cell)
+			elif prop_atlas == ATLAS_CHAPEL_CANDLE:
+				_candle_cell_positions.append(cell)
 
 
 func _collect_walkable_cells() -> void:
@@ -1557,13 +1580,16 @@ func _on_weather_changed(type: String) -> void:
 # (tavern, blacksmith, manor).  The emitter uses soft grey modulate so it reads
 # clearly against the sky without breaking the desaturated palette.
 
-const _CHIMNEY_BUILDINGS := ["tavern", "blacksmith", "manor"]
+const _CHIMNEY_BUILDINGS := ["tavern", "blacksmith", "manor", "chapel", "town_hall", "mill"]
 # Pixel offsets (in world space) from the tile anchor to the chimney mouth.
 # Tuned to match the chimney positions drawn in generate_assets.js.
 const _CHIMNEY_OFFSET := {
 	"tavern":     Vector2(-38.0, -60.0),
 	"blacksmith": Vector2(-42.0, -52.0),
 	"manor":      Vector2(-34.0, -66.0),
+	"chapel":     Vector2(-28.0, -62.0),  # SPA-882: smaller clerical hearth
+	"town_hall":  Vector2(-38.0, -70.0),  # SPA-882: taller civic building
+	"mill":       Vector2(-32.0, -54.0),  # SPA-882: millhouse hearth
 }
 
 func _init_chimney_smoke() -> void:
@@ -1603,6 +1629,109 @@ func _init_chimney_smoke() -> void:
 		grad.set_color(1, Color(0.72, 0.69, 0.63, 0.0))
 		emitter.color_ramp = grad
 		add_child(emitter)
+
+
+# ── Visual polish: torch & candle flicker (SPA-882) ─────────────────────────
+# Spawns small CPUParticles2D flame emitters above every iron torch and chapel
+# candle prop placed by _place_props().  Positions come from _torch_cell_positions
+# and _candle_cell_positions which are populated during prop placement.
+
+func _init_torch_flicker() -> void:
+	for cell in _torch_cell_positions:
+		var wx := (cell.x - cell.y) * (TILE_SIZE.x / 2.0)
+		var wy := (cell.x + cell.y) * (TILE_SIZE.y / 2.0)
+		# Position emitter at flame tip — 24 px above tile centre.
+		_spawn_flame_emitter(Vector2(wx, wy - 24.0), Color(1.00, 0.65, 0.10), 4, 0.5, 22.0)
+	for cell in _candle_cell_positions:
+		var wx := (cell.x - cell.y) * (TILE_SIZE.x / 2.0)
+		var wy := (cell.x + cell.y) * (TILE_SIZE.y / 2.0)
+		# Candles are shorter; softer ivory glow.
+		_spawn_flame_emitter(Vector2(wx, wy - 20.0), Color(1.00, 0.90, 0.55), 3, 0.8, 10.0)
+
+
+## Shared helper: creates one CPUParticles2D flame emitter and adds it to the world.
+func _spawn_flame_emitter(pos: Vector2, base_color: Color, amount: int,
+		lifetime: float, gravity_strength: float) -> void:
+	var emitter := CPUParticles2D.new()
+	emitter.position    = pos
+	emitter.z_index     = 10
+	emitter.emitting    = true
+	emitter.amount      = amount
+	emitter.lifetime    = lifetime
+	emitter.one_shot    = false
+	emitter.explosiveness = 0.0
+	emitter.randomness  = 0.7
+	emitter.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	emitter.emission_sphere_radius = 1.0
+	emitter.direction   = Vector2(0.0, -1.0)
+	emitter.spread      = 15.0
+	emitter.gravity     = Vector2(0.0, -gravity_strength)
+	emitter.initial_velocity_min = 8.0
+	emitter.initial_velocity_max = 18.0
+	emitter.scale_amount_min = 0.8
+	emitter.scale_amount_max = 2.0
+	var grad := Gradient.new()
+	grad.set_color(0, Color(base_color.r, base_color.g, base_color.b, 0.90))
+	grad.add_point(0.45, Color(base_color.r * 0.9, base_color.g * 0.5, base_color.b * 0.1, 0.65))
+	grad.set_color(1, Color(base_color.r * 0.7, 0.15, 0.0, 0.0))
+	emitter.color_ramp = grad
+	add_child(emitter)
+
+
+# ── Visual polish: swaying signs (SPA-882) ───────────────────────────────────
+# Adds a small animated hanging-sign Polygon2D near the entrance of Tavern and
+# Market.  Each sign oscillates ±4° on a sine tween to suggest wind movement.
+
+const _SIGN_BUILDINGS := {
+	"tavern": { "offset": Vector2(-8.0, -82.0), "board_color": Color(0.45, 0.25, 0.10, 0.92), "period": 2.0 },
+	"market": { "offset": Vector2(-8.0, -78.0), "board_color": Color(0.18, 0.38, 0.70, 0.92), "period": 2.5 },
+}
+
+func _init_ambient_signs() -> void:
+	for b in buildings:
+		var bname: String = b["name"]
+		if not _SIGN_BUILDINGS.has(bname):
+			continue
+		var anchor := Vector2i(b["x"], b["y"])
+		var wx: float = (anchor.x - anchor.y) * (TILE_SIZE.x / 2.0)
+		var wy: float = (anchor.x + anchor.y) * (TILE_SIZE.y / 2.0)
+		var data: Dictionary = _SIGN_BUILDINGS[bname]
+
+		# Pivot placed at the top of the sign board (rope/chain attachment point).
+		# Children are offset downward so rotation looks like pendulum sway.
+		var pivot := Node2D.new()
+		pivot.name    = "SwaySign_" + bname
+		pivot.position = Vector2(wx, wy) + data["offset"]
+		pivot.z_index  = 8
+
+		# Parchment backing rectangle.
+		var backing := Polygon2D.new()
+		backing.polygon = PackedVector2Array([
+			Vector2(-11.0, 0.0), Vector2(11.0, 0.0),
+			Vector2(11.0, 14.0), Vector2(-11.0, 14.0)
+		])
+		backing.color = Color(0.92, 0.87, 0.70, 0.88)
+		pivot.add_child(backing)
+
+		# Faction-color accent strip across top of sign.
+		var accent := Polygon2D.new()
+		accent.polygon = PackedVector2Array([
+			Vector2(-11.0, 0.0), Vector2(11.0, 0.0),
+			Vector2(11.0, 2.5),  Vector2(-11.0, 2.5)
+		])
+		accent.color = data["board_color"]
+		pivot.add_child(accent)
+
+		add_child(pivot)
+
+		# Oscillate ±4° with TRANS_SINE for a natural pendulum feel.
+		var period: float = data["period"]
+		var tween := create_tween()
+		tween.set_loops()
+		tween.tween_property(pivot, "rotation_degrees",  4.0, period * 0.5) \
+			.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(pivot, "rotation_degrees", -4.0, period * 0.5) \
+			.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 
 
 # ── SPA-874: Illness hotspot detection ──────────────────────────────────────
