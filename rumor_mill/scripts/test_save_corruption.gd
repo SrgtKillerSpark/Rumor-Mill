@@ -40,6 +40,11 @@ static func run() -> void:
 		"test_save_version_zero_explicit",
 		"test_socially_dead_ids_non_string_entry",
 		"test_bribe_charges_preserved",
+		# SPA-901: mid-game event state persistence
+		"test_mid_game_event_pending_event_round_trip",
+		"test_mid_game_event_delayed_rumors_complex_trigger_round_trip",
+		"test_mid_game_event_delayed_rumors_missing_keys_skipped",
+		"test_scenario_manager_heat_ceiling_override_round_trip",
 	]
 
 	for method_name in tests:
@@ -401,6 +406,109 @@ static func test_socially_dead_ids_non_string_entry() -> bool:
 		restored[str(npc_id)] = true
 	## Expected: "npc_edric", "99", "npc_bram" in restored; null skipped.
 	return not crashed and restored.has("npc_edric") and restored.has("99") and not restored.has("")
+
+
+## SPA-901: mid-game event state persistence tests ────────────────────────────
+
+## Pending event dict survives to_data() / restore_from_data() round-trip.
+static func test_mid_game_event_pending_event_round_trip() -> bool:
+	var agent := MidGameEventAgent.new()
+	agent._pending_event = {
+		"id": "s3_forgers_offer",
+		"dayWindowStart": 8, "dayWindowEnd": 14, "probability": 0.6,
+		"choices": [
+			{"text": "Accept", "outcomeText": "You pocket the coin.", "effects": {}},
+			{"text": "Refuse", "outcomeText": "You walk away.",       "effects": {}},
+		],
+	}
+	var data := agent.to_data()
+	## Verify the key survives JSON round-trip (simulate file I/O).
+	var json_text := JSON.stringify(data)
+	var parsed: Variant = JSON.parse_string(json_text)
+	if not (parsed is Dictionary):
+		return false
+	var agent2 := MidGameEventAgent.new()
+	agent2.restore_from_data(parsed)
+	return agent2.get_pending_event().get("id", "") == "s3_forgers_offer"
+
+
+## Delayed rumor with a complex triggerCondition survives round-trip intact.
+static func test_mid_game_event_delayed_rumors_complex_trigger_round_trip() -> bool:
+	var agent := MidGameEventAgent.new()
+	var rumor := {
+		"claimType":      "scandal",
+		"subjectNpcId":   "calder_fenn",
+		"intensity":      4,
+		"triggerDay":     12,
+		"triggerCondition": {
+			"type":      "rep_above",
+			"npcId":     "calder_fenn",
+			"threshold": 60,
+		},
+	}
+	agent._delayed_rumors.append(rumor.duplicate())
+	var data := agent.to_data()
+	var json_text := JSON.stringify(data)
+	var parsed: Variant = JSON.parse_string(json_text)
+	if not (parsed is Dictionary):
+		return false
+	var agent2 := MidGameEventAgent.new()
+	agent2.restore_from_data(parsed)
+	if agent2._delayed_rumors.size() != 1:
+		push_error("test_mid_game_event_delayed_rumors_complex_trigger_round_trip: expected 1 entry, got %d" % agent2._delayed_rumors.size())
+		return false
+	var restored := agent2._delayed_rumors[0]
+	var cond: Dictionary = restored.get("triggerCondition", {})
+	return (restored.get("claimType") == "scandal"
+		and restored.get("subjectNpcId") == "calder_fenn"
+		and int(restored.get("triggerDay", -1)) == 12
+		and cond.get("type") == "rep_above"
+		and int(cond.get("threshold", 0)) == 60)
+
+
+## Delayed rumor entries missing required keys must be skipped during restore.
+static func test_mid_game_event_delayed_rumors_missing_keys_skipped() -> bool:
+	var agent := MidGameEventAgent.new()
+	var raw_data := {
+		"resolved_ids":  {},
+		"rolled_days":   {},
+		"pending_event": {},
+		"delayed_rumors": [
+			## Valid entry.
+			{"claimType": "scandal", "subjectNpcId": "edric_fenn", "triggerDay": 10, "intensity": 3},
+			## Missing claimType.
+			{"subjectNpcId": "edric_fenn", "triggerDay": 10},
+			## Missing subjectNpcId.
+			{"claimType": "scandal", "triggerDay": 10},
+			## Missing triggerDay.
+			{"claimType": "scandal", "subjectNpcId": "edric_fenn"},
+			## Not a Dictionary at all.
+			"bad_entry",
+		],
+	}
+	agent.restore_from_data(raw_data)
+	## Only the single valid entry should survive.
+	if agent._delayed_rumors.size() != 1:
+		push_error("test_mid_game_event_delayed_rumors_missing_keys_skipped: expected 1 valid entry, got %d" % agent._delayed_rumors.size())
+		return false
+	return agent._delayed_rumors[0].get("subjectNpcId") == "edric_fenn"
+
+
+## heat_ceiling_override and its expiry day survive a JSON round-trip via
+## _serialize_scenario_manager / _restore_scenario_manager.
+static func test_scenario_manager_heat_ceiling_override_round_trip() -> bool:
+	var sm := ScenarioManager.new()
+	sm._heat_ceiling_override = 70.0
+	sm._heat_ceiling_override_expires_day = 12
+	var serialized := SaveManager._serialize_scenario_manager(sm)
+	var json_text := JSON.stringify(serialized)
+	var parsed: Variant = JSON.parse_string(json_text)
+	if not (parsed is Dictionary):
+		return false
+	var sm2 := ScenarioManager.new()
+	SaveManager._restore_scenario_manager(sm2, parsed)
+	return (sm2._heat_ceiling_override == 70.0
+		and sm2._heat_ceiling_override_expires_day == 12)
 
 
 ## bribe_charges must survive a round-trip through JSON (int → string repr → int).

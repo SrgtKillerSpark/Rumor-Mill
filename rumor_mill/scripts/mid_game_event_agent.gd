@@ -167,7 +167,15 @@ func restore_from_data(d: Dictionary) -> void:
 	_resolved_ids  = d.get("resolved_ids", {}).duplicate()
 	_rolled_days   = d.get("rolled_days", {}).duplicate()
 	_pending_event = d.get("pending_event", {}).duplicate()
-	_delayed_rumors = d.get("delayed_rumors", []).duplicate(true)
+	_delayed_rumors = []
+	for entry in d.get("delayed_rumors", []):
+		if not entry is Dictionary:
+			push_warning("MidGameEventAgent: delayed_rumors entry is not a Dictionary — skipped")
+			continue
+		if not (entry.has("claimType") and entry.has("subjectNpcId") and entry.has("triggerDay")):
+			push_warning("MidGameEventAgent: delayed_rumors entry missing required keys (claimType/subjectNpcId/triggerDay) — skipped")
+			continue
+		_delayed_rumors.append(entry.duplicate())
 
 
 # ---------------------------------------------------------------------------
