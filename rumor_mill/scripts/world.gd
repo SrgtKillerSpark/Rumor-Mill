@@ -11,6 +11,9 @@ signal rumor_event(message: String, tick: int)
 signal socially_dead_triggered(npc_id: String, npc_name: String, tick: int)
 ## SPA-850: Emitted when 3+ NPCs transition to BELIEVE for the same rumor in one day.
 signal cascade_triggered(rumor_id: String, believer_count: int)
+## SPA-911: Emitted the first time a player-seeded rumor reaches a key/influential NPC.
+## npc_name: display name.  rumor_id: the player's original rumor (rp_ prefix).
+signal rumor_reached_key_npc(npc_name: String, rumor_id: String)
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -113,6 +116,13 @@ var _socially_dead_ids: Dictionary = {}
 var _daily_believe_counts: Dictionary = {}
 ## Set of rumor_ids that already fired cascade this day (prevents re-fire).
 var _daily_cascade_fired: Dictionary = {}
+
+## SPA-911: NPC ids considered "key" for notification purposes.
+## Populated by _apply_active_scenario() based on scenario data.
+## Auto-includes any NPC with faction "noble" or archetype "elder"/"spy".
+var key_npc_ids: Array[String] = []
+## "npc_id:rumor_root_id" — prevents duplicate key-NPC notifications per rumor.
+var _key_npc_notified: Dictionary = {}
 
 ## SPA-852: state snapshot taken at dusk (day→night transition) each day.
 ## Keys: believer_count_by_rumor, target_reputation_score, active_rumor_states.
@@ -609,6 +619,15 @@ func _init_social_graph() -> void:
 	# Pass graph reference to each NPC.
 	for npc in npcs:
 		npc.social_graph_ref = social_graph
+
+	# SPA-911: Populate key_npc_ids from NPC data.
+	# Nobles and elder/spy archetypes are considered influential.
+	key_npc_ids.clear()
+	for npc in npcs:
+		var faction:    String = npc.npc_data.get("faction",   "")
+		var archetype:  String = npc.npc_data.get("archetype", "")
+		if faction == "noble" or archetype in ["elder", "spy"]:
+			key_npc_ids.append(npc.npc_data.get("id", ""))
 
 
 
@@ -1302,6 +1321,35 @@ func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id:
 		if believers.size() >= 3 and not _daily_cascade_fired.has(rumor_id):
 			_daily_cascade_fired[rumor_id] = true
 			emit_signal("cascade_triggered", rumor_id, believers.size())
+	# SPA-911: Notify when a player-seeded rumor reaches a key NPC.
+	if state_name in ["BELIEVE", "SPREAD", "ACT"] and not rumor_id.is_empty():
+		_check_key_npc_reached(npc_name, rumor_id)
+
+
+## SPA-911: Emit rumor_reached_key_npc if the NPC named npc_name is in key_npc_ids
+## and the rumor traces back to a player-seeded root (rp_ prefix).
+func _check_key_npc_reached(npc_name: String, rumor_id: String) -> void:
+	# Find the NPC node by name.
+	var npc_id := ""
+	for npc in npcs:
+		if npc.npc_data.get("name", "") == npc_name:
+			npc_id = npc.npc_data.get("id", "")
+			break
+	if npc_id.is_empty() or not key_npc_ids.has(npc_id):
+		return
+	# Trace lineage back to player root.
+	var root_id := rumor_id
+	if propagation_engine != null:
+		var chain := propagation_engine.get_lineage_chain(rumor_id)
+		if not chain.is_empty():
+			root_id = str(chain[0])
+	if not root_id.begins_with("rp_"):
+		return
+	var notify_key := npc_id + ":" + root_id
+	if _key_npc_notified.has(notify_key):
+		return
+	_key_npc_notified[notify_key] = true
+	emit_signal("rumor_reached_key_npc", npc_name, root_id)
 
 
 func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: String, outcome: String) -> void:

@@ -350,6 +350,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_daily_planning()
 	_init_speed_hud()
 	_init_zone_indicator()
+	_init_rumor_tracker_hud()
 	_init_npc_conversation_overlay()
 	_init_scenario1_hud()
 	_init_scenario2_hud()
@@ -1485,6 +1486,14 @@ func _init_zone_indicator() -> void:
 	add_child(zi)
 	if zi.has_method("setup"):
 		zi.setup(world, camera)
+
+
+func _init_rumor_tracker_hud() -> void:
+	var hud := preload("res://scripts/rumor_tracker_hud.gd").new()
+	hud.name = "RumorTrackerHUD"
+	add_child(hud)
+	if hud.has_method("setup"):
+		hud.setup(world, day_night)
 
 
 func _init_npc_conversation_overlay() -> void:
