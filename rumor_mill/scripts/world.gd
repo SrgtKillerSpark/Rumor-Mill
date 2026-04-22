@@ -249,6 +249,8 @@ func _ready() -> void:
 	_init_chimney_smoke()
 	_init_torch_flicker()    # SPA-882: flame particles above torch/candle props
 	_init_ambient_signs()    # SPA-882: swaying sign animations at tavern and market
+	_init_district_overlay() # SPA-910: district zone polygons (behind terrain)
+	_init_town_map_overlay() # SPA-910: gathering spots + NPC destination dots
 
 
 func _exit_tree() -> void:
@@ -661,6 +663,37 @@ func _init_town_mood_controller() -> void:
 	# Direct call is safe here because _init_reputation_system runs before this.
 	# Camera is provided later by main.gd via town_mood_controller.set_camera().
 	town_mood_controller.setup(self)
+
+
+# ── Town map overlays (SPA-910) ───────────────────────────────────────────────
+
+func _init_district_overlay() -> void:
+	var overlay: Node2D = preload("res://scripts/district_overlay.gd").new()
+	overlay.name = "DistrictOverlay"
+	add_child(overlay)
+	# Insert just before TerrainLayer so it renders beneath everything.
+	move_child(overlay, 0)
+
+
+func _init_town_map_overlay() -> void:
+	var overlay: Node2D = preload("res://scripts/town_map_overlay.gd").new()
+	overlay.name = "TownMapOverlay"
+	# Add as a child of NPCContainer so coordinates match NPC positions exactly.
+	npc_container.add_child(overlay)
+	overlay.setup(npcs, _gathering_points)
+
+
+## SPA-910: Return all NPCs within `radius` grid cells of the named location.
+## Used by building_interior.gd to populate the interior NPC roster.
+func get_npcs_near_location(location_key: String, radius: int = 4) -> Array:
+	if not _gathering_points.has(location_key):
+		return []
+	var center: Vector2i = _gathering_points[location_key]
+	var result: Array = []
+	for npc in npcs:
+		if (npc.current_cell - center).length() <= radius:
+			result.append(npc)
+	return result
 
 
 func _on_day_changed(_day: int) -> void:

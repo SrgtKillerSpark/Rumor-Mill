@@ -893,6 +893,9 @@ func _init_recon_system() -> void:
 		var _loc: String = loc_id  # capture loop variable for closure
 		interior.interior_opened.connect(func() -> void: AudioManager.set_location_ambient(_loc))
 		interior.interior_closed.connect(AudioManager.clear_location_ambient)
+	# SPA-910: wire world reference so each interior can show the NPC roster.
+	for loc_id in _interiors:
+		_interiors[loc_id].setup_world_ref(world, loc_id)
 	recon_ctrl.set_interiors(_interiors)
 
 	# SPA-683: NPC conversation dialogue panel — created programmatically so it
