@@ -28,6 +28,10 @@ var _dimmed_buildings: Dictionary = {}
 
 const _DIM_ALPHA     := 0.35   # overlay alpha when dimmed
 const _DIM_FADE_SEC  := 1.0    # fade duration
+## SPA-909: Ambient flicker on dimmed buildings (simulates torch/lamp variation).
+const _FLICKER_RANGE    := 0.07   # ± alpha around _DIM_ALPHA
+const _FLICKER_MIN_SEC  := 0.45
+const _FLICKER_MAX_SEC  := 1.25
 
 # ── State tracking ───────────────────────────────────────────────────────────
 var _spread_audio_active: bool  = false   # ambient chatter layer playing
@@ -35,6 +39,8 @@ var _tension_audio_active: bool = false   # evening_tension crossfade done
 var _guards_alerted: bool       = false   # guard speed modifier applied
 ## Win-progress milestones already fired this session (0.25, 0.50, 0.75).
 var _fired_milestones: Array[float] = []
+## SPA-909: location_id → active flicker Tween for dimmed buildings.
+var _flickering_buildings: Dictionary = {}
 
 const _SPREAD_THRESHOLD  := 5      # NPCs in SPREAD to trigger ambient chatter
 const _HEAT_THRESHOLD    := 50.0   # max player heat to alert guards
@@ -107,6 +113,11 @@ func _update_building_dims() -> void:
 		var target_a: float = _DIM_ALPHA if should_dim else 0.0
 		var tw := overlay.create_tween()
 		tw.tween_property(overlay, "modulate:a", target_a, _DIM_FADE_SEC)
+		# SPA-909: Start/stop ambient flicker alongside the dim transition.
+		if should_dim:
+			tw.tween_callback(_flicker_building.bind(loc, overlay))
+		else:
+			_stop_flicker(loc)
 
 
 # ── Effect 2: Ambient chatter audio ─────────────────────────────────────────
@@ -184,6 +195,46 @@ func _play_milestone_effect() -> void:
 	# Camera shake (moderate — noticeable but not jarring).
 	if _camera != null and _camera.has_method("shake_screen"):
 		_camera.shake_screen(6.0, 0.4)
+
+
+# ── SPA-909: Ambient building flicker ───────────────────────────────────────
+
+## Entry point: start flicker on a newly dimmed building overlay.
+## Chains self-referentially so the effect continues until _stop_flicker() is called.
+func _flicker_building(loc: String, overlay: Polygon2D) -> void:
+	if overlay == null or not is_instance_valid(overlay):
+		_flickering_buildings.erase(loc)
+		return
+	if _flickering_buildings.has(loc):
+		var ft: Tween = _flickering_buildings[loc]
+		if ft != null and ft.is_valid():
+			return  # already flickering
+	_do_flicker_step(loc, overlay)
+
+
+func _do_flicker_step(loc: String, overlay: Polygon2D) -> void:
+	if overlay == null or not is_instance_valid(overlay):
+		_flickering_buildings.erase(loc)
+		return
+	var target_a := clampf(
+		_DIM_ALPHA + randf_range(-_FLICKER_RANGE, _FLICKER_RANGE),
+		_DIM_ALPHA - _FLICKER_RANGE,
+		_DIM_ALPHA + _FLICKER_RANGE
+	)
+	var duration := randf_range(_FLICKER_MIN_SEC, _FLICKER_MAX_SEC)
+	var ft := overlay.create_tween()
+	_flickering_buildings[loc] = ft
+	ft.tween_property(overlay, "modulate:a", target_a, duration) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	ft.tween_callback(_do_flicker_step.bind(loc, overlay))
+
+
+func _stop_flicker(loc: String) -> void:
+	if _flickering_buildings.has(loc):
+		var ft: Tween = _flickering_buildings[loc]
+		if ft != null and ft.is_valid():
+			ft.kill()
+		_flickering_buildings.erase(loc)
 
 
 # ── Building overlay creation ────────────────────────────────────────────────

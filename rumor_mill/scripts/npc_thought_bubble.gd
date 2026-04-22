@@ -56,6 +56,8 @@ var _badge_bg: Panel = null  # SPA-894: background badge for contrast
 var _hint_label: Label = null  # SPA-894: brief state-name hint
 var _hint_tween: Tween = null
 var _tween: Tween = null
+## SPA-909: Looping tween for the gentle idle float animation when bubble is visible.
+var _float_tween: Tween = null
 ## True while this bubble holds one of the MAX_VISIBLE slots.
 var _is_showing: bool = false
 var _current_state: Rumor.RumorState = Rumor.RumorState.UNAWARE
@@ -175,12 +177,27 @@ func _show() -> void:
 		return
 	_is_showing = true
 	_visible_count += 1
+	if _float_tween:
+		_float_tween.kill()
+		_float_tween = null
 	if _tween:
 		_tween.kill()
-	_tween = create_tween().set_parallel(true)
-	_tween.tween_property(_label, "modulate:a", 1.0, 0.25).set_ease(Tween.EASE_OUT)
+	# SPA-909: Scale spring pop-in so the bubble feels alive rather than a plain fade.
+	_label.scale = Vector2(0.35, 0.35)
 	if _badge_bg != null:
-		_tween.tween_property(_badge_bg, "modulate:a", 1.0, 0.25).set_ease(Tween.EASE_OUT)
+		_badge_bg.scale = Vector2(0.35, 0.35)
+	_tween = create_tween().set_parallel(true)
+	_tween.tween_property(_label, "modulate:a", 1.0, 0.22).set_ease(Tween.EASE_OUT)
+	_tween.tween_property(_label, "scale", Vector2.ONE, 0.28) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if _badge_bg != null:
+		_tween.tween_property(_badge_bg, "modulate:a", 1.0, 0.22).set_ease(Tween.EASE_OUT)
+		_tween.tween_property(_badge_bg, "scale", Vector2.ONE, 0.28) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Start idle float loop once the entrance animation completes.
+	_float_tween = create_tween()
+	_float_tween.tween_interval(0.30)
+	_float_tween.tween_callback(_start_float_loop)
 
 
 func _hide() -> void:
@@ -188,6 +205,13 @@ func _hide() -> void:
 		return
 	_is_showing = false
 	_visible_count = maxi(_visible_count - 1, 0)
+	# SPA-909: Stop float loop and reset positions before fading out.
+	if _float_tween:
+		_float_tween.kill()
+		_float_tween = null
+	_label.position.y = -118.0
+	if _badge_bg != null:
+		_badge_bg.position.y = -120.0
 	if _tween:
 		_tween.kill()
 	_tween = create_tween().set_parallel(true)
@@ -197,11 +221,22 @@ func _hide() -> void:
 
 
 func _pulse() -> void:
+	# SPA-909: Stop float so the position pop below has a clean baseline.
+	if _float_tween:
+		_float_tween.kill()
+		_float_tween = null
 	if _tween:
 		_tween.kill()
 	_tween = create_tween()
 	_tween.tween_property(_label, "modulate:a", 0.3, 0.08)
 	_tween.tween_property(_label, "modulate:a", 1.0, 0.18)
+	# Brief upward position pop to signal the state change visually.
+	var _pt := create_tween()
+	_pt.tween_property(_label, "position:y", _label.position.y - 5.0, 0.08) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_pt.tween_property(_label, "position:y", -118.0, 0.25) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	_pt.tween_callback(_start_float_loop)
 
 
 ## SPA-894: Show a brief state-name label below the symbol for immediate readability.
@@ -220,6 +255,35 @@ func _show_state_hint(state: Rumor.RumorState) -> void:
 	_hint_tween.tween_property(_hint_label, "modulate:a", 1.0, 0.15).set_ease(Tween.EASE_OUT)
 	_hint_tween.tween_interval(1.5)
 	_hint_tween.tween_property(_hint_label, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
+
+
+## SPA-909: Idle float loop — gently oscillates label+badge up and back (±2.5 px, 1.3 s period).
+## Starts after the pop-in spring completes; restarts after each _pulse().
+func _start_float_loop() -> void:
+	if not _is_showing:
+		return
+	if _float_tween != null and _float_tween.is_valid():
+		_float_tween.kill()
+	const FLOAT_AMP  := 2.5
+	const FLOAT_HALF := 0.65  # half-period in seconds
+	_float_tween = create_tween()
+	_float_tween.tween_method(
+		func(v: float) -> void:
+			if _label != null:
+				_label.position.y = -118.0 - v
+			if _badge_bg != null:
+				_badge_bg.position.y = -120.0 - v,
+		0.0, FLOAT_AMP, FLOAT_HALF
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_float_tween.tween_method(
+		func(v: float) -> void:
+			if _label != null:
+				_label.position.y = -118.0 - v
+			if _badge_bg != null:
+				_badge_bg.position.y = -120.0 - v,
+		FLOAT_AMP, 0.0, FLOAT_HALF
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_float_tween.tween_callback(_start_float_loop)
 
 
 ## Returns true when this node's world position is within the visible viewport.

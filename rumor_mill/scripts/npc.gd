@@ -649,6 +649,12 @@ func _on_move_finished(arrived_cell: Vector2i) -> void:
 			"east":  sprite.flip_h = false; sprite.play("idle_east")
 			"west":  sprite.flip_h = true;  sprite.play("idle_east")
 			_:       sprite.play("idle_south")
+	# SPA-909: Landing squash — wide-and-short on impact, spring back to rest.
+	# Gives foot-traffic a grounded, weighted feel without a separate animation frame.
+	if sprite != null:
+		sprite.scale = Vector2(1.07, 0.93)
+		var _land := create_tween().set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
+		_land.tween_property(sprite, "scale", Vector2.ONE, 0.35)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -917,11 +923,23 @@ func _spread_to_neighbours(
 			elif h >= 50.0:
 				heat_mod = 0.15
 
+		# SPA-911: Day-phase and location susceptibility modifiers.
+		var day_phase_mod := 0.0
+		var location_mod  := 0.0
+		if _has_engine():
+			# Schedule slot = tick % SLOTS_PER_DAY (6 slots per day).
+			var slot_idx: int = tick % NpcSchedule.SLOTS_PER_DAY
+			day_phase_mod = propagation_engine_ref.calc_day_phase_mod(slot_idx)
+			location_mod  = propagation_engine_ref.calc_location_susceptibility(
+				other.current_location_code
+			)
+
 		# β formula.
 		var beta: float
 		if _has_engine():
 			beta = propagation_engine_ref.calc_beta(
-				_sociability, t_credulity, edge_w, spreader_faction, t_faction, heat_mod
+				_sociability, t_credulity, edge_w, spreader_faction, t_faction,
+				heat_mod, day_phase_mod, location_mod
 			)
 		else:
 			beta = _sociability * t_credulity * edge_w * 1.8
@@ -930,9 +948,13 @@ func _spread_to_neighbours(
 			continue
 
 		# Roll mutations before passing the rumor on.
+		# SPA-911: Pass spreader personality so volatile/disloyal NPCs mutate differently.
 		var spread_rumor := slot.rumor
 		if _has_engine():
-			spread_rumor = propagation_engine_ref.try_mutate(slot.rumor, tick, all_npcs_ref)
+			spread_rumor = propagation_engine_ref.try_mutate(
+				slot.rumor, tick, all_npcs_ref,
+				_temperament, _loyalty, _sociability
+			)
 
 		other.hear_rumor(spread_rumor, spreader_faction)
 		spread_happened = true
@@ -1205,6 +1227,8 @@ func _start_spread_clustering(rumor: Rumor) -> void:
 
 ## Called each tick to advance the defending NPC's countdown and broadcast the
 ## credibility penalty to all social-graph neighbours.
+## SPA-911: Also rolls for counter-rumor generation — high-loyalty NPCs may
+## actively seed a PRAISE counter-narrative to neutralise negative rumors.
 func _tick_defender(tick: int) -> void:
 	if not _is_defending:
 		return
@@ -1219,6 +1243,52 @@ func _tick_defender(tick: int) -> void:
 		_defending_icon = null
 		return
 	_broadcast_defense(tick)
+	_tick_counter_rumor(tick)
+
+
+## SPA-911: Roll for counter-rumor seeding from a defending NPC.
+## Probability scales with loyalty (~10% per tick at loyalty 0.7+).
+## Creates a low-intensity PRAISE rumor and spreads it to nearby NPCs who
+## haven't yet heard a rumor about the defended subject.
+func _tick_counter_rumor(tick: int) -> void:
+	if not _has_engine() or propagation_engine_ref == null:
+		return
+	# Only high-loyalty defenders counter-spread.
+	if randf() > _loyalty * 0.12:
+		return
+	if _defender_target_npc_id.is_empty() or all_npcs_ref.is_empty():
+		return
+
+	var counter_id := "cnt_%s_%d" % [_defender_target_npc_id, Time.get_ticks_msec()]
+	var counter_rumor := Rumor.create(
+		counter_id,
+		_defender_target_npc_id,
+		Rumor.ClaimType.PRAISE,
+		2,      # low intensity — not sensational
+		0.08,   # low mutability — stays as praise, doesn't spiral
+		tick,
+		120,    # short shelf life
+		""
+	)
+	propagation_engine_ref.register_rumor(counter_rumor)
+
+	var faction: String = npc_data.get("faction", "")
+	for other in all_npcs_ref:
+		if other == self:
+			continue
+		var delta: Vector2i = current_cell - (other.current_cell as Vector2i)
+		if absi(delta.x) + absi(delta.y) > SPREAD_RADIUS:
+			continue
+		# Only spread to NPCs who haven't already heard about this subject.
+		var already_knows := false
+		for slot_val in other.rumor_slots.values():
+			if (slot_val as Rumor.NpcRumorSlot).rumor.subject_npc_id == _defender_target_npc_id:
+				already_knows = true
+				break
+		if already_knows:
+			continue
+		if randf() < _loyalty * 0.35:
+			other.hear_rumor(counter_rumor, faction)
 
 
 ## Broadcast a credulity penalty for the defended subject to all neighbours.
@@ -1783,6 +1853,42 @@ func flash_belief_vignette() -> void:
 	sprite.self_modulate = Color(0.12, 0.12, 0.18, 1.0)  # dark vignette
 	_flash_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.55)
+
+
+## SPA-909: Warm greeting bob when the player initiates dialogue.
+## Softer than flash_click() — communicates engagement rather than selection impact.
+func flash_interaction_greeting() -> void:
+	if sprite == null:
+		return
+	# Soft warm-white tint: the NPC notices the player.
+	sprite.self_modulate = Color(1.5, 1.4, 1.0, 1.0)
+	var _ct := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_ct.tween_property(sprite, "self_modulate", Color.WHITE, 0.35)
+	# Gentle upward bob (4 px up, settle back with slight TRANS_BACK overshoot).
+	var _bt := create_tween()
+	_bt.tween_property(sprite, "position:y", sprite.position.y - 4.0, 0.11) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_bt.tween_property(sprite, "position:y", 0.0, 0.22) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+
+
+## SPA-909: Red shrink-pulse when a player action on this NPC fails or is rejected.
+## Distinguishes failure from neutral click (gold) and greeting (warm white).
+func flash_action_failed() -> void:
+	if sprite == null:
+		return
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	sprite.self_modulate = Color(1.9, 0.45, 0.45, 1.0)
+	_flash_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.42)
+	# Shrink then spring back so the failure registers kinesthetically.
+	sprite.scale = Vector2.ONE
+	var _ss := create_tween()
+	_ss.tween_property(sprite, "scale", Vector2(0.87, 0.87), 0.08) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	_ss.tween_property(sprite, "scale", Vector2.ONE, 0.22) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 ## SPA-788: Apply / remove the belief-shaken speed penalty (0.72× for rest of day).
