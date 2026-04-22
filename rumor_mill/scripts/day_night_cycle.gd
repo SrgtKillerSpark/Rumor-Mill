@@ -404,12 +404,14 @@ func _get_phase_name(hour: int) -> String:
 
 
 ## Play a non-blocking phase label fade-in → hold → fade-out (0.3 + 0.6 + 0.3 s).
+## SPA-903: Label includes the current day so players see "Day 3 — Evening" rather
+## than just "Evening", orienting them in time without obscuring gameplay.
 func _play_phase_transition(phase_name: String) -> void:
 	if _phase_label == null:
 		return
 	if _phase_label_tween != null and _phase_label_tween.is_valid():
 		_phase_label_tween.kill()
-	_phase_label.text = phase_name
+	_phase_label.text = "Day %d — %s" % [current_day, phase_name]
 	_phase_label.modulate.a = 0.0
 	_phase_label_tween = create_tween()
 	_phase_label_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)

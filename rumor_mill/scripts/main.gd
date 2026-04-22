@@ -1022,6 +1022,9 @@ func _spawn_seed_ripple(seed_target_name: String) -> void:
 		var nid: String = npc.npc_data.get("id", "")
 		if nid.replace("_", " ").capitalize() == seed_target_name:
 			npc_pos = npc.global_position
+			# SPA-903: Immediate amber sprite flash before the ripple VFX lands.
+			if npc.has_method("flash_seed_confirmation"):
+				npc.flash_seed_confirmation()
 			found = true
 			break
 	if not found:

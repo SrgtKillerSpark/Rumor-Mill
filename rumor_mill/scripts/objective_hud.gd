@@ -140,6 +140,12 @@ var _budget_flash_tween: Tween = null
 ## Last polled action count; -1 = not yet initialised.
 var _budget_last_actions: int = -1
 
+# ── SPA-903: Resource delta floating indicators ──────────────────────────────
+## CanvasLayer (layer 15) used to host the transient floating +/- labels.
+var _delta_layer: CanvasLayer = null
+## Last polled whisper count for dawn-replenish detection; -1 = not initialised.
+var _budget_last_whispers: int = -1
+
 
 func _ready() -> void:
 	layer = 4
@@ -178,6 +184,9 @@ func setup(scenario_manager: ScenarioManager, day_night: Node, rep_system: Reput
 		day_night.day_transition_started.connect(_on_day_transition_started)
 	if scenario_manager.has_signal("deadline_warning"):
 		scenario_manager.deadline_warning.connect(_on_deadline_warning)
+	# SPA-903: Connect whisper spend signal for immediate delta + pulse feedback.
+	if intel_store != null and intel_store.has_signal("whisper_spent"):
+		intel_store.whisper_spent.connect(_on_whisper_spent)
 	# Capture initial reputation scores for the first dawn comparison.
 	_snapshot_dawn_scores()
 	# SPA-859: Show first-time callout pointing to the objective display.
@@ -461,13 +470,27 @@ func _refresh_budget_label() -> void:
 		return
 	var actions: int  = _intel_store.recon_actions_remaining
 	var whispers: int = _intel_store.whisper_tokens_remaining
-	# Detect first action spend on Day 1 and flash.
 	var day: int = _day_night.current_day if _day_night != null else 1
-	if day == 1 and _budget_last_actions > 0 and actions < _budget_last_actions:
-		_flash_budget_label(actions)
+	# Detect recon action changes (spend or dawn replenish).
+	if _budget_last_actions >= 0 and actions < _budget_last_actions:
+		var delta: int = _budget_last_actions - actions
+		_spawn_budget_delta("-%d" % delta, Color(1.0, 0.35, 0.25, 1.0))
+		if day == 1:
+			_flash_budget_label(actions)
+		else:
+			_pulse_budget_label(Color(1.0, 0.65, 0.20, 1.0))
+			_lbl_budget.text = "%d actions | %d whispers" % [actions, whispers]
+	elif _budget_last_actions >= 0 and actions > _budget_last_actions:
+		# Dawn replenish — green gain indicator for actions.
+		_spawn_budget_delta("+%d" % (actions - _budget_last_actions), Color(0.30, 0.95, 0.45, 1.0))
+		_lbl_budget.text = "%d actions | %d whispers" % [actions, whispers]
 	else:
 		_lbl_budget.text = "%d actions | %d whispers" % [actions, whispers]
 	_budget_last_actions = actions
+	# Detect whisper replenish at dawn (spend is handled via whisper_spent signal).
+	if _budget_last_whispers >= 0 and whispers > _budget_last_whispers:
+		_spawn_budget_delta("+%d" % (whispers - _budget_last_whispers), Color(0.30, 0.95, 0.45, 1.0))
+	_budget_last_whispers = whispers
 
 
 ## Brief gold flash on the budget label, then revert to the standard counter.
@@ -489,6 +512,58 @@ func _flash_budget_label(actions_remaining: int) -> void:
 			_lbl_budget.text = "%d actions | %d whispers" % [
 				_intel_store.recon_actions_remaining,
 				_intel_store.whisper_tokens_remaining])
+
+
+# ── SPA-903: Resource delta indicators ───────────────────────────────────────
+
+## Spawn a floating +/- number near the budget label that floats upward and fades.
+## Green for gains, red for losses; lives on a dedicated CanvasLayer so it clears cleanly.
+func _spawn_budget_delta(text: String, color: Color) -> void:
+	if _lbl_budget == null or not is_inside_tree():
+		return
+	if _delta_layer == null:
+		_delta_layer = CanvasLayer.new()
+		_delta_layer.layer = 15
+		add_child(_delta_layer)
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_constant_override("outline_size", 2)
+	lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.75))
+	var rect := _lbl_budget.get_global_rect()
+	lbl.position = Vector2(rect.position.x + rect.size.x * 0.5 - 12.0, rect.position.y - 4.0)
+	_delta_layer.add_child(lbl)
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(lbl, "position:y", lbl.position.y - 36.0, 0.9) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.85) \
+		.set_delay(0.08).set_ease(Tween.EASE_IN)
+	get_tree().create_timer(1.0).timeout.connect(func() -> void:
+		if is_instance_valid(lbl):
+			lbl.queue_free()
+	)
+
+
+## Brief colour pulse on the budget label confirming a resource spend.
+## Reuses _budget_flash_tween without altering label text.
+func _pulse_budget_label(pulse_color: Color) -> void:
+	if _lbl_budget == null:
+		return
+	if _budget_flash_tween != null and _budget_flash_tween.is_valid():
+		_budget_flash_tween.kill()
+		_lbl_budget.self_modulate = Color.WHITE
+	_budget_flash_tween = create_tween()
+	_budget_flash_tween.tween_property(_lbl_budget, "self_modulate", pulse_color, 0.07) \
+		.set_ease(Tween.EASE_OUT)
+	_budget_flash_tween.tween_property(_lbl_budget, "self_modulate", Color.WHITE, 0.85) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+
+
+## SPA-903: Called immediately when the player spends a whisper token.
+func _on_whisper_spent() -> void:
+	_spawn_budget_delta("-1", Color(1.0, 0.35, 0.25, 1.0))
+	_pulse_budget_label(Color(1.0, 0.40, 0.25, 1.0))
 
 
 # ── Context-sensitive nudge (SPA-520) ───────────────────────────────────────

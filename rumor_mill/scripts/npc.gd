@@ -1880,6 +1880,25 @@ func show_rumor_received_glow() -> void:
 	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.50)
 
 
+## SPA-903: Warm amber burst on the sprite when the player targets this NPC with a
+## seeded rumor — immediate visual confirmation before the ripple VFX lands.
+func flash_seed_confirmation() -> void:
+	if sprite == null:
+		return
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	sprite.self_modulate = Color(1.8, 1.2, 0.4, 1.0)  # warm amber
+	_flash_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_flash_tween.tween_property(sprite, "self_modulate", Color.WHITE, 0.45)
+	# Brief scale bounce for extra tactile feel.
+	sprite.scale = Vector2.ONE
+	var _sp := create_tween()
+	_sp.tween_property(sprite, "scale", Vector2(1.12, 1.12), 0.08) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_sp.tween_property(sprite, "scale", Vector2.ONE, 0.12) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+
+
 # ── Utility ──────────────────────────────────────────────────────────────────
 
 func _cell_to_world(cell: Vector2i) -> Vector2:
