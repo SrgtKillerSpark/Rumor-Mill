@@ -1547,6 +1547,10 @@ func show_observed() -> void:
 		if not (npc_lines.get("observe_wary", []) as Array).is_empty():
 			_show_dialogue_bubble("observe_wary")
 			return
+	var base_lines: Dictionary = _dialogue_data.get(_npc_dialogue_key, {})
+	if (base_lines.get("observe", []) as Array).is_empty():
+		push_warning("NPC '%s': missing 'observe' dialogue category — skipping bubble" % _npc_dialogue_key)
+		return
 	_show_dialogue_bubble("observe")
 
 
@@ -1561,6 +1565,10 @@ func show_eavesdropped() -> void:
 		if not (npc_lines.get("eavesdrop_wary", []) as Array).is_empty():
 			_show_dialogue_bubble("eavesdrop_wary", true)
 			return
+	var base_lines: Dictionary = _dialogue_data.get(_npc_dialogue_key, {})
+	if (base_lines.get("eavesdrop", []) as Array).is_empty():
+		push_warning("NPC '%s': missing 'eavesdrop' dialogue category — skipping bubble" % _npc_dialogue_key)
+		return
 	_show_dialogue_bubble("eavesdrop", true)
 
 

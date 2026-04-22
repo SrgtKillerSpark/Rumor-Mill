@@ -239,6 +239,8 @@ func _apply_effects(effects: Dictionary) -> void:
 	var illness_cd: int = int(effects.get("illnessEscalationCooldownDelta", 0))
 	if illness_cd != 0 and illness_agent_ref != null:
 		illness_agent_ref.cooldown_offset += illness_cd
+	elif illness_cd != 0:
+		push_warning("MidGameEventAgent: illnessEscalationCooldownDelta requested but illness_agent_ref is null — effect skipped")
 
 	# Rival intensity bonus (S3): { delta, durationDays }
 	var rival_bonus: Dictionary = effects.get("rivalIntensityBonus", {})
@@ -249,11 +251,15 @@ func _apply_effects(effects: Dictionary) -> void:
 			_get_current_day() + int(rival_bonus.get("durationDays", 0)))
 		rival_agent_ref.set_meta("intensity_revert_amount",
 			int(rival_bonus.get("delta", 0)))
+	elif not rival_bonus.is_empty():
+		push_warning("MidGameEventAgent: rivalIntensityBonus requested but rival_agent_ref is null — effect skipped")
 
 	# Rival cooldown bonus (S3): flat days added to rival cooldown.
 	var rival_cd: int = int(effects.get("rivalCooldownBonus", 0))
 	if rival_cd != 0 and rival_agent_ref != null:
 		rival_agent_ref.cooldown_offset += rival_cd
+	elif rival_cd != 0:
+		push_warning("MidGameEventAgent: rivalCooldownBonus requested but rival_agent_ref is null — effect skipped")
 
 	# Inject a rumor (S3): { claimType, subjectNpcId, intensity, targetFaction }
 	var inject: Dictionary = effects.get("injectRumor", {})
@@ -264,6 +270,8 @@ func _apply_effects(effects: Dictionary) -> void:
 	var inq_cd: int = int(effects.get("inquisitorCooldownDelta", 0))
 	if inq_cd != 0 and inquisitor_agent_ref != null:
 		inquisitor_agent_ref.cooldown_offset += inq_cd
+	elif inq_cd != 0:
+		push_warning("MidGameEventAgent: inquisitorCooldownDelta requested but inquisitor_agent_ref is null — effect skipped")
 
 	# Inquisitor focus target (S4): { npcId, durationDays }
 	var focus: Dictionary = effects.get("inquisitorFocusTarget", {})
@@ -272,6 +280,8 @@ func _apply_effects(effects: Dictionary) -> void:
 		inquisitor_agent_ref.set_meta("focus_target_id", focus_id)
 		inquisitor_agent_ref.set_meta("focus_until_day",
 			_get_current_day() + int(focus.get("durationDays", 3)))
+	elif not focus.is_empty():
+		push_warning("MidGameEventAgent: inquisitorFocusTarget requested but inquisitor_agent_ref is null — effect skipped")
 
 	# Free quarantine charges (S2): int.
 	var free_quarantine: int = int(effects.get("freeQuarantineCharges", 0))
@@ -282,6 +292,8 @@ func _apply_effects(effects: Dictionary) -> void:
 	var bonus_disrupt: int = int(effects.get("bonusDisruptCharges", 0))
 	if bonus_disrupt > 0 and rival_agent_ref != null:
 		rival_agent_ref.disrupt_charges_remaining += bonus_disrupt
+	elif bonus_disrupt > 0:
+		push_warning("MidGameEventAgent: bonusDisruptCharges requested but rival_agent_ref is null — effect skipped")
 
 	# Delayed rumor injection (S3): { claimType, subjectNpcId, intensity, triggerDay, triggerCondition }
 	var delayed: Dictionary = effects.get("delayedRumor", {})
