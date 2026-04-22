@@ -419,9 +419,8 @@ const HINT_DATA: Dictionary = {
 	"gtut_explore": {
 		"title": "Explore the Town",
 		"body":  (
-			"Pan around with [b]WASD[/b] or middle-mouse drag, then "
-			+ "[b]right-click a building[/b] to see who's inside.  "
-			+ "The nearest building has a gold outline."
+			"[b]Lord Edric Fenn[/b] is marked with a gold [b]▼ TARGET[/b] above his head.  "
+			+ "Pan with [b]WASD[/b], then [b]right-click a building[/b] to see who's inside."
 		),
 		"auto_dismiss_secs": 999,
 		"action_gate": "read_the_room",

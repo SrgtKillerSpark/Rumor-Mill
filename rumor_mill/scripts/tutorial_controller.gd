@@ -128,6 +128,12 @@ var _skip_shown:      bool           = false
 var _highlight_node:  Node2D         = null  # node currently highlighted
 var _highlight_tween: Tween          = null
 
+# ── SPA-881: Persistent target NPC marker ────────────────────────────────────
+## Gold "▼ TARGET" label added as a child of the primary target NPC so it
+## follows them automatically.  Visible from tutorial start until completion.
+var _target_marker_label: Label      = null
+var _target_marker_tween: Tween      = null
+
 # ── Top-centre toast ──────────────────────────────────────────────────────────
 
 var _toast_canvas:    CanvasLayer    = null
@@ -195,6 +201,7 @@ func skip() -> void:
 		if _tutorial_sys != null:
 			_tutorial_sys.mark_seen(step_def["id"])
 	_clear_highlight()
+	_remove_target_marker()
 	_disconnect_all()
 	if _skip_overlay != null:
 		_skip_overlay.queue_free()
@@ -335,6 +342,7 @@ func _begin_tutorial() -> void:
 	guided_tutorial_active = (_scenario_id == "scenario_1")
 	_current_step = -1
 	_connect_signals()
+	_show_target_marker()
 	_advance_step()
 
 
@@ -386,6 +394,7 @@ func _finish_tutorial() -> void:
 	guided_tutorial_active = false
 	_disconnect_all()
 	_clear_highlight()
+	_remove_target_marker()
 	tutorial_completed.emit()
 
 
@@ -450,6 +459,65 @@ func _clear_highlight() -> void:
 	if _highlight_node != null and is_instance_valid(_highlight_node):
 		_highlight_node.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	_highlight_node = null
+
+
+# ── SPA-881: Persistent target NPC marker ────────────────────────────────────
+
+## Map of scenario → primary target NPC id(s) for the marker.
+const _TARGET_NPC_IDS: Dictionary = {
+	"scenario_1": ["edric_fenn"],
+}
+
+## Find the world NPC node matching the given npc_data id.
+func _find_npc_by_id(npc_id: String) -> Node2D:
+	if _world == null or _world.get("npcs") == null:
+		return null
+	for npc in _world.npcs:
+		if npc.npc_data.get("id", "") == npc_id:
+			return npc
+	return null
+
+
+## Place a pulsing "▼ TARGET" label above the primary target NPC.
+func _show_target_marker() -> void:
+	var ids: Array = _TARGET_NPC_IDS.get(_scenario_id, [])
+	if ids.is_empty():
+		return
+	var target_npc: Node2D = _find_npc_by_id(ids[0])
+	if target_npc == null:
+		return
+
+	_target_marker_label = Label.new()
+	_target_marker_label.text = "▼ TARGET"
+	_target_marker_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_target_marker_label.add_theme_font_size_override("font_size", 11)
+	_target_marker_label.add_theme_color_override("font_color", Color(0.96, 0.84, 0.40, 1.0))
+	_target_marker_label.add_theme_constant_override("outline_size", 3)
+	_target_marker_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+	# Position above the NPC sprite; offset upward.
+	_target_marker_label.position = Vector2(-30, -55)
+	_target_marker_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	target_npc.add_child(_target_marker_label)
+
+	# Gentle pulse between full and half alpha.
+	_target_marker_tween = _target_marker_label.create_tween()
+	_target_marker_tween.set_loops()
+	_target_marker_tween.tween_property(
+		_target_marker_label, "modulate:a", 0.45, 0.8
+	).set_ease(Tween.EASE_IN_OUT)
+	_target_marker_tween.tween_property(
+		_target_marker_label, "modulate:a", 1.0, 0.8
+	).set_ease(Tween.EASE_IN_OUT)
+
+
+## Remove the persistent target marker.
+func _remove_target_marker() -> void:
+	if _target_marker_tween != null and _target_marker_tween.is_valid():
+		_target_marker_tween.kill()
+	_target_marker_tween = null
+	if _target_marker_label != null and is_instance_valid(_target_marker_label):
+		_target_marker_label.queue_free()
+	_target_marker_label = null
 
 
 # ── Top-centre toast ──────────────────────────────────────────────────────────
