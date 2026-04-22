@@ -225,6 +225,18 @@ func _build_ui() -> void:
 	btn_quit.pressed.connect(_on_quit_to_menu)
 	_main_container.add_child(btn_quit)
 
+	# ── Focus neighbor chain for main buttons (Up/Down arrows cycle all buttons) ─
+	var _main_btns: Array = [
+		btn_resume, btn_howto, btn_settings, btn_save, btn_load, btn_restart, btn_quit,
+	]
+	for i in _main_btns.size():
+		var prev: Button = _main_btns[(i - 1 + _main_btns.size()) % _main_btns.size()]
+		var next: Button = _main_btns[(i + 1) % _main_btns.size()]
+		_main_btns[i].focus_neighbor_top    = prev.get_path()
+		_main_btns[i].focus_neighbor_bottom = next.get_path()
+		_main_btns[i].focus_next            = next.get_path()
+		_main_btns[i].focus_previous        = prev.get_path()
+
 	# ── Slot picker container (hidden initially) ───────────────────────────────
 	_slot_container = VBoxContainer.new()
 	_slot_container.add_theme_constant_override("separation", 10)
@@ -258,6 +270,16 @@ func _build_ui() -> void:
 	var btn_cancel := _make_pause_btn("Cancel", Color(0.80, 0.60, 0.60, 1.0))
 	btn_cancel.pressed.connect(_hide_slot_picker)
 	_slot_container.add_child(btn_cancel)
+
+	# ── Focus neighbor chain for slot picker buttons (Up/Down arrows) ─────────
+	var _slot_btns: Array = [_slot_btn_auto, _slot_btn_1, _slot_btn_2, _slot_btn_3, btn_cancel]
+	for i in _slot_btns.size():
+		var prev: Button = _slot_btns[(i - 1 + _slot_btns.size()) % _slot_btns.size()]
+		var next: Button = _slot_btns[(i + 1) % _slot_btns.size()]
+		_slot_btns[i].focus_neighbor_top    = prev.get_path()
+		_slot_btns[i].focus_neighbor_bottom = next.get_path()
+		_slot_btns[i].focus_next            = next.get_path()
+		_slot_btns[i].focus_previous        = prev.get_path()
 
 	# ── Status label ──────────────────────────────────────────────────────────
 	_status_label = Label.new()

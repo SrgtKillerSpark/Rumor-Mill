@@ -133,6 +133,11 @@ func _build_canvas() -> void:
 func _input(event: InputEvent) -> void:
 	if _panel == null or not _panel.visible:
 		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE:
+			_dismiss()
+			get_viewport().set_input_as_handled()
+			return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT \
 			and event.pressed:
 		# Dismiss if click lands outside the panel rect.
@@ -428,6 +433,13 @@ func _rebuild_panel(npc: Node2D) -> void:
 	await get_tree().process_frame
 	_panel.size = Vector2(PANEL_W, vbox.get_minimum_size().y + 20.0)
 
+	# Keyboard focus: grab the first enabled action button so keyboard users
+	# can interact immediately without reaching for the mouse.
+	for child in vbox.get_children():
+		if child is Button and not child.disabled and child.focus_mode != Control.FOCUS_NONE:
+			child.grab_focus()
+			break
+
 
 # ── Button factory ────────────────────────────────────────────────────────────
 
@@ -435,7 +447,7 @@ func _make_button(label: String, enabled: bool, is_leave: bool = false) -> Butto
 	var btn := Button.new()
 	btn.text = label
 	btn.disabled = not enabled
-	btn.focus_mode = Control.FOCUS_NONE
+	btn.focus_mode = Control.FOCUS_ALL
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.add_theme_color_override(
 		"font_color",
@@ -488,6 +500,16 @@ func _make_button(label: String, enabled: bool, is_leave: bool = false) -> Butto
 	style_disabled.set_content_margin_all(5.0)
 	style_disabled.set_corner_radius_all(2)
 	btn.add_theme_stylebox_override("disabled", style_disabled)
+
+	# Focus ring — gold border for keyboard navigation visibility.
+	var style_focus := StyleBoxFlat.new()
+	style_focus.bg_color = C_BTN_HOVER
+	style_focus.set_border_width_all(2)
+	style_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)
+	style_focus.set_content_margin_all(5.0)
+	if not is_leave:
+		style_focus.set_corner_radius_all(2)
+	btn.add_theme_stylebox_override("focus", style_focus)
 
 	return btn
 

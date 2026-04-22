@@ -40,6 +40,16 @@ func _input(event: InputEvent) -> void:
 		if event.keycode == KEY_ESCAPE:
 			_close()
 			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_RIGHT:
+			var next_tab := Tab(((_current_tab as int) + 1) % 3)
+			_switch_tab(next_tab)
+			_tab_buttons[next_tab as int].grab_focus()
+			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_LEFT:
+			var prev_tab := Tab(((_current_tab as int) + 2) % 3)
+			_switch_tab(prev_tab)
+			_tab_buttons[prev_tab as int].grab_focus()
+			get_viewport().set_input_as_handled()
 
 
 ## Show the overlay and reset to the Controls tab.
@@ -168,7 +178,27 @@ func _build_ui() -> void:
 	btn_close.add_theme_font_size_override("font_size", 12)
 	btn_close.process_mode = Node.PROCESS_MODE_ALWAYS
 	btn_close.pressed.connect(_close)
+	# Focus ring matches the tab button gold-border style.
+	var close_focus := StyleBoxFlat.new()
+	close_focus.bg_color = Color(0, 0, 0, 0)
+	close_focus.draw_center = false
+	close_focus.set_border_width_all(2)
+	close_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)
+	btn_close.add_theme_stylebox_override("focus", close_focus)
 	close_row.add_child(btn_close)
+
+	# ── Tab button focus neighbors (Left/Right to cycle; Down goes to Close) ──
+	for i in _tab_buttons.size():
+		var prev_idx: int = (i - 1 + _tab_buttons.size()) % _tab_buttons.size()
+		var next_idx: int = (i + 1) % _tab_buttons.size()
+		_tab_buttons[i].focus_neighbor_left   = _tab_buttons[prev_idx].get_path()
+		_tab_buttons[i].focus_neighbor_right  = _tab_buttons[next_idx].get_path()
+		_tab_buttons[i].focus_neighbor_bottom = btn_close.get_path()
+		_tab_buttons[i].focus_next            = _tab_buttons[next_idx].get_path()
+		_tab_buttons[i].focus_previous        = _tab_buttons[prev_idx].get_path()
+	# Close button Tab-back goes to the last tab button.
+	btn_close.focus_neighbor_top = _tab_buttons[_tab_buttons.size() - 1].get_path()
+	btn_close.focus_previous     = _tab_buttons[_tab_buttons.size() - 1].get_path()
 
 	# Activate first tab.
 	_switch_tab(Tab.CONTROLS)

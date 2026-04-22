@@ -540,6 +540,21 @@ func _build_select_panel() -> void:
 		vbox.add_child(card)
 		_scenario_cards.append(card)
 
+	# Wire Up/Down focus neighbors between card overlay buttons so arrow keys work.
+	var _card_btns: Array = []
+	for card in _scenario_cards:
+		# The overlay Button is the last child of each card PanelContainer.
+		var overlay: Button = card.get_child(card.get_child_count() - 1) as Button
+		if overlay != null:
+			_card_btns.append(overlay)
+	for i in _card_btns.size():
+		var prev: Button = _card_btns[(i - 1 + _card_btns.size()) % _card_btns.size()]
+		var next: Button = _card_btns[(i + 1) % _card_btns.size()]
+		_card_btns[i].focus_neighbor_top    = prev.get_path()
+		_card_btns[i].focus_neighbor_bottom = next.get_path()
+		_card_btns[i].focus_next            = next.get_path()
+		_card_btns[i].focus_previous        = prev.get_path()
+
 	vbox.add_child(_separator())
 
 	# Bottom row: Back + Next

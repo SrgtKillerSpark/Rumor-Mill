@@ -1022,6 +1022,12 @@ func _build_ui() -> void:
 	_tab_replay.pressed.connect(_show_tab_replay)
 	tab_row.add_child(_tab_replay)
 
+	# Left/Right neighbor chain between the two tabs.
+	_tab_results.focus_neighbor_right = _tab_replay.get_path()
+	_tab_results.focus_next           = _tab_replay.get_path()
+	_tab_replay.focus_neighbor_left   = _tab_results.get_path()
+	_tab_replay.focus_previous        = _tab_results.get_path()
+
 	# ── Results tab content (existing two-column card row) ────────────────────
 	_results_container = HBoxContainer.new()
 	_results_container.add_theme_constant_override("separation", 12)
@@ -1098,6 +1104,20 @@ func _build_ui() -> void:
 	_btn_main_menu = _make_button("Main Menu", 150)
 	_btn_main_menu.pressed.connect(_on_main_menu)
 	btn_row.add_child(_btn_main_menu)
+
+	# Left/Right neighbor chain between bottom buttons (circular).
+	_btn_again.focus_neighbor_right      = _btn_next.get_path()
+	_btn_again.focus_next                = _btn_next.get_path()
+	_btn_again.focus_neighbor_left       = _btn_main_menu.get_path()
+	_btn_again.focus_previous            = _btn_main_menu.get_path()
+	_btn_next.focus_neighbor_left        = _btn_again.get_path()
+	_btn_next.focus_previous             = _btn_again.get_path()
+	_btn_next.focus_neighbor_right       = _btn_main_menu.get_path()
+	_btn_next.focus_next                 = _btn_main_menu.get_path()
+	_btn_main_menu.focus_neighbor_left   = _btn_next.get_path()
+	_btn_main_menu.focus_previous        = _btn_next.get_path()
+	_btn_main_menu.focus_neighbor_right  = _btn_again.get_path()
+	_btn_main_menu.focus_next            = _btn_again.get_path()
 
 
 func _make_card() -> PanelContainer:
@@ -1569,9 +1589,16 @@ func _make_preset_button(label_text: String, index: int) -> Button:
 	hover.set_border_width_all(1)
 	hover.set_content_margin_all(6)
 
+	var focus := StyleBoxFlat.new()
+	focus.bg_color = C_BTN_HOVER
+	focus.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	focus.set_border_width_all(2)
+	focus.set_content_margin_all(6)
+
 	btn.add_theme_stylebox_override("normal",  normal)
 	btn.add_theme_stylebox_override("hover",   hover)
 	btn.add_theme_stylebox_override("pressed", normal)
+	btn.add_theme_stylebox_override("focus",   focus)
 
 	btn.pressed.connect(func() -> void: _on_preset_selected(index))
 	return btn
