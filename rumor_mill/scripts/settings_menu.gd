@@ -129,7 +129,7 @@ func _build_ui() -> void:
 	vbox.add_child(res_row)
 
 	# Window mode row.
-	var wm_row := _make_setting_row("Window  (F11)")
+	var wm_row := _make_setting_row("Window  (F11 / Alt+Enter)")
 	_btn_window_mode = _make_cycle_button(SettingsManager.get_window_mode_label())
 	_btn_window_mode.pressed.connect(_on_window_mode_cycle)
 	wm_row.add_child(_btn_window_mode)

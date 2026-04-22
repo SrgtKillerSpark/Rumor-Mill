@@ -318,7 +318,7 @@ func _build_tab_controls() -> VBoxContainer:
 		["Left-click NPC",              "View NPC tooltip"],
 		["Right-click building",        "Observe — costs 1 Recon Action"],
 		["Right-click NPC (in convo)", "Eavesdrop — costs 1 Recon Action"],
-		["F11",                         "Toggle fullscreen"],
+		["F11 / Alt+Enter",             "Toggle fullscreen"],
 	]
 	for i in gp_rows.size():
 		vbox.add_child(_make_table_row(gp_rows[i][0], gp_rows[i][1], i % 2 == 1))

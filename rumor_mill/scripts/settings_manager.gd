@@ -234,7 +234,7 @@ func get_window_mode_label() -> String:
 		_: return "Windowed"
 
 
-## Toggle between windowed and the current fullscreen mode via F11.
+## Toggle between windowed and the current fullscreen mode via F11 / Alt+Enter.
 ## If currently windowed, switches to borderless fullscreen.
 ## If currently fullscreen (any mode), switches back to windowed.
 func toggle_fullscreen() -> void:
@@ -248,7 +248,7 @@ func toggle_fullscreen() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_F11:
+		if event.keycode == KEY_F11 or (event.keycode == KEY_ENTER and event.alt_pressed):
 			toggle_fullscreen()
 			get_viewport().set_input_as_handled()
 

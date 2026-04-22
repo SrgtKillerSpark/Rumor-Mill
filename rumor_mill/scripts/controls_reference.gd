@@ -27,7 +27,7 @@ const BINDINGS := [
 	["O", "Review mission briefing"],
 	["H", "Replay last hint"],
 	["F1", "Toggle this reference"],
-	["F11", "Toggle fullscreen"],
+	["F11 / Alt+Enter", "Toggle fullscreen"],
 	["Tab", "Cycle NPCs"],
 	["M", "Toggle Social Graph / Map"],
 	["1 / 2 / 3", "NPC action (panel open)"],

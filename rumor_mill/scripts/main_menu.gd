@@ -1278,7 +1278,7 @@ func _build_settings_panel() -> void:
 	vbox.add_child(fs_row)
 
 	var fs_name := Label.new()
-	fs_name.text = "Window (F11):"
+	fs_name.text = "Window (F11 / Alt+Enter):"
 	fs_name.custom_minimum_size = Vector2(80, 0)
 	fs_name.add_theme_font_size_override("font_size", 13)
 	fs_name.add_theme_color_override("font_color", C_BODY)
