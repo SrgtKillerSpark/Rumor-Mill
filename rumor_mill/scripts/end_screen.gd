@@ -220,31 +220,10 @@ const SUMMARY_TEXT := {
 	},
 }
 
-# ── SPA-840: Next-scenario tease copy ────────────────────────────────────────
-# Shown on victory screens when a next scenario exists.  Keyed by current
-# scenario string id.  Each line hints at the mechanic shift ahead without
-# spoiling the outcome.
-const NEXT_SCENARIO_TEASE: Dictionary = {
-	"scenario_1": (
-		"In your next mission, you will need to convince 7 people of a lie"
-		+ " — and one powerful voice is already preparing to contradict you."
-	),
-	"scenario_2": (
-		"Next: manage two reputations at once while a rival works against you in the shadows."
-	),
-	"scenario_3": (
-		"Your next challenge: defend instead of attack."
-		+ " Three lives are in the inquisitor's crosshairs — only your whispers can protect them."
-	),
-	"scenario_4": (
-		"Ahead: the same town, an open election, and two candidates fighting for one chain of office."
-		+ " You must choose who rises."
-	),
-	"scenario_5": (
-		"Your final test: the Guild itself."
-		+ " One corrupt master, one loyal ally, and twenty days before the ledger is sealed."
-	),
-}
+# ── SPA-899: Next-scenario tease — data-driven from scenarios.json ───────────
+# Loaded at run-time by _load_next_scenario_tease() below.
+# The scenarios.json "teaseHook" field provides the one-liner; "title" the name.
+# Format displayed: "Next: [title] — [teaseHook]"
 
 # Universal fallback summaries for conditions not defined per-scenario.
 const SUMMARY_FALLBACK := {
@@ -426,12 +405,12 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_next.disabled = true
 		_btn_next.focus_mode = Control.FOCUS_NONE
 
-	# ── SPA-840: Cross-scenario tease ─────────────────────────────────────────
+	# ── SPA-899: Cross-scenario tease (data-driven) ───────────────────────────
 	if _tease_lbl != null:
 		if won and not next_id.is_empty():
-			var tease: String = NEXT_SCENARIO_TEASE.get(_current_scenario_id, "")
-			if not tease.is_empty():
-				_tease_lbl.text = "[center][color=#998877]" + tease + "[/color][/center]"
+			var tease_text: String = _load_next_scenario_tease(next_id)
+			if not tease_text.is_empty():
+				_tease_lbl.text = "[center][color=#998877]" + tease_text + "[/color][/center]"
 				_tease_lbl.visible = true
 			else:
 				_tease_lbl.visible = false
@@ -933,6 +912,34 @@ static func _next_scenario_id(current: String) -> String:
 		"scenario_3": return "scenario_4"
 		"scenario_4": return "scenario_5"
 		"scenario_5": return "scenario_6"
+	return ""
+
+
+## Load title + teaseHook for the given scenario id from scenarios.json.
+## Returns a formatted "Next: [title] — [hook]" string, or "" on failure.
+static func _load_next_scenario_tease(scenario_id: String) -> String:
+	const SCENARIOS_PATH := "res://data/scenarios.json"
+	if not FileAccess.file_exists(SCENARIOS_PATH):
+		return ""
+	var file := FileAccess.open(SCENARIOS_PATH, FileAccess.READ)
+	if file == null:
+		return ""
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if not (parsed is Array):
+		return ""
+	for entry: Variant in parsed as Array:
+		if not (entry is Dictionary):
+			continue
+		if (entry as Dictionary).get("scenarioId", "") != scenario_id:
+			continue
+		var title: String = str((entry as Dictionary).get("title", ""))
+		var hook: String  = str((entry as Dictionary).get("teaseHook",
+				(entry as Dictionary).get("hookText", "")))
+		if title.is_empty():
+			return ""
+		if hook.is_empty():
+			return "Next: " + title
+		return "Next: " + title + " \u2014 " + hook
 	return ""
 
 
