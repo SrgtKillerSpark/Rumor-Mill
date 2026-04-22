@@ -323,6 +323,7 @@ var _last_outcome_won: bool = false
 var _arrow_labels: Array = []   # Label refs for animated pulse
 var _btn_pulse_tween: Tween = null
 var _what_went_wrong_lbl: Label = null
+var _rating_row: HBoxContainer = null   # SPA-907: performance rating row
 
 
 func _ready() -> void:
@@ -585,6 +586,7 @@ func _populate_stats(scenario_id: int, won: bool) -> void:
 	if _bonus_lbl != null:
 		_bonus_lbl.queue_free()
 		_bonus_lbl = null
+	_rating_row = null
 
 	var sm: ScenarioManager = _world_ref.scenario_manager if _world_ref != null else null
 
@@ -655,6 +657,9 @@ func _populate_stats(scenario_id: int, won: bool) -> void:
 
 	# ── Scenario-specific bonus stat ──────────────────────────────────────────
 	_build_bonus_stat(scenario_id)
+
+	# ── SPA-907: Performance summary — achieved vs. possible ─────────────────
+	_build_performance_summary(won, days_taken, days_allowed, npcs_reached, npc_total, peak_belief)
 
 
 ## Add one stat row (label + value) to _stats_container. Returns the value Label.
@@ -781,6 +786,60 @@ func _build_bonus_stat(scenario_id: int) -> void:
 		_bonus_lbl = null   # no delayed reveal needed
 
 
+## SPA-907: Build a short performance rating line at the bottom of the stats card.
+## Compares what the player achieved against what was theoretically possible.
+func _build_performance_summary(won: bool, days_taken: int, days_allowed: int,
+		npcs_reached: int, npc_total: int, peak_belief: int) -> void:
+	_add_separator_to(_stats_container)
+
+	# Calculate a composite score (0–100) from the three primary metrics.
+	var day_score: float = 0.0
+	if days_allowed > 0:
+		# Finishing early is better — invert so fewer days = higher score.
+		day_score = clampf(1.0 - (float(days_taken) / float(days_allowed)), 0.0, 1.0)
+	var reach_score: float = float(npcs_reached) / float(maxi(npc_total, 1))
+	var belief_score: float = clampf(float(peak_belief) / 100.0, 0.0, 1.0)
+
+	# Weighted average: belief matters most, then reach, then speed.
+	var composite: float = belief_score * 0.45 + reach_score * 0.35 + day_score * 0.20
+	var pct: int = int(composite * 100.0)
+
+	var rating: String
+	var rating_color: Color
+	if not won:
+		rating = "Incomplete"
+		rating_color = C_FAIL
+	elif pct >= 85:
+		rating = "Masterful"
+		rating_color = C_WIN
+	elif pct >= 65:
+		rating = "Competent"
+		rating_color = C_SCORE_NEU
+	elif pct >= 40:
+		rating = "Adequate"
+		rating_color = C_SUBHEADING
+	else:
+		rating = "Narrow"
+		rating_color = C_SCORE_FAIL
+
+	_rating_row = HBoxContainer.new()
+	_rating_row.modulate.a = 0.0   # revealed by count-up tween
+
+	var lbl := Label.new()
+	lbl.text = "Rating"
+	lbl.custom_minimum_size = Vector2(140, 0)
+	lbl.add_theme_color_override("font_color", C_STAT_LABEL)
+	_rating_row.add_child(lbl)
+
+	var val := Label.new()
+	val.text = rating
+	val.add_theme_color_override("font_color", rating_color)
+	val.add_theme_font_size_override("font_size", 15)
+	_rating_row.add_child(val)
+
+	_stats_container.add_child(_rating_row)
+
+
 ## Populate the NPC outcomes right card.
 func _populate_npc_outcomes() -> void:
 	for child in _npc_container.get_children():
@@ -895,6 +954,16 @@ func _start_count_up_tween() -> void:
 		get_tree().create_timer(bonus_delay).timeout.connect(func() -> void:
 			if is_instance_valid(bonus_ref):
 				bonus_ref.modulate = Color.WHITE
+		)
+
+	# SPA-907: Reveal the performance rating row after all stats.
+	if _rating_row != null:
+		var rating_ref: HBoxContainer = _rating_row
+		var rating_delay: float = idx * 0.3 + 0.6
+		get_tree().create_timer(rating_delay).timeout.connect(func() -> void:
+			if is_instance_valid(rating_ref):
+				var rtw := rating_ref.create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+				rtw.tween_property(rating_ref, "modulate:a", 1.0, 0.35)
 		)
 
 	# SPA-784: Start arrow pulse animations after stats are revealed.

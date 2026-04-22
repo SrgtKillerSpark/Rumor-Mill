@@ -32,6 +32,11 @@ var _tutorial_sys_ref: TutorialSystem = null
 
 var _status_label: Label = null
 
+# ── Context header refs ────────────────────────────────────────────────────────
+var _context_scenario_lbl: Label = null
+var _context_day_lbl:      Label = null
+var _context_objective_lbl: Label = null
+
 # ── Slot picker state ──────────────────────────────────────────────────────────
 var _main_container:  VBoxContainer = null   # main menu buttons
 var _slot_container:  VBoxContainer = null   # slot picker panel
@@ -102,6 +107,7 @@ func _open() -> void:
 	if _status_label != null:
 		_status_label.text = ""
 	_hide_slot_picker()
+	_refresh_context_header()
 	# Animate open: fade bg + scale panel in.
 	if _open_tween != null and _open_tween.is_valid():
 		_open_tween.kill()
@@ -153,10 +159,10 @@ func _build_ui() -> void:
 
 	# Centred panel — tall enough for buttons + slot picker + status line.
 	_center_panel = Panel.new()
-	_center_panel.custom_minimum_size = Vector2(300, 460)
+	_center_panel.custom_minimum_size = Vector2(300, 540)
 	_center_panel.set_anchors_preset(Control.PRESET_CENTER)
 	_center_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	_center_panel.pivot_offset = Vector2(150, 230)  # centre of 300x460
+	_center_panel.pivot_offset = Vector2(150, 270)  # centre of 300x540
 	var style := StyleBoxFlat.new()
 	style.bg_color            = Color(0.10, 0.08, 0.06, 0.96)
 	style.border_width_left   = 2
@@ -186,6 +192,30 @@ func _build_ui() -> void:
 	title.add_theme_color_override("font_color", Color(0.90, 0.82, 0.60, 1.0))
 	title.process_mode = Node.PROCESS_MODE_ALWAYS
 	outer_vbox.add_child(title)
+
+	# ── SPA-907: Context header — scenario name, day, objective ────────────
+	_context_scenario_lbl = Label.new()
+	_context_scenario_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_context_scenario_lbl.add_theme_font_size_override("font_size", 14)
+	_context_scenario_lbl.add_theme_color_override("font_color", Color(0.92, 0.78, 0.12, 1.0))
+	_context_scenario_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
+	outer_vbox.add_child(_context_scenario_lbl)
+
+	_context_day_lbl = Label.new()
+	_context_day_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_context_day_lbl.add_theme_font_size_override("font_size", 12)
+	_context_day_lbl.add_theme_color_override("font_color", Color(0.75, 0.65, 0.50, 1.0))
+	_context_day_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
+	outer_vbox.add_child(_context_day_lbl)
+
+	_context_objective_lbl = Label.new()
+	_context_objective_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_context_objective_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_context_objective_lbl.custom_minimum_size = Vector2(240, 0)
+	_context_objective_lbl.add_theme_font_size_override("font_size", 11)
+	_context_objective_lbl.add_theme_color_override("font_color", Color(0.70, 0.65, 0.55, 1.0))
+	_context_objective_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
+	outer_vbox.add_child(_context_objective_lbl)
 
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 4)
@@ -298,6 +328,45 @@ func _on_how_to_play() -> void:
 
 func _on_settings() -> void:
 	_settings_menu.open()
+
+
+## SPA-907: Populate scenario name, day counter, and objective in the header.
+func _refresh_context_header() -> void:
+	if _world_ref == null:
+		if _context_scenario_lbl != null:
+			_context_scenario_lbl.text = ""
+		if _context_day_lbl != null:
+			_context_day_lbl.text = ""
+		if _context_objective_lbl != null:
+			_context_objective_lbl.text = ""
+		return
+
+	# Scenario name
+	if _context_scenario_lbl != null:
+		if _world_ref.scenario_manager != null:
+			_context_scenario_lbl.text = _world_ref.scenario_manager.get_title()
+		else:
+			_context_scenario_lbl.text = ""
+
+	# Day X / Y
+	if _context_day_lbl != null:
+		var day: int = 1
+		if _day_night_ref != null and "current_day" in _day_night_ref:
+			day = _day_night_ref.current_day
+		var days_allowed: int = 0
+		if _world_ref.scenario_manager != null:
+			days_allowed = _world_ref.scenario_manager.get_days_allowed()
+		if days_allowed > 0:
+			_context_day_lbl.text = "Day %d / %d" % [day, days_allowed]
+		else:
+			_context_day_lbl.text = "Day %d" % day
+
+	# Objective one-liner
+	if _context_objective_lbl != null:
+		if _world_ref.scenario_manager != null:
+			_context_objective_lbl.text = _world_ref.scenario_manager.get_objective_one_liner()
+		else:
+			_context_objective_lbl.text = ""
 
 
 func _on_save_game() -> void:

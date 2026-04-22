@@ -635,12 +635,14 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 		diff_badge.add_theme_color_override("font_color", accent_color if not locked else C_MUTED)
 		title_row.add_child(diff_badge)
 
-	# Days label — replaced with lock message when locked.
+	# Days + estimated play time — replaced with lock message when locked.
 	var days_lbl := Label.new()
 	if locked:
 		days_lbl.text = "Locked"
 	else:
-		days_lbl.text = "%d days" % int(sc.get("daysAllowed", 30))
+		var days_val: int = int(sc.get("daysAllowed", 30))
+		var est_mins: int = maxi(days_val * 2, 5)   # ~2 min per in-game day
+		days_lbl.text = "%d days  (~%d min)" % [days_val, est_mins]
 	days_lbl.add_theme_font_size_override("font_size", 12)
 	days_lbl.add_theme_color_override("font_color", C_MUTED)
 	title_row.add_child(days_lbl)
