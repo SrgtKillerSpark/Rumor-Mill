@@ -1047,7 +1047,6 @@ func _spawn_rumor_seed_burst() -> void:
 	var layer := CanvasLayer.new()
 	layer.layer = 20
 	add_child(layer)
-	var vp_size := get_viewport().get_visible_rect().size
 	# Origin near the whisper pip counter (top-left HUD panel area).
 	var origin := Vector2(140.0, 80.0)
 	const GLYPHS: Array = ["✦", "~", "✧", "…", "✦", "~", "✧", "…", "✦", "~", "✧", "…"]
