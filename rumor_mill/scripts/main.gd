@@ -1897,6 +1897,7 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 							return
 						if _tutorial_banner != null and not _banner_seed_fired:
 							_tutorial_banner.queue_hint("hint_rumour_panel")
+							_banner_hint06_fired = true  # SPA-942: prevent Day-2 tick double-fire
 						# SPA-626: Auto-open Rumour Panel after first eavesdrop (4 s delay).
 						if is_instance_valid(rumor_panel) and rumor_panel.panel != null and not rumor_panel.panel.visible and not _banner_seed_fired:
 							rumor_panel.toggle()
@@ -1939,12 +1940,13 @@ func _on_s1_valid_eavesdrop_hovered() -> void:
 
 
 func _on_s1_game_tick(tick: int) -> void:
-	# HINT-06: fire at day 2 (tick 24) if tokens exist, player has eavesdropped, and no rumour seeded.
-	# Gating on _banner_eavesdrop_gate ensures the player has gathered intel before being nudged
-	# toward the Rumour Panel — avoids an arbitrary first seed choice (SPA-170 recommendation).
+	# HINT-06: fire at day 2 (tick 24) as a fallback if player has tokens but hasn't yet been
+	# nudged toward the Rumour Panel. Primary trigger is the post-eavesdrop 4-s timer above
+	# (SPA-537), which sets _banner_hint06_fired. This Day-2 path fires unconditionally so
+	# players who skipped eavesdropping still receive the craft-rumour nudge (SPA-942).
 	if tick >= 24 and not _banner_hint06_fired and _tutorial_banner != null and not _banner_seed_fired:
 		var intel: PlayerIntelStore = world.intel_store
-		if intel != null and intel.whisper_tokens_remaining >= 1 and _banner_eavesdrop_gate:
+		if intel != null and intel.whisper_tokens_remaining >= 1:
 			_banner_hint06_fired = true
 			_tutorial_banner.queue_hint("hint_rumour_panel")
 
