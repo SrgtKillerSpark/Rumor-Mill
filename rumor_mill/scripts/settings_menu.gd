@@ -232,7 +232,7 @@ func _build_ui() -> void:
 		_btn_controls, btn_back,
 	]
 	for i in focus_list.size():
-		var prev_idx: int = (i - 1) % focus_list.size()
+		var prev_idx: int = (i - 1 + focus_list.size()) % focus_list.size()
 		var next_idx: int = (i + 1) % focus_list.size()
 		focus_list[i].focus_neighbor_top    = focus_list[prev_idx].get_path()
 		focus_list[i].focus_neighbor_bottom = focus_list[next_idx].get_path()
