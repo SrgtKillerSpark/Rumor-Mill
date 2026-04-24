@@ -15,6 +15,9 @@
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
 ##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text (SPA-981)
 ##   • TestWorld                  — tile/grid constants, faction schedules, initial state (SPA-981)
+##   • TestAudioManager           — constants, phase detection, ambient state, dialogue duck, tension flags (SPA-982)
+##   • TestTransitionManager      — initial state, _kill_tween guard, layer default (SPA-982)
+##   • TestDailyPlanningOverlay   — priorities, counters, save/load round-trip, dawn handling, eval (SPA-982)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -59,5 +62,14 @@ func _init() -> void:
 
 	print("\n── World ──")
 	TestWorld.run()
+
+	print("\n── AudioManager ──")
+	TestAudioManager.run()
+
+	print("\n── TransitionManager ──")
+	TestTransitionManager.run()
+
+	print("\n── DailyPlanningOverlay ──")
+	TestDailyPlanningOverlay.run()
 
 	print("\n=== All suites complete ===")
