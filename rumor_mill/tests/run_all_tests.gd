@@ -11,6 +11,10 @@
 ##   • TestAchievementManager     — unlock/query API and static definition table (SPA-964)
 ##   • TestFactionEventSystem     — scheduling, activation, effects, expiry, hotspots, foreshadow, serialization (SPA-965)
 ##   • TestSpa970976Regressions   — regression guard for SPA-970/974/975/976 bug fix batch (SPA-985)
+##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
+##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
+##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text (SPA-981)
+##   • TestWorld                  — tile/grid constants, faction schedules, initial state (SPA-981)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -43,5 +47,17 @@ func _init() -> void:
 
 	print("\n── SPA-970..976 Regressions ──")
 	TestSpa970976Regressions.run()
+
+	print("\n── TutorialSystem ──")
+	TestTutorialSystem.run()
+
+	print("\n── TutorialController ──")
+	TestTutorialController.run()
+
+	print("\n── SuggestionEngine ──")
+	TestSuggestionEngine.run()
+
+	print("\n── World ──")
+	TestWorld.run()
 
 	print("\n=== All suites complete ===")
