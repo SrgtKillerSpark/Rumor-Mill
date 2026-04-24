@@ -168,6 +168,7 @@ static func save_game(
 
 	var path := save_path(world.active_scenario_id, slot)
 	var tmp_path := path + ".tmp"
+	var bak_path := path + ".bak"
 	var f := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if f == null:
 		return "Failed to open '%s' for writing (error %d)." % [
@@ -178,6 +179,12 @@ static func save_game(
 	dir = DirAccess.open("user://")
 	if dir == null:
 		return "Failed to open user:// for atomic rename (error %d)." % DirAccess.get_open_error()
+	# Keep a .bak of the previous save so it can be recovered if the new write is corrupt.
+	if FileAccess.file_exists(path):
+		# Best-effort: backup failure should not block saving.
+		var _bak_err := dir.rename(path, bak_path)
+		if _bak_err != OK:
+			push_warning("save_manager: could not create backup '%s' (error %d) — continuing" % [bak_path, _bak_err])
 	var rename_err := dir.rename(tmp_path, path)
 	if rename_err != OK:
 		return "Failed to rename temp save to '%s' (error %d)." % [path, rename_err]
@@ -229,6 +236,17 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 		var migration_err := _migrate_save_data(parsed, ver)
 		if migration_err != "":
 			return migration_err
+
+	# Validate that essential top-level keys exist so apply_pending_load() won't crash.
+	var required_keys := ["scenario_id", "tick", "day"]
+	for key in required_keys:
+		if not parsed.has(key):
+			return "Save file is corrupted (missing required key '%s')." % key
+
+	# Warn if the scenario_id inside the file doesn't match what was requested.
+	var file_scenario: String = str(parsed.get("scenario_id", ""))
+	if file_scenario != "" and file_scenario != scenario_id:
+		push_warning("save_manager: save file contains scenario_id '%s' but was loaded for '%s'" % [file_scenario, scenario_id])
 
 	_pending_load_data = parsed
 	return ""
@@ -290,7 +308,10 @@ static func apply_pending_load(
 	_restore_faction_event_system(world.faction_event_system, data.get("faction_event_system", {}))
 	world._socially_dead_ids.clear()
 	for npc_id in data.get("socially_dead_ids", []):
-		world._socially_dead_ids[npc_id] = true
+		if npc_id == null:
+			push_warning("save_manager: socially_dead_ids contains null — skipped")
+			continue
+		world._socially_dead_ids[str(npc_id)] = true
 	var _timeline_data: Variant = data.get("timeline", [])
 	if journal != null and journal.has_method("restore_timeline") and _timeline_data is Array:
 		journal.restore_timeline(_timeline_data)
@@ -299,7 +320,12 @@ static func apply_pending_load(
 		journal.restore_milestones(_milestone_data)
 	_restore_tutorial(tutorial_sys, data.get("tutorial_progress", {}))
 	if world.milestone_tracker != null:
-		world.milestone_tracker._fired = data.get("milestone_fired", {}).duplicate()
+		var _mf_raw: Variant = data.get("milestone_fired", {})
+		if _mf_raw is Dictionary:
+			world.milestone_tracker._fired = _mf_raw.duplicate()
+		else:
+			push_warning("save_manager: milestone_fired is not a Dictionary — using empty default")
+			world.milestone_tracker._fired = {}
 	_restore_daily_planning(world, data.get("daily_planning", {}))
 	# Rebuild reputation cache after all systems (including FactionEventSystem) are
 	# restored so that active event bonuses (e.g. religious_festival +10) are included.
@@ -525,21 +551,27 @@ static func _serialize_guild_defense_agent(gda: GuildDefenseAgent) -> Dictionary
 # ── Restoration ───────────────────────────────────────────────────────────────
 
 static func _restore_day_night(dn: Node, data: Dictionary) -> void:
+	if dn == null:
+		return
 	dn.current_tick = int(data.get("tick", 0))
 	dn.current_day  = int(data.get("day",  1))
 
 
 static func _restore_social_graph(sg: SocialGraph, d: Dictionary) -> void:
-	if d.is_empty():
+	if sg == null or d.is_empty():
 		return
-	sg.edges           = d.get("edges",          {}).duplicate(true)
-	sg._mutation_log   = d.get("mutation_log",   []).duplicate(true)
-	sg._mutation_count = d.get("mutation_count", {}).duplicate(true)
-	sg._net_mutations  = d.get("net_mutations",  {}).duplicate(true)
+	var _edges: Variant = d.get("edges", {})
+	sg.edges           = (_edges if _edges is Dictionary else {}).duplicate(true)
+	var _mlog: Variant = d.get("mutation_log", [])
+	sg._mutation_log   = (_mlog if _mlog is Array else []).duplicate(true)
+	var _mcount: Variant = d.get("mutation_count", {})
+	sg._mutation_count = (_mcount if _mcount is Dictionary else {}).duplicate(true)
+	var _nmut: Variant = d.get("net_mutations", {})
+	sg._net_mutations  = (_nmut if _nmut is Dictionary else {}).duplicate(true)
 
 
 static func _restore_propagation(pe: PropagationEngine, d: Dictionary) -> void:
-	if d.is_empty():
+	if pe == null or d.is_empty():
 		return
 	pe.live_rumors.clear()
 	for rid in d.get("live_rumors", {}):
@@ -617,7 +649,7 @@ static func _restore_npc_slots(
 
 
 static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void:
-	if d.is_empty():
+	if store == null or d.is_empty():
 		return
 	store.recon_actions_remaining  = int(d.get("recon_actions_remaining",  PlayerIntelStore.MAX_DAILY_ACTIONS))
 	store.whisper_tokens_remaining = int(d.get("whisper_tokens_remaining", PlayerIntelStore.MAX_DAILY_WHISPERS))
@@ -684,7 +716,7 @@ static func _restore_reputation(rs: ReputationSystem, d: Dictionary) -> void:
 
 
 static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> void:
-	if d.is_empty():
+	if sm == null or d.is_empty():
 		return
 	sm.scenario_1_state   = int(d.get("scenario_1_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.scenario_2_state   = int(d.get("scenario_2_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
