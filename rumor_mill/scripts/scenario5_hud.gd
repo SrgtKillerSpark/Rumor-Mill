@@ -99,7 +99,7 @@ func _build_ui() -> void:
 	title_lbl.text = "Scenario 5:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
-	title_lbl.tooltip_text = "The Election — get Aldric Vane elected alderman. He must reach 65+ and be highest; both rivals below 45."
+	title_lbl.tooltip_text = "The Election — get Aldric Vane elected alderman. He must reach %d+ and be highest; both rivals below %d." % [ScenarioManager.S5_WIN_ALDRIC_MIN, ScenarioManager.S5_WIN_RIVALS_MAX]
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
 
@@ -185,7 +185,7 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "Aldric: 65+ & highest | Rivals: <45"
+	legend_lbl.text = "Aldric: %d+ & highest | Rivals: <%d" % [ScenarioManager.S5_WIN_ALDRIC_MIN, ScenarioManager.S5_WIN_RIVALS_MAX]
 	right_vbox.add_child(legend_lbl)
 
 	_endorse_lbl = Label.new()

@@ -85,7 +85,7 @@ func _build_ui() -> void:
 	title_lbl.text = "Scenario 6:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
-	title_lbl.tooltip_text = "The Merchant's Debt — expose Aldric Vane (rep ≤ 30) while protecting Marta Coin (rep ≥ 62). Heat ceiling is 55."
+	title_lbl.tooltip_text = "The Merchant's Debt — expose Aldric Vane (rep \u2264 %d) while protecting Marta Coin (rep \u2265 %d). Heat ceiling is %d." % [ScenarioManager.S6_WIN_ALDRIC_MAX, ScenarioManager.S6_WIN_MARTA_MIN, int(ScenarioManager.S6_EXPOSED_HEAT)]
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
 
@@ -98,7 +98,7 @@ func _build_ui() -> void:
 	_aldric_score_lbl.add_theme_font_size_override("font_size", 11)
 	_aldric_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_aldric_score_lbl.text = "Aldric Vane  Rep: 55 / 100  Target: \u226430"
-	_aldric_score_lbl.tooltip_text = "Aldric Vane's reputation. Win condition: drag to 30 or below to expose his embezzlement."
+	_aldric_score_lbl.tooltip_text = "Aldric Vane's reputation. Win condition: drag to %d or below to expose his embezzlement." % ScenarioManager.S6_WIN_ALDRIC_MAX
 	_aldric_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_text_outline(_aldric_score_lbl)
 	aldric_vbox.add_child(_aldric_score_lbl)
@@ -118,7 +118,7 @@ func _build_ui() -> void:
 	_marta_score_lbl.add_theme_font_size_override("font_size", 11)
 	_marta_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_marta_score_lbl.text = "Marta Coin  Rep: 52 / 100  Target: 60+"
-	_marta_score_lbl.tooltip_text = "Marta Coin's reputation. Win condition: keep at 62 or above. Below 30 = instant fail (she's been silenced)."
+	_marta_score_lbl.tooltip_text = "Marta Coin's reputation. Win condition: keep at %d or above. Below %d = instant fail (she's been silenced)." % [ScenarioManager.S6_WIN_MARTA_MIN, ScenarioManager.S6_FAIL_MARTA_BELOW]
 	_marta_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_text_outline(_marta_score_lbl)
 	marta_vbox.add_child(_marta_score_lbl)
@@ -138,13 +138,13 @@ func _build_ui() -> void:
 	_heat_lbl.add_theme_font_size_override("font_size", 11)
 	_heat_lbl.add_theme_color_override("font_color", C_BODY)
 	_heat_lbl.text = "Heat: 0 / 55"
-	_heat_lbl.tooltip_text = "Your suspicion level. Guards are on Aldric's payroll — exposure threshold is 55 (not the usual 80). Keep it low."
+	_heat_lbl.tooltip_text = "Your suspicion level. Guards are on Aldric's payroll — exposure threshold is %d (not the usual 80). Keep it low." % int(ScenarioManager.S6_EXPOSED_HEAT)
 	_heat_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_text_outline(_heat_lbl)
 	heat_vbox.add_child(_heat_lbl)
 
 	var heat_pair := _make_progress_bar(BAR_WIDTH, BAR_HEIGHT,
-		"Heat gauge. At 55, the Guard Captain exposes you. Route rumors through non-merchant channels to stay hidden.")
+		"Heat gauge. At %d, the Guard Captain exposes you. Route rumors through non-merchant channels to stay hidden." % int(ScenarioManager.S6_EXPOSED_HEAT))
 	_heat_bar_bg = heat_pair[0]
 	_heat_bar    = heat_pair[1]
 	heat_vbox.add_child(_heat_bar_bg)
@@ -171,7 +171,7 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "Aldric: \u226430 | Marta: 62+ | Heat: <55"
+	legend_lbl.text = "Aldric: \u2264%d | Marta: %d+ | Heat: <%d" % [ScenarioManager.S6_WIN_ALDRIC_MAX, ScenarioManager.S6_WIN_MARTA_MIN, int(ScenarioManager.S6_EXPOSED_HEAT)]
 	right_vbox.add_child(legend_lbl)
 
 	# ── Guild defense status ──────────────────────────────────────────────────
@@ -285,8 +285,8 @@ func _refresh() -> void:
 	else:
 		_marta_bar.color = C_FAIL
 
-	# Heat bar: lower is better, ceiling at 60.
-	# Spec thresholds: yellow@30, orange@40, red@50.
+	# Heat bar: lower is better, ceiling at 55 (S6_EXPOSED_HEAT).
+	# Spec thresholds: yellow below 40, orange@40, red@50.
 	var heat_ratio: float = clamp(max_heat / heat_ceil, 0.0, 1.0) if heat_ceil > 0 else 0.0
 	_heat_bar.custom_minimum_size.x = BAR_WIDTH * heat_ratio
 	if max_heat >= 50.0:

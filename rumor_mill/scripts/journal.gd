@@ -1847,10 +1847,10 @@ func _build_objectives_section() -> void:
 		+ "  Marta Coin:   %s / 100  \u2014 %s\n"
 		+ "  Heat ceiling: %d  (guards on Aldric's payroll)"
 	) % [sm.S6_WIN_ALDRIC_MAX if sm != null else 30,
-		sm.S6_WIN_MARTA_MIN if sm != null else 60, s6_win_status,
+		sm.S6_WIN_MARTA_MIN if sm != null else 62, s6_win_status,
 		aldric_s6_str, aldric_s6_band,
 		marta_score_str, marta_band_str,
-		int(sm.S6_EXPOSED_HEAT) if sm != null else 60]
+		int(sm.S6_EXPOSED_HEAT) if sm != null else 55]
 	s6_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s6_win_body.add_theme_font_size_override("font_size", 12)
 	s6_win_body.add_theme_color_override("font_color", s6_win_color)
@@ -1870,7 +1870,7 @@ func _build_objectives_section() -> void:
 		+ "  [ ] Heat reaches %d  (exposed by guards)\n"
 		+ "  [ ] %d days elapsed without meeting both targets  (days remaining: %d)"
 	) % [sm.S6_FAIL_MARTA_BELOW if sm != null else 30,
-		int(sm.S6_EXPOSED_HEAT) if sm != null else 60,
+		int(sm.S6_EXPOSED_HEAT) if sm != null else 55,
 		S6_DAYS, s6_days_remaining]
 	s6_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s6_fail_body.add_theme_font_size_override("font_size", 12)

@@ -782,7 +782,7 @@ func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 	if aldric == null or marta == null:
 		return
 
-	# WIN: Aldric <= 30 AND Marta >= 60.
+	# WIN: Aldric <= 30 AND Marta >= 62 (S6_WIN_ALDRIC_MAX / S6_WIN_MARTA_MIN).
 	if aldric.score <= S6_WIN_ALDRIC_MAX and marta.score >= S6_WIN_MARTA_MIN:
 		scenario_6_state = ScenarioState.WON
 		scenario_resolved.emit(6, ScenarioState.WON)
