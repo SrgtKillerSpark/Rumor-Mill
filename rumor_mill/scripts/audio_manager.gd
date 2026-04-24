@@ -108,6 +108,7 @@ const SFX_FILES: Dictionary = {
 	"reputation_shift":   "sfx/reputation_shift.wav",
 	"victory_chime":      "sfx/victory_chime.wav",
 	"failure_bell":       "sfx/failure_bell.wav",
+	"event_sting":        "sfx/event_sting.wav",
 }
 
 # ── State ──────────────────────────────────────────────────────────────────────

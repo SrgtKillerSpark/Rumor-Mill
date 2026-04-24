@@ -14,43 +14,214 @@
       "timeout": "The autumn tax rolls were signed. Lord Edric Fenn's seal was already dry.\n\nSomewhere the story you planted still traveled — changed, embellished, half-forgotten. But the window had closed. Your patron's patience had not."
     },
     "edgeOverrides": [
-      { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
-      { "npcA": "edric_fenn",       "npcB": "calder_fenn",      "weightAtoB": 0.70, "weightBtoA": 0.80 },
-      { "npcA": "edric_fenn",       "npcB": "isolde_fenn",      "weightAtoB": 0.75, "weightBtoA": 0.80 },
-      { "npcA": "edric_fenn",       "npcB": "annit_scribe",     "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "edric_fenn",       "npcB": "tomas_reeve",      "weightAtoB": 0.55, "weightBtoA": 0.50 },
-      { "npcA": "bram_guard",       "npcB": "wynn_gate",        "weightAtoB": 0.70, "weightBtoA": 0.60 },
-      { "npcA": "bram_guard",       "npcB": "pell_gate",        "weightAtoB": 0.55, "weightBtoA": 0.35 },
-      { "npcA": "calder_fenn",      "npcB": "pell_gate",        "weightAtoB": 0.50, "weightBtoA": 0.55 },
-      { "npcA": "old_hugh",         "npcB": "edric_fenn",       "weightAtoB": 0.40, "weightBtoA": 0.30 },
-      { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.75, "weightBtoA": 0.70 },
-      { "npcA": "aldric_vane",      "npcB": "rufus_bolt",       "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "aldric_vane",      "npcB": "bess_wicker",      "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "sybil_oats",       "npcB": "nell_picker",      "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "sybil_oats",       "npcB": "cob_farrow",       "weightAtoB": 0.60, "weightBtoA": 0.70 },
-      { "npcA": "nell_picker",      "npcB": "greta_flint",      "weightAtoB": 0.75, "weightBtoA": 0.75 },
-      { "npcA": "greta_flint",      "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.70 },
-      { "npcA": "marta_coin",       "npcB": "sim_carter",       "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "idris_kemp",       "npcB": "bess_wicker",      "weightAtoB": 0.50, "weightBtoA": 0.50 },
-      { "npcA": "aldous_prior",     "npcB": "maren_nun",        "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "aldous_prior",     "npcB": "finn_monk",        "weightAtoB": 0.60, "weightBtoA": 0.80 },
-      { "npcA": "aldous_prior",     "npcB": "old_piety",        "weightAtoB": 0.55, "weightBtoA": 0.70 },
-      { "npcA": "maren_nun",        "npcB": "vera_midwife",     "weightAtoB": 0.70, "weightBtoA": 0.65 },
-      { "npcA": "finn_monk",        "npcB": "constance_widow",  "weightAtoB": 0.65, "weightBtoA": 0.70 },
-      { "npcA": "finn_monk",        "npcB": "old_piety",        "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "jude_bellringer",  "npcB": "aldous_prior",     "weightAtoB": 0.50, "weightBtoA": 0.40 },
-      { "npcA": "thomas_pilgrim",   "npcB": "finn_monk",        "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "alys_herbwife",    "npcB": "maren_nun",        "weightAtoB": 0.60, "weightBtoA": 0.55 },
-      { "npcA": "edric_fenn",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.30 },
-      { "npcA": "edric_fenn",       "npcB": "aldous_prior",     "weightAtoB": 0.50, "weightBtoA": 0.45 },
-      { "npcA": "bram_guard",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.40 },
-      { "npcA": "vera_midwife",     "npcB": "nell_picker",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
-      { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.40, "weightBtoA": 0.35 }
+      {
+        "npcA": "edric_fenn",
+        "npcB": "bram_guard",
+        "weightAtoB": 0.9,
+        "weightBtoA": 0.85
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "calder_fenn",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "isolde_fenn",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "annit_scribe",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "tomas_reeve",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "wynn_gate",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "pell_gate",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.35
+      },
+      {
+        "npcA": "calder_fenn",
+        "npcB": "pell_gate",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "old_hugh",
+        "npcB": "edric_fenn",
+        "weightAtoB": 0.4,
+        "weightBtoA": 0.3
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "sybil_oats",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "rufus_bolt",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "bess_wicker",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "cob_farrow",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "nell_picker",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "greta_flint",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "marta_coin",
+        "npcB": "sim_carter",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "idris_kemp",
+        "npcB": "bess_wicker",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "old_piety",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "maren_nun",
+        "npcB": "vera_midwife",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "old_piety",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "jude_bellringer",
+        "npcB": "aldous_prior",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "thomas_pilgrim",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "alys_herbwife",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.3
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldous_prior",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.45
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "vera_midwife",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "denny_gravedigger",
+        "npcB": "old_hugh",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "marta_coin",
+        "weightAtoB": 0.4,
+        "weightBtoA": 0.35
+      }
     ],
     "personalityOverrides": [
-      { "npcId": "edric_fenn", "loyalty": 0.70 },
-      { "npcId": "bram_guard", "loyalty": 0.60 }
+      {
+        "npcId": "edric_fenn",
+        "loyalty": 0.7
+      },
+      {
+        "npcId": "bram_guard",
+        "loyalty": 0.6
+      }
     ],
     "startingReputations": {},
     "strategicBrief": {
@@ -80,17 +251,50 @@
       "timeout": "The story needs more time to root. Seed through well-connected NPCs like merchants — they spread further and faster. Plant rumors early so they have days to compound."
     },
     "milestoneToasts": [
-      { "threshold": 0.10, "message": "The first whispers take hold..." },
-      { "threshold": 0.20, "message": "Word is spreading through the market." },
-      { "threshold": 0.25, "message": "The whispers are taking hold — Edric's name is tarnished." },
-      { "threshold": 0.30, "message": "More tongues are wagging. Edric feels it." },
-      { "threshold": 0.40, "message": "His allies grow uneasy." },
-      { "threshold": 0.50, "message": "His reputation is cracking. Keep pushing." },
-      { "threshold": 0.60, "message": "The town is turning against him." },
-      { "threshold": 0.70, "message": "Edric's supporters are abandoning ship." },
-      { "threshold": 0.75, "message": "Almost there — one more push and Edric falls." },
-      { "threshold": 0.80, "message": "He's nearly finished. Don't stop now." },
-      { "threshold": 0.90, "message": "The end is in sight — deliver the final blow." }
+      {
+        "threshold": 0.1,
+        "message": "The first whispers take hold..."
+      },
+      {
+        "threshold": 0.2,
+        "message": "Word is spreading through the market."
+      },
+      {
+        "threshold": 0.25,
+        "message": "The whispers are taking hold — Edric's name is tarnished."
+      },
+      {
+        "threshold": 0.3,
+        "message": "More tongues are wagging. Edric feels it."
+      },
+      {
+        "threshold": 0.4,
+        "message": "His allies grow uneasy."
+      },
+      {
+        "threshold": 0.5,
+        "message": "His reputation is cracking. Keep pushing."
+      },
+      {
+        "threshold": 0.6,
+        "message": "The town is turning against him."
+      },
+      {
+        "threshold": 0.7,
+        "message": "Edric's supporters are abandoning ship."
+      },
+      {
+        "threshold": 0.75,
+        "message": "Almost there — one more push and Edric falls."
+      },
+      {
+        "threshold": 0.8,
+        "message": "He's nearly finished. Don't stop now."
+      },
+      {
+        "threshold": 0.9,
+        "message": "The end is in sight — deliver the final blow."
+      }
     ],
     "midGameEvents": [
       {
@@ -105,9 +309,20 @@
             "label": "Circulate the ledger through the market",
             "outcomeText": "The ledger passes from hand to hand. By evening, half the market quarter is whispering about Edric's accounts. But the Guard Captain is asking questions about where the document came from.",
             "effects": {
-              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -5 }],
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 15.0 }]
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -5
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 15
+                }
+              ]
+            },
+            "choicePreview": "Bold — damages his reputation but draws guard attention"
           },
           {
             "label": "Use it as leverage — keep it quiet for now",
@@ -115,8 +330,15 @@
             "effects": {
               "bonusReconActions": 2,
               "bonusReconDays": 3,
-              "personalityChanges": [{ "npcId": "edric_fenn", "trait": "loyalty", "delta": -0.15 }]
-            }
+              "personalityChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "trait": "loyalty",
+                  "delta": -0.15
+                }
+              ]
+            },
+            "choicePreview": "Cautious — gains recon advantage but weakens his loyalty slowly"
           }
         ]
       },
@@ -125,7 +347,7 @@
         "name": "The Feast Invitation",
         "dayWindowStart": 18,
         "dayWindowEnd": 22,
-        "probability": 0.60,
+        "probability": 0.6,
         "description": "Lord Edric has announced a public feast at the Manor — roast boar, Rhenish wine, and speeches about his nine years of service. It is a transparent attempt to shore up his reputation. How do you respond?",
         "choices": [
           {
@@ -134,20 +356,41 @@
             "effects": {
               "bonusReconActions": 3,
               "bonusReconDays": 2,
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 10.0 }]
-            }
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 10
+                }
+              ]
+            },
+            "choicePreview": "Risky — extra intelligence but increases guard suspicion"
           },
           {
             "label": "Spread word the feast is a bribe",
             "outcomeText": "By the time the first course is served, the story has already changed. 'A feast for the town,' they say, 'or a feast to buy silence?' The nobles shift uncomfortably in their seats.",
             "effects": {
-              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -3 }],
+              "reputationChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -3
+                }
+              ],
               "credulityChanges": [
-                { "npcId": "isolde_fenn", "delta": 0.10 },
-                { "npcId": "calder_fenn", "delta": 0.10 },
-                { "npcId": "annit_scribe", "delta": 0.10 }
+                {
+                  "npcId": "isolde_fenn",
+                  "delta": 0.1
+                },
+                {
+                  "npcId": "calder_fenn",
+                  "delta": 0.1
+                },
+                {
+                  "npcId": "annit_scribe",
+                  "delta": 0.1
+                }
               ]
-            }
+            },
+            "choicePreview": "Subtle — erodes reputation and makes allies more gullible"
           }
         ]
       },
@@ -156,20 +399,39 @@
         "name": "The Midnight Meeting",
         "dayWindowStart": 13,
         "dayWindowEnd": 17,
-        "probability": 0.60,
+        "probability": 0.6,
         "description": "A servant at the Manor has tipped you off: Edric Fenn is meeting a creditor from the capital tonight, behind closed doors. The meeting concerns debts he has kept hidden from the town council. You have a narrow window to act.",
         "choices": [
           {
             "label": "Eavesdrop and spread what you overhear",
             "outcomeText": "You press your ear to the wall of the lesser hall. The numbers are damning — Edric owes more than the town's annual tithe. By morning, two of his closest allies are having second thoughts. But the guard patrols have tightened around the Manor.",
             "effects": {
-              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -4 }],
-              "personalityChanges": [
-                { "npcId": "annit_scribe", "trait": "loyalty", "delta": -0.10 },
-                { "npcId": "isolde_fenn", "trait": "loyalty", "delta": -0.10 }
+              "reputationChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -4
+                }
               ],
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 12.0 }]
-            }
+              "personalityChanges": [
+                {
+                  "npcId": "annit_scribe",
+                  "trait": "loyalty",
+                  "delta": -0.1
+                },
+                {
+                  "npcId": "isolde_fenn",
+                  "trait": "loyalty",
+                  "delta": -0.1
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 12
+                }
+              ]
+            },
+            "choicePreview": "Aggressive — hurts reputation and loyalty but raises heat"
           },
           {
             "label": "Bribe the servant for details instead",
@@ -177,8 +439,14 @@
             "effects": {
               "bonusReconActions": 2,
               "bonusReconDays": 2,
-              "injectRumor": { "claimType": "scandal", "subjectNpcId": "edric_fenn", "intensity": 2, "targetFaction": "merchant" }
-            }
+              "injectRumor": {
+                "claimType": "scandal",
+                "subjectNpcId": "edric_fenn",
+                "intensity": 2,
+                "targetFaction": "merchant"
+              }
+            },
+            "choicePreview": "Quiet — gains intel and contacts without raising heat"
           }
         ]
       }
@@ -186,9 +454,9 @@
     "difficultyModifiers": {
       "easy": {
         "daysAllowedOverride": 36,
-        "credulityDelta": 0.10,
+        "credulityDelta": 0.1,
         "heatRateMultiplier": 0.75,
-        "exposedHeatOverride": 95.0,
+        "exposedHeatOverride": 95,
         "designNote": "More time, more gullible NPCs, and a higher heat ceiling give new players room to experiment with the rumor system."
       },
       "normal": {
@@ -196,18 +464,24 @@
       },
       "hard": {
         "daysAllowedOverride": 25,
-        "credulityDelta": -0.10,
-        "heatRateMultiplier": 1.30,
-        "exposedHeatOverride": 65.0,
+        "credulityDelta": -0.1,
+        "heatRateMultiplier": 1.3,
+        "exposedHeatOverride": 65,
         "personalityOverrides": [
-          { "npcId": "edric_fenn", "loyalty": 0.85 },
-          { "npcId": "bram_guard", "loyalty": 0.75 }
+          {
+            "npcId": "edric_fenn",
+            "loyalty": 0.85
+          },
+          {
+            "npcId": "bram_guard",
+            "loyalty": 0.75
+          }
         ],
         "designNote": "Fewer days, skeptical NPCs, faster heat. Edric and Bram are harder to crack — requires precise rumor routing through low-loyalty intermediaries."
       }
     },
     "suggestion_overrides": {
-      "heat_spike_threshold": 60.0,
+      "heat_spike_threshold": 60,
       "category_priorities": []
     }
   },
@@ -226,44 +500,220 @@
       "timeout": "The autumn market closed without incident. Alys the Herb-Wife was still there on the last day, packing her unsold stock slowly, in no hurry at all.\n\nThe Midwife's customers had not come back. The twenty days were gone."
     },
     "edgeOverrides": [
-      { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
-      { "npcA": "edric_fenn",       "npcB": "calder_fenn",      "weightAtoB": 0.70, "weightBtoA": 0.80 },
-      { "npcA": "edric_fenn",       "npcB": "isolde_fenn",      "weightAtoB": 0.75, "weightBtoA": 0.80 },
-      { "npcA": "edric_fenn",       "npcB": "annit_scribe",     "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "edric_fenn",       "npcB": "tomas_reeve",      "weightAtoB": 0.55, "weightBtoA": 0.50 },
-      { "npcA": "bram_guard",       "npcB": "wynn_gate",        "weightAtoB": 0.70, "weightBtoA": 0.60 },
-      { "npcA": "bram_guard",       "npcB": "pell_gate",        "weightAtoB": 0.55, "weightBtoA": 0.35 },
-      { "npcA": "calder_fenn",      "npcB": "pell_gate",        "weightAtoB": 0.50, "weightBtoA": 0.55 },
-      { "npcA": "old_hugh",         "npcB": "edric_fenn",       "weightAtoB": 0.40, "weightBtoA": 0.30 },
-      { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.75, "weightBtoA": 0.70 },
-      { "npcA": "aldric_vane",      "npcB": "rufus_bolt",       "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "aldric_vane",      "npcB": "bess_wicker",      "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "sybil_oats",       "npcB": "nell_picker",      "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "sybil_oats",       "npcB": "cob_farrow",       "weightAtoB": 0.60, "weightBtoA": 0.70 },
-      { "npcA": "nell_picker",      "npcB": "greta_flint",      "weightAtoB": 0.75, "weightBtoA": 0.75 },
-      { "npcA": "greta_flint",      "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.70 },
-      { "npcA": "marta_coin",       "npcB": "sim_carter",       "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "idris_kemp",       "npcB": "bess_wicker",      "weightAtoB": 0.50, "weightBtoA": 0.50 },
-      { "npcA": "aldous_prior",     "npcB": "maren_nun",        "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "aldous_prior",     "npcB": "finn_monk",        "weightAtoB": 0.60, "weightBtoA": 0.80 },
-      { "npcA": "aldous_prior",     "npcB": "old_piety",        "weightAtoB": 0.55, "weightBtoA": 0.70 },
-      { "npcA": "maren_nun",        "npcB": "vera_midwife",     "weightAtoB": 0.70, "weightBtoA": 0.65 },
-      { "npcA": "finn_monk",        "npcB": "constance_widow",  "weightAtoB": 0.65, "weightBtoA": 0.70 },
-      { "npcA": "finn_monk",        "npcB": "old_piety",        "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "jude_bellringer",  "npcB": "aldous_prior",     "weightAtoB": 0.50, "weightBtoA": 0.40 },
-      { "npcA": "thomas_pilgrim",   "npcB": "finn_monk",        "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "alys_herbwife",    "npcB": "maren_nun",        "weightAtoB": 0.35, "weightBtoA": 0.30 },
-      { "npcA": "alys_herbwife",    "npcB": "vera_midwife",     "weightAtoB": 0.25, "weightBtoA": 0.20 },
-      { "npcA": "edric_fenn",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.30 },
-      { "npcA": "edric_fenn",       "npcB": "aldous_prior",     "weightAtoB": 0.50, "weightBtoA": 0.45 },
-      { "npcA": "bram_guard",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.40 },
-      { "npcA": "vera_midwife",     "npcB": "nell_picker",      "weightAtoB": 0.70, "weightBtoA": 0.65 },
-      { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
-      { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.40, "weightBtoA": 0.35 }
+      {
+        "npcA": "edric_fenn",
+        "npcB": "bram_guard",
+        "weightAtoB": 0.9,
+        "weightBtoA": 0.85
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "calder_fenn",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "isolde_fenn",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "annit_scribe",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "tomas_reeve",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "wynn_gate",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "pell_gate",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.35
+      },
+      {
+        "npcA": "calder_fenn",
+        "npcB": "pell_gate",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "old_hugh",
+        "npcB": "edric_fenn",
+        "weightAtoB": 0.4,
+        "weightBtoA": 0.3
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "sybil_oats",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "rufus_bolt",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "bess_wicker",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "cob_farrow",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "nell_picker",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "greta_flint",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "marta_coin",
+        "npcB": "sim_carter",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "idris_kemp",
+        "npcB": "bess_wicker",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "old_piety",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "maren_nun",
+        "npcB": "vera_midwife",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "old_piety",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "jude_bellringer",
+        "npcB": "aldous_prior",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "thomas_pilgrim",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "alys_herbwife",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.3
+      },
+      {
+        "npcA": "alys_herbwife",
+        "npcB": "vera_midwife",
+        "weightAtoB": 0.25,
+        "weightBtoA": 0.2
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.3
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldous_prior",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.45
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "vera_midwife",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "denny_gravedigger",
+        "npcB": "old_hugh",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "marta_coin",
+        "weightAtoB": 0.4,
+        "weightBtoA": 0.35
+      }
     ],
     "personalityOverrides": [
-      { "npcId": "alys_herbwife", "temperament": 0.55 },
-      { "npcId": "maren_nun", "credulity": 0.20 }
+      {
+        "npcId": "alys_herbwife",
+        "temperament": 0.55
+      },
+      {
+        "npcId": "maren_nun",
+        "credulity": 0.2
+      }
     ],
     "startingReputations": {},
     "strategicBrief": {
@@ -293,17 +743,50 @@
       "timeout": "Seven believers takes steady seeding. Focus on the most credulous NPCs first, then let the chain spread naturally. Use evidence items to accelerate uptake."
     },
     "milestoneToasts": [
-      { "threshold": 0.10, "message": "Uneasy glances — the fear has begun." },
-      { "threshold": 0.20, "message": "People are talking. The rumor takes root." },
-      { "threshold": 0.25, "message": "Fear spreads — the lie finds its first believers." },
-      { "threshold": 0.30, "message": "Three now believe. The seed germinates." },
-      { "threshold": 0.40, "message": "The sickness story grows with each retelling." },
-      { "threshold": 0.50, "message": "Halfway there. The plague scare is real to them." },
-      { "threshold": 0.60, "message": "More than half the town eyes Alys with dread." },
-      { "threshold": 0.70, "message": "Panic is becoming contagious." },
-      { "threshold": 0.75, "message": "Almost enough — one more voice and panic takes hold." },
-      { "threshold": 0.80, "message": "The crowd's fear is nearly unstoppable." },
-      { "threshold": 0.90, "message": "One last push — let the hysteria crest." }
+      {
+        "threshold": 0.1,
+        "message": "Uneasy glances — the fear has begun."
+      },
+      {
+        "threshold": 0.2,
+        "message": "People are talking. The rumor takes root."
+      },
+      {
+        "threshold": 0.25,
+        "message": "Fear spreads — the lie finds its first believers."
+      },
+      {
+        "threshold": 0.3,
+        "message": "Three now believe. The seed germinates."
+      },
+      {
+        "threshold": 0.4,
+        "message": "The sickness story grows with each retelling."
+      },
+      {
+        "threshold": 0.5,
+        "message": "Halfway there. The plague scare is real to them."
+      },
+      {
+        "threshold": 0.6,
+        "message": "More than half the town eyes Alys with dread."
+      },
+      {
+        "threshold": 0.7,
+        "message": "Panic is becoming contagious."
+      },
+      {
+        "threshold": 0.75,
+        "message": "Almost enough — one more voice and panic takes hold."
+      },
+      {
+        "threshold": 0.8,
+        "message": "The crowd's fear is nearly unstoppable."
+      },
+      {
+        "threshold": 0.9,
+        "message": "One last push — let the hysteria crest."
+      }
     ],
     "midGameEvents": [
       {
@@ -311,22 +794,33 @@
         "name": "The Stranger's Cough",
         "dayWindowStart": 5,
         "dayWindowEnd": 8,
-        "probability": 0.70,
+        "probability": 0.7,
         "description": "A traveler has arrived at the gate, visibly ill — coughing, pale, leaning on a stick. The town is already nervous. You could use this.",
         "choices": [
           {
             "label": "Link the stranger's illness to Alys",
             "outcomeText": "You mention, quietly, that the stranger visited Alys's stall yesterday. By noon, two more townspeople have decided they believe the illness rumor. Fear is a fast teacher.",
             "effects": {
-              "instantBelievers": { "subjectNpcId": "alys_herbwife", "count": 2, "pool": "credulous_market" }
-            }
+              "instantBelievers": {
+                "subjectNpcId": "alys_herbwife",
+                "count": 2,
+                "pool": "credulous_market"
+              }
+            },
+            "choicePreview": "Direct — seeds illness belief but risks overexposure"
           },
           {
             "label": "Spread quarantine rumors to distract Maren",
             "outcomeText": "Sister Maren rushes to the gate to tend to the stranger. While she is occupied, the illness story about Alys spreads unchallenged through the market quarter.",
             "effects": {
-              "credulityChanges": [{ "npcId": "maren_nun", "delta": -0.08 }]
-            }
+              "credulityChanges": [
+                {
+                  "npcId": "maren_nun",
+                  "delta": -0.08
+                }
+              ]
+            },
+            "choicePreview": "Indirect — diverts attention and stalls investigation"
           }
         ]
       },
@@ -335,23 +829,34 @@
         "name": "Alys Fights Back",
         "dayWindowStart": 13,
         "dayWindowEnd": 16,
-        "probability": 0.60,
+        "probability": 0.6,
         "description": "Alys the Herb-Wife has had enough. She stands in the Market Square and declares her innocence to anyone who will listen. Her voice is steady, but her hands are shaking. The crowd watches.",
         "choices": [
           {
             "label": "Twist her words — she protests too much",
             "outcomeText": "You lean toward the nearest merchant and murmur: 'If she were truly innocent, would she need to say so?' The seed lands. But Alys's speech has reached one believer, who begins to doubt.",
             "effects": {
-              "personalityChanges": [{ "npcId": "alys_herbwife", "trait": "temperament", "delta": 0.20 }],
-              "recoverBelievers": { "subjectNpcId": "alys_herbwife", "count": 1 }
-            }
+              "personalityChanges": [
+                {
+                  "npcId": "alys_herbwife",
+                  "trait": "temperament",
+                  "delta": 0.2
+                }
+              ],
+              "recoverBelievers": {
+                "subjectNpcId": "alys_herbwife",
+                "count": 1
+              }
+            },
+            "choicePreview": "Manipulative — her denial becomes evidence against her"
           },
           {
             "label": "Stage a distraction — pull the crowd away",
             "outcomeText": "A dropped crate, a shout from the alley, a child's cry. The crowd turns away before Alys can finish. Her words dissolve into the market noise, unheard.",
             "effects": {
               "illnessEscalationCooldownDelta": -1
-            }
+            },
+            "choicePreview": "Diversionary — redirects the crowd away from counter-arguments"
           }
         ]
       },
@@ -367,21 +872,47 @@
             "label": "Use the empty market — push illness rumors while Maren is occupied",
             "outcomeText": "With the chapel full and the market quiet, the illness story spreads through the remaining stalls unchecked. Two more merchants decide they believe. But the vigil ends at dawn, and Maren will be watching more closely than ever.",
             "effects": {
-              "instantBelievers": { "subjectNpcId": "alys_herbwife", "count": 2, "pool": "credulous_market" },
-              "personalityChanges": [{ "npcId": "maren_nun", "trait": "credulity", "delta": 0.05 }]
-            }
+              "instantBelievers": {
+                "subjectNpcId": "alys_herbwife",
+                "count": 2,
+                "pool": "credulous_market"
+              },
+              "personalityChanges": [
+                {
+                  "npcId": "maren_nun",
+                  "trait": "credulity",
+                  "delta": 0.05
+                }
+              ]
+            },
+            "choicePreview": "Opportunistic — spreads rumors while the town is distracted"
           },
           {
             "label": "Attend the vigil and redirect the prayers toward Alys",
             "outcomeText": "You kneel with the rest and, during the open intercession, you speak of 'the stranger's herbs' and 'the sick children at the well.' The congregation murmurs. Maren's eyes narrow — but she cannot silence a prayer. The clergy leave the vigil unsettled.",
             "effects": {
               "credulityChanges": [
-                { "npcId": "finn_monk", "delta": 0.10 },
-                { "npcId": "old_piety", "delta": 0.10 },
-                { "npcId": "jude_bellringer", "delta": 0.10 }
+                {
+                  "npcId": "finn_monk",
+                  "delta": 0.1
+                },
+                {
+                  "npcId": "old_piety",
+                  "delta": 0.1
+                },
+                {
+                  "npcId": "jude_bellringer",
+                  "delta": 0.1
+                }
               ],
-              "heatChanges": [{ "npcId": "maren_nun", "delta": 8.0 }]
-            }
+              "heatChanges": [
+                {
+                  "npcId": "maren_nun",
+                  "delta": 8
+                }
+              ]
+            },
+            "choicePreview": "Subversive — turns devotion into suspicion of Alys"
           }
         ]
       },
@@ -397,10 +928,26 @@
             "label": "Blame Alys — say she sold tainted remedies to the merchant",
             "outcomeText": "You catch the nearest stall-keeper's eye and murmur, just loud enough: 'The carter says he bought a remedy from Alys three days ago. Look at him now.' The words travel faster than the flies. A believer joins the ranks — and Maren's attention sharpens.",
             "effects": {
-              "instantBelievers": { "subjectNpcId": "alys_herbwife", "count": 1, "pool": "credulous_market" },
-              "heatChanges": [{ "npcId": "alys_herbwife", "delta": 10.0 }],
-              "personalityChanges": [{ "npcId": "maren_nun", "trait": "temperament", "delta": 0.10 }]
-            }
+              "instantBelievers": {
+                "subjectNpcId": "alys_herbwife",
+                "count": 1,
+                "pool": "credulous_market"
+              },
+              "heatChanges": [
+                {
+                  "npcId": "alys_herbwife",
+                  "delta": 10
+                }
+              ],
+              "personalityChanges": [
+                {
+                  "npcId": "maren_nun",
+                  "trait": "temperament",
+                  "delta": 0.1
+                }
+              ]
+            },
+            "choicePreview": "Aggressive — direct accusation with lasting reputation damage"
           },
           {
             "label": "Use the cart as proof — quarantine is justified",
@@ -408,11 +955,21 @@
             "effects": {
               "freeQuarantineCharges": 1,
               "credulityChanges": [
-                { "npcId": "nell_picker", "delta": 0.08 },
-                { "npcId": "cob_farrow", "delta": 0.08 },
-                { "npcId": "sim_carter", "delta": 0.08 }
+                {
+                  "npcId": "nell_picker",
+                  "delta": 0.08
+                },
+                {
+                  "npcId": "cob_farrow",
+                  "delta": 0.08
+                },
+                {
+                  "npcId": "sim_carter",
+                  "delta": 0.08
+                }
               ]
-            }
+            },
+            "choicePreview": "Methodical — builds quarantine case but slower impact"
           }
         ]
       },
@@ -421,17 +978,27 @@
         "name": "The Herbwife's Apprentice",
         "dayWindowStart": 15,
         "dayWindowEnd": 17,
-        "probability": 0.60,
+        "probability": 0.6,
         "description": "A young apprentice of Alys shows up at the Tavern, coughing and pale. She claims Alys sent her to buy supplies — but the townsfolk are eyeing her nervously.",
         "choices": [
           {
             "label": "Spread word the apprentice is proof Alys carries plague",
             "outcomeText": "You let the coughing do your work, adding just one detail: 'Alys herself looked ill when I passed her stall this morning.' Two more tavern regulars decide they believe. The illness agent's hand reaches further than ever.",
             "effects": {
-              "instantBelievers": { "subjectNpcId": "alys_herbwife", "count": 2, "pool": "credulous_market" },
+              "instantBelievers": {
+                "subjectNpcId": "alys_herbwife",
+                "count": 2,
+                "pool": "credulous_market"
+              },
               "illnessEscalationCooldownDelta": -1,
-              "heatChanges": [{ "npcId": "alys_herbwife", "delta": 8.0 }]
-            }
+              "heatChanges": [
+                {
+                  "npcId": "alys_herbwife",
+                  "delta": 8
+                }
+              ]
+            },
+            "choicePreview": "Bold — forces panic but may attract scrutiny"
           },
           {
             "label": "Quietly isolate the apprentice — use her as leverage over Alys",
@@ -439,8 +1006,15 @@
             "effects": {
               "bonusReconActions": 2,
               "bonusReconDays": 2,
-              "personalityChanges": [{ "npcId": "alys_herbwife", "trait": "loyalty", "delta": -0.15 }]
-            }
+              "personalityChanges": [
+                {
+                  "npcId": "alys_herbwife",
+                  "trait": "loyalty",
+                  "delta": -0.15
+                }
+              ]
+            },
+            "choicePreview": "Measured — gains leverage over Alys through her apprentice"
           }
         ]
       }
@@ -448,7 +1022,7 @@
     "difficultyModifiers": {
       "easy": {
         "daysAllowedOverride": 29,
-        "credulityDelta": 0.10,
+        "credulityDelta": 0.1,
         "winBelieversOverride": 5,
         "designNote": "More days, more credulous NPCs, and only 5 believers needed. Maren's rejection triggers a 2-day grace window — teaches the avoidance mechanic with a wider margin."
       },
@@ -457,17 +1031,23 @@
       },
       "hard": {
         "daysAllowedOverride": 18,
-        "credulityDelta": -0.10,
+        "credulityDelta": -0.1,
         "winBelieversOverride": 10,
         "personalityOverrides": [
-          { "npcId": "maren_nun", "credulity": 0.30 }
+          {
+            "npcId": "maren_nun",
+            "credulity": 0.3
+          }
         ],
         "designNote": "Fewer days, 10 believers needed, and Maren is slightly more curious (higher credulity = she encounters more rumors, increasing rejection risk). Requires routing through 3+ independent clusters."
       }
     },
     "suggestion_overrides": {
-      "heat_spike_threshold": 60.0,
-      "category_priorities": ["illness", "claim_type"]
+      "heat_spike_threshold": 60,
+      "category_priorities": [
+        "illness",
+        "claim_type"
+      ]
     }
   },
   {
@@ -485,52 +1065,242 @@
       "timeout": "The winter festival nominations were read at dawn.\n\nCalder Fenn's name drew polite applause. Tomas Reeve's drew the same.\n\nLady Isolde's face, when you passed her in the corridor, told you everything about whether there would be further work."
     },
     "edgeOverrides": [
-      { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
-      { "npcA": "edric_fenn",       "npcB": "calder_fenn",      "weightAtoB": 0.70, "weightBtoA": 0.80 },
-      { "npcA": "edric_fenn",       "npcB": "isolde_fenn",      "weightAtoB": 0.75, "weightBtoA": 0.80 },
-      { "npcA": "edric_fenn",       "npcB": "annit_scribe",     "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "edric_fenn",       "npcB": "tomas_reeve",      "weightAtoB": 0.55, "weightBtoA": 0.50 },
-      { "npcA": "bram_guard",       "npcB": "wynn_gate",        "weightAtoB": 0.70, "weightBtoA": 0.60 },
-      { "npcA": "bram_guard",       "npcB": "pell_gate",        "weightAtoB": 0.55, "weightBtoA": 0.35 },
-      { "npcA": "calder_fenn",      "npcB": "pell_gate",        "weightAtoB": 0.50, "weightBtoA": 0.55 },
-      { "npcA": "old_hugh",         "npcB": "edric_fenn",       "weightAtoB": 0.40, "weightBtoA": 0.30 },
-      { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.75, "weightBtoA": 0.70 },
-      { "npcA": "aldric_vane",      "npcB": "rufus_bolt",       "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "aldric_vane",      "npcB": "bess_wicker",      "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "sybil_oats",       "npcB": "nell_picker",      "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "sybil_oats",       "npcB": "cob_farrow",       "weightAtoB": 0.60, "weightBtoA": 0.70 },
-      { "npcA": "nell_picker",      "npcB": "greta_flint",      "weightAtoB": 0.75, "weightBtoA": 0.75 },
-      { "npcA": "greta_flint",      "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.70 },
-      { "npcA": "marta_coin",       "npcB": "sim_carter",       "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "idris_kemp",       "npcB": "bess_wicker",      "weightAtoB": 0.50, "weightBtoA": 0.50 },
-      { "npcA": "aldous_prior",     "npcB": "maren_nun",        "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "aldous_prior",     "npcB": "finn_monk",        "weightAtoB": 0.60, "weightBtoA": 0.80 },
-      { "npcA": "aldous_prior",     "npcB": "old_piety",        "weightAtoB": 0.55, "weightBtoA": 0.70 },
-      { "npcA": "maren_nun",        "npcB": "vera_midwife",     "weightAtoB": 0.70, "weightBtoA": 0.65 },
-      { "npcA": "finn_monk",        "npcB": "constance_widow",  "weightAtoB": 0.65, "weightBtoA": 0.70 },
-      { "npcA": "finn_monk",        "npcB": "old_piety",        "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "jude_bellringer",  "npcB": "aldous_prior",     "weightAtoB": 0.50, "weightBtoA": 0.40 },
-      { "npcA": "thomas_pilgrim",   "npcB": "finn_monk",        "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "alys_herbwife",    "npcB": "maren_nun",        "weightAtoB": 0.60, "weightBtoA": 0.55 },
-      { "npcA": "edric_fenn",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.30 },
-      { "npcA": "edric_fenn",       "npcB": "aldous_prior",     "weightAtoB": 0.50, "weightBtoA": 0.45 },
-      { "npcA": "bram_guard",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.40 },
-      { "npcA": "vera_midwife",     "npcB": "nell_picker",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
-      { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.40, "weightBtoA": 0.35 },
-      { "npcA": "isolde_fenn",      "npcB": "greta_flint",      "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "calder_fenn",      "npcB": "nell_picker",      "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "tomas_reeve",      "npcB": "aldric_vane",      "weightAtoB": 0.30, "weightBtoA": 0.25 },
-      { "npcA": "calder_fenn",      "npcB": "tomas_reeve",      "weightAtoB": 0.35, "weightBtoA": 0.40 }
+      {
+        "npcA": "edric_fenn",
+        "npcB": "bram_guard",
+        "weightAtoB": 0.9,
+        "weightBtoA": 0.85
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "calder_fenn",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "isolde_fenn",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "annit_scribe",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "tomas_reeve",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "wynn_gate",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "pell_gate",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.35
+      },
+      {
+        "npcA": "calder_fenn",
+        "npcB": "pell_gate",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "old_hugh",
+        "npcB": "edric_fenn",
+        "weightAtoB": 0.4,
+        "weightBtoA": 0.3
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "sybil_oats",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "rufus_bolt",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "bess_wicker",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "cob_farrow",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "nell_picker",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "greta_flint",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "marta_coin",
+        "npcB": "sim_carter",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "idris_kemp",
+        "npcB": "bess_wicker",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "old_piety",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "maren_nun",
+        "npcB": "vera_midwife",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "old_piety",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "jude_bellringer",
+        "npcB": "aldous_prior",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "thomas_pilgrim",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "alys_herbwife",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.3
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldous_prior",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.45
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "vera_midwife",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "denny_gravedigger",
+        "npcB": "old_hugh",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "marta_coin",
+        "weightAtoB": 0.4,
+        "weightBtoA": 0.35
+      },
+      {
+        "npcA": "isolde_fenn",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "calder_fenn",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.3,
+        "weightBtoA": 0.25
+      },
+      {
+        "npcA": "calder_fenn",
+        "npcB": "tomas_reeve",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.4
+      }
     ],
     "personalityOverrides": [
-      { "npcId": "tomas_reeve", "loyalty": 0.40 }
+      {
+        "npcId": "tomas_reeve",
+        "loyalty": 0.4
+      }
     ],
     "startingReputations": {
       "calder_fenn": 62,
       "tomas_reeve": 48
     },
-    "targetShiftExcluded": ["calder_fenn"],
+    "targetShiftExcluded": [
+      "calder_fenn"
+    ],
     "strategicBrief": {
       "targetNpcId": "calder_fenn",
       "repStart": 62,
@@ -558,17 +1328,50 @@
       "timeout": "The two-front war demands constant pressure on both targets. Use Disrupt to buy time and prioritize Tomas's scandal — his reputation falls faster than Calder's rises."
     },
     "milestoneToasts": [
-      { "threshold": 0.10, "message": "Seeds of doubt take root." },
-      { "threshold": 0.20, "message": "Calder's name is spoken more favourably." },
-      { "threshold": 0.25, "message": "The ground shifts — Calder rises as Tomas stumbles." },
-      { "threshold": 0.30, "message": "Tomas loses another supporter." },
-      { "threshold": 0.40, "message": "The gap widens. Keep pressing." },
-      { "threshold": 0.50, "message": "The scales are tipping. Stay the course." },
-      { "threshold": 0.60, "message": "Calder's lead grows undeniable." },
-      { "threshold": 0.70, "message": "Tomas scrambles for allies he no longer has." },
-      { "threshold": 0.75, "message": "Victory is close — finish what you started." },
-      { "threshold": 0.80, "message": "The succession is nearly decided." },
-      { "threshold": 0.90, "message": "One final stroke — seal Calder's ascendancy." }
+      {
+        "threshold": 0.1,
+        "message": "Seeds of doubt take root."
+      },
+      {
+        "threshold": 0.2,
+        "message": "Calder's name is spoken more favourably."
+      },
+      {
+        "threshold": 0.25,
+        "message": "The ground shifts — Calder rises as Tomas stumbles."
+      },
+      {
+        "threshold": 0.3,
+        "message": "Tomas loses another supporter."
+      },
+      {
+        "threshold": 0.4,
+        "message": "The gap widens. Keep pressing."
+      },
+      {
+        "threshold": 0.5,
+        "message": "The scales are tipping. Stay the course."
+      },
+      {
+        "threshold": 0.6,
+        "message": "Calder's lead grows undeniable."
+      },
+      {
+        "threshold": 0.7,
+        "message": "Tomas scrambles for allies he no longer has."
+      },
+      {
+        "threshold": 0.75,
+        "message": "Victory is close — finish what you started."
+      },
+      {
+        "threshold": 0.8,
+        "message": "The succession is nearly decided."
+      },
+      {
+        "threshold": 0.9,
+        "message": "One final stroke — seal Calder's ascendancy."
+      }
     ],
     "midGameEvents": [
       {
@@ -576,24 +1379,45 @@
         "name": "The Debt Letter",
         "dayWindowStart": 6,
         "dayWindowEnd": 9,
-        "probability": 0.70,
+        "probability": 0.7,
         "description": "A crumpled letter has surfaced at the Tavern — addressed to a moneylender in the capital, signed by Tomas Reeve. The debts are substantial. This could be the weapon you need, but the rival will notice.",
         "choices": [
           {
             "label": "Publish it widely — let the whole town see",
             "outcomeText": "By sundown, copies of the letter are pinned to the Tavern door and the Market notice board. Tomas's reputation takes a sharp blow. But the rival, sensing your hand, redoubles their efforts.",
             "effects": {
-              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -7 }],
-              "rivalIntensityBonus": { "delta": 1, "durationDays": 5 }
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": -7
+                }
+              ],
+              "rivalIntensityBonus": {
+                "delta": 1,
+                "durationDays": 5
+              }
+            },
+            "choicePreview": "Loud — maximum damage to Tomas but may provoke backlash"
           },
           {
             "label": "Show it privately to key merchants",
             "outcomeText": "You share the letter with Aldric Vane and Marta Coin over quiet drinks. The damage is smaller but surgical — and Tomas's allies begin to wonder if their loyalty is misplaced.",
             "effects": {
-              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -3 }],
-              "personalityChanges": [{ "npcId": "tomas_reeve", "trait": "loyalty", "delta": -0.15 }]
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": -3
+                }
+              ],
+              "personalityChanges": [
+                {
+                  "npcId": "tomas_reeve",
+                  "trait": "loyalty",
+                  "delta": -0.15
+                }
+              ]
+            },
+            "choicePreview": "Quiet — targeted damage through influential merchants"
           }
         ]
       },
@@ -602,28 +1426,56 @@
         "name": "The Merchant Pact",
         "dayWindowStart": 10,
         "dayWindowEnd": 14,
-        "probability": 0.60,
+        "probability": 0.6,
         "description": "Aldric Vane has called a private meeting of the merchant guild at the Tavern. The question: should the guild publicly back Calder or Tomas? Aldric is undecided and open to persuasion. His choice will ripple through the entire merchant quarter.",
         "choices": [
           {
             "label": "Convince Aldric that Calder is good for trade",
             "outcomeText": "Over ale and ledger-talk, you make the case: a Fenn alderman means stable contracts, predictable tariffs, no sudden reforms. Aldric leans forward. By the end of the night, the guild's informal endorsement drifts Calder's way. Tomas's merchant friends are suddenly less sure of their man.",
             "effects": {
-              "reputationChanges": [{ "npcId": "calder_fenn", "delta": 4 }],
+              "reputationChanges": [
+                {
+                  "npcId": "calder_fenn",
+                  "delta": 4
+                }
+              ],
               "personalityChanges": [
-                { "npcId": "aldric_vane", "trait": "loyalty", "delta": 0.10 },
-                { "npcId": "sybil_oats", "trait": "loyalty", "delta": 0.10 }
+                {
+                  "npcId": "aldric_vane",
+                  "trait": "loyalty",
+                  "delta": 0.1
+                },
+                {
+                  "npcId": "sybil_oats",
+                  "trait": "loyalty",
+                  "delta": 0.1
+                }
               ]
-            }
+            },
+            "choicePreview": "Constructive — strengthens Calder through alliance building"
           },
           {
             "label": "Poison the well — make the guild distrust Tomas",
             "outcomeText": "You arrive early and leave a rumor at each table: Tomas has been making promises to the capital's moneylenders that would undercut local traders. By the time the meeting starts, the mood has turned. Tomas's reputation takes a quiet hit, and the rival senses something has shifted.",
             "effects": {
-              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -4 }],
-              "injectRumor": { "claimType": "scandal", "subjectNpcId": "tomas_reeve", "intensity": 2, "targetFaction": "merchant" },
-              "rivalIntensityBonus": { "delta": 1, "durationDays": 3 }
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": -4
+                }
+              ],
+              "injectRumor": {
+                "claimType": "scandal",
+                "subjectNpcId": "tomas_reeve",
+                "intensity": 2,
+                "targetFaction": "merchant"
+              },
+              "rivalIntensityBonus": {
+                "delta": 1,
+                "durationDays": 3
+              }
+            },
+            "choicePreview": "Destructive — undermines Tomas through guild distrust"
           }
         ]
       },
@@ -639,16 +1491,28 @@
             "label": "Reframe it as boldness — Calder fights for honest trade",
             "outcomeText": "You work the crowd: 'Did you see that? The boy has spine. That's what this town needs — someone who calls out cheats to their face.' The commons warm to him. The nobles raise an eyebrow.",
             "effects": {
-              "reputationChanges": [{ "npcId": "calder_fenn", "delta": 2 }],
-              "injectRumor": { "claimType": "praise", "subjectNpcId": "calder_fenn", "intensity": 3, "targetFaction": "merchant" }
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "calder_fenn",
+                  "delta": 2
+                }
+              ],
+              "injectRumor": {
+                "claimType": "praise",
+                "subjectNpcId": "calder_fenn",
+                "intensity": 3,
+                "targetFaction": "merchant"
+              }
+            },
+            "choicePreview": "Spin — reframes the mistake as a strength for Calder"
           },
           {
             "label": "Have Lady Isolde smooth things over quietly",
             "outcomeText": "Lady Isolde sends wine and an apology within the hour. The merchant is mollified. More importantly, the rival's planned attack is delayed — Isolde's intervention has shifted the conversation.",
             "effects": {
               "rivalCooldownBonus": 3
-            }
+            },
+            "choicePreview": "Smooth — uses noble connections to quietly contain damage"
           }
         ]
       },
@@ -664,16 +1528,32 @@
             "label": "Accept the forgery — use it to boost Calder immediately",
             "outcomeText": "Annit's hand is steady. The letter circulates through the noble quarter by evening. Calder's name rises. But if the forgery surfaces later, there will be consequences — the story will find its way back.",
             "effects": {
-              "reputationChanges": [{ "npcId": "calder_fenn", "delta": 6 }],
-              "personalityChanges": [{ "npcId": "annit_scribe", "trait": "loyalty", "delta": 0.15 }],
+              "reputationChanges": [
+                {
+                  "npcId": "calder_fenn",
+                  "delta": 6
+                }
+              ],
+              "personalityChanges": [
+                {
+                  "npcId": "annit_scribe",
+                  "trait": "loyalty",
+                  "delta": 0.15
+                }
+              ],
               "delayedRumor": {
                 "claimType": "scandal",
                 "subjectNpcId": "calder_fenn",
                 "intensity": 3,
                 "triggerDay": 16,
-                "triggerCondition": { "type": "rep_above", "npcId": "calder_fenn", "threshold": 70 }
+                "triggerCondition": {
+                  "type": "rep_above",
+                  "npcId": "calder_fenn",
+                  "threshold": 70
+                }
               }
-            }
+            },
+            "choicePreview": "Risky — immediate boost but forgery may be discovered later"
           },
           {
             "label": "Refuse — but ask Annit to spy on the rival instead",
@@ -682,7 +1562,8 @@
               "bonusDisruptCharges": 2,
               "bonusReconActions": 1,
               "bonusReconDays": 3
-            }
+            },
+            "choicePreview": "Safe — no forgery risk and gains a spy in the rival camp"
           }
         ]
       },
@@ -691,29 +1572,57 @@
         "name": "The Tavern Brawl",
         "dayWindowStart": 17,
         "dayWindowEnd": 19,
-        "probability": 0.60,
+        "probability": 0.6,
         "description": "A drunken argument between Calder and Tomas supporters erupts at the Tavern. Chairs fly. The guards are called. Both factions are furious — and the town is watching.",
         "choices": [
           {
             "label": "Frame Tomas's supporters as the aggressors",
             "outcomeText": "You are at the Tavern door when the brawl starts. Your version reaches the Guard Captain first: 'It was Tomas's men — unprovoked.' The story sticks. Tomas's reputation takes a hard blow, but his supporters are now furious, and the rival doubles down.",
             "effects": {
-              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -5 }],
-              "heatChanges": [{ "npcId": "tomas_reeve", "delta": 12.0 }],
-              "rivalIntensityBonus": { "delta": 1, "durationDays": 4 }
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": -5
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": 12
+                }
+              ],
+              "rivalIntensityBonus": {
+                "delta": 1,
+                "durationDays": 4
+              }
+            },
+            "choicePreview": "Aggressive — damages rival supporters but raises tensions"
           },
           {
             "label": "Have Calder publicly break up the fight — show leadership",
             "outcomeText": "Calder steps between the brawlers and raises his voice. The fight stops. The crowd sees exactly what you want them to see: a future alderman who keeps his head while others swing their fists.",
             "effects": {
-              "reputationChanges": [{ "npcId": "calder_fenn", "delta": 4 }],
+              "reputationChanges": [
+                {
+                  "npcId": "calder_fenn",
+                  "delta": 4
+                }
+              ],
               "personalityChanges": [
-                { "npcId": "rufus_bolt", "trait": "loyalty", "delta": 0.10 },
-                { "npcId": "bess_wicker", "trait": "loyalty", "delta": 0.10 }
+                {
+                  "npcId": "rufus_bolt",
+                  "trait": "loyalty",
+                  "delta": 0.1
+                },
+                {
+                  "npcId": "bess_wicker",
+                  "trait": "loyalty",
+                  "delta": 0.1
+                }
               ],
               "rivalCooldownBonus": 1
-            }
+            },
+            "choicePreview": "Positive — builds Calder's image as a leader and peacemaker"
           }
         ]
       }
@@ -721,7 +1630,7 @@
     "difficultyModifiers": {
       "easy": {
         "daysAllowedOverride": 32,
-        "credulityDelta": 0.10,
+        "credulityDelta": 0.1,
         "rivalIntensityDelta": -1,
         "rivalStartDay": 22,
         "winCalderMin": 70,
@@ -734,7 +1643,7 @@
       },
       "hard": {
         "daysAllowedOverride": 21,
-        "credulityDelta": -0.10,
+        "credulityDelta": -0.1,
         "rivalIntensityDelta": 1,
         "rivalStartDay": 14,
         "winCalderMin": 80,
@@ -748,8 +1657,11 @@
       }
     },
     "suggestion_overrides": {
-      "heat_spike_threshold": 60.0,
-      "category_priorities": ["dual_target", "claim_type"]
+      "heat_spike_threshold": 60,
+      "category_priorities": [
+        "dual_target",
+        "claim_type"
+      ]
     }
   },
   {
@@ -767,48 +1679,207 @@
       "timeout": "Twenty days passed. Brother Cornelius presented his findings to the Bishop's clerk with the quiet satisfaction of a man whose work was already done.\n\nThe stories had taken root. The names on the writ were already ruined in every way that mattered. The formal verdict was a formality."
     },
     "edgeOverrides": [
-      { "npcA": "aldous_prior",     "npcB": "maren_nun",        "weightAtoB": 0.85, "weightBtoA": 0.80 },
-      { "npcA": "aldous_prior",     "npcB": "finn_monk",        "weightAtoB": 0.65, "weightBtoA": 0.85 },
-      { "npcA": "aldous_prior",     "npcB": "old_piety",        "weightAtoB": 0.60, "weightBtoA": 0.75 },
-      { "npcA": "aldous_prior",     "npcB": "jude_bellringer",  "weightAtoB": 0.55, "weightBtoA": 0.50 },
-      { "npcA": "finn_monk",        "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.75 },
-      { "npcA": "finn_monk",        "npcB": "old_piety",        "weightAtoB": 0.65, "weightBtoA": 0.70 },
-      { "npcA": "finn_monk",        "npcB": "thomas_pilgrim",   "weightAtoB": 0.60, "weightBtoA": 0.55 },
-      { "npcA": "vera_midwife",     "npcB": "maren_nun",        "weightAtoB": 0.75, "weightBtoA": 0.70 },
-      { "npcA": "vera_midwife",     "npcB": "nell_picker",      "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "vera_midwife",     "npcB": "greta_flint",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "vera_midwife",     "npcB": "alys_herbwife",    "weightAtoB": 0.50, "weightBtoA": 0.45 },
-      { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
-      { "npcA": "edric_fenn",       "npcB": "aldous_prior",     "weightAtoB": 0.45, "weightBtoA": 0.40 },
-      { "npcA": "sybil_oats",       "npcB": "nell_picker",      "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "sybil_oats",       "npcB": "cob_farrow",       "weightAtoB": 0.65, "weightBtoA": 0.70 },
-      { "npcA": "nell_picker",      "npcB": "greta_flint",      "weightAtoB": 0.75, "weightBtoA": 0.75 },
-      { "npcA": "greta_flint",      "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.70 },
-      { "npcA": "marta_coin",       "npcB": "sim_carter",       "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.75, "weightBtoA": 0.70 },
-      { "npcA": "aldric_vane",      "npcB": "rufus_bolt",       "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "edric_fenn",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.30 },
-      { "npcA": "bram_guard",       "npcB": "aldric_vane",      "weightAtoB": 0.35, "weightBtoA": 0.40 },
-      { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
-      { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.40, "weightBtoA": 0.35 },
-      { "npcA": "maren_nun",        "npcB": "constance_widow",  "weightAtoB": 0.60, "weightBtoA": 0.55 },
-      { "npcA": "old_piety",        "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.65 }
+      {
+        "npcA": "aldous_prior",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.85,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.85
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "old_piety",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "jude_bellringer",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "old_piety",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "thomas_pilgrim",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "vera_midwife",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "vera_midwife",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "vera_midwife",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "vera_midwife",
+        "npcB": "alys_herbwife",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.45
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "bram_guard",
+        "weightAtoB": 0.9,
+        "weightBtoA": 0.85
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldous_prior",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "cob_farrow",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "nell_picker",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "greta_flint",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "marta_coin",
+        "npcB": "sim_carter",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "sybil_oats",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "rufus_bolt",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.3
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.35,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "denny_gravedigger",
+        "npcB": "old_hugh",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "marta_coin",
+        "weightAtoB": 0.4,
+        "weightBtoA": 0.35
+      },
+      {
+        "npcA": "maren_nun",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "old_piety",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.65
+      }
     ],
     "personalityOverrides": [
-      { "npcId": "aldous_prior", "loyalty": 0.95, "credulity": 0.10 },
-      { "npcId": "finn_monk",    "loyalty": 0.45, "credulity": 0.60 },
-      { "npcId": "vera_midwife", "loyalty": 0.65, "credulity": 0.70 },
-      { "npcId": "sybil_oats",   "credulity": 0.60 },
-      { "npcId": "nell_picker",  "credulity": 0.85 },
-      { "npcId": "greta_flint",  "credulity": 0.90 }
+      {
+        "npcId": "aldous_prior",
+        "loyalty": 0.95,
+        "credulity": 0.1
+      },
+      {
+        "npcId": "finn_monk",
+        "loyalty": 0.45,
+        "credulity": 0.6
+      },
+      {
+        "npcId": "vera_midwife",
+        "loyalty": 0.65,
+        "credulity": 0.7
+      },
+      {
+        "npcId": "sybil_oats",
+        "credulity": 0.6
+      },
+      {
+        "npcId": "nell_picker",
+        "credulity": 0.85
+      },
+      {
+        "npcId": "greta_flint",
+        "credulity": 0.9
+      }
     ],
     "startingReputations": {
       "aldous_prior": 70,
       "vera_midwife": 68,
       "finn_monk": 68
     },
-    "targetShiftExcluded": ["aldous_prior", "vera_midwife", "finn_monk"],
-    "protectedNpcIds": ["aldous_prior", "vera_midwife", "finn_monk"],
+    "targetShiftExcluded": [
+      "aldous_prior",
+      "vera_midwife",
+      "finn_monk"
+    ],
+    "protectedNpcIds": [
+      "aldous_prior",
+      "vera_midwife",
+      "finn_monk"
+    ],
     "strategicBrief": {
       "targetNpcId": "finn_monk",
       "repStart": 68,
@@ -836,17 +1907,50 @@
       "timeout": "The Inquisitor accelerates late in the scenario. Counter each accusation immediately — do not let reputations drift before responding. Praise rumours work fastest through allied NPCs."
     },
     "milestoneToasts": [
-      { "threshold": 0.10, "message": "The Inquisitor's eye turns elsewhere — for now." },
-      { "threshold": 0.20, "message": "Two days survived. Stay vigilant." },
-      { "threshold": 0.25, "message": "A quarter done — your charges still stand. Hold the line." },
-      { "threshold": 0.30, "message": "Three in ten days withstood. Keep the shields up." },
-      { "threshold": 0.40, "message": "The charges are holding. Don't let your guard down." },
-      { "threshold": 0.50, "message": "Halfway through the fire. The Inquisitor hasn't broken through." },
-      { "threshold": 0.60, "message": "More than halfway. The tide may be turning." },
-      { "threshold": 0.70, "message": "The Inquisitor grows frustrated." },
-      { "threshold": 0.75, "message": "Three-quarters survived. Don't falter now." },
-      { "threshold": 0.80, "message": "Almost safe — hold formation for the final stretch." },
-      { "threshold": 0.90, "message": "The ordeal is nearly over. One last push." }
+      {
+        "threshold": 0.1,
+        "message": "The Inquisitor's eye turns elsewhere — for now."
+      },
+      {
+        "threshold": 0.2,
+        "message": "Two days survived. Stay vigilant."
+      },
+      {
+        "threshold": 0.25,
+        "message": "A quarter done — your charges still stand. Hold the line."
+      },
+      {
+        "threshold": 0.3,
+        "message": "Three in ten days withstood. Keep the shields up."
+      },
+      {
+        "threshold": 0.4,
+        "message": "The charges are holding. Don't let your guard down."
+      },
+      {
+        "threshold": 0.5,
+        "message": "Halfway through the fire. The Inquisitor hasn't broken through."
+      },
+      {
+        "threshold": 0.6,
+        "message": "More than halfway. The tide may be turning."
+      },
+      {
+        "threshold": 0.7,
+        "message": "The Inquisitor grows frustrated."
+      },
+      {
+        "threshold": 0.75,
+        "message": "Three-quarters survived. Don't falter now."
+      },
+      {
+        "threshold": 0.8,
+        "message": "Almost safe — hold formation for the final stretch."
+      },
+      {
+        "threshold": 0.9,
+        "message": "The ordeal is nearly over. One last push."
+      }
     ],
     "midGameEvents": [
       {
@@ -861,20 +1965,36 @@
             "label": "Rally behind the noble — focus on the weakest accused",
             "outcomeText": "You direct the noble's allies toward the most endangered name on the writ. The defence is concentrated and effective. One reputation steadies.",
             "effects": {
-              "reputationChanges": [{ "npcId": "__weakest_protected__", "delta": 6 }]
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "__weakest_protected__",
+                  "delta": 6
+                }
+              ]
+            },
+            "choicePreview": "Focused — concentrates defense on the most vulnerable"
           },
           {
             "label": "Ask the noble to vouch for all three accused",
             "outcomeText": "The noble agrees, but spreading the defence thins it. All three accused gain some shelter — but the Inquisitor, sensing organised resistance, quickens his pace.",
             "effects": {
               "reputationChanges": [
-                { "npcId": "aldous_prior", "delta": 3 },
-                { "npcId": "vera_midwife", "delta": 3 },
-                { "npcId": "finn_monk", "delta": 3 }
+                {
+                  "npcId": "aldous_prior",
+                  "delta": 3
+                },
+                {
+                  "npcId": "vera_midwife",
+                  "delta": 3
+                },
+                {
+                  "npcId": "finn_monk",
+                  "delta": 3
+                }
               ],
               "inquisitorCooldownDelta": -1
-            }
+            },
+            "choicePreview": "Broad — spreads noble influence across all three accused"
           }
         ]
       },
@@ -890,19 +2010,33 @@
             "label": "Challenge the evidence publicly — expose the forgery",
             "outcomeText": "You stand in the chapel and name the forgery for what it is. The document is discredited. But Brother Cornelius fixes his gaze on the accused — he will not forget this humiliation.",
             "effects": {
-              "inquisitorFocusTarget": { "npcId": "__highest_rep_protected__", "durationDays": 3 }
-            }
+              "inquisitorFocusTarget": {
+                "npcId": "__highest_rep_protected__",
+                "durationDays": 3
+              }
+            },
+            "choicePreview": "Direct — publicly undermines the Inquisitor's credibility"
           },
           {
             "label": "Counter with character witnesses — drown out the evidence",
             "outcomeText": "You send allies to speak for the targeted accused. Their reputation recovers. But the noise draws attention away from the other two, and whispers find fertile ground.",
             "effects": {
               "reputationChanges": [
-                { "npcId": "__highest_rep_protected__", "delta": 5 },
-                { "npcId": "__other_protected_1__", "delta": -2 },
-                { "npcId": "__other_protected_2__", "delta": -2 }
+                {
+                  "npcId": "__highest_rep_protected__",
+                  "delta": 5
+                },
+                {
+                  "npcId": "__other_protected_1__",
+                  "delta": -2
+                },
+                {
+                  "npcId": "__other_protected_2__",
+                  "delta": -2
+                }
               ]
-            }
+            },
+            "choicePreview": "Indirect — drowns forged evidence under character testimony"
           }
         ]
       },
@@ -911,26 +2045,49 @@
         "name": "The Breaking Point",
         "dayWindowStart": 16,
         "dayWindowEnd": 19,
-        "probability": 0.70,
+        "probability": 0.7,
         "description": "The pressure has told. The most vulnerable of the accused has been seen weeping in the chapel at midnight, whispering about surrender. Brother Cornelius knows — he is circling, waiting for a public confession. If the accused breaks, the other two will follow. You must intervene now.",
         "choices": [
           {
             "label": "Rally the accused — remind them what they are fighting for",
             "outcomeText": "You find them in the chapel before dawn. Your words are quiet but firm: the town needs them, the evidence is fabricated, and three more days is all you need. They straighten. The confession does not come. But the Inquisitor, sensing his prey slipping away, redoubles his efforts against all three.",
             "effects": {
-              "reputationChanges": [{ "npcId": "__weakest_protected__", "delta": 5 }],
-              "personalityChanges": [{ "npcId": "__weakest_protected__", "trait": "loyalty", "delta": 0.15 }],
+              "reputationChanges": [
+                {
+                  "npcId": "__weakest_protected__",
+                  "delta": 5
+                }
+              ],
+              "personalityChanges": [
+                {
+                  "npcId": "__weakest_protected__",
+                  "trait": "loyalty",
+                  "delta": 0.15
+                }
+              ],
               "inquisitorCooldownDelta": -1
-            }
+            },
+            "choicePreview": "Inspiring — rallies the accused to resist breaking"
           },
           {
             "label": "Redirect the Inquisitor — give him a false lead",
             "outcomeText": "You plant a rumor about a fourth name — someone unconnected, someone disposable. Brother Cornelius takes the bait and spends two days investigating a phantom. The accused have breathing room. But the weakest among them is still shaken, and the reprieve is temporary.",
             "effects": {
               "inquisitorCooldownDelta": 2,
-              "reputationChanges": [{ "npcId": "__weakest_protected__", "delta": 2 }],
-              "heatChanges": [{ "npcId": "aldous_prior", "delta": 8.0 }]
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "__weakest_protected__",
+                  "delta": 2
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "aldous_prior",
+                  "delta": 8
+                }
+              ]
+            },
+            "choicePreview": "Risky — misdirects the Inquisitor with a false trail"
           }
         ]
       },
@@ -939,7 +2096,7 @@
         "name": "The Confession Box",
         "dayWindowStart": 8,
         "dayWindowEnd": 10,
-        "probability": 0.70,
+        "probability": 0.7,
         "description": "The Inquisitor has set up a confession box in the Chapel — townsfolk are encouraged to report heretical behaviour. Two NPCs are planning to confess what they have heard. If those confessions reach the Inquisitor, the accused will face intensified scrutiny.",
         "choices": [
           {
@@ -947,19 +2104,32 @@
             "outcomeText": "You catch the pair before they reach the chapel door. Your words are calm and certain: the accused are good people, the charges are fabricated, confession will only hurt the innocent. They leave without confessing. Two reputations steady.",
             "effects": {
               "reputationChanges": [
-                { "npcId": "__weakest_protected__", "delta": 4 },
-                { "npcId": "__other_protected_1__", "delta": 2 }
+                {
+                  "npcId": "__weakest_protected__",
+                  "delta": 4
+                },
+                {
+                  "npcId": "__other_protected_1__",
+                  "delta": 2
+                }
               ],
               "inquisitorCooldownDelta": -1
-            }
+            },
+            "choicePreview": "Defensive — intercepts confessors to protect the accused"
           },
           {
             "label": "Poison the confession box — plant false confessions implicating the Inquisitor's own allies",
             "outcomeText": "You slip forged notes into the box before dawn — names from Brother Cornelius's own circle, accusations vague enough to need investigation. He spends two days chasing shadows among his own people. The accused breathe easier.",
             "effects": {
               "inquisitorCooldownDelta": 2,
-              "heatChanges": [{ "npcId": "aldous_prior", "delta": 10.0 }]
-            }
+              "heatChanges": [
+                {
+                  "npcId": "aldous_prior",
+                  "delta": 10
+                }
+              ]
+            },
+            "choicePreview": "Offensive — floods confessions to discredit the entire process"
           }
         ]
       },
@@ -975,23 +2145,53 @@
             "label": "Coach them before the questioning — prepare their defense",
             "outcomeText": "You spend the morning going over every question Cornelius is likely to ask. By the time they walk into the chapel, they are ready. The questioning goes well. Their reputation rises — but it cost you recon time you will not get back.",
             "effects": {
-              "reputationChanges": [{ "npcId": "__weakest_protected__", "delta": 6 }],
-              "personalityChanges": [{ "npcId": "__weakest_protected__", "trait": "loyalty", "delta": 0.20 }],
+              "reputationChanges": [
+                {
+                  "npcId": "__weakest_protected__",
+                  "delta": 6
+                }
+              ],
+              "personalityChanges": [
+                {
+                  "npcId": "__weakest_protected__",
+                  "trait": "loyalty",
+                  "delta": 0.2
+                }
+              ],
               "reconActionCost": 2
-            }
+            },
+            "choicePreview": "Cautious — careful preparation improves their chances"
           },
           {
             "label": "Let them go — but spread word they faced the Inquisitor bravely",
             "outcomeText": "You do not interfere. The questioning is difficult but they survive it. Before the day is out, you are in three conversations at once, describing their courage in the chapel. The story spreads. A praise rumor takes root on its own.",
             "effects": {
               "reputationChanges": [
-                { "npcId": "__weakest_protected__", "delta": 3 },
-                { "npcId": "aldous_prior", "delta": 1 },
-                { "npcId": "vera_midwife", "delta": 1 },
-                { "npcId": "finn_monk", "delta": 1 }
+                {
+                  "npcId": "__weakest_protected__",
+                  "delta": 3
+                },
+                {
+                  "npcId": "aldous_prior",
+                  "delta": 1
+                },
+                {
+                  "npcId": "vera_midwife",
+                  "delta": 1
+                },
+                {
+                  "npcId": "finn_monk",
+                  "delta": 1
+                }
               ],
-              "injectRumor": { "claimType": "praise", "subjectNpcId": "__weakest_protected__", "intensity": 2, "targetFaction": "commons" }
-            }
+              "injectRumor": {
+                "claimType": "praise",
+                "subjectNpcId": "__weakest_protected__",
+                "intensity": 2,
+                "targetFaction": "commons"
+              }
+            },
+            "choicePreview": "Bold — lets them face questioning and builds their legend"
           }
         ]
       }
@@ -999,7 +2199,7 @@
     "difficultyModifiers": {
       "easy": {
         "daysAllowedOverride": 24,
-        "credulityDelta": 0.10,
+        "credulityDelta": 0.1,
         "inquisitorCooldownDelta": 2,
         "inquisitorIntensityDelta": -1,
         "winRepMin": 40,
@@ -1016,7 +2216,7 @@
       },
       "hard": {
         "daysAllowedOverride": 15,
-        "credulityDelta": -0.10,
+        "credulityDelta": -0.1,
         "inquisitorCooldownDelta": -3,
         "inquisitorIntensityDelta": 1,
         "winRepMin": 52,
@@ -1030,8 +2230,11 @@
       }
     },
     "suggestion_overrides": {
-      "heat_spike_threshold": 50.0,
-      "category_priorities": ["heat_warning", "claim_type"]
+      "heat_spike_threshold": 50,
+      "category_priorities": [
+        "heat_warning",
+        "claim_type"
+      ]
     }
   },
   {
@@ -1049,50 +2252,220 @@
       "timeout": "The votes were counted. Edric Fenn's name was called first, as always.\n\nAldric Vane came second — close enough to taste it, far enough to know it was over. Tomas Reeve's supporters consoled themselves with ale.\n\nYour patron did not send for you again."
     },
     "edgeOverrides": [
-      { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "aldric_vane",      "npcB": "rufus_bolt",       "weightAtoB": 0.70, "weightBtoA": 0.65 },
-      { "npcA": "aldric_vane",      "npcB": "bess_wicker",      "weightAtoB": 0.65, "weightBtoA": 0.70 },
-      { "npcA": "aldric_vane",      "npcB": "marta_coin",       "weightAtoB": 0.60, "weightBtoA": 0.55 },
-      { "npcA": "aldric_vane",      "npcB": "greta_flint",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
-      { "npcA": "edric_fenn",       "npcB": "calder_fenn",      "weightAtoB": 0.70, "weightBtoA": 0.80 },
-      { "npcA": "edric_fenn",       "npcB": "isolde_fenn",      "weightAtoB": 0.75, "weightBtoA": 0.80 },
-      { "npcA": "edric_fenn",       "npcB": "annit_scribe",     "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "edric_fenn",       "npcB": "aldous_prior",     "weightAtoB": 0.55, "weightBtoA": 0.50 },
-      { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.50, "weightBtoA": 0.45 },
-      { "npcA": "tomas_reeve",      "npcB": "sim_carter",       "weightAtoB": 0.60, "weightBtoA": 0.55 },
-      { "npcA": "tomas_reeve",      "npcB": "nell_picker",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "tomas_reeve",      "npcB": "constance_widow",  "weightAtoB": 0.50, "weightBtoA": 0.55 },
-      { "npcA": "tomas_reeve",      "npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
-      { "npcA": "bram_guard",       "npcB": "wynn_gate",        "weightAtoB": 0.70, "weightBtoA": 0.60 },
-      { "npcA": "bram_guard",       "npcB": "pell_gate",        "weightAtoB": 0.55, "weightBtoA": 0.35 },
-      { "npcA": "sybil_oats",       "npcB": "nell_picker",      "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "sybil_oats",       "npcB": "cob_farrow",       "weightAtoB": 0.60, "weightBtoA": 0.70 },
-      { "npcA": "nell_picker",      "npcB": "greta_flint",      "weightAtoB": 0.75, "weightBtoA": 0.75 },
-      { "npcA": "greta_flint",      "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.70 },
-      { "npcA": "aldous_prior",     "npcB": "maren_nun",        "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "aldous_prior",     "npcB": "finn_monk",        "weightAtoB": 0.60, "weightBtoA": 0.80 },
-      { "npcA": "maren_nun",        "npcB": "vera_midwife",     "weightAtoB": 0.70, "weightBtoA": 0.65 },
-      { "npcA": "finn_monk",        "npcB": "constance_widow",  "weightAtoB": 0.65, "weightBtoA": 0.70 },
-      { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
-      { "npcA": "idris_kemp",       "npcB": "bess_wicker",      "weightAtoB": 0.50, "weightBtoA": 0.50 },
-      { "npcA": "marta_coin",       "npcB": "sim_carter",       "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "edric_fenn",       "npcB": "aldric_vane",      "weightAtoB": 0.20, "weightBtoA": 0.15 },
-      { "npcA": "edric_fenn",       "npcB": "tomas_reeve",      "weightAtoB": 0.25, "weightBtoA": 0.20 },
-      { "npcA": "aldric_vane",      "npcB": "tomas_reeve",      "weightAtoB": 0.30, "weightBtoA": 0.25 }
+      {
+        "npcA": "aldric_vane",
+        "npcB": "sybil_oats",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "rufus_bolt",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "bess_wicker",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "marta_coin",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "bram_guard",
+        "weightAtoB": 0.9,
+        "weightBtoA": 0.85
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "calder_fenn",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "isolde_fenn",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "annit_scribe",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldous_prior",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "marta_coin",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.45
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "sim_carter",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "old_hugh",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "wynn_gate",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "pell_gate",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.35
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "cob_farrow",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "nell_picker",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "greta_flint",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "maren_nun",
+        "npcB": "vera_midwife",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "denny_gravedigger",
+        "npcB": "old_hugh",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "idris_kemp",
+        "npcB": "bess_wicker",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "marta_coin",
+        "npcB": "sim_carter",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.2,
+        "weightBtoA": 0.15
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "tomas_reeve",
+        "weightAtoB": 0.25,
+        "weightBtoA": 0.2
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "tomas_reeve",
+        "weightAtoB": 0.3,
+        "weightBtoA": 0.25
+      }
     ],
     "personalityOverrides": [
-      { "npcId": "edric_fenn", "loyalty": 0.80 },
-      { "npcId": "aldric_vane", "loyalty": 0.70 },
-      { "npcId": "tomas_reeve", "loyalty": 0.35 }
+      {
+        "npcId": "edric_fenn",
+        "loyalty": 0.8
+      },
+      {
+        "npcId": "aldric_vane",
+        "loyalty": 0.7
+      },
+      {
+        "npcId": "tomas_reeve",
+        "loyalty": 0.35
+      }
     ],
     "startingReputations": {
       "edric_fenn": 58,
       "aldric_vane": 45,
       "tomas_reeve": 45
     },
-    "targetShiftExcluded": ["aldric_vane"],
-    "electionCandidates": ["edric_fenn", "aldric_vane", "tomas_reeve"],
+    "targetShiftExcluded": [
+      "aldric_vane"
+    ],
+    "electionCandidates": [
+      "edric_fenn",
+      "aldric_vane",
+      "tomas_reeve"
+    ],
     "strategicBrief": {
       "targetNpcId": "aldric_vane",
       "repStart": 45,
@@ -1126,17 +2499,50 @@
       "timeout": "Aldric needs to lead before Day 13 to capture the Prior's endorsement. Start boosting him through the merchant chain in the first week while seeding scandal against both rivals simultaneously."
     },
     "milestoneToasts": [
-      { "threshold": 0.10, "message": "Aldric's name stirs interest at the market." },
-      { "threshold": 0.20, "message": "The early whispers favour Aldric." },
-      { "threshold": 0.25, "message": "The campaign is gaining traction — Aldric's name is on every tongue." },
-      { "threshold": 0.30, "message": "Momentum builds. The rivals take notice." },
-      { "threshold": 0.40, "message": "Aldric is pulling ahead. Press every advantage." },
-      { "threshold": 0.50, "message": "Aldric is making his move — keep the pressure on both rivals." },
-      { "threshold": 0.60, "message": "The election begins to feel like his to lose." },
-      { "threshold": 0.70, "message": "Edric and Tomas scramble for ground." },
-      { "threshold": 0.75, "message": "Victory is within reach — close out the election." },
-      { "threshold": 0.80, "message": "The crowd chants Aldric's name." },
-      { "threshold": 0.90, "message": "One final push — the Council vote is near." }
+      {
+        "threshold": 0.1,
+        "message": "Aldric's name stirs interest at the market."
+      },
+      {
+        "threshold": 0.2,
+        "message": "The early whispers favour Aldric."
+      },
+      {
+        "threshold": 0.25,
+        "message": "The campaign is gaining traction — Aldric's name is on every tongue."
+      },
+      {
+        "threshold": 0.3,
+        "message": "Momentum builds. The rivals take notice."
+      },
+      {
+        "threshold": 0.4,
+        "message": "Aldric is pulling ahead. Press every advantage."
+      },
+      {
+        "threshold": 0.5,
+        "message": "Aldric is making his move — keep the pressure on both rivals."
+      },
+      {
+        "threshold": 0.6,
+        "message": "The election begins to feel like his to lose."
+      },
+      {
+        "threshold": 0.7,
+        "message": "Edric and Tomas scramble for ground."
+      },
+      {
+        "threshold": 0.75,
+        "message": "Victory is within reach — close out the election."
+      },
+      {
+        "threshold": 0.8,
+        "message": "The crowd chants Aldric's name."
+      },
+      {
+        "threshold": 0.9,
+        "message": "One final push — the Council vote is near."
+      }
     ],
     "midGameEvents": [
       {
@@ -1151,20 +2557,43 @@
             "label": "Plant cheering supporters for Aldric in the crowd",
             "outcomeText": "Aldric's speech lands well — partly because of the words, partly because of the enthusiastic applause that drowns out the hecklers. The crowd leaves talking about Aldric's vision. But Edric's allies noticed the planted supporters.",
             "effects": {
-              "reputationChanges": [{ "npcId": "aldric_vane", "delta": 4 }],
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 8.0 }]
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "aldric_vane",
+                  "delta": 4
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 8
+                }
+              ]
+            },
+            "choicePreview": "Supportive — boosts Aldric's presence but costs resources"
           },
           {
             "label": "Heckle the rivals during their speeches",
             "outcomeText": "Edric stumbles over a question about the treasury. Tomas loses his thread when the crowd turns hostile. Neither recovers well. But the tactic is transparent, and some in the crowd wonder who organised it.",
             "effects": {
               "reputationChanges": [
-                { "npcId": "edric_fenn", "delta": -3 },
-                { "npcId": "tomas_reeve", "delta": -3 }
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -3
+                },
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": -3
+                }
               ],
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 5.0 }]
-            }
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 5
+                }
+              ]
+            },
+            "choicePreview": "Disruptive — weakens rivals but may draw negative attention"
           }
         ]
       },
@@ -1180,17 +2609,40 @@
             "label": "Release the letter through the merchant quarter",
             "outcomeText": "The letter passes through the market like fire through dry straw. Edric's support among the merchants collapses overnight. But the Guard Captain is furious — and he is looking for whoever leaked the document.",
             "effects": {
-              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -6 }],
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 15.0 }]
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -6
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 15
+                }
+              ]
+            },
+            "choicePreview": "Public — maximum exposure through the merchant quarter"
           },
           {
             "label": "Show it privately to Aldous Prior before the endorsement",
             "outcomeText": "The Prior reads the letter in silence. He says nothing. But when the endorsement comes, his words carry a weight that suggests he knows more than he is saying. The letter stays between you.",
             "effects": {
-              "personalityChanges": [{ "npcId": "aldous_prior", "trait": "loyalty", "delta": -0.20 }],
-              "credulityChanges": [{ "npcId": "aldous_prior", "delta": 0.15 }]
-            }
+              "personalityChanges": [
+                {
+                  "npcId": "aldous_prior",
+                  "trait": "loyalty",
+                  "delta": -0.2
+                }
+              ],
+              "credulityChanges": [
+                {
+                  "npcId": "aldous_prior",
+                  "delta": 0.15
+                }
+              ]
+            },
+            "choicePreview": "Private — secures endorsement through trusted channels"
           }
         ]
       },
@@ -1199,7 +2651,7 @@
         "name": "The Final Rally",
         "dayWindowStart": 18,
         "dayWindowEnd": 21,
-        "probability": 0.70,
+        "probability": 0.7,
         "description": "The election is days away. Tomas Reeve has called a gathering at the well — a last appeal to the common folk. Edric is countering with a feast at the Manor. Aldric has nothing planned. This is the moment to seize.",
         "choices": [
           {
@@ -1207,20 +2659,49 @@
             "outcomeText": "Sybil and Nell spread the word. By evening, the Market Square is full of merchants calling Aldric's name. The display of support shakes Edric's remaining allies. But Tomas's common-folk gathering draws its own crowd — the race is not over.",
             "effects": {
               "reputationChanges": [
-                { "npcId": "aldric_vane", "delta": 5 },
-                { "npcId": "edric_fenn", "delta": -2 }
+                {
+                  "npcId": "aldric_vane",
+                  "delta": 5
+                },
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -2
+                }
               ],
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 6.0 }]
-            }
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 6
+                }
+              ]
+            },
+            "choicePreview": "Constructive — builds positive momentum for Aldric"
           },
           {
             "label": "Sabotage Tomas's gathering with a planted heckler",
             "outcomeText": "A well-timed question about Tomas's record on the bridge tolls derails his speech. The crowd disperses muttering. Tomas's support among the commons fractures. But Old Hugh saw who planted the heckler — and he is no friend of yours.",
             "effects": {
-              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -5 }],
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 10.0 }],
-              "personalityChanges": [{ "npcId": "old_hugh", "trait": "credulity", "delta": -0.15 }]
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": -5
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 10
+                }
+              ],
+              "personalityChanges": [
+                {
+                  "npcId": "old_hugh",
+                  "trait": "credulity",
+                  "delta": -0.15
+                }
+              ]
+            },
+            "choicePreview": "Disruptive — undermines the opposition's final push"
           }
         ]
       },
@@ -1236,25 +2717,52 @@
             "label": "Destroy the pamphlets and campaign against Edric's dirty tactics",
             "outcomeText": "You gather the pamphlets before most of the guild hall has seen them, then spend the afternoon in conversation: 'Edric's people are handing out filth because they have nothing real to say.' Edric's reputation suffers — and you have a free appearance in the bank.",
             "effects": {
-              "reputationChanges": [{ "npcId": "edric_fenn", "delta": -4 }],
-              "heatChanges": [{ "npcId": "edric_fenn", "delta": 8.0 }],
+              "reputationChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -4
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "delta": 8
+                }
+              ],
               "freeCampaignCharges": 1
-            }
+            },
+            "choicePreview": "Defensive — destroys smears and campaigns against dirty tactics"
           },
           {
             "label": "Show the pamphlets to the townsfolk — let them see Edric's desperation",
             "outcomeText": "You carry one pamphlet into the Tavern and set it on the table. 'Look what Edric's people are doing.' The room reads it in silence. Some are offended on Aldric's behalf. The credulity of the undecided tilts your way.",
             "effects": {
               "reputationChanges": [
-                { "npcId": "aldric_vane", "delta": 3 },
-                { "npcId": "edric_fenn", "delta": -2 }
+                {
+                  "npcId": "aldric_vane",
+                  "delta": 3
+                },
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -2
+                }
               ],
               "credulityChanges": [
-                { "npcId": "nell_picker", "delta": 0.08 },
-                { "npcId": "sim_carter", "delta": 0.08 },
-                { "npcId": "constance_widow", "delta": 0.08 }
+                {
+                  "npcId": "nell_picker",
+                  "delta": 0.08
+                },
+                {
+                  "npcId": "sim_carter",
+                  "delta": 0.08
+                },
+                {
+                  "npcId": "constance_widow",
+                  "delta": 0.08
+                }
               ]
-            }
+            },
+            "choicePreview": "Offensive — uses the pamphlets as evidence of corruption"
           }
         ]
       },
@@ -1270,21 +2778,52 @@
             "label": "Sabotage the speech — pay a heckler to disrupt Tomas",
             "outcomeText": "A persistent question from the back of the crowd ruins Tomas's rhythm. He loses the thread, stumbles over his own record, and finishes to quiet applause. Aldous Prior watches with a flat expression. Tomas's credibility takes a hard blow.",
             "effects": {
-              "reputationChanges": [{ "npcId": "tomas_reeve", "delta": -5 }],
-              "heatChanges": [{ "npcId": "tomas_reeve", "delta": 10.0 }],
-              "personalityChanges": [{ "npcId": "aldous_prior", "trait": "temperament", "delta": 0.10 }]
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": -5
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": 10
+                }
+              ],
+              "personalityChanges": [
+                {
+                  "npcId": "aldous_prior",
+                  "trait": "temperament",
+                  "delta": 0.1
+                }
+              ]
+            },
+            "choicePreview": "Aggressive — disrupts Tomas's speech directly"
           },
           {
             "label": "Counter-program — organise Aldric's own speech at the Market",
             "outcomeText": "While Tomas speaks at the Chapel, Aldric speaks at the Market. Two audiences, two messages. The merchant crowd is Aldric's — he knows them, and they know him. His reputation rises. The merchants who will sway the Prior's thinking have been reached.",
             "effects": {
-              "reputationChanges": [{ "npcId": "aldric_vane", "delta": 4 }],
+              "reputationChanges": [
+                {
+                  "npcId": "aldric_vane",
+                  "delta": 4
+                }
+              ],
               "personalityChanges": [
-                { "npcId": "sybil_oats", "trait": "loyalty", "delta": 0.10 },
-                { "npcId": "rufus_bolt", "trait": "loyalty", "delta": 0.10 }
+                {
+                  "npcId": "sybil_oats",
+                  "trait": "loyalty",
+                  "delta": 0.1
+                },
+                {
+                  "npcId": "rufus_bolt",
+                  "trait": "loyalty",
+                  "delta": 0.1
+                }
               ]
-            }
+            },
+            "choicePreview": "Strategic — counter-programs with Aldric's own speech"
           }
         ]
       }
@@ -1292,7 +2831,7 @@
     "difficultyModifiers": {
       "easy": {
         "daysAllowedOverride": 30,
-        "credulityDelta": 0.10,
+        "credulityDelta": 0.1,
         "heatRateMultiplier": 0.75,
         "winAldricMin": 60,
         "winRivalsMax": 50,
@@ -1305,8 +2844,8 @@
       },
       "hard": {
         "daysAllowedOverride": 19,
-        "credulityDelta": -0.10,
-        "heatRateMultiplier": 1.30,
+        "credulityDelta": -0.1,
+        "heatRateMultiplier": 1.3,
         "winAldricMin": 72,
         "winRivalsMax": 40,
         "failAldricBelow": 35,
@@ -1320,8 +2859,11 @@
       }
     },
     "suggestion_overrides": {
-      "heat_spike_threshold": 60.0,
-      "category_priorities": ["faction_momentum", "claim_type"]
+      "heat_spike_threshold": 60,
+      "category_priorities": [
+        "faction_momentum",
+        "claim_type"
+      ]
     }
   },
   {
@@ -1340,51 +2882,226 @@
       "timeout": "Twenty days passed. The ledger sat in Marta's locked chest, still waiting for the right moment.\n\nThe right moment never came. Aldric Vane's reputation was bruised but intact. The guild closed its books for the season, and with them, the window for an audit.\n\nMarta Coin paid you the second half of your fee without a word. You both knew it had been wasted."
     },
     "edgeOverrides": [
-      { "npcA": "aldric_vane",      "npcB": "sybil_oats",       "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "aldric_vane",      "npcB": "rufus_bolt",       "weightAtoB": 0.70, "weightBtoA": 0.65 },
-      { "npcA": "aldric_vane",      "npcB": "bess_wicker",      "weightAtoB": 0.65, "weightBtoA": 0.70 },
-      { "npcA": "aldric_vane",      "npcB": "idris_kemp",       "weightAtoB": 0.55, "weightBtoA": 0.50 },
-      { "npcA": "aldric_vane",      "npcB": "greta_flint",      "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "aldric_vane",      "npcB": "bram_guard",       "weightAtoB": 0.50, "weightBtoA": 0.45 },
-      { "npcA": "marta_coin",       "npcB": "sim_carter",       "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "marta_coin",       "npcB": "nell_picker",      "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "marta_coin",       "npcB": "constance_widow",  "weightAtoB": 0.50, "weightBtoA": 0.55 },
-      { "npcA": "marta_coin",       "npcB": "vera_midwife",     "weightAtoB": 0.45, "weightBtoA": 0.50 },
-      { "npcA": "sybil_oats",       "npcB": "nell_picker",      "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "sybil_oats",       "npcB": "cob_farrow",       "weightAtoB": 0.60, "weightBtoA": 0.70 },
-      { "npcA": "nell_picker",      "npcB": "greta_flint",      "weightAtoB": 0.75, "weightBtoA": 0.75 },
-      { "npcA": "greta_flint",      "npcB": "constance_widow",  "weightAtoB": 0.70, "weightBtoA": 0.70 },
-      { "npcA": "edric_fenn",       "npcB": "bram_guard",       "weightAtoB": 0.90, "weightBtoA": 0.85 },
-      { "npcA": "edric_fenn",       "npcB": "aldric_vane",      "weightAtoB": 0.40, "weightBtoA": 0.35 },
-      { "npcA": "edric_fenn",       "npcB": "annit_scribe",     "weightAtoB": 0.65, "weightBtoA": 0.60 },
-      { "npcA": "annit_scribe",     "npcB": "aldric_vane",      "weightAtoB": 0.70, "weightBtoA": 0.60 },
-      { "npcA": "aldous_prior",     "npcB": "maren_nun",        "weightAtoB": 0.80, "weightBtoA": 0.75 },
-      { "npcA": "aldous_prior",     "npcB": "finn_monk",        "weightAtoB": 0.60, "weightBtoA": 0.80 },
-      { "npcA": "maren_nun",        "npcB": "vera_midwife",     "weightAtoB": 0.70, "weightBtoA": 0.65 },
-      { "npcA": "finn_monk",        "npcB": "constance_widow",  "weightAtoB": 0.65, "weightBtoA": 0.70 },
-      { "npcA": "finn_monk",        "npcB": "old_piety",        "weightAtoB": 0.60, "weightBtoA": 0.65 },
-      { "npcA": "bram_guard",       "npcB": "wynn_gate",        "weightAtoB": 0.70, "weightBtoA": 0.60 },
-      { "npcA": "bram_guard",       "npcB": "pell_gate",        "weightAtoB": 0.55, "weightBtoA": 0.35 },
-      { "npcA": "tomas_reeve",      "npcB": "marta_coin",       "weightAtoB": 0.45, "weightBtoA": 0.40 },
-      { "npcA": "denny_gravedigger","npcB": "old_hugh",         "weightAtoB": 0.45, "weightBtoA": 0.40 },
-      { "npcA": "old_hugh",         "npcB": "edric_fenn",       "weightAtoB": 0.40, "weightBtoA": 0.30 },
-      { "npcA": "jude_bellringer",  "npcB": "aldous_prior",     "weightAtoB": 0.50, "weightBtoA": 0.40 },
-      { "npcA": "thomas_pilgrim",   "npcB": "finn_monk",        "weightAtoB": 0.55, "weightBtoA": 0.60 },
-      { "npcA": "alys_herbwife",    "npcB": "maren_nun",        "weightAtoB": 0.60, "weightBtoA": 0.55 }
+      {
+        "npcA": "aldric_vane",
+        "npcB": "sybil_oats",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "rufus_bolt",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "bess_wicker",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "idris_kemp",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "aldric_vane",
+        "npcB": "bram_guard",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.45
+      },
+      {
+        "npcA": "marta_coin",
+        "npcB": "sim_carter",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "marta_coin",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "marta_coin",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.55
+      },
+      {
+        "npcA": "marta_coin",
+        "npcB": "vera_midwife",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.5
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "nell_picker",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "sybil_oats",
+        "npcB": "cob_farrow",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "nell_picker",
+        "npcB": "greta_flint",
+        "weightAtoB": 0.75,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "greta_flint",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "bram_guard",
+        "weightAtoB": 0.9,
+        "weightBtoA": 0.85
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.4,
+        "weightBtoA": 0.35
+      },
+      {
+        "npcA": "edric_fenn",
+        "npcB": "annit_scribe",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "annit_scribe",
+        "npcB": "aldric_vane",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.8,
+        "weightBtoA": 0.75
+      },
+      {
+        "npcA": "aldous_prior",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.8
+      },
+      {
+        "npcA": "maren_nun",
+        "npcB": "vera_midwife",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "constance_widow",
+        "weightAtoB": 0.65,
+        "weightBtoA": 0.7
+      },
+      {
+        "npcA": "finn_monk",
+        "npcB": "old_piety",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.65
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "wynn_gate",
+        "weightAtoB": 0.7,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "bram_guard",
+        "npcB": "pell_gate",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.35
+      },
+      {
+        "npcA": "tomas_reeve",
+        "npcB": "marta_coin",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "denny_gravedigger",
+        "npcB": "old_hugh",
+        "weightAtoB": 0.45,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "old_hugh",
+        "npcB": "edric_fenn",
+        "weightAtoB": 0.4,
+        "weightBtoA": 0.3
+      },
+      {
+        "npcA": "jude_bellringer",
+        "npcB": "aldous_prior",
+        "weightAtoB": 0.5,
+        "weightBtoA": 0.4
+      },
+      {
+        "npcA": "thomas_pilgrim",
+        "npcB": "finn_monk",
+        "weightAtoB": 0.55,
+        "weightBtoA": 0.6
+      },
+      {
+        "npcA": "alys_herbwife",
+        "npcB": "maren_nun",
+        "weightAtoB": 0.6,
+        "weightBtoA": 0.55
+      }
     ],
     "personalityOverrides": [
-      { "npcId": "aldric_vane", "loyalty": 0.90 },
-      { "npcId": "annit_scribe", "loyalty": 0.70 },
-      { "npcId": "marta_coin", "loyalty": 0.60, "credulity": 0.35 },
-      { "npcId": "sybil_oats", "loyalty": 0.65 },
-      { "npcId": "rufus_bolt", "loyalty": 0.60 }
+      {
+        "npcId": "aldric_vane",
+        "loyalty": 0.9
+      },
+      {
+        "npcId": "annit_scribe",
+        "loyalty": 0.7
+      },
+      {
+        "npcId": "marta_coin",
+        "loyalty": 0.6,
+        "credulity": 0.35
+      },
+      {
+        "npcId": "sybil_oats",
+        "loyalty": 0.65
+      },
+      {
+        "npcId": "rufus_bolt",
+        "loyalty": 0.6
+      }
     ],
     "startingReputations": {
       "aldric_vane": 55,
       "marta_coin": 48
     },
-    "targetShiftExcluded": ["marta_coin"],
-    "protectedNpcIds": ["marta_coin"],
+    "targetShiftExcluded": [
+      "marta_coin"
+    ],
+    "protectedNpcIds": [
+      "marta_coin"
+    ],
     "strategicBrief": {
       "targetNpcId": "aldric_vane",
       "repStart": 55,
@@ -1392,10 +3109,15 @@
       "primaryConstraint": "Heat ceiling 55 — guards are on Aldric's payroll",
       "strategicHint": "Route accusations through clergy and commons — Aldric's merchant allies actively counter your market-quarter rumors."
     },
-    "exposedHeatOverride": 55.0,
+    "exposedHeatOverride": 55,
     "guildDefenseActive": true,
     "guildDefenseConfig": {
-      "defenderNpcIds": ["sybil_oats", "rufus_bolt", "bess_wicker", "idris_kemp"],
+      "defenderNpcIds": [
+        "sybil_oats",
+        "rufus_bolt",
+        "bess_wicker",
+        "idris_kemp"
+      ],
       "defenseTarget": "aldric_vane",
       "praiseIntensity": 2,
       "cooldownDays": 3,
@@ -1423,17 +3145,50 @@
       "timeout": "Aldric's merchant allies actively block market-quarter rumors. Route entirely through clergy and commons chains — Finn Monk is your best primary seed target for accusations."
     },
     "milestoneToasts": [
-      { "threshold": 0.10, "message": "A ledger discrepancy is mentioned in hushed tones." },
-      { "threshold": 0.20, "message": "The story of missing silver is gaining credence." },
-      { "threshold": 0.25, "message": "The first cracks appear — whispers of missing silver spread." },
-      { "threshold": 0.30, "message": "Aldric's confidence falters under scrutiny." },
-      { "threshold": 0.40, "message": "Doubt spreads among the guild merchants." },
-      { "threshold": 0.50, "message": "Halfway there. Aldric's allies are starting to doubt him." },
-      { "threshold": 0.60, "message": "The guild debates Aldric's fitness openly." },
-      { "threshold": 0.70, "message": "Marta gains ground as Aldric's story unravels." },
-      { "threshold": 0.75, "message": "The guild is turning — one final push and the truth wins." },
-      { "threshold": 0.80, "message": "Aldric is nearly exposed. Don't let up." },
-      { "threshold": 0.90, "message": "The reckoning is at hand — finish the reversal." }
+      {
+        "threshold": 0.1,
+        "message": "A ledger discrepancy is mentioned in hushed tones."
+      },
+      {
+        "threshold": 0.2,
+        "message": "The story of missing silver is gaining credence."
+      },
+      {
+        "threshold": 0.25,
+        "message": "The first cracks appear — whispers of missing silver spread."
+      },
+      {
+        "threshold": 0.3,
+        "message": "Aldric's confidence falters under scrutiny."
+      },
+      {
+        "threshold": 0.4,
+        "message": "Doubt spreads among the guild merchants."
+      },
+      {
+        "threshold": 0.5,
+        "message": "Halfway there. Aldric's allies are starting to doubt him."
+      },
+      {
+        "threshold": 0.6,
+        "message": "The guild debates Aldric's fitness openly."
+      },
+      {
+        "threshold": 0.7,
+        "message": "Marta gains ground as Aldric's story unravels."
+      },
+      {
+        "threshold": 0.75,
+        "message": "The guild is turning — one final push and the truth wins."
+      },
+      {
+        "threshold": 0.8,
+        "message": "Aldric is nearly exposed. Don't let up."
+      },
+      {
+        "threshold": 0.9,
+        "message": "The reckoning is at hand — finish the reversal."
+      }
     ],
     "midGameEvents": [
       {
@@ -1441,30 +3196,47 @@
         "name": "The Real Ledger",
         "dayWindowStart": 6,
         "dayWindowEnd": 9,
-        "probability": 0.70,
+        "probability": 0.7,
         "description": "Marta has given you the real ledger — the one that shows every missing silver mark, every falsified entry. Hard proof. But using it will put Marta's name on the evidence trail.",
         "choices": [
           {
             "label": "Copy the key pages and leak them anonymously",
             "outcomeText": "The copied pages appear on the chapel notice board overnight. No name attached. By morning, Aldous Prior is reading them with a furrowed brow. Aldric's merchant allies scramble to call them forgeries — but the numbers are too precise to dismiss.",
             "effects": {
-              "reputationChanges": [{ "npcId": "aldric_vane", "delta": -5 }],
+              "reputationChanges": [
+                {
+                  "npcId": "aldric_vane",
+                  "delta": -5
+                }
+              ],
               "credulityChanges": [
-                { "npcId": "aldous_prior", "delta": 0.15 },
-                { "npcId": "maren_nun", "delta": 0.10 }
+                {
+                  "npcId": "aldous_prior",
+                  "delta": 0.15
+                },
+                {
+                  "npcId": "maren_nun",
+                  "delta": 0.1
+                }
               ]
-            }
+            },
+            "choicePreview": "Bold — widespread exposure but hard to control the narrative"
           },
           {
             "label": "Hold the ledger — use it to turn Annit Scribe",
             "outcomeText": "You show Annit the real ledger. Her face goes pale. She signed those false entries — she knows what that means. She won't speak against Aldric publicly. Not yet. But her loyalty wavers, and she stops defending him.",
             "effects": {
               "personalityChanges": [
-                { "npcId": "annit_scribe", "trait": "loyalty", "delta": -0.30 }
+                {
+                  "npcId": "annit_scribe",
+                  "trait": "loyalty",
+                  "delta": -0.3
+                }
               ],
               "bonusReconActions": 2,
               "bonusReconDays": 3
-            }
+            },
+            "choicePreview": "Strategic — turns a key official to your side"
           }
         ]
       },
@@ -1481,18 +3253,36 @@
             "outcomeText": "You've spent the last days building Marta's reputation. Now it pays off. When Aldric makes his accusations, Sim Carter stands and speaks for Marta. Then Nell Picker. Then Constance Widow. Aldric's attack falters against a wall of testimony.",
             "effects": {
               "reputationChanges": [
-                { "npcId": "marta_coin", "delta": 4 },
-                { "npcId": "aldric_vane", "delta": -2 }
+                {
+                  "npcId": "marta_coin",
+                  "delta": 4
+                },
+                {
+                  "npcId": "aldric_vane",
+                  "delta": -2
+                }
               ]
-            }
+            },
+            "choicePreview": "Proactive — preemptive defense with character witnesses"
           },
           {
             "label": "Let Aldric speak — then present counter-evidence publicly",
             "outcomeText": "You wait. Aldric makes his case — convincing, polished, full of righteous anger. And then you step forward with the copied ledger pages. The silence that follows is devastating. But Aldric's allies now know exactly who to blame.",
             "effects": {
-              "reputationChanges": [{ "npcId": "aldric_vane", "delta": -7 }],
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 12.0 }]
-            }
+              "reputationChanges": [
+                {
+                  "npcId": "aldric_vane",
+                  "delta": -7
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 12
+                }
+              ]
+            },
+            "choicePreview": "Reactive — lets Aldric overextend then counters publicly"
           }
         ]
       },
@@ -1509,22 +3299,48 @@
             "outcomeText": "Sim Carter, Nell Picker, and Constance Widow arrive early and take prominent seats. Their presence emboldens the undecided — when the hands go up, Marta's motion passes by three votes. Aldric's face is stone. The audit will happen.",
             "effects": {
               "reputationChanges": [
-                { "npcId": "aldric_vane", "delta": -4 },
-                { "npcId": "marta_coin", "delta": 3 }
+                {
+                  "npcId": "aldric_vane",
+                  "delta": -4
+                },
+                {
+                  "npcId": "marta_coin",
+                  "delta": 3
+                }
               ]
-            }
+            },
+            "choicePreview": "Direct — packs the vote with Marta's supporters"
           },
           {
             "label": "Leak Annit Scribe's involvement to fracture Aldric's defence",
             "outcomeText": "The whisper reaches Rufus Bolt first: Annit signed the false ledgers. Rufus confronts Annit privately. She breaks. By the time the vote is called, two of Aldric's four defenders have gone quiet. But Aldric knows someone is pulling strings.",
             "effects": {
-              "reputationChanges": [{ "npcId": "aldric_vane", "delta": -5 }],
-              "personalityChanges": [
-                { "npcId": "annit_scribe", "trait": "loyalty", "delta": -0.20 },
-                { "npcId": "rufus_bolt", "trait": "loyalty", "delta": -0.15 }
+              "reputationChanges": [
+                {
+                  "npcId": "aldric_vane",
+                  "delta": -5
+                }
               ],
-              "heatChanges": [{ "npcId": "bram_guard", "delta": 8.0 }]
-            }
+              "personalityChanges": [
+                {
+                  "npcId": "annit_scribe",
+                  "trait": "loyalty",
+                  "delta": -0.2
+                },
+                {
+                  "npcId": "rufus_bolt",
+                  "trait": "loyalty",
+                  "delta": -0.15
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "bram_guard",
+                  "delta": 8
+                }
+              ]
+            },
+            "choicePreview": "Subtle — fractures Aldric's coalition from within"
           }
         ]
       },
@@ -1541,22 +3357,46 @@
             "outcomeText": "You take the ledger and Bess steps back into shadow. The numbers are exactly what you needed. Two more uses of your evidence are yours — but Bess will not spread anti-Aldric rumors now. She is protecting herself.",
             "effects": {
               "bonusExposeCharges": 2,
-              "personalityChanges": [{ "npcId": "bess_wicker", "trait": "loyalty", "delta": -0.20 }],
-              "heatChanges": [{ "npcId": "bess_wicker", "delta": 6.0 }]
-            }
+              "personalityChanges": [
+                {
+                  "npcId": "bess_wicker",
+                  "trait": "loyalty",
+                  "delta": -0.2
+                }
+              ],
+              "heatChanges": [
+                {
+                  "npcId": "bess_wicker",
+                  "delta": 6
+                }
+              ]
+            },
+            "choicePreview": "Aggressive — immediate exposure of Aldric's inner circle"
           },
           {
             "label": "Protect Bess — have her leak information gradually through trusted channels",
             "outcomeText": "You tell Bess to stay quiet and stay safe. Instead of ledger pages, you leave with names — guild members who already doubt Aldric. Rufus Bolt and Idris Kemp are more receptive than they were yesterday. And Aldric takes a small, deniable hit.",
             "effects": {
-              "reputationChanges": [{ "npcId": "aldric_vane", "delta": -3 }],
+              "reputationChanges": [
+                {
+                  "npcId": "aldric_vane",
+                  "delta": -3
+                }
+              ],
               "credulityChanges": [
-                { "npcId": "rufus_bolt", "delta": 0.10 },
-                { "npcId": "idris_kemp", "delta": 0.10 }
+                {
+                  "npcId": "rufus_bolt",
+                  "delta": 0.1
+                },
+                {
+                  "npcId": "idris_kemp",
+                  "delta": 0.1
+                }
               ],
               "bonusReconActions": 1,
               "bonusReconDays": 3
-            }
+            },
+            "choicePreview": "Careful — protects your source and builds the case gradually"
           }
         ]
       },
@@ -1565,27 +3405,45 @@
         "name": "The Guard Captain's Price",
         "dayWindowStart": 15,
         "dayWindowEnd": 17,
-        "probability": 0.60,
+        "probability": 0.6,
         "description": "The guard captain who enforces Aldric's low heat ceiling approaches you with an offer. He knows what Aldric has done — and for a price, he will look the other way. But his loyalty is fragile.",
         "choices": [
           {
             "label": "Pay the captain — raise the heat ceiling temporarily",
             "outcomeText": "You pass a purse under the table. The captain pockets it without looking at you. For the next four days, the ceiling on what you can risk rises significantly — a window to act aggressively before it closes again.",
             "effects": {
-              "heatCeilingOverride": { "newCeiling": 70, "durationDays": 4 },
+              "heatCeilingOverride": {
+                "newCeiling": 70,
+                "durationDays": 4
+              },
               "consumeAllBribeCharges": true
-            }
+            },
+            "choicePreview": "Costly — raises the heat ceiling but costs resources"
           },
           {
             "label": "Decline — but ask the captain to deliver a message to Marta's supporters",
             "outcomeText": "You let him keep his coin and ask a simpler favour: carry word that Marta Coin is holding firm. He shrugs and walks toward the commons. Two of her neighbours begin saying her name with a little more certainty.",
             "effects": {
-              "reputationChanges": [{ "npcId": "marta_coin", "delta": 5 }],
+              "reputationChanges": [
+                {
+                  "npcId": "marta_coin",
+                  "delta": 5
+                }
+              ],
               "personalityChanges": [
-                { "npcId": "sim_carter", "trait": "loyalty", "delta": 0.10 },
-                { "npcId": "nell_picker", "trait": "loyalty", "delta": 0.10 }
+                {
+                  "npcId": "sim_carter",
+                  "trait": "loyalty",
+                  "delta": 0.1
+                },
+                {
+                  "npcId": "nell_picker",
+                  "trait": "loyalty",
+                  "delta": 0.1
+                }
               ]
-            }
+            },
+            "choicePreview": "Free — no cost but gains a communication channel to allies"
           }
         ]
       }
@@ -1593,9 +3451,9 @@
     "difficultyModifiers": {
       "easy": {
         "daysAllowedOverride": 27,
-        "credulityDelta": 0.10,
+        "credulityDelta": 0.1,
         "heatRateMultiplier": 0.75,
-        "exposedHeatOverride": 75.0,
+        "exposedHeatOverride": 75,
         "winAldricMax": 35,
         "winMartaMin": 55,
         "failMartaBelow": 25,
@@ -1607,9 +3465,9 @@
       },
       "hard": {
         "daysAllowedOverride": 16,
-        "credulityDelta": -0.10,
-        "heatRateMultiplier": 1.30,
-        "exposedHeatOverride": 45.0,
+        "credulityDelta": -0.1,
+        "heatRateMultiplier": 1.3,
+        "exposedHeatOverride": 45,
         "winAldricMax": 22,
         "winMartaMin": 68,
         "failMartaBelow": 38,
@@ -1619,15 +3477,24 @@
           "marta_coin": 44
         },
         "personalityOverrides": [
-          { "npcId": "aldric_vane", "loyalty": 0.95 },
-          { "npcId": "sybil_oats", "loyalty": 0.80 },
-          { "npcId": "rufus_bolt", "loyalty": 0.75 }
+          {
+            "npcId": "aldric_vane",
+            "loyalty": 0.95
+          },
+          {
+            "npcId": "sybil_oats",
+            "loyalty": 0.8
+          },
+          {
+            "npcId": "rufus_bolt",
+            "loyalty": 0.75
+          }
         ],
         "designNote": "Aldric starts stronger and better defended. Marta starts weaker. Tighter heat ceiling (50), faster guild defense (every 2 days), and 18-day deadline. Requires near-perfect routing through non-merchant channels and constant Marta-boosting."
       }
     },
     "suggestion_overrides": {
-      "heat_spike_threshold": 60.0,
+      "heat_spike_threshold": 60,
       "category_priorities": []
     }
   }

@@ -6,6 +6,9 @@ extends CanvasLayer
 ## visible (same pattern as TutorialHUD).  Emits `choice_made` when the player
 ## picks an option, then shows the outcome text with a dismiss button.
 ##
+## SPA-953: Enhanced with 500ms screen-dim tween, SFX sting on presentation,
+## and qualitative choicePreview text under each choice button.
+##
 ## Usage from main.gd:
 ##   var modal := preload("res://scripts/event_choice_modal.gd").new()
 ##   modal.name = "EventChoiceModal"
@@ -24,9 +27,13 @@ const C_BTN_NORMAL    := Color(0.35, 0.22, 0.08, 1.0)
 const C_BTN_HOVER     := Color(0.55, 0.35, 0.12, 1.0)
 const C_BTN_TEXT      := Color(0.92, 0.82, 0.60, 1.0)
 const C_OUTCOME_BG    := Color(0.08, 0.06, 0.03, 1.0)
+const C_PREVIEW       := Color(0.60, 0.52, 0.38, 1.0)   # muted parchment for choicePreview
 
 const PANEL_WIDTH  := 700
 const PANEL_HEIGHT := 420
+
+## Duration of the backdrop dim-in tween (SPA-953).
+const DIM_TWEEN_SECS := 0.5
 
 ## Emitted when the player picks a choice.
 ## event_id: String, choice_index: int (0 or 1).
@@ -43,6 +50,8 @@ var _title_label:   Label          = null
 var _body_label:    RichTextLabel  = null
 var _choice_a_btn:  Button         = null
 var _choice_b_btn:  Button         = null
+var _preview_a:     Label          = null
+var _preview_b:     Label          = null
 var _outcome_label: RichTextLabel  = null
 var _dismiss_btn:   Button         = null
 
@@ -54,6 +63,7 @@ var _showing_outcome: bool = false
 
 func _ready() -> void:
 	layer = 21  # Above TutorialHUD (20)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui()
 	visible = false
 
@@ -81,14 +91,22 @@ func present_event(event_data: Dictionary) -> void:
 	if choices.size() >= 1:
 		_choice_a_btn.text = str(choices[0].get("label", "Choice A"))
 		_choice_a_btn.visible = true
+		var prev_a: String = str(choices[0].get("choicePreview", ""))
+		_preview_a.text = prev_a
+		_preview_a.visible = not prev_a.is_empty()
 	else:
 		_choice_a_btn.visible = false
+		_preview_a.visible = false
 
 	if choices.size() >= 2:
 		_choice_b_btn.text = str(choices[1].get("label", "Choice B"))
 		_choice_b_btn.visible = true
+		var prev_b: String = str(choices[1].get("choicePreview", ""))
+		_preview_b.text = prev_b
+		_preview_b.visible = not prev_b.is_empty()
 	else:
 		_choice_b_btn.visible = false
+		_preview_b.visible = false
 
 	_outcome_label.visible = false
 	_dismiss_btn.visible = false
@@ -96,7 +114,17 @@ func present_event(event_data: Dictionary) -> void:
 	_choice_a_btn.visible = choices.size() >= 1
 	_choice_b_btn.visible = choices.size() >= 2
 
+	# SPA-953: Animate backdrop dim-in and play SFX sting.
+	_backdrop.color.a = 0.0
 	visible = true
+	var tw := create_tween()
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tw.tween_property(_backdrop, "color:a", C_BACKDROP.a, DIM_TWEEN_SECS)
+
+	var audio := _get_audio_manager()
+	if audio != null:
+		audio.play_sfx("event_sting")
+
 	get_tree().paused = true
 
 	# Keyboard focus: grab the first visible choice button.
@@ -111,6 +139,8 @@ func show_outcome(outcome_text: String) -> void:
 	_showing_outcome = true
 	_choice_a_btn.visible = false
 	_choice_b_btn.visible = false
+	_preview_a.visible = false
+	_preview_b.visible = false
 	_body_label.visible = false
 
 	_outcome_label.text = outcome_text
@@ -189,9 +219,15 @@ func _build_ui() -> void:
 	_choice_a_btn.pressed.connect(_on_choice_a_pressed)
 	btn_box.add_child(_choice_a_btn)
 
+	_preview_a = _make_preview_label()
+	btn_box.add_child(_preview_a)
+
 	_choice_b_btn = _make_choice_button("Choice B")
 	_choice_b_btn.pressed.connect(_on_choice_b_pressed)
 	btn_box.add_child(_choice_b_btn)
+
+	_preview_b = _make_preview_label()
+	btn_box.add_child(_preview_b)
 
 	# Dismiss button (hidden initially).
 	_dismiss_btn = _make_choice_button("Continue")
@@ -260,3 +296,25 @@ func _on_dismiss_pressed() -> void:
 	visible = false
 	get_tree().paused = false
 	dismissed.emit()
+
+
+## Build a small italic label for choicePreview text under a choice button.
+func _make_preview_label() -> Label:
+	var lbl := Label.new()
+	lbl.add_theme_color_override("font_color", C_PREVIEW)
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.custom_minimum_size = Vector2(PANEL_WIDTH - 80, 0)
+	lbl.visible = false
+	return lbl
+
+
+## Locate the AudioManager autoload (safe to return null).
+func _get_audio_manager() -> Node:
+	if Engine.has_singleton("AudioManager"):
+		return Engine.get_singleton("AudioManager")
+	var root := get_tree().root if get_tree() != null else null
+	if root != null and root.has_node("AudioManager"):
+		return root.get_node("AudioManager")
+	return null
