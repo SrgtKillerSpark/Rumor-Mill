@@ -1,14 +1,14 @@
-## analytics_wiring.gd — SPA-993: Analytics logger signal wiring.
+## analytics_manager.gd — SPA-994: Analytics logger signal wiring.
 ##
 ## Owns the AnalyticsLogger instance and wires all analytics signals.
 ## Extracted from main.gd to keep the entry-point lean.
 ##
 ## Usage (from main.gd):
-##   _analytics_wiring = AnalyticsWiring.new()
-##   _analytics_wiring.setup(scenario_id, world, day_night, rumor_panel, recon_ctrl)
+##   _analytics_manager = AnalyticsManager.new()
+##   _analytics_manager.setup(scenario_id, world, day_night, rumor_panel, recon_ctrl)
 
 extends RefCounted
-class_name AnalyticsWiring
+class_name AnalyticsManager
 
 var _analytics_logger:      AnalyticsLogger = null
 var _analytics_scenario_id: String          = ""

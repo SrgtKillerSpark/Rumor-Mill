@@ -94,8 +94,8 @@ var _daily_planning: CanvasLayer = null
 # ── SPA-212: Analytics data collector ─────────────────────────────────────────
 var _analytics: ScenarioAnalytics = null
 
-# ── SPA-244 / SPA-993: Analytics logger signal wiring ────────────────────────
-var _analytics_wiring: AnalyticsWiring = null
+# ── SPA-244 / SPA-994: Analytics logger signal wiring ────────────────────────
+var _analytics_manager: AnalyticsManager = null
 
 
 # Prevent duplicate tooltip triggers for observe / eavesdrop / npc_state_change.
@@ -2411,8 +2411,8 @@ func _init_audio() -> void:
 # ── SPA-244: Local analytics logger ──────────────────────────────────────────
 
 func _init_analytics_logger(scenario_id: String) -> void:
-	_analytics_wiring = AnalyticsWiring.new()
-	_analytics_wiring.setup(scenario_id, world, day_night, rumor_panel, _recon_ctrl_ref)
+	_analytics_manager = AnalyticsManager.new()
+	_analytics_manager.setup(scenario_id, world, day_night, rumor_panel, _recon_ctrl_ref)
 
 
 # ── Pause Menu ────────────────────────────────────────────────────────────────
