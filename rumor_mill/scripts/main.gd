@@ -126,6 +126,8 @@ var _ctx_act_fired:      bool = false
 var _ctx_reject_fired:   bool = false
 var _ctx_tokens_fired:   bool = false
 var _ctx_heat_warn_fired: bool = false  # SPA-608: heat warning hint (S1 only)
+var _ctx_rival_first_act_fired:      bool = false  # SPA-937: S3 rival first-action hint gate
+var _ctx_inquisitor_first_act_fired: bool = false  # SPA-937: S4 inquisitor first-action hint gate
 
 # ── SPA-788: First-time reward moment guards ──────────────────────────────────
 var _reward_first_spread_fired: bool = false
@@ -1627,9 +1629,11 @@ func _init_context_banner() -> void:
 		"scenario_2":
 			_s_hints = ["ctx_s2_illness_mechanic", "ctx_s2_maren_warning", "ctx_s2_believer_check"]
 		"scenario_3":
-			_s_hints = ["ctx_s3_dual_targets", "ctx_s3_rival_intro", "ctx_s3_disrupt_tip"]
+			# SPA-937: ctx_s3_disrupt_tip moved to event-driven trigger (rival_acted).
+			_s_hints = ["ctx_s3_dual_targets", "ctx_s3_rival_intro"]
 		"scenario_4":
-			_s_hints = ["ctx_s4_defense_goal", "ctx_s4_inquisitor_info", "ctx_s4_prioritize_finn"]
+			# SPA-937: ctx_s4_prioritize_finn moved to event-driven trigger (inquisitor_acted).
+			_s_hints = ["ctx_s4_defense_goal", "ctx_s4_inquisitor_info"]
 		"scenario_5":
 			_s_hints = ["ctx_s5_three_way_race", "ctx_s5_endorsement_tip"]
 		"scenario_6":
@@ -1665,6 +1669,16 @@ func _init_context_banner() -> void:
 		journal.visibility_changed.connect(_on_journal_visibility_changed_banner)
 	if rumor_panel != null:
 		rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed_banner)
+
+	# SPA-937: S3 rival first-action hint — fires ctx_s3_disrupt_tip when rival acts.
+	if world.active_scenario_id == "scenario_3" and world.rival_agent != null \
+			and world.rival_agent.has_signal("rival_acted"):
+		world.rival_agent.rival_acted.connect(_on_rival_first_acted_tutorial)
+
+	# SPA-937: S4 inquisitor first-action hint — fires ctx_s4_prioritize_finn when inquisitor acts.
+	if world.active_scenario_id == "scenario_4" and world.inquisitor_agent != null \
+			and world.inquisitor_agent.has_signal("inquisitor_acted"):
+		world.inquisitor_agent.inquisitor_acted.connect(_on_inquisitor_first_acted_tutorial)
 
 
 ## SPA-804 DEPRECATED — no longer called.  S2-S6 now use TutorialBanner via
@@ -2086,6 +2100,24 @@ func _on_heat_warning() -> void:
 	AudioManager.on_heat_warning()
 	if _tutorial_banner != null:
 		_tutorial_banner.queue_hint("ctx_heat_warning")
+
+
+## SPA-937: Show ctx_s3_disrupt_tip once when the rival makes their first move in S3.
+## Fires from rival_agent.rival_acted so the tip is contextually relevant (rival acts on day 18+).
+func _on_rival_first_acted_tutorial(_day: int, _claim: String, _subject: String) -> void:
+	if _ctx_rival_first_act_fired or _tutorial_banner == null:
+		return
+	_ctx_rival_first_act_fired = true
+	_tutorial_banner.queue_hint("ctx_s3_disrupt_tip")
+
+
+## SPA-937: Show ctx_s4_prioritize_finn once when the Inquisitor makes their first move in S4.
+## Fires from inquisitor_agent.inquisitor_acted so the tip lands when it is actionable.
+func _on_inquisitor_first_acted_tutorial(_day: int, _claim: String, _subject: String) -> void:
+	if _ctx_inquisitor_first_act_fired or _tutorial_banner == null:
+		return
+	_ctx_inquisitor_first_act_fired = true
+	_tutorial_banner.queue_hint("ctx_s4_prioritize_finn")
 
 
 ## ── SPA-487: Idle-detection hint system ──────────────────────────────────────

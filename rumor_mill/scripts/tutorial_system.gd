@@ -619,6 +619,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"title": "Defend the Accused",
 		"body":  (
 			"Keep [b]Aldous Prior[/b], [b]Vera Midwife[/b], and [b]Finn Monk[/b] above [b]45 reputation[/b].  "
+			+ "If any of the three drops below [b]40[/b], the scenario fails instantly.  "
 			+ "This scenario is purely [b]defensive[/b] — counter slander with Praise rumours."
 		),
 		"auto_dismiss_secs": 10,
