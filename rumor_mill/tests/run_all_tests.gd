@@ -23,6 +23,7 @@
 ##   • TestSocialGraph            — edge weight, mutation cap, net delta, adjacency queries (SPA-987)
 ##   • TestAchievementHooks       — per-session state tracking: exposure, action flags, bribe (SPA-988)
 ##   • TestScenarioManager        — narrative getters, heat ceiling, time helpers, signals, progress dicts (SPA-997)
+##   • TestNpcCore                — state queries, force_believe, credulity modifier, defense penalty, schedule avoidance, dialogue category, time phase (SPA-998)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -91,5 +92,8 @@ func _init() -> void:
 
 	print("\n── ScenarioManager ──")
 	TestScenarioManager.run()
+
+	print("\n── NpcCore ──")
+	TestNpcCore.run()
 
 	print("\n=== All suites complete ===")
