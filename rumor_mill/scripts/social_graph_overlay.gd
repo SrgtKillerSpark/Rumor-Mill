@@ -103,6 +103,9 @@ var _search_target_id: String = ""
 var _search_input:     LineEdit        = null
 var _search_panel:     PanelContainer  = null
 
+# ── NPC id → Node2D lookup (rebuilt each _on_draw for O(1) access) ───────────
+var _npc_lookup: Dictionary = {}
+
 # ── Legend filter state ───────────────────────────────────────────────────────
 
 # faction_name → true  when that faction's nodes/edges are hidden.
@@ -362,6 +365,11 @@ func _on_draw() -> void:
 	var npcs: Array = _world_ref.npcs
 	if npcs.is_empty():
 		return
+	# Build id→node lookup once per draw call (O(n)) instead of scanning
+	# per-edge inside _draw_edges (was O(n × edges) per frame).
+	_npc_lookup.clear()
+	for npc in npcs:
+		_npc_lookup[npc.npc_data.get("id", "")] = npc
 	var sg: SocialGraph = _world_ref.social_graph
 	if sg != null:
 		_draw_edges(npcs, sg)
@@ -888,11 +896,8 @@ func _world_to_screen(world_pos: Vector2) -> Vector2:
 	return center + (base_screen - center) * _zoom_level + _pan_offset
 
 
-func _find_npc_by_id(npcs: Array, npc_id: String) -> Node2D:
-	for npc in npcs:
-		if npc.npc_data.get("id", "") == npc_id:
-			return npc
-	return null
+func _find_npc_by_id(_npcs: Array, npc_id: String) -> Node2D:
+	return _npc_lookup.get(npc_id, null)
 
 
 # ── Faction Influence Heatmap ─────────────────────────────────────────────────
