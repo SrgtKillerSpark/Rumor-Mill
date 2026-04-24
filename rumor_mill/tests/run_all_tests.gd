@@ -7,6 +7,8 @@
 ##   • TestReputationSystem   — score formula, SOCIALLY_DEAD, illness tracking
 ##   • TestScenarioConditions — win/fail evaluation for Scenarios 1–6
 ##   • TestSaveCorruption     — save/load hardening (SPA-864, SPA-896, SPA-901)
+##   • TestSaveManager        — save_path(), prepare_load(), pending state, migration (SPA-964)
+##   • TestAchievementManager — unlock/query API and static definition table (SPA-964)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -27,5 +29,11 @@ func _init() -> void:
 
 	print("\n── SaveCorruption ──")
 	TestSaveCorruption.run()
+
+	print("\n── SaveManager ──")
+	TestSaveManager.run()
+
+	print("\n── AchievementManager ──")
+	TestAchievementManager.run()
 
 	print("\n=== All suites complete ===")
