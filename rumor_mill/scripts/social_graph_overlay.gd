@@ -189,6 +189,7 @@ func _toggle_overlay() -> void:
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
 	if visible_overlay:
+		AudioManager.play_sfx("journal_open")
 		visible = true
 		_legend_panel.visible = true
 		_search_panel.visible = true
@@ -207,6 +208,7 @@ func _toggle_overlay() -> void:
 func _close_overlay() -> void:
 	_set_heatmap_mode(false)
 	visible_overlay = false
+	AudioManager.play_sfx("journal_close")
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
 	_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)

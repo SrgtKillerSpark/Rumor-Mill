@@ -1207,15 +1207,15 @@ func _on_rumor_event(message: String, tick: int) -> void:
 			var npc_name := main_msg.split(" →")[0].strip_edges() if " →" in main_msg else "NPC"
 			recon_hud.show_milestone("%s rejected the rumor" % npc_name, Color(0.85, 0.40, 0.30, 1.0))
 
-	# SPA-860: SFX for each NPC belief-state transition (independent of HUD availability).
+	# SPA-860 / SPA-917: SFX for each NPC belief-state transition.
 	if main_msg.contains("→ Believe"):
-		AudioManager.play_sfx_pitched("reputation_up", 0.85)
+		AudioManager.on_rumor_success()
 	elif main_msg.contains("→ Spread"):
 		AudioManager.play_sfx("rumor_spread")
 	elif main_msg.contains("→ Act"):
-		AudioManager.play_sfx_pitched("reputation_up", 1.0)
+		AudioManager.play_sfx("victory_chime")
 	elif main_msg.contains("→ Reject"):
-		AudioManager.play_sfx("rumor_fail")
+		AudioManager.play_sfx("failure_bell")
 
 
 ## SPA-788 Moment 1: fires once the first time any NPC-to-NPC rumor transmission occurs.
@@ -2299,9 +2299,11 @@ func _init_audio() -> void:
 	# Reputation collapse SFX: play reputation_down when an NPC goes socially dead.
 	world.socially_dead_triggered.connect(AudioManager.on_socially_dead)
 
-	# Whisper spend SFX: bribe_coin on each whisper token spend (SPA-860).
+	# Whisper spend SFX: whisper on each whisper token spend (SPA-917).
 	if world.intel_store != null:
-		world.intel_store.whisper_spent.connect(func() -> void: AudioManager.play_sfx("bribe_coin"))
+		world.intel_store.whisper_spent.connect(func() -> void: AudioManager.play_sfx("whisper"))
+		# SPA-917: Heat tension ambient — lower ambient dB when heat warning fires (fires once).
+		world.intel_store.heat_warning.connect(func() -> void: AudioManager.set_heat_ambient_tension(true))
 
 
 

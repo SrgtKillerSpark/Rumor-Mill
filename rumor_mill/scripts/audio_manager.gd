@@ -1,6 +1,6 @@
 extends Node
 
-## audio_manager.gd — Sprint 7 + SPA-491 audio polish.
+## audio_manager.gd — Sprint 7 + SPA-491 + SPA-917 audio polish.
 ##
 ## Manages three audio layers:
 ##   1. Music      — phase-aware music (morning_calm / evening_tension / night_suspense),
@@ -18,14 +18,19 @@ extends Node
 ##   AudioManager.set_location_ambient("tavern")
 ##   AudioManager.clear_location_ambient()
 ##   AudioManager.set_sfx_volume_db(-6.0)
+##   AudioManager.duck_for_dialogue()
+##   AudioManager.restore_from_dialogue()
+##   AudioManager.set_heat_ambient_tension(active)
 ##
 ## Called by main.gd:
 ##   AudioManager.connect_to_day_night(day_night_node)
 ##   AudioManager.on_rumor_seeded(...)
+##   AudioManager.on_rumor_success()
 ##   AudioManager.on_rumor_fail()
 ##   AudioManager.on_recon_action(message, success)
 ##   AudioManager.on_bribe_executed(npc_name, tick)
 ##   AudioManager.on_heat_warning()
+##   AudioManager.set_heat_ambient_tension(active)
 ##   AudioManager.on_win()
 ##   AudioManager.on_fail()
 ##   AudioManager.on_socially_dead(npc_id, npc_name, tick)
@@ -97,8 +102,12 @@ const SFX_FILES: Dictionary = {
 	"reputation_up":      "sfx/reputation_up.wav",
 	"reputation_down":    "sfx/reputation_down.wav",
 	"bribe_coin":         "sfx/bribe_coin.wav",
-	"milestone_chime":    "sfx/reputation_up.wav",  ## distinct key — swap wav once asset exists
-	"heat_warning":       "sfx/rumor_fail.wav",     ## placeholder — swap wav once dedicated asset exists
+	"milestone_chime":    "sfx/rumor_success.wav",
+	"heat_warning":       "sfx/heat_warning.wav",
+	"rumor_success":      "sfx/rumor_success.wav",
+	"reputation_shift":   "sfx/reputation_shift.wav",
+	"victory_chime":      "sfx/victory_chime.wav",
+	"failure_bell":       "sfx/failure_bell.wav",
 }
 
 # ── State ──────────────────────────────────────────────────────────────────────
@@ -123,6 +132,18 @@ var _location_ambient: String = ""
 var _late_game_active: bool = false
 const LATE_GAME_MORNING_BIAS := -2.0   # morning_calm gets quieter
 const LATE_GAME_EVENING_BIAS :=  2.0   # evening_tension gets louder
+
+## SPA-917: Dialogue ducking — music and ambient lowered while NPC panel is open.
+var _dialogue_duck_active: bool = false
+const DIALOGUE_DUCK_DB   := -10.0   # dB reduction while ducked
+const DIALOGUE_DUCK_TIME :=  0.2    # seconds to duck down
+const DIALOGUE_DUCK_RESTORE_TIME := 0.5  # seconds to restore
+var _dialogue_duck_tween: Tween = null
+
+## SPA-917: Heat tension ambient — ambient ducked slightly when heat warning fires.
+var _heat_tension_active: bool = false
+const HEAT_TENSION_AMBIENT_BIAS := -3.0  # ambient dB reduction when heat is high
+var _heat_tension_tween: Tween = null
 
 ## Preloaded stream cache: name → AudioStream (or null if file absent).
 var _music_cache: Dictionary = {}
@@ -513,9 +534,83 @@ func on_rumor_fail() -> void:
 	play_sfx("rumor_fail")
 
 
+## Called when a rumor succeeds in convincing an NPC (BELIEVE / SPREAD / ACT transition).
+func on_rumor_success() -> void:
+	play_sfx("rumor_success")
+
+
 ## Called when an NPC reaches the socially-dead threshold (reputation collapse).
 func on_socially_dead(_npc_id: String, _npc_name: String, _tick: int) -> void:
 	play_sfx("reputation_down")
+
+
+## SPA-917: Duck music and ambient when an NPC dialogue panel opens.
+## Safe to call multiple times — no-op if already ducked.
+func duck_for_dialogue() -> void:
+	if _dialogue_duck_active:
+		return
+	_dialogue_duck_active = true
+	if _dialogue_duck_tween != null and _dialogue_duck_tween.is_valid():
+		_dialogue_duck_tween.kill()
+	var target_music   := _music_volume_db   + DIALOGUE_DUCK_DB
+	var target_ambient := _ambient_volume_db + DIALOGUE_DUCK_DB
+	_dialogue_duck_tween = create_tween().set_parallel(true)
+	_dialogue_duck_tween.tween_method(
+		func(v: float) -> void:
+			var active_music := _music_player_a if _music_active_a else _music_player_b
+			active_music.volume_db = v,
+		_music_volume_db, target_music, DIALOGUE_DUCK_TIME
+	)
+	_dialogue_duck_tween.tween_method(
+		func(v: float) -> void:
+			var active_amb := _ambient_player_a if _ambient_active_a else _ambient_player_b
+			active_amb.volume_db = v,
+		_ambient_volume_db, target_ambient, DIALOGUE_DUCK_TIME
+	)
+
+
+## SPA-917: Restore music and ambient to normal levels after NPC dialogue closes.
+## Safe to call if not currently ducked — no-op.
+func restore_from_dialogue() -> void:
+	if not _dialogue_duck_active:
+		return
+	_dialogue_duck_active = false
+	if _dialogue_duck_tween != null and _dialogue_duck_tween.is_valid():
+		_dialogue_duck_tween.kill()
+	var target_music   := _music_volume_db
+	var target_ambient := _ambient_volume_db
+	# When heat tension is active, the ambient target is biased lower.
+	if _heat_tension_active:
+		target_ambient += HEAT_TENSION_AMBIENT_BIAS
+	_dialogue_duck_tween = create_tween().set_parallel(true)
+	_dialogue_duck_tween.tween_method(
+		func(v: float) -> void:
+			var active_music := _music_player_a if _music_active_a else _music_player_b
+			active_music.volume_db = v,
+		target_music + DIALOGUE_DUCK_DB, target_music, DIALOGUE_DUCK_RESTORE_TIME
+	)
+	_dialogue_duck_tween.tween_method(
+		func(v: float) -> void:
+			var active_amb := _ambient_player_a if _ambient_active_a else _ambient_player_b
+			active_amb.volume_db = v,
+		target_ambient + DIALOGUE_DUCK_DB, target_ambient, DIALOGUE_DUCK_RESTORE_TIME
+	)
+
+
+## SPA-917: Apply a heat-tension dB bias to the ambient layer when heat is high.
+## active=true lowers ambient by HEAT_TENSION_AMBIENT_BIAS dB (making music more prominent).
+## active=false restores to the normal ambient volume.
+func set_heat_ambient_tension(active: bool) -> void:
+	if active == _heat_tension_active:
+		return
+	_heat_tension_active = active
+	# Skip adjustment if dialogue is currently ducking ambient.
+	if _heat_tension_tween != null and _heat_tension_tween.is_valid():
+		_heat_tension_tween.kill()
+	var target_db: float = _ambient_volume_db + (HEAT_TENSION_AMBIENT_BIAS if active else 0.0)
+	_heat_tension_tween = create_tween().set_parallel(true)
+	_heat_tension_tween.tween_property(_ambient_player_a, "volume_db", target_db, 2.0)
+	_heat_tension_tween.tween_property(_ambient_player_b, "volume_db", target_db, 2.0)
 
 
 ## SPA-786: Enable late-game tension audio shift (called from main.gd on day change).

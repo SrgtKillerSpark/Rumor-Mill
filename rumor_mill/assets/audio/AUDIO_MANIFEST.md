@@ -71,6 +71,11 @@ interior panel is open.  Restores to day/night ambient on panel close.
 | `reputation_up.wav`    | Player or faction reputation increases                     |
 | `reputation_down.wav`  | Player or faction reputation decreases                     |
 | `bribe_coin.wav`       | Bribe action used (coin drop clink)                        |
+| `heat_warning.wav`     | Heat threshold crossed — ominous tension cue (pitched ×0.85) |
+| `rumor_success.wav`    | NPC transitions to BELIEVE — rumor conviction chime        |
+| `reputation_shift.wav` | General reputation delta (faction or NPC)                  |
+| `victory_chime.wav`    | NPC transitions to ACT — short victory chime               |
+| `failure_bell.wav`     | NPC transitions to REJECT — short failure bell             |
 
 ---
 
@@ -80,6 +85,13 @@ Button hover uses `AudioManager.play_sfx_pitched("ui_click", 2.0)` — the same
 `ui_click.wav` played at 2× pitch scale, producing a lighter tick distinct from
 the full click.  No separate `ui_hover.wav` asset is required.  Wired in:
 `main_menu.gd`, `pause_menu.gd`, `speed_hud.gd`, `rumor_panel.gd`.
+
+Social Graph overlay uses `journal_open.wav` / `journal_close.wav` on toggle
+(wired in `social_graph_overlay.gd`).
+
+NPC Dialogue Panel ducks music and ambient by −10 dB while open, restoring on
+close (0.2 s duck / 0.5 s restore, via `AudioManager.duck_for_dialogue()` /
+`restore_from_dialogue()`).  Wired in `npc_dialogue_panel.gd`.
 
 ---
 

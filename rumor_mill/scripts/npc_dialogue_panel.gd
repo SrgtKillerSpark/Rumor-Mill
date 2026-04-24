@@ -152,6 +152,7 @@ func _input(event: InputEvent) -> void:
 ## Show the conversation panel for the given NPC, positioned near screen_pos.
 func show_for_npc(npc: Node2D, screen_pos: Vector2) -> void:
 	_current_npc = npc
+	AudioManager.duck_for_dialogue()
 	_rebuild_panel(npc)
 
 	# Position: offset right of cursor, clamped to viewport.
@@ -175,6 +176,7 @@ func hide_panel() -> void:
 	if _panel != null:
 		_panel.visible = false
 	_current_npc = null
+	AudioManager.restore_from_dialogue()
 
 
 # ── Panel construction ────────────────────────────────────────────────────────
@@ -673,4 +675,5 @@ func _dismiss() -> void:
 	if _panel != null:
 		_panel.visible = false
 	_current_npc = null
+	AudioManager.restore_from_dialogue()
 	dismissed.emit()
