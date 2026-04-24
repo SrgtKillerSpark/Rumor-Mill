@@ -192,6 +192,10 @@ func _ready() -> void:
 	_main_menu.name = "MainMenu"
 	add_child(_main_menu)
 	_main_menu.begin_game.connect(_on_begin_game)
+	# Restore main-menu music on scene reload (AudioManager persists across reloads
+	# so its _ready() won't re-run; crossfade from any in-game phase music back to
+	# the title theme here).
+	AudioManager.play_music("main_theme", true)
 
 
 ## SPA-767: Update context controls panel mode based on which panels are open.
