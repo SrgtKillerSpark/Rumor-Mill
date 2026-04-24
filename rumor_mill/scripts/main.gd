@@ -53,6 +53,9 @@ var _controls_ref: CanvasLayer = null
 # ── SPA-560: Mid-game narrative event choice modal ───────────────────────────
 var _event_choice_modal: CanvasLayer = null
 
+# ── SPA-953: Faction event card overlay with screen dim ─────────────────────
+var _event_card: CanvasLayer = null
+
 # ── SPA-589: Visual affordances for new players ──────────────────────────────
 var _visual_affordances: CanvasLayer = null
 
@@ -354,6 +357,7 @@ func _on_begin_game(scenario_id: String) -> void:
 		)
 	_wire_rumor_events()
 	_init_event_choice_modal()
+	_init_event_card()
 	_init_objective_hud()
 	_init_daily_planning()
 	_init_speed_hud()
@@ -1452,6 +1456,19 @@ func _init_event_choice_modal() -> void:
 	agent.event_presented.connect(_on_mid_game_event_presented)
 	_event_choice_modal.choice_made.connect(_on_mid_game_event_choice_made)
 	_event_choice_modal.dismissed.connect(_on_mid_game_event_dismissed)
+
+
+## SPA-953: Faction event card overlay — shows parchment card + dim on event_activated.
+func _init_event_card() -> void:
+	if world == null or world.faction_event_system == null:
+		return
+	_event_card = preload("res://scripts/event_card.gd").new()
+	_event_card.name = "EventCard"
+	add_child(_event_card)
+	world.faction_event_system.event_activated.connect(
+		func(label: String, description: String, day: int) -> void:
+			_event_card.show_event(label, description, day)
+	)
 
 
 func _on_mid_game_event_presented(event_data: Dictionary) -> void:

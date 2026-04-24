@@ -18,6 +18,8 @@
 
 class_name FactionEventSystem
 
+## Emitted when an event activates so UI layers can present the card (SPA-953).
+signal event_activated(label: String, description: String, day: int)
 
 const ALL_EVENT_TYPES: Array = [
 	"market_dispute",
@@ -47,6 +49,14 @@ const FORESHADOW_TEXT: Dictionary = {
 	"religious_festival": "The clergy have begun preparations for a gathering — devotion will run high across town.",
 	"noble_feast":        "Nobles have started sending invitations around town — a feast at the manor appears imminent.",
 	"guard_crackdown":    "Guards have been seen conferring in hushed tones — expect a much tighter watch on the streets soon.",
+}
+
+## Full descriptions shown on the event card overlay when an event activates (SPA-953).
+const EVENT_DESCRIPTIONS: Dictionary = {
+	"market_dispute":     "A bitter rivalry erupts between merchants in the market square. Trust is fractured, prices spike, and whispered accusations fly freely — a fertile ground for rumour.",
+	"religious_festival": "The clergy unite at the chapel for days of prayer and celebration. Devotion runs high; citizens are moved by faith and reluctant to heed secular gossip.",
+	"noble_feast":        "The nobles retreat to the manor for an extravagant banquet. With their guards occupied and their tongues loosened by wine, secrets may be overheard.",
+	"guard_crackdown":    "The city watch tightens its grip, patrolling every alley and scrutinising every face. Suspicion lingers long after curfew — move carefully.",
 }
 
 
@@ -223,7 +233,9 @@ func _activate_event(ev: FactionEvent, day: int) -> void:
 		"religious_festival": _activate_religious_festival(ev, day)
 		"noble_feast":        _activate_noble_feast(ev, day)
 		"guard_crackdown":    _activate_guard_crackdown(ev)
-	pass
+	var lbl: String  = _label(ev.event_type)
+	var desc: String = EVENT_DESCRIPTIONS.get(ev.event_type, "")
+	event_activated.emit(lbl, desc, day)
 
 
 ## Market Dispute: mutate 2-3 edges between disputing merchants and open a
