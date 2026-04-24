@@ -17,7 +17,6 @@ const C_SAFE    := Color(0.85, 0.55, 0.10, 1.0)   # amber — rep still high
 const C_DANGER  := Color(0.90, 0.30, 0.10, 1.0)   # orange-red — nearing win
 const C_CAUTION := Color(0.95, 0.80, 0.15, 1.0)   # yellow — getting close
 
-const WIN_THRESHOLD := 30
 const BAR_WIDTH     := 160
 const BAR_HEIGHT    := 12
 
@@ -120,7 +119,7 @@ func _refresh() -> void:
 
 	var score: int     = progress["edric_score"]
 	var state          = progress["state"]
-	var threshold: int = progress.get("win_threshold", WIN_THRESHOLD)
+	var threshold: int = progress.get("win_threshold", ScenarioConfig.S1_WIN_EDRIC_BELOW)
 
 	_score_lbl.text = "Edric Fenn  Rep: %d / 100  Target: <%d" % [score, threshold]
 

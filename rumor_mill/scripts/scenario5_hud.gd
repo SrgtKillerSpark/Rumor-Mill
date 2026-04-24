@@ -55,8 +55,9 @@ var _guild_last_defense_day:  int = -1  # updated by defense_fired signal
 
 # ── S5 Endorsement Campaign verb ─────────────────────────────────────────────
 ## Spend 1 recon to stage a public appearance for Aldric (+4 rep boost, 3-day cooldown).
-const CAMPAIGN_REP_BOOST:  int = 4
-const CAMPAIGN_COOLDOWN:   int = 3  # days between appearances
+## Campaign action costs/effects sourced from ScenarioConfig.
+const CAMPAIGN_REP_BOOST  := ScenarioConfig.S5_CAMPAIGN_REP_BOOST
+const CAMPAIGN_COOLDOWN   := ScenarioConfig.S5_CAMPAIGN_COOLDOWN
 var _campaign_btn:       Button = null
 var _campaign_lbl:       Label  = null
 var _campaign_last_day:  int    = -999  # day the last appearance was staged
@@ -99,7 +100,7 @@ func _build_ui() -> void:
 	title_lbl.text = "Scenario 5:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
-	title_lbl.tooltip_text = "The Election — get Aldric Vane elected alderman. He must reach %d+ and be highest; both rivals below %d." % [ScenarioManager.S5_WIN_ALDRIC_MIN, ScenarioManager.S5_WIN_RIVALS_MAX]
+	title_lbl.tooltip_text = "The Election — get Aldric Vane elected alderman. He must reach %d+ and be highest; both rivals below %d." % [ScenarioConfig.S5_WIN_ALDRIC_MIN, ScenarioConfig.S5_WIN_RIVALS_MAX]
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
 
@@ -185,15 +186,15 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "Aldric: %d+ & highest | Rivals: <%d" % [ScenarioManager.S5_WIN_ALDRIC_MIN, ScenarioManager.S5_WIN_RIVALS_MAX]
+	legend_lbl.text = "Aldric: %d+ & highest | Rivals: <%d" % [ScenarioConfig.S5_WIN_ALDRIC_MIN, ScenarioConfig.S5_WIN_RIVALS_MAX]
 	right_vbox.add_child(legend_lbl)
 
 	_endorse_lbl = Label.new()
 	_endorse_lbl.add_theme_font_size_override("font_size", 12)
 	_endorse_lbl.add_theme_color_override("font_color", Color(0.65, 0.55, 0.45, 0.80))
-	var _e_day: int = ScenarioManager.S5_ENDORSEMENT_DAY if ScenarioManager != null else 13
+	var _e_day: int = ScenarioConfig.S5_ENDORSEMENT_DAY
 	_endorse_lbl.text = "Endorsement: day %d (pending)" % _e_day
-	_endorse_lbl.tooltip_text = "On day %d, Prior Aldous endorses the candidate with the highest reputation — granting a +%d bonus. Make sure Aldric leads by then." % [_e_day, ScenarioManager.S5_ENDORSEMENT_BONUS if ScenarioManager != null else 8]
+	_endorse_lbl.tooltip_text = "On day %d, Prior Aldous endorses the candidate with the highest reputation — granting a +%d bonus. Make sure Aldric leads by then." % [_e_day, ScenarioConfig.S5_ENDORSEMENT_BONUS]
 	_endorse_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_endorse_lbl)
 
@@ -325,7 +326,7 @@ func _refresh() -> void:
 	if progress["endorsement_fired"]:
 		var endorsed: String = NPC_DISPLAY_NAMES.get(progress["endorsed_candidate"], progress["endorsed_candidate"])
 		_endorse_lbl.text = "Endorsed: %s (+%d)" % [endorsed, sm.S5_ENDORSEMENT_BONUS]
-		if progress["endorsed_candidate"] == ScenarioManager.ALDRIC_VANE_ID:
+		if progress["endorsed_candidate"] == ScenarioConfig.ALDRIC_VANE_ID:
 			_endorse_lbl.add_theme_color_override("font_color", C_WIN)
 		else:
 			_endorse_lbl.add_theme_color_override("font_color", C_FAIL)
@@ -394,7 +395,7 @@ func _on_campaign_pressed() -> void:
 	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) if _day_night_ref != null else 0
 	if not used_free:
 		_campaign_last_day = current_day
-	rep.apply_score_delta(ScenarioManager.ALDRIC_VANE_ID, CAMPAIGN_REP_BOOST)
+	rep.apply_score_delta(ScenarioConfig.ALDRIC_VANE_ID, CAMPAIGN_REP_BOOST)
 	AudioManager.play_sfx_pitched("reputation_up", 1.0)
 	if _campaign_lbl != null:
 		_campaign_lbl.text = "Day %d: Aldric rallied the crowd (+%d rep)" % [current_day, CAMPAIGN_REP_BOOST]
@@ -503,13 +504,13 @@ func _update_event_countdown(sm: ScenarioManager) -> void:
 func _on_endorsement(candidate_id: String, bonus: int) -> void:
 	if _endorse_lbl == null:
 		return
-	if candidate_id == ScenarioManager.ALDRIC_VANE_ID:
+	if candidate_id == ScenarioConfig.ALDRIC_VANE_ID:
 		AudioManager.play_sfx_pitched("reputation_up", 1.1)
 	else:
 		AudioManager.play_sfx_pitched("reputation_down", 0.9)
 	var name_str: String = NPC_DISPLAY_NAMES.get(candidate_id, _display_name(candidate_id))
 	_endorse_lbl.text = "Endorsed: %s (+%d)" % [name_str, bonus]
-	if candidate_id == ScenarioManager.ALDRIC_VANE_ID:
+	if candidate_id == ScenarioConfig.ALDRIC_VANE_ID:
 		_endorse_lbl.add_theme_color_override("font_color", C_WIN)
 	else:
 		_endorse_lbl.add_theme_color_override("font_color", C_FAIL)

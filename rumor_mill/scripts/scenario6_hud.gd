@@ -47,14 +47,12 @@ var _event_toast_lbl:   Label = null
 var _event_toast_tween: Tween = null
 
 # ── S6 Blackmail Evidence verb ────────────────────────────────────────────────
-## Spend 2 whisper tokens to release damaging evidence: big reputation hit on Aldric,
-## but at the cost of significant heat (Aldric's guards notice the leak).
-const BLACKMAIL_WHISPER_COST: int   = 2
-const BLACKMAIL_REP_HIT:      int   = -18
-const BLACKMAIL_HEAT_ADD:     float = 22.0
-const BLACKMAIL_MAX_USES:     int   = 2
-## NPCs whose heat rises when evidence leaks (Aldric's merchant defenders).
-const BLACKMAIL_HEAT_NPCS: Array[String] = ["sybil_oats", "rufus_bolt"]
+## Blackmail evidence action — costs and effects sourced from ScenarioConfig.
+const BLACKMAIL_WHISPER_COST := ScenarioConfig.S6_BLACKMAIL_WHISPER_COST
+const BLACKMAIL_REP_HIT      := ScenarioConfig.S6_BLACKMAIL_REP_HIT
+const BLACKMAIL_HEAT_ADD     := ScenarioConfig.S6_BLACKMAIL_HEAT_ADD
+const BLACKMAIL_MAX_USES     := ScenarioConfig.S6_BLACKMAIL_MAX_USES
+const BLACKMAIL_HEAT_NPCS    := ScenarioConfig.S6_BLACKMAIL_HEAT_NPCS
 var _blackmail_btn: Button = null
 var _blackmail_lbl: Label  = null
 
@@ -85,7 +83,7 @@ func _build_ui() -> void:
 	title_lbl.text = "Scenario 6:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
-	title_lbl.tooltip_text = "The Merchant's Debt — expose Aldric Vane (rep \u2264 %d) while protecting Marta Coin (rep \u2265 %d). Heat ceiling is %d." % [ScenarioManager.S6_WIN_ALDRIC_MAX, ScenarioManager.S6_WIN_MARTA_MIN, int(ScenarioManager.S6_EXPOSED_HEAT)]
+	title_lbl.tooltip_text = "The Merchant's Debt — expose Aldric Vane (rep \u2264 %d) while protecting Marta Coin (rep \u2265 %d). Heat ceiling is %d." % [ScenarioConfig.S6_WIN_ALDRIC_MAX, ScenarioConfig.S6_WIN_MARTA_MIN, int(ScenarioConfig.S6_EXPOSED_HEAT)]
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
 
@@ -98,7 +96,7 @@ func _build_ui() -> void:
 	_aldric_score_lbl.add_theme_font_size_override("font_size", 11)
 	_aldric_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_aldric_score_lbl.text = "Aldric Vane  Rep: 55 / 100  Target: \u226430"
-	_aldric_score_lbl.tooltip_text = "Aldric Vane's reputation. Win condition: drag to %d or below to expose his embezzlement." % ScenarioManager.S6_WIN_ALDRIC_MAX
+	_aldric_score_lbl.tooltip_text = "Aldric Vane's reputation. Win condition: drag to %d or below to expose his embezzlement." % ScenarioConfig.S6_WIN_ALDRIC_MAX
 	_aldric_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_text_outline(_aldric_score_lbl)
 	aldric_vbox.add_child(_aldric_score_lbl)
@@ -118,7 +116,7 @@ func _build_ui() -> void:
 	_marta_score_lbl.add_theme_font_size_override("font_size", 11)
 	_marta_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_marta_score_lbl.text = "Marta Coin  Rep: 52 / 100  Target: 60+"
-	_marta_score_lbl.tooltip_text = "Marta Coin's reputation. Win condition: keep at %d or above. Below %d = instant fail (she's been silenced)." % [ScenarioManager.S6_WIN_MARTA_MIN, ScenarioManager.S6_FAIL_MARTA_BELOW]
+	_marta_score_lbl.tooltip_text = "Marta Coin's reputation. Win condition: keep at %d or above. Below %d = instant fail (she's been silenced)." % [ScenarioConfig.S6_WIN_MARTA_MIN, ScenarioConfig.S6_FAIL_MARTA_BELOW]
 	_marta_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_text_outline(_marta_score_lbl)
 	marta_vbox.add_child(_marta_score_lbl)
@@ -138,13 +136,13 @@ func _build_ui() -> void:
 	_heat_lbl.add_theme_font_size_override("font_size", 11)
 	_heat_lbl.add_theme_color_override("font_color", C_BODY)
 	_heat_lbl.text = "Heat: 0 / 55"
-	_heat_lbl.tooltip_text = "Your suspicion level. Guards are on Aldric's payroll — exposure threshold is %d (not the usual 80). Keep it low." % int(ScenarioManager.S6_EXPOSED_HEAT)
+	_heat_lbl.tooltip_text = "Your suspicion level. Guards are on Aldric's payroll — exposure threshold is %d (not the usual 80). Keep it low." % int(ScenarioConfig.S6_EXPOSED_HEAT)
 	_heat_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_text_outline(_heat_lbl)
 	heat_vbox.add_child(_heat_lbl)
 
 	var heat_pair := _make_progress_bar(BAR_WIDTH, BAR_HEIGHT,
-		"Heat gauge. At %d, the Guard Captain exposes you. Route rumors through non-merchant channels to stay hidden." % int(ScenarioManager.S6_EXPOSED_HEAT))
+		"Heat gauge. At %d, the Guard Captain exposes you. Route rumors through non-merchant channels to stay hidden." % int(ScenarioConfig.S6_EXPOSED_HEAT))
 	_heat_bar_bg = heat_pair[0]
 	_heat_bar    = heat_pair[1]
 	heat_vbox.add_child(_heat_bar_bg)
@@ -171,7 +169,7 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "Aldric: \u2264%d | Marta: %d+ | Heat: <%d" % [ScenarioManager.S6_WIN_ALDRIC_MAX, ScenarioManager.S6_WIN_MARTA_MIN, int(ScenarioManager.S6_EXPOSED_HEAT)]
+	legend_lbl.text = "Aldric: \u2264%d | Marta: %d+ | Heat: <%d" % [ScenarioConfig.S6_WIN_ALDRIC_MAX, ScenarioConfig.S6_WIN_MARTA_MIN, int(ScenarioConfig.S6_EXPOSED_HEAT)]
 	right_vbox.add_child(legend_lbl)
 
 	# ── Guild defense status ──────────────────────────────────────────────────
@@ -444,7 +442,7 @@ func _on_blackmail_pressed() -> void:
 	intel.blackmail_uses_count += 1
 	AudioManager.play_sfx_pitched("reputation_down", 0.85)
 	# Apply big reputation damage to Aldric.
-	rep.apply_score_delta(ScenarioManager.ALDRIC_VANE_ID, BLACKMAIL_REP_HIT)
+	rep.apply_score_delta(ScenarioConfig.ALDRIC_VANE_ID, BLACKMAIL_REP_HIT)
 	# Apply heat to Aldric's merchant defenders — they notice the source of the leak.
 	for heat_npc_id in BLACKMAIL_HEAT_NPCS:
 		intel.add_heat(heat_npc_id, BLACKMAIL_HEAT_ADD)

@@ -273,7 +273,7 @@ func get_concrete_goal_text(rep: ReputationSystem, current_tick: int) -> String:
 		4:
 			var current_day: int = current_tick / ticks_per_day + 1
 			var parts: PackedStringArray = PackedStringArray()
-			for npc_id in S4_PROTECTED_NPC_IDS:
+			for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 				var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 				var score: int = snap.score if snap != null else 50
 				var display_name: String = npc_id.split("_")[0].capitalize()
@@ -312,84 +312,58 @@ func get_current_day(current_tick: int) -> int:
 	return current_tick / ticks_per_day + 1
 
 
-# NPC IDs used for win/fail checks.
-const EDRIC_FENN_ID    := "edric_fenn"
-const ALYS_HERBWIFE_ID := "alys_herbwife"
-const MAREN_NUN_ID     := "maren_nun"
-const CALDER_FENN_ID   := "calder_fenn"
-const TOMAS_REEVE_ID   := "tomas_reeve"
-const ALDRIC_VANE_ID   := "aldric_vane"
-const MARTA_COIN_ID    := "marta_coin"
-const ALDOUS_PRIOR_ID  := "aldous_prior"
+# NPC IDs — canonical values live in ScenarioConfig; local aliases keep call-sites concise.
+const EDRIC_FENN_ID    := ScenarioConfig.EDRIC_FENN_ID
+const ALYS_HERBWIFE_ID := ScenarioConfig.ALYS_HERBWIFE_ID
+const MAREN_NUN_ID     := ScenarioConfig.MAREN_NUN_ID
+const CALDER_FENN_ID   := ScenarioConfig.CALDER_FENN_ID
+const TOMAS_REEVE_ID   := ScenarioConfig.TOMAS_REEVE_ID
+const ALDRIC_VANE_ID   := ScenarioConfig.ALDRIC_VANE_ID
+const MARTA_COIN_ID    := ScenarioConfig.MARTA_COIN_ID
+const ALDOUS_PRIOR_ID  := ScenarioConfig.ALDOUS_PRIOR_ID
 
 # Scenario 1 thresholds.
-# SPA-98: raised from 25 — Edric's credulity=0.05 and loyalty=0.80 override make
-# the original 26-point drop punishing for a tutorial scenario.
-var S1_WIN_EDRIC_BELOW   := 30
-var S1_EDRIC_START_SCORE := 50  ## Edric's default base reputation at scenario start.
-# SPA-502: cumulative exposure threshold — when any NPC's heat reaches this value,
-# the Guard Captain connects the dots and the player is exposed.
-var S1_EXPOSED_HEAT      := 80.0
+# Vars (not const) so difficulty modifiers from scenarios.json can override them.
+# SPA-98: WIN_EDRIC_BELOW raised from 25; SPA-502: EXPOSED_HEAT cumulative threshold.
+var S1_WIN_EDRIC_BELOW   := ScenarioConfig.S1_WIN_EDRIC_BELOW
+var S1_EDRIC_START_SCORE := ScenarioConfig.S1_EDRIC_START_SCORE
+var S1_EXPOSED_HEAT      := ScenarioConfig.S1_EXPOSED_HEAT
 
 # Scenario 2 thresholds.
-# Win when 7+ NPCs are in BELIEVE/SPREAD/ACT state for illness rumors about Alys.
-# SPA-98: raised from 5; SPA-530: raised from 6 — 6 believers was too easily reachable
-# in the first 3–4 days given the high-credulity merchant chain. 7 requires deliberate
-# routing through 2+ independent clusters and keeps tension alive into mid-game.
-const S2_WIN_ILLNESS_MIN_DEFAULT := 7
-var s2_win_illness_min: int = S2_WIN_ILLNESS_MIN_DEFAULT
-# SPA-592: days of grace after Maren first rejects before triggering the instant fail.
-# Prevents silent propagation chains from ending the scenario without player agency.
-const S2_MAREN_GRACE_DAYS  := 2
+# SPA-98 → SPA-530: illness min raised 5 → 6 → 7 (see ScenarioConfig for rationale).
+# SPA-592: grace days prevent silent-chain instant fail.
+# Var so difficulty modifiers can override the believer count.
+var s2_win_illness_min: int = ScenarioConfig.S2_WIN_ILLNESS_MIN
 # Ticks per in-game day (matches DayNightCycle default; overridden by world.gd on scenario load).
 var ticks_per_day: int = 24
 
 # Scenario 3 thresholds.
-# SPA-98: eased from (Calder>=80, Tomas<=30) to (Calder>=75, Tomas<=35).
-# SPA-530: Calder starting rep raised to 65 (was 58), days_allowed raised to 27 (was 25).
-# SPA-550: Calder fail floor lowered 40→35 — the rival's scandal attacks on Calder felt
-# like random frustration near 40; wider buffer rewards strategy over luck.
-# Tomas start lowered 52→48 in scenarios.json; rival daily phase pushed from day 16→18.
-# Required gains now: +10 (Calder) / -13 (Tomas) with the rival seeding every day from day 18.
-var S3_WIN_CALDER_MIN    := 75
-var S3_WIN_TOMAS_MAX     := 35
-var S3_FAIL_CALDER_BELOW := 35
+# SPA-98 → SPA-550: see ScenarioConfig for full balance history.
+var S3_WIN_CALDER_MIN    := ScenarioConfig.S3_WIN_CALDER_MIN
+var S3_WIN_TOMAS_MAX     := ScenarioConfig.S3_WIN_TOMAS_MAX
+var S3_FAIL_CALDER_BELOW := ScenarioConfig.S3_FAIL_CALDER_BELOW
 
-# Scenario 4 thresholds & NPC ids.
-# Protected NPCs must be >= S4_WIN_REP_MIN at deadline to win.
-# SPA-550: separated fail from win threshold (was both 45). Fail at 40 = instant loss,
-# but NPCs between 40-44 are in a "danger zone" — not yet fatal, but will lose at
-# deadline unless recovered to 45+. This allows comeback plays instead of instant death
-# and makes the defensive challenge about sustained play, not knife-edge precision.
-# Starting reps raised in scenarios.json (Aldous 65→70, Vera 65→68, Finn 70→72).
-# Inquisitor daily phase pushed from day 13→15; late intensity reduced 4→3.
-# SPA-747: win 45→48, fail 40→42 — new HUD systems give near-perfect info, shrinking
-# the danger zone to restore defensive pressure.
-const S4_PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
-var S4_WIN_REP_MIN       := 48
-var S4_FAIL_REP_BELOW    := 40
+# Scenario 4 thresholds.
+# Vars so difficulty modifiers can override them.
+# SPA-550: danger zone between FAIL and WIN; SPA-747: win 45→48 — see ScenarioConfig.
+var S4_WIN_REP_MIN    := ScenarioConfig.S4_WIN_REP_MIN
+var S4_FAIL_REP_BELOW := ScenarioConfig.S4_FAIL_REP_BELOW
 
 # Scenario 5 thresholds (The Election — SPA-605).
-# Three-way race: Aldric must reach 65+ and be highest; both rivals must be below 45.
-# Instant fail if Aldric drops below 30. Endorsement day loaded from scenarios.json (+8 to leader).
-# Vars (not const) so difficulty modifiers from scenarios.json can override them.
-const S5_CANDIDATE_IDS: Array[String] = ["edric_fenn", "aldric_vane", "tomas_reeve"]
-var S5_WIN_ALDRIC_MIN:    int = 65
-var S5_WIN_RIVALS_MAX:    int = 45
-var S5_FAIL_ALDRIC_BELOW: int = 30
-var S5_ENDORSEMENT_DAY:       int = 13
-var S5_ENDORSEMENT_BONUS: int = 8
+# Vars so difficulty modifiers from scenarios.json can override them.
+var S5_WIN_ALDRIC_MIN:    int = ScenarioConfig.S5_WIN_ALDRIC_MIN
+var S5_WIN_RIVALS_MAX:    int = ScenarioConfig.S5_WIN_RIVALS_MAX
+var S5_FAIL_ALDRIC_BELOW: int = ScenarioConfig.S5_FAIL_ALDRIC_BELOW
+var S5_ENDORSEMENT_DAY:   int = ScenarioConfig.S5_ENDORSEMENT_DAY
+var S5_ENDORSEMENT_BONUS: int = ScenarioConfig.S5_ENDORSEMENT_BONUS
 
 # Scenario 6 thresholds (The Merchant's Debt — SPA-605).
-# Expose Aldric (rep <= 30) while protecting Marta (rep >= 62).
-# Lower heat ceiling (55) — guards are on Aldric's payroll.
-# Instant fail if Marta drops below 30.
-# Vars (not const) so difficulty modifiers from scenarios.json can override them.
-# SPA-747: marta win 60→62, heat ceiling 60→55 — visible heat budget must be tighter.
-var S6_WIN_ALDRIC_MAX:   int   = 30
-var S6_WIN_MARTA_MIN:    int   = 62
-var S6_FAIL_MARTA_BELOW: int   = 30
-var S6_EXPOSED_HEAT:     float = 55.0
+# SPA-747: marta win 60→62, heat ceiling 60→55 — see ScenarioConfig for rationale.
+# Vars so difficulty modifiers from scenarios.json can override them.
+var S6_WIN_ALDRIC_MAX:   int   = ScenarioConfig.S6_WIN_ALDRIC_MAX
+var S6_WIN_MARTA_MIN:    int   = ScenarioConfig.S6_WIN_MARTA_MIN
+var S6_FAIL_MARTA_BELOW: int   = ScenarioConfig.S6_FAIL_MARTA_BELOW
+var S6_EXPOSED_HEAT:     float = ScenarioConfig.S6_EXPOSED_HEAT
 
 ## S6 mid-game event: temporary heat ceiling override (s6_guard_captains_price).
 ## -1.0 means inactive.
@@ -548,8 +522,8 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 	if rep.has_illness_rejecter(ALYS_HERBWIFE_ID, MAREN_NUN_ID):
 		if _s2_maren_first_reject_tick == -1:
 			_s2_maren_first_reject_tick = current_tick
-			s2_maren_grace_started.emit(S2_MAREN_GRACE_DAYS)
-		elif current_tick >= _s2_maren_first_reject_tick + ticks_per_day * S2_MAREN_GRACE_DAYS:
+			s2_maren_grace_started.emit(ScenarioConfig.S2_MAREN_GRACE_DAYS)
+		elif current_tick >= _s2_maren_first_reject_tick + ticks_per_day * ScenarioConfig.S2_MAREN_GRACE_DAYS:
 			scenario_2_state = ScenarioState.FAILED
 			scenario_resolved.emit(2, ScenarioState.FAILED)
 			return
@@ -624,7 +598,7 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_4_state != ScenarioState.ACTIVE:
 		return
 	# Fail: any protected NPC drops below 40 (instant fail).
-	for npc_id in S4_PROTECTED_NPC_IDS:
+	for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 		if snap == null:
 			continue
@@ -636,7 +610,7 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		var all_above: bool = true
-		for npc_id in S4_PROTECTED_NPC_IDS:
+		for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 			var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 			if snap == null or snap.score < S4_WIN_REP_MIN:
 				all_above = false
@@ -667,7 +641,7 @@ func get_scenario_3_progress(rep: ReputationSystem) -> Dictionary:
 func get_scenario_4_progress(rep: ReputationSystem) -> Dictionary:
 	var scores: Dictionary = {}
 	var min_score: int = 100
-	for npc_id in S4_PROTECTED_NPC_IDS:
+	for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
 		var score: int = snap.score if snap != null else 50
 		scores[npc_id] = score

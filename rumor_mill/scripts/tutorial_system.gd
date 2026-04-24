@@ -154,7 +154,7 @@ const TOOLTIP_DATA: Dictionary = {
 			+ "and [b]Tomas Reeve[/b]. Your patron backs Aldric.\n"
 			+ "• [b]Boost Aldric[/b] to 65+ reputation — he must be the highest.\n"
 			+ "• [b]Drop both rivals[/b] below 45.\n"
-			+ "• On [b]day 15[/b], the Prior endorses the leader ([b]+8 rep[/b]).\n"
+			+ "• On [b]day 13[/b], the Prior endorses the leader ([b]+8 rep[/b]).\n"
 			+ "• If Aldric drops below [b]30[/b], instant fail.\n"
 			+ "Track standings in the [b]Scenario 5 HUD[/b]."
 		),
@@ -164,8 +164,8 @@ const TOOLTIP_DATA: Dictionary = {
 		"body":  (
 			"Expose [b]Aldric Vane[/b]'s embezzlement while protecting [b]Marta Coin[/b].\n"
 			+ "• Get Aldric's reputation to [b]30 or below[/b].\n"
-			+ "• Keep Marta at [b]60+ reputation[/b] (below 30 = instant fail).\n"
-			+ "• Heat ceiling is [b]60[/b] — the guards are on Aldric's payroll.\n"
+			+ "• Keep Marta at [b]62+ reputation[/b] (below 30 = instant fail).\n"
+			+ "• Heat ceiling is [b]55[/b] — the guards are on Aldric's payroll.\n"
 			+ "• Aldric's merchant allies [b]actively defend[/b] him with praise rumours.\n"
 			+ "• Route accusations through the [b]clergy and commons[/b] to bypass the guild.\n"
 			+ "Track progress in the [b]Scenario 6 HUD[/b]."
@@ -697,7 +697,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 	"ctx_s6_heat_ceiling": {
 		"title": "Guards on Aldric's Payroll",
 		"body":  (
-			"The heat ceiling is [b]60[/b] in this scenario, not 80.  "
+			"The heat ceiling is [b]55[/b] in this scenario, not 80.  "
 			+ "Bram Guard exposes you earlier — vary your targets and wait between actions."
 		),
 		"auto_dismiss_secs": 10,
@@ -705,7 +705,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 	"ctx_s6_protect_marta": {
 		"title": "Protect Marta Coin",
 		"body":  (
-			"Keep [b]Marta Coin[/b] at [b]60+ reputation[/b] — she is your patron.  "
+			"Keep [b]Marta Coin[/b] at [b]62+ reputation[/b] — she is your patron.  "
 			+ "If she drops below [b]30[/b], instant fail.  "
 			+ "Use [b]Praise[/b] rumors through her allies (Sim Carter, Nell Picker) to maintain her standing."
 		),
@@ -744,7 +744,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"body":  (
 			"This scenario is [b]purely defensive[/b] — you protect, not attack.  "
 			+ "An Inquisitor is targeting three people with slander.  "
-			+ "Counter every accusation with [b]Praise[/b] rumours to keep reputations above 45."
+			+ "Counter every accusation with [b]Praise[/b] rumours to keep reputations above 48."
 		),
 		"auto_dismiss_secs": 10,
 	},
@@ -752,16 +752,16 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"title": "What's New — The Election",
 		"body":  (
 			"A [b]three-way race[/b]: Aldric needs 65+ reputation AND must be the highest of the three.  "
-			+ "[b]Day 15[/b] brings a Prior endorsement (+8 rep) to whoever is leading — make sure it is Aldric."
+			+ "[b]Day 13[/b] brings a Prior endorsement (+8 rep) to whoever is leading — make sure it is Aldric."
 		),
 		"auto_dismiss_secs": 10,
 	},
 	"wtut_s6_whats_new": {
 		"title": "What's New — Merchant's Debt",
 		"body":  (
-			"The heat ceiling is [b]60[/b] — guards are on Aldric's payroll.  "
+			"The heat ceiling is [b]55[/b] — guards are on Aldric's payroll.  "
 			+ "Route accusations through [b]clergy and commons[/b] to bypass the merchant guild.  "
-			+ "Also keep [b]Marta Coin[/b] above 60 reputation — she is your patron."
+			+ "Also keep [b]Marta Coin[/b] above 62 reputation — she is your patron."
 		),
 		"auto_dismiss_secs": 10,
 	},

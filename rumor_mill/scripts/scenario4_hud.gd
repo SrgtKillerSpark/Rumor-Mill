@@ -92,7 +92,7 @@ func _build_ui() -> void:
 	title_lbl.text = "Scenario 4:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
-	title_lbl.tooltip_text = "The Holy Inquisition — keep all three accused above 48 reputation for 20 days. Below %d = instant fail." % ScenarioManager.S4_FAIL_REP_BELOW
+	title_lbl.tooltip_text = "The Holy Inquisition — keep all three accused above 48 reputation for 20 days. Below %d = instant fail." % ScenarioConfig.S4_FAIL_REP_BELOW
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	title_vbox.add_child(title_lbl)
 
@@ -106,13 +106,13 @@ func _build_ui() -> void:
 	title_vbox.add_child(shield_badge)
 
 	# NPC tracks.
-	var _fail_thresh: int = ScenarioManager.S4_FAIL_REP_BELOW
+	var _fail_thresh: int = ScenarioConfig.S4_FAIL_REP_BELOW
 	var NPC_TOOLTIPS := {
 		"aldous_prior": "Aldous Prior's reputation. Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh,
 		"vera_midwife": "Vera Midwife's reputation. Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh,
 		"finn_monk":    "Finn Monk's reputation. Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh,
 	}
-	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+	for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 		var vbox := VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 2)
 		hbox.add_child(vbox)
@@ -194,7 +194,7 @@ func _build_ui() -> void:
 	_days_lbl.add_theme_font_size_override("font_size", 12)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 20"
-	_days_lbl.tooltip_text = "Days before the Inquisitor presents his findings to the Bishop. All three must be 48+ at deadline to win. Below %d at any time = instant fail." % ScenarioManager.S4_FAIL_REP_BELOW
+	_days_lbl.tooltip_text = "Days before the Inquisitor presents his findings to the Bishop. All three must be 48+ at deadline to win. Below %d at any time = instant fail." % ScenarioConfig.S4_FAIL_REP_BELOW
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_days_lbl)
 
@@ -207,7 +207,7 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 12)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "[safe] >= 48  [risk] %d-47  [fail] < %d" % [ScenarioManager.S4_FAIL_REP_BELOW, ScenarioManager.S4_FAIL_REP_BELOW]
+	legend_lbl.text = "[safe] >= 48  [risk] %d-47  [fail] < %d" % [ScenarioConfig.S4_FAIL_REP_BELOW, ScenarioConfig.S4_FAIL_REP_BELOW]
 	right_vbox.add_child(legend_lbl)
 
 	_inquisitor_lbl = Label.new()
@@ -285,7 +285,7 @@ func _refresh() -> void:
 	var fail_thr: int         = progress["fail_threshold"]
 	var state                 = progress["state"]
 
-	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+	for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 		var score: int = scores.get(npc_id, 50)
 		if _score_labels.has(npc_id):
 			_score_labels[npc_id].text = "%s  Rep: %d / 100  Floor: %d" % [
@@ -391,9 +391,9 @@ func _on_anon_tip_pressed() -> void:
 
 ## Returns the protected NPC id with the lowest reputation (most at risk from inquisitor).
 func _pick_most_threatened_npc(rep: ReputationSystem) -> String:
-	var worst_id: String = ScenarioManager.S4_PROTECTED_NPC_IDS[0]
+	var worst_id: String = ScenarioConfig.S4_PROTECTED_NPC_IDS[0]
 	var worst_score: int = 100
-	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+	for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id) if rep != null else null
 		var score: int = snap.score if snap != null else 50
 		if score < worst_score:
@@ -442,7 +442,7 @@ func _update_faction_bars() -> void:
 ## Pulses when any protected NPC is in the risk band (fail_thr <= score < win_thr).
 func _update_danger_pulse(scores: Dictionary, fail_thr: int, win_thr: int) -> void:
 	var any_danger: bool = false
-	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+	for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 		var s: int = scores.get(npc_id, 50)
 		if s >= fail_thr and s < win_thr:
 			any_danger = true
@@ -465,7 +465,7 @@ func _start_danger_pulse() -> void:
 		_danger_tween.kill()
 	_danger_tween = create_tween().set_loops()
 	# Pulse each NPC bar bg that is in the danger zone.
-	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+	for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 		if _bar_bgs.has(npc_id):
 			_danger_tween.tween_property(_bar_bgs[npc_id], "modulate:a", 0.40, 0.45)
 			_danger_tween.tween_property(_bar_bgs[npc_id], "modulate:a", 1.00, 0.45)
