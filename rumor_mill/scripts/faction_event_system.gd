@@ -18,10 +18,6 @@
 
 class_name FactionEventSystem
 
-## Emitted when an event activates. label: human-readable name.
-signal event_activated(label: String, day: int)
-## Emitted when a timed event expires.
-signal event_expired(label: String, day: int)
 
 const ALL_EVENT_TYPES: Array = [
 	"market_dispute",
@@ -219,8 +215,7 @@ func _activate_event(ev: FactionEvent, day: int) -> void:
 		"religious_festival": _activate_religious_festival(ev, day)
 		"noble_feast":        _activate_noble_feast(ev, day)
 		"guard_crackdown":    _activate_guard_crackdown(ev)
-	var lbl: String = _label(ev.event_type)
-	event_activated.emit(lbl, day)
+	pass
 
 
 ## Market Dispute: mutate 2-3 edges between disputing merchants and open a
@@ -323,7 +318,7 @@ func _expire_event(ev: FactionEvent, day: int) -> void:
 		"guard_crackdown":
 			if _intel_store != null:
 				_intel_store.heat_decay_override = -1.0   ## restore default
-	event_expired.emit(_label(ev.event_type), day)
+	pass
 
 
 func _remove_injected_overrides(ev: FactionEvent) -> void:

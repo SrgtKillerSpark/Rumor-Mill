@@ -22,11 +22,6 @@ signal evidence_first_shown
 ## Emitted the first time the player reaches the Seed Target panel (panel 3).
 ## Used by the tutorial hint system to trigger HINT-07 (hint_seed_target).
 signal panel_seed_shown
-## SPA-775: Guided tutorial gates.
-signal panel_opened                        ## panel becomes visible (any open)
-signal subject_selected(npc_id: String)    ## player clicked "Select as Subject"
-signal claim_selected(claim_id: String)    ## player clicked "Select Claim"
-
 # Panel index constants.
 const PANEL_SUBJECT   := 0
 const PANEL_CLAIM     := 1
@@ -216,7 +211,6 @@ func toggle() -> void:
 		AudioManager.play_sfx("rumor_panel_open")
 		_open_panel(PANEL_SUBJECT)
 		panel.visible = true
-		panel_opened.emit()  # SPA-775: guided tutorial gate
 		# Slide in from left.
 		panel.modulate.a = 0.0
 		var target_x: float = panel.position.x
@@ -583,7 +577,6 @@ func _build_subject_entry(
 		_selected_claim_id = ""  # reset downstream selections
 		_selected_seed_npc = ""
 		_rebuild_subject_list()
-		subject_selected.emit(captured_id)  # SPA-775
 	)
 	vbox.add_child(btn)
 
@@ -698,7 +691,6 @@ func _build_claim_entry(claim: Dictionary) -> Control:
 		_selected_seed_npc = ""
 		_selected_evidence_item = null  # new claim may change compatible evidence
 		_rebuild_claim_list()
-		claim_selected.emit(captured_id)  # SPA-775
 	)
 	vbox.add_child(btn)
 

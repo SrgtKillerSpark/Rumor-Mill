@@ -80,8 +80,6 @@ var _highlight:    ColorRect      = null
 var _rumor_panel_ref: CanvasLayer = null
 var _current_step: int = 0
 
-signal walkthrough_dismissed
-
 
 func _ready() -> void:
 	layer = 21  # above TutorialHUD (20) and RumorPanel (15)
@@ -190,7 +188,6 @@ func _dismiss_permanently() -> void:
 	visible = false
 	SettingsManager.dismissed_tooltips[PERSIST_KEY] = true
 	SettingsManager.save_settings()
-	walkthrough_dismissed.emit()
 
 
 # ── UI construction ──────────────────────────────────────────────────────────

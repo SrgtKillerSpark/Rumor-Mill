@@ -34,9 +34,6 @@ extends Node
 
 class_name TutorialController
 
-signal tutorial_completed
-signal tutorial_skipped
-
 # ── Step definitions ─────────────────────────────────────────────────────────
 
 ## Scenario 1 — 7-step action-gated tutorial (SPA-835).
@@ -206,7 +203,6 @@ func skip() -> void:
 	if _skip_overlay != null:
 		_skip_overlay.queue_free()
 		_skip_overlay = null
-	tutorial_skipped.emit()
 
 
 # ── Skip option UI ───────────────────────────────────────────────────────────
@@ -396,7 +392,6 @@ func _finish_tutorial() -> void:
 	_disconnect_all()
 	_clear_highlight()
 	_remove_target_marker()
-	tutorial_completed.emit()
 
 
 func _complete_current_step() -> void:

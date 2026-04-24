@@ -11,8 +11,6 @@ signal game_tick(tick: int)
 signal day_changed(day: int)
 ## Emitted at the start of the day transition flash so HUDs can react.
 signal day_transition_started(day: int)
-## Emitted when the named time-of-day phase changes (Morning/Afternoon/Evening/Night).
-signal phase_changed(phase_name: String)
 
 @export var tick_duration_seconds: float = 1.0   ## Real seconds between ticks
 @export var ticks_per_day: int = 24              ## Ticks that make one full day
@@ -171,7 +169,6 @@ func _on_tick_timer_timeout() -> void:
 		var new_phase := _get_phase_name(hour_of_day)
 		if new_phase != _current_phase_name:
 			_current_phase_name = new_phase
-			emit_signal("phase_changed", new_phase)
 			_play_phase_transition(new_phase)
 	emit_signal("game_tick", current_tick)
 	_apply_time_of_day(hour_of_day)
@@ -298,8 +295,6 @@ func set_paused(paused: bool) -> void:
 ## SPA-757: Skip remaining ticks in the current day and advance to the next dawn.
 ## Emits day_changed / day_transition_started as if the day had ended normally,
 ## then fires game_tick for each skipped tick so listeners stay in sync.
-signal day_skipped(new_day: int)
-
 func skip_to_next_day() -> void:
 	var hour_of_day: int = current_tick % ticks_per_day
 	if hour_of_day == 0:
@@ -314,7 +309,6 @@ func skip_to_next_day() -> void:
 	_apply_time_of_day(0)
 	_update_shadow_direction(0)
 	_update_time_label()
-	day_skipped.emit(current_day)
 
 
 # ── Directional shadow overlay (SPA-586) ──────────────────────────────────────

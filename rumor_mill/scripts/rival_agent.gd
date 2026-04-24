@@ -16,8 +16,6 @@ signal rival_acted(day: int, claim_type: String, subject_id: String)
 signal rival_disrupted(day: int)
 ## SPA-868: Emitted when the rival degrades an NPC's belief by one tier.
 signal belief_degraded(day: int, npc_id: String, old_state: int, new_state: int)
-## SPA-868: Emitted when the player scouts the rival's next target.
-signal rival_scouted(day: int, next_target_id: String)
 
 const TOMAS_REEVE_ID := "tomas_reeve"
 const CALDER_FENN_ID := "calder_fenn"
@@ -287,8 +285,6 @@ func scout_next_target(current_day: int) -> String:
 	if not _active:
 		return ""
 	var target: String = _next_degrade_target_id
-	if not target.is_empty():
-		rival_scouted.emit(current_day, target)
 	return target
 
 

@@ -8,8 +8,6 @@ extends CanvasLayer
 ## DayNightCycle.  Selected priorities are forwarded to ObjectiveHUD
 ## tier2_container and evaluated at end-of-day for bonus rewards.
 
-signal planning_completed(selected_priorities: Array[String])
-
 # ── Priority definitions ─────────────────────────────────────────────────────
 # Each entry: { id, label, eval_key, bonus_desc }
 # eval_key is checked against simple game-state counters at end-of-day.
@@ -269,7 +267,6 @@ func _on_begin_day_pressed() -> void:
 			.set_ease(Tween.EASE_IN)
 
 	_push_priorities_to_hud()
-	planning_completed.emit(_current_day_priorities)
 	# Small delay to let the button animation land before closing.
 	var close_tw := create_tween()
 	close_tw.tween_interval(0.12)

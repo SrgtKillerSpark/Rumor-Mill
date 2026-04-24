@@ -19,9 +19,6 @@ extends CanvasLayer
 
 signal interior_opened
 signal interior_closed
-## Emitted when the player clicks an NPC entry in the roster.
-## npc_id: the NPC's data id string.
-signal npc_selected(npc_id: String)
 
 @onready var _overlay:    ColorRect = $Overlay
 @onready var _panel:      Panel     = $Panel
@@ -121,8 +118,8 @@ func _refresh_npc_roster() -> void:
 	_npc_roster.text = "\n".join(lines)
 
 
-func _on_roster_meta_clicked(meta: Variant) -> void:
-	emit_signal("npc_selected", str(meta))
+func _on_roster_meta_clicked(_meta: Variant) -> void:
+	pass
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
