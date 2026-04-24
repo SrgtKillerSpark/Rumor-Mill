@@ -327,6 +327,9 @@ func _on_begin_game(scenario_id: String) -> void:
 	# SPA-695: Give TownMoodController the camera so it can shake on milestones.
 	if world.town_mood_controller != null and camera != null:
 		world.town_mood_controller.set_camera(camera)
+	# SPA-925: Apply scenario-specific environment mood tint (2 s fade-in).
+	if world.town_mood_controller != null:
+		world.town_mood_controller.apply_scenario_mood(scenario_id)
 	_init_journal()
 	# SPA-709: Milestone notifier — must be created after journal is ready.
 	_milestone_notifier = preload("res://scripts/milestone_notifier.gd").new()

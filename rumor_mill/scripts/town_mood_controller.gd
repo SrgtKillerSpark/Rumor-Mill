@@ -65,6 +65,21 @@ func set_camera(cam: Node) -> void:
 	_camera = cam
 
 
+## SPA-925: Apply a scenario-specific environment tint to the world node via a
+## smooth canvas modulate transition.  The tint is a subtle multiplicative color
+## that shifts the overall atmosphere without obscuring the art.
+## Call from main.gd after set_camera(), passing the active scenario id string.
+func apply_scenario_mood(scenario_id: String) -> void:
+	if _world == null:
+		return
+	var target: Color = ScenarioEnvironmentPalette.scenario_canvas_tint(scenario_id)
+	if target == Color(1.0, 1.0, 1.0, 1.0):
+		return  # S1 tutorial: no tint needed
+	var tw := _world.create_tween()
+	tw.tween_property(_world, "modulate", target, 2.0) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
 # ── Per-tick entry point ─────────────────────────────────────────────────────
 
 func on_game_tick(tick: int) -> void:
