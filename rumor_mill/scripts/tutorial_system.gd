@@ -376,7 +376,7 @@ const HINT_DATA: Dictionary = {
 		"body":  (
 			"The [b]Objective HUD[/b] at the top tracks Edric's reputation.  "
 			+ "Press [b]J → Objectives[/b] for the full breakdown.  "
-			+ "Target: below [b]30[/b]. You have [b]30 days[/b]. Keep seeding rumours!"
+			+ "Target: Bring Edric Fenn's reputation below [b]30[/b]. You have [b]30 days[/b]. Keep seeding rumours!"
 		),
 		"auto_dismiss_secs": 7,
 	},
