@@ -317,6 +317,16 @@ const HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 7,
 	},
+	# SPA-944: One-shot banner fired ~12 s after briefing dismissal (non-guided S1 only).
+	# Guided-tutorial players already see the persistent ▼ TARGET label + gtut_explore hint.
+	"hint_s1_find_target": {
+		"title": "Find Your Target",
+		"body":  (
+			"[b]Lord Edric Fenn[/b] has a pulsing [b]amber ◆[/b] above his head.  "
+			+ "Hover over him to check his reputation before taking action."
+		),
+		"auto_dismiss_secs": 9,
+	},
 	"hint_observe": {
 		"title": "Observe a Location",
 		"body":  (

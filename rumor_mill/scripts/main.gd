@@ -472,6 +472,15 @@ func _on_mission_briefing_dismissed() -> void:
 		var target_id: String = brief.get("targetNpcId", "")
 		if target_id != "":
 			_start_target_npc_marker(target_id)
+			# SPA-944: 12-second deferred hint pointing non-guided S1 players to
+			# the amber crest above Edric.  Guided-tutorial players see ▼ TARGET
+			# + gtut_explore hint instead, so they are excluded in the callback.
+			if world != null and world.active_scenario_id == "scenario_1" \
+					and _tutorial_banner != null:
+				get_tree().create_timer(12.0).timeout.connect(func() -> void:
+					if _tutorial_ctrl == null or not _tutorial_ctrl.guided_tutorial_active:
+						_tutorial_banner.queue_hint("hint_s1_find_target")
+				)
 
 	# SPA-724: Auto-show contextual "What next" hint on game start so players
 	# aren't left guessing what to do in the first 60 seconds.
