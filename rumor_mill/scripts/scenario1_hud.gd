@@ -98,14 +98,6 @@ func _build_ui() -> void:
 	_result_lbl.text = ""
 	right_vbox.add_child(_result_lbl)
 
-	var legend_lbl := Label.new()
-	legend_lbl.add_theme_font_size_override("font_size", 12)
-	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "Target: Edric Fenn Rep < 30"
-	legend_lbl.tooltip_text = "Ruin Edric Fenn's reputation below 30 to win the scenario."
-	legend_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
-	right_vbox.add_child(legend_lbl)
-
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
 
