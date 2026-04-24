@@ -41,6 +41,18 @@ var _prev_aldric_score: int = -1
 var _prev_edric_score:  int = -1
 var _prev_tomas_score:  int = -1
 
+# ── Rival threat + guild defense + event tracking ─────────────────────────────
+var _rival_gap_lbl:    Label     = null
+var _rival_gap_bar:    ColorRect = null
+var _rival_gap_bg:     Panel     = null
+var _guild_defense_lbl: Label    = null  # null-safe: only shows when agent is active
+var _event_lbl:         Label    = null
+
+# S5: guild_defense_agent is not activated for the Election scenario.
+# We connect defensively and show a "not active" fallback when the agent is absent.
+var _guild_defense_agent_ref = null
+var _guild_last_defense_day:  int = -1  # updated by defense_fired signal
+
 # ── S5 Endorsement Campaign verb ─────────────────────────────────────────────
 ## Spend 1 recon to stage a public appearance for Aldric (+4 rep boost, 3-day cooldown).
 const CAMPAIGN_REP_BOOST:  int = 4
@@ -57,6 +69,12 @@ func _scenario_number() -> int:
 func _on_setup_extra(world: Node2D) -> void:
 	if world != null and "scenario_manager" in world and world.scenario_manager != null:
 		world.scenario_manager.endorsement_triggered.connect(_on_endorsement)
+	# Guild defense agent: only active in S6, but wire defensively so the HUD
+	# will display cooldown info if the agent is ever present in S5.
+	var gda = world.get("guild_defense_agent") if world != null else null
+	if gda != null and gda._active:
+		_guild_defense_agent_ref = gda
+		gda.defense_fired.connect(_on_guild_defense_fired)
 
 
 ## Returns a momentum arrow string based on current vs previous score.
@@ -179,6 +197,41 @@ func _build_ui() -> void:
 	_endorse_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_endorse_lbl)
 
+	# ── Rival threat bar ─────────────────────────────────────────────────────
+	# Shows the gap between the leading rival and Aldric. Filled = danger.
+	_rival_gap_lbl = Label.new()
+	_rival_gap_lbl.add_theme_font_size_override("font_size", 11)
+	_rival_gap_lbl.add_theme_color_override("font_color", Color(0.65, 0.55, 0.50, 0.85))
+	_rival_gap_lbl.text = "Rival threat: —"
+	_rival_gap_lbl.tooltip_text = "How far the leading rival is ahead of Aldric. Bar is green when Aldric leads; red when rivals threaten."
+	_rival_gap_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	right_vbox.add_child(_rival_gap_lbl)
+
+	var gap_pair := _make_progress_bar(100, 7,
+		"Rival threat. Fills red when the leading rival is ahead of Aldric.")
+	_rival_gap_bg  = gap_pair[0]
+	_rival_gap_bar = gap_pair[1]
+	_rival_gap_bar.color = C_FAIL
+	right_vbox.add_child(_rival_gap_bg)
+
+	# ── Guild defense cooldown ────────────────────────────────────────────────
+	_guild_defense_lbl = Label.new()
+	_guild_defense_lbl.add_theme_font_size_override("font_size", 11)
+	_guild_defense_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.70))
+	_guild_defense_lbl.text = "Guild defense: inactive"
+	_guild_defense_lbl.tooltip_text = "Guild defense agent status — shows cooldown between defense rounds when active."
+	_guild_defense_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	right_vbox.add_child(_guild_defense_lbl)
+
+	# ── Upcoming mid-game event ───────────────────────────────────────────────
+	_event_lbl = Label.new()
+	_event_lbl.add_theme_font_size_override("font_size", 11)
+	_event_lbl.add_theme_color_override("font_color", Color(0.75, 0.65, 0.40, 0.85))
+	_event_lbl.text = ""
+	_event_lbl.tooltip_text = "Next mid-game narrative event window."
+	_event_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	right_vbox.add_child(_event_lbl)
+
 	# ── Endorsement Campaign verb ────────────────────────────────────────────
 	_campaign_btn = Button.new()
 	_campaign_btn.text = "Stage Appearance"
@@ -293,6 +346,9 @@ func _refresh() -> void:
 		"VICTORY — Aldric Vane wins the election",
 		"FAILED — The election is lost")
 	_update_campaign_button()
+	_update_rival_gap(aldric_score, edric_score, tomas_score)
+	_update_guild_defense_display()
+	_update_event_countdown(sm)
 
 
 # ── Endorsement Campaign verb ─────────────────────────────────────────────────
@@ -347,6 +403,98 @@ func _on_campaign_pressed() -> void:
 		tween.tween_property(_campaign_lbl, "modulate:a", 0.20, 0.10)
 		tween.tween_property(_campaign_lbl, "modulate:a", 1.0, 0.25)
 	_update_campaign_button()
+
+
+# ── Rival gap threat bar ─────────────────────────────────────────────────────
+
+## Update the rival threat bar showing the leading rival's gap versus Aldric.
+## Bar fills red when a rival leads; green when Aldric is ahead.
+func _update_rival_gap(aldric: int, edric: int, tomas: int) -> void:
+	if _rival_gap_lbl == null or _rival_gap_bar == null:
+		return
+	var top_rival: int = maxi(edric, tomas)
+	var gap: int = top_rival - aldric  # positive = rival leads, negative = Aldric leads
+	if gap > 0:
+		_rival_gap_lbl.text = "Rival threat: +%d ahead" % gap
+		_rival_gap_lbl.add_theme_color_override("font_color", C_FAIL)
+		_rival_gap_bar.color = C_FAIL
+		_rival_gap_bar.custom_minimum_size.x = 100 * clamp(float(gap) / 30.0, 0.0, 1.0)
+	elif gap == 0:
+		_rival_gap_lbl.text = "Rival threat: tied"
+		_rival_gap_lbl.add_theme_color_override("font_color", C_NEUTRAL)
+		_rival_gap_bar.color = C_NEUTRAL
+		_rival_gap_bar.custom_minimum_size.x = 4
+	else:
+		_rival_gap_lbl.text = "Aldric leads by %d" % (-gap)
+		_rival_gap_lbl.add_theme_color_override("font_color", C_WIN)
+		_rival_gap_bar.color = C_WIN
+		_rival_gap_bar.custom_minimum_size.x = 100 * clamp(float(-gap) / 30.0, 0.0, 1.0)
+
+
+# ── Guild defense display ─────────────────────────────────────────────────────
+
+## Update the guild defense cooldown label.
+## Shows "inactive" for S5 (agent not activated); shows cooldown info for S6.
+func _update_guild_defense_display() -> void:
+	if _guild_defense_lbl == null:
+		return
+	if _guild_defense_agent_ref == null or not _guild_defense_agent_ref._active:
+		_guild_defense_lbl.text = "Guild defense: inactive"
+		return
+	var gda = _guild_defense_agent_ref
+	var sm: ScenarioManager = _world_ref.get("scenario_manager") if _world_ref != null else null
+	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) \
+		if sm != null and _day_night_ref != null else 0
+	if _guild_last_defense_day < 0:
+		_guild_defense_lbl.text = "Guild defense: waiting (starts Day %d)" % gda.start_day
+	else:
+		var next_day: int = _guild_last_defense_day + gda.cooldown_days
+		var days_until: int = next_day - current_day
+		if days_until <= 0:
+			_guild_defense_lbl.text = "Guild defense: ready now"
+			_guild_defense_lbl.add_theme_color_override("font_color", C_FAIL)
+		else:
+			_guild_defense_lbl.text = "Guild defense: in %d day%s" % \
+				[days_until, "s" if days_until != 1 else ""]
+			_guild_defense_lbl.add_theme_color_override("font_color",
+				C_NEUTRAL if days_until <= 2 else Color(0.55, 0.55, 0.50, 0.70))
+
+
+## Called by guild_defense_agent.defense_fired signal.
+func _on_guild_defense_fired(day: int, _defender_id: String, _target_id: String) -> void:
+	_guild_last_defense_day = day
+	_update_guild_defense_display()
+
+
+# ── Event countdown ───────────────────────────────────────────────────────────
+
+## Show the name and day window of the next unfired mid-game event, if any.
+func _update_event_countdown(sm: ScenarioManager) -> void:
+	if _event_lbl == null or _world_ref == null:
+		return
+	var mga: MidGameEventAgent = _world_ref.get("mid_game_event_agent")
+	if mga == null:
+		return
+	if mga.has_pending_event():
+		var ev: Dictionary = mga.get_pending_event()
+		_event_lbl.text = "Event: %s — choose now!" % ev.get("name", "?")
+		_event_lbl.add_theme_color_override("font_color", C_NEUTRAL)
+		return
+	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) \
+		if _day_night_ref != null else 1
+	var upcoming: Dictionary = mga.get_upcoming_event(current_day)
+	if upcoming.is_empty():
+		_event_lbl.text = ""
+	else:
+		var win_start: int = int(upcoming.get("dayWindowStart", 0))
+		var win_end:   int = int(upcoming.get("dayWindowEnd", 0))
+		var ev_name:   String = upcoming.get("name", "?")
+		if current_day >= win_start:
+			_event_lbl.text = "Event: %s (active, Day %d-%d)" % [ev_name, win_start, win_end]
+			_event_lbl.add_theme_color_override("font_color", C_NEUTRAL)
+		else:
+			_event_lbl.text = "Next event: %s (Day %d)" % [ev_name, win_start]
+			_event_lbl.add_theme_color_override("font_color", Color(0.65, 0.60, 0.45, 0.75))
 
 
 # ── Endorsement event ────────────────────────────────────────────────────────

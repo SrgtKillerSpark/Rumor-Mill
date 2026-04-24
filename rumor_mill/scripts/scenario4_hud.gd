@@ -15,10 +15,15 @@ extends BaseScenarioHud
 ## Wire via setup(world, day_night) from main.gd.
 
 # ── S4-specific palette ──────────────────────────────────────────────────────
-const C_DEFEND := Color(0.50, 0.80, 1.00, 1.0)  # sky blue for defending
+const C_DEFEND   := Color(0.50, 0.80, 1.00, 1.0)  # sky blue for defending
+const C_MERCHANT := Color(0.35, 0.80, 0.45, 1.0)  # green — merchants helped
+const C_BISHOP   := Color(0.90, 0.35, 0.20, 1.0)  # red   — bishop pressured
+const C_CLERGY   := Color(0.70, 0.65, 0.90, 1.0)  # violet — clergy stood firm
 
-const BAR_WIDTH  := 120
-const BAR_HEIGHT := 10
+const BAR_WIDTH        := 120
+const BAR_HEIGHT       := 10
+const FACTION_BAR_W    := 60
+const FACTION_BAR_H    :=  7
 
 const NPC_DISPLAY_NAMES := {
 	"aldous_prior": "Aldous Prior",
@@ -34,6 +39,25 @@ var _inquisitor_lbl:    Label      = null
 var _faction_shift_lbl: Label      = null
 var _inquisitor_tween:  Tween      = null
 var _faction_shift_tween: Tween    = null
+
+# ── Faction phase tracker ─────────────────────────────────────────────────────
+# Three mini-bars show which faction shift phases have fired this run.
+var _faction_bar_fills: Dictionary = {}  # "merchant" / "bishop" / "clergy" -> ColorRect
+var _faction_phase_lbls: Dictionary = {} # same keys -> Label
+var _phase_merchant_fired: bool = false
+var _phase_bishop_fired:   bool = false
+var _phase_clergy_fired:   bool = false
+
+# ── Tipping-point pulse ───────────────────────────────────────────────────────
+# Loops while any protected NPC is in the danger zone (fail..win threshold).
+var _danger_pulse_active: bool = false
+var _danger_tween: Tween = null
+
+# ── Faction shift toast ───────────────────────────────────────────────────────
+# Appears for ~3 s then fades out when a faction shift fires.
+var _toast_panel: Panel  = null
+var _toast_lbl:   Label  = null
+var _toast_tween: Tween  = null
 
 # ── S4 Anonymous Tip verb ─────────────────────────────────────────────────────
 var _anon_tip_btn: Button = null
@@ -111,7 +135,56 @@ func _build_ui() -> void:
 		_bar_bgs[npc_id] = bar_bg
 		_bars[npc_id]    = bar
 
-	# Right column: days + result + inquisitor.
+	# ── Faction phase tracker ────────────────────────────────────────────────
+	# Three small labeled bars show which faction phases have fired this run.
+	# Merchant Sympathy (help), Bishop Pressure (hurt), Clergy Solidarity (help).
+	var faction_vbox := VBoxContainer.new()
+	faction_vbox.add_theme_constant_override("separation", 3)
+	hbox.add_child(faction_vbox)
+
+	var faction_title := Label.new()
+	faction_title.text = "Faction Shifts"
+	faction_title.add_theme_font_size_override("font_size", 11)
+	faction_title.add_theme_color_override("font_color", Color(0.70, 0.65, 0.55, 0.80))
+	faction_vbox.add_child(faction_title)
+
+	const FACTION_ROWS: Array = [
+		["merchant", "Merchants", C_MERCHANT,
+			"Phase 1 (Day 5-7): Merchants speak up for the accused."],
+		["bishop",   "Bishop",    C_BISHOP,
+			"Phase 2 (Day 10-13): Bishop pressures Inquisitor — accusations increase."],
+		["clergy",   "Clergy",    C_CLERGY,
+			"Phase 3 (Day 14-17): Clergy stand together — praise seeded for all three."],
+	]
+	for row in FACTION_ROWS:
+		var key:     String = row[0]
+		var caption: String = row[1]
+		var color:   Color  = row[2]
+		var tip:     String = row[3]
+
+		var row_hbox := HBoxContainer.new()
+		row_hbox.add_theme_constant_override("separation", 4)
+		faction_vbox.add_child(row_hbox)
+
+		var lbl := Label.new()
+		lbl.text = caption
+		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_color_override("font_color", Color(0.65, 0.62, 0.55, 0.75))
+		lbl.custom_minimum_size = Vector2(52, 0)
+		lbl.tooltip_text = tip
+		lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+		row_hbox.add_child(lbl)
+		_faction_phase_lbls[key] = lbl
+
+		var bar_pair := _make_progress_bar(FACTION_BAR_W, FACTION_BAR_H, tip)
+		var bar_bg: Panel = bar_pair[0]
+		var bar:    ColorRect = bar_pair[1]
+		bar.color = color
+		bar.custom_minimum_size.x = 0  # starts empty (no phase fired yet)
+		row_hbox.add_child(bar_bg)
+		_faction_bar_fills[key] = bar
+
+	# ── Right column: days + result + inquisitor ──────────────────────────────
 	var right_vbox := VBoxContainer.new()
 	right_vbox.add_theme_constant_override("separation", 2)
 	hbox.add_child(right_vbox)
@@ -168,6 +241,34 @@ func _build_ui() -> void:
 	_anon_tip_lbl.visible = false
 	right_vbox.add_child(_anon_tip_lbl)
 
+	# ── Faction shift toast panel ─────────────────────────────────────────────
+	# Appears briefly below the main strip when a faction shift fires, then fades.
+	_toast_panel = Panel.new()
+	var toast_style := StyleBoxFlat.new()
+	toast_style.bg_color = Color(0.12, 0.10, 0.08, 0.92)
+	toast_style.set_corner_radius_all(4)
+	_toast_panel.add_theme_stylebox_override("panel", toast_style)
+	_toast_panel.set_anchor(SIDE_LEFT,   0.0)
+	_toast_panel.set_anchor(SIDE_RIGHT,  1.0)
+	_toast_panel.set_anchor(SIDE_TOP,    0.0)
+	_toast_panel.set_anchor(SIDE_BOTTOM, 0.0)
+	_toast_panel.set_offset(SIDE_LEFT,   8)
+	_toast_panel.set_offset(SIDE_RIGHT, -8)
+	_toast_panel.set_offset(SIDE_TOP,   90)
+	_toast_panel.set_offset(SIDE_BOTTOM, 112)
+	_toast_panel.visible = false
+	add_child(_toast_panel)
+
+	_toast_lbl = Label.new()
+	_toast_lbl.add_theme_font_size_override("font_size", 12)
+	_toast_lbl.add_theme_color_override("font_color", Color(0.90, 0.85, 0.60, 1.0))
+	_toast_lbl.add_theme_constant_override("outline_size", 2)
+	_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_toast_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_toast_panel.add_child(_toast_lbl)
+
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
 
@@ -203,6 +304,8 @@ func _refresh() -> void:
 		"VICTORY — The accused are safe",
 		"FAILED — The inquisitor prevails")
 	_update_anon_tip_button()
+	_update_faction_bars()
+	_update_danger_pulse(scores, fail_thr, win_thr)
 
 
 # ── Inquisitor activity ──────────────────────────────────────────────────────
@@ -224,7 +327,7 @@ func notify_inquisitor_acted(day: int, claim_type: String, subject_id: String) -
 # ── Faction shift activity ────────────────────────────────────────────────────
 
 ## Called by s4_faction_shift_agent.faction_shift_occurred signal.
-func notify_faction_shift(day: int, _event_type: String, description: String) -> void:
+func notify_faction_shift(day: int, event_type: String, description: String) -> void:
 	if _faction_shift_lbl == null:
 		return
 	_faction_shift_lbl.text = "Town: Day %d — %s" % [day, description]
@@ -234,6 +337,14 @@ func notify_faction_shift(day: int, _event_type: String, description: String) ->
 	_faction_shift_tween = create_tween()
 	_faction_shift_tween.tween_property(_faction_shift_lbl, "modulate:a", 0.25, 0.12)
 	_faction_shift_tween.tween_property(_faction_shift_lbl, "modulate:a", 1.0, 0.30)
+
+	# Update internal phase tracking and show toast.
+	match event_type:
+		"merchant_sympathy": _phase_merchant_fired = true
+		"bishop_pressure":   _phase_bishop_fired   = true
+		"clergy_solidarity": _phase_clergy_fired    = true
+	_update_faction_bars()
+	_show_faction_shift_toast("Day %d — %s" % [day, description])
 
 
 # ── Anonymous Tip verb ────────────────────────────────────────────────────────
@@ -287,6 +398,92 @@ func _pick_most_threatened_npc(rep: ReputationSystem) -> String:
 			worst_score = score
 			worst_id = npc_id
 	return worst_id
+
+
+# ── Faction phase bar helpers ─────────────────────────────────────────────────
+
+## Sync the three faction phase bars based on which phases have fired.
+## Reads from the stored shift agent reference when available; falls back to
+## the internal phase booleans updated via notify_faction_shift().
+func _update_faction_bars() -> void:
+	if _faction_bar_fills.is_empty():
+		return
+	# Read phase state from agent if we have a ref (more authoritative).
+	var shift_agent = _world_ref.get("s4_faction_shift_agent") if _world_ref != null else null
+	if shift_agent != null:
+		_phase_merchant_fired = shift_agent._phase_1_fired
+		_phase_bishop_fired   = shift_agent._phase_2_fired
+		_phase_clergy_fired   = shift_agent._phase_3_fired
+
+	if _faction_bar_fills.has("merchant"):
+		_faction_bar_fills["merchant"].custom_minimum_size.x = \
+			FACTION_BAR_W if _phase_merchant_fired else 0
+	if _faction_bar_fills.has("bishop"):
+		_faction_bar_fills["bishop"].custom_minimum_size.x = \
+			FACTION_BAR_W if _phase_bishop_fired else 0
+	if _faction_bar_fills.has("clergy"):
+		_faction_bar_fills["clergy"].custom_minimum_size.x = \
+			FACTION_BAR_W if _phase_clergy_fired else 0
+
+	# Dim the label for un-fired phases so players see which are still pending.
+	const ACTIVE_ALPHA: float  = 1.0
+	const PENDING_ALPHA: float = 0.45
+	if _faction_phase_lbls.has("merchant"):
+		_faction_phase_lbls["merchant"].modulate.a = ACTIVE_ALPHA if _phase_merchant_fired else PENDING_ALPHA
+	if _faction_phase_lbls.has("bishop"):
+		_faction_phase_lbls["bishop"].modulate.a = ACTIVE_ALPHA if _phase_bishop_fired else PENDING_ALPHA
+	if _faction_phase_lbls.has("clergy"):
+		_faction_phase_lbls["clergy"].modulate.a = ACTIVE_ALPHA if _phase_clergy_fired else PENDING_ALPHA
+
+
+## Start or stop the danger-zone pulse on NPC bars.
+## Pulses when any protected NPC is in the risk band (fail_thr <= score < win_thr).
+func _update_danger_pulse(scores: Dictionary, fail_thr: int, win_thr: int) -> void:
+	var any_danger: bool = false
+	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+		var s: int = scores.get(npc_id, 50)
+		if s >= fail_thr and s < win_thr:
+			any_danger = true
+			break
+
+	if any_danger and not _danger_pulse_active:
+		_danger_pulse_active = true
+		_start_danger_pulse()
+	elif not any_danger and _danger_pulse_active:
+		_danger_pulse_active = false
+		if _danger_tween != null and _danger_tween.is_valid():
+			_danger_tween.kill()
+		# Restore full alpha on all NPC bar backgrounds.
+		for npc_id in _bar_bgs:
+			_bar_bgs[npc_id].modulate.a = 1.0
+
+
+func _start_danger_pulse() -> void:
+	if _danger_tween != null and _danger_tween.is_valid():
+		_danger_tween.kill()
+	_danger_tween = create_tween().set_loops()
+	# Pulse each NPC bar bg that is in the danger zone.
+	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+		if _bar_bgs.has(npc_id):
+			_danger_tween.tween_property(_bar_bgs[npc_id], "modulate:a", 0.40, 0.45)
+			_danger_tween.tween_property(_bar_bgs[npc_id], "modulate:a", 1.00, 0.45)
+
+
+# ── Faction shift toast ───────────────────────────────────────────────────────
+
+## Show a brief toast when a faction shift fires. Called after updating the label.
+func _show_faction_shift_toast(text: String) -> void:
+	if _toast_panel == null or _toast_lbl == null:
+		return
+	if _toast_tween != null and _toast_tween.is_valid():
+		_toast_tween.kill()
+	_toast_lbl.text = text
+	_toast_panel.modulate.a = 1.0
+	_toast_panel.visible = true
+	_toast_tween = create_tween()
+	_toast_tween.tween_interval(2.5)
+	_toast_tween.tween_property(_toast_panel, "modulate:a", 0.0, 0.5)
+	_toast_tween.tween_callback(func() -> void: _toast_panel.visible = false)
 
 
 ## Called by inquisitor_agent.tip_deflected — update feedback label.

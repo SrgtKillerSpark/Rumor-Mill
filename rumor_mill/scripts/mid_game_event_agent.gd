@@ -152,6 +152,25 @@ func get_pending_event() -> Dictionary:
 	return _pending_event
 
 
+## Returns the nearest unfired event whose window is still open or upcoming,
+## ordered by dayWindowStart. Returns an empty dict when none remain.
+func get_upcoming_event(current_day: int) -> Dictionary:
+	var best: Dictionary = {}
+	var best_start: int = 9999
+	for ev in _events:
+		var ev_id: String = ev.get("id", "")
+		if _resolved_ids.has(ev_id):
+			continue
+		var win_end: int = int(ev.get("dayWindowEnd", 0))
+		if current_day > win_end:
+			continue
+		var win_start: int = int(ev.get("dayWindowStart", 0))
+		if win_start < best_start:
+			best_start = win_start
+			best = ev
+	return best
+
+
 ## Serialise state for save/load.
 func to_data() -> Dictionary:
 	return {

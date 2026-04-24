@@ -32,6 +32,20 @@ var _marta_bar_bg:     ColorRect = null
 var _heat_bar:         ColorRect = null
 var _heat_bar_bg:      ColorRect = null
 
+# ── Guild defense tracking ────────────────────────────────────────────────────
+var _guild_defense_lbl:  Label     = null
+var _guild_threat_bar:   ColorRect = null
+var _guild_threat_bg:    Panel     = null
+var _guild_defense_agent_ref             = null
+var _guild_last_defense_day: int   = -1
+var _guild_defenses_this_run: int  = 0
+
+# ── Mid-game event display ───────────────────────────────────────────────────
+var _event_lbl:         Label = null
+var _event_toast_panel: Panel = null
+var _event_toast_lbl:   Label = null
+var _event_toast_tween: Tween = null
+
 # ── S6 Blackmail Evidence verb ────────────────────────────────────────────────
 ## Spend 2 whisper tokens to release damaging evidence: big reputation hit on Aldric,
 ## but at the cost of significant heat (Aldric's guards notice the leak).
@@ -47,6 +61,18 @@ var _blackmail_lbl: Label  = null
 
 func _scenario_number() -> int:
 	return 6
+
+
+func _on_setup_extra(world: Node2D) -> void:
+	# Wire guild defense agent (active for S6).
+	var gda = world.get("guild_defense_agent") if world != null else null
+	if gda != null and gda._active:
+		_guild_defense_agent_ref = gda
+		gda.defense_fired.connect(_on_guild_defense_fired)
+	# Wire mid-game event outcome toast.
+	var mga: MidGameEventAgent = world.get("mid_game_event_agent") if world != null else null
+	if mga != null:
+		mga.event_resolved.connect(_on_mid_game_event_resolved)
 
 
 # ── UI construction ──────────────────────────────────────────────────────────
@@ -148,6 +174,31 @@ func _build_ui() -> void:
 	legend_lbl.text = "Aldric: \u226430 | Marta: 62+ | Heat: <55"
 	right_vbox.add_child(legend_lbl)
 
+	# ── Guild defense status ──────────────────────────────────────────────────
+	_guild_defense_lbl = Label.new()
+	_guild_defense_lbl.add_theme_font_size_override("font_size", 11)
+	_guild_defense_lbl.add_theme_color_override("font_color", Color(0.70, 0.50, 0.40, 0.80))
+	_guild_defense_lbl.text = "Guild: waiting to defend Aldric"
+	_guild_defense_lbl.tooltip_text = "Aldric's merchant allies periodically seed praise rumors to protect his reputation. Counter-route your attacks through non-merchant channels."
+	_guild_defense_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	right_vbox.add_child(_guild_defense_lbl)
+
+	var threat_pair := _make_progress_bar(100, 7,
+		"Guild defense threat level — higher means they are defending more frequently.")
+	_guild_threat_bg  = threat_pair[0]
+	_guild_threat_bar = threat_pair[1]
+	_guild_threat_bar.color = Color(0.85, 0.45, 0.15, 1.0)  # orange threat
+	right_vbox.add_child(_guild_threat_bg)
+
+	# ── Upcoming event indicator ──────────────────────────────────────────────
+	_event_lbl = Label.new()
+	_event_lbl.add_theme_font_size_override("font_size", 11)
+	_event_lbl.add_theme_color_override("font_color", Color(0.75, 0.65, 0.40, 0.85))
+	_event_lbl.text = ""
+	_event_lbl.tooltip_text = "Next mid-game narrative event window."
+	_event_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	right_vbox.add_child(_event_lbl)
+
 	# ── Blackmail Evidence verb ──────────────────────────────────────────────
 	_blackmail_btn = Button.new()
 	_blackmail_btn.text = "Release Evidence"
@@ -163,6 +214,37 @@ func _build_ui() -> void:
 	_blackmail_lbl.text = ""
 	_blackmail_lbl.visible = false
 	right_vbox.add_child(_blackmail_lbl)
+
+	# ── Event outcome toast ───────────────────────────────────────────────────
+	# Appears briefly when a mid-game event choice resolves.
+	_event_toast_panel = Panel.new()
+	var ev_toast_style := StyleBoxFlat.new()
+	ev_toast_style.bg_color = Color(0.10, 0.08, 0.06, 0.93)
+	ev_toast_style.set_corner_radius_all(4)
+	_event_toast_panel.add_theme_stylebox_override("panel", ev_toast_style)
+	_event_toast_panel.set_anchor(SIDE_LEFT,   0.0)
+	_event_toast_panel.set_anchor(SIDE_RIGHT,  1.0)
+	_event_toast_panel.set_anchor(SIDE_TOP,    0.0)
+	_event_toast_panel.set_anchor(SIDE_BOTTOM, 0.0)
+	_event_toast_panel.set_offset(SIDE_LEFT,   8)
+	_event_toast_panel.set_offset(SIDE_RIGHT, -8)
+	_event_toast_panel.set_offset(SIDE_TOP,   90)
+	_event_toast_panel.set_offset(SIDE_BOTTOM, 118)
+	_event_toast_panel.visible = false
+	add_child(_event_toast_panel)
+
+	_event_toast_lbl = Label.new()
+	_event_toast_lbl.add_theme_font_size_override("font_size", 12)
+	_event_toast_lbl.add_theme_color_override("font_color", Color(0.90, 0.85, 0.60, 1.0))
+	_event_toast_lbl.add_theme_constant_override("outline_size", 2)
+	_event_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_event_toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_event_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_event_toast_lbl.set_offset(SIDE_LEFT,  8)
+	_event_toast_lbl.set_offset(SIDE_RIGHT, -8)
+	_event_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_event_toast_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_event_toast_panel.add_child(_event_toast_lbl)
 
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
@@ -219,6 +301,8 @@ func _refresh() -> void:
 		"VICTORY — Aldric Vane is exposed",
 		"FAILED — The guild closes ranks")
 	_update_blackmail_button()
+	_update_guild_defense_display()
+	_update_event_display(sm)
 
 
 # ── Blackmail Evidence verb ───────────────────────────────────────────────────
@@ -234,6 +318,107 @@ func _update_blackmail_button() -> void:
 	_blackmail_btn.disabled = not (has_whispers and uses_left > 0)
 	var whispers: int = intel.whisper_tokens_remaining if intel != null else 0
 	_blackmail_btn.tooltip_text = "Leak blackmail evidence (%d rep on Aldric, +%.0f heat). Costs %d whisper tokens (%d available). %d/%d uses remaining." % [BLACKMAIL_REP_HIT, BLACKMAIL_HEAT_ADD, BLACKMAIL_WHISPER_COST, whispers, uses_left, effective_max]
+
+
+# ── Guild defense display ─────────────────────────────────────────────────────
+
+## Update guild defense cooldown label and threat bar.
+func _update_guild_defense_display() -> void:
+	if _guild_defense_lbl == null:
+		return
+	if _guild_defense_agent_ref == null or not _guild_defense_agent_ref._active:
+		_guild_defense_lbl.text = "Guild: waiting to defend Aldric"
+		if _guild_threat_bar != null:
+			_guild_threat_bar.custom_minimum_size.x = 0
+		return
+	var gda = _guild_defense_agent_ref
+	var sm: ScenarioManager = _world_ref.get("scenario_manager") if _world_ref != null else null
+	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) \
+		if sm != null and _day_night_ref != null else 0
+	if _guild_last_defense_day < 0:
+		_guild_defense_lbl.text = "Guild: first defense ~Day %d" % gda.start_day
+		_guild_defense_lbl.add_theme_color_override("font_color", Color(0.70, 0.50, 0.40, 0.80))
+	else:
+		var next_day: int = _guild_last_defense_day + gda.cooldown_days
+		var days_until: int = next_day - current_day
+		if days_until <= 0:
+			_guild_defense_lbl.text = "Guild: defending now!"
+			_guild_defense_lbl.add_theme_color_override("font_color", C_FAIL)
+		elif days_until == 1:
+			_guild_defense_lbl.text = "Guild: defends tomorrow (Day %d)" % next_day
+			_guild_defense_lbl.add_theme_color_override("font_color", C_NEUTRAL)
+		else:
+			_guild_defense_lbl.text = "Guild: next defense Day %d (in %d days)" % \
+				[next_day, days_until]
+			_guild_defense_lbl.add_theme_color_override("font_color",
+				Color(0.70, 0.50, 0.40, 0.80))
+	# Threat bar: fills based on how many defenses have fired (cap at 5 for full bar).
+	if _guild_threat_bar != null:
+		var threat_ratio: float = clamp(float(_guild_defenses_this_run) / 5.0, 0.0, 1.0)
+		_guild_threat_bar.custom_minimum_size.x = 100 * threat_ratio
+		if threat_ratio >= 0.80:
+			_guild_threat_bar.color = C_FAIL
+		elif threat_ratio >= 0.50:
+			_guild_threat_bar.color = C_NEUTRAL
+		else:
+			_guild_threat_bar.color = Color(0.85, 0.45, 0.15, 1.0)
+
+
+## Called by guild_defense_agent.defense_fired.
+func _on_guild_defense_fired(day: int, _defender_id: String, _target_id: String) -> void:
+	_guild_last_defense_day = day
+	_guild_defenses_this_run += 1
+	_update_guild_defense_display()
+
+
+# ── Event display and toast ───────────────────────────────────────────────────
+
+## Update upcoming event label.
+func _update_event_display(sm: ScenarioManager) -> void:
+	if _event_lbl == null or _world_ref == null:
+		return
+	var mga: MidGameEventAgent = _world_ref.get("mid_game_event_agent")
+	if mga == null:
+		return
+	if mga.has_pending_event():
+		var ev: Dictionary = mga.get_pending_event()
+		_event_lbl.text = "Event: %s — choose now!" % ev.get("name", "?")
+		_event_lbl.add_theme_color_override("font_color", C_NEUTRAL)
+		return
+	var current_day: int = sm.get_current_day(_day_night_ref.current_tick) \
+		if _day_night_ref != null else 1
+	var upcoming: Dictionary = mga.get_upcoming_event(current_day)
+	if upcoming.is_empty():
+		_event_lbl.text = ""
+	else:
+		var win_start: int = int(upcoming.get("dayWindowStart", 0))
+		var win_end:   int = int(upcoming.get("dayWindowEnd", 0))
+		var ev_name:   String = upcoming.get("name", "?")
+		if current_day >= win_start:
+			_event_lbl.text = "Event: %s (Day %d-%d)" % [ev_name, win_start, win_end]
+			_event_lbl.add_theme_color_override("font_color", C_NEUTRAL)
+		else:
+			_event_lbl.text = "Next event: %s (Day %d)" % [ev_name, win_start]
+			_event_lbl.add_theme_color_override("font_color", Color(0.65, 0.60, 0.45, 0.75))
+
+
+## Called by mid_game_event_agent.event_resolved — shows outcome as a toast.
+func _on_mid_game_event_resolved(_event_id: String, _choice_index: int, outcome_text: String) -> void:
+	if _event_toast_panel == null or _event_toast_lbl == null:
+		return
+	if _event_toast_tween != null and _event_toast_tween.is_valid():
+		_event_toast_tween.kill()
+	# Truncate long outcome text for HUD readability.
+	var display_text: String = outcome_text.substr(0, mini(outcome_text.length(), 160))
+	if outcome_text.length() > 160:
+		display_text += "…"
+	_event_toast_lbl.text = display_text
+	_event_toast_panel.modulate.a = 1.0
+	_event_toast_panel.visible = true
+	_event_toast_tween = create_tween()
+	_event_toast_tween.tween_interval(3.5)
+	_event_toast_tween.tween_property(_event_toast_panel, "modulate:a", 0.0, 0.6)
+	_event_toast_tween.tween_callback(func() -> void: _event_toast_panel.visible = false)
 
 
 ## Player clicked "Release Evidence" — spend whisper tokens, hit Aldric's rep, raise heat.
