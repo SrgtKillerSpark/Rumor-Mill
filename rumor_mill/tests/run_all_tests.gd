@@ -18,6 +18,9 @@
 ##   • TestAudioManager           — constants, phase detection, ambient state, dialogue duck, tension flags (SPA-982)
 ##   • TestTransitionManager      — initial state, _kill_tween guard, layer default (SPA-982)
 ##   • TestDailyPlanningOverlay   — priorities, counters, save/load round-trip, dawn handling, eval (SPA-982)
+##   • TestIntelStore             — action budget, whisper tokens, heat, evidence, location/rel intel (SPA-987)
+##   • TestGameState              — difficulty modifier keys, values, unknown preset fallback (SPA-987)
+##   • TestSocialGraph            — edge weight, mutation cap, net delta, adjacency queries (SPA-987)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -71,5 +74,14 @@ func _init() -> void:
 
 	print("\n── DailyPlanningOverlay ──")
 	TestDailyPlanningOverlay.run()
+
+	print("\n── IntelStore ──")
+	TestIntelStore.run()
+
+	print("\n── GameState ──")
+	TestGameState.run()
+
+	print("\n── SocialGraph ──")
+	TestSocialGraph.run()
 
 	print("\n=== All suites complete ===")
