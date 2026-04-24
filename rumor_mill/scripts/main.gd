@@ -781,6 +781,11 @@ func _on_ctx_day_changed(day: int) -> void:
 		if day > total / 2:
 			_ctx_halfway_fired = true
 			_tutorial_banner.queue_hint("ctx_halfway_warning")
+	# Event aftermath: show bulletin text the morning after an event expires.
+	if world.faction_event_system != null:
+		var aftermaths: Array = world.faction_event_system.get_aftermath_for_day(day)
+		for entry in aftermaths:
+			_tutorial_banner.queue_hint(entry["hint_id"], entry["text"])
 
 
 func _on_ctx_rumor_state_changed(

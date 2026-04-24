@@ -42,6 +42,14 @@ const RELIGIOUS_FESTIVAL_SENTIMENT_BONUS := 10.0
 ## Duration in days for timed effects.
 const TIMED_EVENT_DURATION := 2
 
+## Human-readable aftermath text shown the morning after an event expires.
+const AFTERMATH_TEXT: Dictionary = {
+	"market_dispute":     "The market dispute has settled, but old trade bonds remain frayed. Some merchants eye each other with new suspicion.",
+	"religious_festival": "The religious festival has ended. The clergy have returned to their routines, but the faithful still speak warmly of the gathering.",
+	"noble_feast":        "The noble feast is over. The manor doors are closed again, but alliances forged over wine may linger.",
+	"guard_crackdown":    "The guard crackdown has lifted. Patrols return to normal, and the town breathes a little easier.",
+}
+
 ## Heat decay rate during guard_crackdown (normal: 6/day — see intel_store.gd).
 const GUARD_CRACKDOWN_HEAT_DECAY := 3.0
 
@@ -351,6 +359,25 @@ func get_active_event_labels() -> Array:
 ## Returns true if a given location code is an active eavesdrop hotspot.
 func is_eavesdrop_hotspot(location_code: String) -> bool:
 	return eavesdrop_hotspots.has(location_code)
+
+
+## Returns aftermath entries for events that expired on the previous day.
+## Each entry is {"hint_id": "event_aftermath_<type>", "text": "..."}.
+## Call on day N to get aftermath for events that expired on day N-1.
+func get_aftermath_for_day(day: int) -> Array:
+	var result: Array = []
+	for ev in _events:
+		if not ev.is_expired or ev.duration_days <= 0:
+			continue
+		var expire_day: int = ev.trigger_day + ev.duration_days
+		if expire_day == day - 1:
+			var text: String = AFTERMATH_TEXT.get(ev.event_type, "")
+			if text != "":
+				result.append({
+					"hint_id": "event_aftermath_" + ev.event_type,
+					"text": text,
+				})
+	return result
 
 
 # ---------------------------------------------------------------------------

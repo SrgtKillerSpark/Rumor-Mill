@@ -381,6 +381,26 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 10,
 	},
+	"event_aftermath_market_dispute": {
+		"title": "Town News — Market Dispute Settled",
+		"body":  "",  # body_override supplies the actual text
+		"auto_dismiss_secs": 9,
+	},
+	"event_aftermath_religious_festival": {
+		"title": "Town News — Festival Ended",
+		"body":  "",  # body_override supplies the actual text
+		"auto_dismiss_secs": 9,
+	},
+	"event_aftermath_noble_feast": {
+		"title": "Town News — Feast Over",
+		"body":  "",  # body_override supplies the actual text
+		"auto_dismiss_secs": 9,
+	},
+	"event_aftermath_guard_crackdown": {
+		"title": "Town News — Crackdown Lifted",
+		"body":  "",  # body_override supplies the actual text
+		"auto_dismiss_secs": 9,
+	},
 	"ctx_idle_no_action": {
 		"title": "Need a Nudge?",
 		"body":  (
