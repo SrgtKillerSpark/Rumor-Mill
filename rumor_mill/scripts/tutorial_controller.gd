@@ -182,7 +182,7 @@ func setup(
 func start() -> void:
 	if _tutorial_sys == null or _tutorial_banner == null:
 		return
-	if _scenario_id == "scenario_1" and SaveManager.has_any_save():
+	if _scenario_id == "scenario_1" and SaveManager.has_any_save() and not SaveManager.session_was_loaded():
 		_show_skip_option()
 	else:
 		_begin_tutorial()

@@ -189,6 +189,16 @@ static func save_game(
 ## Parsed save data waiting to be applied after scene reload.
 static var _pending_load_data: Dictionary = {}
 
+## Set to true once apply_pending_load() completes for this session.
+## Remains true for the lifetime of the scene so tutorial_controller can
+## detect that the current session was restored from a save.
+static var _session_was_loaded: bool = false
+
+
+## Returns true if the current game session was restored from a save file.
+static func session_was_loaded() -> bool:
+	return _session_was_loaded
+
 
 ## Parse and validate a save file; store data as pending for apply_pending_load().
 ## Returns "" on success, or a human-readable error string on failure.
@@ -294,6 +304,7 @@ static func apply_pending_load(
 	# Rebuild reputation cache after all systems (including FactionEventSystem) are
 	# restored so that active event bonuses (e.g. religious_festival +10) are included.
 	world.reputation_system.recalculate_all(world.npcs, day_night.current_tick)
+	_session_was_loaded = true
 	_pending_load_data = {}
 
 
