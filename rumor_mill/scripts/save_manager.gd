@@ -202,9 +202,14 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 	var text := f.get_as_text()
 	f.close()
 
-	var parsed: Variant = JSON.parse_string(text)
+	var json := JSON.new()
+	var parse_err := json.parse(text)
+	if parse_err != OK:
+		return "Save file is corrupted (JSON parse error at line %d: %s)." % [
+			json.get_error_line(), json.get_error_message()]
+	var parsed: Variant = json.get_data()
 	if not (parsed is Dictionary):
-		return "Save file is corrupted (invalid JSON)."
+		return "Save file is corrupted (expected JSON object)."
 
 	var ver: int = int(parsed.get("version", 0))
 	if ver > SAVE_VERSION:

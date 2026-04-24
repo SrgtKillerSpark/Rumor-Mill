@@ -176,13 +176,23 @@ func _init_steam() -> void:
 # ---------------------------------------------------------------------------
 
 func _save() -> void:
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var tmp_path := SAVE_PATH + ".tmp"
+	var file := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if file == null:
 		push_warning("[AchievementManager] Could not open '%s' for writing (err %d)" % [
-			SAVE_PATH, FileAccess.get_open_error()])
+			tmp_path, FileAccess.get_open_error()])
 		return
 	file.store_string(JSON.stringify(_unlocked))
 	file.close()
+	# Atomically replace the achievements file so a crash mid-write cannot corrupt it.
+	var dir := DirAccess.open("user://")
+	if dir == null:
+		push_warning("[AchievementManager] Could not open user:// for atomic rename (err %d)" % DirAccess.get_open_error())
+		return
+	var rename_err := dir.rename(tmp_path, SAVE_PATH)
+	if rename_err != OK:
+		push_warning("[AchievementManager] Failed to rename '%s' to '%s' (err %d)" % [
+			tmp_path, SAVE_PATH, rename_err])
 
 
 func _load() -> void:
