@@ -75,6 +75,10 @@
         "0.75": "Near collapse"
       }
     },
+    "strategicDefeatHints": {
+      "exposed": "You drew too much heat in one district. Vary your observation targets and wait a day between actions on the same NPC — suspicion fades overnight.",
+      "timeout": "The story needs more time to root. Seed through well-connected NPCs like merchants — they spread further and faster. Plant rumors early so they have days to compound."
+    },
     "milestoneToasts": [
       { "threshold": 0.10, "message": "The first whispers take hold..." },
       { "threshold": 0.20, "message": "Word is spreading through the market." },
@@ -283,6 +287,10 @@
         "0.50": "Panic growing",
         "0.75": "Town gripped by fear"
       }
+    },
+    "strategicDefeatHints": {
+      "contradicted": "The illness rumor reached Sister Maren. Keep seeding through the merchant quarter and stay away from clergy circles — Sybil, Nell, and Greta believe fastest.",
+      "timeout": "Seven believers takes steady seeding. Focus on the most credulous NPCs first, then let the chain spread naturally. Use evidence items to accelerate uptake."
     },
     "milestoneToasts": [
       { "threshold": 0.10, "message": "Uneasy glances — the fear has begun." },
@@ -544,6 +552,10 @@
         "0.50": "Power shifting",
         "0.75": "Succession within reach"
       }
+    },
+    "strategicDefeatHints": {
+      "calder_implicated": "The rival agent turned your own campaign against Calder. Use the Disrupt button in the Scenario HUD early before their intensity spikes, and avoid over-seeding Calder.",
+      "timeout": "The two-front war demands constant pressure on both targets. Use Disrupt to buy time and prioritize Tomas's scandal — his reputation falls faster than Calder's rises."
     },
     "milestoneToasts": [
       { "threshold": 0.10, "message": "Seeds of doubt take root." },
@@ -818,6 +830,10 @@
         "0.50": "Defenses tested",
         "0.75": "Safety almost secured"
       }
+    },
+    "strategicDefeatHints": {
+      "reputation_collapsed": "Prioritize the most vulnerable target (Finn) and use Praise proactively before their reputation falls below the threshold. Counter the Inquisitor's moves the same day they happen.",
+      "timeout": "The Inquisitor accelerates late in the scenario. Counter each accusation immediately — do not let reputations drift before responding. Praise rumours work fastest through allied NPCs."
     },
     "milestoneToasts": [
       { "threshold": 0.10, "message": "The Inquisitor's eye turns elsewhere — for now." },
@@ -1104,6 +1120,10 @@
         "0.50": "Momentum building",
         "0.75": "Victory in sight"
       }
+    },
+    "strategicDefeatHints": {
+      "aldric_destroyed": "Too much praise can backfire — over-seeding makes Aldric seem suspicious. Balance boost rumours with scandal against Edric and Tomas rather than flooding Aldric's reputation.",
+      "timeout": "Aldric needs to lead before Day 13 to capture the Prior's endorsement. Start boosting him through the merchant chain in the first week while seeding scandal against both rivals simultaneously."
     },
     "milestoneToasts": [
       { "threshold": 0.10, "message": "Aldric's name stirs interest at the market." },
@@ -1396,6 +1416,11 @@
         "0.50": "Balance tipping",
         "0.75": "Reversal nearly complete"
       }
+    },
+    "strategicDefeatHints": {
+      "marta_silenced": "Marta's enemies can turn your campaign against her. Monitor her reputation daily and seed Praise through Sim Carter and Nell Picker — her closest allies — to keep her above 60.",
+      "exposed": "Heat reaches 55 quickly near Aldric's merchant network. Route all accusations through Finn Monk, Constance Widow, or Old Piety — never merchants. Wait a day between actions on the same NPC.",
+      "timeout": "Aldric's merchant allies actively block market-quarter rumors. Route entirely through clergy and commons chains — Finn Monk is your best primary seed target for accusations."
     },
     "milestoneToasts": [
       { "threshold": 0.10, "message": "A ledger discrepancy is mentioned in hushed tones." },

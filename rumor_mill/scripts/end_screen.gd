@@ -262,11 +262,12 @@ const SUMMARY_FALLBACK := {
 }
 
 # ── Node refs ─────────────────────────────────────────────────────────────────
-var _backdrop:         ColorRect      = null
-var _panel:            PanelContainer = null
-var _result_banner:    Label          = null
-var _scenario_title:   Label          = null
-var _narrative_lbl:    RichTextLabel  = null
+var _backdrop:              ColorRect      = null
+var _panel:                 PanelContainer = null
+var _result_banner:         Label          = null
+var _scenario_title:        Label          = null
+var _narrative_lbl:         RichTextLabel  = null
+var _strategic_hint_lbl:    RichTextLabel  = null   # SPA-948: defeat-specific strategy tip
 var _stats_container:  VBoxContainer  = null
 var _npc_container:    VBoxContainer  = null
 var _bonus_lbl:        Control        = null   # bonus stat label or row to reveal
@@ -378,6 +379,18 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		if not carrier.is_empty():
 			summary += ("\n\nThe rumor reached her through %s." % carrier)
 	_narrative_lbl.text = "[center][i]" + summary + "[/i][/center]"
+
+	# ── SPA-948: Strategic defeat hint below narrative ────────────────────────
+	if _strategic_hint_lbl != null:
+		if not won and sm != null:
+			var hint := sm.get_strategic_defeat_hint(fail_reason)
+			if not hint.is_empty():
+				_strategic_hint_lbl.text = "[center][b]NEXT TIME:[/b] " + hint + "[/center]"
+				_strategic_hint_lbl.visible = true
+			else:
+				_strategic_hint_lbl.visible = false
+		else:
+			_strategic_hint_lbl.visible = false
 
 	# ── Stats panel ───────────────────────────────────────────────────────────
 	_populate_stats(scenario_id, won)
@@ -1075,6 +1088,18 @@ func _build_ui() -> void:
 	_narrative_lbl.add_theme_color_override("default_color", C_BODY)
 	_narrative_lbl.add_theme_font_size_override("normal_font_size", 15)
 	vbox.add_child(_narrative_lbl)
+
+	# ── SPA-948: Strategic defeat hint (hidden until defeat + hint available) ──
+	_strategic_hint_lbl = RichTextLabel.new()
+	_strategic_hint_lbl.fit_content          = true
+	_strategic_hint_lbl.custom_maximum_size  = Vector2(0, 60)
+	_strategic_hint_lbl.autowrap_mode        = TextServer.AUTOWRAP_WORD_SMART
+	_strategic_hint_lbl.bbcode_enabled       = true
+	_strategic_hint_lbl.add_theme_color_override("default_color", Color(0.95, 0.75, 0.30, 1.0))
+	_strategic_hint_lbl.add_theme_font_size_override("normal_font_size", 13)
+	_strategic_hint_lbl.add_theme_font_size_override("bold_font_size", 13)
+	_strategic_hint_lbl.visible = false
+	vbox.add_child(_strategic_hint_lbl)
 
 	vbox.add_child(_make_separator())
 
