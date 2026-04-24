@@ -163,18 +163,18 @@ func _eval_s4(current_tick: int) -> void:
 		_fire("s4_day15_safe", "Day 15 — 5 more days. Stay vigilant!", C_WARNING)
 
 	# Danger milestones.
-	if min_score <= 52 and min_score > ScenarioManager.S4_FAIL_REP_BELOW:
+	if min_score <= ScenarioConfig.S4_CAUTION_REP and min_score > ScenarioManager.S4_FAIL_REP_BELOW:
 		_fire("s4_close_call", "⚠ %s is dangerously close to the threshold!" % weakest_name, C_DANGER)
-	if min_score <= 48 and min_score > ScenarioManager.S4_FAIL_REP_BELOW:
+	if min_score <= ScenarioConfig.S4_WIN_REP_MIN and min_score > ScenarioManager.S4_FAIL_REP_BELOW:
 		_fire("s4_critical", "⚠ CRITICAL — %s is about to fall!" % weakest_name, C_DANGER)
 
 
 # ── Scenario 5: The Election ────────────────────────────────────────────────
 
 func _eval_s5(current_tick: int) -> void:
-	var aldric: ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("aldric_vane")
-	var edric:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("edric_fenn")
-	var tomas:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("tomas_reeve")
+	var aldric: ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot(ScenarioConfig.ALDRIC_VANE_ID)
+	var edric:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot(ScenarioConfig.EDRIC_FENN_ID)
+	var tomas:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot(ScenarioConfig.TOMAS_REEVE_ID)
 	if aldric == null or edric == null or tomas == null:
 		return
 
@@ -200,7 +200,7 @@ func _eval_s5(current_tick: int) -> void:
 		_fire("s5_aldric_danger", "⚠ Aldric's reputation is collapsing — act now!", C_DANGER)
 
 	# Both rivals still strong.
-	if edric.score >= 50 and tomas.score >= 45 and day >= 10:
+	if edric.score >= 50 and tomas.score >= ScenarioConfig.S5_WIN_RIVALS_MAX and day >= 10:
 		_fire("s5_rivals_strong", "⚠ Both rivals are still in the race — step up the attacks", C_WARNING)
 
 

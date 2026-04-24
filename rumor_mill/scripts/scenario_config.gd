@@ -43,6 +43,10 @@ const S1_EDRIC_START_SCORE := 50
 ## SPA-502: cumulative exposure threshold via Guard Captain.
 const S1_EXPOSED_HEAT      := 80.0
 
+## Edric's reputation below this value fires the "First Blood" celebration (SPA-805).
+## Sits between the start score (50) and the win threshold (30) as an early-progress marker.
+const S1_FIRST_BLOOD_THRESHOLD := 48
+
 # ---------------------------------------------------------------------------
 # Scenario 2 — The Plague Scare
 # ---------------------------------------------------------------------------
@@ -85,6 +89,10 @@ const S4_WIN_REP_MIN       := 48
 ## Any protected NPC dropping below this triggers an instant fail.
 ## SPA-550: separated from win threshold to create a "danger zone" for comeback plays.
 const S4_FAIL_REP_BELOW    := 40
+
+## Milestone warning threshold — a protected NPC below this score triggers a
+## "dangerously close" toast in MilestoneTracker (4 points above the win floor).
+const S4_CAUTION_REP       := 52
 
 ## Day window [first_day, last_day] for each mid-game faction shift event.
 ## Phase 1: Merchant Sympathy  — weakest NPC receives a praise rumour.

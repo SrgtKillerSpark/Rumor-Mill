@@ -322,6 +322,12 @@ const ALDRIC_VANE_ID   := ScenarioConfig.ALDRIC_VANE_ID
 const MARTA_COIN_ID    := ScenarioConfig.MARTA_COIN_ID
 const ALDOUS_PRIOR_ID  := ScenarioConfig.ALDOUS_PRIOR_ID
 
+# Array aliases — re-exported so callers (end_screen, milestone_tracker, objective_hud) can
+# reference ScenarioManager.S4_PROTECTED_NPC_IDS and ScenarioManager.S2_WIN_ILLNESS_MIN_DEFAULT
+# without needing a direct ScenarioConfig import.
+const S4_PROTECTED_NPC_IDS      := ScenarioConfig.S4_PROTECTED_NPC_IDS
+const S2_WIN_ILLNESS_MIN_DEFAULT := ScenarioConfig.S2_WIN_ILLNESS_MIN
+
 # Scenario 1 thresholds.
 # Vars (not const) so difficulty modifiers from scenarios.json can override them.
 # SPA-98: WIN_EDRIC_BELOW raised from 25; SPA-502: EXPOSED_HEAT cumulative threshold.
@@ -485,8 +491,8 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 	var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
 	if snap == null:
 		return
-	# SPA-805: "First Blood" celebration — first time Edric's rep cracks below 48.
-	if not _s1_first_blood_fired and snap.score < 48:
+	# SPA-805: "First Blood" celebration — first time Edric's rep cracks below S1_FIRST_BLOOD_THRESHOLD.
+	if not _s1_first_blood_fired and snap.score < ScenarioConfig.S1_FIRST_BLOOD_THRESHOLD:
 		_s1_first_blood_fired = true
 		s1_first_blood.emit()
 	if snap.score < S1_WIN_EDRIC_BELOW:

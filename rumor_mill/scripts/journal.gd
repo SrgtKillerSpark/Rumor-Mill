@@ -1766,12 +1766,12 @@ func _build_objectives_section() -> void:
 		+ "  Edric Fenn:   %s / 100  \u2014 %s\n"
 		+ "  Tomas Reeve:  %s / 100  \u2014 %s\n"
 		+ "  Endorsement: Day %d (Prior Aldous grants +%d to leader)"
-	) % [sm.S5_WIN_ALDRIC_MIN if sm != null else 65, s5_win_status,
-		sm.S5_WIN_RIVALS_MAX if sm != null else 45,
+	) % [sm.S5_WIN_ALDRIC_MIN if sm != null else ScenarioConfig.S5_WIN_ALDRIC_MIN, s5_win_status,
+		sm.S5_WIN_RIVALS_MAX if sm != null else ScenarioConfig.S5_WIN_RIVALS_MAX,
 		aldric_score_str, aldric_band_str,
 		edric_s5_str, edric_s5_band,
 		tomas_s5_str, tomas_s5_band,
-		ScenarioManager.S5_ENDORSEMENT_DAY, sm.S5_ENDORSEMENT_BONUS if sm != null else 8]
+		ScenarioManager.S5_ENDORSEMENT_DAY, sm.S5_ENDORSEMENT_BONUS if sm != null else ScenarioConfig.S5_ENDORSEMENT_BONUS]
 	s5_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s5_win_body.add_theme_font_size_override("font_size", 12)
 	s5_win_body.add_theme_color_override("font_color", s5_win_color)

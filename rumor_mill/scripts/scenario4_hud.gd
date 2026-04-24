@@ -120,7 +120,7 @@ func _build_ui() -> void:
 		var lbl := Label.new()
 		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", C_BODY)
-		lbl.text = "%s  Rep: 50 / 100  Floor: 45" % NPC_DISPLAY_NAMES.get(npc_id, npc_id)
+		lbl.text = "%s  Rep: 50 / 100  Floor: %d" % [NPC_DISPLAY_NAMES.get(npc_id, npc_id), ScenarioConfig.S4_WIN_REP_MIN]
 		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh)
 		lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 		vbox.add_child(lbl)
