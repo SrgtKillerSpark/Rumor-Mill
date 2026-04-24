@@ -209,6 +209,10 @@ func setup_world(world: Node2D) -> void:
 				_day_night.day_changed.connect(_suggestion_engine._on_day_changed)
 			if _day_night.has_signal("day_transition_started"):
 				_day_night.day_transition_started.connect(_suggestion_engine._on_dawn)
+	# SPA-943: Win target label is built during setup() when _world_ref is still null,
+	# so _refresh_win_target() returns early and the label stays hidden until the first
+	# game tick.  Populate it immediately now that _world_ref is available.
+	_refresh_win_target()
 
 
 ## SPA-769/870: Set tooltip_text on scene-defined HUD controls (what/how/why format).
