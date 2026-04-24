@@ -73,6 +73,8 @@ var _toast_slide_tween: Tween = null
 var _flash_rect:        ColorRect = null
 var _flash_tween:       Tween = null
 
+var _tooltip_mgr: ReconTooltipManager = null
+
 # ── SPA-724: Goal reminder strip ────────────────────────────────────────────
 var _goal_strip: Panel = null
 var _goal_label: Label = null
@@ -135,7 +137,21 @@ func _ready() -> void:
 	_build_hint_button()
 	_build_flash_overlay()
 	_build_feed_panel()
-	_setup_recon_tooltips()
+	_tooltip_mgr = ReconTooltipManager.new()
+	_tooltip_mgr.setup(
+		$CounterPanel,
+		_heat_row,
+		_feed_panel,
+		$CounterPanel/VBox/KeyHintRow,
+		action_pips_row.get_parent() as Control,
+		whisper_pips_row.get_parent() as Control,
+		favors_row,
+		_key_hint_rumor,
+		_key_hint_journal,
+		_key_hint_graph,
+		_key_hint_help
+	)
+	_tooltip_mgr.setup_initial_tooltips()
 
 
 func setup(intel_store: PlayerIntelStore, rumor_panel: CanvasLayer) -> void:
@@ -453,8 +469,6 @@ func _build_heat_meter() -> void:
 	_heat_count_lbl.add_theme_color_override("font_color", C_HEAT_LOW)
 	_heat_row.add_child(_heat_count_lbl)
 
-	_heat_row.tooltip_text = "Suspicion: highest NPC heat level (0-100). High heat makes NPCs reject your rumors."
-
 	# Insert before KeyHintRow (index 2 = after ActionsRow, WhispersRow)
 	var key_hint_idx: int = -1
 	for i in vbox.get_child_count():
@@ -525,18 +539,8 @@ func _refresh_heat() -> void:
 			_heat_count_lbl.text = "%d" % int(max_heat)
 			_heat_count_lbl.add_theme_color_override("font_color", heat_color)
 
-	# Update tooltip to reflect the current failure ceiling.
-	if _heat_row != null:
-		if ceiling > 0.0:
-			_heat_row.tooltip_text = (
-				"Suspicion: highest NPC heat (0-100). Reaches %d → exposed, scenario fails!\n"
-				+ "High heat also makes NPCs reject your rumors (−15%% at 50, −30%% at 75)."
-			) % int(ceiling)
-		else:
-			_heat_row.tooltip_text = (
-				"Suspicion: highest NPC heat (0-100). "
-				+ "High heat makes NPCs reject your rumors (−15%% at 50, −30%% at 75)."
-			)
+	# Update tooltip to reflect the current heat value and failure ceiling.
+	_tooltip_mgr.refresh_heat_tooltip(int(max_heat), ceiling)
 
 
 func _build_extra_key_hints() -> void:
@@ -579,28 +583,10 @@ func _refresh_key_hint_availability() -> void:
 
 	# R: Rumor — requires whisper tokens.
 	if _key_hint_rumor != null:
-		if whispers <= 0:
-			_key_hint_rumor.modulate = Color(1.0, 1.0, 1.0, 0.30)
-			_key_hint_rumor.tooltip_text = "Craft Rumor (R)\nUnavailable — no Whisper Tokens remaining.\nTokens refresh at dawn."
-		else:
-			_key_hint_rumor.modulate = Color.WHITE
-			_key_hint_rumor.tooltip_text = "Craft Rumor (R)\nOpen the Rumor Crafting panel to create and seed a new rumor.\nCosts 1 Whisper Token."
-		_key_hint_rumor.mouse_filter = Control.MOUSE_FILTER_PASS
+		_key_hint_rumor.modulate = Color(1.0, 1.0, 1.0, 0.30) if whispers <= 0 else Color.WHITE
 
-	# J: Journal — always available.
-	if _key_hint_journal != null:
-		_key_hint_journal.tooltip_text = "Journal (J)\nReview your rumors, intel, faction standings, and objectives."
-		_key_hint_journal.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# G: Graph — always available.
-	if _key_hint_graph != null:
-		_key_hint_graph.tooltip_text = "Social Graph (G)\nVisualize NPC relationships and find the best paths to spread rumors."
-		_key_hint_graph.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# F1: Help — always available.
-	if _key_hint_help != null:
-		_key_hint_help.tooltip_text = "Help (F1)\nOpen the tutorial and help overlay."
-		_key_hint_help.mouse_filter = Control.MOUSE_FILTER_PASS
+	# Tooltip text and mouse-filter for all key hints.
+	_tooltip_mgr.refresh_key_hint_tooltips(whispers)
 
 
 # ── SPA-870: First-time resource change callouts ────────────────────────────
@@ -811,6 +797,11 @@ func _rebuild_feed() -> void:
 		var filter_text: String = entry["message"]
 		btn.pressed.connect(_on_feed_entry_clicked.bind(filter_text))
 		_feed_vbox.add_child(btn)
+		# SPA-992: Fade in the newest entry so it pops without jarring the feed.
+		if i == 0:
+			btn.modulate.a = 0.0
+			var tw := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tw.tween_property(btn, "modulate:a", 1.0, 0.20)
 
 
 func _on_feed_entry_clicked(filter_text: String) -> void:
@@ -861,20 +852,7 @@ func _refresh_pips() -> void:
 	_check_first_time_callouts(_last_action_rem, remaining, _last_whisper_rem, whispers)
 
 	# Update row tooltips so hovering the pip area explains the resource (SPA-870 enhanced).
-	action_pips_row.get_parent().tooltip_text = (
-		"Recon Actions: %d / %d remaining\n"
-		+ "What: Your daily budget for gathering intelligence.\n"
-		+ "How to use: Right-click buildings to Observe, NPCs to Eavesdrop.\n"
-		+ "Refresh: All actions replenish at dawn each day."
-	) % [remaining, max_val]
-	whisper_pips_row.get_parent().tooltip_text = (
-		"Whisper Tokens: %d / %d remaining\n"
-		+ "What: Tokens spent to seed rumors into the town.\n"
-		+ "How to use: Press R to craft a rumor, then choose a seed target.\n"
-		+ "Refresh: All tokens replenish at dawn each day."
-	) % [whispers, max_w]
-	action_pips_row.get_parent().mouse_filter = Control.MOUSE_FILTER_PASS
-	whisper_pips_row.get_parent().mouse_filter = Control.MOUSE_FILTER_PASS
+	_tooltip_mgr.refresh_resource_tooltips(remaining, max_val, whispers, max_w)
 
 	# Show dawn refresh hint when all actions and whispers are spent.
 	if _dawn_label != null:
@@ -899,12 +877,7 @@ func _refresh_pips() -> void:
 		favors_row.visible = show_favors
 		if show_favors:
 			favors_label.text = str(favors)
-			favors_row.tooltip_text = (
-				"Favors: %d available\n"
-				+ "What: Tokens earned through successful actions.\n"
-				+ "How to use: Bribe NPCs to reduce their suspicion of you.\n"
-				+ "Earn more: Complete recon actions successfully."
-			) % favors
+			_tooltip_mgr.refresh_favors_tooltip(favors)
 
 	# SPA-894: Low-resource warning pulse when down to last token.
 	_check_low_resource_warning(remaining, whispers)
@@ -1179,61 +1152,5 @@ func _update_pips(
 			tw.tween_property(pip, "scale", Vector2.ONE, 0.18)
 
 
-# ── SPA-767: Recon HUD tooltips & visual indicators ─────────────────────────
-
-func _setup_recon_tooltips() -> void:
-	# Counter panel overall tooltip (SPA-870: what/how/why format).
-	var counter_panel: Panel = $CounterPanel
-	counter_panel.tooltip_text = (
-		"Recon Resources\n"
-		+ "What: Your daily budget of Actions and Whisper Tokens.\n"
-		+ "Actions let you gather intel; Whispers let you seed rumors.\n"
-		+ "All resources refresh at the start of each new day."
-	)
-	counter_panel.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# Heat meter tooltip (set dynamically, but provide a default).
-	if _heat_row != null:
-		_heat_row.tooltip_text = (
-			"Town Suspicion\n"
-			+ "What: How suspicious NPCs are of your activities.\n"
-			+ "Effect: High heat makes NPCs reject your rumors.\n"
-			+ "Reduce it: Use Favors to bribe NPCs, or lay low and wait."
-		)
-		_heat_row.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# Feed panel tooltip.
-	if _feed_panel != null:
-		_feed_panel.tooltip_text = (
-			"Recent Actions\n"
-			+ "What: A log of your last few recon actions and their results.\n"
-			+ "Tip: Click an entry to filter the Journal to that event."
-		)
-
-	# Key hints row.
-	var key_hint_row: HBoxContainer = $CounterPanel/VBox/KeyHintRow
-	key_hint_row.tooltip_text = (
-		"Quick Actions\n"
-		+ "Keyboard shortcuts to open game panels.\n"
-		+ "R: Rumor crafting | J: Journal | G: Social Graph | F1: Help\n"
-		+ "Greyed-out shortcuts require resources you don't currently have."
-	)
-	key_hint_row.mouse_filter = Control.MOUSE_FILTER_PASS
-
-
-## SPA-767: Update heat meter tooltip with live values for richer context.
-func _update_heat_tooltip(heat_val: int) -> void:
-	if _heat_row == null:
-		return
-	var severity := "Safe"
-	var effect := "No effect on rumor believability."
-	if heat_val > 75:
-		severity = "CRITICAL"
-		effect = "Severe penalty to believability. Risk of exposure!"
-	elif heat_val > 50:
-		severity = "Danger"
-		effect = "-30% rumor believability."
-	elif heat_val > 25:
-		severity = "Caution"
-		effect = "-15% rumor believability."
-	_heat_row.tooltip_text = "Town Suspicion: %d/100 (%s)\n%s\nReduce heat by using Favors (bribes) or waiting." % [heat_val, severity, effect]
+# ── SPA-767 / SPA-999: Tooltip management delegated to ReconTooltipManager ───
+# See recon_tooltip_manager.gd — _tooltip_mgr is wired in _ready().
