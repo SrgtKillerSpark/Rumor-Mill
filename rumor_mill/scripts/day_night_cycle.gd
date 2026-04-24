@@ -409,6 +409,8 @@ func _get_phase_name(hour: int) -> String:
 func _play_phase_transition(phase_name: String) -> void:
 	if _phase_label == null:
 		return
+	# Subtle ambient chime — pitched low for a clock-like phase marker.
+	AudioManager.play_sfx_pitched("whisper", 0.65)
 	if _phase_label_tween != null and _phase_label_tween.is_valid():
 		_phase_label_tween.kill()
 	_phase_label.text = "Day %d — %s" % [current_day, phase_name]

@@ -364,6 +364,7 @@ func _show_step(step_idx: int) -> void:
 		_advance_step()
 		return
 
+	AudioManager.play_sfx_pitched("milestone_chime", 1.25)
 	_apply_step_highlights(step_idx)
 
 	if _tutorial_banner != null and _tutorial_banner.has_method("queue_hint"):
@@ -561,6 +562,7 @@ func _show_toast(text: String, duration: float = 2.0) -> void:
 # ── Celebration (step 4: first rumor seeded) ──────────────────────────────────
 
 func _celebrate_first_rumor() -> void:
+	AudioManager.play_sfx("rumor_success")
 	var target_label := _last_seed_target_name if _last_seed_target_name != "" else "NPC"
 	_show_toast("Rumor planted! Watch %s's thought bubble..." % target_label, 4.0)
 	# Camera pan to the target NPC so the player sees the rumor arrive.

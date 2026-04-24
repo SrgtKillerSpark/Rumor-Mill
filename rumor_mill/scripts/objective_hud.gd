@@ -733,6 +733,10 @@ func _check_target_rep_change(cur_scores: Dictionary) -> void:
 	_last_target_scores = cur_scores.duplicate()
 	if abs(best_delta) < 2:
 		return
+	if best_delta > 0:
+		AudioManager.play_sfx_pitched("reputation_up", 1.05)
+	else:
+		AudioManager.play_sfx_pitched("reputation_down", 0.95)
 	var npc_name:  String = best_npc_id.replace("_", " ").capitalize()
 	var direction: String = "dropped to" if best_delta < 0 else "rose to"
 	var sign:      String = "+" if best_delta > 0 else ""

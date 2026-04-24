@@ -314,6 +314,7 @@ func _refresh() -> void:
 func notify_inquisitor_acted(day: int, claim_type: String, subject_id: String) -> void:
 	if _inquisitor_lbl == null:
 		return
+	AudioManager.play_sfx_pitched("heat_warning", 0.9)
 	var subject_display := NPC_DISPLAY_NAMES.get(subject_id, _display_name(subject_id))
 	_inquisitor_lbl.text = "Inquisitor: Day %d — %s on %s" % [day, claim_type.capitalize(), subject_display]
 	_inquisitor_lbl.add_theme_color_override("font_color", Color(1.0, 0.30, 0.15, 1.0))
@@ -475,6 +476,7 @@ func _start_danger_pulse() -> void:
 func _show_faction_shift_toast(text: String) -> void:
 	if _toast_panel == null or _toast_lbl == null:
 		return
+	AudioManager.play_sfx("reputation_shift")
 	if _toast_tween != null and _toast_tween.is_valid():
 		_toast_tween.kill()
 	_toast_lbl.text = text

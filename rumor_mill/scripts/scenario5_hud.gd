@@ -395,6 +395,7 @@ func _on_campaign_pressed() -> void:
 	if not used_free:
 		_campaign_last_day = current_day
 	rep.apply_score_delta(ScenarioManager.ALDRIC_VANE_ID, CAMPAIGN_REP_BOOST)
+	AudioManager.play_sfx_pitched("reputation_up", 1.0)
 	if _campaign_lbl != null:
 		_campaign_lbl.text = "Day %d: Aldric rallied the crowd (+%d rep)" % [current_day, CAMPAIGN_REP_BOOST]
 		_campaign_lbl.visible = true
@@ -502,6 +503,10 @@ func _update_event_countdown(sm: ScenarioManager) -> void:
 func _on_endorsement(candidate_id: String, bonus: int) -> void:
 	if _endorse_lbl == null:
 		return
+	if candidate_id == ScenarioManager.ALDRIC_VANE_ID:
+		AudioManager.play_sfx_pitched("reputation_up", 1.1)
+	else:
+		AudioManager.play_sfx_pitched("reputation_down", 0.9)
 	var name_str: String = NPC_DISPLAY_NAMES.get(candidate_id, _display_name(candidate_id))
 	_endorse_lbl.text = "Endorsed: %s (+%d)" % [name_str, bonus]
 	if candidate_id == ScenarioManager.ALDRIC_VANE_ID:

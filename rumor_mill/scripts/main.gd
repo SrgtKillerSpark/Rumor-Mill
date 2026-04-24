@@ -1202,6 +1202,9 @@ func _on_rumor_event(message: String, tick: int) -> void:
 		elif main_msg.contains("→ Spread"):
 			var npc_name := main_msg.split(" →")[0].strip_edges() if " →" in main_msg else "NPC"
 			recon_hud.show_milestone("%s is spreading the word!" % npc_name, Color(0.40, 0.85, 1.00, 1.0))
+			# SPA-922: Flash to reinforce spread — makes NPC-to-NPC propagation more noticeable.
+			if recon_hud.has_method("show_action_flash"):
+				recon_hud.show_action_flash(true)
 		elif main_msg.contains("→ Act"):
 			var npc_name := main_msg.split(" →")[0].strip_edges() if " →" in main_msg else "NPC"
 			recon_hud.show_milestone("%s takes action!" % npc_name, Color(1.00, 0.85, 0.20, 1.0))

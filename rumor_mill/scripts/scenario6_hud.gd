@@ -406,6 +406,7 @@ func _update_event_display(sm: ScenarioManager) -> void:
 func _on_mid_game_event_resolved(_event_id: String, _choice_index: int, outcome_text: String) -> void:
 	if _event_toast_panel == null or _event_toast_lbl == null:
 		return
+	AudioManager.play_sfx("milestone_chime")
 	if _event_toast_tween != null and _event_toast_tween.is_valid():
 		_event_toast_tween.kill()
 	# Truncate long outcome text for HUD readability.
@@ -441,6 +442,7 @@ func _on_blackmail_pressed() -> void:
 		intel.whisper_tokens_remaining += 1
 		return
 	intel.blackmail_uses_count += 1
+	AudioManager.play_sfx_pitched("reputation_down", 0.85)
 	# Apply big reputation damage to Aldric.
 	rep.apply_score_delta(ScenarioManager.ALDRIC_VANE_ID, BLACKMAIL_REP_HIT)
 	# Apply heat to Aldric's merchant defenders — they notice the source of the leak.
