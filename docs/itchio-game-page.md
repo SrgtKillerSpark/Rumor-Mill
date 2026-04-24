@@ -80,11 +80,14 @@ Then adapt.
 - Real-time rumor propagation — stories mutate, stall, accelerate, and backfire
 - Full social graph visualization — watch your whisper move through the town
 - Multiple claim types: accusations, scandals, illness scares, prophecies, blackmail threats, secret alliances, forbidden romances
+- Evidence system — collect Forged Documents, Incriminating Artifacts, and Witness Accounts to boost rumor credibility before seeding
 - Intel system — eavesdrop, observe, build your picture before committing
+- AI rival opponent (Scenario 3) — a metric-driven agent that adapts its counter-campaign in three escalating phases
 - Player Journal — track reputation scores, active rumors, and known relationships
 - Four handcrafted scenarios with distinct objectives and faction configurations
 - Full save/load — resume any scenario at any point
 - Day/night cycle — NPC schedules shift; timing your move matters
+- Ambient audio — distinct soundscapes per location (tavern, market, chapel, manor) with day-phase music transitions
 - Post-scenario feedback prompt — rate your experience and surface replay data
 - Accessibility options: colorblind-safe icons, adjustable font sizes, keyboard navigation
 
@@ -95,7 +98,6 @@ Then adapt.
 All four scenarios are fully playable. The rumor engine runs, save/load is in, and the post-scenario analytics are live. This is a complete early build — not a vertical slice.
 
 **What's not in yet:**
-- **Audio is placeholder.** The game launches silent. Music and sound effects are the top priority for the first update.
 - **Windows only.** Mac and Linux builds are planned but not yet tested.
 
 Built in **Godot 4.6**. Solo-developed with AI-assisted engineering (Claude Code). The design, direction, and judgment calls are mine.
@@ -208,8 +210,9 @@ Before publishing the itch.io page:
 
 ---
 
-*Document version: 1.3 — 2026-04-04*
+*Document version: 1.4 — 2026-04-24*
 *v1.0 ([SPA-183](/SPA/issues/SPA-183)): Initial itch.io page copy. Steam copy source: [SPA-168](/SPA/issues/SPA-168) | Devlog plan: [SPA-178](/SPA/issues/SPA-178)*
 *v1.1 ([SPA-267](/SPA/issues/SPA-267)): Added Scenario 4 "The Holy Inquisition"; updated scenario count to four.*
 *v1.2 ([SPA-294](/SPA/issues/SPA-294)): Finalized for Apr 11 demo launch — fixed "three→four" in demo section, added save/load to features, added roadmap link, explicit no-audio/Windows-only callout, social post added, devlog #4 title updated.*
 *v1.3 ([SPA-346](/SPA/issues/SPA-346)): Added BLACKMAIL, SECRET_ALLIANCE, FORBIDDEN_ROMANCE claim types to Rumor Crafting Panel description and features list; added post-scenario feedback prompt to features.*
+*v1.4 ([SPA-939](/SPA/issues/SPA-939)): Removed stale "audio is placeholder" callout (audio fully implemented SPA-216 through SPA-928); added evidence system and AI rival to features list; added ambient audio to features list.*

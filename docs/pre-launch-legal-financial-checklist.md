@@ -2,10 +2,52 @@
 
 **Prepared by:** CFO  
 **Date:** 2026-04-03  
+**Last updated:** 2026-04-24 (SPA-290 — added action plan, owners, and target dates)  
 **For:** Rumor Mill — board / founding team  
 **Status:** Actionable — complete before any public release (itch.io early demo or Steam launch)
 
 > **Prerequisite:** Complete the business formation and Steam setup steps in [`docs/business-setup-guide.md`](./business-setup-guide.md) before this checklist. This document covers what comes *after* the LLC and developer accounts are in place.
+
+---
+
+## Master Action Plan
+
+> **Board: please confirm the Status column for each row.** All items are marked ⬜ Unknown pending your confirmation. Update this table directly or reply on [SPA-290](/SPA/issues/SPA-290).
+
+**Target launch sequence:** itch.io free demo → **2026-05-02** · Steam EA → **2026-05-16**
+
+### Blocking for Steam EA
+
+| # | Item | Owner | Status | Target Date | Notes |
+|---|------|-------|--------|-------------|-------|
+| S1 | W-9 submitted and accepted by Valve (use EIN, not SSN) | Founder | ⬜ Unknown | **2026-04-28** | Cannot receive any revenue without this. Steamworks → Account → Tax Information. Allow 2–7 days for Valve review. |
+| S2 | ACH payout configured in Steamworks (Mercury account) | Founder | ⬜ Unknown | **2026-04-28** | LLC entity name must match bank account exactly. |
+| S3 | Regional pricing set ($14.99 USD base + Steam Regional Templates) | Founder | ⬜ Unknown | **2026-04-30** | Must be set before Coming Soon page can go live. |
+| S4 | Privacy policy hosted at a public URL | Founder | ⬜ Unknown | **2026-04-28** | Steam page cannot go live without this URL. GitHub Pages is fastest. See §3D for template. |
+| S5 | 30-day Steam review window started | Founder | ⬜ Unknown | **Start by 2026-04-17** (overdue if not started) | Must be in progress now. If not yet started, begin immediately — the 30-day clock is the longest blocker. |
+| S6 | Coming Soon page live ≥ 14 days before launch date | Founder | ⬜ Unknown | **By 2026-05-02** (for a 2026-05-16 launch) | Publish as soon as the review window opens. |
+
+### Blocking for itch.io Demo (if any revenue / PWYW)
+
+| # | Item | Owner | Status | Target Date | Notes |
+|---|------|-------|--------|-------------|-------|
+| I1 | itch.io payout method configured (PayPal or Stripe) | Founder | ⬜ Unknown | **2026-04-28** | itch.io Dashboard → Payouts. Required before any paid tier. Set up now even for free demo. |
+| I2 | itch.io revenue model set to "itch.io as MOR" | Founder | ⬜ Unknown | **2026-04-28** | Account Settings → Payment Options. Recommended to avoid solo MOR complexity. |
+
+### High Priority (Not Blocking Day 1, but Time-Sensitive)
+
+| # | Item | Owner | Status | Target Date | Notes |
+|---|------|-------|--------|-------------|-------|
+| H1 | LLC formation filed (home state) | Founder | ⬜ Unknown | **2026-04-30** | ~$100–200 filing fee; 1–3 weeks processing. Required before Steam EA payout to protect personal assets. Start now if not filed. |
+| H2 | `THIRD_PARTY_LICENSES.txt` created in repo | Dev / CFO | ⬜ Unknown | **2026-05-02** | Must include Godot MIT attribution. Update when final audio assets are integrated. See §2D template. |
+| H3 | Tax set-aside plan: 25–30% of net receipts in dedicated savings | Founder | ⬜ Unknown | **Before first payout (~2026-06-15)** | First Valve payout expected ~60 days after launch. Set up the savings account now. |
+| H4 | CPA consultation booked | Founder | ⬜ Unknown | **Before 2026-07-01** | Recommended before first taxable year. ~$200–400 one-hour consult pays for itself. |
+
+### Low Priority (Defer to 1.0)
+
+| # | Item | Owner | Status | Target Date | Notes |
+|---|------|-------|--------|-------------|-------|
+| L1 | EULA decision: Steam SSA (no action) vs. custom EULA | Founder | ⬜ Deferred to 1.0 | 1.0 launch | Steam SSA is legally sufficient for EA. No action needed for EA launch. |
 
 ---
 
@@ -92,7 +134,7 @@ As of the Sprint 7 build, **no addons are installed** in `rumor_mill/addons/`. I
 
 ### 2C — Audio and Art Assets
 
-The Sprint 7 build uses **silent placeholder audio files** (see `README.md` §Known Limitations). Before integrating final assets:
+Ambient audio is fully implemented in the current build (location soundscapes, day-phase music transitions, SFX — see SPA-216 through SPA-928). Before integrating any additional audio assets:
 
 - [ ] **Audio (music and SFX):** Use only assets with explicit commercial-use licenses. Acceptable sources:
   - [Freesound.org](https://freesound.org) — filter by CC0 or CC BY; read each track's license

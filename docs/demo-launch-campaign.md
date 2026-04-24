@@ -87,7 +87,7 @@ The full text is in `docs/devlog-series-plan.md`. Do not rewrite it — post as-
 > - Raise one reputation and ruin another simultaneously against an AI opponent
 > - Purely defensive — protect three people from an inquisitor's propaganda campaign
 >
-> All four scenarios are fully playable. It's a complete early build, not a vertical slice. Audio is currently placeholder — the game launches silent. Windows only for now.
+> All four scenarios are fully playable. It's a complete early build, not a vertical slice. Windows only for now.
 >
 > **Free, no account required.** Built in Godot 4.6. Solo-developed.
 >
@@ -123,7 +123,7 @@ The full text is in `docs/devlog-series-plan.md`. Do not rewrite it — post as-
 >
 > Built with AI-assisted engineering (Claude Code for Godot scripting and architecture). Design, direction, and judgment calls are mine.
 >
-> Demo is free, Windows only, audio placeholder. Any feedback on the systems or how the propagation engine reads is welcome.
+> Demo is free, Windows only. Any feedback on the systems or how the propagation engine reads is welcome.
 >
 > — SrgtKillerSpark
 
@@ -160,7 +160,7 @@ The full text is in `docs/devlog-series-plan.md`. Do not rewrite it — post as-
 > One propagation engine. Four completely different problems.
 
 **Tweet 5 (CTA):**
-> Free. No account required. Windows only. Audio is placeholder — it launches silent.
+> Free. No account required. Windows only.
 >
 > Devlog #1 is up on the itch.io page if you want the systems breakdown first.
 >
@@ -178,7 +178,7 @@ The full text is in `docs/devlog-series-plan.md`. Do not rewrite it — post as-
 >
 > Social Graph Overlay shows every active spread thread in real time. Four handcrafted scenarios.
 >
-> Free. Windows only. Audio is placeholder.
+> Free. Windows only.
 >
 > [ITCH_LINK]
 >
@@ -261,14 +261,104 @@ Check the following by end of day April 11:
 
 ## What This Campaign Does NOT Cover
 
-- Steam wishlist CTAs — not relevant until the Steam Coming Soon page is live (target: April 14–18)
 - Pricing, discounts, or Early Access framing — the demo is free
 - Post-launch analytics posts — those are for the Steam EA launch week
 - The launch-week 7-day social schedule (`docs/launch-week-campaign.md`) — that activates on Steam EA launch day, not April 11
 
 ---
 
-*Document version: 1.1 — 2026-04-04*
+## 8. Steam EA Launch Day — Finalized Posts (April 25)
+
+*Ready-to-post. Replace [STEAM_LINK] and [ITCH_LINK] with actual URLs before posting.*
+*Launch day cadence: Post 1 first (announcement), then Posts 2–4 spaced 30–60 min apart. Post 5 end-of-day.*
+
+---
+
+**Post 1 — Launch announcement (Twitter/X + Mastodon)**
+
+> Rumor Mill is live on Steam Early Access.
+>
+> Medieval social strategy. No combat. 30 NPCs. Your only weapons are whispers and a precise understanding of who talks to whom.
+>
+> [STEAM_LINK] #indiedev #RumorMill #godotengine
+
+*Attach: Social Graph Overlay screenshot — amber spread threads crossing faction lines, no UI labels.*
+
+---
+
+**Post 2 — The hook (Twitter/X)**
+
+> The rumor moves through the social network on its own.
+>
+> NPCs pass it on based on personality — some embellish, some downplay, some go quiet. The story mutates in transit. A petty accusation becomes a corruption scandal. A health concern becomes a plague scare.
+>
+> You can't fully control the message once it's out. That's the game.
+>
+> [STEAM_LINK] #RumorMill
+
+---
+
+**Post 3 — Scenarios (Twitter/X)**
+
+> Four scenarios. Four completely different problems.
+>
+> - Discredit a nine-year alderman before the tax rolls are signed
+> - Drive out a rival herbalist before the town healer contradicts you
+> - Raise one reputation and ruin another — against an AI opponent running its own counter-campaign
+> - Purely defensive: protect three people from an inquisitor's propaganda for 20 days
+>
+> One propagation engine. All of it.
+>
+> [STEAM_LINK] #indiedev #RumorMill #strategygame
+
+---
+
+**Post 4 — The demo players (Twitter/X + Mastodon)**
+
+> The itch.io demo has been out for two weeks. Thank you for the plays, the bug reports, and the questions about the SIR model.
+>
+> Steam Early Access is out now — full difficulty presets, same four scenarios, same engine.
+>
+> Free demo still on itch.io if you want to try before buying.
+>
+> [STEAM_LINK] | [ITCH_LINK]
+
+---
+
+**Post 5 — End of day (Twitter/X)**
+
+> Launch day done.
+>
+> If you played the itch.io demo and are wondering what changed: difficulty presets (Apprentice → Spymaster), minor balance fixes from demo feedback, and the heat ambient audio is now properly reset on scenario restart.
+>
+> Questions about the game? Reply here. I'll answer.
+>
+> [STEAM_LINK] #indiedev #RumorMill
+
+---
+
+*Note: full 7-day launch week schedule (Posts 1–7, Reddit copy, press outreach) is in `docs/launch-announcements.md` and `docs/launch-week-campaign.md`.*
+
+---
+
+## Demo Scope Recommendation
+
+*Which scenarios best showcase the game for marketing and demo purposes.*
+
+**Recommendation: lead marketing with S1 + S3. Keep all four in the demo.**
+
+- **S1 (The Alderman's Ruin)** is the right entry point — 30 days, one target, full tutorial system, faction routing puzzle. It teaches the system without overwhelming. Press and players who only try one scenario should try this one.
+- **S3 (The Succession)** is the strongest differentiator — it's the only scenario with an active AI opponent running a counter-campaign. The dual-track reputation management + rival escalation is the hook that no comparable game has. Lead with this in press outreach and feature spotlights.
+- **S4 (The Holy Inquisition)** is the third most marketable — purely defensive play is a strong positioning contrast. "You are not the aggressor" is a compelling short copy hook. Recommend mentioning in scenario lists, not as the lead.
+- **S2 (The Plague Scare)** is mechanically interesting (the Maren constraint) but reads less distinctively in a short pitch. Include in scenario lists; don't lead with it.
+
+**Note on scenario count:** The issue brief mentions "6 scenarios" — the GDD confirms S5 (The Election) and S6 (The Merchant's Debt) exist in data files but are excluded from the demo as unbalanced. All marketing copy should say **four scenarios**. Promoting unfinished or excluded content would create player confusion and support burden.
+
+---
+
+*Document version: 1.3 — 2026-04-24*
 *v1.0 ([SPA-309](/SPA/issues/SPA-309)): Initial campaign document.*
 *v1.1 ([SPA-423](/SPA/issues/SPA-423)): Added secondary Reddit communities (r/roguelikes, r/IndieDev) with stagger guidance; added Demo Period Follow-Up section (April 12–24) including Coming Soon announcement copy; updated screenshot note to reference art pass 4 (SPA-410).*
-*Reference: `docs/itchio-game-page.md` (v1.3), `docs/devlog-series-plan.md`, `docs/launch-announcements.md`, `docs/launch-week-campaign.md`, `docs/pre-launch-action-plan.md`*
+*v1.2 ([SPA-939](/SPA/issues/SPA-939)): Added Steam EA launch day finalized posts (5 posts, April 25); added demo scope recommendation; corrected "What This Campaign Does NOT Cover" (Steam Coming Soon page was live by April 14–18, removed stale note).*
+*v1.3 ([SPA-951](/SPA/issues/SPA-951)): Removed stale "audio is placeholder" / "launches silent" copy from all ready-to-post social templates (Reddit posts, Twitter thread, Mastodon post) — audio fully implemented SPA-216 through SPA-928.*
+*Reference: `docs/itchio-game-page.md` (v1.4), `docs/devlog-series-plan.md`, `docs/launch-announcements.md`, `docs/launch-week-campaign.md`, `docs/pre-launch-action-plan.md`*

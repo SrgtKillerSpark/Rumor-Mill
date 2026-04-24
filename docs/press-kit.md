@@ -27,7 +27,10 @@ There is no combat. There are no levels. There is only the town, the people in i
 - **30-NPC living social simulation** — every character has faction loyalties, relationship weights, and a daily routine. The network state changes in real time as rumors travel.
 - **Rumor propagation engine** — stories mutate as they move. A subtle hint becomes a scandal becomes a legend. Every spreader changes the details based on their personality.
 - **Social Graph Overlay** — a full-town network visualization showing every NPC, faction, and active rumor thread in real time. Watch your whisper move.
-- **Rumor Crafting Panel** — choose your subject, your claim type (accusation, scandal, illness scare, prophecy), and your seeder. Each combination produces different spread patterns and mutation rates.
+- **Rumor Crafting Panel** — choose your subject, your claim type (accusation, scandal, illness scare, prophecy, blackmail threat, secret alliance, forbidden romance), and your seeder. Each combination produces different spread patterns and mutation rates.
+- **Evidence system** — collect Forged Documents, Incriminating Artifacts, and Witness Accounts in the field. Attaching evidence boosts a rumor's credibility check when seeding, improving spread probability against skeptical targets.
+- **Full save/load** — resume any scenario at any point.
+- **AI rival agent (Scenario 3)** — a metric-driven opponent that seeds counter-rumors and adapts its strategy through three escalating phases, targeting whichever of your goals is most vulnerable.
 - **Intel system** — observe NPCs at their workplaces and eavesdrop on conversations to build an intelligence picture before committing to a move.
 - **Player Journal** — track reputation scores, active rumors, and known relationships across the whole town.
 - **Four handcrafted scenarios** — offense, precision targeting, dual-front campaign against an AI opponent, and a purely defensive scenario. Each demands a different strategy.
@@ -58,7 +61,7 @@ Rumor Mill began as a prototype exploring whether a social simulation could make
 
 The project migrated to Godot 4.6 for the full production version, enabling the isometric town view, the real-time Social Graph Overlay, and the NPC behavior simulation running underneath.
 
-Current state (Sprint 7): all three core scenarios are playable. The full 30-NPC simulation, rumor propagation engine, social graph visualization, and journal system are implemented. Audio is in placeholder state; final royalty-free tracks are planned before Early Access launch.
+Current state: all four scenarios are fully playable and content-complete. The full 30-NPC simulation, rumor propagation engine, social graph visualization, journal system, evidence system, and save/load are implemented. Ambient audio is in — distinct location soundscapes (tavern, market, chapel, manor), day-phase music transitions, and full SFX coverage including heat tension, rumor spread, and cascade events.
 
 The game is in active development with regular sprint updates.
 
@@ -149,6 +152,7 @@ The player Rumor Mill is designed for: someone who wants to feel clever, enjoys 
 
 ---
 
-*Document version: 1.1 — 2026-04-04*
+*Document version: 1.2 — 2026-04-24*
 *v1.0 ([SPA-154](/SPA/issues/SPA-154)): Initial press kit. Asset specs: [SPA-135](/SPA/issues/SPA-135) | Screenshot list: [SPA-129](/SPA/issues/SPA-129)*
 *v1.1 ([SPA-267](/SPA/issues/SPA-267)): Added Scenario 4 "The Holy Inquisition"; updated scenario count to four in Key Features.*
+*v1.2 ([SPA-939](/SPA/issues/SPA-939)): Added blackmail/secret alliance/forbidden romance claim types; added evidence system, save/load, and AI rival to Key Features; updated Development History to reflect all four scenarios, full audio implementation, and current game state.*
