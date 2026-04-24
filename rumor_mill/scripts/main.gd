@@ -28,12 +28,8 @@ var _pause_menu:   CanvasLayer = null
 # ── Sprint 9: loading tips (shown during game-start transition) ───────────────
 var _loading_tips: CanvasLayer = null
 
-# ── Sprint 7: tutorial system (created programmatically) ──────────────────────
-var _tutorial_sys: TutorialSystem = null
-var _tutorial_hud: CanvasLayer    = null   # S2/S3: blocking modal tooltips
-
-# ── Sprint 10: Scenario 1 non-blocking banner (SPA-131) ───────────────────────
-var _tutorial_banner: CanvasLayer = null   # S1 only
+# ── SPA-1002: Tutorial wiring (extracted to TutorialWiring) ──────────────────
+var _tutorial_wiring: TutorialWiring = null
 
 # ── Sprint 6: end screen (created programmatically) ───────────────────────────
 var _end_screen: CanvasLayer = null
@@ -44,11 +40,7 @@ var _feedback_seq: CanvasLayer = null
 # ── SPA-841: Consolidated Mission Briefing screen (game-start + recall) ──────
 var _mission_briefing: CanvasLayer = null
 
-# ── SPA-948: "What's Changed" card (S2-S6, shown after Mission Briefing) ─────
-var _whats_changed_card: CanvasLayer = null
-
-
-# ── SPA-560: Mid-game narrative event choice modal ───────────────────────────
+# ── SPA-560: Mid-game narrative event choice modal ───────────���───────────────
 var _event_choice_modal: CanvasLayer = null
 
 # ── SPA-953: Faction event card overlay with screen dim ─────────────────────
@@ -58,19 +50,8 @@ var _event_card: CanvasLayer = null
 var _visual_affordances: CanvasLayer = null
 
 
-# ── SPA-768: Interactive tutorial controller (step-gated S1 tutorial) ────────
-var _tutorial_ctrl: TutorialController = null
-
-# ── SPA-758: Onboarding waypoint marker (3-step guided sequence) ─────────────
-var _waypoint_node:  Node2D = null   # world-space marker (pulsing diamond + label)
-var _waypoint_tween: Tween  = null
-var _waypoint_step:  int    = 0      # 0=inactive, 1=market, 2=eavesdrop pair, 3=R key
-
 # ── SPA-709: Milestone reward notification popup ──────────────────────────────
 var _milestone_notifier: CanvasLayer = null
-
-# ── SPA-805: S1 manor golden-pulse highlight (day 1–2 building affordance) ────
-var _s1_manor_highlight: Polygon2D = null
 
 # ── SPA-769: HUD tooltip overlay and context controls panel ──────────────────
 var _hud_tooltip: CanvasLayer = null
@@ -95,52 +76,11 @@ var _analytics: ScenarioAnalytics = null
 var _analytics_manager: AnalyticsManager = null
 
 
-# Prevent duplicate tooltip triggers for observe / eavesdrop / npc_state_change.
-var _observe_tooltip_fired:          bool = false
-var _eavesdrop_tooltip_fired:        bool = false
-var _npc_state_change_tooltip_fired: bool = false
-var _evidence_tooltip_fired:         bool = false
-
 # Cached ReconController reference for post-tutorial-init wiring.
 var _recon_ctrl_ref: Node = null
 
-# ── SPA-629: Rumor Panel first-time tooltip walkthrough ──────────────────────
-var _rumor_panel_tooltip: CanvasLayer = null
-var _rumor_panel_tooltip_wired: bool  = false  # guard: only trigger once per session
-
-# ── SPA-724: Onboarding action counter for goal strip fade ──────────────────
-var _spa724_action_count: int = 0
-
-# ── Sprint 10: S1 banner hint gates ───────────────────────────────────────────
-var _banner_camera_gate:       bool = false  # set true after camera_moved fires
-var _banner_observe_gate:      bool = false  # set true after first successful Observe
-var _banner_eavesdrop_gate:    bool = false  # set true after first successful Eavesdrop
-var _banner_seed_fired:        bool = false  # guard for hint_propagation 5 s delay
-var _banner_hint06_fired:      bool = false  # guard: rumour panel nudge at tick 24
-var _banner_believe_fired:     bool = false  # guard for hint_objectives
-var _banner_journal_hint_fired: bool = false  # guard: journal hint shown (observe or eavesdrop)
-var _banner_social_graph_fired: bool = false  # guard: social graph hint shown
-var _banner_s1_market_cleared: bool = false  # SPA-626: true after first recon clears Market highlight
-# Cross-scenario contextual hint gates (S2/S3/S4).
-var _ctx_spread_fired:   bool = false
-var _ctx_act_fired:      bool = false
-var _ctx_reject_fired:   bool = false
-var _ctx_tokens_fired:   bool = false
-var _ctx_heat_warn_fired: bool = false  # SPA-608: heat warning hint (S1 only)
-var _ctx_rival_first_act_fired:      bool = false  # SPA-937: S3 rival first-action hint gate
-var _ctx_inquisitor_first_act_fired: bool = false  # SPA-937: S4 inquisitor first-action hint gate
-
 # ── SPA-1002: Rumor event wiring (extracted to RumorEventWiring) ──────────────
 var _rumor_event_wiring: RumorEventWiring = null
-var _ctx_halfway_fired:  bool = false
-var _banner_eavesdrop_count:    int  = 0      # counts eavesdrop actions for social graph trigger
-
-# ── SPA-487: Idle-detection hint system ───────────────────────────────────────
-var _idle_timer: Timer = null
-var _idle_hint_fired_no_action:  bool = false  # first idle nudge
-var _idle_hint_fired_no_rumor:   bool = false  # nudge to craft a rumor
-var _has_performed_any_action:   bool = false  # true after first recon action
-var _has_crafted_any_rumor:      bool = false  # true after first rumor seeded
 
 # Guards against double-initialisation if begin_game fires more than once.
 var _game_started: bool = false
@@ -291,7 +231,18 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_scenario4_hud()
 	_init_scenario5_hud()
 	_init_scenario6_hud()
-	_init_tutorial_system()
+	# SPA-1002: Tutorial wiring — must run after _init_recon_system caches _recon_ctrl_ref.
+	_tutorial_wiring = TutorialWiring.new()
+	_tutorial_wiring.name = "TutorialWiring"
+	add_child(_tutorial_wiring)
+	_tutorial_wiring.setup(
+		world, day_night, camera, recon_hud, rumor_panel,
+		journal, _visual_affordances, _recon_ctrl_ref
+	)
+	# HelpReminderUI stays in main.gd — it's referenced by _init_context_controls_panel.
+	_help_ui = HelpReminderUI.new()
+	add_child(_help_ui)
+	_help_ui.setup(self, day_night)
 	_init_end_screen()
 	_init_audio()
 	_init_analytics_logger(scenario_id)
@@ -308,7 +259,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	add_child(_input_handler)
 	_input_handler.setup(
 		world, camera, day_night, rumor_panel, journal, social_graph_overlay,
-		_npc_info_panel, _tutorial_banner, _context_controls
+		_npc_info_panel, _tutorial_wiring.tutorial_banner if _tutorial_wiring != null else null, _context_controls
 	)
 	_input_handler.objective_recall_requested.connect(_show_objective_recall)
 	# SPA-1002: Rumor event wiring — must run after milestone notifier + daily planning.
@@ -340,7 +291,7 @@ func _on_begin_game(scenario_id: String) -> void:
 	# Restore saved state if a load was triggered from the pause menu.
 	var _was_save_load := SaveManager.has_pending_load()
 	if _was_save_load:
-		SaveManager.apply_pending_load(world, day_night, journal, _tutorial_sys)
+		SaveManager.apply_pending_load(world, day_night, journal, _tutorial_wiring.tutorial_sys if _tutorial_wiring != null else null)
 
 	# SPA-589: Show "Story So Far" recap after loading a saved game.
 	if _was_save_load and world.scenario_manager != null:
@@ -422,10 +373,10 @@ func _on_mission_briefing_dismissed() -> void:
 			# the amber crest above Edric.  Guided-tutorial players see ▼ TARGET
 			# + gtut_explore hint instead, so they are excluded in the callback.
 			if world != null and world.active_scenario_id == "scenario_1" \
-					and _tutorial_banner != null:
+					and _tutorial_wiring != null and _tutorial_wiring.tutorial_banner != null:
 				get_tree().create_timer(12.0).timeout.connect(func() -> void:
-					if _tutorial_ctrl == null or not _tutorial_ctrl.guided_tutorial_active:
-						_tutorial_banner.queue_hint("hint_s1_find_target")
+					if _tutorial_wiring._tutorial_ctrl == null or not _tutorial_wiring._tutorial_ctrl.guided_tutorial_active:
+						_tutorial_wiring.tutorial_banner.queue_hint("hint_s1_find_target")
 				)
 
 	# SPA-724: Auto-show contextual "What next" hint on game start so players
@@ -441,12 +392,9 @@ func _on_mission_briefing_dismissed() -> void:
 			if goal_text != "":
 				recon_hud.build_goal_strip("GOAL: " + goal_text)
 
-	# SPA-626: S1 first-time player flow — camera pan + Market highlight + gated banner.
-	if world.active_scenario_id == "scenario_1":
-		_init_s1_onboarding_flow()
-	else:
-		# SPA-948: Show "What's Changed" blocking card before the What's-New banners.
-		_show_whats_changed_card(world.active_scenario_id)
+	# SPA-1002: Onboarding flow delegated to TutorialWiring.
+	if _tutorial_wiring != null:
+		_tutorial_wiring.start_onboarding(world.active_scenario_id)
 
 
 ## SPA-720: Attach a subtle amber crest marker above the primary target NPC for 60 seconds.
@@ -487,277 +435,6 @@ func _start_target_npc_marker(npc_id: String) -> void:
 		if is_instance_valid(crest):
 			crest.queue_free()
 	)
-
-
-## SPA-626: Camera auto-pan to Market, single-target highlight, and persistent gated banner.
-## Called from _on_mission_briefing_dismissed() when scenario_1 is active.
-func _init_s1_onboarding_flow() -> void:
-	# Resolve Market building world-space position via the building entry cell.
-	var market_cell: Vector2i = world._building_entries.get("market", Vector2i(12, 30))
-	var market_world_pos: Vector2 = Vector2.ZERO
-	if _recon_ctrl_ref != null and _recon_ctrl_ref.has_method("_cell_to_world"):
-		market_world_pos = _recon_ctrl_ref._cell_to_world(market_cell)
-
-	# 1. Camera auto-pan to Market over 2 s.
-	if camera.has_method("pan_to_target"):
-		camera.pan_to_target(market_world_pos, 2.0)
-
-	# 2. Single-target pulse-glow on Market building.
-	if _visual_affordances != null and _visual_affordances.has_method("highlight_single_target"):
-		_visual_affordances.highlight_single_target(market_world_pos)
-
-	# SPA-805: Second highlight on the Manor (Edric's building) — subtle gold pulse for 2 days.
-	_init_s1_manor_highlight()
-
-	# 3. Persistent gated banner — stays until first Recon Action.
-	if _tutorial_banner != null:
-		_tutorial_banner.queue_hint("hint_s1_investigate_gate")
-
-	# 4. SPA-758: Waypoint marker on Market — step 1 of 3-step guided sequence.
-	_show_waypoint_step1_market(market_world_pos)
-
-	# 5. SPA-768: Interactive tutorial controller — step-gated progression.
-	_tutorial_ctrl = preload("res://scripts/tutorial_controller.gd").new()
-	_tutorial_ctrl.name = "TutorialController"
-	add_child(_tutorial_ctrl)
-	_tutorial_ctrl.setup(
-		_tutorial_sys, _tutorial_banner, camera,
-		_recon_ctrl_ref, journal, rumor_panel, world
-	)
-	_tutorial_ctrl.start()
-
-
-## SPA-948: Show the non-auto-dismiss "What's Changed" card for S2-S6.
-## After the player clicks "Got it", the sx onboarding flow begins.
-func _show_whats_changed_card(scenario_id: String) -> void:
-	if _tutorial_sys == null:
-		_init_sx_onboarding_flow(scenario_id)
-		return
-	var card_data: Dictionary = _tutorial_sys.get_whats_changed(scenario_id)
-	if card_data.is_empty():
-		_init_sx_onboarding_flow(scenario_id)
-		return
-	var title: String  = card_data.get("title", "What's Changed")
-	var bullets: Array = card_data.get("bullets", [])
-	_whats_changed_card = preload("res://scripts/whats_changed_card.gd").new()
-	_whats_changed_card.name = "WhatsChangedCard"
-	add_child(_whats_changed_card)
-	_whats_changed_card.setup(title, bullets)
-	_whats_changed_card.dismissed.connect(func() -> void:
-		_whats_changed_card = null
-		# SPA-804: S2-S6 — short "What's New" TutorialController sequence.
-		_init_sx_onboarding_flow(scenario_id)
-	)
-
-
-## SPA-804: S2-S6 "What's New" banner sequence via TutorialController.
-## Called from _show_whats_changed_card() callback for non-S1 scenarios.
-func _init_sx_onboarding_flow(scenario_id: String) -> void:
-	if _tutorial_sys == null or _tutorial_banner == null:
-		return
-	_tutorial_ctrl = preload("res://scripts/tutorial_controller.gd").new()
-	_tutorial_ctrl.name = "TutorialController"
-	add_child(_tutorial_ctrl)
-	_tutorial_ctrl.setup(
-		_tutorial_sys, _tutorial_banner, camera,
-		_recon_ctrl_ref, journal, rumor_panel, world,
-		scenario_id
-	)
-	_tutorial_ctrl.start()
-
-
-# ── SPA-805: S1 manor golden-pulse affordance (Edric's building, days 1–2) ────
-
-## Create a soft golden diamond highlight on the Manor building for days 1–2 of S1.
-## Cleared automatically on day 3 or when the scenario resolves.
-func _init_s1_manor_highlight() -> void:
-	if world == null or _recon_ctrl_ref == null:
-		return
-	var manor_cell: Vector2i = world._building_entries.get("manor", Vector2i(8, 14))
-	var manor_pos := Vector2.ZERO
-	if _recon_ctrl_ref.has_method("_cell_to_world"):
-		manor_pos = _recon_ctrl_ref._cell_to_world(manor_cell)
-	if manor_pos == Vector2.ZERO:
-		return
-	# Build a slightly smaller diamond than the Market highlight, in a distinct gold.
-	var poly := Polygon2D.new()
-	poly.polygon = PackedVector2Array([
-		Vector2(0.0,  -22.0),
-		Vector2(34.0,   0.0),
-		Vector2(0.0,   22.0),
-		Vector2(-34.0,  0.0),
-	])
-	poly.color    = Color(1.00, 0.80, 0.12, 0.22)  # warm gold, softer than Market highlight
-	poly.name     = "S1ManorHighlight"
-	poly.position = manor_pos
-	poly.z_index  = 1
-	world.add_child(poly)
-	_s1_manor_highlight = poly
-	# Slow sine-wave pulse via looping tween.
-	var pulse_tw := poly.create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	pulse_tw.tween_property(poly, "modulate:a", 0.35, 1.2)
-	pulse_tw.tween_property(poly, "modulate:a", 1.0,  1.2)
-	# Auto-clear on day 3.
-	if day_night != null and day_night.has_signal("day_changed"):
-		var _clear_manor := func(day: int) -> void:
-			if day >= 3:
-				_clear_s1_manor_highlight()
-		day_night.day_changed.connect(_clear_manor)
-
-
-## Pulse the manor highlight each frame (called via a simple _process override is not
-## available on main.gd, so we reuse the existing game_tick signal instead).
-func _clear_s1_manor_highlight() -> void:
-	if _s1_manor_highlight != null and is_instance_valid(_s1_manor_highlight):
-		var tw := create_tween()
-		tw.tween_property(_s1_manor_highlight, "modulate:a", 0.0, 0.8)
-		tw.tween_callback(_s1_manor_highlight.queue_free)
-	_s1_manor_highlight = null
-
-
-# ── SPA-758: Onboarding waypoint marker system ──────────────────────────────
-
-## Step 1: Pulsing marker on Market building — "Start here — Observe who's inside"
-func _show_waypoint_step1_market(market_pos: Vector2) -> void:
-	_clear_waypoint()
-	_waypoint_step = 1
-	_waypoint_node = _create_waypoint_marker(
-		market_pos + Vector2(0.0, -48.0),
-		"▼  Start here — Observe who's inside"
-	)
-	if world != null:
-		world.add_child(_waypoint_node)
-
-
-## Step 2: Move marker to two NPCs in conversation — "Eavesdrop on their relationship"
-func _show_waypoint_step2_eavesdrop() -> void:
-	_clear_waypoint()
-	_waypoint_step = 2
-	# Find two NPCs that are close enough for eavesdrop (within 3 tiles).
-	var best_pair_pos: Vector2 = Vector2.ZERO
-	var found: bool = false
-	if world != null:
-		for i in range(world.npcs.size()):
-			if found:
-				break
-			for j in range(i + 1, world.npcs.size()):
-				var npc_a: Node2D = world.npcs[i]
-				var npc_b: Node2D = world.npcs[j]
-				var dist: int = abs(npc_a.current_cell.x - npc_b.current_cell.x) \
-				              + abs(npc_a.current_cell.y - npc_b.current_cell.y)
-				if dist <= 3:
-					best_pair_pos = (npc_a.position + npc_b.position) * 0.5
-					found = true
-					break
-	if not found:
-		# Fallback: use position of first NPC.
-		if world != null and world.npcs.size() > 0:
-			best_pair_pos = world.npcs[0].position
-	_waypoint_node = _create_waypoint_marker(
-		best_pair_pos + Vector2(0.0, -56.0),
-		"▼  Eavesdrop on their relationship"
-	)
-	if world != null:
-		world.add_child(_waypoint_node)
-
-
-## Step 3: Flash R key prompt (screen-space, not world-space).
-func _show_waypoint_step3_craft() -> void:
-	_clear_waypoint()
-	_waypoint_step = 3
-	# Create a screen-space prompt via a CanvasLayer label.
-	var cl := CanvasLayer.new()
-	cl.name = "WaypointCraftPrompt"
-	cl.layer = 18
-	add_child(cl)
-	var lbl := Label.new()
-	lbl.text = "Press  R  to craft your first rumor"
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 18)
-	lbl.add_theme_color_override("font_color", Color(0.957, 0.651, 0.227, 1.0))
-	lbl.add_theme_constant_override("outline_size", 3)
-	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
-	lbl.anchor_left   = 0.5
-	lbl.anchor_right  = 0.5
-	lbl.anchor_top    = 0.7
-	lbl.anchor_bottom = 0.7
-	lbl.offset_left   = -200
-	lbl.offset_right  = 200
-	lbl.offset_top    = -20
-	lbl.offset_bottom = 20
-	cl.add_child(lbl)
-	# Pulse the label.
-	_waypoint_tween = cl.create_tween().set_loops()
-	_waypoint_tween.tween_property(lbl, "modulate:a", 0.3, 0.8) \
-		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-	_waypoint_tween.tween_property(lbl, "modulate:a", 1.0, 0.8) \
-		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-	# Auto-remove after 30 seconds.
-	get_tree().create_timer(30.0).timeout.connect(func() -> void:
-		if _waypoint_step == 3:
-			_clear_waypoint()
-			_waypoint_step = 0
-	)
-
-
-## Advance waypoint on action.  Called from _on_recon_action_for_tutorial.
-func _advance_waypoint(action: String) -> void:
-	if _waypoint_step == 1 and action == "observe":
-		_show_waypoint_step2_eavesdrop()
-	elif _waypoint_step == 2 and action == "eavesdrop":
-		_show_waypoint_step3_craft()
-
-
-## Clear the current waypoint marker.
-func _clear_waypoint() -> void:
-	if _waypoint_tween != null and _waypoint_tween.is_valid():
-		_waypoint_tween.kill()
-	_waypoint_tween = null
-	if _waypoint_node != null and is_instance_valid(_waypoint_node):
-		_waypoint_node.queue_free()
-		_waypoint_node = null
-	# Step 3 uses a CanvasLayer child instead of _waypoint_node.
-	var craft_prompt := get_node_or_null("WaypointCraftPrompt")
-	if craft_prompt != null:
-		craft_prompt.queue_free()
-
-
-## Build a world-space pulsing waypoint marker (diamond + label).
-func _create_waypoint_marker(pos: Vector2, text: String) -> Node2D:
-	var root := Node2D.new()
-	root.name = "WaypointMarker"
-	root.position = pos
-	root.z_index = 12
-
-	# Diamond shape.
-	var diamond := Polygon2D.new()
-	diamond.polygon = PackedVector2Array([
-		Vector2(0.0,  -10.0),
-		Vector2(7.0,   0.0),
-		Vector2(0.0,   10.0),
-		Vector2(-7.0,  0.0),
-	])
-	diamond.color = Color(0.957, 0.651, 0.227, 0.90)
-	root.add_child(diamond)
-
-	# Text label offset to the right.
-	var lbl := Label.new()
-	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 12)
-	lbl.add_theme_color_override("font_color", Color(0.96, 0.84, 0.40, 1.0))
-	lbl.add_theme_constant_override("outline_size", 2)
-	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
-	lbl.position = Vector2(12, -10)
-	root.add_child(lbl)
-
-	# Pulse tween.
-	_waypoint_tween = root.create_tween().set_loops()
-	_waypoint_tween.tween_property(root, "modulate:a", 0.35, 1.0) \
-		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-	_waypoint_tween.tween_property(root, "modulate:a", 1.0, 1.0) \
-		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-
-	return root
 
 
 ## SPA-841: Show the Mission Briefing mid-game in recall mode. Blocked during active dialogs.
@@ -842,9 +519,6 @@ func _init_recon_system() -> void:
 	# RumorPanel: 3-panel crafting modal (Subject → Claim → Seed Target).
 	if rumor_panel != null and rumor_panel.has_method("setup"):
 		rumor_panel.setup(world, intel_store)
-	# Evidence tutorial — fires once when compatible evidence items first appear.
-	if rumor_panel != null:
-		rumor_panel.evidence_first_shown.connect(_on_evidence_first_shown)
 
 	# ReconController: input handler — created programmatically so it sits in
 	# the scene tree and receives _unhandled_input events.
@@ -899,10 +573,7 @@ func _init_recon_system() -> void:
 	if recon_hud != null and recon_hud.has_method("push_feed_entry"):
 		recon_ctrl.action_performed.connect(recon_hud.push_feed_entry)
 
-	# Pipe action results to the tutorial system (observe / eavesdrop tooltips).
-	recon_ctrl.action_performed.connect(_on_recon_action_for_tutorial)
-
-	# Cache ref so _wire_s1_recon_hints can run after _init_tutorial_system().
+	# Cache ref so TutorialWiring.setup() can wire recon signals.
 	_recon_ctrl_ref = recon_ctrl
 
 	# Pipe action results to AudioManager (recon SFX).
@@ -914,6 +585,11 @@ func _init_recon_system() -> void:
 	# Wire eavesdrop exposure → ScenarioManager fail trigger (Scenario 1).
 	recon_ctrl.player_exposed.connect(_on_player_exposed)
 
+
+## Connected to recon_ctrl.player_exposed — triggers Scenario 1 exposure fail.
+func _on_player_exposed() -> void:
+	if world != null and world.scenario_manager != null:
+		world.scenario_manager.on_player_exposed()
 
 
 func _init_journal() -> void:
@@ -1114,637 +790,6 @@ func _init_scenario6_hud() -> void:
 		hud.setup(world, day_night)
 
 
-# ── Sprint 7 / Sprint 10: Tutorial system ─────────────────────────────────────
-
-func _init_tutorial_system() -> void:
-	_tutorial_sys = TutorialSystem.new()
-
-	if world.active_scenario_id == "scenario_1":
-		_init_tutorial_banner_s1()
-	else:
-		# SPA-804: S2-S6 use non-blocking TutorialBanner only — blocking TutorialHUD
-		# removed.  TutorialController for S2-S6 is started after the ready overlay.
-		_init_context_banner()
-
-	_init_idle_hints()
-	_help_ui = HelpReminderUI.new()
-	add_child(_help_ui)
-	_help_ui.setup(self, day_night)
-
-
-## All scenarios except S1: non-blocking contextual hint banner for day-gated tips.
-## S1 already has its own banner — this adds the cross-scenario hints for S2/S3/S4.
-func _init_context_banner() -> void:
-	_tutorial_banner = preload("res://scripts/tutorial_banner.gd").new()
-	_tutorial_banner.name = "TutorialBanner"
-	add_child(_tutorial_banner)
-	_tutorial_banner.setup(_tutorial_sys)
-
-	# SPA-537: "Your First Move" hints — tightened timing (mission briefing
-	# is now shown by the ready overlay before gameplay starts).
-	var _opening_hint_id: String = ""
-	match world.active_scenario_id:
-		"scenario_2": _opening_hint_id = "ctx_s2_opening"
-		"scenario_3": _opening_hint_id = "ctx_s3_opening"
-		"scenario_4": _opening_hint_id = "ctx_s4_opening"
-		"scenario_5": _opening_hint_id = "ctx_s5_opening"
-		"scenario_6": _opening_hint_id = "ctx_s6_opening"
-	if _opening_hint_id != "":
-		var _open_timer := get_tree().create_timer(4.0)  # tightened from 8 s
-		var _hint_id_copy: String = _opening_hint_id
-		_open_timer.timeout.connect(func() -> void:
-			if _tutorial_banner != null:
-				_tutorial_banner.queue_hint(_hint_id_copy)
-		)
-
-	# SPA-549: Scenario-specific onboarding banners — queued after the opening hint.
-	# Opening hint fires at 4 s (12 s auto-dismiss), so queue these at 10 s and 16 s.
-	var _s_hints: Array = []
-	match world.active_scenario_id:
-		"scenario_2":
-			_s_hints = ["ctx_s2_illness_mechanic", "ctx_s2_maren_warning", "ctx_s2_believer_check"]
-		"scenario_3":
-			# SPA-937: ctx_s3_disrupt_tip moved to event-driven trigger (rival_acted).
-			_s_hints = ["ctx_s3_dual_targets", "ctx_s3_rival_intro"]
-		"scenario_4":
-			# SPA-937: ctx_s4_prioritize_finn moved to event-driven trigger (inquisitor_acted).
-			_s_hints = ["ctx_s4_defense_goal", "ctx_s4_inquisitor_info"]
-		"scenario_5":
-			_s_hints = ["ctx_s5_three_way_race", "ctx_s5_endorsement_tip"]
-		"scenario_6":
-			_s_hints = ["ctx_s6_heat_ceiling", "ctx_s6_protect_marta"]
-	var _delays: Array = [10.0, 16.0, 22.0]
-	for i in range(_s_hints.size()):
-		var _hint_id: String = _s_hints[i]
-		var _timer := get_tree().create_timer(_delays[i])
-		_timer.timeout.connect(func() -> void:
-			if _tutorial_banner != null:
-				_tutorial_banner.queue_hint(_hint_id)
-		)
-
-	# Day-gated hints: hook into day_changed signal.
-	if day_night != null and day_night.has_signal("day_changed"):
-		day_night.day_changed.connect(_on_ctx_day_changed)
-
-	# Whisper token exhaustion hint (SPA-448).
-	if world.intel_store != null:
-		world.intel_store.tokens_exhausted.connect(_on_ctx_tokens_exhausted)
-
-	# Heat warning hint (SPA-608): fires once when heat first crosses 50.
-	# S1 (ceiling 80) and S6 (ceiling 60) both benefit from an early warning.
-	if world.intel_store != null and world.active_scenario_id in ["scenario_1", "scenario_6"]:
-		world.intel_store.heat_warning.connect(_on_heat_warning)
-
-	# NPC state change hints: first SPREAD, ACT, or REJECT triggers.
-	for npc in world.npcs:
-		npc.rumor_state_changed.connect(_on_ctx_rumor_state_changed)
-
-	# Suppression: pause banner while Journal / Rumour Panel are open.
-	if journal != null:
-		journal.visibility_changed.connect(_on_journal_visibility_changed_banner)
-	if rumor_panel != null:
-		rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed_banner)
-
-	# SPA-937: S3 rival first-action hint — fires ctx_s3_disrupt_tip when rival acts.
-	if world.active_scenario_id == "scenario_3" and world.rival_agent != null \
-			and world.rival_agent.has_signal("rival_acted"):
-		world.rival_agent.rival_acted.connect(_on_rival_first_acted_tutorial)
-
-	# SPA-937: S4 inquisitor first-action hint — fires ctx_s4_prioritize_finn when inquisitor acts.
-	if world.active_scenario_id == "scenario_4" and world.inquisitor_agent != null \
-			and world.inquisitor_agent.has_signal("inquisitor_acted"):
-		world.inquisitor_agent.inquisitor_acted.connect(_on_inquisitor_first_acted_tutorial)
-
-
-## SPA-804 DEPRECATED — no longer called.  S2-S6 now use TutorialBanner via
-## _init_sx_onboarding_flow().  Kept to avoid breaking any tool-generated refs.
-func _init_tutorial_hud_s2s3s4() -> void:
-	_tutorial_hud = preload("res://scripts/tutorial_hud.gd").new()
-	_tutorial_hud.name = "TutorialHUD"
-	add_child(_tutorial_hud)
-	_tutorial_hud.setup(_tutorial_sys)
-
-	# SPA-589: Show only core_loop immediately; defer navigation and recon
-	# tooltips to contextual triggers so the player isn't overwhelmed.
-	_tutorial_hud.queue_tooltip("core_loop")
-	if world.active_scenario_id == "scenario_3":
-		_tutorial_hud.queue_tooltip("rival_agent")
-	if world.active_scenario_id == "scenario_4":
-		_tutorial_hud.queue_tooltip("inquisitor_agent")
-	if world.active_scenario_id == "scenario_5":
-		_tutorial_hud.queue_tooltip("election_race")
-	if world.active_scenario_id == "scenario_6":
-		_tutorial_hud.queue_tooltip("guild_defense")
-
-	# SPA-589: Deferred navigation tooltip — show after 10 s if not yet seen.
-	var _nav_timer := get_tree().create_timer(10.0)
-	_nav_timer.timeout.connect(func() -> void:
-		if _tutorial_hud != null and _tutorial_sys != null:
-			if not _tutorial_sys.has_seen("navigation_controls"):
-				_tutorial_hud.queue_tooltip("navigation_controls")
-	)
-	# SPA-589: Deferred recon tooltip — show after first observe/eavesdrop attempt.
-	# Fallback: show after 20 s if player hasn't done anything.
-	var _recon_timer := get_tree().create_timer(20.0)
-	_recon_timer.timeout.connect(func() -> void:
-		if _tutorial_hud != null and _tutorial_sys != null:
-			if not _tutorial_sys.has_seen("recon_actions"):
-				_tutorial_hud.queue_tooltip("recon_actions")
-	)
-
-	if rumor_panel != null:
-		rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed)
-	if journal != null:
-		journal.visibility_changed.connect(_on_journal_visibility_changed)
-	for npc in world.npcs:
-		npc.first_npc_became_evaluating.connect(_on_first_npc_state_change)
-
-
-
-## S1: non-blocking banner hint system (SPA-131).
-func _init_tutorial_banner_s1() -> void:
-	_tutorial_banner = preload("res://scripts/tutorial_banner.gd").new()
-	_tutorial_banner.name = "TutorialBanner"
-	add_child(_tutorial_banner)
-	_tutorial_banner.setup(_tutorial_sys)
-
-	# SPA-537: The ready overlay now shows the full mission briefing, so the
-	# first banner hint is the immediate first action — not the mission intro.
-	# Tightened timing: 2 s → first action, 8 s → target NPC, 14 s → controls.
-	# Creates a snappy "first 60 seconds" flow:
-	#   0 s: ReadyOverlay dismissed → game starts
-	#   2 s: "Step 1: Observe a Building" banner
-	#   8 s: "Step 2: Eavesdrop" banner (if player hasn't already)
-	#  14 s: "Time Controls" banner
-
-	# HINT-01: immediate first action — fires 2 s after game start.
-	var _first_action_timer := get_tree().create_timer(2.0)
-	_first_action_timer.timeout.connect(func() -> void:
-		if _tutorial_banner != null:
-			_tutorial_banner.queue_hint("hint_first_action")
-	)
-
-	# HINT-02: point toward target NPC — fires 8 s after game start.
-	var _target_hint_timer := get_tree().create_timer(8.0)
-	_target_hint_timer.timeout.connect(func() -> void:
-		if _tutorial_banner != null:
-			_tutorial_banner.queue_hint("hint_target_npc")
-	)
-
-	# hint_speed_controls: fires 14 s after game start.
-	var _speed_hint_timer := get_tree().create_timer(14.0)
-	_speed_hint_timer.timeout.connect(func() -> void:
-		if _tutorial_banner != null:
-			_tutorial_banner.queue_hint("hint_speed_controls")
-	)
-
-	# Suppression: pause banner while Journal / Rumour Panel / Pause Menu are open.
-	if journal != null:
-		journal.visibility_changed.connect(_on_journal_visibility_changed_banner)
-	if rumor_panel != null:
-		rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed_banner)
-
-	# Wire camera_moved for HINT-02 gate.
-	var cam: Camera2D = world.get_node_or_null("Camera2D")
-	if cam == null:
-		# Camera may be a direct child of the scene root instead.
-		for child in get_children():
-			if child is Camera2D:
-				cam = child
-				break
-	if cam != null and cam.has_signal("camera_moved"):
-		cam.camera_moved.connect(_on_s1_camera_moved)
-
-	# HINT-03: first building hover — wired after recon_ctrl is created.
-	# (wired later in _wire_s1_recon_hints once recon_ctrl is available)
-
-	# HINT-05: journal open after eavesdrop — handled in _on_s1_recon_action.
-	# HINT-06: day 2 tick.
-	if day_night != null:
-		day_night.game_tick.connect(_on_s1_game_tick)
-
-	# HINT-07: panel seed shown.
-	if rumor_panel != null:
-		rumor_panel.panel_seed_shown.connect(_on_s1_panel_seed_shown)
-
-	# HINT-08: 5 s after seed.
-	if rumor_panel != null:
-		rumor_panel.rumor_seeded.connect(_on_s1_rumor_seeded)
-
-	# HINT-09: first NPC reaches BELIEVE state.
-	for npc in world.npcs:
-		npc.rumor_state_changed.connect(_on_s1_rumor_state_changed)
-
-	# HINT-10: evidence acquired (reuses existing signal).
-	if rumor_panel != null:
-		rumor_panel.evidence_first_shown.connect(_on_s1_evidence_first_shown)
-
-	# SPA-629: Rumor Panel first-time tooltip walkthrough.
-	if rumor_panel != null:
-		_rumor_panel_tooltip = preload("res://scripts/rumor_panel_tooltip.gd").new()
-		_rumor_panel_tooltip.name = "RumorPanelTooltip"
-		add_child(_rumor_panel_tooltip)
-		_rumor_panel_tooltip.setup(rumor_panel)
-		rumor_panel.visibility_changed.connect(_on_rumor_panel_first_open_tooltip)
-
-	# Wire hover signals now that banner is ready (recon_ctrl was cached earlier).
-	if _recon_ctrl_ref != null:
-		_wire_s1_recon_hints(_recon_ctrl_ref)
-
-
-
-## Wires S1 hint signals from recon_ctrl and NPCs to the tutorial banner.
-## Called from _init_tutorial_banner_s1() after recon_ctrl is cached.
-func _wire_s1_recon_hints(recon_ctrl: Node) -> void:
-	if _tutorial_banner == null:
-		return
-	# HINT-02: NPC hover after camera moved.
-	if recon_ctrl.has_signal("valid_eavesdrop_hovered"):
-		recon_ctrl.valid_eavesdrop_hovered.connect(_on_s1_valid_eavesdrop_hovered)
-	# HINT-03: first building hover.
-	if recon_ctrl.has_signal("building_first_hovered"):
-		recon_ctrl.building_first_hovered.connect(_on_s1_building_first_hovered)
-	# Wire NPC hover for HINT-02 via all NPC nodes.
-	for npc in world.npcs:
-		if npc.has_signal("npc_hovered"):
-			npc.npc_hovered.connect(_on_s1_npc_hovered)
-
-
-## Connected to recon_ctrl.player_exposed — triggers Scenario 1 exposure fail.
-func _on_player_exposed() -> void:
-	if world != null and world.scenario_manager != null:
-		world.scenario_manager.on_player_exposed()
-
-
-## Connected to recon_ctrl.action_performed — drives S1 banner gates.
-## SPA-804: S2/S3 modal tooltip calls removed; blocking TutorialHUD replaced by
-## non-blocking TutorialBanner driven by TutorialController.
-func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
-	if not success:
-		return
-	# SPA-589: Notify visual affordances so they fade after enough actions.
-	if _visual_affordances != null and _visual_affordances.has_method("on_action_performed"):
-		_visual_affordances.on_action_performed()
-	# SPA-724: Fade goal strip after player has taken 3 successful actions.
-	_spa724_action_count += 1
-	if _spa724_action_count >= 3 and recon_hud != null and recon_hud.has_method("fade_goal_strip"):
-		recon_hud.fade_goal_strip()
-
-	# SPA-626: Clear the Market highlight and dismiss the gated banner on first recon action.
-	if not _banner_s1_market_cleared:
-		_banner_s1_market_cleared = true
-		if _visual_affordances != null and _visual_affordances.has_method("clear_single_target"):
-			_visual_affordances.clear_single_target()
-		if _tutorial_banner != null and _tutorial_banner.has_method("dismiss_hint"):
-			_tutorial_banner.dismiss_hint("hint_s1_investigate_gate")
-
-	# SPA-758: Notify banner of action for action-gated hints + advance waypoint.
-	if message.begins_with("Observed"):
-		if _tutorial_banner != null and _tutorial_banner.has_method("notify_action"):
-			_tutorial_banner.notify_action("observe")
-		_advance_waypoint("observe")
-	elif message.begins_with("Eavesdropped"):
-		if _tutorial_banner != null and _tutorial_banner.has_method("notify_action"):
-			_tutorial_banner.notify_action("eavesdrop")
-		_advance_waypoint("eavesdrop")
-
-	# S1 banner: open observe gate (HINT-04 unlocks) and eavesdrop gate (HINT-05).
-	if _tutorial_banner != null:
-		if message.begins_with("Observed") and not _banner_observe_gate:
-			_banner_observe_gate = true
-			# Prompt Journal after first intel discovery (Observe counts as first discovery).
-			if not _banner_journal_hint_fired:
-				_banner_journal_hint_fired = true
-				_tutorial_banner.queue_hint("hint_journal")
-		if message.begins_with("Eavesdropped"):
-			if not _banner_eavesdrop_gate:
-				_banner_eavesdrop_gate = true
-				# Journal hint after first eavesdrop, if not already shown from Observe.
-				if not _banner_journal_hint_fired:
-					_banner_journal_hint_fired = true
-					_tutorial_banner.queue_hint("hint_journal")
-				# SPA-537: Immediately nudge toward Rumour Panel after first eavesdrop
-				# (tighter flow — don't wait until Day 2).
-				if not _banner_seed_fired:
-					var _rumour_nudge_timer := get_tree().create_timer(4.0)
-					_rumour_nudge_timer.timeout.connect(func() -> void:
-						if not is_instance_valid(self):
-							return
-						if _tutorial_banner != null and not _banner_seed_fired:
-							_tutorial_banner.queue_hint("hint_rumour_panel")
-							_banner_hint06_fired = true  # SPA-942: prevent Day-2 tick double-fire
-						# SPA-626: Auto-open Rumour Panel after first eavesdrop (4 s delay).
-						if is_instance_valid(rumor_panel) and rumor_panel.panel != null and not rumor_panel.panel.visible and not _banner_seed_fired:
-							rumor_panel.toggle()
-					)
-			_banner_eavesdrop_count += 1
-			# Introduce social graph when 2+ relationships are revealed.
-			if _banner_eavesdrop_count >= 2 and not _banner_social_graph_fired:
-				_banner_social_graph_fired = true
-				_tutorial_banner.queue_hint("hint_social_graph")
-
-
-# ── S1 banner signal handlers ─────────────────────────────────────────────────
-
-func _on_s1_camera_moved() -> void:
-	_banner_camera_gate = true
-	# Dismiss HINT-01 if it's active (player has already found camera controls).
-	# The banner will auto-dismiss; no forced close needed.
-
-
-func _on_s1_npc_hovered(_npc: Node2D) -> void:
-	# HINT-02: fire once after camera has been moved.
-	if _banner_camera_gate and _tutorial_banner != null:
-		_tutorial_banner.queue_hint("hint_hover_npc")
-		# Disconnect all NPC hover connections — hint fired.
-		for npc in world.npcs:
-			if npc.has_signal("npc_hovered") and npc.npc_hovered.is_connected(_on_s1_npc_hovered):
-				npc.npc_hovered.disconnect(_on_s1_npc_hovered)
-
-
-func _on_s1_building_first_hovered() -> void:
-	# HINT-03: first building hover.
-	if _tutorial_banner != null:
-		_tutorial_banner.queue_hint("hint_observe")
-
-
-func _on_s1_valid_eavesdrop_hovered() -> void:
-	# HINT-04: valid eavesdrop target hovered, but only after first Observe.
-	if _banner_observe_gate and _tutorial_banner != null:
-		_tutorial_banner.queue_hint("hint_eavesdrop")
-
-
-func _on_s1_game_tick(tick: int) -> void:
-	# HINT-06: fire at day 2 (tick 24) as a fallback if player has tokens but hasn't yet been
-	# nudged toward the Rumour Panel. Primary trigger is the post-eavesdrop 4-s timer above
-	# (SPA-537), which sets _banner_hint06_fired. This Day-2 path fires unconditionally so
-	# players who skipped eavesdropping still receive the craft-rumour nudge (SPA-942).
-	if tick >= 24 and not _banner_hint06_fired and _tutorial_banner != null and not _banner_seed_fired:
-		var intel: PlayerIntelStore = world.intel_store
-		if intel != null and intel.whisper_tokens_remaining >= 1:
-			_banner_hint06_fired = true
-			_tutorial_banner.queue_hint("hint_rumour_panel")
-
-
-func _on_s1_panel_seed_shown() -> void:
-	# HINT-07: first time panel 3 opens.
-	if _tutorial_banner != null:
-		_tutorial_banner.queue_hint("hint_seed_target")
-
-
-func _on_s1_rumor_seeded(
-		_rumor_id: String,
-		_subject_name: String,
-		_claim_id: String,
-		_seed_target_name: String
-) -> void:
-	# SPA-758: Dismiss action-gated craft_rumor banner and clear waypoint step 3.
-	if _tutorial_banner != null and _tutorial_banner.has_method("notify_action"):
-		_tutorial_banner.notify_action("craft_rumor")
-	if _waypoint_step == 3:
-		_clear_waypoint()
-		_waypoint_step = 0
-	# HINT-08: 5 s after first seed.
-	if _banner_seed_fired or _tutorial_banner == null:
-		return
-	_banner_seed_fired = true
-	# SPA-626: Immediate toast — confirm the whisper is in motion.
-	if recon_hud != null and recon_hud.has_method("show_toast"):
-		recon_hud.show_toast("Rumours take time to spread. Watch the dawn bulletin tomorrow.", false)
-	var timer := get_tree().create_timer(5.0)
-	timer.timeout.connect(func() -> void:
-		if _tutorial_banner != null:
-			_tutorial_banner.queue_hint("hint_propagation")
-	)
-
-
-func _on_s1_rumor_state_changed(
-		_npc_name: String, new_state_name: String, _rumor_id: String
-) -> void:
-	# HINT-09: first NPC reaches BELIEVE for any player-seeded rumour.
-	if new_state_name == "BELIEVE" and not _banner_believe_fired and _tutorial_banner != null:
-		_banner_believe_fired = true
-		_tutorial_banner.queue_hint("hint_objectives")
-
-
-func _on_s1_evidence_first_shown() -> void:
-	# HINT-10: evidence item acquired.
-	if _tutorial_banner != null and not _evidence_tooltip_fired:
-		_evidence_tooltip_fired = true
-		_tutorial_banner.queue_hint("hint_evidence")
-
-
-## S1 banner suppression: pause when Journal opens/closes.
-func _on_journal_visibility_changed_banner() -> void:
-	if _tutorial_banner == null or journal == null:
-		return
-	if journal.visible:
-		_tutorial_banner.suppress()
-	else:
-		_tutorial_banner.unsuppress()
-
-
-## SPA-629: Show first-time tooltip walkthrough when Rumor Panel opens in S1.
-func _on_rumor_panel_first_open_tooltip() -> void:
-	if _rumor_panel_tooltip_wired or _rumor_panel_tooltip == null or rumor_panel == null:
-		return
-	if not rumor_panel.visible:
-		return
-	_rumor_panel_tooltip_wired = true
-	_rumor_panel_tooltip.show_walkthrough()
-	# Disconnect after first trigger — the tooltip handles its own persistence.
-	if rumor_panel.visibility_changed.is_connected(_on_rumor_panel_first_open_tooltip):
-		rumor_panel.visibility_changed.disconnect(_on_rumor_panel_first_open_tooltip)
-
-
-## S1 banner suppression: pause when Rumour Panel opens/closes.
-func _on_rumor_panel_visibility_changed_banner() -> void:
-	if _tutorial_banner == null or rumor_panel == null:
-		return
-	if rumor_panel.visible:
-		_tutorial_banner.suppress()
-	else:
-		_tutorial_banner.unsuppress()
-
-
-## S1 banner suppression: pause when Pause Menu opens/closes.
-func _on_pause_menu_visibility_changed_banner() -> void:
-	if _tutorial_banner == null or _pause_menu == null:
-		return
-	if _pause_menu.visible:
-		_tutorial_banner.suppress()
-	else:
-		_tutorial_banner.unsuppress()
-
-
-# ── Cross-scenario contextual hint handlers ──────────────────────────────────
-
-func _on_ctx_day_changed(day: int) -> void:
-	if _tutorial_banner == null:
-		return
-	if day == 2:
-		_tutorial_banner.queue_hint("ctx_actions_refresh")
-	elif day == 3:
-		_tutorial_banner.queue_hint("ctx_check_journal")
-	# S5: endorsement approaches — warn the player 2 days before.
-	if world.active_scenario_id == "scenario_5" and world.scenario_manager != null:
-		var _endorse_day: int = world.scenario_manager.S5_ENDORSEMENT_DAY
-		if day == _endorse_day - 2:
-			_tutorial_banner.queue_hint("ctx_s5_endorsement_warning")
-	# Halfway warning: check if past 50% of days and progress is slow.
-	if not _ctx_halfway_fired and world.scenario_manager != null:
-		var total: int = world.scenario_manager.get_days_allowed()
-		if day > total / 2:
-			_ctx_halfway_fired = true
-			_tutorial_banner.queue_hint("ctx_halfway_warning")
-	# SPA-786: Late-game audio tension shift at 75% days used.
-	if world.scenario_manager != null:
-		var total_days: int = world.scenario_manager.get_days_allowed()
-		var frac: float = clampf(float(day - 1) / float(max(total_days - 1, 1)), 0.0, 1.0)
-		AudioManager.set_late_game_tension(frac >= 0.75)
-	# SPA-952: Faction event foreshadow — fire 2 days before each scheduled event.
-	if world.faction_event_system != null:
-		for text in world.faction_event_system.get_foreshadow_for_day(day):
-			_tutorial_banner.queue_hint("foreshadow_event", text)
-
-
-func _on_ctx_rumor_state_changed(
-		_npc_name: String, new_state_name: String, _rumor_id: String
-) -> void:
-	if _tutorial_banner == null:
-		return
-	if new_state_name == "SPREAD" and not _ctx_spread_fired:
-		_ctx_spread_fired = true
-		_tutorial_banner.queue_hint("ctx_rumor_spreading")
-	elif new_state_name == "ACT" and not _ctx_act_fired:
-		_ctx_act_fired = true
-		_tutorial_banner.queue_hint("ctx_rumor_acted")
-	elif new_state_name == "REJECT" and not _ctx_reject_fired:
-		_ctx_reject_fired = true
-		_tutorial_banner.queue_hint("ctx_rumor_rejected")
-
-
-## Fires once when the player exhausts all Whisper Tokens (S2/S3/S4) (SPA-448).
-func _on_ctx_tokens_exhausted() -> void:
-	if _ctx_tokens_fired or _tutorial_banner == null:
-		return
-	_ctx_tokens_fired = true
-	_tutorial_banner.queue_hint("ctx_out_of_tokens")
-
-
-## Fires once in S1/S6 when any NPC's heat first crosses 50 (SPA-608, SPA-888).
-## Warns the player before the hard fail at 80/60.
-func _on_heat_warning() -> void:
-	if _ctx_heat_warn_fired:
-		return
-	_ctx_heat_warn_fired = true
-	AudioManager.on_heat_warning()
-	if _tutorial_banner != null:
-		_tutorial_banner.queue_hint("ctx_heat_warning")
-
-
-## SPA-937: Show ctx_s3_disrupt_tip once when the rival makes their first move in S3.
-## Fires from rival_agent.rival_acted so the tip is contextually relevant (rival acts on day 18+).
-func _on_rival_first_acted_tutorial(_day: int, _claim: String, _subject: String) -> void:
-	if _ctx_rival_first_act_fired or _tutorial_banner == null:
-		return
-	_ctx_rival_first_act_fired = true
-	_tutorial_banner.queue_hint("ctx_s3_disrupt_tip")
-
-
-## SPA-937: Show ctx_s4_prioritize_finn once when the Inquisitor makes their first move in S4.
-## Fires from inquisitor_agent.inquisitor_acted so the tip lands when it is actionable.
-func _on_inquisitor_first_acted_tutorial(_day: int, _claim: String, _subject: String) -> void:
-	if _ctx_inquisitor_first_act_fired or _tutorial_banner == null:
-		return
-	_ctx_inquisitor_first_act_fired = true
-	_tutorial_banner.queue_hint("ctx_s4_prioritize_finn")
-
-
-## ── SPA-487: Idle-detection hint system ──────────────────────────────────────
-## Fires contextual hints when the player hasn't taken actions for a while.
-
-func _init_idle_hints() -> void:
-	_idle_timer = Timer.new()
-	_idle_timer.name = "IdleHintTimer"
-	_idle_timer.wait_time = 30.0  # 30 seconds of inactivity
-	_idle_timer.one_shot = true
-	_idle_timer.timeout.connect(_on_idle_timeout)
-	add_child(_idle_timer)
-	_idle_timer.start()
-
-	# Reset idle timer when the player performs any recon action.
-	if _recon_ctrl_ref != null and _recon_ctrl_ref.has_signal("action_performed"):
-		_recon_ctrl_ref.action_performed.connect(_on_action_reset_idle)
-	# Track rumor seeding via the rumor_seeded signal on rumor_panel.
-	if rumor_panel != null and rumor_panel.has_signal("rumor_seeded"):
-		rumor_panel.rumor_seeded.connect(_on_rumor_seeded_idle)
-
-
-func _on_action_reset_idle(message: String, success: bool) -> void:
-	if success:
-		_has_performed_any_action = true
-	if _idle_timer != null:
-		_idle_timer.start()  # restart the idle countdown
-
-
-func _on_rumor_seeded_idle(_rid: String = "", _subj: String = "", _claim: String = "", _tgt: String = "") -> void:
-	_has_crafted_any_rumor = true
-	if _idle_timer != null:
-		_idle_timer.start()
-
-
-func _on_idle_timeout() -> void:
-	if _tutorial_banner == null:
-		return
-	# First nudge: player hasn't taken any action at all.
-	if not _has_performed_any_action and not _idle_hint_fired_no_action:
-		_idle_hint_fired_no_action = true
-		_tutorial_banner.queue_hint("ctx_idle_no_action")
-	# Second nudge: player has observed/eavesdropped but never crafted a rumor.
-	elif _has_performed_any_action and not _has_crafted_any_rumor and not _idle_hint_fired_no_rumor:
-		_idle_hint_fired_no_rumor = true
-		_tutorial_banner.queue_hint("ctx_idle_no_rumor")
-	# Restart the timer for future idle checks (60 s gap for subsequent nudges).
-	if _idle_timer != null:
-		_idle_timer.wait_time = 60.0
-		_idle_timer.start()
-
-
-## Evidence tutorial trigger — fires once when compatible evidence is first shown (S2/S3).
-func _on_evidence_first_shown() -> void:
-	if _evidence_tooltip_fired or _tutorial_hud == null:
-		return
-	_evidence_tooltip_fired = true
-	_tutorial_hud.queue_tooltip("evidence_items")
-
-
-## Tooltip (npc_state_change) trigger — fires once when any NPC first enters EVALUATING (S2/S3).
-func _on_first_npc_state_change() -> void:
-	if _npc_state_change_tooltip_fired or _tutorial_hud == null:
-		return
-	_npc_state_change_tooltip_fired = true
-	_tutorial_hud.queue_tooltip("npc_state_change")
-
-
-## Tooltip 4 trigger — fires once when the Rumor Panel first opens (S2/S3).
-func _on_rumor_panel_visibility_changed() -> void:
-	if rumor_panel == null or not rumor_panel.visible:
-		return
-	if _tutorial_hud != null:
-		_tutorial_hud.queue_tooltip("rumor_crafting")
-	rumor_panel.visibility_changed.disconnect(_on_rumor_panel_visibility_changed)
-
-
-## Tooltip 5 trigger — fires once when the Journal first opens (S2/S3).
-func _on_journal_visibility_changed() -> void:
-	if journal == null or not journal.visible:
-		return
-	if _tutorial_hud != null:
-		_tutorial_hud.queue_tooltip("reputation")
-	journal.visibility_changed.disconnect(_on_journal_visibility_changed)
-
-
 # ── Sprint 6: End Screen ───────────────────────────────────────────────────────
 
 func _init_end_screen() -> void:
@@ -1806,13 +851,13 @@ func _init_pause_menu() -> void:
 	add_child(_pause_menu)
 	_pause_menu.setup(world.active_scenario_id)
 	_pause_menu.setup_save_load(world, day_night, journal)
-	_pause_menu.setup_tutorial(_tutorial_sys)
+	_pause_menu.setup_tutorial(_tutorial_wiring.tutorial_sys if _tutorial_wiring != null else null)
 	# SPA-335: flush session time whenever the pause menu opens so partial
 	# play time is saved if the player quits from the pause menu.
 	_pause_menu.visibility_changed.connect(_on_pause_menu_visibility_changed_flush)
 	# Suppress tutorial banner while pause menu is open (all scenarios).
-	if _tutorial_banner != null:
-		_pause_menu.visibility_changed.connect(_on_pause_menu_visibility_changed_banner)
+	if _tutorial_wiring != null:
+		_tutorial_wiring.wire_pause_menu(_pause_menu)
 
 
 # ── NPC Tooltip ───────────────────────────────────────────────────────────────
@@ -1888,7 +933,7 @@ func _on_npc_info_action(action_key: String, npc: Node2D) -> void:
 
 ## Auto-save to slot 0 at the start of each new day (SPA-220).
 func _on_new_day_auto_save(day: int) -> void:
-	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT, _tutorial_sys)
+	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT, _tutorial_wiring.tutorial_sys if _tutorial_wiring != null else null)
 	if not err.is_empty():
 		push_warning("[Main] Auto-save failed on day %d: %s" % [day, err])
 
@@ -1949,12 +994,13 @@ func _on_scenario_resolved_tutorial_steps(
 		scenario_id: int,
 		_state: ScenarioManager.ScenarioState
 ) -> void:
-	if _tutorial_sys == null:
+	var tut_sys: TutorialSystem = _tutorial_wiring.tutorial_sys if _tutorial_wiring != null else null
+	if tut_sys == null:
 		return
 	PlayerStats.record_tutorial_steps(
 		"scenario_%d" % scenario_id,
 		GameState.selected_difficulty,
-		_tutorial_sys.get_seen_count(),
+		tut_sys.get_seen_count(),
 		TutorialSystem.TOOLTIP_DATA.size(),
 	)
 
