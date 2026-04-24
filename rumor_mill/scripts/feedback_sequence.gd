@@ -131,14 +131,14 @@ func play_victory(scenario_id: int) -> void:
 	_zoom_camera(0.05, 2.0)
 	await get_tree().create_timer(1.0).timeout
 
-	# 4. 120 gold/amber celebration particles.
-	_spawn_celebration_particles(120)
+	# 4. 70 gold/amber celebration particles.
+	_spawn_celebration_particles(70)
 	await get_tree().create_timer(0.5).timeout
 
-	# 5. Parchment banner with scenario-specific victory text (hold 3 s).
+	# 5. Parchment banner with scenario-specific victory text (hold 2.5 s).
 	var victory_text := _get_victory_banner_text(scenario_id)
 	_show_banner(victory_text, true)
-	await get_tree().create_timer(3.0).timeout
+	await get_tree().create_timer(2.5).timeout
 	_hide_banner(0.5)
 
 	# 6. Stinger fade, town ambient at 50 %.
@@ -183,7 +183,8 @@ func play_defeat(scenario_id: int) -> void:
 	_show_banner(fail_text, false)
 	await get_tree().create_timer(3.0).timeout
 
-	# 5. Hard cut to end screen (abrupt).
+	# 5. Fade out then cut to end screen.
+	await TransitionManager.fade_out(0.3)
 	_hide_all_overlays()
 
 	_running = false

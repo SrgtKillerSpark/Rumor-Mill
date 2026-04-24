@@ -38,8 +38,10 @@ var _context_day_lbl:      Label = null
 var _context_objective_lbl: Label = null
 
 # ── Slot picker state ──────────────────────────────────────────────────────────
-var _main_container:  VBoxContainer = null   # main menu buttons
-var _slot_container:  VBoxContainer = null   # slot picker panel
+var _main_container:   VBoxContainer = null   # main menu buttons
+var _slot_container:   VBoxContainer = null   # slot picker panel
+var _confirm_container: VBoxContainer = null  # inline confirmation panel
+var _confirm_action:   String = ""            # "restart" or "quit"
 var _slot_mode_save:  bool = false           # true = saving, false = loading
 var _slot_label:      Label = null           # "Save to Slot" / "Load from Slot"
 var _slot_btn_auto:   Button = null
@@ -106,6 +108,9 @@ func _open() -> void:
 	get_tree().paused = true
 	if _status_label != null:
 		_status_label.text = ""
+	if _confirm_container != null:
+		_confirm_container.visible = false
+	_confirm_action = ""
 	_hide_slot_picker()
 	_refresh_context_header()
 	# Animate open: fade bg + scale panel in.
@@ -311,6 +316,31 @@ func _build_ui() -> void:
 		_slot_btns[i].focus_next            = next.get_path()
 		_slot_btns[i].focus_previous        = prev.get_path()
 
+	# ── Confirm container (hidden initially) ──────────────────────────────────
+	_confirm_container = VBoxContainer.new()
+	_confirm_container.add_theme_constant_override("separation", 10)
+	_confirm_container.process_mode = Node.PROCESS_MODE_ALWAYS
+	_confirm_container.visible = false
+	outer_vbox.add_child(_confirm_container)
+
+	var confirm_lbl := Label.new()
+	confirm_lbl.text = "Unsaved progress will be lost. Continue?"
+	confirm_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	confirm_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	confirm_lbl.custom_minimum_size = Vector2(240, 0)
+	confirm_lbl.add_theme_font_size_override("font_size", 13)
+	confirm_lbl.add_theme_color_override("font_color", Color(0.90, 0.82, 0.60, 1.0))
+	confirm_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
+	_confirm_container.add_child(confirm_lbl)
+
+	var confirm_yes := _make_pause_btn("Yes — Continue", Color(0.95, 0.80, 0.40, 1.0))
+	confirm_yes.pressed.connect(_on_confirm_yes)
+	_confirm_container.add_child(confirm_yes)
+
+	var confirm_no := _make_pause_btn("No — Go Back", C_BTN_TEXT)
+	confirm_no.pressed.connect(_on_confirm_no)
+	_confirm_container.add_child(confirm_no)
+
 	# ── Status label ──────────────────────────────────────────────────────────
 	_status_label = Label.new()
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -466,15 +496,46 @@ func _set_status(msg: String, colour: Color) -> void:
 
 
 func _on_restart_scenario() -> void:
-	_pending_restart_id = _scenario_id
-	get_tree().paused = false
-	get_tree().reload_current_scene()
+	_confirm_action = "restart"
+	_main_container.visible = false
+	if _status_label != null:
+		_status_label.text = ""
+	_confirm_container.visible = true
+	# Focus Yes button (first action button in confirm container).
+	var yes_btn: Button = _confirm_container.get_child(1) as Button
+	if yes_btn != null:
+		yes_btn.call_deferred("grab_focus")
 
 
 func _on_quit_to_menu() -> void:
-	_pending_restart_id = ""
+	_confirm_action = "quit"
+	_main_container.visible = false
+	if _status_label != null:
+		_status_label.text = ""
+	_confirm_container.visible = true
+	var yes_btn: Button = _confirm_container.get_child(1) as Button
+	if yes_btn != null:
+		yes_btn.call_deferred("grab_focus")
+
+
+func _on_confirm_yes() -> void:
+	_confirm_container.visible = false
 	get_tree().paused = false
+	await TransitionManager.fade_out(0.3)
+	if _confirm_action == "restart":
+		_pending_restart_id = _scenario_id
+	else:
+		_pending_restart_id = ""
 	get_tree().reload_current_scene()
+
+
+func _on_confirm_no() -> void:
+	_confirm_container.visible = false
+	_main_container.visible = true
+	if _main_container.get_child_count() > 0:
+		var first := _main_container.get_child(0)
+		if first is Button:
+			first.call_deferred("grab_focus")
 
 
 func _make_pause_btn(label_text: String, font_color: Color) -> Button:

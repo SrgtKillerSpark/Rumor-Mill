@@ -444,23 +444,27 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_enter_tw.tween_property(_panel, "modulate:a", 1.0, 0.4)
 		_enter_tw.tween_property(_panel, "scale", Vector2.ONE, 0.4)
 
-	# SPA-784: Defeat makes Try Again prominent; victory focuses Play Again.
+	# SPA-784 / SPA-947: Defeat makes Try Again prominent; victory uses Play Again.
 	if not won and _btn_again != null:
-		# Enlarge Try Again button for defeat to draw attention.
+		_btn_again.text = "Try Again"
+		# Enlarge for defeat to draw attention.
 		_btn_again.add_theme_font_size_override("font_size", 18)
 		_btn_again.custom_minimum_size = Vector2(180, 48)
 		_btn_again.call_deferred("grab_focus")
 	elif _btn_again != null:
+		_btn_again.text = "Play Again"
 		_btn_again.call_deferred("grab_focus")
 
-	# ── Count-up tween (start after entrance completes) ───────────────────────
+	# ── Count-up tween + journal SFX (start after entrance completes) ──────────
 	get_tree().create_timer(0.45).timeout.connect(func() -> void:
 		if is_inside_tree():
+			AudioManager.play_sfx("journal_open")
 			_start_count_up_tween()
 	)
 
-	# ── SPA-336: Show feedback prompt after a short delay ────────────────────
-	get_tree().create_timer(5.0).timeout.connect(func() -> void:
+	# ── SPA-336 / SPA-947: Feedback prompt — 5s on victory, 8s on defeat ───────
+	var _feedback_delay := 5.0 if won else 8.0
+	get_tree().create_timer(_feedback_delay).timeout.connect(func() -> void:
 		if is_inside_tree():
 			_show_feedback_prompt()
 	)
@@ -1064,8 +1068,8 @@ func _build_ui() -> void:
 
 	# ── Summary narrative (italic, centered, 15pt) ────────────────────────────
 	_narrative_lbl = RichTextLabel.new()
-	_narrative_lbl.custom_minimum_size = Vector2(0, 80)
-	_narrative_lbl.fit_content          = false
+	_narrative_lbl.fit_content          = true
+	_narrative_lbl.custom_maximum_size  = Vector2(0, 120)
 	_narrative_lbl.autowrap_mode        = TextServer.AUTOWRAP_WORD_SMART
 	_narrative_lbl.bbcode_enabled       = true
 	_narrative_lbl.add_theme_color_override("default_color", C_BODY)
@@ -1805,6 +1809,7 @@ func _show_what_went_wrong(scenario_id: int, fail_reason: String) -> void:
 func _on_play_again() -> void:
 	var pause_menu_script = preload("res://scripts/pause_menu.gd")
 	pause_menu_script._pending_restart_id = _current_scenario_id
+	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()
 
 
@@ -1814,10 +1819,12 @@ func _on_next_scenario() -> void:
 		return
 	var pause_menu_script = preload("res://scripts/pause_menu.gd")
 	pause_menu_script._pending_restart_id = next_id
+	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()
 
 
 func _on_main_menu() -> void:
 	var pause_menu_script = preload("res://scripts/pause_menu.gd")
 	pause_menu_script._pending_restart_id = ""
+	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()
