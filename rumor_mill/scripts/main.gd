@@ -44,6 +44,9 @@ var _feedback_seq: CanvasLayer = null
 # ── SPA-841: Consolidated Mission Briefing screen (game-start + recall) ──────
 var _mission_briefing: CanvasLayer = null
 
+# ── SPA-948: "What's Changed" card (S2-S6, shown after Mission Briefing) ─────
+var _whats_changed_card: CanvasLayer = null
+
 # ── SPA-541: Persistent controls reference overlay ───────────────────────────
 var _controls_ref: CanvasLayer = null
 
@@ -499,8 +502,8 @@ func _on_mission_briefing_dismissed() -> void:
 	if world.active_scenario_id == "scenario_1":
 		_init_s1_onboarding_flow()
 	else:
-		# SPA-804: S2-S6 — short "What's New" TutorialController sequence.
-		_init_sx_onboarding_flow(world.active_scenario_id)
+		# SPA-948: Show "What's Changed" blocking card before the What's-New banners.
+		_show_whats_changed_card(world.active_scenario_id)
 
 
 ## SPA-720: Attach a subtle amber crest marker above the primary target NPC for 60 seconds.
@@ -581,8 +584,31 @@ func _init_s1_onboarding_flow() -> void:
 	_tutorial_ctrl.start()
 
 
+## SPA-948: Show the non-auto-dismiss "What's Changed" card for S2-S6.
+## After the player clicks "Got it", the sx onboarding flow begins.
+func _show_whats_changed_card(scenario_id: String) -> void:
+	if _tutorial_sys == null:
+		_init_sx_onboarding_flow(scenario_id)
+		return
+	var card_data: Dictionary = _tutorial_sys.get_whats_changed(scenario_id)
+	if card_data.is_empty():
+		_init_sx_onboarding_flow(scenario_id)
+		return
+	var title: String  = card_data.get("title", "What's Changed")
+	var bullets: Array = card_data.get("bullets", [])
+	_whats_changed_card = preload("res://scripts/whats_changed_card.gd").new()
+	_whats_changed_card.name = "WhatsChangedCard"
+	add_child(_whats_changed_card)
+	_whats_changed_card.setup(title, bullets)
+	_whats_changed_card.dismissed.connect(func() -> void:
+		_whats_changed_card = null
+		# SPA-804: S2-S6 — short "What's New" TutorialController sequence.
+		_init_sx_onboarding_flow(scenario_id)
+	)
+
+
 ## SPA-804: S2-S6 "What's New" banner sequence via TutorialController.
-## Called from _on_mission_briefing_dismissed() for non-S1 scenarios.
+## Called from _show_whats_changed_card() callback for non-S1 scenarios.
 func _init_sx_onboarding_flow(scenario_id: String) -> void:
 	if _tutorial_sys == null or _tutorial_banner == null:
 		return
@@ -2076,6 +2102,10 @@ func _on_ctx_day_changed(day: int) -> void:
 		var total_days: int = world.scenario_manager.get_days_allowed()
 		var frac: float = clampf(float(day - 1) / float(max(total_days - 1, 1)), 0.0, 1.0)
 		AudioManager.set_late_game_tension(frac >= 0.75)
+	# SPA-952: Faction event foreshadow — fire 2 days before each scheduled event.
+	if world.faction_event_system != null:
+		for text in world.faction_event_system.get_foreshadow_for_day(day):
+			_tutorial_banner.queue_hint("foreshadow_event", text)
 
 
 func _on_ctx_rumor_state_changed(

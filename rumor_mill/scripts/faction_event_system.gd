@@ -41,6 +41,14 @@ const TIMED_EVENT_DURATION := 2
 ## Heat decay rate during guard_crackdown (normal: 6/day — see intel_store.gd).
 const GUARD_CRACKDOWN_HEAT_DECAY := 3.0
 
+## Foreshadow hint text shown 2 days before each event type activates (SPA-952).
+const FORESHADOW_TEXT: Dictionary = {
+	"market_dispute":     "Merchants in the market square are growing restless — tensions between them may spill over soon.",
+	"religious_festival": "The clergy have begun preparations for a gathering — devotion will run high across town.",
+	"noble_feast":        "Nobles have started sending invitations around town — a feast at the manor appears imminent.",
+	"guard_crackdown":    "Guards have been seen conferring in hushed tones — expect a much tighter watch on the streets soon.",
+}
+
 
 # ---------------------------------------------------------------------------
 # Internal event record
@@ -351,6 +359,18 @@ func get_active_event_labels() -> Array:
 ## Returns true if a given location code is an active eavesdrop hotspot.
 func is_eavesdrop_hotspot(location_code: String) -> bool:
 	return eavesdrop_hotspots.has(location_code)
+
+
+## Returns foreshadow hint texts for events scheduled to trigger on day + 2 (SPA-952).
+## Called by main.gd from _on_ctx_day_changed to prime the player two days early.
+func get_foreshadow_for_day(day: int) -> Array:
+	var result: Array = []
+	for ev in _events:
+		if not ev.is_expired and not ev.is_active and ev.trigger_day == day + 2:
+			var text: String = FORESHADOW_TEXT.get(ev.event_type, "")
+			if not text.is_empty():
+				result.append(text)
+	return result
 
 
 # ---------------------------------------------------------------------------

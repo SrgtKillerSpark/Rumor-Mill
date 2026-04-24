@@ -775,6 +775,12 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 12,
 	},
+	# ── Faction event foreshadow (SPA-952) ──────────────────────────────────
+	"foreshadow_event": {
+		"title": "Rumours of Change",
+		"body":  "",   ## always overridden via body_override in main.gd
+		"auto_dismiss_secs": 9,
+	},
 	# ── General idle hints ───────────────────────────────────────────────────
 	"ctx_idle_no_action": {
 		"title": "Need a Nudge?",
@@ -794,6 +800,61 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"auto_dismiss_secs": 10,
 	},
 }
+
+
+## ── SPA-948: "What's Changed" modal data for Scenarios 2-6 ──────────────────
+##
+## Shown as a blocking "Got it" overlay immediately after Mission Briefing
+## dismiss for S2-S6.  Each entry: { "title": String, "bullets": Array[String] }
+## Bullets support BBCode ([b], [color=…], etc.).
+
+const WHATS_CHANGED_DATA: Dictionary = {
+	"scenario_2": {
+		"title": "What's New — Plague Scare",
+		"bullets": [
+			"[b]Win condition:[/b] 7 or more NPCs must [b]believe[/b] the illness rumour — there is no reputation bar.",
+			"[b]Avoid Sister Maren:[/b] If she rejects any illness claim about Alys, a 2-day grace window begins. Fail to recover in time and you lose.",
+			"Seed through the [b]merchant quarter[/b] — Sybil, Nell, and Greta believe fastest and spread widest.",
+		],
+	},
+	"scenario_3": {
+		"title": "What's New — Succession",
+		"bullets": [
+			"[b]Dual targets:[/b] Raise Calder Fenn to [b]75+[/b] reputation AND drop Tomas Reeve to [b]35 or below[/b].",
+			"[b]Rival agent:[/b] An unseen whisperer actively counters you — watch the Scenario HUD for their moves and use Disrupt to slow them.",
+			"Use [b]Praise[/b] rumours to build Calder's standing through his noble and merchant allies.",
+		],
+	},
+	"scenario_4": {
+		"title": "What's New — Holy Inquisition",
+		"bullets": [
+			"[b]Purely defensive:[/b] Protect Aldous, Vera, and Finn. If any NPC's reputation drops below [b]40[/b], the scenario fails.",
+			"[b]Counter-Rumour:[/b] Seed [b]Praise[/b] claims to push reputations back up after each Inquisitor attack.",
+			"The [b]Inquisitor[/b] accelerates over time — [b]Finn Monk[/b] is most vulnerable. Prioritize him.",
+		],
+	},
+	"scenario_5": {
+		"title": "What's New — The Election",
+		"bullets": [
+			"[b]Three-way race:[/b] Aldric needs [b]65+ reputation[/b] AND must lead both Edric Fenn and Tomas Reeve.",
+			"On [b]Day 15[/b], Prior Aldous endorses whoever is leading — a [b]+8 reputation[/b] boost. Make sure Aldric is ahead by then.",
+			"If Aldric drops below [b]30 reputation[/b], instant fail.",
+		],
+	},
+	"scenario_6": {
+		"title": "What's New — Merchant's Debt",
+		"bullets": [
+			"[b]Heat ceiling is 55[/b] — Aldric's guards are watching. Route rumours through clergy and commons, never the merchant quarter.",
+			"[b]Merchant guild danger:[/b] Aldric's allies actively defend him inside the guild network. Go around them.",
+			"Protect [b]Marta Coin[/b] — keep her above [b]62 reputation[/b]. If she falls below 30, instant fail.",
+		],
+	},
+}
+
+
+## Return the "What's Changed" data dict for a scenario, or empty if not found.
+func get_whats_changed(scenario_id: String) -> Dictionary:
+	return WHATS_CHANGED_DATA.get(scenario_id, {})
 
 
 ## Tracks which tooltip IDs have been seen this session.
