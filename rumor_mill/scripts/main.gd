@@ -2293,6 +2293,11 @@ func _init_end_screen() -> void:
 # ── Sprint 7: Audio ────────────────────────────────────────────────────────────
 
 func _init_audio() -> void:
+	# SPA-928: Clear heat tension carried over from a previous session.
+	# AudioManager is an autoload singleton that persists across scene reloads;
+	# reset before wiring any new signals so restarts start with a clean state.
+	AudioManager.set_heat_ambient_tension(false)
+
 	# Connect ambient crossfade + new_day SFX to the day/night clock.
 	AudioManager.connect_to_day_night(day_night)
 
