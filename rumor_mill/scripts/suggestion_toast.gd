@@ -34,7 +34,7 @@ func _init() -> void:
 
 func _build_style() -> void:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.08, 0.10, 0.75)
+	style.bg_color = Color(0.08, 0.08, 0.10, 0.85)
 	style.set_corner_radius_all(4)
 	add_theme_stylebox_override("panel", style)
 	mouse_filter = MOUSE_FILTER_STOP
@@ -55,7 +55,7 @@ func _build_children() -> void:
 	_hint_label = Label.new()
 	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_hint_label.autowrap_mode        = TextServer.AUTOWRAP_WORD_SMART
-	_hint_label.add_theme_font_size_override("font_size",           12)
+	_hint_label.add_theme_font_size_override("font_size",           13)
 	_hint_label.add_theme_color_override("font_color",              C_SUGGESTION)
 	_hint_label.add_theme_constant_override("outline_size",         2)
 	_hint_label.add_theme_color_override("font_outline_color",      Color(0, 0, 0, 0.7))
@@ -66,9 +66,10 @@ func _build_children() -> void:
 	_dismiss_btn = Button.new()
 	_dismiss_btn.text = "×"
 	_dismiss_btn.flat = true
-	_dismiss_btn.custom_minimum_size = Vector2(16, 0)
-	_dismiss_btn.add_theme_font_size_override("font_size",  12)
+	_dismiss_btn.custom_minimum_size = Vector2(22, 0)
+	_dismiss_btn.add_theme_font_size_override("font_size",  13)
 	_dismiss_btn.add_theme_color_override("font_color",     Color(0.7, 0.7, 0.7, 0.8))
+	_dismiss_btn.add_theme_color_override("font_hover_color", Color(0.95, 0.85, 0.60, 1.0))
 	_dismiss_btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	_dismiss_btn.pressed.connect(_on_dismiss_pressed)
 	hbox.add_child(_dismiss_btn)

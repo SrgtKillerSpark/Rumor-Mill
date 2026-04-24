@@ -411,7 +411,7 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		if won and not next_id.is_empty():
 			var tease_text: String = _load_next_scenario_tease(next_id)
 			if not tease_text.is_empty():
-				_tease_lbl.text = "[center][color=#998877]" + tease_text + "[/color][/center]"
+				_tease_lbl.text = "[center][color=#c8a84e]▸ " + tease_text + "[/color][/center]"
 				_tease_lbl.visible = true
 			else:
 				_tease_lbl.visible = false
@@ -1076,12 +1076,12 @@ func _build_ui() -> void:
 
 	# ── SPA-840: Next-scenario tease (hidden until victory) ───────────────────
 	_tease_lbl = RichTextLabel.new()
-	_tease_lbl.custom_minimum_size = Vector2(0, 28)
+	_tease_lbl.custom_minimum_size = Vector2(0, 32)
 	_tease_lbl.fit_content = true
 	_tease_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_tease_lbl.bbcode_enabled = true
-	_tease_lbl.add_theme_color_override("default_color", C_MUTED)
-	_tease_lbl.add_theme_font_size_override("normal_font_size", 13)
+	_tease_lbl.add_theme_color_override("default_color", C_SUBHEADING)
+	_tease_lbl.add_theme_font_size_override("normal_font_size", 14)
 	_tease_lbl.visible = false
 	vbox.add_child(_tease_lbl)
 

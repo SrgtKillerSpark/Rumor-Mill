@@ -446,8 +446,8 @@ func _build_budget_label() -> void:
 	_lbl_budget = Label.new()
 	_lbl_budget.text = ""
 	_lbl_budget.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_lbl_budget.add_theme_font_size_override("font_size", 13)
-	_lbl_budget.add_theme_color_override("font_color", Color(0.85, 0.75, 0.45, 1.0))
+	_lbl_budget.add_theme_font_size_override("font_size", 14)
+	_lbl_budget.add_theme_color_override("font_color", Color(0.88, 0.78, 0.48, 1.0))
 	_lbl_budget.add_theme_constant_override("outline_size", 2)
 	_lbl_budget.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	_lbl_budget.tooltip_text = "Daily budget — actions and whispers refresh at dawn"
@@ -479,13 +479,13 @@ func _refresh_budget_label() -> void:
 			_flash_budget_label(actions)
 		else:
 			_pulse_budget_label(Color(1.0, 0.65, 0.20, 1.0))
-			_lbl_budget.text = "%d actions | %d whispers" % [actions, whispers]
+			_lbl_budget.text = "%d actions · %d whispers" % [actions, whispers]
 	elif _budget_last_actions >= 0 and actions > _budget_last_actions:
 		# Dawn replenish — green gain indicator for actions.
 		_spawn_budget_delta("+%d" % (actions - _budget_last_actions), Color(0.30, 0.95, 0.45, 1.0))
-		_lbl_budget.text = "%d actions | %d whispers" % [actions, whispers]
+		_lbl_budget.text = "%d actions · %d whispers" % [actions, whispers]
 	else:
-		_lbl_budget.text = "%d actions | %d whispers" % [actions, whispers]
+		_lbl_budget.text = "%d actions · %d whispers" % [actions, whispers]
 	_budget_last_actions = actions
 	# Detect whisper replenish at dawn (spend is handled via whisper_spent signal).
 	if _budget_last_whispers >= 0 and whispers > _budget_last_whispers:
@@ -509,7 +509,7 @@ func _flash_budget_label(actions_remaining: int) -> void:
 	# Restore full counter text after flash.
 	_budget_flash_tween.tween_callback(func() -> void:
 		if _lbl_budget != null and _intel_store != null:
-			_lbl_budget.text = "%d actions | %d whispers" % [
+			_lbl_budget.text = "%d actions · %d whispers" % [
 				_intel_store.recon_actions_remaining,
 				_intel_store.whisper_tokens_remaining])
 

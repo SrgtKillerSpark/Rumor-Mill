@@ -562,14 +562,19 @@ func _show_toast(text: String, duration: float = 2.0) -> void:
 
 func _celebrate_first_rumor() -> void:
 	var target_label := _last_seed_target_name if _last_seed_target_name != "" else "NPC"
-	_show_toast("Rumor planted! Watch %s's thought bubble..." % target_label, 3.0)
+	_show_toast("Rumor planted! Watch %s's thought bubble..." % target_label, 4.0)
 	# Camera pan to the target NPC so the player sees the rumor arrive.
+	# Brief 0.3 s delay so the toast registers before the camera moves.
 	if _camera != null and _world != null and _last_seed_target_name != "":
-		for npc in _world.npcs:
-			if npc.npc_data.get("name", "") == _last_seed_target_name:
-				if _camera.has_method("pan_to_target"):
-					_camera.pan_to_target(npc.global_position, 1.2)
-				break
+		get_tree().create_timer(0.3).timeout.connect(func() -> void:
+			if not is_instance_valid(_camera) or not is_instance_valid(_world):
+				return
+			for npc in _world.npcs:
+				if npc.npc_data.get("name", "") == _last_seed_target_name:
+					if _camera.has_method("pan_to_target"):
+						_camera.pan_to_target(npc.global_position, 1.2)
+					break
+		)
 
 
 # ── Celebration (step 5: first NPC believes) ─────────────────────────────────

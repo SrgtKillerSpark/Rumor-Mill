@@ -145,8 +145,8 @@ func _build_shell() -> void:
 	_card.anchor_bottom = 0.5
 	_card.offset_left   = -310.0
 	_card.offset_right  =  310.0
-	_card.offset_top    = -260.0
-	_card.offset_bottom =  260.0
+	_card.offset_top    = -270.0
+	_card.offset_bottom =  270.0
 	var card_style := StyleBoxFlat.new()
 	card_style.bg_color = C_CARD_BG
 	card_style.border_color = C_CARD_BORDER
@@ -163,7 +163,7 @@ func _build_shell() -> void:
 	_vbox.offset_right  = -20
 	_vbox.offset_top    = 16
 	_vbox.offset_bottom = -16
-	_vbox.add_theme_constant_override("separation", 7)
+	_vbox.add_theme_constant_override("separation", 9)
 	_card.add_child(_vbox)
 
 
@@ -175,7 +175,7 @@ func _populate_content() -> void:
 	var badge := Label.new()
 	badge.text = header_text
 	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	badge.add_theme_font_size_override("font_size", 11)
+	badge.add_theme_font_size_override("font_size", 12)
 	badge.add_theme_color_override("font_color", C_PHASE_HDR)
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_vbox.add_child(badge)
@@ -259,7 +259,7 @@ func _populate_content() -> void:
 
 		_begin_btn = Button.new()
 		_begin_btn.text = "BEGIN"
-		_begin_btn.custom_minimum_size = Vector2(160, 36)
+		_begin_btn.custom_minimum_size = Vector2(180, 40)
 		_begin_btn.add_theme_font_size_override("font_size", 16)
 		_begin_btn.add_theme_color_override("font_color", C_BTN_TEXT)
 
@@ -287,14 +287,20 @@ func _populate_content() -> void:
 		btn_pressed.set_content_margin_all(8)
 		_begin_btn.add_theme_stylebox_override("pressed", btn_pressed)
 
+		var btn_focus := btn_style.duplicate()
+		btn_focus.border_color = Color(0.96, 0.84, 0.40, 0.9)
+		btn_focus.set_border_width_all(2)
+		_begin_btn.add_theme_stylebox_override("focus", btn_focus)
+
 		_begin_btn.pressed.connect(_dismiss)
 		btn_center.add_child(_begin_btn)
+		_begin_btn.grab_focus()
 
 		# Subtle keyboard hint below button.
 		var hint_lbl := Label.new()
 		hint_lbl.text = "or press SPACE / ENTER"
 		hint_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		hint_lbl.add_theme_font_size_override("font_size", 10)
+		hint_lbl.add_theme_font_size_override("font_size", 11)
 		hint_lbl.add_theme_color_override("font_color", Color(0.65, 0.58, 0.42, 0.6))
 		hint_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_vbox.add_child(hint_lbl)
