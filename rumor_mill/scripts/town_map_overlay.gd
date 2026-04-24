@@ -104,8 +104,6 @@ func _draw_npc_destinations() -> void:
 		if npc.schedule_waypoints.is_empty():
 			continue
 		var wi: int = clampi(npc._waypoint_index, 0, npc.schedule_waypoints.size() - 1)
-		if wi < 0:
-			continue
 		var target: Vector2i = npc.schedule_waypoints[wi]
 		if target == npc.current_cell:
 			continue  # already at destination
