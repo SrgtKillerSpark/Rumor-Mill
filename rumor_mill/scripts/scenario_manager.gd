@@ -22,7 +22,7 @@
 ##
 ## Scenario 4 — The Holy Inquisition:
 ##   WIN:  All 3 protected NPCs above reputation 48 when days elapsed >= days_allowed
-##   FAIL: Any protected NPC drops below reputation 42 (instant)
+##   FAIL: Any protected NPC drops below reputation 40 (instant)
 ##         OR days elapsed >= days_allowed with any NPC below 48
 ##
 ## Scenario 5 — The Election (SPA-605):

@@ -92,7 +92,7 @@ func _build_ui() -> void:
 	title_lbl.text = "Scenario 4:"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
-	title_lbl.tooltip_text = "The Holy Inquisition — keep all three accused above 48 reputation for 20 days. Below 42 = instant fail."
+	title_lbl.tooltip_text = "The Holy Inquisition — keep all three accused above 48 reputation for 20 days. Below %d = instant fail." % ScenarioManager.S4_FAIL_REP_BELOW
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	title_vbox.add_child(title_lbl)
 
@@ -106,10 +106,11 @@ func _build_ui() -> void:
 	title_vbox.add_child(shield_badge)
 
 	# NPC tracks.
-	const NPC_TOOLTIPS := {
-		"aldous_prior": "Aldous Prior's reputation. Below 42 = instant fail. Must be 48+ at deadline to win.",
-		"vera_midwife": "Vera Midwife's reputation. Below 42 = instant fail. Must be 48+ at deadline to win.",
-		"finn_monk":    "Finn Monk's reputation. Below 42 = instant fail. Must be 48+ at deadline to win.",
+	var _fail_thresh: int = ScenarioManager.S4_FAIL_REP_BELOW
+	var NPC_TOOLTIPS := {
+		"aldous_prior": "Aldous Prior's reputation. Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh,
+		"vera_midwife": "Vera Midwife's reputation. Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh,
+		"finn_monk":    "Finn Monk's reputation. Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh,
 	}
 	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
 		var vbox := VBoxContainer.new()
@@ -120,13 +121,13 @@ func _build_ui() -> void:
 		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", C_BODY)
 		lbl.text = "%s  Rep: 50 / 100  Floor: 45" % NPC_DISPLAY_NAMES.get(npc_id, npc_id)
-		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Below 40 = instant fail. Must be 45+ at deadline to win.")
+		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh)
 		lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 		vbox.add_child(lbl)
 		_score_labels[npc_id] = lbl
 
 		var bar_pair := _make_progress_bar(BAR_WIDTH, BAR_HEIGHT,
-			"Reputation bar — green means safe (>=48), red means failing (<42).")
+			"Reputation bar — green means safe (>=48), red means failing (<%d)." % _fail_thresh)
 		var bar_bg: ColorRect = bar_pair[0]
 		var bar:    ColorRect = bar_pair[1]
 		# Blue accent: tint background with C_DEFEND to mark this as a defense track.
@@ -193,7 +194,7 @@ func _build_ui() -> void:
 	_days_lbl.add_theme_font_size_override("font_size", 12)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 20"
-	_days_lbl.tooltip_text = "Days before the Inquisitor presents his findings to the Bishop. All three must be 48+ at deadline to win. Below 42 at any time = instant fail."
+	_days_lbl.tooltip_text = "Days before the Inquisitor presents his findings to the Bishop. All three must be 48+ at deadline to win. Below %d at any time = instant fail." % ScenarioManager.S4_FAIL_REP_BELOW
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	right_vbox.add_child(_days_lbl)
 
@@ -206,7 +207,7 @@ func _build_ui() -> void:
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 12)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "[safe] >= 48  [risk] 42-47  [fail] < 42"
+	legend_lbl.text = "[safe] >= 48  [risk] %d-47  [fail] < %d" % [ScenarioManager.S4_FAIL_REP_BELOW, ScenarioManager.S4_FAIL_REP_BELOW]
 	right_vbox.add_child(legend_lbl)
 
 	_inquisitor_lbl = Label.new()
