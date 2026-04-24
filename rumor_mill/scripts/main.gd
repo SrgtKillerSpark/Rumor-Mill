@@ -154,9 +154,8 @@ var _game_started: bool = false
 # ── SPA-518: Help hotkey reminder label ──────────────────────────────────────
 var _help_reminder: Label = null
 
-# ── SPA-272: Per-session achievement tracking ─────────────────────────────────
-var _ach_exposed:       bool = false   # true if player_exposed fired this game
-var _ach_actions_used:  Dictionary = {}  # action key → true (observe/eavesdrop/craft/bribe)
+# ── SPA-272 / SPA-988: Achievement hooks module ───────────────────────────────
+var _achievement_hooks: AchievementHooks = null
 
 
 func _ready() -> void:
@@ -2628,111 +2627,19 @@ func _on_scenario_resolved_audio(scenario_id: int, state: ScenarioManager.Scenar
 			_camera_shake(15.0, 0.6)
 
 
-# ── SPA-272: Achievement hooks ────────────────────────────────────────────────
+# ── SPA-272 / SPA-988: Achievement hooks ─────────────────────────────────────
 
-## Wire all per-session achievement signals.  Called once per game start.
+## Instantiate AchievementHooks and wire all per-session achievement signals.
+## Called once per game start.
 func _init_achievement_hooks() -> void:
-	# Scenario win/fail — drives all outcome-based achievements.
+	_achievement_hooks = AchievementHooks.new()
+	_achievement_hooks.day_night = day_night
+	_achievement_hooks.analytics = _analytics
 	var sm: ScenarioManager = world.scenario_manager
+	_achievement_hooks.connect_signals(sm, _recon_ctrl_ref, rumor_panel)
+	# SPA-335: record tutorial step completion at scenario end.
 	if sm != null:
-		sm.scenario_resolved.connect(_on_achievement_scenario_resolved)
-		# SPA-335: record tutorial step completion at scenario end.
 		sm.scenario_resolved.connect(_on_scenario_resolved_tutorial_steps)
-
-	# Exposure tracking — ghost achievement.
-	if _recon_ctrl_ref != null:
-		_recon_ctrl_ref.player_exposed.connect(_on_achievement_player_exposed)
-		# Observe / Eavesdrop action tracking.
-		_recon_ctrl_ref.action_performed.connect(_on_achievement_action_performed)
-		# Bribe tracking.
-		_recon_ctrl_ref.bribe_executed.connect(_on_achievement_bribe_executed)
-
-	# Craft Rumor tracking + first-rumor achievement.
-	if rumor_panel != null:
-		rumor_panel.rumor_seeded.connect(_on_achievement_rumor_seeded)
-
-
-## Flags that the player was detected this session.
-func _on_achievement_player_exposed() -> void:
-	_ach_exposed = true
-
-
-## Tracks Observe and Eavesdrop usage from action_performed messages.
-func _on_achievement_action_performed(message: String, success: bool) -> void:
-	if not success:
-		return
-	if message.begins_with("Observed"):
-		_ach_actions_used["observe"] = true
-	elif message.begins_with("Eavesdropped"):
-		_ach_actions_used["eavesdrop"] = true
-
-
-## Flags that Bribe was used at least once this session.
-func _on_achievement_bribe_executed(_npc_name: String, _tick: int) -> void:
-	_ach_actions_used["bribe"] = true
-
-
-## Tracks Craft Rumor usage and unlocks "It Starts With a Whisper" on first seed.
-func _on_achievement_rumor_seeded(
-		_rumor_id: String,
-		_subject_name: String,
-		_claim_id: String,
-		_seed_target_name: String
-) -> void:
-	_ach_actions_used["craft"] = true
-	AchievementManager.unlock("a_rumor_begins")
-
-
-## Central achievement evaluator called when a scenario resolves.
-func _on_achievement_scenario_resolved(
-		scenario_id: int,
-		state: ScenarioManager.ScenarioState
-) -> void:
-	if state != ScenarioManager.ScenarioState.WON:
-		return
-
-	# Per-scenario completion.
-	AchievementManager.unlock("scenario_%d_complete" % scenario_id)
-
-	# Difficulty-based achievements.
-	var diff: String = GameState.selected_difficulty
-	if diff == "master":
-		AchievementManager.unlock("master_victory")
-	elif diff == "spymaster":
-		AchievementManager.unlock("spymaster_victory")
-
-	# Speed run: win within 10 days (inclusive).
-	var current_day: int = day_night.current_day if day_night != null and "current_day" in day_night else 99
-	if current_day <= 10:
-		AchievementManager.unlock("speedrunner")
-
-	# Ghost: won without any detection event.
-	if not _ach_exposed:
-		AchievementManager.unlock("ghost")
-
-	# Jack of all trades: all four action types used.
-	if (_ach_actions_used.has("observe") and _ach_actions_used.has("eavesdrop")
-			and _ach_actions_used.has("craft") and _ach_actions_used.has("bribe")):
-		AchievementManager.unlock("jack_of_all_trades")
-
-	# Whisper network: 20+ unique NPCs received a rumor.
-	if _analytics != null:
-		var ranking: Array = _analytics.get_influence_ranking(9999)
-		var recipients: int = 0
-		for entry in ranking:
-			if entry.get("received_count", 0) > 0:
-				recipients += 1
-		if recipients >= 20:
-			AchievementManager.unlock("whisper_network")
-
-	# Mastermind: all six scenarios completed (checks persisted unlock state).
-	if (AchievementManager.is_unlocked("scenario_1_complete")
-			and AchievementManager.is_unlocked("scenario_2_complete")
-			and AchievementManager.is_unlocked("scenario_3_complete")
-			and AchievementManager.is_unlocked("scenario_4_complete")
-			and AchievementManager.is_unlocked("scenario_5_complete")
-			and AchievementManager.is_unlocked("scenario_6_complete")):
-		AchievementManager.unlock("mastermind")
 
 
 # ── SPA-335: Demo analytics helpers ──────────────────────────────────────────

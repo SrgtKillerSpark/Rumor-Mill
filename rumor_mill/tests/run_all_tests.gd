@@ -21,6 +21,7 @@
 ##   • TestIntelStore             — action budget, whisper tokens, heat, evidence, location/rel intel (SPA-987)
 ##   • TestGameState              — difficulty modifier keys, values, unknown preset fallback (SPA-987)
 ##   • TestSocialGraph            — edge weight, mutation cap, net delta, adjacency queries (SPA-987)
+##   • TestAchievementHooks       — per-session state tracking: exposure, action flags, bribe (SPA-988)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -83,5 +84,8 @@ func _init() -> void:
 
 	print("\n── SocialGraph ──")
 	TestSocialGraph.run()
+
+	print("\n── AchievementHooks ──")
+	TestAchievementHooks.run()
 
 	print("\n=== All suites complete ===")
