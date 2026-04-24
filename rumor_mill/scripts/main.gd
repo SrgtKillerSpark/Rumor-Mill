@@ -78,8 +78,9 @@ var _context_controls: CanvasLayer = null
 
 # ── SPA-872: NPC quick-info panel and Tab NPC cycling ─────────────────────────
 var _npc_info_panel: CanvasLayer = null
-var _tab_npc_index:  int         = -1   # current index into _tab_npc_list
-var _tab_npc_list:   Array       = []   # sorted list of NPC nodes for Tab cycling
+
+# ── SPA-1002: Input dispatch (extracted to GameInputHandler) ─────────────────
+var _input_handler: GameInputHandler = null
 
 # ── SPA-589: Story recap overlay (shown on save load) ─────────────────────────
 var _story_recap: CanvasLayer = null
@@ -189,81 +190,6 @@ func _ready() -> void:
 	# so its _ready() won't re-run; crossfade from any in-game phase music back to
 	# the title theme here).
 	AudioManager.play_music("main_theme", true)
-
-
-## SPA-767: Update context controls panel mode based on which panels are open.
-func _process(_delta: float) -> void:
-	if _context_controls == null or not _game_started:
-		return
-	var mode: int = 0  # EXPLORE
-	if rumor_panel.visible:
-		mode = 1  # RUMOR_PANEL
-	elif journal.visible:
-		mode = 2  # JOURNAL
-	elif social_graph_overlay.visible:
-		mode = 3  # SOCIAL_GRAPH
-	elif day_night != null and day_night.has_method("is_paused") and day_night.is_paused():
-		mode = 4  # PAUSED
-	_context_controls.set_mode(mode)
-
-
-## SPA-518/SPA-872: Keyboard shortcuts for panels and NPC cycling.
-func _unhandled_input(event: InputEvent) -> void:
-	if not _game_started:
-		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_H:
-				if _tutorial_banner != null and _tutorial_banner.has_method("replay_hint"):
-					_tutorial_banner.replay_hint()
-					get_viewport().set_input_as_handled()
-			KEY_O:
-				_show_objective_recall()
-				get_viewport().set_input_as_handled()
-			KEY_M:
-				# M mirrors G: toggle the Social Graph / Map overview.
-				if social_graph_overlay != null and social_graph_overlay.has_method("_toggle_overlay"):
-					social_graph_overlay._toggle_overlay()
-					get_viewport().set_input_as_handled()
-			KEY_TAB:
-				# Tab cycles through NPCs in the current world and shows the info panel.
-				_cycle_npc(1)
-				get_viewport().set_input_as_handled()
-			KEY_ESCAPE:
-				# Centralised Esc: close whichever panel is topmost.
-				if _npc_info_panel != null and _npc_info_panel.visible:
-					_npc_info_panel.hide_panel()
-					get_viewport().set_input_as_handled()
-				elif rumor_panel != null and rumor_panel.visible and rumor_panel.has_method("toggle"):
-					rumor_panel.toggle()
-					get_viewport().set_input_as_handled()
-
-
-## SPA-872: Cycle through NPCs in the world using Tab.
-## direction: +1 = forward, -1 = backward.
-func _cycle_npc(direction: int) -> void:
-	if world == null:
-		return
-	var npc_container: Node = world.get_node_or_null("NPCContainer")
-	if npc_container == null:
-		return
-	# Rebuild NPC list each cycle so it stays current.
-	_tab_npc_list = npc_container.get_children().filter(
-		func(n: Node) -> bool: return n is Node2D and n.has_method("get_worst_rumor_state")
-	)
-	if _tab_npc_list.is_empty():
-		return
-	_tab_npc_index = (_tab_npc_index + direction) % _tab_npc_list.size()
-	if _tab_npc_index < 0:
-		_tab_npc_index = _tab_npc_list.size() - 1
-	var npc: Node2D = _tab_npc_list[_tab_npc_index]
-	# Pan camera toward the selected NPC.
-	if camera != null:
-		var tw := camera.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		tw.tween_property(camera, "position", npc.global_position, 0.4)
-	# Show the NPC info panel.
-	if _npc_info_panel != null:
-		_npc_info_panel.show_npc(npc)
 
 
 ## Called when the player clicks Begin on the scenario intro screen.
@@ -378,6 +304,15 @@ func _on_begin_game(scenario_id: String) -> void:
 	_init_context_controls_panel()
 	_init_visual_affordances()
 	_init_npc_info_panel()
+	# SPA-1002: Input dispatch — must run after all panels are created.
+	_input_handler = GameInputHandler.new()
+	_input_handler.name = "GameInputHandler"
+	add_child(_input_handler)
+	_input_handler.setup(
+		world, camera, day_night, rumor_panel, journal, social_graph_overlay,
+		_npc_info_panel, _tutorial_banner, _context_controls
+	)
+	_input_handler.objective_recall_requested.connect(_show_objective_recall)
 	day_night.day_changed.connect(_on_new_day_auto_save)
 	PlayerStats.start_session()  # SPA-273: begin timing this play session
 
