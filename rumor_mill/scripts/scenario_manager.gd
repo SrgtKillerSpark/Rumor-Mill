@@ -394,7 +394,7 @@ signal s1_first_blood
 ## days_remaining: how many days the player has to reach 7 believers before the fail fires.
 signal s2_maren_grace_started(days_remaining: int)
 
-## Scenario 5 only: emitted when Prior Aldous endorses a candidate on day 15.
+## Scenario 5 only: emitted when Prior Aldous endorses a candidate on day 13.
 ## candidate_id: the NPC with the highest reputation. bonus: the rep boost applied.
 signal endorsement_triggered(candidate_id: String, bonus: int)
 
