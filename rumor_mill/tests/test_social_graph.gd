@@ -1,4 +1,4 @@
-## test_social_graph.gd — Unit tests for SocialGraph (SPA-987).
+## test_social_graph.gd — Unit tests for SocialGraph (SPA-987, SPA-1052).
 ##
 ## Covers:
 ##   • build() populates all directed edges for a set of NPCs
@@ -8,10 +8,13 @@
 ##   • Edge weight is in [0.0, 1.0] after build()
 ##   • mutate_edge applies delta and clamps to [0.0, 1.0]
 ##   • MUTATION_CAP: at most MUTATION_CAP mutations per directed edge
-##   • Net delta tracking via get_net_mutation
+##   • Net delta tracking via get_net_mutation (derived from _mutation_log)
 ##   • mutate_edge is a no-op for missing edges
 ##   • apply_overrides sets exact weights
 ##   • get_top_neighbours returns sorted results, capped at n
+##   • get_mutations_in_tick_range returns entries within [tick_min, tick_max]
+##   • Mutation history consistency: get_net_mutation matches manual log sum
+##   • Save/load cycle: restoring _mutation_log preserves net mutation values
 ##
 ## Run from the Godot editor: Scene → Run Script.
 
@@ -51,6 +54,17 @@ func run() -> void:
 		# get_top_neighbours
 		"test_get_top_neighbours_sorted_descending",
 		"test_get_top_neighbours_capped_at_n",
+		# get_mutations_in_tick_range
+		"test_get_mutations_in_tick_range_returns_matching_entries",
+		"test_get_mutations_in_tick_range_excludes_out_of_range",
+		"test_get_mutations_in_tick_range_empty_when_no_mutations",
+		"test_get_mutations_in_tick_range_inclusive_bounds",
+		# Mutation history consistency
+		"test_net_mutation_consistent_with_log_sum",
+		"test_net_mutation_only_counts_directed_pair",
+		# Save/load cycle
+		"test_save_load_cycle_preserves_net_mutation",
+		"test_save_load_cycle_preserves_tick_range_query",
 	]
 
 	for method_name in tests:
@@ -270,3 +284,107 @@ static func test_get_top_neighbours_capped_at_n() -> bool:
 	sg.edges["a"] = {"b": 0.1, "c": 0.2, "d": 0.3, "e": 0.4, "f": 0.5, "g": 0.6}
 	var top := sg.get_top_neighbours("a", 3)
 	return top.size() == 3
+
+
+# ── get_mutations_in_tick_range ───────────────────────────────────────────────
+
+## Mutations at ticks 2 and 4 are returned when querying [1, 5].
+static func test_get_mutations_in_tick_range_returns_matching_entries() -> bool:
+	var sg := _same_faction_graph()
+	sg.mutate_edge("a", "b", 0.05, 2)
+	sg.mutate_edge("a", "b", 0.05, 4)
+	var entries := sg.get_mutations_in_tick_range("a", "b", 1, 5)
+	return entries.size() == 2
+
+
+## Mutation at tick 10 is excluded when querying [1, 5].
+static func test_get_mutations_in_tick_range_excludes_out_of_range() -> bool:
+	var sg := _same_faction_graph()
+	sg.mutate_edge("a", "b", 0.05, 10)
+	var entries := sg.get_mutations_in_tick_range("a", "b", 1, 5)
+	return entries.size() == 0
+
+
+## No mutations → empty result for any tick range.
+static func test_get_mutations_in_tick_range_empty_when_no_mutations() -> bool:
+	var sg := _same_faction_graph()
+	var entries := sg.get_mutations_in_tick_range("a", "b", 0, 100)
+	return entries.size() == 0
+
+
+## Boundary ticks are inclusive: mutations at tick_min and tick_max are included.
+static func test_get_mutations_in_tick_range_inclusive_bounds() -> bool:
+	var sg := _same_faction_graph()
+	sg.mutate_edge("a", "b", 0.05, 1)   # == tick_min
+	sg.mutate_edge("a", "b", 0.05, 3)   # == tick_max
+	var entries := sg.get_mutations_in_tick_range("a", "b", 1, 3)
+	return entries.size() == 2
+
+
+# ── Mutation history consistency ──────────────────────────────────────────────
+
+## get_net_mutation must equal the sum of all delta values in the log for that pair.
+static func test_net_mutation_consistent_with_log_sum() -> bool:
+	var sg := _same_faction_graph()
+	sg.mutate_edge("a", "b", 0.05, 1)
+	sg.mutate_edge("a", "b", -0.03, 2)
+	# Manual sum of log entries for "a"→"b"
+	var manual_sum := 0.0
+	for entry in sg._mutation_log:
+		if entry["from"] == "a" and entry["to"] == "b":
+			manual_sum += entry["delta"]
+	var net := sg.get_net_mutation("a", "b")
+	return absf(net - manual_sum) < 0.0001
+
+
+## get_net_mutation for "a"→"b" must not include mutations on the reverse "b"→"a" edge.
+static func test_net_mutation_only_counts_directed_pair() -> bool:
+	var sg := _same_faction_graph()
+	sg.mutate_edge("a", "b", 0.1, 1)
+	sg.mutate_edge("b", "a", 0.2, 2)
+	var net_ab := sg.get_net_mutation("a", "b")
+	var net_ba := sg.get_net_mutation("b", "a")
+	return absf(net_ab - 0.1) < 0.0001 and absf(net_ba - 0.2) < 0.0001
+
+
+# ── Save / load cycle ─────────────────────────────────────────────────────────
+
+## Restoring _mutation_log into a new SocialGraph preserves get_net_mutation values.
+static func test_save_load_cycle_preserves_net_mutation() -> bool:
+	var sg := _same_faction_graph()
+	sg.mutate_edge("a", "b", 0.1, 1)
+	sg.mutate_edge("a", "b", 0.05, 2)
+	var original_net := sg.get_net_mutation("a", "b")
+
+	# Simulate save: snapshot the log and mutation count (as save_manager does).
+	var saved_log:   Array      = sg._mutation_log.duplicate(true)
+	var saved_count: Dictionary = sg._mutation_count.duplicate(true)
+	var saved_edges: Dictionary = sg.edges.duplicate(true)
+
+	# Simulate load: restore into a fresh SocialGraph.
+	var sg2 := SocialGraph.new()
+	sg2.edges          = saved_edges.duplicate(true)
+	sg2._mutation_log  = saved_log.duplicate(true)
+	sg2._mutation_count = saved_count.duplicate(true)
+
+	return absf(sg2.get_net_mutation("a", "b") - original_net) < 0.0001
+
+
+## Restoring _mutation_log preserves get_mutations_in_tick_range results.
+static func test_save_load_cycle_preserves_tick_range_query() -> bool:
+	var sg := _same_faction_graph()
+	sg.mutate_edge("a", "b", 0.05, 3)
+	sg.mutate_edge("a", "b", 0.05, 7)
+
+	var saved_log:   Array      = sg._mutation_log.duplicate(true)
+	var saved_count: Dictionary = sg._mutation_count.duplicate(true)
+	var saved_edges: Dictionary = sg.edges.duplicate(true)
+
+	var sg2 := SocialGraph.new()
+	sg2.edges           = saved_edges.duplicate(true)
+	sg2._mutation_log   = saved_log.duplicate(true)
+	sg2._mutation_count = saved_count.duplicate(true)
+
+	var entries := sg2.get_mutations_in_tick_range("a", "b", 1, 5)
+	# Only the tick-3 mutation falls in [1, 5].
+	return entries.size() == 1 and absf(entries[0]["delta"] - 0.05) < 0.0001

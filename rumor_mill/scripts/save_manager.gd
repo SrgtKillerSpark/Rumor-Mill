@@ -343,7 +343,6 @@ static func _serialize_social_graph(sg: SocialGraph) -> Dictionary:
 		"edges":          sg.edges.duplicate(true),
 		"mutation_log":   sg._mutation_log.duplicate(true),
 		"mutation_count": sg._mutation_count.duplicate(true),
-		"net_mutations":  sg._net_mutations.duplicate(true),
 	}
 
 
@@ -566,8 +565,6 @@ static func _restore_social_graph(sg: SocialGraph, d: Dictionary) -> void:
 	sg._mutation_log   = (_mlog if _mlog is Array else []).duplicate(true)
 	var _mcount: Variant = d.get("mutation_count", {})
 	sg._mutation_count = (_mcount if _mcount is Dictionary else {}).duplicate(true)
-	var _nmut: Variant = d.get("net_mutations", {})
-	sg._net_mutations  = (_nmut if _nmut is Dictionary else {}).duplicate(true)
 
 
 static func _restore_propagation(pe: PropagationEngine, d: Dictionary) -> void:
