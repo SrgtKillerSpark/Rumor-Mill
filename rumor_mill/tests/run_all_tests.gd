@@ -70,6 +70,29 @@
 ##                                  wire_pause_menu null guard (SPA-1024)
 ##   • TestObjectiveHudBanner     — colour constants, initial state, show_banner/snapshot/bulletin/check
 ##                                  null guards, on_deadline_warning text format (SPA-1024)
+##   • TestNpcSchedule            — archetype_from_string, SLOTS_PER_DAY, get_location with base/work/overrides (SPA-1041)
+##   • TestScenarioConfig         — all S1–S6 balance constants, NPC ids, arrays, phase windows (SPA-1041)
+##   • TestRumor                  — create, base_believability, is_expired, decay_one_tick, is_positive_claim,
+##                                  claim_type_name, NpcRumorSlot initial state (SPA-1041)
+##   • TestRivalAgent             — initial state, activate, constants, _get_cooldown, can/apply_disruption,
+##                                  _DEGRADE_MAP, scout (SPA-1041)
+##   • TestGuildDefenseAgent      — initial state, config, activate, tick guards, effective cooldown (SPA-1041)
+##   • TestIllnessEscalationAgent — constants, initial state, activate, _get_cooldown, tick guards (SPA-1041)
+##   • TestInquisitorAgent        — constants, initial state, activate, tip/shield, _get_cooldown,
+##                                  _pick_claim_type, tick guards (SPA-1041)
+##   • TestS4FactionShiftAgent    — constants, initial state, activate, phase firing, bishop pressure,
+##                                  _weakest_protected_npc null rep (SPA-1041)
+##   • TestScenarioAnalytics      — initial state, _on_rumor_transmitted, _on_rumor_event, _on_socially_dead,
+##                                  get_influence_ranking, finalize (SPA-1041)
+##   • TestAstarPathfinder        — initial state, get_path guards, nearest_walkable static math (SPA-1041)
+##   • TestQuarantineSystem       — constants, initial state, activate, query methods, tick expiry,
+##                                  try_quarantine blocked/success cases (SPA-1041)
+##   • TestWeatherSystem          — constants, initial state, _start_rain/_stop_rain state flags (SPA-1041)
+##   • TestTownMoodController     — constants, initial state, set_camera, on_game_tick null guard (SPA-1041)
+##   • TestNpcThoughtBubble       — MAX_VISIBLE, SYMBOL/STATE_COLOR/STATE_HINT dicts, initial state,
+##                                  _exit_tree counter (SPA-1041)
+##   • TestNpcInfoPanel           — palette, C_FACTION, C_BELIEF, BELIEF_LABEL/ICON, ACTIONS,
+##                                  initial state (SPA-1041)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -267,5 +290,50 @@ func _init() -> void:
 
 	print("\n── ObjectiveHudBanner ──")
 	TestObjectiveHudBanner.new().run()
+
+	print("\n── NpcSchedule ──")
+	TestNpcSchedule.new().run()
+
+	print("\n── ScenarioConfig ──")
+	TestScenarioConfig.new().run()
+
+	print("\n── Rumor ──")
+	TestRumor.new().run()
+
+	print("\n── RivalAgent ──")
+	TestRivalAgent.new().run()
+
+	print("\n── GuildDefenseAgent ──")
+	TestGuildDefenseAgent.new().run()
+
+	print("\n── IllnessEscalationAgent ──")
+	TestIllnessEscalationAgent.new().run()
+
+	print("\n── InquisitorAgent ──")
+	TestInquisitorAgent.new().run()
+
+	print("\n── S4FactionShiftAgent ──")
+	TestS4FactionShiftAgent.new().run()
+
+	print("\n── ScenarioAnalytics ──")
+	TestScenarioAnalytics.new().run()
+
+	print("\n── AstarPathfinder ──")
+	TestAstarPathfinder.new().run()
+
+	print("\n── QuarantineSystem ──")
+	TestQuarantineSystem.new().run()
+
+	print("\n── WeatherSystem ──")
+	TestWeatherSystem.new().run()
+
+	print("\n── TownMoodController ──")
+	TestTownMoodController.new().run()
+
+	print("\n── NpcThoughtBubble ──")
+	TestNpcThoughtBubble.new().run()
+
+	print("\n── NpcInfoPanel ──")
+	TestNpcInfoPanel.new().run()
 
 	print("\n=== All suites complete ===")
