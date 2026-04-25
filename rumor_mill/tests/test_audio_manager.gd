@@ -1,4 +1,4 @@
-## test_audio_manager.gd — Unit tests for AudioManager (SPA-982).
+## test_audio_manager.gd — Unit tests for AudioManager (SPA-982, SPA-1053).
 ##
 ## Covers:
 ##   • Constants         — MUSIC_FILES and SFX_FILES contain required keys;
@@ -18,6 +18,8 @@
 ##                         enabling it sets the flag (safe path when _current_music="")
 ##   • Day/night connect — connect_to_day_night(null) returns safely
 ##   • Recon action hook — on_recon_action() early-exits when success=false
+##   • SFX null-safety   — play_sfx / play_sfx_pitched / set_sfx_volume_db are safe
+##                         when _sfx_player is null (SPA-1053)
 ##
 ## AudioManager is instantiated via preload so _ready() is NOT called; no
 ## AudioStreamPlayers are built and no scene-tree context is required.
@@ -70,6 +72,10 @@ func run() -> void:
 		"test_connect_to_day_night_null_guard",
 		# Recon action hook
 		"test_on_recon_action_skips_when_not_success",
+		# SFX null-safety (SPA-1053)
+		"test_play_sfx_null_player_no_crash",
+		"test_play_sfx_pitched_null_player_no_crash",
+		"test_set_sfx_volume_db_null_player_no_crash",
 	]
 
 	for method_name in tests:
@@ -361,4 +367,32 @@ static func test_on_recon_action_skips_when_not_success() -> bool:
 	if not am._sfx_cache.is_empty():
 		push_error("test_on_recon_action_skips_when_not_success: _sfx_cache unexpectedly populated")
 		return false
+	return true
+
+
+# ── SFX null-safety (SPA-1053) ────────────────────────────────────────────────
+
+## play_sfx() must not crash when _sfx_player is null (i.e. _ready() never ran).
+## We inject a dummy stream into _sfx_cache so the function reaches the
+## _sfx_player null-guard rather than returning early on a missing stream.
+static func test_play_sfx_null_player_no_crash() -> bool:
+	var am := _make_am()
+	# _sfx_player is null because _ready() / _build_players() was never called.
+	am._sfx_cache["dummy"] = AudioStreamWAV.new()
+	am.play_sfx("dummy")   # must return at the _sfx_player == null guard
+	return true   # reaching here without crash is the pass condition
+
+
+## play_sfx_pitched() must not crash when _sfx_player is null.
+static func test_play_sfx_pitched_null_player_no_crash() -> bool:
+	var am := _make_am()
+	am._sfx_cache["dummy"] = AudioStreamWAV.new()
+	am.play_sfx_pitched("dummy", 1.2)   # must return at the _sfx_player == null guard
+	return true
+
+
+## set_sfx_volume_db() must not crash when _sfx_player is null.
+static func test_set_sfx_volume_db_null_player_no_crash() -> bool:
+	var am := _make_am()
+	am.set_sfx_volume_db(-6.0)   # must return at the _sfx_player == null guard
 	return true

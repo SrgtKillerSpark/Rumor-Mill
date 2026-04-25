@@ -351,9 +351,14 @@ func play_sfx(sfx_name: String) -> void:
 		if OS.is_debug_build():
 			push_warning("AudioManager: play_sfx('%s') — no stream in cache (asset missing?)" % sfx_name)
 		return
+	if _sfx_player == null:
+		return
 	var pb := _sfx_player.get_stream_playback() as AudioStreamPlaybackPolyphonic
-	if pb != null:
-		pb.play_stream(stream)
+	if pb == null:
+		if OS.is_debug_build():
+			push_warning("AudioManager: play_sfx('%s') — playback unavailable (player not ready or wrong stream type)" % sfx_name)
+		return
+	pb.play_stream(stream)
 
 
 ## Play a named SFX at a custom pitch scale. Useful for hover variants of click sounds.
@@ -363,9 +368,14 @@ func play_sfx_pitched(sfx_name: String, pitch_scale: float) -> void:
 		if OS.is_debug_build():
 			push_warning("AudioManager: play_sfx_pitched('%s') — no stream in cache (asset missing?)" % sfx_name)
 		return
+	if _sfx_player == null:
+		return
 	var pb := _sfx_player.get_stream_playback() as AudioStreamPlaybackPolyphonic
-	if pb != null:
-		pb.play_stream(stream, 0, 0.0, pitch_scale)
+	if pb == null:
+		if OS.is_debug_build():
+			push_warning("AudioManager: play_sfx_pitched('%s') — playback unavailable (player not ready or wrong stream type)" % sfx_name)
+		return
+	pb.play_stream(stream, 0, 0.0, pitch_scale)
 
 
 # ── Public API — Volume control ────────────────────────────────────────────────
@@ -400,6 +410,8 @@ func set_ambient_volume_db(db: float) -> void:
 		_ambient_player_b.volume_db = db
 
 func set_sfx_volume_db(db: float) -> void:
+	if _sfx_player == null:
+		return
 	_sfx_player.volume_db = db
 
 func set_master_volume_db(db: float) -> void:
