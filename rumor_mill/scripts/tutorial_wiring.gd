@@ -73,6 +73,9 @@ var _waypoint_step:  int    = 0
 # ── SPA-805: S1 manor golden-pulse highlight ────────────────────────────────
 var _s1_manor_highlight: Polygon2D = null
 
+# ── SPA-1033: Scene timer references — prevents callback fires after free ────
+var _scene_timers: Array = []
+
 # ── SPA-948: "What's Changed" card ──────────────────────────────────────────
 var _whats_changed_card: CanvasLayer = null
 
@@ -108,6 +111,12 @@ func setup(
 	# Pipe action results to the tutorial system (observe / eavesdrop tooltips).
 	if _recon_ctrl_ref != null:
 		_recon_ctrl_ref.action_performed.connect(_on_recon_action_for_tutorial)
+
+	tree_exiting.connect(_on_tree_exiting)
+
+
+func _on_tree_exiting() -> void:
+	_scene_timers.clear()
 
 
 ## Called from main.gd _on_mission_briefing_dismissed() to start the appropriate
@@ -211,6 +220,7 @@ func _init_tutorial_banner_s1() -> void:
 
 	# HINT-01: immediate first action — fires 2 s after game start.
 	var _first_action_timer := get_tree().create_timer(2.0)
+	_scene_timers.append(_first_action_timer)
 	_first_action_timer.timeout.connect(func() -> void:
 		if tutorial_banner != null:
 			tutorial_banner.queue_hint("hint_first_action")
@@ -218,6 +228,7 @@ func _init_tutorial_banner_s1() -> void:
 
 	# HINT-02: point toward target NPC — fires 8 s after game start.
 	var _target_hint_timer := get_tree().create_timer(8.0)
+	_scene_timers.append(_target_hint_timer)
 	_target_hint_timer.timeout.connect(func() -> void:
 		if tutorial_banner != null:
 			tutorial_banner.queue_hint("hint_target_npc")
@@ -225,6 +236,7 @@ func _init_tutorial_banner_s1() -> void:
 
 	# hint_speed_controls: fires 14 s after game start.
 	var _speed_hint_timer := get_tree().create_timer(14.0)
+	_scene_timers.append(_speed_hint_timer)
 	_speed_hint_timer.timeout.connect(func() -> void:
 		if tutorial_banner != null:
 			tutorial_banner.queue_hint("hint_speed_controls")
@@ -345,6 +357,7 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 					tutorial_banner.queue_hint("hint_journal")
 				if not _banner_seed_fired:
 					var _rumour_nudge_timer := get_tree().create_timer(4.0)
+					_scene_timers.append(_rumour_nudge_timer)
 					_rumour_nudge_timer.timeout.connect(func() -> void:
 						if not is_instance_valid(self):
 							return
@@ -415,6 +428,7 @@ func _on_s1_rumor_seeded(
 	if _recon_hud != null and _recon_hud.has_method("show_toast"):
 		_recon_hud.show_toast("Rumours take time to spread. Watch the dawn bulletin tomorrow.", false)
 	var timer := get_tree().create_timer(5.0)
+	_scene_timers.append(timer)
 	timer.timeout.connect(func() -> void:
 		if tutorial_banner != null:
 			tutorial_banner.queue_hint("hint_propagation")
@@ -718,6 +732,7 @@ func _start_sx_timed_hints(scenario_id: String) -> void:
 		"scenario_6": opening_hint_id = "ctx_s6_opening"
 	if opening_hint_id != "":
 		var _open_timer := get_tree().create_timer(2.0)
+		_scene_timers.append(_open_timer)
 		var _hint_copy: String = opening_hint_id
 		_open_timer.timeout.connect(func() -> void:
 			if tutorial_banner != null:
@@ -741,6 +756,7 @@ func _start_sx_timed_hints(scenario_id: String) -> void:
 	for i in range(s_hints.size()):
 		var hint_id: String = s_hints[i]
 		var t := get_tree().create_timer(delays[i])
+		_scene_timers.append(t)
 		t.timeout.connect(func() -> void:
 			if tutorial_banner != null:
 				tutorial_banner.queue_hint(hint_id)
@@ -859,7 +875,9 @@ func _show_waypoint_step3_craft() -> void:
 		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	_waypoint_tween.tween_property(lbl, "modulate:a", 1.0, 0.8) \
 		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-	get_tree().create_timer(30.0).timeout.connect(func() -> void:
+	var _craft_timeout := get_tree().create_timer(30.0)
+	_scene_timers.append(_craft_timeout)
+	_craft_timeout.timeout.connect(func() -> void:
 		if _waypoint_step == 3:
 			_clear_waypoint()
 			_waypoint_step = 0

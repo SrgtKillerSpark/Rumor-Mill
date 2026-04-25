@@ -328,7 +328,9 @@ func _refresh() -> void:
 	# Belief state.
 	var state_int: int = 0
 	if _current_npc.has_method("get_worst_rumor_state"):
-		state_int = int(_current_npc.get_worst_rumor_state())
+		var _raw_state = _current_npc.get_worst_rumor_state()
+		if _raw_state != null:
+			state_int = int(_raw_state)
 	var icon: String = BELIEF_ICON.get(state_int, "○")
 	var state_name: String = BELIEF_LABEL.get(state_int, "Unaware")
 	_belief_lbl.text = "%s %s" % [icon, state_name]
@@ -387,4 +389,13 @@ func _trigger_action(action_key: String) -> void:
 	if _current_npc == null or not is_instance_valid(_current_npc):
 		return
 	AudioManager.play_sfx("ui_click")
+	# SPA-992: Brief scale pop on the pressed button for tactile confirmation.
+	for i in ACTIONS.size():
+		if ACTIONS[i]["key"] == action_key and i < _action_btns.size():
+			var btn: Button = _action_btns[i]
+			btn.pivot_offset = btn.size * 0.5
+			var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.tween_property(btn, "scale", Vector2(1.10, 1.10), 0.07)
+			tw.tween_property(btn, "scale", Vector2.ONE, 0.12)
+			break
 	action_requested.emit(action_key, _current_npc)

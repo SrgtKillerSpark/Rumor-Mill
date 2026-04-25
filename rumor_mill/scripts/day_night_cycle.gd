@@ -42,6 +42,8 @@ var _day_banner_label:  Label     = null
 var _day_banner_tween:  Tween     = null
 var _day_obj_label:     Label     = null
 var _day_obj_tween:     Tween     = null
+## SPA-992: Tween for smooth sub-tick colour interpolation.
+var _color_tween:       Tween     = null
 ## True while the cinematic day-transition overlay is animating (tick timer paused).
 var _transition_paused: bool = false
 ## SPA-869: Phase transition overlay nodes.
@@ -75,7 +77,7 @@ func _ready() -> void:
 	tick_timer.wait_time = tick_duration_seconds
 	tick_timer.timeout.connect(_on_tick_timer_timeout)
 	tick_timer.start()
-	_apply_time_of_day(0)
+	_apply_time_of_day(0, true)  # SPA-992: instant on init — no tween needed at startup
 	_update_time_label()
 	_build_day_flash_overlay()
 	_build_shadow_overlay()
@@ -227,8 +229,8 @@ func _play_day_transition_flash() -> void:
 		# Always prefix with a dawn marker; append objective beneath if available.
 		var dawn_text := "~ Dawn ~"
 		if objective_text_provider.is_valid():
-			var obj := objective_text_provider.call()
-			if not obj.is_empty():
+			var obj = objective_text_provider.call()
+			if obj != null and not obj.is_empty():
 				dawn_text = dawn_text + "\n" + obj
 		if _day_obj_tween != null and _day_obj_tween.is_valid():
 			_day_obj_tween.kill()
@@ -242,7 +244,9 @@ func _play_day_transition_flash() -> void:
 			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
 
 
-func _apply_time_of_day(hour: int) -> void:
+## SPA-992: `instant` skips the tween — used at startup so the initial colour
+## is applied immediately rather than fading in from Godot's default white.
+func _apply_time_of_day(hour: int, instant: bool = false) -> void:
 	# Interpolate between the two nearest keyframe colours.
 	# When hour exceeds the last key (ticks_per_day > max key), wrap toward
 	# the first key of the next cycle to avoid a hard colour snap at midnight.
@@ -257,19 +261,33 @@ func _apply_time_of_day(hour: int) -> void:
 			next_hour = k
 			break
 
+	# Compute the target colour first so we can apply it either instantly or via tween.
+	var target: Color
 	if prev_hour == next_hour:
 		# Past the last key: interpolate toward the first key of the next cycle.
 		if hour > last_key:
 			var wrap_span: int = ticks_per_day - last_key
 			if wrap_span > 0:
 				var t := float(hour - last_key) / float(wrap_span)
-				canvas_modulate.color = TIME_COLORS[last_key].lerp(TIME_COLORS[_time_keys[0]], t)
-				return
-		canvas_modulate.color = TIME_COLORS[prev_hour]
-		return
+				target = TIME_COLORS[last_key].lerp(TIME_COLORS[_time_keys[0]], t)
+			else:
+				target = TIME_COLORS[prev_hour]
+		else:
+			target = TIME_COLORS[prev_hour]
+	else:
+		var t := float(hour - prev_hour) / float(next_hour - prev_hour)
+		target = TIME_COLORS[prev_hour].lerp(TIME_COLORS[next_hour], t)
 
-	var t := float(hour - prev_hour) / float(next_hour - prev_hour)
-	canvas_modulate.color = TIME_COLORS[prev_hour].lerp(TIME_COLORS[next_hour], t)
+	# SPA-992: Tween the canvas colour smoothly over the tick duration so each
+	# tick boundary blends into the next rather than snapping visibly.
+	if instant:
+		canvas_modulate.color = target
+		return
+	if _color_tween != null and _color_tween.is_valid():
+		_color_tween.kill()
+	_color_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_color_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_color_tween.tween_property(canvas_modulate, "color", target, tick_duration_seconds)
 
 
 func _update_time_label() -> void:
