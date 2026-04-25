@@ -416,7 +416,7 @@ func _build_bonus_stat(scenario_id: int) -> void:
 					_world_ref.reputation_system
 				)
 				var max_heat: float = progress.get("max_heat", 0.0)
-				bonus_value_text = "%d / %d" % [int(max_heat), int(ScenarioManager.S6_EXPOSED_HEAT)]
+				bonus_value_text = "%d / %d" % [int(max_heat), int(ScenarioConfig.S6_EXPOSED_HEAT)]
 			else:
 				bonus_value_text = "—"
 		_:

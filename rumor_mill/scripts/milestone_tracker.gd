@@ -163,9 +163,9 @@ func _eval_s4(current_tick: int) -> void:
 		_fire("s4_day15_safe", "Day 15 — 5 more days. Stay vigilant!", C_WARNING)
 
 	# Danger milestones.
-	if min_score <= ScenarioConfig.S4_CAUTION_REP and min_score > ScenarioManager.S4_FAIL_REP_BELOW:
+	if min_score <= ScenarioConfig.S4_CAUTION_REP and min_score > ScenarioConfig.S4_FAIL_REP_BELOW:
 		_fire("s4_close_call", "⚠ %s is dangerously close to the threshold!" % weakest_name, C_DANGER)
-	if min_score <= ScenarioConfig.S4_WIN_REP_MIN and min_score > ScenarioManager.S4_FAIL_REP_BELOW:
+	if min_score <= ScenarioConfig.S4_WIN_REP_MIN and min_score > ScenarioConfig.S4_FAIL_REP_BELOW:
 		_fire("s4_critical", "⚠ CRITICAL — %s is about to fall!" % weakest_name, C_DANGER)
 
 
@@ -192,7 +192,7 @@ func _eval_s5(current_tick: int) -> void:
 
 	# Endorsement timing.
 	var day: int = _scenario_mgr.get_current_day(current_tick)
-	if day >= 12 and day < ScenarioManager.S5_ENDORSEMENT_DAY:
+	if day >= 12 and day < ScenarioConfig.S5_ENDORSEMENT_DAY:
 		_fire("s5_endorsement_soon", "The Prior's endorsement is days away — ensure Aldric leads!", C_WARNING)
 
 	# Aldric danger.

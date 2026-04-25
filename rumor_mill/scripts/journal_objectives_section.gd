@@ -128,7 +128,7 @@ func build(content_vbox: VBoxContainer) -> void:
 		"  Lord Edric Fenn reputation drops below %d.\n"
 		+ "  Current:  %s / 100  — %s  %s\n"
 		+ "  Target:   < %d (Disgraced — faction loyalty collapses)"
-	) % [ScenarioManager.S1_WIN_EDRIC_BELOW, edric_score_str, edric_band_str, s1_win_status, ScenarioManager.S1_WIN_EDRIC_BELOW]
+	) % [ScenarioConfig.S1_WIN_EDRIC_BELOW, edric_score_str, edric_band_str, s1_win_status, ScenarioConfig.S1_WIN_EDRIC_BELOW]
 	win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	win_body.add_theme_font_size_override("font_size", 12)
 	win_body.add_theme_color_override("font_color", s1_win_color)
@@ -248,9 +248,9 @@ func build(content_vbox: VBoxContainer) -> void:
 		+ "  FAIL: Calder Fenn < 40\n\n"
 		+ "  Calder Fenn:   %s / 100  — %s  (target: \u2265%d)\n"
 		+ "  Tomas Reeve:   %s / 100  — %s  (target: \u2264%d)"
-	) % [ScenarioManager.S3_WIN_CALDER_MIN, ScenarioManager.S3_WIN_TOMAS_MAX,
-		calder_score_str, calder_band_str, ScenarioManager.S3_WIN_CALDER_MIN,
-		tomas_score_str, tomas_band_str, ScenarioManager.S3_WIN_TOMAS_MAX]
+	) % [ScenarioConfig.S3_WIN_CALDER_MIN, ScenarioConfig.S3_WIN_TOMAS_MAX,
+		calder_score_str, calder_band_str, ScenarioConfig.S3_WIN_CALDER_MIN,
+		tomas_score_str, tomas_band_str, ScenarioConfig.S3_WIN_TOMAS_MAX]
 	s3_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s3_body.add_theme_font_size_override("font_size", 12)
 	s3_body.add_theme_color_override("font_color", C_BODY)
@@ -314,11 +314,11 @@ func build(content_vbox: VBoxContainer) -> void:
 		+ "  Vera Midwife:  %s / 100  \u2014 %s\n"
 		+ "  Finn Monk:     %s / 100  \u2014 %s\n"
 		+ "  Floor: \u2265 %d  (all three must stay above this)"
-	) % [S4_DAYS, ScenarioManager.S4_WIN_REP_MIN, s4_win_status,
+	) % [S4_DAYS, ScenarioConfig.S4_WIN_REP_MIN, s4_win_status,
 		aldous_score_str, aldous_band_str,
 		vera_score_str, vera_band_str,
 		finn_score_str, finn_band_str,
-		ScenarioManager.S4_WIN_REP_MIN]
+		ScenarioConfig.S4_WIN_REP_MIN]
 	s4_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s4_win_body.add_theme_font_size_override("font_size", 12)
 	s4_win_body.add_theme_color_override("font_color", s4_win_color)
@@ -336,7 +336,7 @@ func build(content_vbox: VBoxContainer) -> void:
 	s4_fail_body.text = (
 		"  [ ] Any accused NPC drops below %d reputation\n"
 		+ "  [ ] %d days elapsed without all three surviving  (days remaining: %d)"
-	) % [ScenarioManager.S4_FAIL_REP_BELOW, S4_DAYS, s4_days_remaining]
+	) % [ScenarioConfig.S4_FAIL_REP_BELOW, S4_DAYS, s4_days_remaining]
 	s4_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s4_fail_body.add_theme_font_size_override("font_size", 12)
 	s4_fail_body.add_theme_color_override("font_color", C_BODY)
@@ -404,7 +404,7 @@ func build(content_vbox: VBoxContainer) -> void:
 		aldric_score_str, aldric_band_str,
 		edric_s5_str, edric_s5_band,
 		tomas_s5_str, tomas_s5_band,
-		ScenarioManager.S5_ENDORSEMENT_DAY, sm.S5_ENDORSEMENT_BONUS if sm != null else ScenarioConfig.S5_ENDORSEMENT_BONUS]
+		ScenarioConfig.S5_ENDORSEMENT_DAY, sm.S5_ENDORSEMENT_BONUS if sm != null else ScenarioConfig.S5_ENDORSEMENT_BONUS]
 	s5_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s5_win_body.add_theme_font_size_override("font_size", 12)
 	s5_win_body.add_theme_color_override("font_color", s5_win_color)

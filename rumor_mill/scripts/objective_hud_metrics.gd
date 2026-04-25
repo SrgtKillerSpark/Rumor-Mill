@@ -216,7 +216,7 @@ func _refresh_threat() -> void:
 				break
 			var snap: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot(npc_id)
 			if snap != null:
-				var margin: int = snap.score - ScenarioManager.S4_FAIL_REP_BELOW
+				var margin: int = snap.score - ScenarioConfig.S4_FAIL_REP_BELOW
 				if margin < min_margin:
 					min_margin = margin
 		threat = clampf(1.0 - float(max(min_margin, 0)) / 30.0, 0.0, 1.0)
@@ -234,7 +234,7 @@ func _refresh_threat() -> void:
 
 	elif _scenario_manager._active_scenario == 6:
 		var heat: float = _intel_store.get_heat("player") if _intel_store != null else 0.0
-		threat = clampf(heat / ScenarioManager.S6_EXPOSED_HEAT, 0.0, 1.0)
+		threat = clampf(heat / ScenarioConfig.S6_EXPOSED_HEAT, 0.0, 1.0)
 		var time_frac: float = _scenario_manager.get_time_fraction(
 			_day_night.current_tick if _day_night != null else 0)
 		threat = maxf(threat, time_frac * 0.5)

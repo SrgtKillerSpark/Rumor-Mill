@@ -216,7 +216,7 @@ func infer_fail_reason(scenario_id: int) -> String:
 		var rep: ReputationSystem = _world_ref.reputation_system
 		if rep != null:
 			var calder := rep.get_snapshot(ScenarioManager.CALDER_FENN_ID)
-			if calder != null and calder.score < ScenarioManager.S3_FAIL_CALDER_BELOW:
+			if calder != null and calder.score < ScenarioConfig.S3_FAIL_CALDER_BELOW:
 				return "calder_implicated"
 	if scenario_id == 2:
 		var rep: ReputationSystem = _world_ref.reputation_system
@@ -227,23 +227,23 @@ func infer_fail_reason(scenario_id: int) -> String:
 		if rep != null:
 			for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
 				var snap := rep.get_snapshot(npc_id)
-				if snap != null and snap.score < ScenarioManager.S4_FAIL_REP_BELOW:
+				if snap != null and snap.score < ScenarioConfig.S4_FAIL_REP_BELOW:
 					return "reputation_collapsed"
 	if scenario_id == 5:
 		var rep: ReputationSystem = _world_ref.reputation_system
 		if rep != null:
 			var aldric := rep.get_snapshot(ScenarioManager.ALDRIC_VANE_ID)
-			if aldric != null and aldric.score < ScenarioManager.S5_FAIL_ALDRIC_BELOW:
+			if aldric != null and aldric.score < ScenarioConfig.S5_FAIL_ALDRIC_BELOW:
 				return "aldric_destroyed"
 	if scenario_id == 6:
 		var rep: ReputationSystem = _world_ref.reputation_system
 		if rep != null:
 			var marta := rep.get_snapshot(ScenarioManager.MARTA_COIN_ID)
-			if marta != null and marta.score < ScenarioManager.S6_FAIL_MARTA_BELOW:
+			if marta != null and marta.score < ScenarioConfig.S6_FAIL_MARTA_BELOW:
 				return "marta_silenced"
 		if _world_ref.intel_store != null:
 			for npc_id in _world_ref.intel_store.heat:
-				if _world_ref.intel_store.heat[npc_id] >= ScenarioManager.S6_EXPOSED_HEAT:
+				if _world_ref.intel_store.heat[npc_id] >= ScenarioConfig.S6_EXPOSED_HEAT:
 					return "exposed"
 	# Check days elapsed vs allowed.
 	if _day_night_ref != null and sm.get_days_allowed() > 0:

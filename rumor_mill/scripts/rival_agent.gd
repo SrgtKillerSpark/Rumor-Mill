@@ -147,10 +147,10 @@ func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -
 
 			# Rival goal: push Tomas up, Calder down.
 			# calder_gap: distance above the fail floor (smaller = nearer to fail)
-			var calder_gap: int = calder_score - ScenarioManager.S3_FAIL_CALDER_BELOW
+			var calder_gap: int = calder_score - ScenarioConfig.S3_FAIL_CALDER_BELOW
 			# tomas_gap: distance below the win ceiling for Tomas (smaller = Tomas
 			# is already low, so rival should push him up)
-			var tomas_gap: int = ScenarioManager.S3_WIN_TOMAS_MAX - tomas_score
+			var tomas_gap: int = ScenarioConfig.S3_WIN_TOMAS_MAX - tomas_score
 
 			if tomas_gap <= 0:
 				# Tomas already above ceiling - focus on attacking Calder
