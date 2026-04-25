@@ -28,6 +28,8 @@
 ##   • TestReconController        — constants, coordinate conversion, belief_trend, initial state (SPA-1012)
 ##   • TestReconHud               — constants, pip/heat colours, initial state, contextual hint logic (SPA-1012)
 ##   • TestRumorPanel             — constants, colour helpers, initial state, believability/spread estimates (SPA-1012)
+##   • TestPauseMenu              — palette constants, static var, initial state, setup wiring (SPA-1015)
+##   • TestSettingsMenu           — palette constants, initial state, _close() behaviour (SPA-1015)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -111,5 +113,11 @@ func _init() -> void:
 
 	print("\n── RumorPanel ──")
 	TestRumorPanel.run()
+
+	print("\n── PauseMenu ──")
+	TestPauseMenu.run()
+
+	print("\n── SettingsMenu ──")
+	TestSettingsMenu.run()
 
 	print("\n=== All suites complete ===")
