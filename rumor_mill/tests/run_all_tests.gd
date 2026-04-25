@@ -30,6 +30,8 @@
 ##   • TestRumorPanel             — constants, colour helpers, initial state, believability/spread estimates (SPA-1012)
 ##   • TestPauseMenu              — palette constants, static var, initial state, setup wiring (SPA-1015)
 ##   • TestSettingsMenu           — palette constants, initial state, _close() behaviour (SPA-1015)
+##   • TestMidGameEventAgent      — activation, window guards, probability firing, resolve choice, serialization, effects (SPA-1017)
+##   • TestDayNightCycle          — initial state, TIME_COLORS, phase detection, shadow guard, skip_to_next_day, color interpolation, signals (SPA-1017)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -119,5 +121,11 @@ func _init() -> void:
 
 	print("\n── SettingsMenu ──")
 	TestSettingsMenu.run()
+
+	print("\n── MidGameEventAgent ──")
+	TestMidGameEventAgent.run()
+
+	print("\n── DayNightCycle ──")
+	TestDayNightCycle.run()
 
 	print("\n=== All suites complete ===")
