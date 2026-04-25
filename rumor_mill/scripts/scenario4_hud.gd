@@ -3,13 +3,13 @@ extends BaseScenarioHud
 ## scenario4_hud.gd — Persistent triple-track reputation defence display.
 ##
 ## Shows a thin header tracking the three protected NPCs' reputation scores
-## against the Scenario 4 fail threshold (< 45) and 20-day survival win.
+## against the Scenario 4 fail threshold (< 40) and 20-day survival win.
 ##
 ## Layout:
 ##   Scenario 4: The Holy Inquisition
-##   [Aldous Prior]   Rep: 60 / 100   Floor: 45  [bar]
-##   [Vera Midwife]   Rep: 55 / 100   Floor: 45  [bar]
-##   [Finn Monk]      Rep: 50 / 100   Floor: 45  [bar]
+##   [Aldous Prior]   Rep: 60 / 100   Target: 48+ | Fail: <40  [bar]
+##   [Vera Midwife]   Rep: 55 / 100   Target: 48+ | Fail: <40  [bar]
+##   [Finn Monk]      Rep: 50 / 100   Target: 48+ | Fail: <40  [bar]
 ##   Days remaining: 20       Inquisitor: no activity yet
 ##
 ## Wire via setup(world, day_night) from main.gd.
@@ -120,7 +120,7 @@ func _build_ui() -> void:
 		var lbl := Label.new()
 		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", C_BODY)
-		lbl.text = "%s  Rep: 50 / 100  Floor: %d" % [NPC_DISPLAY_NAMES.get(npc_id, npc_id), ScenarioConfig.S4_WIN_REP_MIN]
+		lbl.text = "%s  Rep: 50 / 100  Target: %d+ | Fail: <%d" % [NPC_DISPLAY_NAMES.get(npc_id, npc_id), ScenarioConfig.S4_WIN_REP_MIN, ScenarioConfig.S4_FAIL_REP_BELOW]
 		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh)
 		lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 		vbox.add_child(lbl)
@@ -288,8 +288,8 @@ func _refresh() -> void:
 	for npc_id in ScenarioConfig.S4_PROTECTED_NPC_IDS:
 		var score: int = scores.get(npc_id, 50)
 		if _score_labels.has(npc_id):
-			_score_labels[npc_id].text = "%s  Rep: %d / 100  Floor: %d" % [
-				NPC_DISPLAY_NAMES.get(npc_id, npc_id), score, win_thr]
+			_score_labels[npc_id].text = "%s  Rep: %d / 100  Target: %d+ | Fail: <%d" % [
+				NPC_DISPLAY_NAMES.get(npc_id, npc_id), score, win_thr, fail_thr]
 		if _bars.has(npc_id):
 			_bars[npc_id].custom_minimum_size.x = BAR_WIDTH * clamp(float(score) / 100.0, 0.0, 1.0)
 			# Three-tier coloring: safe (>=win), danger zone (fail..win), failing (<fail)

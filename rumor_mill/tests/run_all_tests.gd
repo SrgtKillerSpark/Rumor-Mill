@@ -140,12 +140,32 @@
 ##                                  state→category map, belief hints, greeting picker (SPA-1057)
 ##   • TestRumorTrackerHud        — constants, palette, initial state, flash timer logic,
 ##                                  _depth_dfs, _collect_lineage, _max_descendant_depth (SPA-1057)
+##   • TestAmbientParticles       — hour-window constants, initial state, _apply_hour() emitter logic (SPA-1065)
+##   • TestAnalyticsLogger        — SAVE_PATH, initial state, start_session, get_session_duration (SPA-1065)
+##   • TestDistrictPropsRegistry  — PROPS count, required keys, no duplicate ids, props_for_district,
+##                                  district_labels (SPA-1065)
+##   • TestFactionPalette         — ZONE_COLORS/BADGE_COLORS/DISPLAY_NAMES, accessor methods,
+##                                  fallback behavior, all_ids (SPA-1065)
+##   • TestGameInputHandler       — initial state, setup wiring, signal declaration (SPA-1065)
+##   • TestNpc                    — grid/defender/credulity constants, initial state, subsystem refs null,
+##                                  signal declarations (SPA-1065)
+##   • TestNpcConversationOverlay — range/duration constants, color constants, initial state (SPA-1065)
+##   • TestPlayerStats            — constants, initial state, start_session, flush guard, get_totals (SPA-1065)
+##   • TestProgressData           — SAVE_PATH, is_completed guard, mark/get round-trip (SPA-1065)
+##   • TestRumorEventWiring       — initial state, reward guards, planning handler null guards (SPA-1065)
+##   • TestRumorRippleVfx         — constants, initial _elapsed, accent_color default and writability (SPA-1065)
+##   • TestScenarioEnvironmentPalette — SCENARIO_MOODS/DISTRICT_PALETTES, accessor methods,
+##                                  fallback behavior, all_ids (SPA-1065)
+##   • TestSettingsManager        — DEFAULT_* constants, scale presets, _to_db(), label helpers,
+##                                  set_text_size_index (SPA-1065)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
 
 const TestAchievementHooks = preload("res://tests/test_achievement_hooks.gd")
 const TestAchievementManager = preload("res://tests/test_achievement_manager.gd")
+const TestAmbientParticles = preload("res://tests/test_ambient_particles.gd")
+const TestAnalyticsLogger = preload("res://tests/test_analytics_logger.gd")
 const TestAnalyticsManager = preload("res://tests/test_analytics_manager.gd")
 const TestAstarPathfinder = preload("res://tests/test_astar_pathfinder.gd")
 const TestAudioManager = preload("res://tests/test_audio_manager.gd")
@@ -157,6 +177,7 @@ const TestControlsReference = preload("res://tests/test_controls_reference.gd")
 const TestDailyPlanningOverlay = preload("res://tests/test_daily_planning_overlay.gd")
 const TestDayNightCycle = preload("res://tests/test_day_night_cycle.gd")
 const TestDistrictOverlay = preload("res://tests/test_district_overlay.gd")
+const TestDistrictPropsRegistry = preload("res://tests/test_district_props_registry.gd")
 const TestEndScreen = preload("res://tests/test_end_screen.gd")
 const TestEndScreenAnimations = preload("res://tests/test_end_screen_animations.gd")
 const TestEndScreenFeedback = preload("res://tests/test_end_screen_feedback.gd")
@@ -168,7 +189,9 @@ const TestEndScreenSummary = preload("res://tests/test_end_screen_summary.gd")
 const TestEventCard = preload("res://tests/test_event_card.gd")
 const TestEventChoiceModal = preload("res://tests/test_event_choice_modal.gd")
 const TestFactionEventSystem = preload("res://tests/test_faction_event_system.gd")
+const TestFactionPalette = preload("res://tests/test_faction_palette.gd")
 const TestFeedbackSequence = preload("res://tests/test_feedback_sequence.gd")
+const TestGameInputHandler = preload("res://tests/test_game_input_handler.gd")
 const TestGameState = preload("res://tests/test_game_state.gd")
 const TestGuildDefenseAgent = preload("res://tests/test_guild_defense_agent.gd")
 const TestHelpReminderUI = preload("res://tests/test_help_reminder_ui.gd")
@@ -195,6 +218,8 @@ const TestMilestoneNotifier = preload("res://tests/test_milestone_notifier.gd")
 const TestMilestoneTracker = preload("res://tests/test_milestone_tracker.gd")
 const TestMissionBriefing = preload("res://tests/test_mission_briefing.gd")
 const TestMissionCard = preload("res://tests/test_mission_card.gd")
+const TestNpc = preload("res://tests/test_npc.gd")
+const TestNpcConversationOverlay = preload("res://tests/test_npc_conversation_overlay.gd")
 const TestNpcCore = preload("res://tests/test_npc_core.gd")
 const TestNpcDialogue = preload("res://tests/test_npc_dialogue.gd")
 const TestNpcDialoguePanel = preload("res://tests/test_npc_dialogue_panel.gd")
@@ -211,6 +236,8 @@ const TestObjectiveHudMetrics = preload("res://tests/test_objective_hud_metrics.
 const TestObjectiveHudNudgeManager = preload("res://tests/test_objective_hud_nudge_manager.gd")
 const TestObjectiveHudWinTracker = preload("res://tests/test_objective_hud_win_tracker.gd")
 const TestPauseMenu = preload("res://tests/test_pause_menu.gd")
+const TestPlayerStats = preload("res://tests/test_player_stats.gd")
+const TestProgressData = preload("res://tests/test_progress_data.gd")
 const TestPropagationEngine = preload("res://tests/test_propagation_engine.gd")
 const TestQuarantineSystem = preload("res://tests/test_quarantine_system.gd")
 const TestReadyOverlay = preload("res://tests/test_ready_overlay.gd")
@@ -220,12 +247,14 @@ const TestReconTooltipManager = preload("res://tests/test_recon_tooltip_manager.
 const TestReputationSystem = preload("res://tests/test_reputation_system.gd")
 const TestRivalAgent = preload("res://tests/test_rival_agent.gd")
 const TestRumor = preload("res://tests/test_rumor.gd")
+const TestRumorEventWiring = preload("res://tests/test_rumor_event_wiring.gd")
 const TestRumorPanel = preload("res://tests/test_rumor_panel.gd")
 const TestRumorPanelClaimList = preload("res://tests/test_rumor_panel_claim_list.gd")
 const TestRumorPanelEstimates = preload("res://tests/test_rumor_panel_estimates.gd")
 const TestRumorPanelSeedList = preload("res://tests/test_rumor_panel_seed_list.gd")
 const TestRumorPanelSubjectList = preload("res://tests/test_rumor_panel_subject_list.gd")
 const TestRumorPanelTooltip = preload("res://tests/test_rumor_panel_tooltip.gd")
+const TestRumorRippleVfx = preload("res://tests/test_rumor_ripple_vfx.gd")
 const TestRumorTrackerHud = preload("res://tests/test_rumor_tracker_hud.gd")
 const TestS4FactionShiftAgent = preload("res://tests/test_s4_faction_shift_agent.gd")
 const TestSaveCorruption = preload("res://scripts/test_save_corruption.gd")
@@ -239,7 +268,9 @@ const TestScenario6Hud = preload("res://tests/test_scenario6_hud.gd")
 const TestScenarioAnalytics = preload("res://tests/test_scenario_analytics.gd")
 const TestScenarioConditions = preload("res://tests/test_scenario_conditions.gd")
 const TestScenarioConfig = preload("res://tests/test_scenario_config.gd")
+const TestScenarioEnvironmentPalette = preload("res://tests/test_scenario_environment_palette.gd")
 const TestScenarioManager = preload("res://tests/test_scenario_manager.gd")
+const TestSettingsManager = preload("res://tests/test_settings_manager.gd")
 const TestSettingsMenu = preload("res://tests/test_settings_menu.gd")
 const TestSocialGraph = preload("res://tests/test_social_graph.gd")
 const TestSocialGraphOverlay = preload("res://tests/test_social_graph_overlay.gd")
@@ -633,5 +664,44 @@ func _init() -> void:
 
 	print("\n── Camera ──")
 	TestCamera.new().run()
+
+	print("\n── AmbientParticles ──")
+	TestAmbientParticles.new().run()
+
+	print("\n── AnalyticsLogger ──")
+	TestAnalyticsLogger.new().run()
+
+	print("\n── DistrictPropsRegistry ──")
+	TestDistrictPropsRegistry.new().run()
+
+	print("\n── FactionPalette ──")
+	TestFactionPalette.new().run()
+
+	print("\n── GameInputHandler ──")
+	TestGameInputHandler.new().run()
+
+	print("\n── Npc ──")
+	TestNpc.new().run()
+
+	print("\n── NpcConversationOverlay ──")
+	TestNpcConversationOverlay.new().run()
+
+	print("\n── PlayerStats ──")
+	TestPlayerStats.new().run()
+
+	print("\n── ProgressData ──")
+	TestProgressData.new().run()
+
+	print("\n── RumorEventWiring ──")
+	TestRumorEventWiring.new().run()
+
+	print("\n── RumorRippleVfx ──")
+	TestRumorRippleVfx.new().run()
+
+	print("\n── ScenarioEnvironmentPalette ──")
+	TestScenarioEnvironmentPalette.new().run()
+
+	print("\n── SettingsManager ──")
+	TestSettingsManager.new().run()
 
 	print("\n=== All suites complete ===")
