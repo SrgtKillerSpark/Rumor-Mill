@@ -204,13 +204,13 @@ func get_win_progress(rep: ReputationSystem, current_tick: int) -> float:
 			var tomas: ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
 			if edric == null or tomas == null:
 				return 0.0
-			# Aldric starts ~45, must reach 65.  Rivals start ~58/45, must drop below 45.
+			# Aldric starts ~45, must reach 65.  Rivals start ~58/55, must drop below 45.
 			var prog_aldric: float = clampf(
 				(aldric.score - 45.0) / (S5_WIN_ALDRIC_MIN - 45.0), 0.0, 1.0)
 			var prog_edric: float = clampf(
 				(58.0 - edric.score) / (58.0 - S5_WIN_RIVALS_MAX), 0.0, 1.0)
 			var prog_tomas: float = clampf(
-				(45.0 - tomas.score) / maxf(45.0 - S5_WIN_RIVALS_MAX, 1.0), 0.0, 1.0)
+				(55.0 - tomas.score) / (55.0 - S5_WIN_RIVALS_MAX), 0.0, 1.0)
 			return minf(prog_aldric, minf(prog_edric, prog_tomas))
 		6:
 			# Stealth exposure: Aldric must drop to 30, Marta must stay at 60+.
