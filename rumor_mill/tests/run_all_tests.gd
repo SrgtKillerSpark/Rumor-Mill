@@ -24,6 +24,10 @@
 ##   • TestAchievementHooks       — per-session state tracking: exposure, action flags, bribe (SPA-988)
 ##   • TestScenarioManager        — narrative getters, heat ceiling, time helpers, signals, progress dicts (SPA-997)
 ##   • TestNpcCore                — state queries, force_believe, credulity modifier, defense penalty, schedule avoidance, dialogue category, time phase (SPA-998)
+##   • TestSocialGraphOverlay     — constants, initial state, pure-logic helpers, rumor event parsing (SPA-1000)
+##   • TestReconController        — constants, coordinate conversion, belief_trend, initial state (SPA-1012)
+##   • TestReconHud               — constants, pip/heat colours, initial state, contextual hint logic (SPA-1012)
+##   • TestRumorPanel             — constants, colour helpers, initial state, believability/spread estimates (SPA-1012)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -95,5 +99,17 @@ func _init() -> void:
 
 	print("\n── NpcCore ──")
 	TestNpcCore.run()
+
+	print("\n── SocialGraphOverlay ──")
+	TestSocialGraphOverlay.run()
+
+	print("\n── ReconController ──")
+	TestReconController.run()
+
+	print("\n── ReconHud ──")
+	TestReconHud.run()
+
+	print("\n── RumorPanel ──")
+	TestRumorPanel.run()
 
 	print("\n=== All suites complete ===")
