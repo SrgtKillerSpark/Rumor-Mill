@@ -398,6 +398,10 @@ func _on_s1_valid_eavesdrop_hovered() -> void:
 
 
 func _on_s1_game_tick(tick: int) -> void:
+	# HINT-06 gate verified (SPA-1077): only fires after player has eavesdropped
+	# (_banner_eavesdrop_gate) AND has intel tokens, so the hint never appears
+	# before the player gathers intel.  The eager 4 s path in _on_s1_action_log
+	# is likewise inside the eavesdrop-gate block.
 	if tick >= 24 and _banner_eavesdrop_gate and not _banner_hint06_fired and tutorial_banner != null and not _banner_seed_fired:
 		var intel: PlayerIntelStore = _world.intel_store
 		if intel != null and intel.whisper_tokens_remaining >= 1:
