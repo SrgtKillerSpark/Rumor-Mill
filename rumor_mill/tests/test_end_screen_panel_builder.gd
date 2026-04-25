@@ -58,6 +58,7 @@ func run() -> void:
 		"test_initial_tab_replay_null",
 		"test_initial_results_container_null",
 		"test_initial_replay_container_null",
+		"test_initial_strategic_hint_lbl_null",
 		# Private state
 		"test_initial_what_went_wrong_lbl_null",
 	]
@@ -180,6 +181,10 @@ static func test_initial_results_container_null() -> bool:
 
 static func test_initial_replay_container_null() -> bool:
 	return _make_espb().replay_container == null
+
+
+static func test_initial_strategic_hint_lbl_null() -> bool:
+	return _make_espb().strategic_hint_lbl == null
 
 
 # ── Private state ─────────────────────────────────────────────────────────────

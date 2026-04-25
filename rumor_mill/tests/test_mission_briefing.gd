@@ -1,4 +1,4 @@
-## test_mission_briefing.gd — Unit tests for mission_briefing.gd (SPA-1042).
+## test_mission_briefing.gd — Unit tests for mission_briefing.gd (SPA-1042, SPA-1086).
 ##
 ## Covers:
 ##   • Palette constants
@@ -6,6 +6,7 @@
 ##   • _FACTION_ROW entries, _BODY_TYPE_ROW_OFFSET, _CLOTHING_VAR_BASE
 ##   • Initial node refs null (no scene tree, _ready() not called)
 ##   • Initial data fields empty/false
+##   • setup() / setup_recall() — objectiveCard data binding (SPA-1086)
 ##
 ## Run from the Godot editor: Scene → Run Script.
 
@@ -55,6 +56,16 @@ func run() -> void:
 		"test_initial_win_condition_line_empty",
 		"test_initial_recall_mode_false",
 		"test_initial_brief_empty",
+		# setup() objectiveCard binding (SPA-1086)
+		"test_setup_mission_from_objective_card",
+		"test_setup_mission_fallback_when_card_absent",
+		"test_setup_win_condition_from_card",
+		"test_setup_strategy_hint_from_card",
+		"test_setup_danger_from_card",
+		"test_setup_first_action_from_card",
+		"test_setup_recall_mode_is_false",
+		"test_setup_stores_brief",
+		"test_setup_stores_npc_data",
 	]
 
 	for method_name in tests:
@@ -234,5 +245,91 @@ static func test_initial_recall_mode_false() -> bool:
 static func test_initial_brief_empty() -> bool:
 	var mb := _make_mb()
 	var ok := mb._brief.is_empty()
+	mb.free()
+	return ok
+
+
+# ── setup() objectiveCard binding (SPA-1086) ─────────────────────────────────
+## setup() must read _objective_one_liner from objectiveCard.mission.
+## Pass npc_data={} to avoid the portrait branch which calls load("res://...").
+
+static func test_setup_mission_from_objective_card() -> bool:
+	var mb := _make_mb()
+	mb.setup("fallback", "win", {"mission": "Spread the rumor"}, {}, {})
+	var ok := mb._objective_one_liner == "Spread the rumor"
+	mb.free()
+	return ok
+
+
+## When objectiveCard lacks "mission", setup() falls back to the passed one-liner.
+static func test_setup_mission_fallback_when_card_absent() -> bool:
+	var mb := _make_mb()
+	mb.setup("Fallback text", "win", {}, {}, {})
+	var ok := mb._objective_one_liner == "Fallback text"
+	mb.free()
+	return ok
+
+
+## setup() must read _win_condition_line from objectiveCard.winCondition.
+static func test_setup_win_condition_from_card() -> bool:
+	var mb := _make_mb()
+	mb.setup("obj", "fallback_win", {"winCondition": "7 believers needed"}, {}, {})
+	var ok := mb._win_condition_line == "7 believers needed"
+	mb.free()
+	return ok
+
+
+## setup() must read _strategy_hint from objectiveCard.strategyHint.
+static func test_setup_strategy_hint_from_card() -> bool:
+	var mb := _make_mb()
+	mb.setup("obj", "win", {"strategyHint": "Seed through merchants"}, {}, {})
+	var ok := mb._strategy_hint == "Seed through merchants"
+	mb.free()
+	return ok
+
+
+## setup() must read _danger from objectiveCard.danger.
+static func test_setup_danger_from_card() -> bool:
+	var mb := _make_mb()
+	mb.setup("obj", "win", {"danger": "Avoid Sister Maren"}, {}, {})
+	var ok := mb._danger == "Avoid Sister Maren"
+	mb.free()
+	return ok
+
+
+## setup() must read _first_action from objectiveCard.firstAction.
+static func test_setup_first_action_from_card() -> bool:
+	var mb := _make_mb()
+	mb.setup("obj", "win", {"firstAction": "Observe the Market"}, {}, {})
+	var ok := mb._first_action == "Observe the Market"
+	mb.free()
+	return ok
+
+
+## setup() must set _recall_mode to false.
+static func test_setup_recall_mode_is_false() -> bool:
+	var mb := _make_mb()
+	mb.setup("obj", "win", {}, {}, {})
+	var ok := mb._recall_mode == false
+	mb.free()
+	return ok
+
+
+## setup() must store the brief dictionary in _brief.
+static func test_setup_stores_brief() -> bool:
+	var mb := _make_mb()
+	var brief := {"targetNpcId": "edric_fenn", "repStart": 70}
+	mb.setup("obj", "win", {}, brief, {})
+	var ok := mb._brief == brief
+	mb.free()
+	return ok
+
+
+## setup() must store the npc_data dictionary in _npc_data.
+## Pass npc_data={} so _build_portrait (which calls load("res://...")) is skipped.
+static func test_setup_stores_npc_data() -> bool:
+	var mb := _make_mb()
+	mb.setup("obj", "win", {}, {}, {})
+	var ok := mb._npc_data.is_empty()   # {} round-trips; portrait branch skipped
 	mb.free()
 	return ok
