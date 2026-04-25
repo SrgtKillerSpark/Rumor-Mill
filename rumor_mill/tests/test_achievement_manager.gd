@@ -5,7 +5,7 @@
 ##   • unlock()         — idempotent: calling twice does not error
 ##   • unlock()         — unknown id is ignored (no crash; is_unlocked() stays false)
 ##   • is_unlocked()    — returns false for a never-unlocked id
-##   • get_all()        — returns exactly 12 achievements; each has id/name/description/unlocked
+##   • get_all()        — returns exactly 14 achievements; each has id/name/description/unlocked
 ##   • get_all()        — unlocked status reflects unlock() calls
 ##   • ACHIEVEMENTS     — every key has required fields: name, description, steam_api_name
 ##
@@ -84,12 +84,12 @@ static func test_is_unlocked_false_for_never_unlocked() -> bool:
 	return not mgr.is_unlocked("mastermind")
 
 
-## get_all() returns exactly 12 entries (one per entry in ACHIEVEMENTS).
+## get_all() returns exactly 14 entries (one per entry in ACHIEVEMENTS).
 static func test_get_all_count() -> bool:
 	var mgr := _make_mgr()
 	var all := mgr.get_all()
-	if all.size() != 12:
-		push_error("test_get_all_count: expected 12, got %d" % all.size())
+	if all.size() != 14:
+		push_error("test_get_all_count: expected 14, got %d" % all.size())
 		return false
 	return true
 

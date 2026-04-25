@@ -42,6 +42,16 @@ const ACHIEVEMENTS: Dictionary = {
 		"description":    "Complete Scenario 4: The Holy Inquisition.",
 		"steam_api_name": "ACH_SCENARIO_4_COMPLETE",
 	},
+	"scenario_5_complete": {
+		"name":           "The People's Choice",
+		"description":    "Complete Scenario 5: The Election.",
+		"steam_api_name": "ACH_SCENARIO_5_COMPLETE",
+	},
+	"scenario_6_complete": {
+		"name":           "Debts Collected",
+		"description":    "Complete Scenario 6: The Merchant's Debt.",
+		"steam_api_name": "ACH_SCENARIO_6_COMPLETE",
+	},
 	"master_victory": {
 		"name":           "Seasoned Schemer",
 		"description":    "Win any scenario on Master difficulty.",
@@ -74,7 +84,7 @@ const ACHIEVEMENTS: Dictionary = {
 	},
 	"mastermind": {
 		"name":           "Grand Manipulator",
-		"description":    "Complete all four scenarios.",
+		"description":    "Complete all six scenarios.",
 		"steam_api_name": "ACH_MASTERMIND",
 	},
 	"a_rumor_begins": {
