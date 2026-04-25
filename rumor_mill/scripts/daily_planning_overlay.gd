@@ -167,16 +167,20 @@ func _show_overlay(day: int) -> void:
 	_hide_nudge()
 
 	# Fade in backdrop + slide up panel.
+	# NOTE: CanvasLayer has no modulate property — fade direct children instead.
 	visible = true
-	modulate.a = 0.0
+	_set_children_alpha(0.0)
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
 	if _slide_tween != null and _slide_tween.is_valid():
 		_slide_tween.kill()
 
-	# Dim backdrop fades in.
+	# Dim backdrop fades in via child modulate.
 	_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_fade_tween.tween_property(self, "modulate:a", 1.0, 0.3)
+	if _dim_bg != null:
+		_fade_tween.tween_property(_dim_bg, "modulate:a", 1.0, 0.3)
+	if _planning_panel != null:
+		_fade_tween.parallel().tween_property(_planning_panel, "modulate:a", 1.0, 0.3)
 
 	# Planning panel slides up from below.
 	if _planning_panel != null:
@@ -198,7 +202,10 @@ func _hide_overlay() -> void:
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
 	_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	_fade_tween.tween_property(self, "modulate:a", 0.0, 0.2)
+	if _dim_bg != null:
+		_fade_tween.tween_property(_dim_bg, "modulate:a", 0.0, 0.2)
+	if _planning_panel != null:
+		_fade_tween.parallel().tween_property(_planning_panel, "modulate:a", 0.0, 0.2)
 	_fade_tween.tween_callback(func() -> void: visible = false)
 
 	# Resume game.
@@ -568,6 +575,14 @@ func _apply_bonus(pdef: Dictionary) -> void:
 		"journal_opened":
 			# +1 evidence insight — award a random evidence item if possible.
 			pass  # Evidence system integration TBD based on evidence inventory API.
+
+
+## Set modulate.a on all direct CanvasItem children (CanvasLayer itself has no modulate).
+func _set_children_alpha(a: float) -> void:
+	if _dim_bg != null:
+		_dim_bg.modulate.a = a
+	if _planning_panel != null:
+		_planning_panel.modulate.a = a
 
 
 # ── UX helpers (SPA-713) ─────────────────────────────────────────────────────
