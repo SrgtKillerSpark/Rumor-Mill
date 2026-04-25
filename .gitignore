@@ -1,6 +1,9 @@
 # Godot editor cache (auto-generated, do not commit)
 .godot/
 
+# Godot auto-generated UID sidecar files
+*.gd.uid
+
 # OS-generated files
 .DS_Store
 Thumbs.db
