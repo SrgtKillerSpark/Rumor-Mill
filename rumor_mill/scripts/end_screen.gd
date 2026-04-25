@@ -15,250 +15,39 @@ extends CanvasLayer
 ##
 ## Procedurally built CanvasLayer (layer 30 — above all other HUDs).
 ## Wire via setup(world, day_night) from main.gd.
+##
+## Subsystem modules (SPA-1010):
+##   EndScreenScoring    — stat data, fail inference, summary text, NPC outcomes
+##   EndScreenAnimations — count-up tween, arrow bounce, button pulse
+##   EndScreenReplayTab  — analytics replay tab content
+##   EndScreenFeedback   — post-game feedback prompt modal
 
 # ── Palette ───────────────────────────────────────────────────────────────────
 const C_BACKDROP     := Color(0.04, 0.02, 0.02, 0.90)
 const C_PANEL_BG     := Color(0.13, 0.09, 0.07, 1.0)
 const C_CARD_BG      := Color(0.10, 0.07, 0.05, 1.0)
 const C_PANEL_BORDER := Color(0.55, 0.38, 0.18, 1.0)
-const C_WIN          := Color(0.92, 0.78, 0.12, 1.0)   # gold
-const C_FAIL         := Color(0.85, 0.18, 0.12, 1.0)   # crimson
-const C_HEADING      := Color(0.91, 0.85, 0.70, 1.0)   # parchment
+const C_WIN          := Color(0.92, 0.78, 0.12, 1.0)
+const C_FAIL         := Color(0.85, 0.18, 0.12, 1.0)
+const C_HEADING      := Color(0.91, 0.85, 0.70, 1.0)
 const C_SUBHEADING   := Color(0.75, 0.65, 0.50, 1.0)
 const C_BODY         := Color(0.70, 0.65, 0.55, 1.0)
-const C_MUTED        := Color(0.60, 0.53, 0.42, 1.0)
 const C_BTN_NORMAL   := Color(0.40, 0.22, 0.08, 1.0)
 const C_BTN_HOVER    := Color(0.60, 0.34, 0.12, 1.0)
 const C_BTN_TEXT     := Color(0.95, 0.91, 0.80, 1.0)
-const C_STAT_LABEL   := Color(0.75, 0.65, 0.50, 1.0)
-const C_STAT_VALUE   := Color(0.91, 0.85, 0.70, 1.0)
-const C_SCORE_WIN    := Color(0.92, 0.78, 0.12, 1.0)   # gold  — score > 60
-const C_SCORE_FAIL   := Color(0.85, 0.18, 0.12, 1.0)   # crimson — score < 40
-const C_SCORE_NEU    := Color(0.85, 0.65, 0.15, 1.0)   # amber — neutral
 
 const PANEL_W := 760
 const PANEL_H := 640
 
-# ── Key NPC outcomes per scenario ─────────────────────────────────────────────
-# id must match the NPC id string used in reputation_system.
-
-# The primary target NPC whose belief score is shown in the "Peak Belief" stat.
-# Keyed by integer scenario_id (matches _populate_stats / _build_bonus_stat).
-const PEAK_BELIEF_TARGET: Dictionary = {
-	1: { "id": "edric_fenn",    "name": "Edric Fenn" },
-	2: { "id": "alys_herbwife", "name": "Alys Herbwife" },
-	3: { "id": "calder_fenn",   "name": "Calder Fenn" },
-	4: { "id": "aldous_prior",  "name": "Aldous Prior" },
-	5: { "id": "aldric_vane",   "name": "Aldric Vane" },
-	6: { "id": "marta_coin",    "name": "Marta Coin" },
-}
-
-const NPC_OUTCOMES: Dictionary = {
-	"scenario_1": [
-		{ "id": "edric_fenn",   "name": "Edric Fenn" },
-		{ "id": "bram_guard",   "name": "Bram (Guard)" },
-		{ "id": "aldous_prior", "name": "Prior Aldous" },
-	],
-	"scenario_2": [
-		{ "id": "alys_herbwife", "name": "Alys Herbwife" },
-		{ "id": "maren_nun",     "name": "Sister Maren" },
-		{ "id": "vera_midwife",  "name": "Vera Midwife" },
-	],
-	"scenario_3": [
-		{ "id": "calder_fenn", "name": "Calder Fenn" },
-		{ "id": "tomas_reeve", "name": "Tomas Reeve" },
-		{ "id": "isolde_fenn", "name": "Lady Isolde" },
-	],
-	"scenario_4": [
-		{ "id": "aldous_prior", "name": "Prior Aldous" },
-		{ "id": "vera_midwife", "name": "Vera Midwife" },
-		{ "id": "finn_monk",    "name": "Brother Finn" },
-	],
-	"scenario_5": [
-		{ "id": "aldric_vane",  "name": "Aldric Vane" },
-		{ "id": "edric_fenn",   "name": "Edric Fenn" },
-		{ "id": "tomas_reeve",  "name": "Tomas Reeve" },
-	],
-	"scenario_6": [
-		{ "id": "aldric_vane",  "name": "Guild Master Aldric" },
-		{ "id": "marta_coin",   "name": "Marta Coin" },
-		{ "id": "annit_scribe", "name": "Annit Scribe" },
-	],
-}
-
-# ── Summary text (SPA-128 design doc) ────────────────────────────────────────
-# keyed as { scenario_int: { "win": String, fail_reason: String, ... } }
-const SUMMARY_TEXT := {
-	1: {
-		"win": (
-			"Edric Fenn resigned the aldermanship within a fortnight, citing ill health that no physician"
-			+ " could confirm. Your patron's candidate was endorsed by Prior Aldous before the tax rolls"
-			+ " were ever signed, and the autumn assessment passed quietly under new hands."
-			+ " The story you planted has already grown three different endings — none of them yours."
-		),
-		"exposed": (
-			"Bram the Guard Captain never moved against you openly — he didn't have to. Once your movements"
-			+ " were common knowledge, every rumor you had planted lost its anonymous source and gained"
-			+ " a suspect instead. The town closed around Edric Fenn like a fist,"
-			+ " and your patron stopped sending letters."
-		),
-		"timeout": (
-			"The tax rolls were sealed before your work could ripen. Fenn's position hardened rather than"
-			+ " cracked — a man under rumored attack earns sympathy in a town that fears disruption more"
-			+ " than corruption. Your patron made other arrangements. You were not part of them."
-		),
-	},
-	2: {
-		"win": (
-			"Alys the Herb-Wife left quietly before anyone thought to ask why the illness talk had started."
-			+ " Sister Maren's public correction came too late to help her — the customers had already"
-			+ " returned to Vera the Midwife, and the market season closed without incident."
-			+ " The rumor itself died the way it began: with no one admitting they had started it."
-		),
-		"contradicted": (
-			"Sister Maren's public rebuttal did not name you, but it didn't need to. The town's sympathy"
-			+ " shifted to Alys overnight, and the Midwife's customers began to wonder whether the illness"
-			+ " talk had been honest concern or deliberate cruelty."
-			+ " Alys is still here. You are somewhat less welcome than you were."
-		),
-		"timeout": (
-			"The autumn market ran its full course, and Alys ran hers alongside it. By the last week,"
-			+ " several of the Midwife's regular customers had begun buying from both stalls. The window"
-			+ " to shape opinion had closed; the market had simply decided. Your wages were not forthcoming."
-		),
-	},
-	3: {
-		"win": (
-			"Calder Fenn's name was read at the winter festival to a cheer that surprised even Lady Isolde."
-			+ " Tomas Reeve accepted a minor administrative posting with the quiet dignity of a man who"
-			+ " knows he has already lost. The nomination process moved forward without anyone examining"
-			+ " too closely how the ground had shifted beneath it."
-		),
-		"calder_implicated": (
-			"The story mutated somewhere between the Tavern and the Chapel steps — praise curdling into"
-			+ " suspicion faster than anyone had expected. Calder Fenn became the subject rather than the"
-			+ " beneficiary, and Lady Isolde recognised your fingerprints long before she said so."
-			+ " Tomas Reeve, watching from the sidelines, appeared to find the situation quietly satisfying."
-		),
-		"timeout": (
-			"The winter festival came and the nominations were read to a crowd that had settled on no opinion."
-			+ " Calder Fenn's name earned the same polite acknowledgement as Tomas Reeve's — neither elevated,"
-			+ " neither ruined, neither story quite landing. Lady Isolde paid what was agreed and said nothing"
-			+ " beyond that. The ledger, at least, was square."
-		),
-	},
-	4: {
-		"win": (
-			"Brother Cornelius departed with an unsigned writ and the Bishop's clerk recorded the outcome as"
-			+ " 'insufficient evidence.' The three accused returned to their posts — Aldous to his sermons,"
-			+ " Vera to her patients, Finn to his prayers — as though the inquisitor had been a passing storm."
-			+ " The town chose its own, and the Church accepted the choice. This time."
-		),
-		"reputation_collapsed": (
-			"The stories took root faster than you could uproot them. By the time you understood the shape"
-			+ " of the inquisitor's campaign, the town had already chosen its side — and it was not yours."
-			+ " The writ was signed before the twentieth day. The accused were led away quietly,"
-			+ " and the town returned to its business with the relief of people who had found someone to blame."
-		),
-		"timeout": (
-			"Twenty days passed and the inquisitor's patience outlasted yours. The stories you countered"
-			+ " had not been silenced — only muffled. Brother Cornelius presented his findings with the quiet"
-			+ " confidence of a man whose work was already done. The formal verdict was a formality."
-		),
-	},
-	5: {
-		"win": (
-			"The votes were counted in the Town Hall with the doors open and the crowd pressing in."
-			+ " Aldric Vane's name was called three times for every one of Edric's. Tomas Reeve's supporters"
-			+ " had already left. The new alderman accepted the chain of office with a speech about honest"
-			+ " trade and fair governance. Your patron watched from the second row, expressionless."
-			+ " But when Vane finished, the old merchant raised his cup — just once, just slightly."
-			+ " You were already packed."
-		),
-		"aldric_destroyed": (
-			"The story had started as praise. Somewhere between the Tavern and the Market it curdled — too"
-			+ " much too fast, the name repeated until the repetition itself became suspicious."
-			+ " Aldric Vane withdrew his candidacy at noon without explanation. His supporters scattered"
-			+ " like starlings from a broken eave. Your patron's investment, and whatever goodwill"
-			+ " you had built in this town, went with them."
-		),
-		"timeout": (
-			"The votes were counted. Edric Fenn's name was called first, as it had been called for nine years."
-			+ " Aldric Vane came second — close enough to taste, far enough to know it was finished."
-			+ " Tomas Reeve's handful of supporters consoled themselves with ale and reform pamphlets"
-			+ " that no one would read. Your patron did not send for you again."
-		),
-	},
-	6: {
-		"win": (
-			"The guild audit was called on a Tuesday — at Marta Coin's request, seconded by the Prior."
-			+ " Aldric Vane did not attend. His seat in the Guild Hall was empty when the real ledger"
-			+ " was read aloud, and the silence that followed it was louder than any accusation"
-			+ " you had ever whispered. Marta Coin was elected interim Guild Master before the week was out."
-			+ " She did not mention your name. She didn't need to."
-		),
-		"marta_silenced": (
-			"The story changed overnight. Suddenly it was Marta who was the thief — Marta who had falsified"
-			+ " records, Marta whose name could not be trusted in any ledger or marketplace."
-			+ " Aldric's allies moved with the speed of people who had been waiting for exactly this opening."
-			+ " By the time you understood what had happened, Marta's stall was shuttered and her name"
-			+ " was poison in the market quarter. You had underestimated how quickly a guild can close ranks."
-		),
-		"exposed": (
-			"The Guard Captain found you at the well, just after dawn."
-			+ " 'Aldric Vane sends his regards,' he said — not a threat, a statement of fact."
-			+ " By noon, every merchant in the quarter knew your face and your purpose."
-			+ " Marta Coin denied ever meeting you. She had no choice, and you could not blame her for it."
-		),
-		"timeout": (
-			"Twenty days passed. The ledger sat in Marta's locked chest, still waiting for the right moment."
-			+ " The right moment never came. Aldric Vane's reputation was bruised but intact, and the guild"
-			+ " closed its books for the season with the quiet efficiency of an institution that had survived"
-			+ " worse than whispers. Marta Coin paid you the second half of your fee without a word."
-			+ " You both knew it had been wasted."
-		),
-	},
-}
-
-# ── SPA-899: Next-scenario tease — data-driven from scenarios.json ───────────
-# Loaded at run-time by _load_next_scenario_tease() below.
-# The scenarios.json "teaseHook" field provides the one-liner; "title" the name.
-# Format displayed: "Next: [title] — [teaseHook]"
-
-# Universal fallback summaries for conditions not defined per-scenario.
-const SUMMARY_FALLBACK := {
-	"timeout": (
-		"The days ran out before the story ran deep enough. Rumors without roots fade with the season,"
-		+ " and a town that almost changed simply doesn't."
-		+ " Whatever you were paid to accomplish remains undone — the ledger stays open."
-	),
-	"exposed": (
-		"Someone noticed the pattern before the pattern was finished. A foreign face asking the wrong"
-		+ " questions in too many places invites scrutiny, and scrutiny is the one thing a rumor campaign"
-		+ " cannot survive. You left the town largely intact, with only your reputation as a casualty."
-	),
-	"contradicted": (
-		"A credible voice stepped forward and named the story for what it was: invention. The correction"
-		+ " spread faster than the original rumor — corrections usually do, in towns where people are"
-		+ " already suspicious. The target emerged with more goodwill than before you arrived."
-	),
-	"calder_implicated": (
-		"The narrative slipped control and landed on the wrong person. When the person you were protecting"
-		+ " becomes the subject of the story you were telling, the mission is over"
-		+ " — and the client is rarely forgiving about it."
-	),
-	"aldric_destroyed": (
-		"The person you were meant to elevate became the casualty of your own campaign."
-		+ " Praise turned to scrutiny, scrutiny to suspicion, and suspicion to collapse."
-		+ " The difference between making someone's name and ruining it is thinner than most people suppose,"
-		+ " and you found that line from the wrong side."
-	),
-	"marta_silenced": (
-		"The person you were meant to protect became the one they destroyed instead."
-		+ " When the opposition turns your patron into the villain of your own story,"
-		+ " the mission has already ended — you simply haven't admitted it yet."
-		+ " The client's name is now the story, and you are not in it."
-	),
+# ── SPA-784: "What went wrong" defeat one-liner ────────────────────────────
+const WHAT_WENT_WRONG := {
+	"exposed":              "You were identified — the rumor lost its anonymity.",
+	"timeout":              "You ran out of time before the story could take hold.",
+	"contradicted":         "A credible voice contradicted the rumor publicly.",
+	"calder_implicated":    "Calder became the target of your own narrative.",
+	"aldric_destroyed":     "Aldric's reputation collapsed under your campaign.",
+	"marta_silenced":       "Marta was turned into the villain of her own story.",
+	"reputation_collapsed": "A protected NPC's reputation fell below the threshold.",
 }
 
 # ── Node refs ─────────────────────────────────────────────────────────────────
@@ -267,69 +56,45 @@ var _panel:                 PanelContainer = null
 var _result_banner:         Label          = null
 var _scenario_title:        Label          = null
 var _narrative_lbl:         RichTextLabel  = null
-var _strategic_hint_lbl:    RichTextLabel  = null   # SPA-948: defeat-specific strategy tip
-var _stats_container:  VBoxContainer  = null
-var _npc_container:    VBoxContainer  = null
-var _bonus_lbl:        Control        = null   # bonus stat label or row to reveal
-var _btn_again:        Button         = null
-var _btn_next:         Button         = null
-var _btn_main_menu:    Button         = null
-
-# ── SPA-840: Next-scenario tease label ───────────────────────────────────────
-var _tease_lbl:        RichTextLabel  = null
-
-# ── SPA-212: Analytics tab ───────────────────────────────────────────────────
-var _tab_results:      Button         = null
-var _tab_replay:       Button         = null
-var _results_container: Control       = null   # holds cards_row (existing content)
-var _replay_container:  VBoxContainer = null   # analytics content
+var _strategic_hint_lbl:    RichTextLabel  = null
+var _stats_container:       VBoxContainer  = null
+var _npc_container:         VBoxContainer  = null
+var _btn_again:             Button         = null
+var _btn_next:              Button         = null
+var _btn_main_menu:         Button         = null
+var _tease_lbl:             RichTextLabel  = null
+var _tab_results:           Button         = null
+var _tab_replay:            Button         = null
+var _results_container:     Control        = null
+var _replay_container:      VBoxContainer  = null
+var _what_went_wrong_lbl:   Label          = null
 
 # ── Runtime refs ──────────────────────────────────────────────────────────────
 var _world_ref:     Node2D = null
 var _day_night_ref: Node   = null
 var _analytics_ref: ScenarioAnalytics = null
 
-# ── SPA-336: Feedback prompt ─────────────────────────────────────────────────
-const FEEDBACK_PRESETS := [
-	"Understanding the social graph",
-	"Managing whisper tokens",
-	"Avoiding detection",
-	"Knowing which NPCs to target",
-]
-const FEEDBACK_PANEL_W := 500
-const FEEDBACK_PANEL_H := 360
-const C_PRESET_NORMAL   := Color(0.22, 0.15, 0.10, 1.0)
-const C_PRESET_SELECTED := Color(0.55, 0.38, 0.18, 1.0)
-const FEEDBACK_CHAR_LIMIT := 200
-
-var _feedback_backdrop:       ColorRect      = null
-var _feedback_panel:          PanelContainer = null
-var _feedback_preset_btns:    Array          = []
-var _feedback_selected_preset: int           = -1
-var _feedback_text_edit:      TextEdit       = null
-var _feedback_char_lbl:       Label          = null
-
-# ── Active scenario id captured on resolve ────────────────────────────────────
+# ── State ─────────────────────────────────────────────────────────────────────
 var _current_scenario_id: String = ""
+var _resolving:           bool   = false
+var _last_outcome_won:    bool   = false
 
-# ── Tween targets for count-up animation ─────────────────────────────────────
-# Each entry: { "label": Label, "target": int, "suffix": String }
-var _tween_targets: Array = []
-
-# ── Re-entry guard — prevents duplicate UI from double signal emission ────────
-var _resolving: bool = false
-
-# ── SPA-784: Track outcome for arrow coloring ─────────────────────────────────
-var _last_outcome_won: bool = false
-var _arrow_labels: Array = []   # Label refs for animated pulse
-var _btn_pulse_tween: Tween = null
-var _what_went_wrong_lbl: Label = null
-var _rating_row: HBoxContainer = null   # SPA-907: performance rating row
+# ── Subsystem modules ─────────────────────────────────────────────────────────
+var _scoring:    EndScreenScoring    = null
+var _animations: EndScreenAnimations = null
+var _replay_tab: EndScreenReplayTab  = null
+var _feedback:   EndScreenFeedback   = null
 
 
 func _ready() -> void:
 	layer = 30
 	_build_ui()
+	_scoring    = EndScreenScoring.new()
+	_animations = EndScreenAnimations.new()
+	_animations.setup(self)
+	_replay_tab = EndScreenReplayTab.new()
+	_feedback   = EndScreenFeedback.new()
+	_feedback.setup(self, _btn_again)
 	visible = false
 
 
@@ -349,19 +114,19 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		return
 	_resolving = true
 
-	# Freeze the game world so NPCs stop moving behind the end-screen overlay.
 	if _day_night_ref != null and _day_night_ref.has_method("set_paused"):
 		_day_night_ref.set_paused(true)
 
-	# SPA-561: Brief fade-out before showing the end screen.
 	await TransitionManager.fade_out(0.4)
 
 	var won: bool = (state == ScenarioManager.ScenarioState.WON)
 	_last_outcome_won = won
-	_arrow_labels.clear()
 	var sm: ScenarioManager = _world_ref.scenario_manager
 
 	_current_scenario_id = _world_ref.active_scenario_id if "active_scenario_id" in _world_ref else ""
+
+	# Wire scoring module now that world/day_night refs are known.
+	_scoring.setup(_world_ref, _day_night_ref, _stats_container, _npc_container)
 
 	# ── Banner ────────────────────────────────────────────────────────────────
 	_result_banner.text = "VICTORY" if won else "DEFEAT"
@@ -371,16 +136,15 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	_scenario_title.text = sm.get_title() if sm != null else ""
 
 	# ── Summary narrative (SPA-128) ───────────────────────────────────────────
-	var fail_reason := "" if won else _infer_fail_reason(scenario_id)
-	var summary := _get_summary_text(scenario_id, won, fail_reason)
-	# SPA-592: append propagation chain attribution when Maren's contradiction caused the fail.
+	var fail_reason := "" if won else _scoring.infer_fail_reason(scenario_id)
+	var summary := _scoring.get_summary_text(scenario_id, won, fail_reason)
 	if scenario_id == 2 and fail_reason == "contradicted" and sm != null:
 		var carrier: String = sm.s2_maren_carrier_name
 		if not carrier.is_empty():
 			summary += ("\n\nThe rumor reached her through %s." % carrier)
 	_narrative_lbl.text = "[center][i]" + summary + "[/i][/center]"
 
-	# ── SPA-948: Strategic defeat hint below narrative ────────────────────────
+	# ── SPA-948: Strategic defeat hint ───────────────────────────────────────
 	if _strategic_hint_lbl != null:
 		if not won and sm != null:
 			var hint := sm.get_strategic_defeat_hint(fail_reason)
@@ -392,19 +156,16 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		else:
 			_strategic_hint_lbl.visible = false
 
-	# ── Stats panel ───────────────────────────────────────────────────────────
-	_populate_stats(scenario_id, won)
-
-	# ── Record lifetime stats (SPA-273) ───────────────────────────────────────
-	_record_player_stats(scenario_id, won)
-
-	# ── NPC outcomes ──────────────────────────────────────────────────────────
-	_populate_npc_outcomes()
+	# ── Stats + NPC outcomes ──────────────────────────────────────────────────
+	_scoring.populate_stats(scenario_id, won)
+	_scoring.record_player_stats(scenario_id, won, _current_scenario_id)
+	_scoring.populate_npc_outcomes(_current_scenario_id, won)
 
 	# ── Analytics (SPA-212) ───────────────────────────────────────────────────
 	if _analytics_ref != null:
 		_analytics_ref.finalize()
-		_populate_replay_tab()
+		_replay_tab.setup(_replay_container, _analytics_ref)
+		_replay_tab.populate()
 
 	# ── Next Scenario button ──────────────────────────────────────────────────
 	var next_id := _next_scenario_id(_current_scenario_id)
@@ -412,19 +173,18 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_next.modulate = Color.WHITE
 		_btn_next.disabled = false
 		_btn_next.focus_mode = Control.FOCUS_ALL
-		# SPA-784: Pulsing glow on Next Scenario button for victory.
-		_start_btn_pulse()
+		_animations.start_btn_pulse(_btn_next)
 	else:
 		_btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		_btn_next.disabled = true
 		_btn_next.focus_mode = Control.FOCUS_NONE
 
-	# ── SPA-899: Cross-scenario tease (data-driven) ───────────────────────────
+	# ── SPA-899: Cross-scenario tease ────────────────────────────────────────
 	if _tease_lbl != null:
 		if won and not next_id.is_empty():
 			var tease_text: String = _load_next_scenario_tease(next_id)
 			if not tease_text.is_empty():
-				_tease_lbl.text = "[center][color=#c8a84e]▸ " + tease_text + "[/color][/center]"
+				_tease_lbl.text = "[center][color=#c8a84e]\u25b8 " + tease_text + "[/color][/center]"
 				_tease_lbl.visible = true
 			else:
 				_tease_lbl.visible = false
@@ -433,15 +193,12 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 
 	# ── SPA-784: "What went wrong" one-liner for defeat ──────────────────────
 	if not won:
-		_show_what_went_wrong(scenario_id, _infer_fail_reason(scenario_id))
+		_show_what_went_wrong(scenario_id, _scoring.infer_fail_reason(scenario_id))
 
-	# Default to Results tab.
 	_show_tab_results()
 
-	# SPA-561: Fade the transition overlay back in so the end screen is revealed.
-	# The overlay was faded-out in the pre-show step above.
 	visible = true
-	# ── Entrance animation: fade in backdrop + scale panel ────────────────────
+	# ── Entrance animation ────────────────────────────────────────────────────
 	if _backdrop != null:
 		_backdrop.modulate.a = 0.0
 	if _panel != null:
@@ -457,10 +214,9 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_enter_tw.tween_property(_panel, "modulate:a", 1.0, 0.4)
 		_enter_tw.tween_property(_panel, "scale", Vector2.ONE, 0.4)
 
-	# SPA-784 / SPA-947: Defeat makes Try Again prominent; victory uses Play Again.
+	# SPA-784 / SPA-947: Defeat makes Try Again prominent.
 	if not won and _btn_again != null:
 		_btn_again.text = "Try Again"
-		# Enlarge for defeat to draw attention.
 		_btn_again.add_theme_font_size_override("font_size", 18)
 		_btn_again.custom_minimum_size = Vector2(180, 48)
 		_btn_again.call_deferred("grab_focus")
@@ -468,527 +224,29 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_again.text = "Play Again"
 		_btn_again.call_deferred("grab_focus")
 
-	# ── Count-up tween + journal SFX (start after entrance completes) ──────────
+	# ── Count-up tween + journal SFX ─────────────────────────────────────────
 	get_tree().create_timer(0.45).timeout.connect(func() -> void:
 		if is_inside_tree():
 			AudioManager.play_sfx("journal_open")
-			_start_count_up_tween()
+			_animations.start_count_up(
+				_scoring.get_tween_targets(),
+				_scoring.get_bonus_lbl(),
+				_scoring.get_rating_row(),
+				_scoring.get_arrow_labels(),
+			)
 	)
 
-	# ── SPA-336 / SPA-947: Feedback prompt — 5s on victory, 8s on defeat ───────
-	var _feedback_delay := 5.0 if won else 8.0
-	get_tree().create_timer(_feedback_delay).timeout.connect(func() -> void:
+	# ── SPA-336 / SPA-947: Feedback prompt ───────────────────────────────────
+	var feedback_delay := 5.0 if won else 8.0
+	var scenario_id_snap := _current_scenario_id
+	var won_snap := won
+	get_tree().create_timer(feedback_delay).timeout.connect(func() -> void:
 		if is_inside_tree():
-			_show_feedback_prompt()
+			_feedback.show_prompt(won_snap, scenario_id_snap)
 	)
 
 
-## Guess the fail reason for the fail-text lookup.
-func _infer_fail_reason(scenario_id: int) -> String:
-	if _world_ref == null or _world_ref.scenario_manager == null:
-		return "timeout"
-	var sm: ScenarioManager = _world_ref.scenario_manager
-	if scenario_id == 3:
-		var rep: ReputationSystem = _world_ref.reputation_system
-		if rep != null:
-			var calder := rep.get_snapshot(ScenarioManager.CALDER_FENN_ID)
-			if calder != null and calder.score < ScenarioManager.S3_FAIL_CALDER_BELOW:
-				return "calder_implicated"
-	if scenario_id == 2:
-		var rep: ReputationSystem = _world_ref.reputation_system
-		if rep != null and rep.has_illness_rejecter(ScenarioManager.ALYS_HERBWIFE_ID, ScenarioManager.MAREN_NUN_ID):
-			return "contradicted"
-	if scenario_id == 4:
-		var rep: ReputationSystem = _world_ref.reputation_system
-		if rep != null:
-			for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
-				var snap := rep.get_snapshot(npc_id)
-				if snap != null and snap.score < ScenarioManager.S4_FAIL_REP_BELOW:
-					return "reputation_collapsed"
-	if scenario_id == 5:
-		var rep: ReputationSystem = _world_ref.reputation_system
-		if rep != null:
-			var aldric := rep.get_snapshot(ScenarioManager.ALDRIC_VANE_ID)
-			if aldric != null and aldric.score < ScenarioManager.S5_FAIL_ALDRIC_BELOW:
-				return "aldric_destroyed"
-	if scenario_id == 6:
-		var rep: ReputationSystem = _world_ref.reputation_system
-		if rep != null:
-			var marta := rep.get_snapshot(ScenarioManager.MARTA_COIN_ID)
-			if marta != null and marta.score < ScenarioManager.S6_FAIL_MARTA_BELOW:
-				return "marta_silenced"
-		if _world_ref.intel_store != null:
-			for npc_id in _world_ref.intel_store.heat:
-				if _world_ref.intel_store.heat[npc_id] >= ScenarioManager.S6_EXPOSED_HEAT:
-					return "exposed"
-	# Check days elapsed vs allowed.
-	if _day_night_ref != null and sm.get_days_allowed() > 0:
-		var days_elapsed: int = _day_night_ref.current_day if "current_day" in _day_night_ref else 0
-		if days_elapsed >= sm.get_days_allowed():
-			return "timeout"
-	# Scenario-appropriate fallback (avoid S1-specific "exposed" text for S2/S3).
-	if scenario_id == 1:
-		return "exposed"
-	return "timeout"
-
-
-## Record end-of-game data into the PlayerStats autoload (SPA-273).
-func _record_player_stats(scenario_id: int, won: bool) -> void:
-	if _world_ref == null:
-		return
-	var sm: ScenarioManager = _world_ref.scenario_manager
-
-	var days_taken    := 0
-	if _day_night_ref != null and "current_day" in _day_night_ref:
-		days_taken = _day_night_ref.current_day
-
-	var rumors_spread := 0
-	if _world_ref.propagation_engine != null:
-		rumors_spread = _world_ref.propagation_engine.lineage.size()
-
-	var npcs_reached := 0
-	if not _world_ref.npcs.is_empty():
-		for npc in _world_ref.npcs:
-			if "rumor_slots" in npc and not npc.rumor_slots.is_empty():
-				npcs_reached += 1
-
-	var peak_belief := 0
-	if _world_ref.reputation_system != null:
-		var target: Dictionary = PEAK_BELIEF_TARGET.get(scenario_id, {})
-		if not target.is_empty():
-			var snap: Variant = _world_ref.reputation_system.get_snapshot(str(target["id"]))
-			if snap != null:
-				peak_belief = snap.score
-
-	# Bribe charges start at 2 for scenarios where bribery is allowed (SPA-406).
-	var bribes_paid := 0
-	var bribery_allowed := scenario_id > 1 and _current_scenario_id != "scenario_4"
-	if bribery_allowed and _world_ref.intel_store != null:
-		bribes_paid = max(0, 2 - _world_ref.intel_store.bribe_charges)
-
-	PlayerStats.record_game(
-		_current_scenario_id,
-		GameState.selected_difficulty,
-		won,
-		days_taken,
-		rumors_spread,
-		npcs_reached,
-		peak_belief,
-		bribes_paid,
-	)
-
-
-## Look up summary text from the SPA-128 table.
-func _get_summary_text(scenario_id: int, won: bool, fail_reason: String) -> String:
-	var key := "win" if won else fail_reason
-	var scenario_table: Dictionary = SUMMARY_TEXT.get(scenario_id, {})
-	if scenario_table.has(key):
-		return scenario_table[key]
-	# Fall back to ScenarioManager (scenarios.json) for any key not in the hard-coded table.
-	if _world_ref != null and _world_ref.scenario_manager != null:
-		var sm: ScenarioManager = _world_ref.scenario_manager
-		var json_text := sm.get_victory_text() if won else sm.get_fail_text(key)
-		if not json_text.is_empty():
-			return json_text
-	if SUMMARY_FALLBACK.has(key):
-		return SUMMARY_FALLBACK[key]
-	return "Your scheme ran its course." if won else "Your scheme unravelled."
-
-
-## Populate the stats grid (4 universal + 1 scenario bonus).
-func _populate_stats(scenario_id: int, won: bool) -> void:
-	for child in _stats_container.get_children():
-		child.queue_free()
-	_tween_targets.clear()
-	if _bonus_lbl != null:
-		_bonus_lbl.queue_free()
-		_bonus_lbl = null
-	_rating_row = null
-
-	var sm: ScenarioManager = _world_ref.scenario_manager if _world_ref != null else null
-
-	# ── Days Taken ────────────────────────────────────────────────────────────
-	var days_taken    := 0
-	var days_allowed  := sm.get_days_allowed() if sm != null else 0
-	if _day_night_ref != null and "current_day" in _day_night_ref:
-		days_taken = _day_night_ref.current_day
-
-	var days_val_lbl := _add_stat_row("Days Taken", "0 / %d days" % days_allowed)
-	_tween_targets.append({
-		"label":  days_val_lbl,
-		"target": days_taken,
-		"suffix": " / %d days" % days_allowed,
-	})
-
-	# ── Rumors Spread ─────────────────────────────────────────────────────────
-	var rumors_spread := 0
-	if _world_ref != null and _world_ref.propagation_engine != null:
-		rumors_spread = _world_ref.propagation_engine.lineage.size()
-
-	var rumors_val_lbl := _add_stat_row("Rumors Spread", "0 rumors")
-	_tween_targets.append({
-		"label":  rumors_val_lbl,
-		"target": rumors_spread,
-		"suffix": " rumors",
-	})
-
-	# ── NPCs Reached ──────────────────────────────────────────────────────────
-	var npcs_reached := 0
-	var npc_total    := 0
-	if _world_ref != null and not _world_ref.npcs.is_empty():
-		npc_total = _world_ref.npcs.size()
-		for npc in _world_ref.npcs:
-			if "rumor_slots" in npc and not npc.rumor_slots.is_empty():
-				npcs_reached += 1
-
-	var npcs_val_lbl := _add_stat_row("NPCs Reached", "0 / %d NPCs" % npc_total)
-	_tween_targets.append({
-		"label":  npcs_val_lbl,
-		"target": npcs_reached,
-		"suffix": " / %d NPCs" % npc_total,
-	})
-
-	# ── Peak Belief ───────────────────────────────────────────────────────────
-	# Scoped to the scenario primary target NPC so the stat is contextually
-	# meaningful.  Falls back to the population maximum for unknown scenarios.
-	var peak_belief := 0
-	if _world_ref != null and _world_ref.reputation_system != null:
-		var target: Dictionary = PEAK_BELIEF_TARGET.get(scenario_id, {})
-		if not target.is_empty():
-			var snap: Variant = _world_ref.reputation_system.get_snapshot(str(target["id"]))
-			if snap != null:
-				peak_belief = snap.score
-		else:
-			var all_snaps: Dictionary = _world_ref.reputation_system.get_all_snapshots()
-			for npc_id in all_snaps:
-				var snap: ReputationSystem.ReputationSnapshot = all_snaps[npc_id]
-				if snap.score > peak_belief:
-					peak_belief = snap.score
-
-	var peak_val_lbl := _add_stat_row("Peak Belief", "0% peak belief")
-	_tween_targets.append({
-		"label":  peak_val_lbl,
-		"target": peak_belief,
-		"suffix": "% peak belief",
-	})
-
-	# ── Scenario-specific bonus stat ──────────────────────────────────────────
-	_build_bonus_stat(scenario_id)
-
-	# ── SPA-907: Performance summary — achieved vs. possible ─────────────────
-	_build_performance_summary(won, days_taken, days_allowed, npcs_reached, npc_total, peak_belief)
-
-
-## Add one stat row (label + value) to _stats_container. Returns the value Label.
-func _add_stat_row(label_text: String, initial_value: String) -> Label:
-	var row := HBoxContainer.new()
-	# SPA-561: Start invisible for staggered reveal.
-	row.modulate.a = 0.0
-
-	var lbl := Label.new()
-	lbl.text = label_text
-	lbl.custom_minimum_size = Vector2(140, 0)
-	lbl.add_theme_color_override("font_color", C_STAT_LABEL)
-	row.add_child(lbl)
-
-	var val := Label.new()
-	val.text = initial_value
-	val.add_theme_color_override("font_color", C_STAT_VALUE)
-	row.add_child(val)
-
-	_stats_container.add_child(row)
-	return val
-
-
-## Build the scenario-specific bonus stat row, stored in _bonus_lbl.
-func _build_bonus_stat(scenario_id: int) -> void:
-	var bonus_label_text := ""
-	var bonus_value_text := ""
-
-	match scenario_id:
-		1:
-			bonus_label_text = "Guard Suspicion"
-			if _world_ref != null and _world_ref.reputation_system != null:
-				var snap: Variant = _world_ref.reputation_system.get_snapshot("bram_guard")
-				if snap != null and "score" in snap:
-					var s: int = snap.score
-					if s >= 80:
-						bonus_value_text = "Active"
-					elif s >= 60:
-						bonus_value_text = "High"
-					elif s >= 30:
-						bonus_value_text = "Medium"
-					else:
-						bonus_value_text = "Low"
-				else:
-					bonus_value_text = "—"
-			else:
-				bonus_value_text = "—"
-		2:
-			bonus_label_text = "Contradiction Events"
-			var count := 0
-			if _world_ref != null and _world_ref.propagation_engine != null:
-				count = _world_ref.propagation_engine.contradiction_count
-			bonus_value_text = str(count)
-		3:
-			bonus_label_text = "Calder Rep Delta"
-			if _world_ref != null and _world_ref.scenario_manager != null:
-				var sm: ScenarioManager = _world_ref.scenario_manager
-				var start_score := sm.calder_score_start
-				var final_score := sm.calder_score_final
-				if start_score >= 0 and final_score >= 0:
-					var delta := final_score - start_score
-					bonus_value_text = ("+%d pts" % delta) if delta >= 0 else ("%d pts" % delta)
-				else:
-					bonus_value_text = "—"
-			else:
-				bonus_value_text = "—"
-		4:
-			bonus_label_text = "Min Protected Rep"
-			if _world_ref != null and _world_ref.scenario_manager != null:
-				var progress: Dictionary = _world_ref.scenario_manager.get_scenario_4_progress(
-					_world_ref.reputation_system
-				)
-				bonus_value_text = "%d pts" % progress.get("min_score", 0)
-			else:
-				bonus_value_text = "—"
-		5:
-			bonus_label_text = "Election Margin"
-			if _world_ref != null and _world_ref.scenario_manager != null:
-				var progress: Dictionary = _world_ref.scenario_manager.get_scenario_5_progress(
-					_world_ref.reputation_system
-				)
-				var aldric: int = progress.get("aldric_score", 48)
-				var edric: int  = progress.get("edric_score", 58)
-				var tomas: int  = progress.get("tomas_score", 45)
-				var runner_up: int = max(edric, tomas)
-				var margin: int = aldric - runner_up
-				bonus_value_text = ("+%d pts" % margin) if margin >= 0 else ("%d pts" % margin)
-			else:
-				bonus_value_text = "—"
-		6:
-			bonus_label_text = "Peak Heat"
-			if _world_ref != null and _world_ref.scenario_manager != null:
-				var progress: Dictionary = _world_ref.scenario_manager.get_scenario_6_progress(
-					_world_ref.reputation_system
-				)
-				var max_heat: float = progress.get("max_heat", 0.0)
-				bonus_value_text = "%d / %d" % [int(max_heat), int(ScenarioManager.S6_EXPOSED_HEAT)]
-			else:
-				bonus_value_text = "—"
-		_:
-			return   # No bonus stat for unknown scenarios.
-
-	_add_separator_to(_stats_container)
-	var row := HBoxContainer.new()
-
-	var lbl := Label.new()
-	lbl.text = bonus_label_text
-	lbl.custom_minimum_size = Vector2(140, 0)
-	lbl.add_theme_color_override("font_color", C_STAT_LABEL)
-	row.add_child(lbl)
-
-	_bonus_lbl = Label.new()
-	_bonus_lbl.text = bonus_value_text
-	_bonus_lbl.add_theme_color_override("font_color", C_STAT_VALUE)
-	row.add_child(_bonus_lbl)
-
-	_stats_container.add_child(row)
-
-	# Hide numeric bonus (scenario 2) until tween completes; non-numeric shows immediately.
-	if scenario_id == 2:
-		row.modulate = Color(1.0, 1.0, 1.0, 0.0)
-		_bonus_lbl = row as Control   # repurpose _bonus_lbl as the row to reveal
-	else:
-		_bonus_lbl = null   # no delayed reveal needed
-
-
-## SPA-907: Build a short performance rating line at the bottom of the stats card.
-## Compares what the player achieved against what was theoretically possible.
-func _build_performance_summary(won: bool, days_taken: int, days_allowed: int,
-		npcs_reached: int, npc_total: int, peak_belief: int) -> void:
-	_add_separator_to(_stats_container)
-
-	# Calculate a composite score (0–100) from the three primary metrics.
-	var day_score: float = 0.0
-	if days_allowed > 0:
-		# Finishing early is better — invert so fewer days = higher score.
-		day_score = clampf(1.0 - (float(days_taken) / float(days_allowed)), 0.0, 1.0)
-	var reach_score: float = float(npcs_reached) / float(maxi(npc_total, 1))
-	var belief_score: float = clampf(float(peak_belief) / 100.0, 0.0, 1.0)
-
-	# Weighted average: belief matters most, then reach, then speed.
-	var composite: float = belief_score * 0.45 + reach_score * 0.35 + day_score * 0.20
-	var pct: int = int(composite * 100.0)
-
-	var rating: String
-	var rating_color: Color
-	if not won:
-		rating = "Incomplete"
-		rating_color = C_FAIL
-	elif pct >= 85:
-		rating = "Masterful"
-		rating_color = C_WIN
-	elif pct >= 65:
-		rating = "Competent"
-		rating_color = C_SCORE_NEU
-	elif pct >= 40:
-		rating = "Adequate"
-		rating_color = C_SUBHEADING
-	else:
-		rating = "Narrow"
-		rating_color = C_SCORE_FAIL
-
-	_rating_row = HBoxContainer.new()
-	_rating_row.modulate.a = 0.0   # revealed by count-up tween
-
-	var lbl := Label.new()
-	lbl.text = "Rating"
-	lbl.custom_minimum_size = Vector2(140, 0)
-	lbl.add_theme_color_override("font_color", C_STAT_LABEL)
-	_rating_row.add_child(lbl)
-
-	var val := Label.new()
-	val.text = rating
-	val.add_theme_color_override("font_color", rating_color)
-	val.add_theme_font_size_override("font_size", 15)
-	_rating_row.add_child(val)
-
-	_stats_container.add_child(_rating_row)
-
-
-## Populate the NPC outcomes right card.
-func _populate_npc_outcomes() -> void:
-	for child in _npc_container.get_children():
-		child.queue_free()
-
-	if _world_ref == null or _world_ref.reputation_system == null:
-		return
-
-	var rep: ReputationSystem = _world_ref.reputation_system
-	var npcs_to_show: Array = NPC_OUTCOMES.get(_current_scenario_id, [])
-
-	for entry in npcs_to_show:
-		var npc_id: String   = str(entry["id"])
-		var npc_name: String = str(entry["name"])
-		var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
-		if snap == null:
-			# NPC not present in this scenario — skip silently.
-			continue
-
-		var score := snap.score
-		var arrow_text: String
-		var arrow_color: Color
-		if not _last_outcome_won:
-			# SPA-784: Defeat — all arrows are red to emphasize failure.
-			if score > 60:
-				arrow_text  = "▲"
-			elif score < 40:
-				arrow_text  = "▼"
-			else:
-				arrow_text  = "—"
-			arrow_color = C_SCORE_FAIL
-		else:
-			if score > 60:
-				arrow_text  = "▲"
-				arrow_color = C_SCORE_WIN
-			elif score < 40:
-				arrow_text  = "▼"
-				arrow_color = C_SCORE_FAIL
-			else:
-				arrow_text  = "—"
-				arrow_color = C_SCORE_NEU
-
-		var row := HBoxContainer.new()
-		# SPA-561: Start hidden for staggered reveal.
-		row.modulate.a = 0.0
-
-		var name_lbl := Label.new()
-		name_lbl.text = npc_name
-		name_lbl.custom_minimum_size = Vector2(130, 0)
-		name_lbl.add_theme_color_override("font_color", C_HEADING)
-		row.add_child(name_lbl)
-
-		var score_lbl := Label.new()
-		score_lbl.text = "%3d" % score
-		score_lbl.custom_minimum_size = Vector2(36, 0)
-		score_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		score_lbl.add_theme_color_override("font_color", C_SUBHEADING)
-		row.add_child(score_lbl)
-
-		var arrow_lbl := Label.new()
-		arrow_lbl.text = "  " + arrow_text
-		arrow_lbl.add_theme_color_override("font_color", arrow_color)
-		row.add_child(arrow_lbl)
-		_arrow_labels.append(arrow_lbl)
-
-		_npc_container.add_child(row)
-		# SPA-561: Staggered fade-in for NPC rows.
-		var npc_idx: int = _npc_container.get_child_count() - 1
-		var delay: float = 0.8 + npc_idx * 0.2
-		get_tree().create_timer(delay).timeout.connect(func() -> void:
-			if is_instance_valid(row):
-				var tw := row.create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-				tw.tween_property(row, "modulate:a", 1.0, 0.3)
-		)
-
-
-## Start count-up tween for all numeric stat value labels.
-func _start_count_up_tween() -> void:
-	if _tween_targets.is_empty():
-		return
-
-	var tw: Tween = create_tween()
-	tw.set_parallel(true)
-
-	# SPA-784: 300 ms staggered reveal — each stat row fades in 0.3 s apart.
-	var idx := 0
-	for entry in _tween_targets:
-		var val_lbl: Label   = entry["label"] as Label
-		var target: int      = int(entry["target"])
-		var suffix: String   = str(entry["suffix"])
-		var row_node: Node   = val_lbl.get_parent() if is_instance_valid(val_lbl) else null
-		var stagger: float   = idx * 0.3
-		# Fade in the row.
-		if row_node != null:
-			tw.tween_property(row_node, "modulate:a", 1.0, 0.25) \
-				.set_delay(stagger) \
-				.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		# Count-up numbers after the row appears.
-		tw.tween_method(
-			func(v: float) -> void:
-				if is_instance_valid(val_lbl):
-					val_lbl.text = str(int(v)) + suffix,
-			0.0, float(target), 1.0
-		).set_delay(stagger + 0.2) \
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		idx += 1
-
-	# Reveal the bonus row (scenario 2: contradiction events) after tween.
-	if _bonus_lbl != null:
-		var bonus_ref: Node = _bonus_lbl
-		var bonus_delay: float = idx * 0.3 + 0.3
-		get_tree().create_timer(bonus_delay).timeout.connect(func() -> void:
-			if is_instance_valid(bonus_ref):
-				bonus_ref.modulate = Color.WHITE
-		)
-
-	# SPA-907: Reveal the performance rating row after all stats.
-	if _rating_row != null:
-		var rating_ref: HBoxContainer = _rating_row
-		var rating_delay: float = idx * 0.3 + 0.6
-		get_tree().create_timer(rating_delay).timeout.connect(func() -> void:
-			if is_instance_valid(rating_ref):
-				var rtw := rating_ref.create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-				rtw.tween_property(rating_ref, "modulate:a", 1.0, 0.35)
-		)
-
-	# SPA-784: Start arrow pulse animations after stats are revealed.
-	var arrow_delay: float = idx * 0.3 + 0.5
-	get_tree().create_timer(arrow_delay).timeout.connect(func() -> void:
-		_start_arrow_animations()
-	)
-
+# ── Scenario navigation ───────────────────────────────────────────────────────
 
 ## Returns the next scenario's string id, or "" if there is none.
 static func _next_scenario_id(current: String) -> String:
@@ -1002,7 +260,6 @@ static func _next_scenario_id(current: String) -> String:
 
 
 ## Load title + teaseHook for the given scenario id from scenarios.json.
-## Returns a formatted "Next: [title] — [hook]" string, or "" on failure.
 static func _load_next_scenario_tease(scenario_id: String) -> String:
 	const SCENARIOS_PATH := "res://data/scenarios.json"
 	if not FileAccess.file_exists(SCENARIOS_PATH):
@@ -1029,16 +286,33 @@ static func _load_next_scenario_tease(scenario_id: String) -> String:
 	return ""
 
 
+# ── Defeat feedback ───────────────────────────────────────────────────────────
+
+func _show_what_went_wrong(scenario_id: int, fail_reason: String) -> void:
+	if _what_went_wrong_lbl != null:
+		_what_went_wrong_lbl.queue_free()
+	var text: String = WHAT_WENT_WRONG.get(fail_reason, "Your scheme unravelled.")
+	_what_went_wrong_lbl = Label.new()
+	_what_went_wrong_lbl.text = text
+	_what_went_wrong_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_what_went_wrong_lbl.add_theme_font_size_override("font_size", 13)
+	_what_went_wrong_lbl.add_theme_color_override("font_color", C_FAIL)
+	_what_went_wrong_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if _results_container != null and _results_container.get_parent() != null:
+		var vbox := _results_container.get_parent()
+		var idx_after: int = _results_container.get_index() + 1
+		vbox.add_child(_what_went_wrong_lbl)
+		vbox.move_child(_what_went_wrong_lbl, idx_after)
+
+
 # ── UI construction ───────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	# Full-screen dimming backdrop.
 	_backdrop = ColorRect.new()
 	_backdrop.color = C_BACKDROP
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_backdrop)
 
-	# Centred panel container.
 	_panel = PanelContainer.new()
 	_panel.custom_minimum_size = Vector2(PANEL_W, PANEL_H)
 	_panel.set_anchor(SIDE_LEFT,   0.5)
@@ -1079,7 +353,7 @@ func _build_ui() -> void:
 
 	vbox.add_child(_make_separator())
 
-	# ── Summary narrative (italic, centered, 15pt) ────────────────────────────
+	# ── Summary narrative ─────────────────────────────────────────────────────
 	_narrative_lbl = RichTextLabel.new()
 	_narrative_lbl.fit_content          = true
 	_narrative_lbl.custom_maximum_size  = Vector2(0, 120)
@@ -1089,7 +363,7 @@ func _build_ui() -> void:
 	_narrative_lbl.add_theme_font_size_override("normal_font_size", 15)
 	vbox.add_child(_narrative_lbl)
 
-	# ── SPA-948: Strategic defeat hint (hidden until defeat + hint available) ──
+	# ── SPA-948: Strategic defeat hint ───────────────────────────────────────
 	_strategic_hint_lbl = RichTextLabel.new()
 	_strategic_hint_lbl.fit_content          = true
 	_strategic_hint_lbl.custom_maximum_size  = Vector2(0, 60)
@@ -1103,7 +377,7 @@ func _build_ui() -> void:
 
 	vbox.add_child(_make_separator())
 
-	# ── SPA-840: Next-scenario tease (hidden until victory) ───────────────────
+	# ── SPA-840: Next-scenario tease ─────────────────────────────────────────
 	_tease_lbl = RichTextLabel.new()
 	_tease_lbl.custom_minimum_size = Vector2(0, 32)
 	_tease_lbl.fit_content = true
@@ -1114,7 +388,7 @@ func _build_ui() -> void:
 	_tease_lbl.visible = false
 	vbox.add_child(_tease_lbl)
 
-	# ── SPA-212: Tab bar (Results / Replay) ───────────────────────────────────
+	# ── SPA-212: Tab bar ─────────────────────────────────────────────────────
 	var tab_row := HBoxContainer.new()
 	tab_row.add_theme_constant_override("separation", 4)
 	vbox.add_child(tab_row)
@@ -1127,19 +401,17 @@ func _build_ui() -> void:
 	_tab_replay.pressed.connect(_show_tab_replay)
 	tab_row.add_child(_tab_replay)
 
-	# Left/Right neighbor chain between the two tabs.
 	_tab_results.focus_neighbor_right = _tab_replay.get_path()
 	_tab_results.focus_next           = _tab_replay.get_path()
 	_tab_replay.focus_neighbor_left   = _tab_results.get_path()
 	_tab_replay.focus_previous        = _tab_results.get_path()
 
-	# ── Results tab content (existing two-column card row) ────────────────────
+	# ── Results tab content ───────────────────────────────────────────────────
 	_results_container = HBoxContainer.new()
 	_results_container.add_theme_constant_override("separation", 12)
 	_results_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(_results_container)
 
-	# Left card — RESULTS / stats
 	var left_card := _make_card()
 	left_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_results_container.add_child(left_card)
@@ -1160,7 +432,6 @@ func _build_ui() -> void:
 	_stats_container.add_theme_constant_override("separation", 5)
 	left_vbox.add_child(_stats_container)
 
-	# Right card — KEY OUTCOMES / NPC rows
 	var right_card := _make_card()
 	right_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_results_container.add_child(right_card)
@@ -1181,7 +452,7 @@ func _build_ui() -> void:
 	_npc_container.add_theme_constant_override("separation", 7)
 	right_vbox.add_child(_npc_container)
 
-	# ── Replay tab content (SPA-212 analytics) ───────────────────────────────
+	# ── Replay tab content ────────────────────────────────────────────────────
 	_replay_container = VBoxContainer.new()
 	_replay_container.add_theme_constant_override("separation", 8)
 	_replay_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1210,7 +481,6 @@ func _build_ui() -> void:
 	_btn_main_menu.pressed.connect(_on_main_menu)
 	btn_row.add_child(_btn_main_menu)
 
-	# Left/Right neighbor chain between bottom buttons (circular).
 	_btn_again.focus_neighbor_right      = _btn_next.get_path()
 	_btn_again.focus_next                = _btn_next.get_path()
 	_btn_again.focus_neighbor_left       = _btn_main_menu.get_path()
@@ -1224,6 +494,8 @@ func _build_ui() -> void:
 	_btn_main_menu.focus_neighbor_right  = _btn_again.get_path()
 	_btn_main_menu.focus_next            = _btn_again.get_path()
 
+
+# ── UI helpers ────────────────────────────────────────────────────────────────
 
 func _make_card() -> PanelContainer:
 	var card := PanelContainer.new()
@@ -1269,7 +541,7 @@ func _make_button(label: String, min_width: int) -> Button:
 	var focus_style := StyleBoxFlat.new()
 	focus_style.bg_color = C_BTN_HOVER
 	focus_style.set_border_width_all(2)
-	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)
 	focus_style.set_content_margin_all(8)
 
 	btn.add_theme_stylebox_override("normal", normal)
@@ -1279,16 +551,10 @@ func _make_button(label: String, min_width: int) -> Button:
 	return btn
 
 
-# ── SPA-212: Tab helpers ─────────────────────────────────────────────────────
+# ── SPA-212: Tab helpers ──────────────────────────────────────────────────────
 
 const C_TAB_ACTIVE   := Color(0.55, 0.38, 0.18, 1.0)
 const C_TAB_INACTIVE := Color(0.20, 0.14, 0.10, 1.0)
-const C_BAR_HIGH     := Color(0.92, 0.78, 0.12, 1.0)   # gold — matches C_WIN
-const C_BAR_MED      := Color(0.85, 0.65, 0.15, 1.0)   # amber
-const C_BAR_LOW      := Color(0.50, 0.45, 0.38, 1.0)   # muted
-const C_MOMENT_SEED  := Color(0.40, 0.75, 0.40, 1.0)   # green
-const C_MOMENT_PEAK  := Color(0.92, 0.78, 0.12, 1.0)   # gold
-const C_MOMENT_BAD   := Color(0.85, 0.18, 0.12, 1.0)   # crimson
 
 
 func _make_tab_button(label_text: String, active: bool) -> Button:
@@ -1313,7 +579,7 @@ func _make_tab_button(label_text: String, active: bool) -> Button:
 	var focus_style := StyleBoxFlat.new()
 	focus_style.bg_color = C_TAB_ACTIVE if active else C_TAB_INACTIVE
 	focus_style.set_border_width_all(2)
-	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)
 	focus_style.set_content_margin_all(4)
 
 	btn.add_theme_stylebox_override("normal", style)
@@ -1349,484 +615,6 @@ func _show_tab_replay() -> void:
 		_replay_container.visible = true
 	if _tab_replay != null:
 		_tab_replay.call_deferred("grab_focus")
-
-
-## Populate the Replay tab with analytics data from ScenarioAnalytics.
-func _populate_replay_tab() -> void:
-	# Clear previous content.
-	for child in _replay_container.get_children():
-		child.queue_free()
-
-	if _analytics_ref == null:
-		return
-
-	# Use a scroll container for the replay content.
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_replay_container.add_child(scroll)
-
-	var replay_content := VBoxContainer.new()
-	replay_content.add_theme_constant_override("separation", 10)
-	replay_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(replay_content)
-
-	# ── Section 1: Rumor Timeline ─────────────────────────────────────────────
-	_build_timeline_section(replay_content)
-
-	_add_separator_to(replay_content)
-
-	# ── Section 2: Top Influencers ────────────────────────────────────────────
-	_build_influence_section(replay_content)
-
-	_add_separator_to(replay_content)
-
-	# ── Section 3: Key Moments ────────────────────────────────────────────────
-	_build_moments_section(replay_content)
-
-
-func _build_timeline_section(parent: VBoxContainer) -> void:
-	var heading := Label.new()
-	heading.text = "RUMOR TIMELINE"
-	heading.add_theme_font_size_override("font_size", 13)
-	heading.add_theme_color_override("font_color", C_HEADING)
-	parent.add_child(heading)
-
-	var data: Array = _analytics_ref.get_timeline_data()
-	if data.is_empty():
-		var empty_lbl := Label.new()
-		empty_lbl.text = "No rumor activity recorded."
-		empty_lbl.add_theme_color_override("font_color", C_MUTED)
-		parent.add_child(empty_lbl)
-		return
-
-	# Find max for scaling bars.
-	var max_count := 1
-	for entry in data:
-		var count: int = entry.get("believer_count", 0)
-		if count > max_count:
-			max_count = count
-		var live: int = entry.get("live_count", 0)
-		if live > max_count:
-			max_count = live
-
-	# Draw horizontal bar chart (one row per day).
-	for entry in data:
-		var day: int = entry.get("day", 0)
-		var live: int = entry.get("live_count", 0)
-		var believers: int = entry.get("believer_count", 0)
-
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 6)
-
-		# Day label.
-		var day_lbl := Label.new()
-		day_lbl.text = "Day %d" % day
-		day_lbl.custom_minimum_size = Vector2(50, 0)
-		day_lbl.add_theme_font_size_override("font_size", 12)
-		day_lbl.add_theme_color_override("font_color", C_STAT_LABEL)
-		row.add_child(day_lbl)
-
-		# Bar for believers (primary metric).
-		var bar_width: float = (float(believers) / float(max_count)) * 300.0
-		var bar := ColorRect.new()
-		bar.custom_minimum_size = Vector2(maxf(bar_width, 2.0), 12)
-		bar.color = _bar_color(believers, max_count)
-		row.add_child(bar)
-
-		# Count label.
-		var count_lbl := Label.new()
-		count_lbl.text = "%d believers / %d active" % [believers, live]
-		count_lbl.add_theme_font_size_override("font_size", 12)
-		count_lbl.add_theme_color_override("font_color", C_MUTED)
-		row.add_child(count_lbl)
-
-		parent.add_child(row)
-
-
-func _bar_color(value: int, max_val: int) -> Color:
-	var ratio := float(value) / float(max_val) if max_val > 0 else 0.0
-	if ratio > 0.6:
-		return C_BAR_HIGH
-	elif ratio > 0.3:
-		return C_BAR_MED
-	return C_BAR_LOW
-
-
-func _build_influence_section(parent: VBoxContainer) -> void:
-	var heading := Label.new()
-	heading.text = "TOP INFLUENCERS"
-	heading.add_theme_font_size_override("font_size", 13)
-	heading.add_theme_color_override("font_color", C_HEADING)
-	parent.add_child(heading)
-
-	var ranking: Array = _analytics_ref.get_influence_ranking(5)
-	if ranking.is_empty():
-		var empty_lbl := Label.new()
-		empty_lbl.text = "No rumor transmissions recorded."
-		empty_lbl.add_theme_color_override("font_color", C_MUTED)
-		parent.add_child(empty_lbl)
-		return
-
-	for i in range(ranking.size()):
-		var entry: Dictionary = ranking[i]
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 8)
-
-		# Rank number.
-		var rank_lbl := Label.new()
-		rank_lbl.text = "#%d" % (i + 1)
-		rank_lbl.custom_minimum_size = Vector2(28, 0)
-		rank_lbl.add_theme_font_size_override("font_size", 12)
-		rank_lbl.add_theme_color_override("font_color", C_SUBHEADING)
-		row.add_child(rank_lbl)
-
-		# NPC name.
-		var name_lbl := Label.new()
-		name_lbl.text = str(entry.get("name", "?"))
-		name_lbl.custom_minimum_size = Vector2(140, 0)
-		name_lbl.add_theme_font_size_override("font_size", 12)
-		name_lbl.add_theme_color_override("font_color", C_HEADING)
-		row.add_child(name_lbl)
-
-		# Spread / received stats.
-		var stats_lbl := Label.new()
-		stats_lbl.text = "%d spread, %d received" % [
-			entry.get("spread_count", 0),
-			entry.get("received_count", 0),
-		]
-		stats_lbl.add_theme_font_size_override("font_size", 12)
-		stats_lbl.add_theme_color_override("font_color", C_BODY)
-		row.add_child(stats_lbl)
-
-		parent.add_child(row)
-
-
-func _build_moments_section(parent: VBoxContainer) -> void:
-	var heading := Label.new()
-	heading.text = "KEY MOMENTS"
-	heading.add_theme_font_size_override("font_size", 13)
-	heading.add_theme_color_override("font_color", C_HEADING)
-	parent.add_child(heading)
-
-	var moments: Array = _analytics_ref.get_key_moments()
-	if moments.is_empty():
-		var empty_lbl := Label.new()
-		empty_lbl.text = "No notable moments detected."
-		empty_lbl.add_theme_color_override("font_color", C_MUTED)
-		parent.add_child(empty_lbl)
-		return
-
-	# Show up to 8 key moments.
-	var shown := 0
-	for moment in moments:
-		if shown >= 8:
-			break
-
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 8)
-
-		# Day marker.
-		var day_lbl := Label.new()
-		day_lbl.text = "Day %d" % moment.get("day", 0)
-		day_lbl.custom_minimum_size = Vector2(50, 0)
-		day_lbl.add_theme_font_size_override("font_size", 12)
-		day_lbl.add_theme_color_override("font_color", C_SUBHEADING)
-		row.add_child(day_lbl)
-
-		# Moment text.
-		var text_lbl := Label.new()
-		text_lbl.text = str(moment.get("text", ""))
-		text_lbl.add_theme_font_size_override("font_size", 12)
-		text_lbl.add_theme_color_override("font_color", _moment_color(str(moment.get("type", ""))))
-		text_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		text_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(text_lbl)
-
-		parent.add_child(row)
-		shown += 1
-
-
-func _moment_color(moment_type: String) -> Color:
-	match moment_type:
-		"seed":          return C_MOMENT_SEED
-		"peak":          return C_MOMENT_PEAK
-		"social_death":  return C_MOMENT_BAD
-		"contradiction": return C_MOMENT_BAD
-		"state_change":  return C_BAR_MED
-		_:               return C_BODY
-
-
-# ── SPA-336: Feedback prompt ─────────────────────────────────────────────────
-
-## Build and show the feedback modal overlay.
-func _show_feedback_prompt() -> void:
-	if not visible:
-		return   # End screen was dismissed before timer fired.
-
-	_feedback_selected_preset = -1
-	_feedback_preset_btns.clear()
-
-	# ── Dimming overlay (sits above the end-screen panel) ────────────────────
-	_feedback_backdrop = ColorRect.new()
-	_feedback_backdrop.color = Color(0.0, 0.0, 0.0, 0.55)
-	_feedback_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(_feedback_backdrop)
-
-	# ── Centred panel ─────────────────────────────────────────────────────────
-	_feedback_panel = PanelContainer.new()
-	_feedback_panel.custom_minimum_size = Vector2(FEEDBACK_PANEL_W, FEEDBACK_PANEL_H)
-	_feedback_panel.set_anchor(SIDE_LEFT,   0.5)
-	_feedback_panel.set_anchor(SIDE_RIGHT,  0.5)
-	_feedback_panel.set_anchor(SIDE_TOP,    0.5)
-	_feedback_panel.set_anchor(SIDE_BOTTOM, 0.5)
-	_feedback_panel.set_offset(SIDE_LEFT,   -FEEDBACK_PANEL_W / 2.0)
-	_feedback_panel.set_offset(SIDE_RIGHT,   FEEDBACK_PANEL_W / 2.0)
-	_feedback_panel.set_offset(SIDE_TOP,    -FEEDBACK_PANEL_H / 2.0)
-	_feedback_panel.set_offset(SIDE_BOTTOM,  FEEDBACK_PANEL_H / 2.0)
-
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color     = C_PANEL_BG
-	panel_style.border_color = C_PANEL_BORDER
-	panel_style.set_border_width_all(2)
-	panel_style.set_content_margin_all(24)
-	_feedback_panel.add_theme_stylebox_override("panel", panel_style)
-	add_child(_feedback_panel)
-
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
-	_feedback_panel.add_child(vbox)
-
-	# ── Header ────────────────────────────────────────────────────────────────
-	var title_lbl := Label.new()
-	title_lbl.text = "Before you go…"
-	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.add_theme_font_size_override("font_size", 20)
-	title_lbl.add_theme_color_override("font_color", C_WIN)
-	vbox.add_child(title_lbl)
-
-	vbox.add_child(_make_separator())
-
-	# ── Question ──────────────────────────────────────────────────────────────
-	var question_lbl := Label.new()
-	question_lbl.text = "What was the hardest part?"
-	question_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	question_lbl.add_theme_font_size_override("font_size", 15)
-	question_lbl.add_theme_color_override("font_color", C_HEADING)
-	vbox.add_child(question_lbl)
-
-	# ── Preset option buttons ─────────────────────────────────────────────────
-	var options_vbox := VBoxContainer.new()
-	options_vbox.add_theme_constant_override("separation", 5)
-	vbox.add_child(options_vbox)
-
-	for i in range(FEEDBACK_PRESETS.size()):
-		var opt_btn := _make_preset_button(FEEDBACK_PRESETS[i], i)
-		_feedback_preset_btns.append(opt_btn)
-		options_vbox.add_child(opt_btn)
-
-	# ── Freetext field ────────────────────────────────────────────────────────
-	var text_label := Label.new()
-	text_label.text = "Other thoughts (optional)"
-	text_label.add_theme_font_size_override("font_size", 12)
-	text_label.add_theme_color_override("font_color", C_SUBHEADING)
-	vbox.add_child(text_label)
-
-	_feedback_text_edit = TextEdit.new()
-	_feedback_text_edit.custom_minimum_size = Vector2(0, 52)
-	_feedback_text_edit.placeholder_text = "Up to 200 characters…"
-	_feedback_text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
-
-	var te_style := StyleBoxFlat.new()
-	te_style.bg_color = C_CARD_BG
-	te_style.border_color = C_PANEL_BORDER
-	te_style.set_border_width_all(1)
-	te_style.set_content_margin_all(6)
-	_feedback_text_edit.add_theme_stylebox_override("normal", te_style)
-	_feedback_text_edit.add_theme_stylebox_override("focus",  te_style)
-	_feedback_text_edit.add_theme_color_override("font_color", C_BODY)
-	_feedback_text_edit.text_changed.connect(_on_feedback_text_changed)
-	vbox.add_child(_feedback_text_edit)
-
-	# Char count indicator.
-	_feedback_char_lbl = Label.new()
-	_feedback_char_lbl.text = "0 / %d" % FEEDBACK_CHAR_LIMIT
-	_feedback_char_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_feedback_char_lbl.add_theme_font_size_override("font_size", 12)
-	_feedback_char_lbl.add_theme_color_override("font_color", C_MUTED)
-	vbox.add_child(_feedback_char_lbl)
-
-	# ── Action buttons ────────────────────────────────────────────────────────
-	var btn_row := HBoxContainer.new()
-	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	btn_row.add_theme_constant_override("separation", 16)
-	vbox.add_child(btn_row)
-
-	var btn_submit := _make_button("Submit", 130)
-	btn_submit.pressed.connect(_on_feedback_submit)
-	btn_row.add_child(btn_submit)
-
-	var btn_skip := _make_button("Skip", 100)
-	btn_skip.pressed.connect(_on_feedback_skip)
-	btn_row.add_child(btn_skip)
-
-	btn_submit.call_deferred("grab_focus")
-
-
-## Create a toggle-style preset option button.
-func _make_preset_button(label_text: String, index: int) -> Button:
-	var btn := Button.new()
-	btn.text = label_text
-	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn.custom_minimum_size = Vector2(0, 30)
-	btn.add_theme_font_size_override("font_size", 13)
-	btn.add_theme_color_override("font_color", C_BTN_TEXT)
-
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = C_PRESET_NORMAL
-	normal.border_color = C_PANEL_BORDER
-	normal.set_border_width_all(1)
-	normal.set_content_margin_all(6)
-
-	var hover := StyleBoxFlat.new()
-	hover.bg_color = C_BTN_HOVER
-	hover.border_color = C_PANEL_BORDER
-	hover.set_border_width_all(1)
-	hover.set_content_margin_all(6)
-
-	var focus := StyleBoxFlat.new()
-	focus.bg_color = C_BTN_HOVER
-	focus.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
-	focus.set_border_width_all(2)
-	focus.set_content_margin_all(6)
-
-	btn.add_theme_stylebox_override("normal",  normal)
-	btn.add_theme_stylebox_override("hover",   hover)
-	btn.add_theme_stylebox_override("pressed", normal)
-	btn.add_theme_stylebox_override("focus",   focus)
-
-	btn.pressed.connect(func() -> void: _on_preset_selected(index))
-	return btn
-
-
-## Highlight the selected preset and deselect others.
-func _on_preset_selected(index: int) -> void:
-	_feedback_selected_preset = index
-	for i in range(_feedback_preset_btns.size()):
-		var b: Button = _feedback_preset_btns[i]
-		var style := b.get_theme_stylebox("normal") as StyleBoxFlat
-		if style != null:
-			style.bg_color = C_PRESET_SELECTED if i == index else C_PRESET_NORMAL
-
-
-## Enforce FEEDBACK_CHAR_LIMIT and update the char count label.
-func _on_feedback_text_changed() -> void:
-	if _feedback_text_edit == null or _feedback_char_lbl == null:
-		return
-	var txt := _feedback_text_edit.text
-	if txt.length() > FEEDBACK_CHAR_LIMIT:
-		_feedback_text_edit.text = txt.left(FEEDBACK_CHAR_LIMIT)
-		_feedback_text_edit.set_caret_column(FEEDBACK_CHAR_LIMIT)
-	_feedback_char_lbl.text = "%d / %d" % [_feedback_text_edit.text.length(), FEEDBACK_CHAR_LIMIT]
-
-
-## Save the feedback response and dismiss the prompt.
-func _on_feedback_submit() -> void:
-	var freetext := _feedback_text_edit.text.strip_edges() if _feedback_text_edit != null else ""
-	PlayerStats.record_feedback(
-		_current_scenario_id,
-		GameState.selected_difficulty,
-		_feedback_selected_preset,
-		freetext,
-	)
-	_dismiss_feedback_prompt()
-
-
-## Dismiss without recording.
-func _on_feedback_skip() -> void:
-	_dismiss_feedback_prompt()
-
-
-func _dismiss_feedback_prompt() -> void:
-	if _feedback_backdrop != null:
-		_feedback_backdrop.queue_free()
-		_feedback_backdrop = null
-	if _feedback_panel != null:
-		_feedback_panel.queue_free()
-		_feedback_panel = null
-	_feedback_text_edit = null
-	_feedback_char_lbl = null
-	_feedback_preset_btns.clear()
-	# Return keyboard focus to the first action button.
-	if _btn_again != null:
-		_btn_again.call_deferred("grab_focus")
-
-
-# ── SPA-784: Animated reputation arrows ─────────────────────────────────────
-
-## Bounce-pulse each arrow label to draw attention to reputation changes.
-func _start_arrow_animations() -> void:
-	for i in range(_arrow_labels.size()):
-		var arrow: Label = _arrow_labels[i]
-		if not is_instance_valid(arrow):
-			continue
-		# Small scale bounce with stagger.
-		var delay := i * 0.15
-		arrow.pivot_offset = arrow.size * 0.5
-		var tw := create_tween()
-		tw.tween_property(arrow, "scale", Vector2(1.4, 1.4), 0.15) \
-			.set_delay(delay) \
-			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.tween_property(arrow, "scale", Vector2.ONE, 0.2) \
-			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-
-
-# ── SPA-784: Pulsing Next Scenario button ───────────────────────────────────
-
-func _start_btn_pulse() -> void:
-	if _btn_next == null or _btn_next.disabled:
-		return
-	if _btn_pulse_tween != null:
-		_btn_pulse_tween.kill()
-	_btn_pulse_tween = create_tween().set_loops()
-	_btn_pulse_tween.tween_property(_btn_next, "modulate",
-		Color(1.2, 1.1, 0.8, 1.0), 0.8) \
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_btn_pulse_tween.tween_property(_btn_next, "modulate",
-		Color.WHITE, 0.8) \
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-
-
-# ── SPA-784: "What went wrong" defeat one-liner ────────────────────────────
-
-const WHAT_WENT_WRONG := {
-	"exposed":             "You were identified — the rumor lost its anonymity.",
-	"timeout":             "You ran out of time before the story could take hold.",
-	"contradicted":        "A credible voice contradicted the rumor publicly.",
-	"calder_implicated":   "Calder became the target of your own narrative.",
-	"aldric_destroyed":    "Aldric's reputation collapsed under your campaign.",
-	"marta_silenced":      "Marta was turned into the villain of her own story.",
-	"reputation_collapsed": "A protected NPC's reputation fell below the threshold.",
-}
-
-
-func _show_what_went_wrong(scenario_id: int, fail_reason: String) -> void:
-	if _what_went_wrong_lbl != null:
-		_what_went_wrong_lbl.queue_free()
-	var text: String = WHAT_WENT_WRONG.get(fail_reason, "Your scheme unravelled.")
-	_what_went_wrong_lbl = Label.new()
-	_what_went_wrong_lbl.text = text
-	_what_went_wrong_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_what_went_wrong_lbl.add_theme_font_size_override("font_size", 13)
-	_what_went_wrong_lbl.add_theme_color_override("font_color", C_FAIL)
-	_what_went_wrong_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	# Insert below the stats cards, above the button row.
-	# The stats/npc cards are in _results_container; its parent is the main vbox.
-	if _results_container != null and _results_container.get_parent() != null:
-		var vbox := _results_container.get_parent()
-		var idx_after: int = _results_container.get_index() + 1
-		vbox.add_child(_what_went_wrong_lbl)
-		vbox.move_child(_what_went_wrong_lbl, idx_after)
 
 
 # ── Button handlers ───────────────────────────────────────────────────────────
