@@ -86,6 +86,19 @@ func setup(world: Node2D, intel_store: PlayerIntelStore, rep_system: ReputationS
 	_scenario_manager  = scenario_manager
 	_day_night         = day_night
 	_mid_game_event_agent = mid_game_event_agent
+
+	# Validate required dependencies — warn and degrade gracefully rather than crash.
+	if world == null:
+		push_warning("SuggestionEngine.setup: world_ref is null — NPC/faction triggers will be skipped")
+	if intel_store == null:
+		push_warning("SuggestionEngine.setup: intel_store is null — heat and action triggers will be skipped")
+	if rep_system == null:
+		push_warning("SuggestionEngine.setup: reputation_system is null — pace and momentum triggers will be skipped")
+	if scenario_manager == null:
+		push_warning("SuggestionEngine.setup: scenario_manager is null — progress-based triggers will be skipped")
+	if day_night == null:
+		push_warning("SuggestionEngine.setup: day_night is null — time-based triggers will be skipped")
+
 	_apply_scenario_overrides()
 
 

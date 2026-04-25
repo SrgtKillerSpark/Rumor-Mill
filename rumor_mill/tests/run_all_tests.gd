@@ -13,7 +13,8 @@
 ##   • TestSpa970976Regressions   — regression guard for SPA-970/974/975/976 bug fix batch (SPA-985)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
-##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text (SPA-981)
+##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text,
+##                                  boundary validation for null deps in setup/refresh/triggers (SPA-981, SPA-1051)
 ##   • TestWorld                  — tile/grid constants, faction schedules, initial state (SPA-981)
 ##   • TestAudioManager           — constants, phase detection, ambient state, dialogue duck, tension flags (SPA-982)
 ##   • TestTransitionManager      — initial state, _kill_tween guard, layer default (SPA-982)
