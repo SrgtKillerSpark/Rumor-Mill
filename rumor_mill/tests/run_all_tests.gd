@@ -45,6 +45,31 @@
 ##   • TestHudTooltip             — palette, layout constants, initial state, _hide_tooltip null-panel guard (SPA-1026)
 ##   • TestNpcTooltip             — FACTION_LABEL/COLOR, STATE_LABEL/COLOR/ICON, atlas constants, initial state (SPA-1026)
 ##   • TestBuildingTooltip        — palette, layout constants, initial state, setup, _world_to_cell conversion (SPA-1026)
+##   • TestNpcDialogue            — _MAX_BUBBLES, _get_time_phase, initial state, on_exit_tree counter (SPA-1027)
+##   • TestNpcMovement            — speed/chance constants, initial state, cell_to_world isometric math (SPA-1027)
+##   • TestNpcRumorProcessing     — _MIN_EVAL_TICKS, initial state, setup, get_spread_preview guard clauses (SPA-1027)
+##   • TestNpcVisuals             — sprite constants, STATE_TINT/EMOTES tables, hover tint, initial state (SPA-1027)
+##   • TestJournalFactionsSection — palette, initial state, setup, _get_rumor_by_id null guard (SPA-1027)
+##   • TestJournalIntelSection    — palette, initial state, setup, _tick_to_day_str (SPA-1027)
+##   • TestJournalObjectivesSection — scenario day constants, palette, initial state, setup (SPA-1027)
+##   • TestJournalRumorsSection   — initial state, setup, has_status_transitions, _rumor_journal_status, colours, transitions (SPA-1027)
+##   • TestJournalTimelineSection — MAX_TIMELINE_ENTRIES, initial state, push/flush/restore, filters, has_new_entries_since (SPA-1027)
+##   • TestRumorPanelClaimList    — CLAIM_ICON_INDEX, _claim_type_color, _intensity_color, initial state, setup (SPA-1027)
+##   • TestRumorPanelEstimates    — estimate_spread and estimate_believability with mock world/heat (SPA-1027)
+##   • TestRumorPanelSeedList     — faction colour constants, _faction_color, initial state, setup (SPA-1027)
+##   • TestRumorPanelSubjectList  — portrait constants, palette, _faction_color, initial state, setup (SPA-1027)
+##   • TestRumorPanelTooltip      — PERSIST_KEY, TOOLTIP_W/H, STEPS shape, _current_step initial value (SPA-1027)
+##   • TestEndScreen              — initial state, subsystem refs null, setup() assignment (SPA-1024)
+##   • TestJournal                — palette, Section enum, MAX_MILESTONE_ENTRIES, initial state,
+##                                  push/get/restore milestone log, cap enforcement (SPA-1024)
+##   • TestObjectiveHud           — urgency colour constants, CALLOUT_TOOLTIP_ID, initial state,
+##                                  _get_urgency_color() all four bands, entrance animation guard (SPA-1024)
+##   • TestMain                   — initial state, @onready scene refs null, _camera_shake null guard (SPA-1024)
+##   • TestUILayerManager         — scene/public/private refs null, _on_player_exposed and flush null guards (SPA-1024)
+##   • TestTutorialWiring         — all gate booleans false, counters zero, node refs null,
+##                                  wire_pause_menu null guard (SPA-1024)
+##   • TestObjectiveHudBanner     — colour constants, initial state, show_banner/snapshot/bulletin/check
+##                                  null guards, on_deadline_warning text format (SPA-1024)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -179,5 +204,68 @@ func _init() -> void:
 
 	print("\n── BuildingTooltip ──")
 	TestBuildingTooltip.run()
+
+	print("\n── NpcDialogue ──")
+	TestNpcDialogue.run()
+
+	print("\n── NpcMovement ──")
+	TestNpcMovement.run()
+
+	print("\n── NpcRumorProcessing ──")
+	TestNpcRumorProcessing.run()
+
+	print("\n── NpcVisuals ──")
+	TestNpcVisuals.run()
+
+	print("\n── JournalFactionsSection ──")
+	TestJournalFactionsSection.run()
+
+	print("\n── JournalIntelSection ──")
+	TestJournalIntelSection.run()
+
+	print("\n── JournalObjectivesSection ──")
+	TestJournalObjectivesSection.run()
+
+	print("\n── JournalRumorsSection ──")
+	TestJournalRumorsSection.run()
+
+	print("\n── JournalTimelineSection ──")
+	TestJournalTimelineSection.run()
+
+	print("\n── RumorPanelClaimList ──")
+	TestRumorPanelClaimList.run()
+
+	print("\n── RumorPanelEstimates ──")
+	TestRumorPanelEstimates.run()
+
+	print("\n── RumorPanelSeedList ──")
+	TestRumorPanelSeedList.run()
+
+	print("\n── RumorPanelSubjectList ──")
+	TestRumorPanelSubjectList.run()
+
+	print("\n── RumorPanelTooltip ──")
+	TestRumorPanelTooltip.run()
+
+	print("\n── EndScreen ──")
+	TestEndScreen.run()
+
+	print("\n── Journal ──")
+	TestJournal.run()
+
+	print("\n── ObjectiveHud ──")
+	TestObjectiveHud.run()
+
+	print("\n── Main ──")
+	TestMain.run()
+
+	print("\n── UILayerManager ──")
+	TestUILayerManager.run()
+
+	print("\n── TutorialWiring ──")
+	TestTutorialWiring.run()
+
+	print("\n── ObjectiveHudBanner ──")
+	TestObjectiveHudBanner.run()
 
 	print("\n=== All suites complete ===")
