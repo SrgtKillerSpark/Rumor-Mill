@@ -24,7 +24,7 @@ class_name DistrictPropsRegistry
 ##   "district" : district label — must match a key in ScenarioEnvironmentPalette.DISTRICT_PALETTES
 ##   "id"       : unique snake_case prop identifier
 ##   "label"    : human-readable name for debug / UI
-##   "sprite"   : res:// path for the Texture2D (placeholder until art is delivered)
+##   "sprite"   : res:// path for the Texture2D (art pending SPA-925; consumer must handle missing files gracefully)
 ##   "offset"   : Vector2i grid-cell offset from district centroid  (x east, y south)
 ##   "z_index"  : draw order (1 = above ground tiles, below NPCs)
 const PROPS: Array[Dictionary] = [

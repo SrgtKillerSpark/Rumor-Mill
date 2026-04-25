@@ -4,7 +4,7 @@ extends CanvasLayer
 ##
 ## Tier 1 (always visible): Goal verb headline, win progress bar + milestone
 ##   label, day counter with tempo indicator.
-## Tier 2 (placeholder): Reserved for daily planning system.
+## Tier 2: Unused in this overlay — daily planning lives in DailyPlanningOverlay (separate CanvasLayer).
 ## Tier 3: Context-aware suggestion engine slot.
 ##
 ## Delegates to four extracted subsystems:

@@ -6,6 +6,9 @@
 class_name NpcVisuals
 extends Node
 
+# Suppress duplicate "npc_sprites.png not found" warnings across all NPC instances.
+static var _sprite_missing_warned: bool = false
+
 # ── Sprite sheet layout constants ─────────────────────────────────────────────
 const FACTION_ROW := {"merchant": 0, "noble": 1, "clergy": 2}
 const ARCHETYPE_ROW := {
@@ -90,7 +93,9 @@ func setup(npc: Node2D, sprite: AnimatedSprite2D, name_label: Label, faction: St
 func setup_sprite(faction: String) -> void:
 	var tex := load("res://assets/textures/npc_sprites.png") as Texture2D
 	if tex == null:
-		push_warning("NPC: npc_sprites.png not found; falling back to placeholder")
+		if not _sprite_missing_warned:
+			push_warning("NPC: npc_sprites.png not found; NPC sprites will not display")
+			_sprite_missing_warned = true
 		return
 
 	var npc_archetype: String = _npc.npc_data.get("archetype", "")

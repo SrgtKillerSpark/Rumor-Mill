@@ -213,6 +213,7 @@ func _preload_all() -> void:
 		_music_cache[key] = stream
 	for key: String in SFX_FILES:
 		_sfx_cache[key] = _load_stream(SFX_FILES[key])
+	push_warning("AudioManager: 'event_sting' SFX is using reputation_shift.wav as a placeholder — blocked on SPA-977")
 
 
 func _load_stream(relative_path: String) -> AudioStream:

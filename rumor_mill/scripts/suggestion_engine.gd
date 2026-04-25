@@ -429,7 +429,7 @@ func get_suggestion() -> String:
 	if not suggestion.is_empty():
 		return suggestion
 
-	# 6. Mid-game event hint (placeholder).
+	# 6. Mid-game event hint.
 	suggestion = _check_event_pending()
 	if not suggestion.is_empty():
 		return suggestion
