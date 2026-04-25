@@ -41,12 +41,12 @@ func _input(event: InputEvent) -> void:
 			_close()
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_RIGHT:
-			var next_tab := Tab(((_current_tab as int) + 1) % 3)
+			var next_tab: Tab = ((_current_tab as int) + 1) % 3 as Tab
 			_switch_tab(next_tab)
 			_tab_buttons[next_tab as int].grab_focus()
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_LEFT:
-			var prev_tab := Tab(((_current_tab as int) + 2) % 3)
+			var prev_tab: Tab = ((_current_tab as int) + 2) % 3 as Tab
 			_switch_tab(prev_tab)
 			_tab_buttons[prev_tab as int].grab_focus()
 			get_viewport().set_input_as_handled()
