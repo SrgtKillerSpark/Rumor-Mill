@@ -136,6 +136,10 @@
 ##   • TestThoughtBubbleLegend    — palette, LEGEND_ENTRIES, constants, initial state (SPA-1042)
 ##   • TestReadyOverlay           — palette, initial node refs null, initial state (SPA-1042)
 ##   • TestCamera                 — export defaults, initial state (SPA-1042)
+##   • TestNpcDialoguePanel       — layout/palette constants, initial state, faction colour helpers,
+##                                  state→category map, belief hints, greeting picker (SPA-1057)
+##   • TestRumorTrackerHud        — constants, palette, initial state, flash timer logic,
+##                                  _depth_dfs, _collect_lineage, _max_descendant_depth (SPA-1057)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -193,6 +197,7 @@ const TestMissionBriefing = preload("res://tests/test_mission_briefing.gd")
 const TestMissionCard = preload("res://tests/test_mission_card.gd")
 const TestNpcCore = preload("res://tests/test_npc_core.gd")
 const TestNpcDialogue = preload("res://tests/test_npc_dialogue.gd")
+const TestNpcDialoguePanel = preload("res://tests/test_npc_dialogue_panel.gd")
 const TestNpcInfoPanel = preload("res://tests/test_npc_info_panel.gd")
 const TestNpcMovement = preload("res://tests/test_npc_movement.gd")
 const TestNpcRumorProcessing = preload("res://tests/test_npc_rumor_processing.gd")
@@ -221,6 +226,7 @@ const TestRumorPanelEstimates = preload("res://tests/test_rumor_panel_estimates.
 const TestRumorPanelSeedList = preload("res://tests/test_rumor_panel_seed_list.gd")
 const TestRumorPanelSubjectList = preload("res://tests/test_rumor_panel_subject_list.gd")
 const TestRumorPanelTooltip = preload("res://tests/test_rumor_panel_tooltip.gd")
+const TestRumorTrackerHud = preload("res://tests/test_rumor_tracker_hud.gd")
 const TestS4FactionShiftAgent = preload("res://tests/test_s4_faction_shift_agent.gd")
 const TestSaveCorruption = preload("res://scripts/test_save_corruption.gd")
 const TestSaveManager = preload("res://tests/test_save_manager.gd")
@@ -394,6 +400,9 @@ func _init() -> void:
 	print("\n── NpcDialogue ──")
 	TestNpcDialogue.new().run()
 
+	print("\n── NpcDialoguePanel ──")
+	TestNpcDialoguePanel.new().run()
+
 	print("\n── NpcMovement ──")
 	TestNpcMovement.new().run()
 
@@ -432,6 +441,9 @@ func _init() -> void:
 
 	print("\n── RumorPanelTooltip ──")
 	TestRumorPanelTooltip.new().run()
+
+	print("\n── RumorTrackerHud ──")
+	TestRumorTrackerHud.new().run()
 
 	print("\n── EndScreen ──")
 	TestEndScreen.new().run()
