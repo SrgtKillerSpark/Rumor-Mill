@@ -108,7 +108,7 @@ const SFX_FILES: Dictionary = {
 	"reputation_shift":   "sfx/reputation_shift.wav",
 	"victory_chime":      "sfx/victory_chime.wav",
 	"failure_bell":       "sfx/failure_bell.wav",
-	"event_sting":        "sfx/reputation_shift.wav",  # placeholder — event_sting.wav not yet authored
+	"event_sting":        "sfx/event_sting.wav",
 }
 
 # ── State ──────────────────────────────────────────────────────────────────────
@@ -213,7 +213,6 @@ func _preload_all() -> void:
 		_music_cache[key] = stream
 	for key: String in SFX_FILES:
 		_sfx_cache[key] = _load_stream(SFX_FILES[key])
-	push_warning("AudioManager: 'event_sting' SFX is using reputation_shift.wav as a placeholder — blocked on SPA-977")
 
 
 func _load_stream(relative_path: String) -> AudioStream:
