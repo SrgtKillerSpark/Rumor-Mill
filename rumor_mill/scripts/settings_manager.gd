@@ -99,10 +99,10 @@ func load_settings() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(SAVE_PATH) != OK:
 		return  # File absent — use defaults
-	master_volume     = cfg.get_value(SECTION, "master_volume",     DEFAULT_MASTER_VOL)
-	music_volume      = cfg.get_value(SECTION, "music_volume",      DEFAULT_MUSIC_VOL)
-	ambient_volume    = cfg.get_value(SECTION, "ambient_volume",    DEFAULT_AMBIENT_VOL)
-	sfx_volume        = cfg.get_value(SECTION, "sfx_volume",        DEFAULT_SFX_VOL)
+	master_volume     = clampf(cfg.get_value(SECTION, "master_volume",     DEFAULT_MASTER_VOL), 0.0, 100.0)
+	music_volume      = clampf(cfg.get_value(SECTION, "music_volume",      DEFAULT_MUSIC_VOL), 0.0, 100.0)
+	ambient_volume    = clampf(cfg.get_value(SECTION, "ambient_volume",    DEFAULT_AMBIENT_VOL), 0.0, 100.0)
+	sfx_volume        = clampf(cfg.get_value(SECTION, "sfx_volume",        DEFAULT_SFX_VOL), 0.0, 100.0)
 	game_speed        = cfg.get_value(SECTION, "game_speed",        DEFAULT_GAME_SPEED)
 	analytics_enabled = cfg.get_value(SECTION, "analytics_enabled", DEFAULT_ANALYTICS_ENABLED)
 	resolution_index  = cfg.get_value(SECTION, "resolution_index",  DEFAULT_RESOLUTION_INDEX)
@@ -111,6 +111,7 @@ func load_settings() -> void:
 	var _legacy_fs: bool = cfg.get_value(SECTION, "fullscreen", false)
 	window_mode = cfg.get_value(SECTION, "window_mode",
 		WINDOW_FULLSCREEN if _legacy_fs else DEFAULT_WINDOW_MODE)
+	window_mode = clampi(window_mode, WINDOW_WINDOWED, WINDOW_FULLSCREEN)
 	ui_scale_index = cfg.get_value(SECTION, "ui_scale_index", 2)
 	ui_scale_index = clampi(ui_scale_index, 0, UI_SCALE_PRESETS.size() - 1)
 	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
