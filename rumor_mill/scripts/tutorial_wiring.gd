@@ -258,7 +258,7 @@ func _init_tutorial_banner_s1() -> void:
 	if cam != null and cam.has_signal("camera_moved"):
 		cam.camera_moved.connect(_on_s1_camera_moved)
 
-	# HINT-06: day 2 tick.
+	# HINT-06: day 2 tick (gated behind eavesdrop — SPA-1045).
 	if _day_night != null:
 		_day_night.game_tick.connect(_on_s1_game_tick)
 
@@ -398,7 +398,7 @@ func _on_s1_valid_eavesdrop_hovered() -> void:
 
 
 func _on_s1_game_tick(tick: int) -> void:
-	if tick >= 24 and not _banner_hint06_fired and tutorial_banner != null and not _banner_seed_fired:
+	if tick >= 24 and _banner_eavesdrop_gate and not _banner_hint06_fired and tutorial_banner != null and not _banner_seed_fired:
 		var intel: PlayerIntelStore = _world.intel_store
 		if intel != null and intel.whisper_tokens_remaining >= 1:
 			_banner_hint06_fired = true
