@@ -29,7 +29,7 @@ const DailyPlanningScript := preload("res://scripts/daily_planning_overlay.gd")
 
 # ── Test runner ───────────────────────────────────────────────────────────────
 
-static func run() -> void:
+func run() -> void:
 	var passed := 0
 	var failed := 0
 

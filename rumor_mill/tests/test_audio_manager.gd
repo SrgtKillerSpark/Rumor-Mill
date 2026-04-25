@@ -34,7 +34,7 @@ const AudioManagerScript := preload("res://scripts/audio_manager.gd")
 
 # ── Test runner ───────────────────────────────────────────────────────────────
 
-static func run() -> void:
+func run() -> void:
 	var passed := 0
 	var failed := 0
 

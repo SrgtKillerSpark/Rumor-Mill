@@ -23,7 +23,7 @@ class_name TestSuggestionEngine
 extends RefCounted
 
 
-static func run() -> void:
+func run() -> void:
 	var passed := 0
 	var failed := 0
 

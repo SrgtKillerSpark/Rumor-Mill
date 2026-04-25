@@ -66,7 +66,7 @@ static func _inject_slot(
 
 # ── Test runner ───────────────────────────────────────────────────────────────
 
-static func run() -> void:
+func run() -> void:
 	var passed := 0
 	var failed := 0
 

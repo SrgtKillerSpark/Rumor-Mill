@@ -80,192 +80,192 @@ func _init() -> void:
 	print("=== Rumor Mill unit tests ===\n")
 
 	print("── PropagationEngine ──")
-	TestPropagationEngine.run()
+	TestPropagationEngine.new().run()
 
 	print("\n── ReputationSystem ──")
-	TestReputationSystem.run()
+	TestReputationSystem.new().run()
 
 	print("\n── ScenarioConditions ──")
-	TestScenarioConditions.run()
+	TestScenarioConditions.new().run()
 
 	print("\n── SaveCorruption ──")
-	TestSaveCorruption.run()
+	TestSaveCorruption.new().run()
 
 	print("\n── SaveManager ──")
-	TestSaveManager.run()
+	TestSaveManager.new().run()
 
 	print("\n── AchievementManager ──")
-	TestAchievementManager.run()
+	TestAchievementManager.new().run()
 
 	print("\n── FactionEventSystem ──")
-	TestFactionEventSystem.run()
+	TestFactionEventSystem.new().run()
 
 	print("\n── SPA-970..976 Regressions ──")
 	TestSpa970976Regressions.run()
 
 	print("\n── TutorialSystem ──")
-	TestTutorialSystem.run()
+	TestTutorialSystem.new().run()
 
 	print("\n── TutorialController ──")
-	TestTutorialController.run()
+	TestTutorialController.new().run()
 
 	print("\n── SuggestionEngine ──")
-	TestSuggestionEngine.run()
+	TestSuggestionEngine.new().run()
 
 	print("\n── World ──")
-	TestWorld.run()
+	TestWorld.new().run()
 
 	print("\n── AudioManager ──")
-	TestAudioManager.run()
+	TestAudioManager.new().run()
 
 	print("\n── TransitionManager ──")
-	TestTransitionManager.run()
+	TestTransitionManager.new().run()
 
 	print("\n── DailyPlanningOverlay ──")
-	TestDailyPlanningOverlay.run()
+	TestDailyPlanningOverlay.new().run()
 
 	print("\n── IntelStore ──")
-	TestIntelStore.run()
+	TestIntelStore.new().run()
 
 	print("\n── GameState ──")
-	TestGameState.run()
+	TestGameState.new().run()
 
 	print("\n── SocialGraph ──")
-	TestSocialGraph.run()
+	TestSocialGraph.new().run()
 
 	print("\n── AchievementHooks ──")
-	TestAchievementHooks.run()
+	TestAchievementHooks.new().run()
 
 	print("\n── ScenarioManager ──")
-	TestScenarioManager.run()
+	TestScenarioManager.new().run()
 
 	print("\n── NpcCore ──")
-	TestNpcCore.run()
+	TestNpcCore.new().run()
 
 	print("\n── SocialGraphOverlay ──")
-	TestSocialGraphOverlay.run()
+	TestSocialGraphOverlay.new().run()
 
 	print("\n── ReconController ──")
-	TestReconController.run()
+	TestReconController.new().run()
 
 	print("\n── ReconHud ──")
-	TestReconHud.run()
+	TestReconHud.new().run()
 
 	print("\n── RumorPanel ──")
-	TestRumorPanel.run()
+	TestRumorPanel.new().run()
 
 	print("\n── PauseMenu ──")
-	TestPauseMenu.run()
+	TestPauseMenu.new().run()
 
 	print("\n── SettingsMenu ──")
-	TestSettingsMenu.run()
+	TestSettingsMenu.new().run()
 
 	print("\n── MidGameEventAgent ──")
-	TestMidGameEventAgent.run()
+	TestMidGameEventAgent.new().run()
 
 	print("\n── DayNightCycle ──")
-	TestDayNightCycle.run()
+	TestDayNightCycle.new().run()
 
 	print("\n── EndScreenAnimations ──")
-	TestEndScreenAnimations.run()
+	TestEndScreenAnimations.new().run()
 
 	print("\n── EndScreenFeedback ──")
-	TestEndScreenFeedback.run()
+	TestEndScreenFeedback.new().run()
 
 	print("\n── EndScreenNavigation ──")
-	TestEndScreenNavigation.run()
+	TestEndScreenNavigation.new().run()
 
 	print("\n── EndScreenPanelBuilder ──")
-	TestEndScreenPanelBuilder.run()
+	TestEndScreenPanelBuilder.new().run()
 
 	print("\n── EndScreenScoring ──")
-	TestEndScreenScoring.run()
+	TestEndScreenScoring.new().run()
 
 	print("\n── EndScreenSummary ──")
-	TestEndScreenSummary.run()
+	TestEndScreenSummary.new().run()
 
 	print("\n── EndScreenReplayTab ──")
-	TestEndScreenReplayTab.run()
+	TestEndScreenReplayTab.new().run()
 
 	print("\n── ObjectiveHudMetrics ──")
-	TestObjectiveHudMetrics.run()
+	TestObjectiveHudMetrics.new().run()
 
 	print("\n── ObjectiveHudNudgeManager ──")
-	TestObjectiveHudNudgeManager.run()
+	TestObjectiveHudNudgeManager.new().run()
 
 	print("\n── ObjectiveHudWinTracker ──")
-	TestObjectiveHudWinTracker.run()
+	TestObjectiveHudWinTracker.new().run()
 
 	print("\n── HudTooltip ──")
-	TestHudTooltip.run()
+	TestHudTooltip.new().run()
 
 	print("\n── NpcTooltip ──")
-	TestNpcTooltip.run()
+	TestNpcTooltip.new().run()
 
 	print("\n── BuildingTooltip ──")
-	TestBuildingTooltip.run()
+	TestBuildingTooltip.new().run()
 
 	print("\n── NpcDialogue ──")
-	TestNpcDialogue.run()
+	TestNpcDialogue.new().run()
 
 	print("\n── NpcMovement ──")
-	TestNpcMovement.run()
+	TestNpcMovement.new().run()
 
 	print("\n── NpcRumorProcessing ──")
-	TestNpcRumorProcessing.run()
+	TestNpcRumorProcessing.new().run()
 
 	print("\n── NpcVisuals ──")
-	TestNpcVisuals.run()
+	TestNpcVisuals.new().run()
 
 	print("\n── JournalFactionsSection ──")
-	TestJournalFactionsSection.run()
+	TestJournalFactionsSection.new().run()
 
 	print("\n── JournalIntelSection ──")
-	TestJournalIntelSection.run()
+	TestJournalIntelSection.new().run()
 
 	print("\n── JournalObjectivesSection ──")
-	TestJournalObjectivesSection.run()
+	TestJournalObjectivesSection.new().run()
 
 	print("\n── JournalRumorsSection ──")
-	TestJournalRumorsSection.run()
+	TestJournalRumorsSection.new().run()
 
 	print("\n── JournalTimelineSection ──")
-	TestJournalTimelineSection.run()
+	TestJournalTimelineSection.new().run()
 
 	print("\n── RumorPanelClaimList ──")
-	TestRumorPanelClaimList.run()
+	TestRumorPanelClaimList.new().run()
 
 	print("\n── RumorPanelEstimates ──")
-	TestRumorPanelEstimates.run()
+	TestRumorPanelEstimates.new().run()
 
 	print("\n── RumorPanelSeedList ──")
-	TestRumorPanelSeedList.run()
+	TestRumorPanelSeedList.new().run()
 
 	print("\n── RumorPanelSubjectList ──")
-	TestRumorPanelSubjectList.run()
+	TestRumorPanelSubjectList.new().run()
 
 	print("\n── RumorPanelTooltip ──")
-	TestRumorPanelTooltip.run()
+	TestRumorPanelTooltip.new().run()
 
 	print("\n── EndScreen ──")
-	TestEndScreen.run()
+	TestEndScreen.new().run()
 
 	print("\n── Journal ──")
-	TestJournal.run()
+	TestJournal.new().run()
 
 	print("\n── ObjectiveHud ──")
-	TestObjectiveHud.run()
+	TestObjectiveHud.new().run()
 
 	print("\n── Main ──")
-	TestMain.run()
+	TestMain.new().run()
 
 	print("\n── UILayerManager ──")
-	TestUILayerManager.run()
+	TestUILayerManager.new().run()
 
 	print("\n── TutorialWiring ──")
-	TestTutorialWiring.run()
+	TestTutorialWiring.new().run()
 
 	print("\n── ObjectiveHudBanner ──")
-	TestObjectiveHudBanner.run()
+	TestObjectiveHudBanner.new().run()
 
 	print("\n=== All suites complete ===")

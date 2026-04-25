@@ -24,7 +24,7 @@ const TransitionManagerScript := preload("res://scripts/transition_manager.gd")
 
 # ── Test runner ───────────────────────────────────────────────────────────────
 
-static func run() -> void:
+func run() -> void:
 	var passed := 0
 	var failed := 0
 

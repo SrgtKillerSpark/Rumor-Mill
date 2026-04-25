@@ -31,7 +31,7 @@ static func _make_main() -> Node2D:
 
 # ── Test runner ───────────────────────────────────────────────────────────────
 
-static func run() -> void:
+func run() -> void:
 	var passed := 0
 	var failed := 0
 
