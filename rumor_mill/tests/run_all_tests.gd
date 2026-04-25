@@ -24,7 +24,7 @@
 ##   • TestSocialGraph            — edge weight, mutation cap, net delta, adjacency queries (SPA-987)
 ##   • TestAchievementHooks       — per-session state tracking: exposure, action flags, bribe (SPA-988)
 ##   • TestScenarioManager        — narrative getters, heat ceiling, time helpers, signals, progress dicts (SPA-997)
-##   • TestNpcCore                — state queries, force_believe, credulity modifier, defense penalty, schedule avoidance, dialogue category, time phase (SPA-998)
+##   • TestNpcCore                — state queries, force_believe, credulity modifier, defense penalty, schedule avoidance, dialogue category, time phase, hear_rumor, rebuild_npc_id_dict, reroute_if_avoided, chapel_frozen, has_engine, visual_state (SPA-998/SPA-1056)
 ##   • TestSocialGraphOverlay     — constants, initial state, pure-logic helpers, rumor event parsing (SPA-1000)
 ##   • TestReconController        — constants, coordinate conversion, belief_trend, initial state (SPA-1012)
 ##   • TestReconHud               — constants, pip/heat colours, initial state, contextual hint logic (SPA-1012)

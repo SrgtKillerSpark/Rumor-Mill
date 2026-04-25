@@ -1,4 +1,4 @@
-## test_npc_core.gd — Unit tests for NPC core systems (SPA-998).
+## test_npc_core.gd — Unit tests for NPC core systems (SPA-998 / SPA-1056).
 ##
 ## Covers:
 ##   • State query helpers: get_state_for_rumor, get_worst_rumor_state, has_evaluating_rumor
@@ -11,6 +11,12 @@
 ##   • Rumor history:       _record_rumor_history appends correct fields
 ##   • Dialogue categories: _state_to_dialogue_category maps each state
 ##   • Time-of-day phase:   _get_time_phase returns morning/day/evening/night by hour
+##   • hear_rumor:          new slot created in EVALUATING; re-hear increments count; terminal no-op; dirty flag
+##   • _rebuild_npc_id_dict: all_npcs_ref setter populates id→node dict; blank id skipped
+##   • _reroute_if_avoided: empty list passthrough; home passthrough; avoided match → "home"; no-match passthrough
+##   • _is_chapel_frozen:   null quarantine_ref; chapel not quarantined; wrong location; chapel+quarantined → true
+##   • _has_engine:         null propagation_engine_ref → false; set → true
+##   • visual_state:        computed property delegates to get_worst_rumor_state()
 ##
 ## Strategy: preload npc.gd as an orphaned Node2D — @onready vars are null but
 ## all var-initialised data fields are ready. Only methods that operate purely on
@@ -157,6 +163,42 @@ func run() -> void:
 		"test_time_phase_night_at_22",
 		"test_time_phase_night_at_0",
 		"test_time_phase_night_at_4",
+
+		# ── hear_rumor ──
+		"test_hear_rumor_creates_evaluating_slot",
+		"test_hear_rumor_new_sets_worst_state_dirty",
+		"test_hear_rumor_re_hear_increments_count",
+		"test_hear_rumor_terminal_believe_no_op",
+		"test_hear_rumor_terminal_reject_no_op",
+		"test_hear_rumor_terminal_spread_no_op",
+		"test_hear_rumor_terminal_act_no_op",
+		"test_hear_rumor_terminal_contradicted_no_op",
+		"test_hear_rumor_terminal_expired_no_op",
+
+		# ── _rebuild_npc_id_dict (via all_npcs_ref setter) ──
+		"test_rebuild_dict_populates_from_all_npcs_ref",
+		"test_rebuild_dict_skips_blank_id",
+		"test_rebuild_dict_clears_stale_entries",
+
+		# ── _reroute_if_avoided ──
+		"test_reroute_empty_avoided_returns_same",
+		"test_reroute_home_arg_always_returns_home",
+		"test_reroute_returns_home_when_avoided_npc_at_location",
+		"test_reroute_no_match_returns_same",
+
+		# ── _is_chapel_frozen ──
+		"test_chapel_frozen_false_when_no_quarantine_ref",
+		"test_chapel_frozen_false_when_not_quarantined",
+		"test_chapel_frozen_false_when_quarantined_wrong_location",
+		"test_chapel_frozen_true_when_quarantined_at_chapel",
+
+		# ── _has_engine ──
+		"test_has_engine_false_when_null",
+		"test_has_engine_true_when_set",
+
+		# ── visual_state ──
+		"test_visual_state_unaware_when_empty",
+		"test_visual_state_matches_worst_state",
 	]
 
 	for method_name in tests:
@@ -746,3 +788,294 @@ func test_time_phase_night_at_4() -> bool:
 	var phase := npc._get_time_phase()
 	npc.free()
 	return phase == "night"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# hear_rumor
+# ══════════════════════════════════════════════════════════════════════════════
+
+## Hearing a new rumor inserts an EVALUATING slot into rumor_slots.
+func test_hear_rumor_creates_evaluating_slot() -> bool:
+	var npc := _make_npc()
+	var r   := _make_rumor("r1", "subj", Rumor.ClaimType.ACCUSATION)
+	npc.hear_rumor(r, "merchant")
+	var state := npc.get_state_for_rumor("r1")
+	npc.free()
+	return state == Rumor.RumorState.EVALUATING
+
+
+## Hearing a new rumor marks _worst_state_dirty so the next cache read recomputes.
+func test_hear_rumor_new_sets_worst_state_dirty() -> bool:
+	var npc := _make_npc()
+	var r   := _make_rumor("r1", "subj", Rumor.ClaimType.SCANDAL)
+	# Clear dirty flag first.
+	var _w := npc.get_worst_rumor_state()
+	npc.hear_rumor(r, "merchant")
+	var dirty := npc._worst_state_dirty
+	npc.free()
+	return dirty == true
+
+
+## Hearing the same rumor when still EVALUATING increments heard_from_count.
+func test_hear_rumor_re_hear_increments_count() -> bool:
+	var npc  := _make_npc()
+	var r    := _make_rumor("r1", "subj", Rumor.ClaimType.HERESY)
+	npc.hear_rumor(r, "merchant")  # first hear — creates slot, count = 0
+	var slot: Rumor.NpcRumorSlot = npc.rumor_slots["r1"]
+	var count_before := slot.heard_from_count
+	npc.hear_rumor(r, "noble")    # second hear — increments count
+	var count_after := slot.heard_from_count
+	npc.free()
+	return count_after == count_before + 1
+
+
+## Hearing a rumor whose slot is already in BELIEVE is a no-op (slot unchanged).
+func test_hear_rumor_terminal_believe_no_op() -> bool:
+	var npc  := _make_npc()
+	var r    := _make_rumor("r1", "subj", Rumor.ClaimType.ACCUSATION)
+	var slot := _inject_slot(npc, r, Rumor.RumorState.BELIEVE)
+	var count_before := slot.heard_from_count
+	npc.hear_rumor(r, "merchant")
+	var ok := slot.state == Rumor.RumorState.BELIEVE and slot.heard_from_count == count_before
+	npc.free()
+	return ok
+
+
+## REJECT is also a terminal state — re-hearing is a no-op.
+func test_hear_rumor_terminal_reject_no_op() -> bool:
+	var npc  := _make_npc()
+	var r    := _make_rumor("r1", "subj", Rumor.ClaimType.SCANDAL)
+	_inject_slot(npc, r, Rumor.RumorState.REJECT)
+	npc.hear_rumor(r, "merchant")
+	var ok := npc.get_state_for_rumor("r1") == Rumor.RumorState.REJECT
+	npc.free()
+	return ok
+
+
+## SPREAD is terminal — re-hearing is a no-op.
+func test_hear_rumor_terminal_spread_no_op() -> bool:
+	var npc := _make_npc()
+	var r   := _make_rumor("r1", "subj", Rumor.ClaimType.PRAISE)
+	_inject_slot(npc, r, Rumor.RumorState.SPREAD)
+	npc.hear_rumor(r, "merchant")
+	var ok := npc.get_state_for_rumor("r1") == Rumor.RumorState.SPREAD
+	npc.free()
+	return ok
+
+
+## ACT is terminal — re-hearing is a no-op.
+func test_hear_rumor_terminal_act_no_op() -> bool:
+	var npc := _make_npc()
+	var r   := _make_rumor("r1", "subj", Rumor.ClaimType.HERESY)
+	_inject_slot(npc, r, Rumor.RumorState.ACT)
+	npc.hear_rumor(r, "guild")
+	var ok := npc.get_state_for_rumor("r1") == Rumor.RumorState.ACT
+	npc.free()
+	return ok
+
+
+## CONTRADICTED is terminal — re-hearing is a no-op.
+func test_hear_rumor_terminal_contradicted_no_op() -> bool:
+	var npc := _make_npc()
+	var r   := _make_rumor("r1", "subj", Rumor.ClaimType.ACCUSATION)
+	_inject_slot(npc, r, Rumor.RumorState.CONTRADICTED)
+	npc.hear_rumor(r, "merchant")
+	var ok := npc.get_state_for_rumor("r1") == Rumor.RumorState.CONTRADICTED
+	npc.free()
+	return ok
+
+
+## EXPIRED is terminal — re-hearing is a no-op.
+func test_hear_rumor_terminal_expired_no_op() -> bool:
+	var npc := _make_npc()
+	var r   := _make_rumor("r1", "subj", Rumor.ClaimType.SCANDAL)
+	_inject_slot(npc, r, Rumor.RumorState.EXPIRED)
+	npc.hear_rumor(r, "noble")
+	var ok := npc.get_state_for_rumor("r1") == Rumor.RumorState.EXPIRED
+	npc.free()
+	return ok
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# _rebuild_npc_id_dict  (exercised via the all_npcs_ref setter)
+# ══════════════════════════════════════════════════════════════════════════════
+
+## Assigning all_npcs_ref with peers that have ids populates _npc_id_dict.
+func test_rebuild_dict_populates_from_all_npcs_ref() -> bool:
+	var npc   := _make_npc("self_npc")
+	var peer1 := _make_npc("peer_a")
+	var peer2 := _make_npc("peer_b")
+	npc.all_npcs_ref = [peer1, peer2]
+	var ok := npc._npc_id_dict.has("peer_a") and npc._npc_id_dict.has("peer_b") \
+		and npc._npc_id_dict["peer_a"] == peer1 and npc._npc_id_dict["peer_b"] == peer2
+	peer1.free()
+	peer2.free()
+	npc.free()
+	return ok
+
+
+## Peers whose npc_data has no "id" key (or blank id) are not inserted.
+func test_rebuild_dict_skips_blank_id() -> bool:
+	var npc  := _make_npc()
+	var peer := NpcScript.new()
+	peer.npc_data = {}  # no "id" key → blank
+	npc.all_npcs_ref = [peer]
+	var ok := npc._npc_id_dict.is_empty()
+	peer.free()
+	npc.free()
+	return ok
+
+
+## Re-assigning all_npcs_ref clears stale entries from a previous assignment.
+func test_rebuild_dict_clears_stale_entries() -> bool:
+	var npc   := _make_npc()
+	var peer1 := _make_npc("old_peer")
+	npc.all_npcs_ref = [peer1]
+	var peer2 := _make_npc("new_peer")
+	npc.all_npcs_ref = [peer2]  # replaces — old_peer should be gone
+	var ok := not npc._npc_id_dict.has("old_peer") and npc._npc_id_dict.has("new_peer")
+	peer1.free()
+	peer2.free()
+	npc.free()
+	return ok
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# _reroute_if_avoided
+# ══════════════════════════════════════════════════════════════════════════════
+
+## Empty avoid list — the original location is returned unchanged.
+func test_reroute_empty_avoided_returns_same() -> bool:
+	var npc := _make_npc()
+	var result := npc._reroute_if_avoided("market")
+	npc.free()
+	return result == "market"
+
+
+## When the requested location is "home" it is always returned as-is,
+## even if there are avoided subjects.
+func test_reroute_home_arg_always_returns_home() -> bool:
+	var npc  := _make_npc()
+	var peer := _make_npc("villain")
+	peer.work_location = "home"
+	npc.all_npcs_ref = [peer]
+	npc._avoided_subject_ids.append("villain")
+	var result := npc._reroute_if_avoided("home")
+	peer.free()
+	npc.free()
+	return result == "home"
+
+
+## If an avoided NPC's work_location matches the destination, return "home".
+func test_reroute_returns_home_when_avoided_npc_at_location() -> bool:
+	var npc  := _make_npc()
+	var peer := _make_npc("villain")
+	peer.work_location = "market"
+	npc.all_npcs_ref = [peer]
+	npc._avoided_subject_ids.append("villain")
+	var result := npc._reroute_if_avoided("market")
+	peer.free()
+	npc.free()
+	return result == "home"
+
+
+## Avoided subject works somewhere else — no reroute; original location returned.
+func test_reroute_no_match_returns_same() -> bool:
+	var npc  := _make_npc()
+	var peer := _make_npc("villain")
+	peer.work_location = "tavern"
+	npc.all_npcs_ref = [peer]
+	npc._avoided_subject_ids.append("villain")
+	var result := npc._reroute_if_avoided("market")
+	peer.free()
+	npc.free()
+	return result == "market"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# _is_chapel_frozen
+# ══════════════════════════════════════════════════════════════════════════════
+
+## No quarantine reference → always false.
+func test_chapel_frozen_false_when_no_quarantine_ref() -> bool:
+	var npc    := _make_npc()
+	npc.current_location_code = "chapel"
+	var result := npc._is_chapel_frozen()
+	npc.free()
+	return result == false
+
+
+## Quarantine system present but chapel not quarantined → false.
+func test_chapel_frozen_false_when_not_quarantined() -> bool:
+	var npc := _make_npc()
+	npc.quarantine_ref         = QuarantineSystem.new()
+	npc.current_location_code  = "chapel"
+	var result := npc._is_chapel_frozen()
+	npc.free()
+	return result == false
+
+
+## Chapel is quarantined but NPC is at a different location → false.
+func test_chapel_frozen_false_when_quarantined_wrong_location() -> bool:
+	var npc  := _make_npc()
+	var qs   := QuarantineSystem.new()
+	qs._quarantined["chapel"] = 9999  # simulate active quarantine
+	npc.quarantine_ref        = qs
+	npc.current_location_code = "market"
+	var result := npc._is_chapel_frozen()
+	npc.free()
+	return result == false
+
+
+## Chapel is quarantined AND the NPC is at the chapel → true.
+func test_chapel_frozen_true_when_quarantined_at_chapel() -> bool:
+	var npc  := _make_npc()
+	var qs   := QuarantineSystem.new()
+	qs._quarantined["chapel"] = 9999  # simulate active quarantine
+	npc.quarantine_ref        = qs
+	npc.current_location_code = "chapel"
+	var result := npc._is_chapel_frozen()
+	npc.free()
+	return result == true
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# _has_engine
+# ══════════════════════════════════════════════════════════════════════════════
+
+## propagation_engine_ref defaults to null → _has_engine() is false.
+func test_has_engine_false_when_null() -> bool:
+	var npc := _make_npc()
+	var ok  := npc._has_engine() == false
+	npc.free()
+	return ok
+
+
+## Assigning a PropagationEngine instance → _has_engine() is true.
+func test_has_engine_true_when_set() -> bool:
+	var npc    := _make_npc()
+	npc.propagation_engine_ref = PropagationEngine.new()
+	var ok := npc._has_engine() == true
+	npc.free()
+	return ok
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# visual_state  (computed property — delegates to get_worst_rumor_state)
+# ══════════════════════════════════════════════════════════════════════════════
+
+## With no slots, visual_state equals UNAWARE (same as get_worst_rumor_state).
+func test_visual_state_unaware_when_empty() -> bool:
+	var npc := _make_npc()
+	var ok  := npc.visual_state == Rumor.RumorState.UNAWARE
+	npc.free()
+	return ok
+
+
+## With a BELIEVE slot, visual_state matches get_worst_rumor_state().
+func test_visual_state_matches_worst_state() -> bool:
+	var npc := _make_npc()
+	_inject_slot(npc, _make_rumor("r1", "s", Rumor.ClaimType.ACCUSATION), Rumor.RumorState.BELIEVE)
+	var ok := npc.visual_state == npc.get_worst_rumor_state()
+	npc.free()
+	return ok
