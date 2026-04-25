@@ -2,7 +2,7 @@
 ##
 ## Covers:
 ##   • MIN_DURATION_SEC constant
-##   • TIPS array has 10 entries, all non-empty strings
+##   • TIPS array has 16 entries, all non-empty strings
 ##   • Palette constants: C_BACKDROP (near-black), C_LABEL, C_TIP
 ##   • Initial state: _active=false, node refs null
 ##   • end_transition() is safe to call before start_transition() (no crash)
@@ -69,7 +69,7 @@ static func test_min_duration_sec() -> bool:
 
 static func test_tips_count() -> bool:
 	var lt := _make_lt()
-	var ok := lt.TIPS.size() == 10
+	var ok := lt.TIPS.size() == 16
 	lt.free()
 	return ok
 
