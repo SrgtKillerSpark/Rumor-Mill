@@ -30,7 +30,7 @@
 ##         AND reputation(edric_fenn) < 45 AND reputation(tomas_reeve) < 45
 ##   FAIL: reputation(aldric_vane) < 30 (instant)
 ##         OR days elapsed >= days_allowed (timeout)
-##   EVENT: Day 15 — Prior Aldous endorses highest-rep candidate (+8 bonus)
+##   EVENT: Day 13 — Prior Aldous endorses highest-rep candidate (+8 bonus)
 ##
 ## Scenario 6 — The Merchant's Debt (SPA-605):
 ##   WIN:  reputation(aldric_vane) <= 30 AND reputation(marta_coin) >= 62
