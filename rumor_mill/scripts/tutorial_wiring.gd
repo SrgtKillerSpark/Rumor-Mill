@@ -122,49 +122,14 @@ func start_onboarding(scenario_id: String) -> void:
 # ── Tutorial system init ─────────────────────────────────────────────────────
 
 ## All scenarios except S1: non-blocking contextual hint banner for day-gated tips.
+## Opening and onboarding hint timers are NOT started here — they start after the
+## Mission Briefing is dismissed (via _start_sx_timed_hints called from
+## _init_sx_onboarding_flow) so banners never overlap the blocking briefing screen.
 func _init_context_banner() -> void:
 	tutorial_banner = preload("res://scripts/tutorial_banner.gd").new()
 	tutorial_banner.name = "TutorialBanner"
 	add_child(tutorial_banner)
 	tutorial_banner.setup(tutorial_sys)
-
-	# SPA-537: "Your First Move" hints — tightened timing.
-	var _opening_hint_id: String = ""
-	match _world.active_scenario_id:
-		"scenario_2": _opening_hint_id = "ctx_s2_opening"
-		"scenario_3": _opening_hint_id = "ctx_s3_opening"
-		"scenario_4": _opening_hint_id = "ctx_s4_opening"
-		"scenario_5": _opening_hint_id = "ctx_s5_opening"
-		"scenario_6": _opening_hint_id = "ctx_s6_opening"
-	if _opening_hint_id != "":
-		var _open_timer := get_tree().create_timer(4.0)
-		var _hint_id_copy: String = _opening_hint_id
-		_open_timer.timeout.connect(func() -> void:
-			if tutorial_banner != null:
-				tutorial_banner.queue_hint(_hint_id_copy)
-		)
-
-	# SPA-549: Scenario-specific onboarding banners.
-	var _s_hints: Array = []
-	match _world.active_scenario_id:
-		"scenario_2":
-			_s_hints = ["ctx_s2_illness_mechanic", "ctx_s2_maren_warning", "ctx_s2_believer_check"]
-		"scenario_3":
-			_s_hints = ["ctx_s3_dual_targets", "ctx_s3_rival_intro"]
-		"scenario_4":
-			_s_hints = ["ctx_s4_defense_goal", "ctx_s4_inquisitor_info"]
-		"scenario_5":
-			_s_hints = ["ctx_s5_three_way_race", "ctx_s5_endorsement_tip"]
-		"scenario_6":
-			_s_hints = ["ctx_s6_heat_ceiling", "ctx_s6_protect_marta"]
-	var _delays: Array = [10.0, 16.0, 22.0]
-	for i in range(_s_hints.size()):
-		var _hint_id: String = _s_hints[i]
-		var _timer := get_tree().create_timer(_delays[i])
-		_timer.timeout.connect(func() -> void:
-			if tutorial_banner != null:
-				tutorial_banner.queue_hint(_hint_id)
-		)
 
 	# Day-gated hints: hook into day_changed signal.
 	if _day_night != null and _day_night.has_signal("day_changed"):
@@ -721,6 +686,8 @@ func _show_whats_changed_card(scenario_id: String) -> void:
 
 
 ## SPA-804: S2-S6 "What's New" banner sequence via TutorialController.
+## Also starts the timed opening/onboarding hints now that the Mission Briefing
+## has been dismissed and the player can actually read the gameplay tips.
 func _init_sx_onboarding_flow(scenario_id: String) -> void:
 	if tutorial_sys == null or tutorial_banner == null:
 		return
@@ -733,6 +700,51 @@ func _init_sx_onboarding_flow(scenario_id: String) -> void:
 		scenario_id
 	)
 	_tutorial_ctrl.start()
+	# SPA-1020: Start timed hints now that the blocking briefing screen is gone.
+	_start_sx_timed_hints(scenario_id)
+
+
+## SPA-1020: "Your First Move" opening hint + scenario onboarding banners, deferred
+## until after the Mission Briefing is dismissed so they never overlap the briefing.
+## Timings are relative to when gameplay actually begins (post-briefing), not scene load.
+func _start_sx_timed_hints(scenario_id: String) -> void:
+	# SPA-537: "Your First Move" opening hint at 2 s after briefing dismissed.
+	var opening_hint_id: String = ""
+	match scenario_id:
+		"scenario_2": opening_hint_id = "ctx_s2_opening"
+		"scenario_3": opening_hint_id = "ctx_s3_opening"
+		"scenario_4": opening_hint_id = "ctx_s4_opening"
+		"scenario_5": opening_hint_id = "ctx_s5_opening"
+		"scenario_6": opening_hint_id = "ctx_s6_opening"
+	if opening_hint_id != "":
+		var _open_timer := get_tree().create_timer(2.0)
+		var _hint_copy: String = opening_hint_id
+		_open_timer.timeout.connect(func() -> void:
+			if tutorial_banner != null:
+				tutorial_banner.queue_hint(_hint_copy)
+		)
+
+	# SPA-549: Scenario-specific onboarding banners at 10/16/22 s from gameplay start.
+	var s_hints: Array = []
+	match scenario_id:
+		"scenario_2":
+			s_hints = ["ctx_s2_illness_mechanic", "ctx_s2_maren_warning", "ctx_s2_believer_check"]
+		"scenario_3":
+			s_hints = ["ctx_s3_dual_targets", "ctx_s3_rival_intro"]
+		"scenario_4":
+			s_hints = ["ctx_s4_defense_goal", "ctx_s4_inquisitor_info"]
+		"scenario_5":
+			s_hints = ["ctx_s5_three_way_race", "ctx_s5_endorsement_tip"]
+		"scenario_6":
+			s_hints = ["ctx_s6_heat_ceiling", "ctx_s6_protect_marta"]
+	var delays: Array = [10.0, 16.0, 22.0]
+	for i in range(s_hints.size()):
+		var hint_id: String = s_hints[i]
+		var t := get_tree().create_timer(delays[i])
+		t.timeout.connect(func() -> void:
+			if tutorial_banner != null:
+				tutorial_banner.queue_hint(hint_id)
+		)
 
 
 # ── SPA-805: S1 manor golden-pulse affordance ────────────────────────────────

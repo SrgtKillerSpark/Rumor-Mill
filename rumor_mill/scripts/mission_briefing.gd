@@ -95,8 +95,8 @@ func setup(
 	brief: Dictionary,
 	npc_data: Dictionary
 ) -> void:
-	_objective_one_liner = objective_one_liner
-	_win_condition_line  = win_condition_line
+	_objective_one_liner = objective_card.get("mission", objective_one_liner)
+	_win_condition_line  = objective_card.get("winCondition", win_condition_line)
 	_strategy_hint       = objective_card.get("strategyHint", "")
 	_first_action        = objective_card.get("firstAction", "")
 	_danger              = objective_card.get("danger", "")
@@ -116,8 +116,8 @@ func setup_recall(
 	brief: Dictionary,
 	npc_data: Dictionary
 ) -> void:
-	_objective_one_liner = objective_one_liner
-	_win_condition_line  = win_condition_line
+	_objective_one_liner = objective_card.get("mission", objective_one_liner)
+	_win_condition_line  = objective_card.get("winCondition", win_condition_line)
 	_strategy_hint       = objective_card.get("strategyHint", "")
 	_first_action        = objective_card.get("firstAction", "")
 	_danger              = objective_card.get("danger", "")
