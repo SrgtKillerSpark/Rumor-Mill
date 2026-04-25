@@ -192,7 +192,7 @@ func update_label(faction: String, dialogue: NpcDialogue) -> void:
 				Rumor.RumorState.REJECT:
 					_thought_bubble.show_override("✗", Color(0.80, 0.55, 0.55, 1.0), 1.0)
 		# Reaction dialogue bubble.
-		var cat := _npc._state_to_dialogue_category(worst)
+		var cat: String = _npc._state_to_dialogue_category(worst)
 		if cat != "" and dialogue != null:
 			dialogue.show_bubble(cat)
 

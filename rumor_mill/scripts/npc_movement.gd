@@ -155,8 +155,8 @@ func _walk_to(cell: Vector2i) -> void:
 		return
 	_is_moving = true
 	# Determine cardinal facing from isometric grid delta (SPA-585).
-	var cdx := cell.x - _npc.current_cell.x
-	var cdy := cell.y - _npc.current_cell.y
+	var cdx: int = cell.x - _npc.current_cell.x
+	var cdy: int = cell.y - _npc.current_cell.y
 	if abs(cdx) >= abs(cdy):
 		_facing_dir = "west" if cdx < 0 else "east"
 	else:
@@ -245,10 +245,10 @@ func start_spread_clustering(rumor: Rumor) -> void:
 ## Return the walkable cell that maximises squared distance from from_cell.
 ## Uses the pre-sampled 64-cell candidate list.
 func _cell_furthest_from(from_cell: Vector2i) -> Vector2i:
-	var best_cell := _npc.current_cell
-	var best_dist := 0
+	var best_cell: Vector2i = _npc.current_cell
+	var best_dist: int = 0
 	for cell in _walkable_sample:
-		var d := (cell - from_cell).length_squared()
+		var d: int = (cell - from_cell).length_squared()
 		if d > best_dist:
 			best_dist = d
 			best_cell = cell

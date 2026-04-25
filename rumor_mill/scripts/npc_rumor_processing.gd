@@ -77,7 +77,7 @@ func process_rumor_slots(tick: int) -> void:
 			if newest.state != Rumor.RumorState.CONTRADICTED:
 				newest.state = Rumor.RumorState.CONTRADICTED
 				newest.ticks_in_state = 0
-				var subj_name := sid
+				var subj_name: String = sid
 				var subj_node = _npc._npc_id_dict.get(sid, null)
 				if subj_node != null:
 					subj_name = subj_node.npc_data.get("name", sid)
@@ -98,13 +98,13 @@ func _tick_evaluating(
 	if slot.ticks_in_state < _MIN_EVAL_TICKS:
 		return
 
-	var rumor := slot.rumor
-	var effective_credulity := _npc._credulity
+	var rumor: Rumor = slot.rumor
+	var effective_credulity: float = _npc._credulity
 	var subject_id: String = rumor.subject_npc_id
 	if _npc._defense_modifiers.has(subject_id):
 		effective_credulity = maxf(effective_credulity - _npc._defense_modifiers[subject_id], 0.0)
 
-	var believe_chance := effective_credulity * rumor.current_believability
+	var believe_chance: float = effective_credulity * rumor.current_believability
 	if slot.source_faction == faction:
 		believe_chance += 0.15
 	var extra: int = min(slot.heard_from_count - 1, 3)
@@ -148,7 +148,7 @@ func _tick_believe(
 ) -> void:
 	# ── γ: recovery check — NPC may forget/reject the rumor ──────────────────
 	if _npc._has_engine():
-		var gamma := _npc.propagation_engine_ref.calc_gamma(_npc._loyalty, _npc._temperament)
+		var gamma: float = _npc.propagation_engine_ref.calc_gamma(_npc._loyalty, _npc._temperament)
 		if randf() < gamma:
 			slot.state = Rumor.RumorState.REJECT
 			slot.ticks_in_state = 0
@@ -232,7 +232,7 @@ func _spread_to_neighbours(
 		var heat_mod: float = 0.0
 		if _npc._has_engine() and _npc.propagation_engine_ref.intel_store_ref != null \
 				and _npc.propagation_engine_ref.intel_store_ref.heat_enabled:
-			var h := _npc.propagation_engine_ref.intel_store_ref.get_heat(tid)
+			var h: float = _npc.propagation_engine_ref.intel_store_ref.get_heat(tid)
 			if h >= 75.0:
 				heat_mod = 0.30
 			elif h >= 50.0:
