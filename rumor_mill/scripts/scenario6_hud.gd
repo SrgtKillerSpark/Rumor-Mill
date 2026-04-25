@@ -8,7 +8,7 @@ extends BaseScenarioHud
 ## Layout:
 ##   Scenario 6: The Merchant's Debt
 ##   [Aldric Vane]  Rep: 55 / 100  Target: ≤30  [bar]
-##   [Marta Coin]   Rep: 52 / 100  Target: 60+  [bar]
+##   [Marta Coin]   Rep: 52 / 100  Target: 62+  [bar]
 ##   Heat: 0 / 60                                [bar]
 ##   Days remaining: 22
 ##
@@ -115,7 +115,7 @@ func _build_ui() -> void:
 	_marta_score_lbl = Label.new()
 	_marta_score_lbl.add_theme_font_size_override("font_size", 11)
 	_marta_score_lbl.add_theme_color_override("font_color", C_BODY)
-	_marta_score_lbl.text = "Marta Coin  Rep: 52 / 100  Target: 60+"
+	_marta_score_lbl.text = "Marta Coin  Rep: 52 / 100  Target: %d+" % ScenarioConfig.S6_WIN_MARTA_MIN
 	_marta_score_lbl.tooltip_text = "Marta Coin's reputation. Win condition: keep at %d or above. Below %d = instant fail (she's been silenced)." % [ScenarioConfig.S6_WIN_MARTA_MIN, ScenarioConfig.S6_FAIL_MARTA_BELOW]
 	_marta_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_text_outline(_marta_score_lbl)
