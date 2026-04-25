@@ -32,6 +32,19 @@
 ##   • TestSettingsMenu           — palette constants, initial state, _close() behaviour (SPA-1015)
 ##   • TestMidGameEventAgent      — activation, window guards, probability firing, resolve choice, serialization, effects (SPA-1017)
 ##   • TestDayNightCycle          — initial state, TIME_COLORS, phase detection, shadow guard, skip_to_next_day, color interpolation, signals (SPA-1017)
+##   • TestEndScreenAnimations    — initial state, setup wiring, start_count_up/start_btn_pulse null guards (SPA-1026)
+##   • TestEndScreenFeedback      — presets, dimension/char constants, palette, initial state, setup wiring (SPA-1026)
+##   • TestEndScreenNavigation    — initial state, set_scenario_id, next_scenario_id mapping table (SPA-1026)
+##   • TestEndScreenPanelBuilder  — palette, dimension constants, initial public/private node refs (SPA-1026)
+##   • TestEndScreenScoring       — PEAK_BELIEF_TARGET, NPC_OUTCOMES, palette, initial state, accessors, setup (SPA-1026)
+##   • TestEndScreenSummary       — WHAT_WENT_WRONG, SUMMARY_TEXT, SUMMARY_FALLBACK, infer/lookup logic (SPA-1026)
+##   • TestEndScreenReplayTab     — palette, initial state, setup wiring, populate null-analytics guard (SPA-1026)
+##   • TestObjectiveHudMetrics    — initial state, _threat_word boundaries, _threat_color bands, refresh null guard (SPA-1026)
+##   • TestObjectiveHudNudgeManager — palette, nudge texts, initial phase/budget/dep state (SPA-1026)
+##   • TestObjectiveHudWinTracker — tempo colours, initial state, configure, setup_world, _get_progress_assessment, flash guard (SPA-1026)
+##   • TestHudTooltip             — palette, layout constants, initial state, _hide_tooltip null-panel guard (SPA-1026)
+##   • TestNpcTooltip             — FACTION_LABEL/COLOR, STATE_LABEL/COLOR/ICON, atlas constants, initial state (SPA-1026)
+##   • TestBuildingTooltip        — palette, layout constants, initial state, setup, _world_to_cell conversion (SPA-1026)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -127,5 +140,44 @@ func _init() -> void:
 
 	print("\n── DayNightCycle ──")
 	TestDayNightCycle.run()
+
+	print("\n── EndScreenAnimations ──")
+	TestEndScreenAnimations.run()
+
+	print("\n── EndScreenFeedback ──")
+	TestEndScreenFeedback.run()
+
+	print("\n── EndScreenNavigation ──")
+	TestEndScreenNavigation.run()
+
+	print("\n── EndScreenPanelBuilder ──")
+	TestEndScreenPanelBuilder.run()
+
+	print("\n── EndScreenScoring ──")
+	TestEndScreenScoring.run()
+
+	print("\n── EndScreenSummary ──")
+	TestEndScreenSummary.run()
+
+	print("\n── EndScreenReplayTab ──")
+	TestEndScreenReplayTab.run()
+
+	print("\n── ObjectiveHudMetrics ──")
+	TestObjectiveHudMetrics.run()
+
+	print("\n── ObjectiveHudNudgeManager ──")
+	TestObjectiveHudNudgeManager.run()
+
+	print("\n── ObjectiveHudWinTracker ──")
+	TestObjectiveHudWinTracker.run()
+
+	print("\n── HudTooltip ──")
+	TestHudTooltip.run()
+
+	print("\n── NpcTooltip ──")
+	TestNpcTooltip.run()
+
+	print("\n── BuildingTooltip ──")
+	TestBuildingTooltip.run()
 
 	print("\n=== All suites complete ===")
