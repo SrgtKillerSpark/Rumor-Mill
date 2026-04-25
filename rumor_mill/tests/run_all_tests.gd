@@ -85,6 +85,8 @@
 ##                                  _weakest_protected_npc null rep (SPA-1041)
 ##   • TestScenarioAnalytics      — initial state, _on_rumor_transmitted, _on_rumor_event, _on_socially_dead,
 ##                                  get_influence_ranking, finalize (SPA-1041)
+##   • TestAnalyticsManager       — initial state, _enqueue bounds/eviction, _flush_queue, handler queuing,
+##                                  evidence passthrough guards (SPA-1054)
 ##   • TestAstarPathfinder        — initial state, get_path guards, nearest_walkable static math (SPA-1041)
 ##   • TestQuarantineSystem       — constants, initial state, activate, query methods, tick expiry,
 ##                                  try_quarantine blocked/success cases (SPA-1041)
@@ -140,6 +142,7 @@
 
 const TestAchievementHooks = preload("res://tests/test_achievement_hooks.gd")
 const TestAchievementManager = preload("res://tests/test_achievement_manager.gd")
+const TestAnalyticsManager = preload("res://tests/test_analytics_manager.gd")
 const TestAstarPathfinder = preload("res://tests/test_astar_pathfinder.gd")
 const TestAudioManager = preload("res://tests/test_audio_manager.gd")
 const TestBaseScenarioHud = preload("res://tests/test_base_scenario_hud.gd")
@@ -477,6 +480,9 @@ func _init() -> void:
 
 	print("\n── ScenarioAnalytics ──")
 	TestScenarioAnalytics.new().run()
+
+	print("\n── AnalyticsManager ──")
+	TestAnalyticsManager.new().run()
 
 	print("\n── AstarPathfinder ──")
 	TestAstarPathfinder.new().run()
