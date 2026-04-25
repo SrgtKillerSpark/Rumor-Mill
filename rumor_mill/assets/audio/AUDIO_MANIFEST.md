@@ -131,9 +131,6 @@ just happened", not yet knowing if it is good or bad.
 **Format:** 44.1 kHz, 16-bit stereo WAV.  Deliver normalised to −3 dBFS peak.
 Drop at `assets/audio/sfx/event_sting.wav`.  Godot will generate `.import` on next open.
 
-**Integration note:** Once the file exists, remove the placeholder comment on line 111 of
-`scripts/audio_manager.gd` and update the mapping to `"sfx/event_sting.wav"`.
-
 ---
 
 ## Music Looping
