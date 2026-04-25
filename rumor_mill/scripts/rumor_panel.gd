@@ -16,95 +16,46 @@ extends CanvasLayer
 ##
 ## Toggle via R key (handled by ReconHUD) → call toggle().
 ## Call setup(world, intel_store) after the scene tree is ready.
+##
+## Content for each panel is delegated to focused sub-modules (SPA-1014):
+##   RumorPanelSubjectList, RumorPanelClaimList, RumorPanelSeedList,
+##   RumorPanelEstimates.
 
 signal rumor_seeded(rumor_id: String, subject_name: String, claim_id: String, seed_target_name: String)
 signal evidence_first_shown
 ## Emitted the first time the player reaches the Seed Target panel (panel 3).
 ## Used by the tutorial hint system to trigger HINT-07 (hint_seed_target).
 signal panel_seed_shown
+
 # Panel index constants.
-const PANEL_SUBJECT   := 0
-const PANEL_CLAIM     := 1
-const PANEL_SEED      := 2
+const PANEL_SUBJECT := 0
+const PANEL_CLAIM   := 1
+const PANEL_SEED    := 2
 
-# ── Colour palette ────────────────────────────────────────────────────────────
-# Parchment / UI base colours.
-const C_NPC_NAME       := Color(0.88, 0.80, 0.60, 1.0)   # NPC name label
-const C_LOCKED         := Color(0.42, 0.38, 0.30, 1.0)   # locked / unknown
-const C_TEMPLATE_TEXT  := Color(0.88, 0.88, 0.80, 1.0)   # claim template wording
-const C_COMPAT_HINT    := Color(0.60, 0.60, 0.58, 0.90)  # evidence compatible-claims hint
+# ── Colour palette (coordinator-level: nav buttons, status, spread overlay) ───
 
-# Gold accent colours.
-const C_GOLD           := Color(0.90, 0.75, 0.20, 1.0)   # whisper bar, section headers
-const C_GOLD_BRIGHT    := Color(0.92, 0.78, 0.12, 1.0)   # button hover border
-const C_FOCUS_RING     := Color(1.00, 0.90, 0.40, 1.0)   # keyboard focus ring
+const C_GOLD           := Color(0.90, 0.75, 0.20, 1.0)
+const C_GOLD_BRIGHT    := Color(0.92, 0.78, 0.12, 1.0)
+const C_FOCUS_RING     := Color(1.00, 0.90, 0.40, 1.0)
+const C_STATUS_WARN    := Color(1.0,  0.65, 0.20, 1.0)
+const C_BTN_NORMAL_BG  := Color(0.35, 0.22, 0.08, 1.0)
+const C_BTN_BORDER     := Color(0.55, 0.38, 0.18, 1.0)
+const C_BTN_HOVER_BG   := Color(0.55, 0.35, 0.12, 1.0)
+const C_BTN_TEXT       := Color(0.92, 0.82, 0.60, 1.0)
 
-# Status / feedback colours.
-const C_STATUS_WARN    := Color(1.0,  0.65, 0.20, 1.0)   # inline status warning text
-const C_ESTIMATE       := Color(0.75, 0.85, 0.65, 1.0)   # spread / believability estimates
-const C_CHAIN_ICON     := Color(1.0,  0.90, 0.40, 1.0)   # chain indicator icon
-const C_CHAIN_DESC     := Color(0.95, 0.95, 0.85, 1.0)   # chain description text
+# Spread-overlay ring colours.
+const C_SPREAD_RING_SEED := Color(1.0,  1.0,  1.0,  0.90)
+const C_SPREAD_HIGH      := Color(1.0,  0.35, 0.15, 0.85)
+const C_SPREAD_MED       := Color(1.0,  0.80, 0.15, 0.80)
+const C_SPREAD_LOW       := Color(0.30, 0.90, 0.30, 0.75)
 
-# Relation colours.
-const C_RELATION_SUSPICIOUS := Color(1.0,  0.40, 0.35, 1.0)  # suspicious / hostile
-const C_RELATION_ALLIED     := Color(0.35, 1.0,  0.45, 1.0)  # allied / close
-const C_RELATION_NEUTRAL    := Color(0.95, 0.95, 0.40, 1.0)  # neutral / knows
+# ── Scene nodes (from RumorPanel.tscn) ───────────────────────────────────────
 
-# Panel selection highlight colours (semi-transparent backgrounds).
-const C_SELECTED_SUBJECT_BG  := Color(0.20, 0.45, 0.20, 0.55)  # selected subject row
-const C_SELECTED_CLAIM_BG    := Color(0.20, 0.35, 0.60, 0.55)  # selected claim card
-const C_SELECTED_SEED_BG     := Color(0.50, 0.25, 0.10, 0.55)  # selected seed target
-const C_SELECTED_EVIDENCE_BG := Color(0.45, 0.30, 0.05, 0.55)  # selected evidence item
+@onready var panel:       Panel = $Panel
+@onready var title_label: Label = $Panel/VBox/TitleLabel
+@onready var hint_label:  Label = $Panel/VBox/HintLabel
 
-# Evidence / boost colours.
-const C_EVIDENCE_TYPE     := Color(0.95, 0.85, 0.50, 1.0)  # evidence type + bonus text
-const C_EVIDENCE_ATTACHED := Color(0.35, 0.90, 0.50, 1.0)  # "attached" confirmation
-const C_BOOST_BAR         := Color(0.35, 0.88, 0.52, 1.0)  # believability boost bars
-const C_MUTABILITY        := Color(0.60, 0.75, 1.0,  1.0)  # mutability bar
-
-# Button colours.
-const C_BTN_NORMAL_BG := Color(0.35, 0.22, 0.08, 1.0)  # nav button default bg
-const C_BTN_BORDER    := Color(0.55, 0.38, 0.18, 1.0)  # nav button default border
-const C_BTN_HOVER_BG  := Color(0.55, 0.35, 0.12, 1.0)  # nav button hover / focus bg
-const C_BTN_TEXT      := Color(0.92, 0.82, 0.60, 1.0)  # nav button font
-
-# Chain indicator background colours (accent — intentionally outside parchment palette).
-const C_CHAIN_SAME_BG          := Color(0.20, 0.45, 0.70, 0.50)  # same-type chain
-const C_CHAIN_ESCALATION_BG    := Color(0.55, 0.20, 0.60, 0.50)  # escalation chain
-const C_CHAIN_CONTRADICTION_BG := Color(0.70, 0.35, 0.15, 0.50)  # contradiction chain
-
-# Faction accent colours (accent — each faction has a distinct identity colour).
-const C_FACTION_MERCHANT := Color(1.0,  0.80, 0.20, 1.0)  # gold-yellow
-const C_FACTION_NOBLE    := Color(0.40, 0.60, 1.0,  1.0)  # royal blue
-const C_FACTION_CLERGY   := Color(0.90, 0.90, 0.90, 1.0)  # silver-white
-
-# Claim-type accent colours (accent — each rumour type has a thematic colour).
-const C_CLAIM_ACCUSATION := Color(1.0,  0.35, 0.25, 1.0)  # crimson-red
-const C_CLAIM_SCANDAL    := Color(1.0,  0.70, 0.10, 1.0)  # amber
-const C_CLAIM_ILLNESS    := Color(0.60, 1.0,  0.55, 1.0)  # sickly green
-const C_CLAIM_PROPHECY   := Color(0.70, 0.55, 1.0,  1.0)  # mystic purple
-const C_CLAIM_PRAISE     := Color(0.40, 0.85, 1.0,  1.0)  # sky blue
-const C_CLAIM_DEATH      := Color(0.55, 0.55, 0.55, 1.0)  # slate grey
-const C_CLAIM_HERESY     := Color(1.0,  0.45, 0.85, 1.0)  # hot pink
-
-# Intensity colours (accent — low-to-high severity ramp).
-const C_INTENSITY_LOW  := Color(0.55, 1.0,  0.55, 1.0)  # intensity 1-2
-const C_INTENSITY_MED  := Color(1.0,  0.85, 0.30, 1.0)  # intensity 3
-const C_INTENSITY_HIGH := Color(1.0,  0.35, 0.25, 1.0)  # intensity 4-5 (matches C_CLAIM_ACCUSATION by design)
-
-# Spread-overlay ring colours (accent — sociability heat-map on the world map).
-const C_SPREAD_RING_SEED := Color(1.0,  1.0,  1.0,  0.90)  # seed NPC target ring
-const C_SPREAD_HIGH      := Color(1.0,  0.35, 0.15, 0.85)  # high sociability (>= 0.7)
-const C_SPREAD_MED       := Color(1.0,  0.80, 0.15, 0.80)  # medium sociability (>= 0.4)
-const C_SPREAD_LOW       := Color(0.30, 0.90, 0.30, 0.75)  # low sociability (< 0.4)
-# ─────────────────────────────────────────────────────────────────────────────
-
-# Scene nodes (from RumorPanel.tscn).
-@onready var panel:       Panel         = $Panel
-@onready var title_label: Label         = $Panel/VBox/TitleLabel
-@onready var hint_label:  Label         = $Panel/VBox/HintLabel
-
-# The Scroll + NPCList from the .tscn are Panel 1's content container.
+# Panel 1's content container (from .tscn).
 @onready var _p1_scroll: ScrollContainer = $Panel/VBox/Scroll
 @onready var _npc_list:  VBoxContainer   = $Panel/VBox/Scroll/NPCList
 
@@ -116,47 +67,41 @@ var _seed_list:    VBoxContainer   = null
 var _whisper_bar:  Label           = null
 var _nav_row:      HBoxContainer   = null
 var _btn_back:     Button          = null
-var _btn_next:     Button          = null   # becomes "Confirm & Seed" on panel 3
-var _status_label: Label           = null   # inline feedback for panel 3
+var _btn_next:     Button          = null
+var _status_label: Label           = null
 
-# References.
+# ── References ────────────────────────────────────────────────────────────────
+
 var _world_ref:       Node2D           = null
 var _intel_store_ref: PlayerIntelStore = null
 
-# Texture atlases for icons and portraits.
-var _portrait_tex:    Texture2D = null  # ui_npc_portraits.png — 320×240 (5×64 cols × 3×80 rows)
-var _claim_icon_tex:  Texture2D = null  # ui_claim_icons.png  — atlas of claim-type icons
+# Texture atlases.
+var _portrait_tex:   Texture2D = null
+var _claim_icon_tex: Texture2D = null
 
-# Portrait atlas layout: 6 cols × 5 rows of 64×80 cells (SPA-591 Art Pass 12).
-# Each NPC has a unique portrait_id (0–29) in npcs.json.
-# col = portrait_id % 6,  row = portrait_id / 6
-const PORTRAIT_W := 64
-const PORTRAIT_H := 80
-const PORTRAIT_COLS := 6
+# ── Sub-modules ───────────────────────────────────────────────────────────────
 
-# Claim icon atlas: 5 icons (0=dagger, 1=coin, 2=speech, 3=eye, 4=hands).
-# Map claim types → closest icon column.
-const CLAIM_ICON_INDEX := {
-	"accusation": 0, "death": 0,       # dagger
-	"scandal": 2,    "heresy": 2,      # speech bubble
-	"illness": 3,    "prophecy": 3,    # eye
-	"praise": 4,                        # clasped hands
-}
+var _estimates:    RumorPanelEstimates   = null
+var _subject_list: RumorPanelSubjectList = null
+var _claim_list_m: RumorPanelClaimList   = null
+var _seed_list_m:  RumorPanelSeedList    = null
 
-# Crafting state.
+# ── Crafting state ────────────────────────────────────────────────────────────
+
 var _current_panel:        int    = PANEL_SUBJECT
-var _selected_subject:     String = ""  # npc_id
-var _selected_claim_id:    String = ""  # claims.json id
-var _selected_seed_npc:    String = ""  # npc_id
-var _confirm_pending:      bool   = false  # true after first "Confirm & Seed" press
-var _selected_evidence_item               = null  # PlayerIntelStore.EvidenceItem or null
-var _panel_tween:          Tween  = null  # open/close slide animation
+var _selected_subject:     String = ""
+var _selected_claim_id:    String = ""
+var _selected_seed_npc:    String = ""
+var _confirm_pending:      bool   = false
+var _selected_evidence_item               = null
+var _panel_tween:          Tween  = null
 var _evidence_tutorial_fired: bool        = false
-var _panel_seed_shown_fired:  bool        = false  # guard for panel_seed_shown signal
-var _seed_recommended_shown: bool        = false  # SPA-758: guard for one-time "Recommended" badge
+var _panel_seed_shown_fired:  bool        = false
 
 # SPA-894: Confirm-pending glow tween for decision tension.
 var _confirm_glow_tween: Tween = null
+# SPA-992: Status label fade-in tween.
+var _status_flash_tween: Tween = null
 
 # Spread prediction overlay — draw node + hovered seed NPC.
 var _spread_draw_node:  Node2D = null
@@ -180,6 +125,7 @@ func _ready() -> void:
 	panel.visible = false
 	_load_ui_textures()
 	_build_dynamic_panels()
+	_init_modules()
 	_init_spread_overlay()
 
 
@@ -188,9 +134,21 @@ func _load_ui_textures() -> void:
 	_claim_icon_tex = load("res://assets/textures/ui_claim_icons.png")
 
 
+func _init_modules() -> void:
+	_estimates    = RumorPanelEstimates.new()
+	_subject_list = RumorPanelSubjectList.new()
+	_claim_list_m = RumorPanelClaimList.new()
+	_seed_list_m  = RumorPanelSeedList.new()
+	# setup() calls that need refs are deferred to setup() below.
+
+
 func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
 	_world_ref       = world
 	_intel_store_ref = intel_store
+	_estimates.setup(world, intel_store)
+	_subject_list.setup(world, intel_store, _portrait_tex)
+	_claim_list_m.setup(world, _claim_icon_tex)
+	_seed_list_m.setup(world, intel_store, _estimates)
 
 
 func toggle() -> void:
@@ -205,7 +163,7 @@ func toggle() -> void:
 		_panel_tween.parallel().tween_property(panel, "position:x", panel.position.x - 30.0, 0.15)
 		_panel_tween.tween_callback(func() -> void:
 			panel.visible = false
-			panel.position.x += 30.0  # restore position
+			panel.position.x += 30.0
 		)
 	else:
 		AudioManager.play_sfx("rumor_panel_open")
@@ -218,7 +176,6 @@ func toggle() -> void:
 		_panel_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		_panel_tween.tween_property(panel, "modulate:a", 1.0, 0.18)
 		_panel_tween.parallel().tween_property(panel, "position:x", target_x, 0.22)
-		# Set keyboard focus on the Back/Next nav buttons when panel opens.
 		if _btn_next != null:
 			_btn_next.call_deferred("grab_focus")
 
@@ -237,7 +194,6 @@ func _unhandled_input(event: InputEvent) -> void:
 func _build_dynamic_panels() -> void:
 	var vbox: VBoxContainer = $Panel/VBox
 
-	# Whisper Token bar (shown only on panel 3, hidden otherwise).
 	_whisper_bar = Label.new()
 	_whisper_bar.add_theme_font_size_override("font_size", 12)
 	_whisper_bar.add_theme_color_override("font_color", C_GOLD)
@@ -246,7 +202,7 @@ func _build_dynamic_panels() -> void:
 	_whisper_bar.visible = false
 	vbox.add_child(_whisper_bar)
 
-	# ── Panel 2: Claim selection ─────────────────────────────────────────────
+	# Panel 2: Claim selection.
 	_p2_scroll = ScrollContainer.new()
 	_p2_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_p2_scroll.visible = false
@@ -255,7 +211,7 @@ func _build_dynamic_panels() -> void:
 	_p2_scroll.add_child(_claim_list)
 	vbox.add_child(_p2_scroll)
 
-	# ── Panel 3: Seed target selection ──────────────────────────────────────
+	# Panel 3: Seed target selection.
 	_p3_scroll = ScrollContainer.new()
 	_p3_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_p3_scroll.visible = false
@@ -264,15 +220,15 @@ func _build_dynamic_panels() -> void:
 	_p3_scroll.add_child(_seed_list)
 	vbox.add_child(_p3_scroll)
 
-	# ── Status label (feedback on panel 3) ──────────────────────────────────
+	# Status label (feedback on panel 3).
 	_status_label = Label.new()
 	_status_label.add_theme_font_size_override("font_size", 12)
-	_status_label.add_theme_color_override("font_color", C_STATUS_WARN)
+	_status_label.add_theme_color_override("font_color", Color(1.0, 0.65, 0.20, 1.0))
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_label.visible = false
 	vbox.add_child(_status_label)
 
-	# ── Navigation row ───────────────────────────────────────────────────────
+	# Navigation row.
 	_nav_row = HBoxContainer.new()
 	_btn_back = _make_nav_button("← Back")
 	_btn_back.visible = false
@@ -299,28 +255,23 @@ func _open_panel(idx: int) -> void:
 	_current_panel = idx
 	title_label.text = TITLES[idx]
 	hint_label.text  = HINTS[idx]
-	# SPA-769: Set step-specific tooltip on the title label.
-	var _step_tooltips: Array = [
+
+	# SPA-769: Step-specific tooltip on the title label.
+	var step_tooltips: Array = [
 		"Subject Selection\nChoose which NPC this rumor targets. Their faction and reputation affect spread.",
 		"Claim Type\nThe kind of rumor you are spreading. Intensity and mutability affect how it travels.",
 		"Seed Target\nThe first NPC to hear the rumor. Well-connected NPCs spread it farther.",
 	]
-	if idx < _step_tooltips.size():
-		title_label.tooltip_text = _step_tooltips[idx]
+	if idx < step_tooltips.size():
+		title_label.tooltip_text = step_tooltips[idx]
 
-	# Show / hide content areas.
 	_p1_scroll.visible = (idx == PANEL_SUBJECT)
 	_p2_scroll.visible = (idx == PANEL_CLAIM)
 	_p3_scroll.visible = (idx == PANEL_SEED)
-
-	# Whisper bar only on Panel 3.
 	_whisper_bar.visible = (idx == PANEL_SEED)
+	_btn_back.visible    = (idx != PANEL_SUBJECT)
 
-	# Back button: hidden on panel 1.
-	_btn_back.visible = (idx != PANEL_SUBJECT)
-
-	# Next/Confirm button.  Reset confirmation state on any panel change.
-	_confirm_pending  = false
+	_confirm_pending = false
 	_stop_confirm_glow()
 	_btn_next.visible = true
 	if idx == PANEL_SEED:
@@ -331,10 +282,8 @@ func _open_panel(idx: int) -> void:
 	else:
 		_btn_next.text = "Next →"
 
-	# Status label only relevant on panel 3.
 	_status_label.visible = false
 
-	# Rebuild the appropriate list.
 	match idx:
 		PANEL_SUBJECT:
 			_rebuild_subject_list()
@@ -343,13 +292,72 @@ func _open_panel(idx: int) -> void:
 		PANEL_SEED:
 			_rebuild_seed_list()
 
-	# Grab keyboard focus on the primary nav button for the active panel.
 	if idx == PANEL_SUBJECT:
 		if _btn_next != null:
 			_btn_next.call_deferred("grab_focus")
 	else:
 		if _btn_back != null:
 			_btn_back.call_deferred("grab_focus")
+
+
+# ── List rebuilds (delegate to modules) ──────────────────────────────────────
+
+func _rebuild_subject_list() -> void:
+	_subject_list.build(_npc_list, _selected_subject, func(npc_id: String) -> void:
+		_selected_subject  = npc_id
+		_selected_claim_id = ""
+		_selected_seed_npc = ""
+		_pop_selection_confirm()
+		_rebuild_subject_list()
+	)
+
+
+func _rebuild_claim_list() -> void:
+	var subject_faction := _get_npc_faction(_selected_subject)
+	_claim_list_m.build(_claim_list, subject_faction, _selected_claim_id, func(claim_id: String) -> void:
+		_selected_claim_id      = claim_id
+		_selected_seed_npc      = ""
+		_selected_evidence_item = null
+		_pop_selection_confirm()
+		_rebuild_claim_list()
+	)
+
+
+func _rebuild_seed_list() -> void:
+	# Check evidence tutorial flag from seed list module.
+	var pre_fired: bool = _seed_list_m.evidence_tutorial_fired
+	_seed_list_m.build(
+		_seed_list,
+		_whisper_bar,
+		_selected_subject,
+		_selected_claim_id,
+		_selected_seed_npc,
+		_selected_evidence_item,
+		func(npc_id: String) -> void:  # on_select_seed
+			_selected_seed_npc = npc_id
+			_confirm_pending   = false
+			_stop_confirm_glow()
+			_btn_next.text     = "Confirm & Seed",
+		func(npc_id: String) -> void:  # on_hover_enter
+			_on_seed_hover_enter(npc_id),
+		func() -> void:  # on_hover_exit
+			_on_seed_hover_exit(),
+		func(item) -> void:  # on_evidence_select
+			_selected_evidence_item = item
+			_confirm_pending        = false
+			_btn_next.text          = "Confirm & Seed"
+			_rebuild_seed_list(),
+		func() -> void:  # on_evidence_clear
+			_selected_evidence_item = null
+			_confirm_pending        = false
+			_btn_next.text          = "Confirm & Seed"
+			_rebuild_seed_list(),
+		func() -> void:  # on_pop_confirm
+			_pop_selection_confirm()
+	)
+	# Emit evidence tutorial signal if the module just set the flag for the first time.
+	if not pre_fired and _seed_list_m.evidence_tutorial_fired:
+		evidence_first_shown.emit()
 
 
 # ── Nav callbacks ─────────────────────────────────────────────────────────────
@@ -372,7 +380,6 @@ func _on_next_pressed() -> void:
 			_open_panel(PANEL_SEED)
 		PANEL_SEED:
 			if not _confirm_pending:
-				# First press — validate selection and show a risk/reward summary.
 				if _selected_seed_npc.is_empty():
 					_flash_status("Select a seed target first.")
 					return
@@ -389,18 +396,17 @@ func _on_next_pressed() -> void:
 				var spread_est: float = 0.0
 				var belief_est: float = 0.0
 				if seed_node != null:
-					spread_est = _estimate_spread(seed_node)["value"]
-					belief_est = _estimate_believability(_selected_seed_npc, seed_name)["value"]
+					spread_est = _estimates.estimate_spread(seed_node)["value"]
+					belief_est = _estimates.estimate_believability(
+						_selected_seed_npc, _selected_claim_id, _selected_subject, seed_name
+					)["value"]
 				var heat_risk := "None"
-				var heat_color := "low"
 				if _intel_store_ref != null and _intel_store_ref.heat_enabled:
 					var cur_heat: float = _intel_store_ref.get_heat(_selected_seed_npc)
 					if cur_heat >= 50.0:
 						heat_risk = "HIGH — suspicion will rise"
-						heat_color = "high"
 					elif cur_heat >= 25.0:
 						heat_risk = "Moderate — some suspicion"
-						heat_color = "med"
 					else:
 						heat_risk = "Low"
 				var summary := (
@@ -414,17 +420,34 @@ func _on_next_pressed() -> void:
 					_selected_claim_id, subj_name, seed_name,
 				]
 				_flash_status(summary)
-				_confirm_pending  = true
-				_btn_next.text    = "Confirm & Seed ✓"
-				# SPA-894: Pulse the confirm button to heighten tension.
+				_confirm_pending = true
+				_btn_next.text   = "Confirm & Seed ✓"
 				_start_confirm_glow()
 			else:
 				_try_confirm_seed()
 
 
+# ── Status / animation feedback ───────────────────────────────────────────────
+
 func _flash_status(msg: String) -> void:
 	_status_label.text = msg
 	_status_label.visible = true
+	# SPA-992: Fade in instead of snapping visible.
+	_status_label.modulate.a = 0.0
+	if _status_flash_tween != null and _status_flash_tween.is_valid():
+		_status_flash_tween.kill()
+	_status_flash_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_status_flash_tween.tween_property(_status_label, "modulate:a", 1.0, 0.18)
+
+
+## SPA-992: Brief scale pop on the Next/Confirm button to confirm a selection.
+func _pop_selection_confirm() -> void:
+	if _btn_next == null:
+		return
+	_btn_next.pivot_offset = _btn_next.size * 0.5
+	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_btn_next, "scale", Vector2(1.12, 1.12), 0.08)
+	tw.tween_property(_btn_next, "scale", Vector2.ONE, 0.12)
 
 
 ## SPA-894: Looping glow pulse on the Confirm button while _confirm_pending is true.
@@ -451,495 +474,15 @@ func _stop_confirm_glow() -> void:
 		_btn_next.add_theme_color_override("font_color", C_BTN_TEXT)
 
 
-# ── Panel 1: Subject list ─────────────────────────────────────────────────────
-
-func _rebuild_subject_list() -> void:
-	for child in _npc_list.get_children():
-		child.queue_free()
-
-	if _world_ref == null or _intel_store_ref == null:
-		return
-
-	for npc in _world_ref.npcs:
-		var npc_id:      String = npc.npc_data.get("id",           "")
-		var npc_name:    String = npc.npc_data.get("name",         "")
-		var faction:     String = npc.npc_data.get("faction",      "")
-		var portrait_id: int    = npc.npc_data.get("portrait_id",  0)
-		var rels: Array = _intel_store_ref.get_relationships_for_npc(npc_id)
-
-		var entry := _build_subject_entry(npc_id, npc_name, faction, portrait_id, rels)
-		_npc_list.add_child(entry)
-
-
-func _build_subject_entry(
-		npc_id:      String,
-		npc_name:    String,
-		faction:     String,
-		portrait_id: int,
-		rels:        Array
-) -> Control:
-	var outer := PanelContainer.new()
-
-	# Highlight if selected.
-	if npc_id == _selected_subject:
-		var style := StyleBoxFlat.new()
-		style.bg_color = C_SELECTED_SUBJECT_BG
-		outer.add_theme_stylebox_override("panel", style)
-
-	var hbox_main := HBoxContainer.new()
-	hbox_main.add_theme_constant_override("separation", 8)
-	outer.add_child(hbox_main)
-
-	# Portrait (64×80 from atlas, displayed at 48×60 to fit panel).
-	var portrait_rect := _make_portrait_rect(portrait_id)
-	hbox_main.add_child(portrait_rect)
-
-	var vbox := VBoxContainer.new()
-	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox_main.add_child(vbox)
-
-	# Header row.
-	var header := HBoxContainer.new()
-	vbox.add_child(header)
-
-	var swatch_panel := Panel.new()
-	swatch_panel.custom_minimum_size = Vector2(18, 18)
-	swatch_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var _sw_col := _faction_color(faction)
-	var _sw_style := StyleBoxFlat.new()
-	_sw_style.bg_color = _sw_col
-	_sw_style.set_corner_radius_all(3)
-	_sw_style.set_border_width_all(1)
-	_sw_style.border_color = Color(_sw_col.r * 0.6, _sw_col.g * 0.6, _sw_col.b * 0.6, 0.8)
-	swatch_panel.add_theme_stylebox_override("panel", _sw_style)
-	header.add_child(swatch_panel)
-
-	var name_lbl := Label.new()
-	name_lbl.text = "  " + npc_name
-	name_lbl.add_theme_font_size_override("font_size", 14)
-	name_lbl.add_theme_color_override("font_color", C_NPC_NAME)
-	name_lbl.add_theme_constant_override("outline_size", 1)
-	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
-	header.add_child(name_lbl)
-
-	var faction_lbl := Label.new()
-	faction_lbl.text = "  [" + faction.capitalize() + "]"
-	faction_lbl.add_theme_font_size_override("font_size", 13)
-	faction_lbl.add_theme_color_override("font_color", _faction_color(faction))
-	header.add_child(faction_lbl)
-
-	# Relationship rows.
-	if rels.is_empty():
-		var lock_lbl := Label.new()
-		lock_lbl.text = "    🔒 Relationship: Unknown"
-		lock_lbl.add_theme_font_size_override("font_size", 12)
-		lock_lbl.add_theme_color_override("font_color", C_LOCKED)
-		vbox.add_child(lock_lbl)
-	else:
-		for intel in rels:
-			var other_name: String
-			if intel.npc_a_id == npc_id:
-				other_name = intel.npc_b_name
-			else:
-				other_name = intel.npc_a_name
-
-			var bar_str := "[" + "*".repeat(intel.bars()) + " ".repeat(3 - intel.bars()) + "]"
-			var prefix: String
-			var color: Color
-			if intel.affinity_label == "suspicious":
-				prefix = "    [!] Suspicious of: "
-				color  = C_RELATION_SUSPICIOUS
-			elif intel.affinity_label == "allied":
-				prefix = "    [*] Close with: "
-				color  = C_RELATION_ALLIED
-			else:
-				prefix = "    [~] Knows: "
-				color  = C_RELATION_NEUTRAL
-
-			var rel_lbl := Label.new()
-			rel_lbl.text = "%s%s  %s (%s)" % [
-				prefix, other_name, bar_str, intel.strength_label()
-			]
-			rel_lbl.add_theme_font_size_override("font_size", 12)
-			rel_lbl.add_theme_color_override("font_color", color)
-			vbox.add_child(rel_lbl)
-
-	vbox.add_child(HSeparator.new())
-
-	# Select on click.
-	var btn := Button.new()
-	btn.text = "Select as Subject"
-	btn.add_theme_font_size_override("font_size", 12)
-	var captured_id := npc_id
-	btn.pressed.connect(func():
-		AudioManager.play_sfx("ui_click")
-		_selected_subject = captured_id
-		_selected_claim_id = ""  # reset downstream selections
-		_selected_seed_npc = ""
-		_rebuild_subject_list()
-	)
-	vbox.add_child(btn)
-
-	return outer
-
-
-# ── Panel 2: Claim list ───────────────────────────────────────────────────────
-
-func _rebuild_claim_list() -> void:
-	for child in _claim_list.get_children():
-		child.queue_free()
-
-	if _world_ref == null:
-		return
-
-	# Determine subject faction for filtering.
-	var subject_faction := _get_npc_faction(_selected_subject)
-	var claims: Array = _world_ref.get_claims()
-
-	for claim in claims:
-		var target_factions: Array = claim.get("targetFactions", [])
-		# Show claim if no faction filter OR subject faction matches.
-		if not target_factions.is_empty() and not subject_faction.is_empty():
-			if not (subject_faction in target_factions):
-				continue
-
-		var entry := _build_claim_entry(claim)
-		_claim_list.add_child(entry)
-
-
-func _build_claim_entry(claim: Dictionary) -> Control:
-	var claim_id:  String = claim.get("id",           "?")
-	var type_str:  String = claim.get("type",         "?")
-	var tmpl_text: String = claim.get("templateText", "")
-	var intensity: int    = int(claim.get("intensity",  3))
-	var mutability: float = float(claim.get("mutability", 3)) / 5.0
-
-	var outer := PanelContainer.new()
-
-	if claim_id == _selected_claim_id:
-		var style := StyleBoxFlat.new()
-		style.bg_color = C_SELECTED_CLAIM_BG
-		outer.add_theme_stylebox_override("panel", style)
-
-	var vbox := VBoxContainer.new()
-	outer.add_child(vbox)
-
-	# Type badge + icon + ID.
-	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 6)
-	vbox.add_child(header)
-
-	var icon_rect := _make_claim_icon_rect(type_str)
-	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	header.add_child(icon_rect)
-
-	var type_lbl := Label.new()
-	type_lbl.text = "[%s]  %s" % [type_str.to_upper(), claim_id]
-	type_lbl.add_theme_font_size_override("font_size", 12)
-	type_lbl.add_theme_color_override("font_color", _claim_type_color(type_str))
-	header.add_child(type_lbl)
-
-	# Template text (the actual rumor wording).
-	var tmpl_lbl := Label.new()
-	tmpl_lbl.text = '  "' + tmpl_text + '"'
-	tmpl_lbl.add_theme_font_size_override("font_size", 12)
-	tmpl_lbl.add_theme_color_override("font_color", C_TEMPLATE_TEXT)
-	tmpl_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	vbox.add_child(tmpl_lbl)
-
-	# Stats row.
-	var stats_row := HBoxContainer.new()
-	vbox.add_child(stats_row)
-
-	var inten_lbl := Label.new()
-	inten_lbl.text = "  Intensity: " + "█".repeat(intensity) + "░".repeat(5 - intensity)
-	inten_lbl.add_theme_font_size_override("font_size", 12)
-	inten_lbl.add_theme_color_override("font_color", _intensity_color(intensity))
-	stats_row.add_child(inten_lbl)
-
-	var mut_bars: int = roundi(mutability * 5.0)
-	var mut_lbl  := Label.new()
-	mut_lbl.text = "   Mutability: " + "█".repeat(mut_bars) + "░".repeat(5 - mut_bars)
-	mut_lbl.add_theme_font_size_override("font_size", 12)
-	mut_lbl.add_theme_color_override("font_color", C_MUTABILITY)
-	stats_row.add_child(mut_lbl)
-
-	# Base believability hint — helps player assess claim strength before seed target.
-	var base_belief: int = roundi(float(intensity) / 5.0 * 100.0)
-	var belief_hint := Label.new()
-	belief_hint.text = "   Base Belief: %d%%" % base_belief
-	belief_hint.add_theme_font_size_override("font_size", 12)
-	var bhint_color: Color
-	if base_belief >= 60:
-		bhint_color = Color(0.40, 0.90, 0.45, 1.0)
-	elif base_belief >= 40:
-		bhint_color = Color(0.95, 0.80, 0.30, 1.0)
-	else:
-		bhint_color = Color(0.95, 0.45, 0.25, 1.0)
-	belief_hint.add_theme_color_override("font_color", bhint_color)
-	stats_row.add_child(belief_hint)
-
-	vbox.add_child(HSeparator.new())
-
-	var btn := Button.new()
-	btn.text = "Select Claim"
-	btn.add_theme_font_size_override("font_size", 12)
-	var captured_id := claim_id
-	btn.pressed.connect(func():
-		AudioManager.play_sfx("ui_click")
-		_selected_claim_id = captured_id
-		_selected_seed_npc = ""
-		_selected_evidence_item = null  # new claim may change compatible evidence
-		_rebuild_claim_list()
-	)
-	vbox.add_child(btn)
-
-	return outer
-
-
-# ── Panel 3: Seed target list ─────────────────────────────────────────────────
-
-func _rebuild_seed_list() -> void:
-	for child in _seed_list.get_children():
-		child.queue_free()
-
-	if _world_ref == null or _intel_store_ref == null:
-		return
-
-	# Update Whisper Token bar — show cost prominently.
-	var tokens: int = _intel_store_ref.whisper_tokens_remaining
-	var max_t:  int = _intel_store_ref.max_daily_whispers
-	_whisper_bar.text = "Whisper Tokens: %d / %d remaining  |  Cost: 1 token per rumor  |  Replenishes at dawn" % [
-		tokens, max_t
-	]
-	_whisper_bar.add_theme_font_size_override("font_size", 13)
-	if tokens == 0:
-		_whisper_bar.add_theme_color_override("font_color", Color(0.95, 0.40, 0.25, 1.0))
-	else:
-		_whisper_bar.add_theme_color_override("font_color", C_GOLD)
-
-	# Chain indicator — show when seeding would create a rumor chain.
-	var chain_info := _detect_current_chain()
-	var chain_type: PropagationEngine.ChainType = chain_info.get("chain_type", PropagationEngine.ChainType.NONE)
-	if chain_type != PropagationEngine.ChainType.NONE:
-		_add_chain_indicator(chain_type)
-
-	# Evidence attachment section — only shown when inventory is non-empty.
-	if _intel_store_ref != null and not _intel_store_ref.evidence_inventory.is_empty():
-		var claim_type_upper := _get_claim_type_upper(_selected_claim_id)
-		var compatible := _intel_store_ref.get_compatible_evidence(claim_type_upper)
-		_add_evidence_section(compatible)
-
-	# SPA-758: Determine recommended seed target on first Panel 3 open in S1.
-	var recommended_id: String = ""
-	var _is_s1: bool = _world_ref != null and _world_ref.get("active_scenario_id") == "scenario_1"
-	if _is_s1 and not _seed_recommended_shown:
-		var best_soc: float = -1.0
-		for npc in _world_ref.npcs:
-			var nid: String = npc.npc_data.get("id", "")
-			if nid == _selected_subject:
-				continue
-			var soc: float = float(npc.npc_data.get("sociability", 0.5))
-			if soc > best_soc:
-				best_soc = soc
-				recommended_id = nid
-		_seed_recommended_shown = true
-
-	for npc in _world_ref.npcs:
-		var npc_id:   String = npc.npc_data.get("id",      "")
-		# Cannot seed to the subject themselves.
-		if npc_id == _selected_subject:
-			continue
-		var npc_name: String = npc.npc_data.get("name",    "")
-		var faction:  String = npc.npc_data.get("faction", "")
-
-		var entry := _build_seed_entry(npc, npc_id, npc_name, faction, npc_id == recommended_id)
-		_seed_list.add_child(entry)
-
-
-func _build_seed_entry(
-		npc_node: Node2D,
-		npc_id:   String,
-		npc_name: String,
-		faction:  String,
-		is_recommended: bool = false
-) -> Control:
-	var outer := PanelContainer.new()
-
-	if is_recommended:
-		# SPA-758: Gold border highlight for recommended seed target.
-		var rec_style := StyleBoxFlat.new()
-		rec_style.bg_color = Color(0.12, 0.09, 0.04, 0.95)
-		rec_style.border_color = Color(0.957, 0.651, 0.227, 0.85)
-		rec_style.set_border_width_all(2)
-		rec_style.set_corner_radius_all(4)
-		outer.add_theme_stylebox_override("panel", rec_style)
-	elif npc_id == _selected_seed_npc:
-		var style := StyleBoxFlat.new()
-		style.bg_color = C_SELECTED_SEED_BG
-		outer.add_theme_stylebox_override("panel", style)
-
-	# Spread prediction overlay: hover triggers ring drawing on world map.
-	var captured_npc_id := npc_id
-	outer.mouse_entered.connect(func() -> void: _on_seed_hover_enter(captured_npc_id))
-	outer.mouse_exited.connect(_on_seed_hover_exit)
-
-	var vbox := VBoxContainer.new()
-	outer.add_child(vbox)
-
-	var header := HBoxContainer.new()
-	vbox.add_child(header)
-
-	var swatch_panel := Panel.new()
-	swatch_panel.custom_minimum_size = Vector2(18, 18)
-	swatch_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var _sw_col := _faction_color(faction)
-	var _sw_style := StyleBoxFlat.new()
-	_sw_style.bg_color = _sw_col
-	_sw_style.set_corner_radius_all(3)
-	_sw_style.set_border_width_all(1)
-	_sw_style.border_color = Color(_sw_col.r * 0.6, _sw_col.g * 0.6, _sw_col.b * 0.6, 0.8)
-	swatch_panel.add_theme_stylebox_override("panel", _sw_style)
-	header.add_child(swatch_panel)
-
-	var name_lbl := Label.new()
-	name_lbl.text = "  " + npc_name + "  [" + faction.capitalize() + "]"
-	name_lbl.add_theme_font_size_override("font_size", 14)
-	name_lbl.add_theme_color_override("font_color", C_NPC_NAME)
-	name_lbl.add_theme_constant_override("outline_size", 1)
-	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
-	header.add_child(name_lbl)
-
-	# SPA-758: "Recommended" badge for highest-sociability NPC on first S1 open.
-	if is_recommended:
-		var rec_badge := Label.new()
-		rec_badge.text = "★ Recommended — highest reach"
-		rec_badge.add_theme_font_size_override("font_size", 12)
-		rec_badge.add_theme_color_override("font_color", Color(0.957, 0.651, 0.227, 1.0))
-		header.add_child(rec_badge)
-
-	# Estimates with numeric percentages.
-	var spread_result := _estimate_spread(npc_node)
-	var belief_result := _estimate_believability(npc_id, npc_name)
-	var spread_est:    float  = spread_result["value"]
-	var spread_reason: String = spread_result["reason"]
-	var belief_est:    float  = belief_result["value"]
-	var belief_reason: String = belief_result["reason"]
-	var belief_pct:    int    = roundi(belief_est * 100.0)
-
-	# Spread estimate row.
-	var spread_row := HBoxContainer.new()
-	spread_row.add_theme_constant_override("separation", 6)
-	vbox.add_child(spread_row)
-
-	var spread_icon := Label.new()
-	spread_icon.text = "    Spread: ~%d NPCs" % roundi(spread_est)
-	spread_icon.add_theme_font_size_override("font_size", 13)
-	var spread_color: Color
-	if spread_est >= 4.0:
-		spread_color = Color(0.40, 0.90, 0.45, 1.0)
-	elif spread_est >= 2.0:
-		spread_color = Color(0.95, 0.80, 0.30, 1.0)
-	else:
-		spread_color = Color(0.95, 0.45, 0.25, 1.0)
-	spread_icon.add_theme_color_override("font_color", spread_color)
-	spread_row.add_child(spread_icon)
-
-	# Believability with colour-coded badge.
-	var belief_color: Color
-	if belief_pct >= 60:
-		belief_color = Color(0.40, 0.90, 0.45, 1.0)
-	elif belief_pct >= 35:
-		belief_color = Color(0.95, 0.80, 0.30, 1.0)
-	else:
-		belief_color = Color(0.95, 0.45, 0.25, 1.0)
-
-	var belief_lbl := Label.new()
-	belief_lbl.text = "Believability: %d%%" % belief_pct
-	belief_lbl.add_theme_font_size_override("font_size", 13)
-	belief_lbl.add_theme_color_override("font_color", belief_color)
-	spread_row.add_child(belief_lbl)
-
-	# Success probability hint — combines spread + believability for a quick read.
-	var success_score: float = (spread_est / 6.0) * 0.4 + belief_est * 0.6
-	var hint_text: String
-	var hint_color: Color
-	if success_score >= 0.65:
-		hint_text  = "Very Likely"
-		hint_color = Color(0.30, 0.95, 0.50, 1.0)
-	elif success_score >= 0.45:
-		hint_text  = "Good Chance"
-		hint_color = Color(0.50, 0.90, 0.40, 1.0)
-	elif success_score >= 0.30:
-		hint_text  = "Moderate"
-		hint_color = Color(0.95, 0.80, 0.30, 1.0)
-	elif success_score >= 0.15:
-		hint_text  = "Risky"
-		hint_color = Color(0.95, 0.55, 0.25, 1.0)
-	else:
-		hint_text  = "Unlikely"
-		hint_color = Color(0.95, 0.35, 0.25, 1.0)
-
-	var hint_lbl := Label.new()
-	hint_lbl.text = "[%s]" % hint_text
-	hint_lbl.add_theme_font_size_override("font_size", 12)
-	hint_lbl.add_theme_color_override("font_color", hint_color)
-	spread_row.add_child(hint_lbl)
-
-	# SPA-849: 1-line forecast reasons below the stats row.
-	var reason_row := HBoxContainer.new()
-	reason_row.add_theme_constant_override("separation", 14)
-	vbox.add_child(reason_row)
-	var spread_reason_lbl := Label.new()
-	spread_reason_lbl.text = "    " + spread_reason
-	spread_reason_lbl.add_theme_font_size_override("font_size", 11)
-	spread_reason_lbl.add_theme_color_override("font_color", Color(0.70, 0.82, 0.70, 0.80))
-	reason_row.add_child(spread_reason_lbl)
-	var belief_reason_lbl := Label.new()
-	belief_reason_lbl.text = belief_reason
-	belief_reason_lbl.add_theme_font_size_override("font_size", 11)
-	belief_reason_lbl.add_theme_color_override("font_color", Color(0.70, 0.76, 0.90, 0.80))
-	reason_row.add_child(belief_reason_lbl)
-
-	# Heat warning indicator: shown when the NPC's heat is suppressing the estimate.
-	if _intel_store_ref != null and _intel_store_ref.heat_enabled:
-		var heat_val: float = _intel_store_ref.get_heat(npc_id)
-		if heat_val >= 50.0:
-			var heat_warn := Label.new()
-			heat_warn.text = "  ⚠ Suspicious — estimate reduced"
-			heat_warn.add_theme_font_size_override("font_size", 11)
-			heat_warn.add_theme_color_override("font_color", C_STATUS_WARN)
-			vbox.add_child(heat_warn)
-
-	vbox.add_child(HSeparator.new())
-
-	var btn := Button.new()
-	btn.text = "Whisper to " + npc_name
-	btn.add_theme_font_size_override("font_size", 12)
-	var captured_id := npc_id
-	btn.pressed.connect(func():
-		_selected_seed_npc = captured_id
-		_confirm_pending   = false
-		_stop_confirm_glow()
-		_btn_next.text     = "Confirm & Seed"
-		_rebuild_seed_list()
-	)
-	vbox.add_child(btn)
-
-	return outer
-
-
 # ── Confirm & Seed ────────────────────────────────────────────────────────────
 
 func _try_confirm_seed() -> void:
 	if _selected_seed_npc.is_empty():
 		_flash_status("Select a seed target first.")
 		return
-
 	if _intel_store_ref == null or _intel_store_ref.whisper_tokens_remaining <= 0:
 		_flash_status("No Whisper Tokens remaining. Wait until dawn.")
 		return
-
 	if _world_ref == null:
 		return
 
@@ -955,325 +498,20 @@ func _try_confirm_seed() -> void:
 		AudioManager.on_rumor_fail()
 		return
 
-	# Consume evidence now that seeding succeeded.
 	if _selected_evidence_item != null and _intel_store_ref != null:
 		_intel_store_ref.consume_evidence(_selected_evidence_item)
 
-	# Resolve names for the signal.
-	var subj_name  := _get_npc_name(_selected_subject)
-	var seed_name  := _get_npc_name(_selected_seed_npc)
+	var subj_name := _get_npc_name(_selected_subject)
+	var seed_name := _get_npc_name(_selected_seed_npc)
 
 	emit_signal("rumor_seeded", rumor_id, subj_name, _selected_claim_id, seed_name)
 
-	# Reset state and close the panel.
 	_selected_subject       = ""
 	_selected_claim_id      = ""
 	_selected_seed_npc      = ""
 	_confirm_pending        = false
 	_selected_evidence_item = null
 	toggle()
-
-
-
-# ── Estimates ─────────────────────────────────────────────────────────────────
-
-## Rough spread estimate: count of NPCs within the 8-tile spread radius,
-## weighted by their average sociability.
-## Returns {value: float, reason: String} — reason cites the dominant spread factor.
-func _estimate_spread(seed_npc: Node2D) -> Dictionary:
-	if _world_ref == null:
-		return {"value": 0.0, "reason": "No world data"}
-	const SPREAD_RADIUS := 8
-	var count: float = 0.0
-	var high_soc: int = 0
-	for npc in _world_ref.npcs:
-		if npc == seed_npc:
-			continue
-		var dist: int = abs((npc.current_cell as Vector2i).x - (seed_npc.current_cell as Vector2i).x) \
-		              + abs((npc.current_cell as Vector2i).y - (seed_npc.current_cell as Vector2i).y)
-		if dist <= SPREAD_RADIUS:
-			var soc: float = float(npc.npc_data.get("sociability", 0.5))
-			count += soc
-			if soc >= 0.7:
-				high_soc += 1
-	var reason: String
-	if count >= 4.0:
-		reason = "Social hub — wide reach" if high_soc >= 2 else "Crowded area — wide reach"
-	elif count >= 2.0:
-		reason = "Some neighbors nearby"
-	else:
-		reason = "Sparse area — low reach"
-	return {"value": count, "reason": reason}
-
-
-## Believability estimate: claim base + same-faction bonus, adjusted for heat modifier.
-## Mirrors the heat_modifier path in propagation_engine.calc_beta so the displayed
-## percentage matches actual adoption probability (fixes SPA-594).
-## Returns {value: float, reason: String} — reason cites the dominant believability factor.
-## npc_name is optional; when supplied it personalises the reason line (SPA-849).
-func _estimate_believability(seed_npc_id: String, npc_name: String = "") -> Dictionary:
-	var claim_intensity: int = 3
-	if _world_ref != null:
-		for c in _world_ref.get_claims():
-			if c.get("id", "") == _selected_claim_id:
-				claim_intensity = int(c.get("intensity", 3))
-				break
-
-	var base: float = float(claim_intensity) / 5.0
-
-	# Same-faction bonus mirrors NPC credulity logic in npc.gd.
-	var subj_faction: String = _get_npc_faction(_selected_subject)
-	var seed_faction: String = _get_npc_faction(seed_npc_id)
-	var same_faction: bool = not subj_faction.is_empty() and subj_faction == seed_faction
-	if same_faction:
-		base += 0.15
-
-	# Heat modifier mirrors propagation_engine.calc_beta:
-	#   heat >= 75 → effective credulity -0.30
-	#   heat >= 50 → effective credulity -0.15
-	var heat_penalty: float = 0.0
-	if _intel_store_ref != null and _intel_store_ref.heat_enabled:
-		var heat_val: float = _intel_store_ref.get_heat(seed_npc_id)
-		if heat_val >= 75.0:
-			base -= 0.30
-			heat_penalty = 0.30
-		elif heat_val >= 50.0:
-			base -= 0.15
-			heat_penalty = 0.15
-
-	var label: String = npc_name if not npc_name.is_empty() else "NPC"
-	var reason: String
-	if heat_penalty >= 0.30:
-		reason = "%s — under scrutiny" % label
-	elif heat_penalty >= 0.15:
-		reason = "Moderate heat — belief reduced"
-	elif same_faction:
-		reason = "%s shares %s ties" % [label, seed_faction.capitalize()]
-	elif claim_intensity >= 4:
-		reason = "Strong claim — high credibility"
-	elif claim_intensity <= 2:
-		reason = "Weak claim — low believability"
-	else:
-		reason = "No shared bonds — base belief"
-
-	return {"value": clampf(base, 0.0, 1.0), "reason": reason}
-
-
-# ── Evidence helpers ──────────────────────────────────────────────────────────
-
-## Returns the claim type string (upper-case) for the given claim_id, or "".
-func _get_claim_type_upper(claim_id: String) -> String:
-	if _world_ref == null:
-		return ""
-	for c in _world_ref.get_claims():
-		if c.get("id", "") == claim_id:
-			return c.get("type", "").to_upper()
-	return ""
-
-
-## Detect whether the current subject + claim selection would form a rumor chain.
-func _detect_current_chain() -> Dictionary:
-	if _world_ref == null or _world_ref.propagation_engine == null:
-		return { "chain_type": PropagationEngine.ChainType.NONE, "existing_rumor": null }
-	if _selected_subject.is_empty() or _selected_claim_id.is_empty():
-		return { "chain_type": PropagationEngine.ChainType.NONE, "existing_rumor": null }
-	var claim_type := Rumor.claim_type_from_string(_get_claim_type_upper(_selected_claim_id).to_lower())
-	return _world_ref.propagation_engine.detect_chain(_selected_subject, claim_type)
-
-
-## Builds a compact chain-type badge at the top of Panel 3's seed list.
-func _add_chain_indicator(chain_type: PropagationEngine.ChainType) -> void:
-	var badge_color: Color
-	var badge_text:  String
-	var desc_text:   String
-	match chain_type:
-		PropagationEngine.ChainType.SAME_TYPE:
-			badge_color = Color(0.60, 0.60, 0.55, 1.0)
-			badge_text  = "Echo"
-			desc_text   = "Same-Type Chain: +15% believability, +1 intensity"
-		PropagationEngine.ChainType.ESCALATION:
-			badge_color = Color(0.92, 0.22, 0.18, 1.0)
-			badge_text  = "Escalation"
-			desc_text   = "Escalation Chain: +25% believability, -50% mutation"
-		PropagationEngine.ChainType.CONTRADICTION:
-			badge_color = Color(0.90, 0.50, 0.15, 1.0)
-			badge_text  = "Contradiction"
-			desc_text   = "Contradiction Chain: faster CONTRADICTED, -10% believability"
-
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	_seed_list.add_child(row)
-
-	# Compact colored badge panel.
-	var badge_panel := PanelContainer.new()
-	var badge_style := StyleBoxFlat.new()
-	badge_style.bg_color     = Color(badge_color.r * 0.25, badge_color.g * 0.25, badge_color.b * 0.25, 0.90)
-	badge_style.border_color = badge_color
-	badge_style.set_border_width_all(1)
-	badge_style.set_corner_radius_all(3)
-	badge_style.set_content_margin_all(4)
-	badge_panel.add_theme_stylebox_override("panel", badge_style)
-	badge_panel.tooltip_text = desc_text
-
-	var badge_lbl := Label.new()
-	badge_lbl.text = badge_text
-	badge_lbl.add_theme_font_size_override("font_size", 12)
-	badge_lbl.add_theme_color_override("font_color", badge_color)
-	badge_panel.add_child(badge_lbl)
-	row.add_child(badge_panel)
-
-	# Inline description text.
-	var desc_lbl := Label.new()
-	desc_lbl.text = desc_text
-	desc_lbl.add_theme_font_size_override("font_size", 11)
-	desc_lbl.add_theme_color_override("font_color", C_CHAIN_DESC)
-	desc_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(desc_lbl)
-
-
-## Builds and inserts the evidence attachment sub-section at the top of _seed_list.
-func _add_evidence_section(compatible: Array) -> void:
-	var hdr := Label.new()
-	hdr.add_theme_font_size_override("font_size", 12)
-	hdr.add_theme_color_override("font_color", C_GOLD)
-	if compatible.is_empty():
-		hdr.text = "  [Evidence] No compatible evidence for this claim type."
-		_seed_list.add_child(hdr)
-		_seed_list.add_child(HSeparator.new())
-		return
-
-	hdr.text = "  [Evidence] Attach evidence to boost this rumor (optional):"
-	_seed_list.add_child(hdr)
-
-	# Fire evidence tutorial once the player first sees usable evidence items.
-	if not _evidence_tutorial_fired:
-		_evidence_tutorial_fired = true
-		evidence_first_shown.emit()
-
-	# When evidence is already attached, show a compact summary under the header.
-	if _selected_evidence_item != null:
-		var attached_lbl := Label.new()
-		attached_lbl.add_theme_font_size_override("font_size", 12)
-		attached_lbl.add_theme_color_override("font_color", C_EVIDENCE_ATTACHED)
-		var bonus_str := ""
-		if _selected_evidence_item.believability_bonus != 0.0:
-			bonus_str = "  +%d%% Belief" % roundi(_selected_evidence_item.believability_bonus * 100.0)
-		attached_lbl.text = "  ✓ Attached: %s%s" % [_selected_evidence_item.type, bonus_str]
-		_seed_list.add_child(attached_lbl)
-
-	for item in compatible:
-		_seed_list.add_child(_build_evidence_entry(item))
-
-	if _selected_evidence_item != null:
-		var clear_btn := Button.new()
-		clear_btn.text = "Remove Evidence"
-		clear_btn.add_theme_font_size_override("font_size", 12)
-		clear_btn.pressed.connect(func() -> void:
-			_selected_evidence_item = null
-			_confirm_pending = false
-			_btn_next.text   = "Confirm & Seed"
-			_rebuild_seed_list()
-		)
-		_seed_list.add_child(clear_btn)
-
-	_seed_list.add_child(HSeparator.new())
-
-
-func _build_evidence_entry(item) -> Control:
-	var outer := PanelContainer.new()
-	if item == _selected_evidence_item:
-		var style := StyleBoxFlat.new()
-		style.bg_color = C_SELECTED_EVIDENCE_BG
-		outer.add_theme_stylebox_override("panel", style)
-
-	var vbox := VBoxContainer.new()
-	outer.add_child(vbox)
-
-	# Type + bonus text.
-	var bonus_parts: Array = []
-	if item.believability_bonus != 0.0:
-		bonus_parts.append("Believability +%.2f" % item.believability_bonus)
-	if item.mutability_modifier != 0.0:
-		var sign_str: String = "+" if item.mutability_modifier >= 0.0 else ""
-		bonus_parts.append("Mutability %s%.2f" % [sign_str, item.mutability_modifier])
-	var type_lbl := Label.new()
-	type_lbl.text = "  %s — %s" % [item.type, "  |  ".join(bonus_parts)]
-	type_lbl.add_theme_font_size_override("font_size", 12)
-	type_lbl.add_theme_color_override("font_color", C_EVIDENCE_TYPE)
-	vbox.add_child(type_lbl)
-
-	# Visual boost bar — scale 0.0–0.25 bonus onto 1–5 bars.
-	if item.believability_bonus > 0.0:
-		var boost_bars: int = clampi(roundi(item.believability_bonus * 20.0), 1, 5)
-		var bar_lbl := Label.new()
-		bar_lbl.text = "    Boost: " + "▇".repeat(boost_bars) + "░".repeat(5 - boost_bars)
-		bar_lbl.add_theme_font_size_override("font_size", 12)
-		bar_lbl.add_theme_color_override("font_color", C_BOOST_BAR)
-		vbox.add_child(bar_lbl)
-
-	# Compatible claim types hint.
-	if not item.compatible_claims.is_empty():
-		var compat_lbl := Label.new()
-		compat_lbl.text = "    Works with: " + ", ".join(item.compatible_claims)
-		compat_lbl.add_theme_font_size_override("font_size", 12)
-		compat_lbl.add_theme_color_override("font_color", C_COMPAT_HINT)
-		vbox.add_child(compat_lbl)
-
-	var btn := Button.new()
-	btn.add_theme_font_size_override("font_size", 12)
-	if item == _selected_evidence_item:
-		btn.text = "✓ Attached"
-	else:
-		btn.text = "Attach"
-	var captured_item = item
-	btn.pressed.connect(func() -> void:
-		_selected_evidence_item = captured_item
-		_confirm_pending = false
-		_btn_next.text   = "Confirm & Seed"
-		_rebuild_seed_list()
-	)
-	vbox.add_child(btn)
-
-	return outer
-
-
-# ── Portrait & Icon helpers ──────────────────────────────────────────────────
-
-func _make_portrait_rect(portrait_id: int) -> TextureRect:
-	var rect := TextureRect.new()
-	rect.custom_minimum_size = Vector2(48, 60)
-	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	if _portrait_tex != null:
-		var col: int = portrait_id % PORTRAIT_COLS
-		var row: int = portrait_id / PORTRAIT_COLS
-		var atlas := AtlasTexture.new()
-		atlas.atlas = _portrait_tex
-		atlas.region = Rect2(col * PORTRAIT_W, row * PORTRAIT_H, PORTRAIT_W, PORTRAIT_H)
-		rect.texture = atlas
-	return rect
-
-
-func _make_claim_icon_rect(type_str: String) -> TextureRect:
-	var rect := TextureRect.new()
-	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	if _claim_icon_tex != null:
-		var idx: int = CLAIM_ICON_INDEX.get(type_str.to_lower(), -1)
-		if idx >= 0:
-			# Derive icon size from atlas: total width / 5 icons.
-			var icon_w: int = int(_claim_icon_tex.get_width()) / 5
-			var icon_h: int = int(_claim_icon_tex.get_height())
-			rect.custom_minimum_size = Vector2(icon_w, icon_h)
-			var atlas := AtlasTexture.new()
-			atlas.atlas = _claim_icon_tex
-			atlas.region = Rect2(idx * icon_w, 0, icon_w, icon_h)
-			rect.texture = atlas
-		else:
-			rect.custom_minimum_size = Vector2(16, 16)
-	else:
-		rect.custom_minimum_size = Vector2(16, 16)
-	return rect
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -1331,34 +569,6 @@ func _get_npc_name(npc_id: String) -> String:
 	return npc_id
 
 
-static func _faction_color(faction: String) -> Color:
-	match faction:
-		"merchant": return C_FACTION_MERCHANT
-		"noble":    return C_FACTION_NOBLE
-		"clergy":   return C_FACTION_CLERGY
-		_:          return Color.WHITE
-
-
-static func _claim_type_color(type_str: String) -> Color:
-	match type_str.to_lower():
-		"accusation": return C_CLAIM_ACCUSATION
-		"scandal":    return C_CLAIM_SCANDAL
-		"illness":    return C_CLAIM_ILLNESS
-		"prophecy":   return C_CLAIM_PROPHECY
-		"praise":     return C_CLAIM_PRAISE
-		"death":      return C_CLAIM_DEATH
-		"heresy":     return C_CLAIM_HERESY
-		_:            return Color.WHITE
-
-
-static func _intensity_color(intensity: int) -> Color:
-	match intensity:
-		1, 2: return C_INTENSITY_LOW
-		3:    return C_INTENSITY_MED
-		4, 5: return C_INTENSITY_HIGH
-		_:    return Color.WHITE
-
-
 # ── Spread prediction overlay ─────────────────────────────────────────────────
 
 func _init_spread_overlay() -> void:
@@ -1387,7 +597,6 @@ func _draw_spread_rings() -> void:
 	if vp == null:
 		return
 
-	# Find the hovered seed NPC node.
 	var seed_node: Node2D = null
 	for npc in _world_ref.npcs:
 		if npc.npc_data.get("id", "") == _hover_seed_npc_id:
@@ -1397,13 +606,11 @@ func _draw_spread_rings() -> void:
 		return
 
 	var ct := vp.get_canvas_transform()
-	const SPREAD_RADIUS_OVERLAY := 8  # matches _estimate_spread
+	const SPREAD_RADIUS_OVERLAY := 8
 
-	# White ring on the seed NPC (initial whisper target).
 	var seed_screen := ct * seed_node.global_position
 	_spread_draw_node.draw_arc(seed_screen, 20.0, 0.0, TAU, 32, C_SPREAD_RING_SEED, 3.0)
 
-	# Rings on NPCs within SPREAD_RADIUS, colored by sociability (spread likelihood).
 	for npc in _world_ref.npcs:
 		var npc_id: String = npc.npc_data.get("id", "")
 		if npc_id == _hover_seed_npc_id:
@@ -1415,10 +622,10 @@ func _draw_spread_rings() -> void:
 		var soc: float = float(npc.npc_data.get("sociability", 0.5))
 		var ring_color: Color
 		if soc >= 0.7:
-			ring_color = C_SPREAD_HIGH   # high sociability — orange/red
+			ring_color = C_SPREAD_HIGH
 		elif soc >= 0.4:
-			ring_color = C_SPREAD_MED    # medium sociability — yellow
+			ring_color = C_SPREAD_MED
 		else:
-			ring_color = C_SPREAD_LOW    # low sociability — green
+			ring_color = C_SPREAD_LOW
 		var npc_screen: Vector2 = ct * npc.global_position
 		_spread_draw_node.draw_arc(npc_screen, 15.0, 0.0, TAU, 24, ring_color, 2.0)
