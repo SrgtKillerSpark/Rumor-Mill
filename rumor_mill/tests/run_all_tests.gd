@@ -45,6 +45,7 @@
 ##   • TestObjectiveHudWinTracker — tempo colours, initial state, configure, setup_world, _get_progress_assessment, flash guard (SPA-1026)
 ##   • TestHudTooltip             — palette, layout constants, initial state, _hide_tooltip null-panel guard (SPA-1026)
 ##   • TestNpcTooltip             — FACTION_LABEL/COLOR, STATE_LABEL/COLOR/ICON, atlas constants, initial state (SPA-1026)
+##   • TestBuildingInterior       — ROSTER_RADIUS, FACTION_LABEL, initial state, setup_world_ref, _refresh_npc_roster guards and roster text (SPA-1078)
 ##   • TestBuildingTooltip        — palette, layout constants, initial state, setup, _world_to_cell conversion (SPA-1026)
 ##   • TestNpcDialogue            — _MAX_BUBBLES, _get_time_phase, initial state, on_exit_tree counter (SPA-1027)
 ##   • TestNpcMovement            — speed/chance constants, initial state, cell_to_world isometric math (SPA-1027)
@@ -170,6 +171,7 @@ const TestAnalyticsManager = preload("res://tests/test_analytics_manager.gd")
 const TestAstarPathfinder = preload("res://tests/test_astar_pathfinder.gd")
 const TestAudioManager = preload("res://tests/test_audio_manager.gd")
 const TestBaseScenarioHud = preload("res://tests/test_base_scenario_hud.gd")
+const TestBuildingInterior = preload("res://tests/test_building_interior.gd")
 const TestBuildingTooltip = preload("res://tests/test_building_tooltip.gd")
 const TestCamera = preload("res://tests/test_camera.gd")
 const TestContextControlsPanel = preload("res://tests/test_context_controls_panel.gd")
@@ -424,6 +426,9 @@ func _init() -> void:
 
 	print("\n── NpcTooltip ──")
 	TestNpcTooltip.new().run()
+
+	print("\n── BuildingInterior ──")
+	TestBuildingInterior.new().run()
 
 	print("\n── BuildingTooltip ──")
 	TestBuildingTooltip.new().run()
