@@ -57,6 +57,11 @@ var illness_agent_ref = null     # IllnessEscalationAgent (S2)
 ## Each entry: { claimType, subjectNpcId, intensity, triggerDay, triggerCondition }
 var _delayed_rumors: Array = []
 
+## Last resolved event data for aftermath bulletin display.
+## { event_id, event_name, choice_index, bulletinAftermath }
+## Cleared after the daily planning overlay consumes it.
+var _last_resolved_aftermath: Dictionary = {}
+
 
 func load_events(events: Array) -> void:
 	_events = events
@@ -138,6 +143,16 @@ func resolve_choice(event_id: String, choice_index: int) -> void:
 
 	_apply_effects(effects)
 
+	# Store aftermath data for the daily planning overlay bulletin.
+	var bulletin: String = choice.get("bulletinAftermath", "")
+	if not bulletin.is_empty():
+		_last_resolved_aftermath = {
+			"event_id": event_id,
+			"event_name": _pending_event.get("name", ""),
+			"choice_index": choice_index,
+			"bulletinAftermath": bulletin,
+		}
+
 	event_resolved.emit(event_id, choice_index, outcome_text)
 	_pending_event = {}
 
@@ -150,6 +165,14 @@ func has_pending_event() -> bool:
 ## Returns the pending event data (empty dict if none).
 func get_pending_event() -> Dictionary:
 	return _pending_event
+
+
+## Consumes and returns the stored aftermath data (empty dict if none).
+## Called by DailyPlanningOverlay at dawn to show a bulletin line.
+func consume_aftermath() -> Dictionary:
+	var result: Dictionary = _last_resolved_aftermath.duplicate()
+	_last_resolved_aftermath = {}
+	return result
 
 
 ## Returns the nearest unfired event whose window is still open or upcoming,
@@ -178,6 +201,7 @@ func to_data() -> Dictionary:
 		"rolled_days":    _rolled_days.duplicate(),
 		"pending_event":  _pending_event.duplicate(),
 		"delayed_rumors": _delayed_rumors.duplicate(true),
+		"last_resolved_aftermath": _last_resolved_aftermath.duplicate(),
 	}
 
 
@@ -186,6 +210,7 @@ func restore_from_data(d: Dictionary) -> void:
 	_resolved_ids  = d.get("resolved_ids", {}).duplicate()
 	_rolled_days   = d.get("rolled_days", {}).duplicate()
 	_pending_event = d.get("pending_event", {}).duplicate()
+	_last_resolved_aftermath = d.get("last_resolved_aftermath", {}).duplicate()
 	_delayed_rumors = []
 	for entry in d.get("delayed_rumors", []):
 		if not entry is Dictionary:

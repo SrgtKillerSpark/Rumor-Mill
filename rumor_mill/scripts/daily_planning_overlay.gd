@@ -314,6 +314,19 @@ func _gather_overnight_events() -> Array[String]:
 	if _world == null:
 		return lines
 
+	# Mid-game event aftermath bulletin (SPA-1019).
+	var mgea: MidGameEventAgent = _world.mid_game_event_agent if "mid_game_event_agent" in _world else null
+	if mgea != null:
+		var aftermath: Dictionary = mgea.consume_aftermath()
+		if not aftermath.is_empty():
+			var event_name: String = aftermath.get("event_name", "")
+			var bulletin: String = aftermath.get("bulletinAftermath", "")
+			if not bulletin.is_empty():
+				if not event_name.is_empty():
+					lines.append("- [%s] %s" % [event_name, bulletin])
+				else:
+					lines.append("- %s" % bulletin)
+
 	# Reputation changes.
 	var rep: ReputationSystem = _world.reputation_system if "reputation_system" in _world else null
 	if rep != null:

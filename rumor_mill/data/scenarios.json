@@ -322,7 +322,8 @@
                 }
               ]
             },
-            "choicePreview": "Bold — damages his reputation but draws guard attention"
+            "choicePreview": "Bold — damages his reputation but draws guard attention",
+            "bulletinAftermath": "The market is buzzing — Edric's ledger is the talk of every stall. The Guard Captain has posted extra patrols."
           },
           {
             "label": "Use it as leverage — keep it quiet for now",
@@ -338,9 +339,11 @@
                 }
               ]
             },
-            "choicePreview": "Cautious — gains recon advantage but weakens his loyalty slowly"
+            "choicePreview": "Cautious — gains recon advantage but weakens his loyalty slowly",
+            "bulletinAftermath": "A strange calm has settled. Edric's allies seem uneasy, though no one can say why."
           }
-        ]
+        ],
+        "foreshadowText": "Whispers at the market stalls — someone has been digging through old tax records at the Guild Hall."
       },
       {
         "id": "s1_the_feast",
@@ -363,7 +366,8 @@
                 }
               ]
             },
-            "choicePreview": "Risky — extra intelligence but increases guard suspicion"
+            "choicePreview": "Risky — extra intelligence but increases guard suspicion",
+            "bulletinAftermath": "The feast's secrets are yours. Several guests were overheard expressing doubts about Edric's leadership."
           },
           {
             "label": "Spread word the feast is a bribe",
@@ -390,9 +394,11 @@
                 }
               ]
             },
-            "choicePreview": "Subtle — erodes reputation and makes allies more gullible"
+            "choicePreview": "Subtle — erodes reputation and makes allies more gullible",
+            "bulletinAftermath": "The townsfolk are calling it a bribe-feast. Edric's generosity has backfired."
           }
-        ]
+        ],
+        "foreshadowText": "Servants are hauling wine barrels to the Manor. Lord Edric is planning something lavish."
       },
       {
         "id": "s1_midnight_meeting",
@@ -431,7 +437,8 @@
                 }
               ]
             },
-            "choicePreview": "Aggressive — hurts reputation and loyalty but raises heat"
+            "choicePreview": "Aggressive — hurts reputation and loyalty but raises heat",
+            "bulletinAftermath": "Overnight, talk of Edric's debts has spread through the inns and alehouses."
           },
           {
             "label": "Bribe the servant for details instead",
@@ -446,9 +453,11 @@
                 "targetFaction": "merchant"
               }
             },
-            "choicePreview": "Quiet — gains intel and contacts without raising heat"
+            "choicePreview": "Quiet — gains intel and contacts without raising heat",
+            "bulletinAftermath": "A servant has been quietly passing details about the Manor's finances to curious merchants."
           }
-        ]
+        ],
+        "foreshadowText": "A Manor servant has been asking around the Tavern — nervous, watching over her shoulder."
       }
     ],
     "difficultyModifiers": {
@@ -807,7 +816,8 @@
                 "pool": "credulous_market"
               }
             },
-            "choicePreview": "Direct — seeds illness belief but risks overexposure"
+            "choicePreview": "Direct — seeds illness belief but risks overexposure",
+            "bulletinAftermath": "The illness rumor has taken root. Two more people are avoiding Alys's stall today."
           },
           {
             "label": "Spread quarantine rumors to distract Maren",
@@ -820,9 +830,11 @@
                 }
               ]
             },
-            "choicePreview": "Indirect — diverts attention and stalls investigation"
+            "choicePreview": "Indirect — diverts attention and stalls investigation",
+            "bulletinAftermath": "Sister Maren was called away to tend the stranger. The market gossip went unchecked."
           }
-        ]
+        ],
+        "foreshadowText": "A figure has been spotted on the road from the capital, walking slowly and leaning on a stick."
       },
       {
         "id": "s2_alys_fights_back",
@@ -848,7 +860,8 @@
                 "count": 1
               }
             },
-            "choicePreview": "Manipulative — her denial becomes evidence against her"
+            "choicePreview": "Manipulative — her denial becomes evidence against her",
+            "bulletinAftermath": "Alys's defence has been turned against her. The whisper is: she protests too much."
           },
           {
             "label": "Stage a distraction — pull the crowd away",
@@ -856,9 +869,11 @@
             "effects": {
               "illnessEscalationCooldownDelta": -1
             },
-            "choicePreview": "Diversionary — redirects the crowd away from counter-arguments"
+            "choicePreview": "Diversionary — redirects the crowd away from counter-arguments",
+            "bulletinAftermath": "A commotion near the alley drew the crowd away before Alys could finish speaking."
           }
-        ]
+        ],
+        "foreshadowText": "Alys has been seen pacing the Market Square at dawn, lips moving as though rehearsing a speech."
       },
       {
         "id": "s2_chapel_vigil",
@@ -885,7 +900,8 @@
                 }
               ]
             },
-            "choicePreview": "Opportunistic — spreads rumors while the town is distracted"
+            "choicePreview": "Opportunistic — spreads rumors while the town is distracted",
+            "bulletinAftermath": "With Sister Maren at the vigil, illness rumors spread freely through the empty market quarter."
           },
           {
             "label": "Attend the vigil and redirect the prayers toward Alys",
@@ -912,9 +928,11 @@
                 }
               ]
             },
-            "choicePreview": "Subversive — turns devotion into suspicion of Alys"
+            "choicePreview": "Subversive — turns devotion into suspicion of Alys",
+            "bulletinAftermath": "The vigil prayers took an unexpected turn — someone spoke of suffering linked to the herb-wife."
           }
-        ]
+        ],
+        "foreshadowText": "Sister Maren has posted notices at the Chapel gate — a special vigil is being planned."
       },
       {
         "id": "s2_infected_cart",
@@ -947,7 +965,8 @@
                 }
               ]
             },
-            "choicePreview": "Aggressive — direct accusation with lasting reputation damage"
+            "choicePreview": "Aggressive — direct accusation with lasting reputation damage",
+            "bulletinAftermath": "The spoiled cart has become proof that illness is real. Alys's name is attached to it now."
           },
           {
             "label": "Use the cart as proof — quarantine is justified",
@@ -969,9 +988,11 @@
                 }
               ]
             },
-            "choicePreview": "Methodical — builds quarantine case but slower impact"
+            "choicePreview": "Methodical — builds quarantine case but slower impact",
+            "bulletinAftermath": "Talk of quarantine is growing louder after the cart incident."
           }
-        ]
+        ],
+        "foreshadowText": "A merchant cart from the lowlands is expected at the Market tomorrow. The roads have been bad."
       },
       {
         "id": "s2_herbwife_apprentice",
@@ -998,7 +1019,8 @@
                 }
               ]
             },
-            "choicePreview": "Bold — forces panic but may attract scrutiny"
+            "choicePreview": "Bold — forces panic but may attract scrutiny",
+            "bulletinAftermath": "The apprentice's cough has become evidence. People are saying Alys carries plague."
           },
           {
             "label": "Quietly isolate the apprentice — use her as leverage over Alys",
@@ -1014,9 +1036,11 @@
                 }
               ]
             },
-            "choicePreview": "Measured — gains leverage over Alys through her apprentice"
+            "choicePreview": "Measured — gains leverage over Alys through her apprentice",
+            "bulletinAftermath": "The apprentice has gone quiet. Alys seems nervous — she knows something has shifted."
           }
-        ]
+        ],
+        "foreshadowText": "Alys sent her young apprentice to the Tavern this morning. The girl looked pale."
       }
     ],
     "difficultyModifiers": {
@@ -1397,7 +1421,8 @@
                 "durationDays": 5
               }
             },
-            "choicePreview": "Loud — maximum damage to Tomas but may provoke backlash"
+            "choicePreview": "Loud — maximum damage to Tomas but may provoke backlash",
+            "bulletinAftermath": "Copies of Tomas's debt letter are posted across the town. His supporters are scrambling."
           },
           {
             "label": "Show it privately to key merchants",
@@ -1417,9 +1442,11 @@
                 }
               ]
             },
-            "choicePreview": "Quiet — targeted damage through influential merchants"
+            "choicePreview": "Quiet — targeted damage through influential merchants",
+            "bulletinAftermath": "Key merchants now know about Tomas's debts. The damage is quiet but deep."
           }
-        ]
+        ],
+        "foreshadowText": "Drinkers at the Tavern say someone dropped a crumpled letter near the hearth last night."
       },
       {
         "id": "s3_merchant_pact",
@@ -1452,7 +1479,8 @@
                 }
               ]
             },
-            "choicePreview": "Constructive — strengthens Calder through alliance building"
+            "choicePreview": "Constructive — strengthens Calder through alliance building",
+            "bulletinAftermath": "The merchant guild is now leaning toward Calder. Trade stability won the argument."
           },
           {
             "label": "Poison the well — make the guild distrust Tomas",
@@ -1475,9 +1503,11 @@
                 "durationDays": 3
               }
             },
-            "choicePreview": "Destructive — undermines Tomas through guild distrust"
+            "choicePreview": "Destructive — undermines Tomas through guild distrust",
+            "bulletinAftermath": "Trust in Tomas has eroded among the guild members after last night's meeting."
           }
-        ]
+        ],
+        "foreshadowText": "Aldric Vane has reserved the back room at the Tavern for a private meeting of guild members."
       },
       {
         "id": "s3_calders_blunder",
@@ -1504,7 +1534,8 @@
                 "targetFaction": "merchant"
               }
             },
-            "choicePreview": "Spin — reframes the mistake as a strength for Calder"
+            "choicePreview": "Spin — reframes the mistake as a strength for Calder",
+            "bulletinAftermath": "The market incident is being reframed — Calder stood up for honest trade."
           },
           {
             "label": "Have Lady Isolde smooth things over quietly",
@@ -1512,9 +1543,11 @@
             "effects": {
               "rivalCooldownBonus": 3
             },
-            "choicePreview": "Smooth — uses noble connections to quietly contain damage"
+            "choicePreview": "Smooth — uses noble connections to quietly contain damage",
+            "bulletinAftermath": "Lady Isolde's quiet intervention has smoothed things over. The merchant is satisfied."
           }
-        ]
+        ],
+        "foreshadowText": "Calder Fenn was overheard arguing with a merchant about weights and measures at the Market."
       },
       {
         "id": "s3_forgers_offer",
@@ -1553,7 +1586,8 @@
                 }
               }
             },
-            "choicePreview": "Risky — immediate boost but forgery may be discovered later"
+            "choicePreview": "Risky — immediate boost but forgery may be discovered later",
+            "bulletinAftermath": "A letter of endorsement is circulating in the noble quarter. Its origins are murky."
           },
           {
             "label": "Refuse — but ask Annit to spy on the rival instead",
@@ -1563,9 +1597,11 @@
               "bonusReconActions": 1,
               "bonusReconDays": 3
             },
-            "choicePreview": "Safe — no forgery risk and gains a spy in the rival camp"
+            "choicePreview": "Safe — no forgery risk and gains a spy in the rival camp",
+            "bulletinAftermath": "Annit Scribe has been seen near the rival's usual haunts, watching and listening."
           }
-        ]
+        ],
+        "foreshadowText": "Annit Scribe was seen lingering near the Guild Hall after dark, watching who came and went."
       },
       {
         "id": "s3_tavern_brawl",
@@ -1596,7 +1632,8 @@
                 "durationDays": 4
               }
             },
-            "choicePreview": "Aggressive — damages rival supporters but raises tensions"
+            "choicePreview": "Aggressive — damages rival supporters but raises tensions",
+            "bulletinAftermath": "The guards are blaming Tomas's supporters for last night's brawl at the Tavern."
           },
           {
             "label": "Have Calder publicly break up the fight — show leadership",
@@ -1622,9 +1659,11 @@
               ],
               "rivalCooldownBonus": 1
             },
-            "choicePreview": "Positive — builds Calder's image as a leader and peacemaker"
+            "choicePreview": "Positive — builds Calder's image as a leader and peacemaker",
+            "bulletinAftermath": "Calder broke up the fight himself. The town is impressed — he showed real leadership."
           }
-        ]
+        ],
+        "foreshadowText": "Tempers are rising at the Tavern — Calder and Tomas supporters have been trading insults all evening."
       }
     ],
     "difficultyModifiers": {
@@ -1972,7 +2011,8 @@
                 }
               ]
             },
-            "choicePreview": "Focused — concentrates defense on the most vulnerable"
+            "choicePreview": "Focused — concentrates defense on the most vulnerable",
+            "bulletinAftermath": "The noble's defence has steadied the most vulnerable of the accused."
           },
           {
             "label": "Ask the noble to vouch for all three accused",
@@ -1994,9 +2034,11 @@
               ],
               "inquisitorCooldownDelta": -1
             },
-            "choicePreview": "Broad — spreads noble influence across all three accused"
+            "choicePreview": "Broad — spreads noble influence across all three accused",
+            "bulletinAftermath": "All three accused have gained some shelter, but the Inquisitor is moving faster now."
           }
-        ]
+        ],
+        "foreshadowText": "A minor noble has arrived in town — one who knew Aldous Prior in better days."
       },
       {
         "id": "s4_forged_evidence",
@@ -2015,7 +2057,8 @@
                 "durationDays": 3
               }
             },
-            "choicePreview": "Direct — publicly undermines the Inquisitor's credibility"
+            "choicePreview": "Direct — publicly undermines the Inquisitor's credibility",
+            "bulletinAftermath": "Brother Cornelius's forgery has been exposed. The chapel crowd is murmuring about his methods."
           },
           {
             "label": "Counter with character witnesses — drown out the evidence",
@@ -2036,9 +2079,11 @@
                 }
               ]
             },
-            "choicePreview": "Indirect — drowns forged evidence under character testimony"
+            "choicePreview": "Indirect — drowns forged evidence under character testimony",
+            "bulletinAftermath": "Character witnesses have drowned out the evidence. But the Inquisitor presses on regardless."
           }
-        ]
+        ],
+        "foreshadowText": "Brother Cornelius has been spending long hours at his writing desk. The chapel scribes are nervous."
       },
       {
         "id": "s4_breaking_point",
@@ -2067,7 +2112,8 @@
               ],
               "inquisitorCooldownDelta": -1
             },
-            "choicePreview": "Inspiring — rallies the accused to resist breaking"
+            "choicePreview": "Inspiring — rallies the accused to resist breaking",
+            "bulletinAftermath": "The accused have found new resolve. The town noticed their courage at dawn."
           },
           {
             "label": "Redirect the Inquisitor — give him a false lead",
@@ -2087,9 +2133,11 @@
                 }
               ]
             },
-            "choicePreview": "Risky — misdirects the Inquisitor with a false trail"
+            "choicePreview": "Risky — misdirects the Inquisitor with a false trail",
+            "bulletinAftermath": "The Inquisitor chased a false lead overnight — precious time wasted on a phantom name."
           }
-        ]
+        ],
+        "foreshadowText": "The most vulnerable of the accused has been seen sitting alone in the chapel, head bowed."
       },
       {
         "id": "s4_confession_box",
@@ -2115,7 +2163,8 @@
               ],
               "inquisitorCooldownDelta": -1
             },
-            "choicePreview": "Defensive — intercepts confessors to protect the accused"
+            "choicePreview": "Defensive — intercepts confessors to protect the accused",
+            "bulletinAftermath": "Two potential confessors changed their minds after a quiet conversation near the chapel."
           },
           {
             "label": "Poison the confession box — plant false confessions implicating the Inquisitor's own allies",
@@ -2129,9 +2178,11 @@
                 }
               ]
             },
-            "choicePreview": "Offensive — floods confessions to discredit the entire process"
+            "choicePreview": "Offensive — floods confessions to discredit the entire process",
+            "bulletinAftermath": "Strange confessions have appeared in the box — names that point back at the Inquisitor's allies."
           }
-        ]
+        ],
+        "foreshadowText": "Workers are carrying a wooden booth into the Chapel — the Inquisitor has ordered it built."
       },
       {
         "id": "s4_martyrs_gambit",
@@ -2160,7 +2211,8 @@
               ],
               "reconActionCost": 2
             },
-            "choicePreview": "Cautious — careful preparation improves their chances"
+            "choicePreview": "Cautious — careful preparation improves their chances",
+            "bulletinAftermath": "The accused survived the questioning. They are being called brave by the market traders."
           },
           {
             "label": "Let them go — but spread word they faced the Inquisitor bravely",
@@ -2191,9 +2243,11 @@
                 "targetFaction": "commons"
               }
             },
-            "choicePreview": "Bold — lets them face questioning and builds their legend"
+            "choicePreview": "Bold — lets them face questioning and builds their legend",
+            "bulletinAftermath": "Word has spread of the accused's courage before the Inquisitor. Sympathy is growing."
           }
-        ]
+        ],
+        "foreshadowText": "One of the accused has been asking questions about the Inquisitor's formal questioning procedures."
       }
     ],
     "difficultyModifiers": {
@@ -2570,7 +2624,8 @@
                 }
               ]
             },
-            "choicePreview": "Supportive — boosts Aldric's presence but costs resources"
+            "choicePreview": "Supportive — boosts Aldric's presence but costs resources",
+            "bulletinAftermath": "The debate went well for Aldric — the crowd left talking about his vision."
           },
           {
             "label": "Heckle the rivals during their speeches",
@@ -2593,9 +2648,11 @@
                 }
               ]
             },
-            "choicePreview": "Disruptive — weakens rivals but may draw negative attention"
+            "choicePreview": "Disruptive — weakens rivals but may draw negative attention",
+            "bulletinAftermath": "The rival candidates stumbled during their speeches. The crowd noticed."
           }
-        ]
+        ],
+        "foreshadowText": "Carpenters are building a speaking platform in the Market Square. The candidates will address the town soon."
       },
       {
         "id": "s5_bribery_scandal",
@@ -2622,7 +2679,8 @@
                 }
               ]
             },
-            "choicePreview": "Public — maximum exposure through the merchant quarter"
+            "choicePreview": "Public — maximum exposure through the merchant quarter",
+            "bulletinAftermath": "The bribery letter is the talk of the town. Edric's support is crumbling among the merchants."
           },
           {
             "label": "Show it privately to Aldous Prior before the endorsement",
@@ -2642,9 +2700,11 @@
                 }
               ]
             },
-            "choicePreview": "Private — secures endorsement through trusted channels"
+            "choicePreview": "Private — secures endorsement through trusted channels",
+            "bulletinAftermath": "Aldous Prior read the letter in private. The endorsement announcement may have shifted."
           }
-        ]
+        ],
+        "foreshadowText": "A courier was seen leaving the Guard Captain's quarters with a sealed letter. The seal was not the town's."
       },
       {
         "id": "s5_the_final_rally",
@@ -2675,7 +2735,8 @@
                 }
               ]
             },
-            "choicePreview": "Constructive — builds positive momentum for Aldric"
+            "choicePreview": "Constructive — builds positive momentum for Aldric",
+            "bulletinAftermath": "The Market Square rally for Aldric drew a large crowd. Momentum is building."
           },
           {
             "label": "Sabotage Tomas's gathering with a planted heckler",
@@ -2701,9 +2762,11 @@
                 }
               ]
             },
-            "choicePreview": "Disruptive — undermines the opposition's final push"
+            "choicePreview": "Disruptive — undermines the opposition's final push",
+            "bulletinAftermath": "Tomas's gathering fell flat after a well-timed question derailed his speech."
           }
-        ]
+        ],
+        "foreshadowText": "Tomas Reeve's supporters are gathering supplies for a large public gathering near the well."
       },
       {
         "id": "s5_smear_pamphlet",
@@ -2731,7 +2794,8 @@
               ],
               "freeCampaignCharges": 1
             },
-            "choicePreview": "Defensive — destroys smears and campaigns against dirty tactics"
+            "choicePreview": "Defensive — destroys smears and campaigns against dirty tactics",
+            "bulletinAftermath": "The pamphlets have been destroyed and Edric's dirty tactics are now common knowledge."
           },
           {
             "label": "Show the pamphlets to the townsfolk — let them see Edric's desperation",
@@ -2762,9 +2826,11 @@
                 }
               ]
             },
-            "choicePreview": "Offensive — uses the pamphlets as evidence of corruption"
+            "choicePreview": "Offensive — uses the pamphlets as evidence of corruption",
+            "bulletinAftermath": "The pamphlets backfired — the townsfolk see Edric's desperation clearly now."
           }
-        ]
+        ],
+        "foreshadowText": "The printing press at the Guild Hall has been running after hours. Someone is producing something in bulk."
       },
       {
         "id": "s5_endorsement_gambit",
@@ -2798,7 +2864,8 @@
                 }
               ]
             },
-            "choicePreview": "Aggressive — disrupts Tomas's speech directly"
+            "choicePreview": "Aggressive — disrupts Tomas's speech directly",
+            "bulletinAftermath": "Tomas's pre-endorsement speech was disrupted. His momentum has stalled."
           },
           {
             "label": "Counter-program — organise Aldric's own speech at the Market",
@@ -2823,9 +2890,11 @@
                 }
               ]
             },
-            "choicePreview": "Strategic — counter-programs with Aldric's own speech"
+            "choicePreview": "Strategic — counter-programs with Aldric's own speech",
+            "bulletinAftermath": "Two speeches, two audiences — Aldric's drew the merchants, Tomas kept the chapel crowd."
           }
-        ]
+        ],
+        "foreshadowText": "Tomas Reeve has been rehearsing a speech in the Chapel courtyard — he means to speak before the Prior's endorsement."
       }
     ],
     "difficultyModifiers": {
@@ -3220,7 +3289,8 @@
                 }
               ]
             },
-            "choicePreview": "Bold — widespread exposure but hard to control the narrative"
+            "choicePreview": "Bold — widespread exposure but hard to control the narrative",
+            "bulletinAftermath": "Anonymous ledger pages have appeared on the chapel notice board. The numbers speak for themselves."
           },
           {
             "label": "Hold the ledger — use it to turn Annit Scribe",
@@ -3236,9 +3306,11 @@
               "bonusReconActions": 2,
               "bonusReconDays": 3
             },
-            "choicePreview": "Strategic — turns a key official to your side"
+            "choicePreview": "Strategic — turns a key official to your side",
+            "bulletinAftermath": "Annit Scribe has gone pale. The real ledger is leverage she cannot ignore."
           }
-        ]
+        ],
+        "foreshadowText": "Marta Coin has been visiting the old guild archive late at night, carrying a lantern and a satchel."
       },
       {
         "id": "s6_aldrics_counterstrike",
@@ -3263,7 +3335,8 @@
                 }
               ]
             },
-            "choicePreview": "Proactive — preemptive defense with character witnesses"
+            "choicePreview": "Proactive — preemptive defense with character witnesses",
+            "bulletinAftermath": "Aldric's accusations fell flat — Marta's character witnesses held firm."
           },
           {
             "label": "Let Aldric speak — then present counter-evidence publicly",
@@ -3282,9 +3355,11 @@
                 }
               ]
             },
-            "choicePreview": "Reactive — lets Aldric overextend then counters publicly"
+            "choicePreview": "Reactive — lets Aldric overextend then counters publicly",
+            "bulletinAftermath": "Aldric made his case, but the counter-evidence was devastating. The guild is divided."
           }
-        ]
+        ],
+        "foreshadowText": "Aldric has called an urgent guild meeting at the Town Hall. He looks furious."
       },
       {
         "id": "s6_the_guild_vote",
@@ -3309,7 +3384,8 @@
                 }
               ]
             },
-            "choicePreview": "Direct — packs the vote with Marta's supporters"
+            "choicePreview": "Direct — packs the vote with Marta's supporters",
+            "bulletinAftermath": "Marta's supporters turned out in force for the vote. The guild is taking notice."
           },
           {
             "label": "Leak Annit Scribe's involvement to fracture Aldric's defence",
@@ -3340,9 +3416,11 @@
                 }
               ]
             },
-            "choicePreview": "Subtle — fractures Aldric's coalition from within"
+            "choicePreview": "Subtle — fractures Aldric's coalition from within",
+            "bulletinAftermath": "Annit's involvement has leaked. Aldric's defence is fracturing from within."
           }
-        ]
+        ],
+        "foreshadowText": "Marta's supporters have been counting heads — a formal vote on the guild accounts may be imminent."
       },
       {
         "id": "s6_whistleblower",
@@ -3371,7 +3449,8 @@
                 }
               ]
             },
-            "choicePreview": "Aggressive — immediate exposure of Aldric's inner circle"
+            "choicePreview": "Aggressive — immediate exposure of Aldric's inner circle",
+            "bulletinAftermath": "New evidence from the guild bookkeeper has exposed Aldric's inner circle."
           },
           {
             "label": "Protect Bess — have her leak information gradually through trusted channels",
@@ -3396,9 +3475,11 @@
               "bonusReconActions": 1,
               "bonusReconDays": 3
             },
-            "choicePreview": "Careful — protects your source and builds the case gradually"
+            "choicePreview": "Careful — protects your source and builds the case gradually",
+            "bulletinAftermath": "The bookkeeper is safe. Information is flowing through trusted channels."
           }
-        ]
+        ],
+        "foreshadowText": "A nervous bookkeeper named Bess Wicker has been lingering near the Tavern, watching for someone."
       },
       {
         "id": "s6_guard_captains_price",
@@ -3418,7 +3499,8 @@
               },
               "consumeAllBribeCharges": true
             },
-            "choicePreview": "Costly — raises the heat ceiling but costs resources"
+            "choicePreview": "Costly — raises the heat ceiling but costs resources",
+            "bulletinAftermath": "The heat ceiling has been lifted temporarily. The guard captain looks the other way."
           },
           {
             "label": "Decline — but ask the captain to deliver a message to Marta's supporters",
@@ -3443,9 +3525,11 @@
                 }
               ]
             },
-            "choicePreview": "Free — no cost but gains a communication channel to allies"
+            "choicePreview": "Free — no cost but gains a communication channel to allies",
+            "bulletinAftermath": "The guard captain carried word to Marta's supporters. Morale is rising."
           }
-        ]
+        ],
+        "foreshadowText": "The guard captain has been making quiet inquiries — asking who is behind the recent disruptions."
       }
     ],
     "difficultyModifiers": {

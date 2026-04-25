@@ -37,6 +37,7 @@ var _intel_store:      PlayerIntelStore   = null
 var _reputation_system: ReputationSystem  = null
 var _scenario_manager: ScenarioManager   = null
 var _day_night:        Node               = null
+var _mid_game_event_agent: MidGameEventAgent = null
 
 # ── Content-layer state (original stall tracking) ────────────────────────
 var _last_progress: float = -1.0
@@ -62,6 +63,7 @@ var _inactivity_fired:          bool = false
 var _pace_deficit_fired_today:  bool = false
 var _faction_momentum_fired_today: bool = false
 var _dawn_hint_fired:           bool = false
+var _foreshadow_fired_today:    bool = false
 
 # ── Scenario overrides ─────────────────────────────────────────────────────
 ## Heat value at which the spike trigger activates (default 60; S4 uses 50).
@@ -76,12 +78,14 @@ var _priority_categories: Array = []
 # ---------------------------------------------------------------------------
 
 func setup(world: Node2D, intel_store: PlayerIntelStore, rep_system: ReputationSystem,
-		scenario_manager: ScenarioManager, day_night: Node) -> void:
+		scenario_manager: ScenarioManager, day_night: Node,
+		mid_game_event_agent: MidGameEventAgent = null) -> void:
 	_world_ref         = world
 	_intel_store       = intel_store
 	_reputation_system = rep_system
 	_scenario_manager  = scenario_manager
 	_day_night         = day_night
+	_mid_game_event_agent = mid_game_event_agent
 	_apply_scenario_overrides()
 
 
@@ -108,6 +112,7 @@ func _on_day_changed(_day: int) -> void:
 	_faction_momentum_fired_today = false
 	_dawn_hint_fired              = false
 	_inactivity_fired             = false
+	_foreshadow_fired_today       = false
 	_snapshot_dawn_reputations()
 
 
@@ -188,6 +193,14 @@ func notify_hint_dismissed(was_fast: bool) -> void:
 func _evaluate_triggers(tick: int) -> void:
 	if not _can_fire_hint():
 		return
+
+	# Priority 0: Mid-game event foreshadow (fires once per foreshadow window).
+	if not _foreshadow_fired_today:
+		var foreshadow_hint: String = _trigger_foreshadow()
+		if not foreshadow_hint.is_empty():
+			_foreshadow_fired_today = true
+			_fire_hint(foreshadow_hint)
+			return
 
 	# Priority 1: Heat spike.
 	var hint: String = _trigger_heat_spike()
@@ -493,8 +506,31 @@ func _check_heat_warning() -> String:
 	return ""
 
 
-# ── Priority 6: Mid-game event hint ─────────────────────────────────────────
+# ── Priority 6: Mid-game event foreshadow (content-layer fallback) ──────────
 
 func _check_event_pending() -> String:
-	# Placeholder — mid-game event system fires its own overlays.
-	return ""
+	return _get_foreshadow_text()
+
+
+# ── Foreshadow trigger (priority-0 in trigger layer) ───────────────────────
+
+## Returns foreshadow text if an upcoming event is 1-2 days away and has
+## a foreshadowText field.  Returns "" otherwise.
+func _trigger_foreshadow() -> String:
+	return _get_foreshadow_text()
+
+
+func _get_foreshadow_text() -> String:
+	if _mid_game_event_agent == null or _day_night == null:
+		return ""
+	var current_day: int = _day_night.current_day if "current_day" in _day_night else 1
+	var upcoming: Dictionary = _mid_game_event_agent.get_upcoming_event(current_day)
+	if upcoming.is_empty():
+		return ""
+	var win_start: int = int(upcoming.get("dayWindowStart", 0))
+	var days_until: int = win_start - current_day
+	# Fire foreshadow 1-2 days before the event window opens.
+	if days_until < 1 or days_until > 2:
+		return ""
+	var text: String = upcoming.get("foreshadowText", "")
+	return text

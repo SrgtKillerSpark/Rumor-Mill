@@ -181,8 +181,9 @@ func setup_world(world: Node2D) -> void:
 
 	if _scenario_manager != null and _intel_store != null and _reputation_system != null:
 		_suggestion_engine = SuggestionEngine.new()
+		var mgea: MidGameEventAgent = world.mid_game_event_agent if "mid_game_event_agent" in world else null
 		_suggestion_engine.setup(world, _intel_store, _reputation_system,
-			_scenario_manager, _day_night)
+			_scenario_manager, _day_night, mgea)
 		_suggestion_engine.hint_ready.connect(_on_suggestion_hint_ready)
 		if _day_night != null:
 			if _day_night.has_signal("day_changed"):
