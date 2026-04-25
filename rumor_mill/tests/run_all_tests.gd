@@ -93,6 +93,46 @@
 ##                                  _exit_tree counter (SPA-1041)
 ##   • TestNpcInfoPanel           — palette, C_FACTION, C_BELIEF, BELIEF_LABEL/ICON, ACTIONS,
 ##                                  initial state (SPA-1041)
+##   • TestBaseScenarioHud        — palette, score/bar constants, node refs null (SPA-1042)
+##   • TestScenario1Hud           — palette, bar constants, node refs null (SPA-1042)
+##   • TestScenario2Hud           — palette, bar constants, node refs null (SPA-1042)
+##   • TestScenario3Hud           — palette, bar constants, _bar_color_for_score() branches (SPA-1042)
+##   • TestScenario4Hud           — palette, bar constants, node refs null (SPA-1042)
+##   • TestScenario5Hud           — palette, bar constants, _momentum_arrow() branches (SPA-1042)
+##   • TestScenario6Hud           — palette, bar/blackmail constants, node refs null (SPA-1042)
+##   • TestMainMenu               — Phase enum, palette, initial state, module refs null (SPA-1042)
+##   • TestMainMenuBriefingPanel  — portrait constants, faction row, clothing base, initial refs null (SPA-1042)
+##   • TestMainMenuScenarioSelect — SCENARIO_ACCENT/DIFFICULTY/DESCRIPTOR, initial state (SPA-1042)
+##   • TestMainMenuSettingsPanel  — palette, node refs null (SPA-1042)
+##   • TestMainMenuStatsPanel     — palette, panel ref null (SPA-1042)
+##   • TestHowToPlay              — Tab enum, palette, initial state, node refs null (SPA-1042)
+##   • TestLoadingTips            — constants, palette, initial state, end_transition() guard (SPA-1042)
+##   • TestMilestoneNotifier      — layout constants, PROGRESS_PARTICLE_MAP, initial state (SPA-1042)
+##   • TestMilestoneTracker       — palette, initial state, _fire() dedup guard (SPA-1042)
+##   • TestSpeedHud               — Speed enum, TICK_DURATION, initial state (SPA-1042)
+##   • TestZoneIndicator          — LOCATION_NAMES, SKIP_LOCATIONS, tile constants, initial state (SPA-1042)
+##   • TestFeedbackSequence       — palette, shader constants, initial state (SPA-1042)
+##   • TestStoryRecap             — palette, initial node refs null (SPA-1042)
+##   • TestMissionBriefing        — palette, sprite constants, faction rows, initial state (SPA-1042)
+##   • TestMissionCard            — palette, layout constants, initial state (SPA-1042)
+##   • TestEventCard              — palette, dimension constants, initial node refs null (SPA-1042)
+##   • TestEventChoiceModal       — dimension constants, initial node refs null (SPA-1042)
+##   • TestStrategicOverview      — palette, AUTO_DISMISS, sprite constants, initial state (SPA-1042)
+##   • TestDistrictOverlay        — DISTRICTS, tile constants, _iso() pure math (SPA-1042)
+##   • TestTownMapOverlay         — tile/gather constants, FACTION_COLORS, initial state (SPA-1042)
+##   • TestTooltipManager         — fade/panel constants, OFFSET, initial state (SPA-1042)
+##   • TestReconTooltipManager    — initial node refs null (SPA-1042)
+##   • TestSuggestionToast        — palette, AUTO_DISMISS constants, _shown_at_sec (SPA-1042)
+##   • TestVisualAffordances      — palette, fade constants, initial state, _enabled default true (SPA-1042)
+##   • TestWhatsChangedCard       — palette, initial node refs null (SPA-1042)
+##   • TestTutorialBanner         — layout constants, palette, initial state (SPA-1042)
+##   • TestTutorialHud            — layout constants, initial state (SPA-1042)
+##   • TestContextControlsPanel   — Mode enum, MODE_BINDINGS, palette, initial state (SPA-1042)
+##   • TestControlsReference      — BINDINGS, initial state, toggle() visibility flip (SPA-1042)
+##   • TestHelpReminderUI         — controls_ref null (SPA-1042)
+##   • TestThoughtBubbleLegend    — palette, LEGEND_ENTRIES, constants, initial state (SPA-1042)
+##   • TestReadyOverlay           — palette, initial node refs null, initial state (SPA-1042)
+##   • TestCamera                 — export defaults, initial state (SPA-1042)
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
@@ -124,7 +164,7 @@ func _init() -> void:
 	TestFactionEventSystem.new().run()
 
 	print("\n── SPA-970..976 Regressions ──")
-	TestSpa970976Regressions.run()
+	TestSpa970976Regressions.new().run()
 
 	print("\n── TutorialSystem ──")
 	TestTutorialSystem.new().run()
@@ -335,5 +375,125 @@ func _init() -> void:
 
 	print("\n── NpcInfoPanel ──")
 	TestNpcInfoPanel.new().run()
+
+	print("\n── BaseScenarioHud ──")
+	TestBaseScenarioHud.new().run()
+
+	print("\n── Scenario1Hud ──")
+	TestScenario1Hud.new().run()
+
+	print("\n── Scenario2Hud ──")
+	TestScenario2Hud.new().run()
+
+	print("\n── Scenario3Hud ──")
+	TestScenario3Hud.new().run()
+
+	print("\n── Scenario4Hud ──")
+	TestScenario4Hud.new().run()
+
+	print("\n── Scenario5Hud ──")
+	TestScenario5Hud.new().run()
+
+	print("\n── Scenario6Hud ──")
+	TestScenario6Hud.new().run()
+
+	print("\n── MainMenu ──")
+	TestMainMenu.new().run()
+
+	print("\n── MainMenuBriefingPanel ──")
+	TestMainMenuBriefingPanel.new().run()
+
+	print("\n── MainMenuScenarioSelect ──")
+	TestMainMenuScenarioSelect.new().run()
+
+	print("\n── MainMenuSettingsPanel ──")
+	TestMainMenuSettingsPanel.new().run()
+
+	print("\n── MainMenuStatsPanel ──")
+	TestMainMenuStatsPanel.new().run()
+
+	print("\n── HowToPlay ──")
+	TestHowToPlay.new().run()
+
+	print("\n── LoadingTips ──")
+	TestLoadingTips.new().run()
+
+	print("\n── MilestoneNotifier ──")
+	TestMilestoneNotifier.new().run()
+
+	print("\n── MilestoneTracker ──")
+	TestMilestoneTracker.new().run()
+
+	print("\n── SpeedHud ──")
+	TestSpeedHud.new().run()
+
+	print("\n── ZoneIndicator ──")
+	TestZoneIndicator.new().run()
+
+	print("\n── FeedbackSequence ──")
+	TestFeedbackSequence.new().run()
+
+	print("\n── StoryRecap ──")
+	TestStoryRecap.new().run()
+
+	print("\n── MissionBriefing ──")
+	TestMissionBriefing.new().run()
+
+	print("\n── MissionCard ──")
+	TestMissionCard.new().run()
+
+	print("\n── EventCard ──")
+	TestEventCard.new().run()
+
+	print("\n── EventChoiceModal ──")
+	TestEventChoiceModal.new().run()
+
+	print("\n── StrategicOverview ──")
+	TestStrategicOverview.new().run()
+
+	print("\n── DistrictOverlay ──")
+	TestDistrictOverlay.new().run()
+
+	print("\n── TownMapOverlay ──")
+	TestTownMapOverlay.new().run()
+
+	print("\n── TooltipManager ──")
+	TestTooltipManager.new().run()
+
+	print("\n── ReconTooltipManager ──")
+	TestReconTooltipManager.new().run()
+
+	print("\n── SuggestionToast ──")
+	TestSuggestionToast.new().run()
+
+	print("\n── VisualAffordances ──")
+	TestVisualAffordances.new().run()
+
+	print("\n── WhatsChangedCard ──")
+	TestWhatsChangedCard.new().run()
+
+	print("\n── TutorialBanner ──")
+	TestTutorialBanner.new().run()
+
+	print("\n── TutorialHud ──")
+	TestTutorialHud.new().run()
+
+	print("\n── ContextControlsPanel ──")
+	TestContextControlsPanel.new().run()
+
+	print("\n── ControlsReference ──")
+	TestControlsReference.new().run()
+
+	print("\n── HelpReminderUI ──")
+	TestHelpReminderUI.new().run()
+
+	print("\n── ThoughtBubbleLegend ──")
+	TestThoughtBubbleLegend.new().run()
+
+	print("\n── ReadyOverlay ──")
+	TestReadyOverlay.new().run()
+
+	print("\n── Camera ──")
+	TestCamera.new().run()
 
 	print("\n=== All suites complete ===")
