@@ -43,10 +43,15 @@ func build(make_button: Callable, separator: Callable) -> Control:
 
 	panel = _make_panel(480, 580)
 
+	var scroll := ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
+
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 12)
-	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	panel.add_child(vbox)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(vbox)
 
 	var heading := Label.new()
 	heading.text = "Settings"
@@ -122,7 +127,7 @@ func _build_cycle_button(vbox: VBoxContainer, label_str: String, initial_text: S
 
 	var name_lbl := Label.new()
 	name_lbl.text = label_str
-	name_lbl.custom_minimum_size = Vector2(80, 0)
+	name_lbl.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.add_theme_color_override("font_color", C_BODY)
 	row.add_child(name_lbl)
@@ -189,7 +194,7 @@ func _add_slider_row(
 
 	var name_lbl := Label.new()
 	name_lbl.text = label_text + ":"
-	name_lbl.custom_minimum_size = Vector2(80, 0)
+	name_lbl.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.add_theme_color_override("font_color", C_BODY)
 	row.add_child(name_lbl)
