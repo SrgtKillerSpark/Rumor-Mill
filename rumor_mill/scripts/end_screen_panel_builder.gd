@@ -28,8 +28,16 @@ const C_BTN_TEXT     := Color(0.95, 0.91, 0.80, 1.0)
 const C_TAB_ACTIVE   := Color(0.55, 0.38, 0.18, 1.0)
 const C_TAB_INACTIVE := Color(0.20, 0.14, 0.10, 1.0)
 
-const PANEL_W := 760
-const PANEL_H := 640
+# SPA-1179 #14: replaced fixed 760×640 with viewport-relative sizing.
+# Panel dimensions are clamped between the minimums below and the maximums.
+# build() reads viewport size via owner_layer.get_viewport() and computes
+# actual dimensions as PANEL_VP_W / PANEL_VP_H fractions of the viewport.
+const PANEL_MIN_W := 640
+const PANEL_MIN_H := 560
+const PANEL_MAX_W := 1100
+const PANEL_MAX_H := 900
+const PANEL_VP_W  := 0.62  ## target fraction of viewport width  (≈ 762px at 1280×720)
+const PANEL_VP_H  := 0.88  ## target fraction of viewport height (≈ 634px at 1280×720)
 
 # ── Public node refs (populated by build()) ───────────────────────────────────
 var backdrop:           ColorRect      = null
@@ -61,16 +69,20 @@ func build(owner_layer: CanvasLayer) -> void:
 	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	owner_layer.add_child(backdrop)
 
+	var vp_size: Vector2 = owner_layer.get_viewport().get_visible_rect().size
+	var panel_w: int = clampi(int(vp_size.x * PANEL_VP_W), PANEL_MIN_W, PANEL_MAX_W)
+	var panel_h: int = clampi(int(vp_size.y * PANEL_VP_H), PANEL_MIN_H, PANEL_MAX_H)
+
 	panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(PANEL_W, PANEL_H)
+	panel.custom_minimum_size = Vector2(panel_w, panel_h)
 	panel.set_anchor(SIDE_LEFT,   0.5)
 	panel.set_anchor(SIDE_RIGHT,  0.5)
 	panel.set_anchor(SIDE_TOP,    0.5)
 	panel.set_anchor(SIDE_BOTTOM, 0.5)
-	panel.set_offset(SIDE_LEFT,   -PANEL_W / 2.0)
-	panel.set_offset(SIDE_RIGHT,   PANEL_W / 2.0)
-	panel.set_offset(SIDE_TOP,    -PANEL_H / 2.0)
-	panel.set_offset(SIDE_BOTTOM,  PANEL_H / 2.0)
+	panel.set_offset(SIDE_LEFT,   -panel_w / 2.0)
+	panel.set_offset(SIDE_RIGHT,   panel_w / 2.0)
+	panel.set_offset(SIDE_TOP,    -panel_h / 2.0)
+	panel.set_offset(SIDE_BOTTOM,  panel_h / 2.0)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color           = C_PANEL_BG

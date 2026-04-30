@@ -1,6 +1,9 @@
 extends CanvasLayer
 
 ## speed_hud.gd — Game speed controls: Pause / 1× Normal / 3× Fast.
+## SPA-1179 #10: layer raised to 16 (above ObjectiveHud.LAYER=15) so speed buttons
+## are never occluded by scenario or objective HUD panels.
+const LAYER := 16  ## Tested by test_spa1179_z_order_layers.gd.
 ## SPA-214: Tier 3, Item #10.
 ##
 ## Shown top-right during gameplay.
@@ -26,7 +29,9 @@ var _btn_end_day:  Button = null
 
 
 func _ready() -> void:
-	layer        = 5
+	# SPA-1179 #10: raised from 5 to 16 so speed controls render above scenario HUDs
+	# (BaseScenarioHud layer=14) and objective HUD (layer=15).
+	layer        = 16
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui()
 

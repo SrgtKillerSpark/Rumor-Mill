@@ -1,7 +1,8 @@
 ## test_end_screen_panel_builder.gd — Unit tests for end_screen_panel_builder.gd (SPA-1026).
 ##
 ## Covers:
-##   • Panel dimension constants: PANEL_W, PANEL_H
+##   • Panel dimension constants: PANEL_MIN_W, PANEL_MIN_H, PANEL_MAX_W, PANEL_MAX_H,
+##     PANEL_VP_W, PANEL_VP_H  (SPA-1179 #14: replaces fixed PANEL_W/PANEL_H)
 ##   • Color palette constants
 ##   • Initial state of all public node-ref vars (null before build())
 ##   • Initial private state: _what_went_wrong_lbl
@@ -31,9 +32,15 @@ func run() -> void:
 	var failed := 0
 
 	var tests := [
-		# Dimension constants
-		"test_panel_w",
-		"test_panel_h",
+		# Dimension constants (SPA-1179 #14: viewport-relative sizing)
+		"test_panel_min_w",
+		"test_panel_min_h",
+		"test_panel_max_w",
+		"test_panel_max_h",
+		"test_panel_vp_w_range",
+		"test_panel_vp_h_range",
+		"test_panel_min_w_le_max_w",
+		"test_panel_min_h_le_max_h",
 		# Color constants
 		"test_c_backdrop_colour",
 		"test_c_panel_bg_colour",
@@ -75,20 +82,43 @@ func run() -> void:
 	print("\nEndScreenPanelBuilder tests: %d passed, %d failed" % [passed, failed])
 
 
-# ── Dimension constants ───────────────────────────────────────────────────────
+# ── Dimension constants (SPA-1179 #14: viewport-relative sizing) ─────────────
 
-static func test_panel_w() -> bool:
-	if _make_espb().PANEL_W != 760:
-		push_error("test_panel_w: expected 760, got %d" % _make_espb().PANEL_W)
-		return false
-	return true
+static func test_panel_min_w() -> bool:
+	return _make_espb().PANEL_MIN_W == 640
 
 
-static func test_panel_h() -> bool:
-	if _make_espb().PANEL_H != 640:
-		push_error("test_panel_h: expected 640, got %d" % _make_espb().PANEL_H)
-		return false
-	return true
+static func test_panel_min_h() -> bool:
+	return _make_espb().PANEL_MIN_H == 560
+
+
+static func test_panel_max_w() -> bool:
+	return _make_espb().PANEL_MAX_W == 1100
+
+
+static func test_panel_max_h() -> bool:
+	return _make_espb().PANEL_MAX_H == 900
+
+
+static func test_panel_vp_w_range() -> bool:
+	# Viewport fraction should be between 0.5 and 0.9 to keep panel proportional.
+	var v: float = _make_espb().PANEL_VP_W
+	return v >= 0.5 and v <= 0.9
+
+
+static func test_panel_vp_h_range() -> bool:
+	var v: float = _make_espb().PANEL_VP_H
+	return v >= 0.5 and v <= 0.95
+
+
+static func test_panel_min_w_le_max_w() -> bool:
+	var b := _make_espb()
+	return b.PANEL_MIN_W <= b.PANEL_MAX_W
+
+
+static func test_panel_min_h_le_max_h() -> bool:
+	var b := _make_espb()
+	return b.PANEL_MIN_H <= b.PANEL_MAX_H
 
 
 # ── Color constants ───────────────────────────────────────────────────────────

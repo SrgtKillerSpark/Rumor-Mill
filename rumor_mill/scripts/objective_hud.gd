@@ -2,6 +2,10 @@ extends CanvasLayer
 
 ## objective_hud.gd — Coordinator for the persistent 3-tier objective tracker.
 ##
+## SPA-1179 #10: layer raised to 15 (above BaseScenarioHud.LAYER=14) so objective
+## controls are never occluded by expanding scenario HUD panels.
+const LAYER := 15  ## Tested by test_spa1179_z_order_layers.gd.
+##
 ## Tier 1 (always visible): Goal verb headline, win progress bar + milestone
 ##   label, day counter with tempo indicator.
 ## Tier 2: Unused in this overlay — daily planning lives in DailyPlanningOverlay (separate CanvasLayer).
@@ -74,7 +78,10 @@ var _faction_labels: Dictionary = {}  # faction_id → {mood: Label, bar: ColorR
 
 
 func _ready() -> void:
-	layer = 4
+	# SPA-1179 #10: raised from 4 to 15 so objective HUD renders above scenario HUDs
+	# (BaseScenarioHud layer=14). Layer order: journal(12) < scenario(14) < objective(15)
+	# < speed(16) < hud_tooltip(99) < tooltip_manager(100).
+	layer = 15
 	var vbox: VBoxContainer   = $Panel/VBox
 	var day_row: HBoxContainer = $Panel/VBox/DayRow
 
@@ -620,7 +627,8 @@ func _show_first_time_callout() -> void:
 
 func _build_callout_overlay() -> void:
 	_callout_overlay = CanvasLayer.new()
-	_callout_overlay.layer = 15
+	# SPA-1179 #10: raised from 15 to 17 to stay above objective_hud(15) + speed_hud(16).
+	_callout_overlay.layer = 17
 	_callout_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_callout_overlay)
 

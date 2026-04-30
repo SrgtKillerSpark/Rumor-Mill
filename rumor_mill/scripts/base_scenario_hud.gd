@@ -14,6 +14,11 @@ extends CanvasLayer
 ##   override _refresh()                 (read game state, update labels/bars)
 ##   override _on_setup_extra(world)     (wire extra signals — S3, S4 only)
 
+# ── Canvas layer ─────────────────────────────────────────────────────────────
+## Canonical CanvasLayer value set in _ready(). Tested by test_spa1179_z_order_layers.gd.
+## Layer order: journal(12) < scenario(14) < objective(15) < speed(16).
+const LAYER := 14
+
 # ── Shared palette ───────────────────────────────────────────────────────────
 const C_PANEL_BG := Color(0.15, 0.10, 0.08, 0.92)
 

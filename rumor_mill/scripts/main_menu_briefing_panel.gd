@@ -204,8 +204,11 @@ func _build_intro_panel() -> void:
 
 	_intro_body = RichTextLabel.new()
 	_intro_body.custom_minimum_size = Vector2(0, 240)
+	_intro_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_intro_body.fit_content = false
-	_intro_body.scroll_active = false
+	# SPA-1179 #12: scroll_active=true prevents overflow when narrative text exceeds
+	# the panel height; previously scroll_active=false caused content to clip silently.
+	_intro_body.scroll_active = true
 	_intro_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_intro_body.bbcode_enabled = true
 	_intro_body.add_theme_font_size_override("normal_font_size", 17)

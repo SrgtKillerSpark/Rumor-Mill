@@ -29,7 +29,11 @@ var _data:         Dictionary     = {}
 
 
 func _ready() -> void:
-	layer = 100  # above every other UI layer
+	# SPA-1179 #32: layer 100 — above every other UI layer, including hud_tooltip(99).
+	# Tooltip layer precedence: hud_tooltip(99) < tooltip_manager(100).
+	# hud_tooltip handles auto-detected hover tooltips; this singleton handles
+	# explicit data-driven tooltips via show_at(key).
+	layer = 100
 	_load_data()
 	_build_panel()
 
