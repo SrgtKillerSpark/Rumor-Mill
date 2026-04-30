@@ -85,6 +85,18 @@ func log_reputation_delta(npc_id: String, from_score: int, to_score: int, day: i
 	})
 
 
+## Log a point-in-time reputation snapshot for a win-condition NPC (SPA-1417).
+## Fires once per day for each tracked NPC so day-checkpoint scores can be
+## reconstructed losslessly (unlike reputation_delta which requires abs(delta) >= 3).
+func log_reputation_snapshot(npc_id: String, score: int, day: int, scenario_id: String) -> void:
+	log_event("reputation_snapshot", {
+		"npc_id":      npc_id,
+		"score":       score,
+		"day":         day,
+		"scenario_id": scenario_id,
+	})
+
+
 ## Log a player evidence-collection action (observe or eavesdrop).
 ## Used to correlate recon activity with rumor propagation speed.
 func log_evidence_interaction(action_type: String, success: bool, day: int, scenario_id: String) -> void:

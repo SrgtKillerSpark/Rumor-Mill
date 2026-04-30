@@ -133,11 +133,11 @@ func _on_analytics_new_day(day: int) -> void:
 		_enqueue("_on_analytics_new_day", [day])
 		return
 	if _world == null:
-		push_warning("AnalyticsManager: _world is null in _on_analytics_new_day — reputation_delta for day %d dropped" % day)
+		push_warning("AnalyticsManager: _world is null in _on_analytics_new_day — reputation events for day %d dropped" % day)
 		return
 	var rep: ReputationSystem = _world.reputation_system if "reputation_system" in _world else null
 	if rep == null:
-		push_warning("AnalyticsManager: _world.reputation_system is null — reputation_delta for day %d dropped" % day)
+		push_warning("AnalyticsManager: _world.reputation_system is null — reputation events for day %d dropped" % day)
 		return
 	var snapshots: Dictionary = rep.get_all_snapshots()
 	for npc_id in snapshots:
@@ -146,6 +146,17 @@ func _on_analytics_new_day(day: int) -> void:
 		if abs(snap.score - prev_score) >= 3:
 			_analytics_logger.log_reputation_delta(npc_id, prev_score, snap.score, day, _analytics_scenario_id)
 		_analytics_rep_snapshot[npc_id] = snap.score
+	# SPA-1417: Emit lossless point-in-time snapshots for win-condition NPCs so
+	# day-checkpoint balancing (e.g. Calder rep at day 15 for proposal 3-A) can
+	# be reconstructed exactly without relying on the threshold-filtered delta events.
+	var sm: ScenarioManager = _world.scenario_manager if "scenario_manager" in _world else null
+	if sm != null:
+		for npc_id in sm.get_win_condition_npc_ids():
+			var snap: ReputationSystem.ReputationSnapshot = snapshots.get(npc_id)
+			if snap != null:
+				_analytics_logger.log_reputation_snapshot(npc_id, snap.score, day, _analytics_scenario_id)
+	else:
+		push_warning("AnalyticsManager: _world.scenario_manager is null — reputation_snapshot for day %d skipped" % day)
 
 
 ## SPA-1241: Wire TutorialController step_completed signal.

@@ -240,6 +240,19 @@ func get_win_condition_line() -> String:
 	return ""
 
 
+## Returns the NPC IDs whose reputation must be tracked for win-condition analysis (SPA-1417).
+## Used by AnalyticsManager to scope reputation_snapshot events to relevant NPCs only.
+func get_win_condition_npc_ids() -> Array:
+	match _active_scenario:
+		1: return [EDRIC_FENN_ID]
+		2: return [ALYS_HERBWIFE_ID]
+		3: return [CALDER_FENN_ID, TOMAS_REEVE_ID]
+		4: return Array(ScenarioConfig.S4_PROTECTED_NPC_IDS)
+		5: return [ALDRIC_VANE_ID, EDRIC_FENN_ID, TOMAS_REEVE_ID]
+		6: return [ALDRIC_VANE_ID, MARTA_COIN_ID]
+	return []
+
+
 ## Returns a short, actionable one-line objective for HUD display.
 ## More compact and player-facing than the narrative startingText.
 func get_objective_one_liner() -> String:

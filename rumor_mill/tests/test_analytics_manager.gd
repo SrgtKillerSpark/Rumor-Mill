@@ -63,6 +63,10 @@ func run() -> void:
 		"test_tutorial_step_completed_stores_correct_args",
 		"test_settings_changed_enqueues_when_logger_null",
 		"test_settings_changed_stores_correct_args",
+
+		# ── SPA-1417: reputation_snapshot via new_day handler ──
+		"test_new_day_stores_day_arg_in_queue",
+		"test_new_day_queue_entry_method_name",
 	]
 
 	for method_name in tests:
@@ -267,3 +271,24 @@ func test_settings_changed_stores_correct_args() -> bool:
 	return m._event_queue[0]["args"][0] == "window_mode" \
 		and m._event_queue[0]["args"][1] == "0" \
 		and m._event_queue[0]["args"][2] == "2"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SPA-1417: reputation_snapshot emitted from _on_analytics_new_day
+# ══════════════════════════════════════════════════════════════════════════════
+
+## _on_analytics_new_day queues with the correct day argument, which is also used
+## when emitting reputation_snapshot events upon replay with a live logger + world.
+func test_new_day_stores_day_arg_in_queue() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_new_day(15)
+	return m._event_queue.size() == 1 \
+		and m._event_queue[0]["args"][0] == 15
+
+
+## Confirm the queued method name is _on_analytics_new_day so the flush path
+## correctly re-invokes the handler (which then calls log_reputation_snapshot).
+func test_new_day_queue_entry_method_name() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_new_day(7)
+	return m._event_queue[0]["method"] == "_on_analytics_new_day"
