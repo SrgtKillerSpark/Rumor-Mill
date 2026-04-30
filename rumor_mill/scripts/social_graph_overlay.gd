@@ -23,8 +23,8 @@ const FACTION_FILL := {
 const STATE_RING_COLOR := {
 	Rumor.RumorState.UNAWARE:       Color(0.25, 0.25, 0.25, 0.0),
 	Rumor.RumorState.EVALUATING:    Color(1.00, 1.00, 0.00, 1.0),
-	Rumor.RumorState.BELIEVE:       Color(0.10, 0.90, 0.20, 1.0),
-	Rumor.RumorState.REJECT:        Color(0.90, 0.15, 0.15, 1.0),
+	Rumor.RumorState.BELIEVE:       Color(0.00, 0.45, 0.70, 1.0),  # blue — colorblind-safe (replaces green)
+	Rumor.RumorState.REJECT:        Color(0.84, 0.37, 0.00, 1.0),  # vermilion — colorblind-safe (replaces red)
 	Rumor.RumorState.SPREAD:        Color(1.00, 0.50, 0.00, 1.0),
 	Rumor.RumorState.ACT:           Color(0.75, 0.05, 1.00, 1.0),
 	Rumor.RumorState.DEFENDING:     Color(0.50, 0.80, 1.00, 1.0),
@@ -542,7 +542,7 @@ func _draw_nodes(npcs: Array) -> void:
 		# Name label — dark pill for legibility.
 		var npc_name: String = npc.npc_data.get("name", "?").split(" ")[0]
 		var label_pos := screen_pos + Vector2(-NODE_RADIUS * 1.2, NODE_RADIUS + 12.0)
-		var font_size_px := 13
+		var font_size_px := clamp(roundi(13.0 * _zoom_level), 10, 18)
 
 		# When zoomed in above 1.2x show rep score inline with the name.
 		var rep_inline := ""
@@ -660,12 +660,12 @@ func _count_active_rumor_slots(npc: Node2D) -> int:
 func _build_legend() -> void:
 	_legend_panel = PanelContainer.new()
 	_legend_panel.name = "SGLegend"
-	# Positioned below milestone notification area to avoid overlap (SPA-713).
+	# Anchored to right + bottom so it never overflows on any viewport size (SPA-1113).
 	_legend_panel.set_anchor_and_offset(SIDE_RIGHT,  1.0, -10.0)
 	_legend_panel.set_anchor_and_offset(SIDE_LEFT,   1.0, -220.0)
 	_legend_panel.set_anchor_and_offset(SIDE_TOP,    0.0,  100.0)
-	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  620.0)
-	_legend_panel.custom_minimum_size = Vector2(210, 515)
+	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 1.0,  -10.0)
+	_legend_panel.custom_minimum_size = Vector2(210, 0)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color     = Color(0.08, 0.05, 0.03, 0.92)
@@ -675,7 +675,8 @@ func _build_legend() -> void:
 	_legend_panel.add_theme_stylebox_override("panel", panel_style)
 
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(190, 500)
+	scroll.custom_minimum_size = Vector2(190, 0)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.vertical_scroll_mode   = ScrollContainer.SCROLL_MODE_AUTO
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_legend_panel.add_child(scroll)
@@ -730,8 +731,8 @@ func _build_legend() -> void:
 
 	_legend_header(_sg_legend_box, "Rumor State  [color=gray](click to highlight)[/color]")
 	_state_btn(_sg_legend_box, Rumor.RumorState.EVALUATING,   Color(1.00, 1.00, 0.00), "Evaluating")
-	_state_btn(_sg_legend_box, Rumor.RumorState.BELIEVE,      Color(0.10, 0.90, 0.20), "Believe")
-	_state_btn(_sg_legend_box, Rumor.RumorState.REJECT,       Color(0.90, 0.15, 0.15), "Reject")
+	_state_btn(_sg_legend_box, Rumor.RumorState.BELIEVE,      Color(0.00, 0.45, 0.70), "Believe")
+	_state_btn(_sg_legend_box, Rumor.RumorState.REJECT,       Color(0.84, 0.37, 0.00), "Reject")
 	_state_btn(_sg_legend_box, Rumor.RumorState.SPREAD,       Color(1.00, 0.50, 0.00), "Spread")
 	_state_btn(_sg_legend_box, Rumor.RumorState.ACT,          Color(0.75, 0.05, 1.00), "Act")
 	_state_btn(_sg_legend_box, Rumor.RumorState.DEFENDING,    Color(0.50, 0.80, 1.00), "Defending")
