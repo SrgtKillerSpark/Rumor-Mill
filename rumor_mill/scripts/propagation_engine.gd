@@ -46,6 +46,11 @@ const ESCALATION_PAIRS: Dictionary = {
 # rumor_id → Rumor  (all active, non-expired rumors)
 var live_rumors: Dictionary = {}
 
+# subject_npc_id → Array[String] of rumor_ids currently in live_rumors for that subject.
+# Maintained alongside live_rumors so detect_chain() and get_chain_type() can skip
+# the full O(n) scan and only iterate rumors on the relevant subject.
+var _subject_index: Dictionary = {}
+
 # ── Scenario-specific mutation filters ───────────────────────────────────────
 # NPC ids that must never be picked as a target_shift destination.
 # Set by the scenario loader (e.g. world._apply_active_scenario) before play.
@@ -93,6 +98,10 @@ var contradiction_count: int = 0
 ## Register a newly created rumor (seeded or mutated).
 ## Idempotent — safe to call on already-registered ids.
 func register_rumor(rumor: Rumor) -> void:
+	if not live_rumors.has(rumor.id):
+		if not _subject_index.has(rumor.subject_npc_id):
+			_subject_index[rumor.subject_npc_id] = []
+		_subject_index[rumor.subject_npc_id].append(rumor.id)
 	live_rumors[rumor.id] = rumor
 	if not lineage.has(rumor.id):
 		lineage[rumor.id] = {
@@ -115,7 +124,12 @@ func tick_decay() -> void:
 		if r.is_expired():
 			expired_ids.append(rid)
 	for rid in expired_ids:
+		var subject: String = (live_rumors[rid] as Rumor).subject_npc_id
 		live_rumors.erase(rid)
+		if _subject_index.has(subject):
+			_subject_index[subject].erase(rid)
+			if _subject_index[subject].is_empty():
+				_subject_index.erase(subject)
 
 
 # ── β — spread probability ────────────────────────────────────────────────────
@@ -269,6 +283,9 @@ func try_mutate(
 
 	# Register the new copy.
 	live_rumors[new_id] = mutated
+	if not _subject_index.has(new_subject):
+		_subject_index[new_subject] = []
+	_subject_index[new_subject].append(new_id)
 	lineage[new_id] = {
 		"parent_id":     source.id,
 		"mutation_type": ",".join(mut_tags),
@@ -359,10 +376,8 @@ func apply_relay_heat(npc_id: String, rumor_id: String) -> void:
 func detect_chain(subject_npc_id: String, new_claim_type: Rumor.ClaimType) -> Dictionary:
 	var result := { "chain_type": ChainType.NONE, "existing_rumor": null }
 
-	for rid in live_rumors:
+	for rid in _subject_index.get(subject_npc_id, []):
 		var r: Rumor = live_rumors[rid]
-		if r.subject_npc_id != subject_npc_id:
-			continue
 
 		# Escalation: existing rumor is the "from" type and new claim is the "to" type.
 		if ESCALATION_PAIRS.has(r.claim_type) and ESCALATION_PAIRS[r.claim_type] == new_claim_type:
@@ -412,12 +427,10 @@ func get_chain_type(rumor_id: String) -> ChainType:
 		return ChainType.NONE
 	var r: Rumor = live_rumors[rumor_id]
 	var best: ChainType = ChainType.NONE
-	for rid in live_rumors:
+	for rid in _subject_index.get(r.subject_npc_id, []):
 		if rid == rumor_id:
 			continue
 		var other: Rumor = live_rumors[rid]
-		if other.subject_npc_id != r.subject_npc_id:
-			continue
 		# Escalation: other is the precursor and this rumor is the escalation target.
 		if ESCALATION_PAIRS.has(other.claim_type) and ESCALATION_PAIRS[other.claim_type] == r.claim_type:
 			return ChainType.ESCALATION

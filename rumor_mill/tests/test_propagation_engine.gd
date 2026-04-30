@@ -22,6 +22,9 @@ func run() -> void:
 	var failed := 0
 
 	var tests := [
+		"test_subject_index_populated_on_register",
+		"test_subject_index_cleared_after_expiry",
+		"test_subject_index_idempotent_on_double_register",
 		"test_calc_beta_same_faction_clamped",
 		"test_calc_beta_opposing_faction",
 		"test_calc_beta_neutral_faction",
@@ -81,6 +84,47 @@ static func _make_rumor(
 		shelf: int = 100
 ) -> Rumor:
 	return Rumor.create(rumor_id, subject, claim, intensity, mutability, tick, shelf)
+
+
+# ── Subject index consistency tests ──────────────────────────────────────────
+
+## After register_rumor(), _subject_index maps the subject to an array containing the rumor id.
+static func test_subject_index_populated_on_register() -> bool:
+	var engine := PropagationEngine.new()
+	var r := _make_rumor("r_idx", "npc_subject")
+	engine.register_rumor(r)
+	if not engine._subject_index.has("npc_subject"):
+		push_error("test_subject_index_populated_on_register: subject key missing")
+		return false
+	var ids: Array = engine._subject_index["npc_subject"]
+	return ids.size() == 1 and ids[0] == "r_idx"
+
+
+## After a rumor expires (tick_decay removes it), its id is removed from _subject_index.
+## If it was the only rumor for that subject, the subject key itself is removed.
+static func test_subject_index_cleared_after_expiry() -> bool:
+	var engine := PropagationEngine.new()
+	# shelf_life_ticks=1, intensity=1 → expires on first tick_decay call.
+	var r := _make_rumor("r_exp_idx", "npc_expire_subj", Rumor.ClaimType.ACCUSATION, 1, 0.5, 0, 1)
+	engine.register_rumor(r)
+	engine.tick_decay()
+	# Rumor must be gone from live_rumors and subject key must be absent from index.
+	if engine.live_rumors.has("r_exp_idx"):
+		push_error("test_subject_index_cleared_after_expiry: rumor still in live_rumors")
+		return false
+	return not engine._subject_index.has("npc_expire_subj")
+
+
+## Calling register_rumor() twice with the same rumor does not add a duplicate index entry.
+static func test_subject_index_idempotent_on_double_register() -> bool:
+	var engine := PropagationEngine.new()
+	var r := _make_rumor("r_idem_idx", "npc_idem_subj")
+	engine.register_rumor(r)
+	engine.register_rumor(r)
+	if not engine._subject_index.has("npc_idem_subj"):
+		push_error("test_subject_index_idempotent_on_double_register: subject key missing")
+		return false
+	return engine._subject_index["npc_idem_subj"].size() == 1
 
 
 # ── β (spread probability) tests ──────────────────────────────────────────────
