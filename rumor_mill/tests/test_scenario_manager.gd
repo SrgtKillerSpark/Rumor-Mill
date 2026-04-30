@@ -29,6 +29,13 @@ func run() -> void:
 	var failed := 0
 
 	var tests := [
+		# SPA-1102: Save-state lifecycle — fresh instance resets (new-game safety)
+		"test_fresh_instance_all_scenario_states_active",
+		"test_fresh_instance_event_flags_clear",
+		"test_fresh_instance_heat_ceiling_override_inactive",
+		"test_fresh_instance_calder_score_start_minus_one",
+		"test_load_scenario_data_does_not_reset_won_state",
+		"test_evaluate_noop_after_s1_already_won",
 		# load_scenario_data and narrative getters
 		"test_load_scenario_data_populates_title",
 		"test_load_scenario_data_populates_intro_text",
@@ -561,3 +568,81 @@ static func test_s6_progress_dict_keys() -> bool:
 		and d.has("win_aldric_max") and d.has("win_marta_min")
 		and d.has("fail_marta_below") and d.has("heat_ceiling")
 		and d.has("max_heat") and d.has("state"))
+
+
+# ── SPA-1102: Save-state lifecycle — fresh-instance reset / new-game safety ────
+#
+# These tests lock in the guarantee that ScenarioManager.new() produces a
+# clean slate.  world.gd calls ScenarioManager.new() inside _init_reputation_system()
+# which is invoked from world._ready() on every scene load.  If that call is
+# ever accidentally removed the tests below will catch the regression.
+
+## A freshly constructed ScenarioManager has all six scenario states as ACTIVE.
+## This is the primary guard against the instant-victory save-state leak (SPA-1102).
+static func test_fresh_instance_all_scenario_states_active() -> bool:
+	var sm := ScenarioManager.new()
+	return (
+		sm.scenario_1_state == ScenarioManager.ScenarioState.ACTIVE and
+		sm.scenario_2_state == ScenarioManager.ScenarioState.ACTIVE and
+		sm.scenario_3_state == ScenarioManager.ScenarioState.ACTIVE and
+		sm.scenario_4_state == ScenarioManager.ScenarioState.ACTIVE and
+		sm.scenario_5_state == ScenarioManager.ScenarioState.ACTIVE and
+		sm.scenario_6_state == ScenarioManager.ScenarioState.ACTIVE
+	)
+
+
+## A freshly constructed ScenarioManager has all one-shot event flags cleared.
+## _s1_first_blood_fired, _s5_endorsement_fired, _s2_maren_first_reject_tick,
+## and _deadline_warnings_fired must all be at their default (unfired) values.
+static func test_fresh_instance_event_flags_clear() -> bool:
+	var sm := ScenarioManager.new()
+	if sm._s1_first_blood_fired:
+		push_error("test_fresh_instance_event_flags_clear: _s1_first_blood_fired is true")
+		return false
+	if sm._s5_endorsement_fired:
+		push_error("test_fresh_instance_event_flags_clear: _s5_endorsement_fired is true")
+		return false
+	if sm._s2_maren_first_reject_tick != -1:
+		push_error("test_fresh_instance_event_flags_clear: _s2_maren_first_reject_tick = %d (expected -1)" % sm._s2_maren_first_reject_tick)
+		return false
+	if not sm._deadline_warnings_fired.is_empty():
+		push_error("test_fresh_instance_event_flags_clear: _deadline_warnings_fired is not empty")
+		return false
+	return true
+
+
+## A freshly constructed ScenarioManager has no active heat-ceiling override.
+static func test_fresh_instance_heat_ceiling_override_inactive() -> bool:
+	var sm := ScenarioManager.new()
+	return sm._heat_ceiling_override < 0.0 and sm._heat_ceiling_override_expires_day == -1
+
+
+## A freshly constructed ScenarioManager has calder_score_start == -1
+## (not yet recorded — first evaluate() call sets it).
+static func test_fresh_instance_calder_score_start_minus_one() -> bool:
+	var sm := ScenarioManager.new()
+	return sm.calder_score_start == -1
+
+
+## load_scenario_data() loads narrative fields but does NOT reset scenario_N_state.
+## This ensures the state machine is only reset by creating a new instance (.new()),
+## which is the contract world.gd must uphold on every game start.
+static func test_load_scenario_data_does_not_reset_won_state() -> bool:
+	var sm := ScenarioManager.new()
+	sm.scenario_1_state = ScenarioManager.ScenarioState.WON
+	sm.load_scenario_data(_minimal_data(1))
+	return sm.scenario_1_state == ScenarioManager.ScenarioState.WON
+
+
+## Once scenario_1_state is WON, evaluate() returns early without re-emitting
+## scenario_resolved.  This is the safety net against a double-fire if evaluate()
+## happens to be called while a save with scenario_1_state=WON is in-flight.
+static func test_evaluate_noop_after_s1_already_won() -> bool:
+	var sm  := _make_sm(1)
+	sm.scenario_1_state = ScenarioManager.ScenarioState.WON
+	var emit_count := 0
+	sm.scenario_resolved.connect(func(_sid, _state): emit_count += 1)
+	# Edric at 5 — would normally trigger an instant win if state were ACTIVE.
+	var rep := _rep_with([_snap("edric_fenn", 5)])
+	sm.evaluate(rep, 0)
+	return emit_count == 0

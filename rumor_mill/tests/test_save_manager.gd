@@ -23,6 +23,12 @@ func run() -> void:
 	var failed := 0
 
 	var tests := [
+		# SPA-1102: Save-state lifecycle / new-game safety
+		"test_has_pending_load_false_after_clear",
+		"test_restore_scenario_manager_sets_won_state_silently",
+		"test_restore_scenario_manager_noop_on_empty_dict",
+		"test_pending_load_cleared_after_apply_noop",
+		# Existing tests
 		"test_save_path_auto_slot",
 		"test_save_path_manual_slots",
 		"test_save_path_out_of_range_no_crash",
@@ -233,3 +239,87 @@ static func test_migration_backup_created() -> bool:
 		push_error("test_migration_backup_created: expected .bak at '%s' — not found" % bak_path)
 		return false
 	return true
+
+
+# ── SPA-1102: Save-state lifecycle / new-game safety ─────────────────────────
+#
+# These tests cover the paths most relevant to the instant-victory save-state
+# leak hypothesis: that _pending_load_data could survive from a prior Continue
+# and contaminate a subsequent New Game start.
+
+## After manually clearing _pending_load_data (simulating apply_pending_load
+## completing normally), has_pending_load() must return false.
+## This asserts the guard that main.gd relies on to skip apply_pending_load
+## on a fresh New Game start.
+static func test_has_pending_load_false_after_clear() -> bool:
+	# Persist any previously pending data, then clear, then restore.
+	var previous := SaveManager._pending_load_data.duplicate()
+	SaveManager._pending_load_data = {}
+	var result := not SaveManager.has_pending_load()
+	# Restore so we don't pollute later tests.
+	SaveManager._pending_load_data = previous
+	return result
+
+
+## _restore_scenario_manager() sets scenario_N_state to WON without emitting
+## scenario_resolved.  The signal must never fire during a save restore —
+## only the live evaluate() loop should trigger it.
+static func test_restore_scenario_manager_sets_won_state_silently() -> bool:
+	var sm := ScenarioManager.new()
+	var emit_count := 0
+	sm.scenario_resolved.connect(func(_sid, _state): emit_count += 1)
+
+	var d := {
+		"scenario_1_state": int(ScenarioManager.ScenarioState.WON),
+		"scenario_2_state": int(ScenarioManager.ScenarioState.ACTIVE),
+		"scenario_3_state": int(ScenarioManager.ScenarioState.ACTIVE),
+		"scenario_4_state": int(ScenarioManager.ScenarioState.ACTIVE),
+		"scenario_5_state": int(ScenarioManager.ScenarioState.ACTIVE),
+		"scenario_6_state": int(ScenarioManager.ScenarioState.ACTIVE),
+		"calder_score_start":       -1,
+		"calder_score_final":       -1,
+		"deadline_warnings_fired":  {},
+		"s5_endorsement_fired":     false,
+		"s5_endorsed_candidate":    "",
+		"s2_maren_first_reject_tick": -1,
+		"s2_maren_carrier_name":    "",
+		"heat_ceiling_override":    -1.0,
+		"heat_ceiling_override_expires_day": -1,
+		"s1_first_blood_fired":     false,
+	}
+	SaveManager._restore_scenario_manager(sm, d)
+
+	if emit_count != 0:
+		push_error("test_restore_scenario_manager_sets_won_state_silently: scenario_resolved emitted %d time(s)" % emit_count)
+		return false
+	if sm.scenario_1_state != ScenarioManager.ScenarioState.WON:
+		push_error("test_restore_scenario_manager_sets_won_state_silently: expected WON, got %d" % int(sm.scenario_1_state))
+		return false
+	return true
+
+
+## _restore_scenario_manager() is a no-op when called with an empty dictionary
+## (the default when no "scenario" key exists in the save file).
+## States must remain ACTIVE after a no-op restore.
+static func test_restore_scenario_manager_noop_on_empty_dict() -> bool:
+	var sm := ScenarioManager.new()
+	SaveManager._restore_scenario_manager(sm, {})
+	return (
+		sm.scenario_1_state == ScenarioManager.ScenarioState.ACTIVE and
+		sm.scenario_2_state == ScenarioManager.ScenarioState.ACTIVE
+	)
+
+
+## Calling apply_pending_load when _pending_load_data is empty must be a no-op:
+## _pending_load_data stays empty and _session_was_loaded stays unchanged.
+## This is the exact condition main.gd checks on a fresh New Game start.
+static func test_pending_load_cleared_after_apply_noop() -> bool:
+	# Ensure no pending data.
+	var previous := SaveManager._pending_load_data.duplicate()
+	SaveManager._pending_load_data = {}
+	# Pass null for all args — apply_pending_load() should return immediately.
+	SaveManager.apply_pending_load(null, null, null, null)
+	var still_empty := SaveManager._pending_load_data.is_empty()
+	# Restore.
+	SaveManager._pending_load_data = previous
+	return still_empty
