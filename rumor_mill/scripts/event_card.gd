@@ -148,13 +148,15 @@ func _build_ui(label: String, description: String, day: int) -> void:
 	# Description body.
 	_body_lbl = RichTextLabel.new()
 	_body_lbl.bbcode_enabled = true
-	_body_lbl.fit_content    = true
-	_body_lbl.scroll_active  = false
-	_body_lbl.autowrap_mode  = TextServer.AUTOWRAP_WORD_SMART
+	_body_lbl.fit_content           = true
+	_body_lbl.custom_minimum_size   = Vector2(0, 0)
+	_body_lbl.custom_maximum_size   = Vector2(0, 120)
+	_body_lbl.scroll_active         = true
+	_body_lbl.autowrap_mode         = TextServer.AUTOWRAP_WORD_SMART
 	_body_lbl.text = description
 	_body_lbl.add_theme_color_override("default_color", C_BODY)
 	_body_lbl.add_theme_font_size_override("normal_font_size", 13)
-	_body_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_body_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	vbox.add_child(_body_lbl)
 
 	# Spacer pushes button to bottom.

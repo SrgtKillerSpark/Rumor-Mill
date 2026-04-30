@@ -263,7 +263,7 @@ func _build_ui() -> void:
 	_toast_panel.set_offset(SIDE_LEFT,   8)
 	_toast_panel.set_offset(SIDE_RIGHT, -8)
 	_toast_panel.set_offset(SIDE_TOP,   90)
-	_toast_panel.set_offset(SIDE_BOTTOM, 112)
+	_toast_panel.set_offset(SIDE_BOTTOM, 134)
 	_toast_panel.visible = false
 	add_child(_toast_panel)
 
@@ -272,7 +272,10 @@ func _build_ui() -> void:
 	_toast_lbl.add_theme_color_override("font_color", Color(0.90, 0.85, 0.60, 1.0))
 	_toast_lbl.add_theme_constant_override("outline_size", 2)
 	_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_toast_lbl.set_offset(SIDE_LEFT,  6)
+	_toast_lbl.set_offset(SIDE_RIGHT, -6)
 	_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_toast_panel.add_child(_toast_lbl)

@@ -234,7 +234,7 @@ func _build_ui() -> void:
 	_event_toast_panel.set_offset(SIDE_LEFT,   8)
 	_event_toast_panel.set_offset(SIDE_RIGHT, -8)
 	_event_toast_panel.set_offset(SIDE_TOP,   90)
-	_event_toast_panel.set_offset(SIDE_BOTTOM, 118)
+	_event_toast_panel.set_offset(SIDE_BOTTOM, 134)
 	_event_toast_panel.visible = false
 	add_child(_event_toast_panel)
 
