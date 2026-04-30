@@ -1,0 +1,670 @@
+#!/usr/bin/env node
+/**
+ * kpi_aggregate.js — Rumor Mill telemetry KPI aggregation
+ *
+ * Usage:
+ *   node tools/analytics/kpi_aggregate.js <file.ndjson> [file2.ndjson ...]
+ *   node tools/analytics/kpi_aggregate.js tools/analytics/fixtures/*.ndjson
+ *
+ * Output: Markdown digest to stdout covering all 12 KPIs and a Red Flags
+ * section keyed to the thresholds in docs/post-launch-telemetry-plan.md
+ * (SPA-1140).
+ *
+ * KPIs 11 and 12 stub gracefully until tutorial_step_completed and
+ * settings_changed events are wired in by the Lead Engineer task.
+ *
+ * No external dependencies — stdlib only.
+ */
+
+'use strict';
+
+const fs = require('fs');
+
+// ── Statistics helpers ────────────────────────────────────────────────────────
+
+function median(arr) {
+  if (!arr.length) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+}
+
+function percentile(arr, p) {
+  if (!arr.length) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const idx = Math.max(0, Math.ceil((p / 100) * sorted.length) - 1);
+  return sorted[idx];
+}
+
+function fmtSec(sec) {
+  if (sec == null) return 'N/A';
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return `${m}m ${s}s`;
+}
+
+// ── Event loading ─────────────────────────────────────────────────────────────
+
+function loadFiles(filePaths) {
+  const events = [];
+  for (const fp of filePaths) {
+    const raw = fs.readFileSync(fp, 'utf8');
+    const lines = raw.split('\n').filter(l => l.trim());
+    for (const line of lines) {
+      try {
+        const ev = JSON.parse(line);
+        ev._source = fp;
+        events.push(ev);
+      } catch {
+        // skip malformed lines silently
+      }
+    }
+  }
+  return events;
+}
+
+// ── Session grouping ──────────────────────────────────────────────────────────
+//
+// Each analytics file represents one player. A session begins at each
+// `scenario_selected` event and ends at `scenario_ended`. A file may
+// contain multiple back-to-back sessions.
+
+function groupSessions(events) {
+  const byFile = {};
+  for (const ev of events) {
+    if (!byFile[ev._source]) byFile[ev._source] = [];
+    byFile[ev._source].push(ev);
+  }
+
+  const sessions = [];
+  let idx = 0;
+
+  for (const [file, fileEvents] of Object.entries(byFile)) {
+    let cur = null;
+    for (const ev of fileEvents) {
+      if (ev.type === 'scenario_selected') {
+        if (cur) sessions.push(cur);
+        cur = {
+          id: `${file}#${idx++}`,
+          file,
+          scenario_id: ev.scenario_id,
+          difficulty: ev.difficulty,
+          events: [ev],
+          ended: false,
+          outcome: null,
+          day_reached: null,
+          duration_sec: null,
+        };
+      } else if (cur) {
+        cur.events.push(ev);
+        if (ev.type === 'scenario_ended') {
+          cur.ended = true;
+          cur.outcome = ev.outcome;
+          cur.day_reached = ev.day_reached;
+          cur.duration_sec = ev.duration_sec;
+          if (ev.scenario_id) cur.scenario_id = ev.scenario_id;
+          sessions.push(cur);
+          cur = null;
+        }
+      }
+    }
+    if (cur) sessions.push(cur); // incomplete/open session
+  }
+
+  return sessions;
+}
+
+// ── KPI 1: Per-Scenario Completion Rate ───────────────────────────────────────
+
+function kpi1(sessions) {
+  const map = {};
+  for (const s of sessions) {
+    const key = `${s.scenario_id}|${s.difficulty}`;
+    if (!map[key]) map[key] = { scenario_id: s.scenario_id, difficulty: s.difficulty, selected: 0, won: 0 };
+    map[key].selected++;
+    if (s.outcome === 'WON') map[key].won++;
+  }
+  return Object.values(map).sort(
+    (a, b) => a.scenario_id.localeCompare(b.scenario_id) || a.difficulty.localeCompare(b.difficulty)
+  );
+}
+
+// ── KPI 2: Day-of-Quit Histogram ──────────────────────────────────────────────
+
+function kpi2(sessions) {
+  const byScen = {};
+  for (const s of sessions) {
+    if (s.outcome !== 'FAILED' || s.day_reached == null) continue;
+    if (!byScen[s.scenario_id]) byScen[s.scenario_id] = {};
+    const d = String(s.day_reached);
+    byScen[s.scenario_id][d] = (byScen[s.scenario_id][d] || 0) + 1;
+  }
+  return byScen;
+}
+
+// ── KPI 3: Session Duration by Outcome ────────────────────────────────────────
+
+function kpi3(sessions) {
+  const map = {};
+  for (const s of sessions) {
+    if (!s.ended || s.duration_sec == null) continue;
+    const key = `${s.scenario_id}|${s.outcome}`;
+    if (!map[key]) map[key] = { scenario_id: s.scenario_id, outcome: s.outcome, durations: [] };
+    map[key].durations.push(s.duration_sec);
+  }
+  const result = {};
+  for (const [k, v] of Object.entries(map)) {
+    result[k] = {
+      scenario_id: v.scenario_id,
+      outcome: v.outcome,
+      count: v.durations.length,
+      med: median(v.durations),
+      p90: percentile(v.durations, 90),
+    };
+  }
+  return result;
+}
+
+// ── KPI 4: Rumor Seed-to-First-Believer Time ──────────────────────────────────
+//
+// Matches rumor_seeded.claim_id → npc_state_changed.rumor_id (same value in
+// the logger — claim_id is the rumor identifier used in both events).
+
+function kpi4(sessions) {
+  const byScen = {};
+  for (const s of sessions) {
+    const seeds = {};      // claim_id -> seed day
+    const believes = {};   // rumor_id -> [days of BELIEVE transitions]
+
+    for (const ev of s.events) {
+      if (ev.type === 'rumor_seeded' && ev.claim_id != null) {
+        if (!(ev.claim_id in seeds)) seeds[ev.claim_id] = ev.day;
+      } else if (ev.type === 'npc_state_changed' && ev.new_state === 'BELIEVE') {
+        if (!believes[ev.rumor_id]) believes[ev.rumor_id] = [];
+        believes[ev.rumor_id].push(ev.day);
+      }
+    }
+
+    for (const [claimId, seedDay] of Object.entries(seeds)) {
+      if (!believes[claimId]) continue;
+      const firstBelieve = Math.min(...believes[claimId]);
+      const gap = firstBelieve - seedDay;
+      if (!byScen[s.scenario_id]) byScen[s.scenario_id] = [];
+      byScen[s.scenario_id].push(gap);
+    }
+  }
+
+  const result = {};
+  for (const [scen, gaps] of Object.entries(byScen)) {
+    result[scen] = { med: median(gaps), count: gaps.length };
+  }
+  return result;
+}
+
+// ── KPI 5: Rumor Adoption Funnel ──────────────────────────────────────────────
+//
+// Counts unique NPCs reaching each state per (scenario, rumor).
+// REJECT is counted independently (an NPC can reject before or instead of believing).
+
+function kpi5(events) {
+  // Per (scenario_id, rumor_id): track which states each NPC reached
+  const byRumor = {};
+  for (const ev of events) {
+    if (ev.type !== 'npc_state_changed') continue;
+    const key = `${ev.scenario_id}|${ev.rumor_id}`;
+    if (!byRumor[key]) byRumor[key] = { scenario_id: ev.scenario_id, npcStates: {} };
+    if (!byRumor[key].npcStates[ev.npc_name]) byRumor[key].npcStates[ev.npc_name] = new Set();
+    byRumor[key].npcStates[ev.npc_name].add(ev.new_state);
+  }
+
+  const byScen = {};
+  for (const v of Object.values(byRumor)) {
+    const s = v.scenario_id;
+    if (!byScen[s]) byScen[s] = { believe: 0, spread: 0, act: 0, reject: 0 };
+    for (const states of Object.values(v.npcStates)) {
+      if (states.has('BELIEVE')) byScen[s].believe++;
+      if (states.has('SPREAD'))  byScen[s].spread++;
+      if (states.has('ACT'))     byScen[s].act++;
+      if (states.has('REJECT'))  byScen[s].reject++;
+    }
+  }
+  return byScen;
+}
+
+// ── KPI 6: Recon Action Rate per Day ─────────────────────────────────────────
+
+function kpi6(sessions) {
+  const byScen = {};
+  for (const s of sessions) {
+    if (!s.ended) continue;
+    const byDay = {};
+    for (const ev of s.events) {
+      if (ev.type !== 'evidence_interaction') continue;
+      byDay[ev.day] = (byDay[ev.day] || 0) + 1;
+    }
+    const dayCount = Object.keys(byDay).length;
+    if (!dayCount) continue;
+    const total = Object.values(byDay).reduce((a, b) => a + b, 0);
+    if (!byScen[s.scenario_id]) byScen[s.scenario_id] = [];
+    byScen[s.scenario_id].push(total / dayCount);
+  }
+
+  const result = {};
+  for (const [scen, rates] of Object.entries(byScen)) {
+    const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
+    result[scen] = { avg, sessions: rates.length };
+  }
+  return result;
+}
+
+// ── KPI 7: Recon Success Rate ─────────────────────────────────────────────────
+
+function kpi7(events) {
+  const map = {};
+  for (const ev of events) {
+    if (ev.type !== 'evidence_interaction') continue;
+    const key = `${ev.scenario_id}|${ev.action_type}`;
+    if (!map[key]) map[key] = { scenario_id: ev.scenario_id, action_type: ev.action_type, total: 0, success: 0 };
+    map[key].total++;
+    if (ev.success) map[key].success++;
+  }
+  return Object.values(map).sort(
+    (a, b) => a.scenario_id.localeCompare(b.scenario_id) || a.action_type.localeCompare(b.action_type)
+  );
+}
+
+// ── KPI 8: Reputation Volatility Index ────────────────────────────────────────
+
+function kpi8(sessions) {
+  const byScen = {};
+  for (const s of sessions) {
+    if (!s.ended) continue;
+    const deltas = s.events
+      .filter(e => e.type === 'reputation_delta')
+      .map(e => Math.abs(e.delta));
+    if (!deltas.length) continue;
+    const meanAbs = deltas.reduce((a, b) => a + b, 0) / deltas.length;
+    if (!byScen[s.scenario_id]) byScen[s.scenario_id] = { shifts: [], meanAbsDeltas: [] };
+    byScen[s.scenario_id].shifts.push(deltas.length);
+    byScen[s.scenario_id].meanAbsDeltas.push(meanAbs);
+  }
+
+  const result = {};
+  for (const [scen, v] of Object.entries(byScen)) {
+    result[scen] = {
+      avgShifts: v.shifts.reduce((a, b) => a + b, 0) / v.shifts.length,
+      avgMeanAbs: v.meanAbsDeltas.reduce((a, b) => a + b, 0) / v.meanAbsDeltas.length,
+    };
+  }
+  return result;
+}
+
+// ── KPI 9: Scenario Attempt Sequence ─────────────────────────────────────────
+
+function scenarioNumber(id) {
+  // Accept "S1", "scenario_1", "1", etc.
+  const m = String(id).match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+function kpi9(sessions) {
+  const byFile = {};
+  for (const s of sessions) {
+    if (!byFile[s.file]) byFile[s.file] = [];
+    byFile[s.file].push(s.scenario_id);
+  }
+
+  let maxRetries = 0;
+  let maxRetriesScen = null;
+  let filesReachingS3Plus = 0;
+
+  for (const [, seq] of Object.entries(byFile)) {
+    if (seq.some(id => scenarioNumber(id) >= 3)) filesReachingS3Plus++;
+
+    let i = 0;
+    while (i < seq.length) {
+      const scen = seq[i];
+      let run = 0;
+      while (i < seq.length && seq[i] === scen) { run++; i++; }
+      if (run > maxRetries) { maxRetries = run; maxRetriesScen = scen; }
+    }
+  }
+
+  return {
+    totalFiles: Object.keys(byFile).length,
+    filesReachingS3Plus,
+    maxRetries,
+    maxRetriesScen,
+  };
+}
+
+// ── KPI 10: Difficulty Distribution ──────────────────────────────────────────
+
+function kpi10(sessions) {
+  const byScen = {};
+  for (const s of sessions) {
+    if (!byScen[s.scenario_id]) byScen[s.scenario_id] = {};
+    byScen[s.scenario_id][s.difficulty] = (byScen[s.scenario_id][s.difficulty] || 0) + 1;
+  }
+
+  const result = {};
+  for (const [scen, diffs] of Object.entries(byScen)) {
+    const total = Object.values(diffs).reduce((a, b) => a + b, 0);
+    result[scen] = { _total: total };
+    for (const [diff, count] of Object.entries(diffs)) {
+      result[scen][diff] = { count, pct: (count / total * 100).toFixed(1) };
+    }
+  }
+  return result;
+}
+
+// ── Red Flags ─────────────────────────────────────────────────────────────────
+
+function redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, sessions) {
+  const flags = [];
+
+  // KPI 1
+  for (const e of k1r) {
+    if (!e.selected) continue;
+    const rate = e.won / e.selected * 100;
+    if (e.difficulty === 'Normal' && rate < 25)
+      flags.push(`🚨 **${e.scenario_id} Normal** completion ${rate.toFixed(1)}% < 25% (too hard)`);
+    if (e.difficulty === 'Normal' && rate > 85)
+      flags.push(`⚠️  **${e.scenario_id} Normal** completion ${rate.toFixed(1)}% > 85% (too easy)`);
+  }
+
+  // KPI 2: >40% of failures on a single day
+  for (const [scen, hist] of Object.entries(k2r)) {
+    const total = Object.values(hist).reduce((a, b) => a + b, 0);
+    for (const [day, count] of Object.entries(hist)) {
+      if (total && count / total > 0.40)
+        flags.push(`🚨 **${scen}** day-${day} concentrates ${(count/total*100).toFixed(0)}% of failures (quit wall)`);
+    }
+  }
+
+  // KPI 3: rage-quit / slog / trivial
+  for (const v of Object.values(k3r)) {
+    if (v.outcome === 'WON') {
+      if (v.med != null && v.med < 240)
+        flags.push(`⚠️  **${v.scenario_id} WON** median ${fmtSec(v.med)} < 4 min (trivial)`);
+      if (v.med != null && v.med > 1800)
+        flags.push(`⚠️  **${v.scenario_id} WON** median ${fmtSec(v.med)} > 30 min (slog)`);
+    }
+    if (v.outcome === 'FAILED' && v.med != null && v.med < 60)
+      flags.push(`🚨 **${v.scenario_id} FAILED** median ${fmtSec(v.med)} < 1 min (rage-quit)`);
+  }
+
+  // KPI 4
+  for (const [scen, v] of Object.entries(k4r)) {
+    if (v.med > 4)
+      flags.push(`⚠️  **${scen}** seed→believer median ${v.med.toFixed(1)} d > 4 (unresponsive)`);
+    if (v.med === 0)
+      flags.push(`⚠️  **${scen}** seed→believer median 0 d (instant)`);
+  }
+
+  // KPI 5
+  for (const [scen, v] of Object.entries(k5r)) {
+    if (!v.believe) continue;
+    const spreadRatio = v.spread / v.believe;
+    const rejectTotal = v.reject + v.believe;
+    const rejectRate = rejectTotal ? v.reject / rejectTotal : 0;
+    if (spreadRatio < 0.20)
+      flags.push(`⚠️  **${scen}** SPREAD/BELIEVE ${(spreadRatio*100).toFixed(0)}% < 20% (rumors stall)`);
+    if (rejectRate > 0.80)
+      flags.push(`🚨 **${scen}** REJECT rate ${(rejectRate*100).toFixed(0)}% > 80% (powerless)`);
+  }
+
+  // KPI 6
+  for (const [scen, v] of Object.entries(k6r)) {
+    if (v.avg < 1)
+      flags.push(`⚠️  **${scen}** avg recon/day ${v.avg.toFixed(1)} < 1 (ignoring recon)`);
+    if (v.avg > 10)
+      flags.push(`⚠️  **${scen}** avg recon/day ${v.avg.toFixed(1)} > 10 (spam-clicking)`);
+  }
+
+  // KPI 7
+  for (const v of k7r) {
+    const rate = v.total ? v.success / v.total * 100 : 0;
+    if (rate < 30)
+      flags.push(`🚨 **${v.scenario_id} ${v.action_type}** success ${rate.toFixed(1)}% < 30% (mechanic broken)`);
+    if (rate > 95)
+      flags.push(`⚠️  **${v.scenario_id} ${v.action_type}** success ${rate.toFixed(1)}% > 95% (no tension)`);
+  }
+
+  // KPI 8
+  for (const [scen, v] of Object.entries(k8r)) {
+    if (v.avgShifts > 10)
+      flags.push(`⚠️  **${scen}** avg ${v.avgShifts.toFixed(1)} rep-shifts/session > 10 (chaotic)`);
+    if (v.avgShifts < 1)
+      flags.push(`⚠️  **${scen}** avg ${v.avgShifts.toFixed(1)} rep-shifts/session < 1 (static)`);
+  }
+
+  // Rage-quit rate across all sessions (sessions < 60 s)
+  const ended = sessions.filter(s => s.ended && s.duration_sec != null);
+  if (ended.length) {
+    const rageQuits = ended.filter(s => s.duration_sec < 60).length;
+    const rageRate = rageQuits / ended.length * 100;
+    if (rageRate > 10)
+      flags.push(`🚨 Rage-quit rate (< 60 s) ${rageRate.toFixed(1)}% > 10% across all sessions`);
+  }
+
+  return flags;
+}
+
+// ── Markdown renderer ─────────────────────────────────────────────────────────
+
+function buildDigest(events, sessions, filePaths) {
+  const k1r  = kpi1(sessions);
+  const k2r  = kpi2(sessions);
+  const k3r  = kpi3(sessions);
+  const k4r  = kpi4(sessions);
+  const k5r  = kpi5(events);
+  const k6r  = kpi6(sessions);
+  const k7r  = kpi7(events);
+  const k8r  = kpi8(sessions);
+  const k9r  = kpi9(sessions);
+  const k10r = kpi10(sessions);
+  const flags = redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, sessions);
+
+  const now = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+  const out = [];
+
+  out.push(`# Rumor Mill — Telemetry Digest`);
+  out.push(`\n_Generated: ${now}_  `);
+  out.push(`_Input: ${filePaths.length} file(s) · ${sessions.length} sessions · ${events.length} events_\n`);
+  out.push(`---\n`);
+
+  // KPI 1
+  out.push(`## KPI 1 — Per-Scenario Completion Rate\n`);
+  out.push(`Healthy (Normal): 40–70% | Flags: < 25% (too hard) · > 85% (too easy)\n`);
+  out.push(`| Scenario | Difficulty | Sessions | Won | Rate | Status |`);
+  out.push(`|----------|------------|----------|-----|------|--------|`);
+  for (const e of k1r) {
+    const rate = e.selected ? e.won / e.selected * 100 : 0;
+    let status = '';
+    if (e.difficulty === 'Normal') {
+      if (rate < 25) status = '🚨 too hard';
+      else if (rate > 85) status = '⚠️ too easy';
+      else if (rate >= 40 && rate <= 70) status = '✅ healthy';
+      else status = '⚠️ watch';
+    } else {
+      status = '—';
+    }
+    out.push(`| ${e.scenario_id} | ${e.difficulty} | ${e.selected} | ${e.won} | ${rate.toFixed(1)}% | ${status} |`);
+  }
+
+  // KPI 2
+  out.push(`\n## KPI 2 — Day-of-Quit Histogram\n`);
+  out.push(`Flag: any single day > 40% of failures in a scenario\n`);
+  for (const [scen, hist] of Object.entries(k2r)) {
+    const total = Object.values(hist).reduce((a, b) => a + b, 0);
+    out.push(`**${scen}** — ${total} failed session(s)`);
+    const days = Object.keys(hist).sort((a, b) => Number(a) - Number(b));
+    for (const d of days) {
+      const n = hist[d];
+      const p = (n / total * 100).toFixed(0);
+      const bar = '█'.repeat(Math.max(1, Math.round(n / total * 20)));
+      const wall = n / total > 0.40 ? '  🚨 quit wall' : '';
+      out.push(`  Day ${d.padEnd(3)} ${bar.padEnd(20)} ${String(p).padStart(3)}% (n=${n})${wall}`);
+    }
+    out.push('');
+  }
+  if (!Object.keys(k2r).length) out.push('_No failed sessions in dataset._\n');
+
+  // KPI 3
+  out.push(`## KPI 3 — Session Duration by Outcome\n`);
+  out.push(`Healthy WON: 8–20 min | Flags: WON < 4 min (trivial), WON > 30 min (slog), FAILED < 1 min (rage-quit)\n`);
+  out.push(`| Scenario | Outcome | n | Median | p90 | Status |`);
+  out.push(`|----------|---------|---|--------|-----|--------|`);
+  for (const v of Object.values(k3r).sort((a, b) => a.scenario_id.localeCompare(b.scenario_id) || a.outcome.localeCompare(b.outcome))) {
+    let status = '✅';
+    if (v.outcome === 'WON') {
+      if (v.med != null && v.med < 240) status = '⚠️ trivial';
+      else if (v.med != null && v.med > 1800) status = '⚠️ slog';
+    } else if (v.outcome === 'FAILED' && v.med != null && v.med < 60) {
+      status = '🚨 rage-quit';
+    }
+    out.push(`| ${v.scenario_id} | ${v.outcome} | ${v.count} | ${fmtSec(v.med)} | ${fmtSec(v.p90)} | ${status} |`);
+  }
+
+  // KPI 4
+  out.push(`\n## KPI 4 — Rumor Seed-to-First-Believer Time\n`);
+  out.push(`Healthy: 1–3 day gap | Flags: median > 4 d (unresponsive) · median = 0 d (instant)\n`);
+  if (Object.keys(k4r).length) {
+    out.push(`| Scenario | Median Gap (days) | Samples | Status |`);
+    out.push(`|----------|-------------------|---------|--------|`);
+    for (const [scen, v] of Object.entries(k4r)) {
+      let status = '✅ healthy';
+      if (v.med > 4) status = '⚠️ too slow';
+      else if (v.med === 0) status = '⚠️ instant';
+      out.push(`| ${scen} | ${v.med.toFixed(1)} | ${v.count} | ${status} |`);
+    }
+  } else {
+    out.push(`_No matched seed→believe pairs found (check that claim_id in rumor_seeded matches rumor_id in npc_state_changed)._\n`);
+  }
+
+  // KPI 5
+  out.push(`\n## KPI 5 — Rumor Adoption Funnel\n`);
+  out.push(`Healthy: SPREAD/BELIEVE > 40%, REJECT < 60% | Flags: SPREAD/BELIEVE < 20% · REJECT > 80%\n`);
+  out.push(`| Scenario | BELIEVE | SPREAD | SPREAD/BEL | ACT | REJECT | REJ rate | Status |`);
+  out.push(`|----------|---------|--------|------------|-----|--------|----------|--------|`);
+  for (const [scen, v] of Object.entries(k5r)) {
+    const spreadRatio = v.believe ? (v.spread / v.believe * 100).toFixed(0) + '%' : 'N/A';
+    const rejTotal = v.reject + v.believe;
+    const rejRate  = rejTotal ? (v.reject / rejTotal * 100).toFixed(0) + '%' : 'N/A';
+    let status = '✅';
+    if (v.believe && v.spread / v.believe < 0.20) status = '⚠️ stalling';
+    if (rejTotal && v.reject / rejTotal > 0.80) status = '🚨 rejected';
+    out.push(`| ${scen} | ${v.believe} | ${v.spread} | ${spreadRatio} | ${v.act} | ${v.reject} | ${rejRate} | ${status} |`);
+  }
+
+  // KPI 6
+  out.push(`\n## KPI 6 — Recon Action Rate per Day\n`);
+  out.push(`Healthy: 2–6 actions/day | Flags: < 1 (ignoring recon) · > 10 (spam-clicking)\n`);
+  out.push(`| Scenario | Avg Actions/Day | Sessions | Status |`);
+  out.push(`|----------|-----------------|----------|--------|`);
+  for (const [scen, v] of Object.entries(k6r)) {
+    let status = '✅ healthy';
+    if (v.avg < 1) status = '⚠️ too low';
+    else if (v.avg > 10) status = '⚠️ spam';
+    out.push(`| ${scen} | ${v.avg.toFixed(1)} | ${v.sessions} | ${status} |`);
+  }
+
+  // KPI 7
+  out.push(`\n## KPI 7 — Recon Success Rate\n`);
+  out.push(`Healthy: 50–80% | Flags: < 30% (broken) · > 95% (no tension)\n`);
+  out.push(`| Scenario | Action Type | n | Success | Rate | Status |`);
+  out.push(`|----------|-------------|---|---------|------|--------|`);
+  for (const v of k7r) {
+    const rate = v.total ? v.success / v.total * 100 : 0;
+    let status = '✅ healthy';
+    if (rate < 30) status = '🚨 broken';
+    else if (rate > 95) status = '⚠️ trivial';
+    out.push(`| ${v.scenario_id} | ${v.action_type} | ${v.total} | ${v.success} | ${rate.toFixed(1)}% | ${status} |`);
+  }
+
+  // KPI 8
+  out.push(`\n## KPI 8 — Reputation Volatility Index\n`);
+  out.push(`Healthy: 2–5 shifts/session, mean |Δ| 4–8 | Flags: > 10 shifts (chaotic) · < 1 shift (static)\n`);
+  out.push(`| Scenario | Avg Shifts/Session | Avg Mean |Δ| | Status |`);
+  out.push(`|----------|--------------------|-------------|--------|`);
+  for (const [scen, v] of Object.entries(k8r)) {
+    let status = '✅ healthy';
+    if (v.avgShifts > 10) status = '⚠️ chaotic';
+    else if (v.avgShifts < 1) status = '⚠️ static';
+    out.push(`| ${scen} | ${v.avgShifts.toFixed(1)} | ${v.avgMeanAbs.toFixed(1)} | ${status} |`);
+  }
+
+  // KPI 9
+  out.push(`\n## KPI 9 — Scenario Attempt Sequence (Progression)\n`);
+  out.push(`Healthy: 1–3 retries per scenario, players reaching S3+ | Flags: > 5 retries (stuck)\n`);
+  out.push(`| Metric | Value |`);
+  out.push(`|--------|-------|`);
+  out.push(`| Total player files | ${k9r.totalFiles} |`);
+  out.push(`| Files reaching S3+ | ${k9r.filesReachingS3Plus} / ${k9r.totalFiles} |`);
+  out.push(`| Max consecutive retries | ${k9r.maxRetries} (${k9r.maxRetriesScen || 'N/A'}) |`);
+  if (k9r.maxRetries > 5)
+    out.push(`\n🚨 Retry wall detected on **${k9r.maxRetriesScen}** (${k9r.maxRetries} consecutive attempts)\n`);
+
+  // KPI 10
+  out.push(`\n## KPI 10 — Difficulty Distribution\n`);
+  out.push(`Healthy: Normal 50–70%, Easy 15–30%, Hard 10–25% | Flag: Easy > 50% (base game too hard)\n`);
+  out.push(`| Scenario | Easy | Normal | Hard | Total | Status |`);
+  out.push(`|----------|------|--------|------|-------|--------|`);
+  for (const [scen, diffs] of Object.entries(k10r)) {
+    const easy   = diffs['Easy']   || { pct: '0.0', count: 0 };
+    const normal = diffs['Normal'] || { pct: '0.0', count: 0 };
+    const hard   = diffs['Hard']   || { pct: '0.0', count: 0 };
+    let status = '✅ healthy';
+    if (parseFloat(easy.pct) > 50) status = '⚠️ Easy > 50%';
+    out.push(`| ${scen} | ${easy.pct}% | ${normal.pct}% | ${hard.pct}% | ${diffs._total} | ${status} |`);
+  }
+
+  // KPI 11 — stub
+  out.push(`\n## KPI 11 — Tutorial Step Abandonment\n`);
+  out.push(`> **Stub** — awaiting \`tutorial_step_completed(step_id, scenario_id)\` events.`);
+  out.push(`> Tracked under [SPA-1140](/SPA/issues/SPA-1140) engineering addendum (Lead Engineer task).\n`);
+
+  // KPI 12 — stub
+  out.push(`\n## KPI 12 — Settings-Touched Percentage\n`);
+  out.push(`> **Stub** — awaiting \`settings_changed(setting_key, old_value, new_value)\` events.`);
+  out.push(`> Tracked under [SPA-1140](/SPA/issues/SPA-1140) engineering addendum (Lead Engineer task).\n`);
+
+  // Red Flags
+  out.push(`---\n\n## 🚩 Red Flags\n`);
+  if (!flags.length) {
+    out.push(`_No red flags. All measured metrics within healthy thresholds._\n`);
+  } else {
+    for (const f of flags) out.push(`- ${f}`);
+    out.push('');
+  }
+
+  // Volume
+  out.push(`---\n\n## Volume\n`);
+  out.push(`| Metric | Count |`);
+  out.push(`|--------|-------|`);
+  out.push(`| Analytics files | ${filePaths.length} |`);
+  out.push(`| Total sessions | ${sessions.length} |`);
+  out.push(`| Completed sessions | ${sessions.filter(s => s.ended).length} |`);
+  out.push(`| Incomplete/open sessions | ${sessions.filter(s => !s.ended).length} |`);
+  out.push(`| Total events | ${events.length} |`);
+
+  return out.join('\n');
+}
+
+// ── Entry point ───────────────────────────────────────────────────────────────
+
+const args = process.argv.slice(2);
+if (!args.length) {
+  process.stderr.write(
+    'Usage: node tools/analytics/kpi_aggregate.js <file.ndjson> [file2.ndjson ...]\n' +
+    'Example: node tools/analytics/kpi_aggregate.js tools/analytics/fixtures/*.ndjson\n'
+  );
+  process.exit(1);
+}
+
+const events  = loadFiles(args);
+const sessions = groupSessions(events);
+process.stdout.write(buildDigest(events, sessions, args) + '\n');
