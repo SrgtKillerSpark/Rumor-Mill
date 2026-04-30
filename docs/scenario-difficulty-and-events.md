@@ -1,6 +1,6 @@
 # Scenario Difficulty Curves & Mid-Scenario Narrative Events
 
-Design specification for scenario pacing, difficulty curves, and mid-scenario narrative events across all four active scenarios. Each scenario now features three narrative events that create turning points and escalate tension toward the climax.
+Design specification for scenario pacing, difficulty curves, and mid-scenario narrative events across all six scenarios. Each scenario features narrative events that create turning points and escalate tension toward the climax.
 
 ---
 
@@ -63,7 +63,7 @@ Design specification for scenario pacing, difficulty curves, and mid-scenario na
 
 ### Scenario 4 — The Holy Inquisition (20 days)
 
-**Mechanic:** Pure defense. Keep Aldous Prior, Vera Midwife, and Finn Monk above 45 reputation for 20 days.
+**Mechanic:** Pure defense. Keep Aldous Prior, Vera Midwife, and Finn Monk at or above 48 reputation for 20 days.
 
 | Phase | Days | Tension | Player Focus |
 |-------|------|---------|--------------|
@@ -73,11 +73,47 @@ Design specification for scenario pacing, difficulty curves, and mid-scenario na
 | Evidence crisis | 11–14 | Very High | **Forged Evidence** fires — the Inquisitor's most aggressive move. Player must choose to confront or cushion |
 | Inquisitor frenzy | 15 | Maximum | InquisitorAgent enters phase 3 (cooldown 1). Accusations come every day |
 | Breaking point | 16–19 | Critical | **The Breaking Point** fires — the weakest accused is near collapse. Player's last chance to stabilize before the deadline |
-| Final day | 20 | Resolution | Win condition checked: all three must be ≥ 45 |
+| Final day | 20 | Resolution | Win condition checked: all three must be ≥ 48 |
 
-**Difficulty levers:** Days (24/20/17), credulity delta (+0.10/0/−0.10), inquisitor cooldown delta (+2/0/−2), inquisitor intensity delta (−1/0/+1), win threshold (40/45/50), fail threshold (35/40/45), starting reps.
+**Difficulty levers:** Days (24/20/17), credulity delta (+0.10/0/−0.10), inquisitor cooldown delta (+2/0/−2), inquisitor intensity delta (−1/0/+1), win threshold (40/48/52), fail threshold (35/40/47), starting reps.
 
 **Curve shape:** Relentless escalation. The InquisitorAgent never stops and only gets faster. The three events are spaced at early (4–7), middle (11–14), and late (16–19) to give the player exactly three moments of agency in an otherwise reactive scenario. The new Breaking Point event at days 16–19 provides a desperately needed intervention point just as the Inquisitor reaches maximum intensity.
+
+---
+
+### Scenario 5 — The Election (21 days)
+
+**Mechanic:** Three-candidate race. Raise Aldric Vane to 65+ reputation while keeping Edric Fenn and Tomas Reeve below 45. Prior Aldous endorses the leader on Day 13 (+8 bonus).
+
+| Phase | Days | Tension | Player Focus |
+|-------|------|---------|--------------|
+| Opening campaign | 1–6 | Low-Medium | Establish Aldric's campaign. Seed scandal against Edric (frontrunner at 58). Use campaign appearances (+4 rep, 3-day cooldown) |
+| Pamphlet crisis | 7–9 | Medium | **The Smear Pamphlet** fires — opportunity to damage Edric or boost Aldric |
+| Endorsement race | 10–13 | High | **The Market Debate** and **The Endorsement Gambit** fire — two critical events before the Day 13 endorsement deadline. Player must ensure Aldric leads |
+| Post-endorsement | 14–17 | Medium-High | Consolidate Aldric's lead. Shift focus to suppressing Tomas below 45 |
+| Final push | 18–21 | Critical | **The Bribery Scandal** and **The Final Rally** fire — last-ditch maneuvers on both fronts |
+
+**Difficulty levers:** Days (30/21/19), credulity delta (+0.10/0/−0.10), heat rate multiplier (0.75/1.0/1.30), Aldric win threshold (60/65/72), rivals max (50/45/40), Aldric fail floor (25/30/35), endorsement bonus (10/8/6), starting reps.
+
+**Curve shape:** Deadline-driven. The Day 13 endorsement creates a natural two-act structure: before and after. The first act is a sprint to get Aldric into the lead; the second is a grinding multi-target suppression campaign. Five events (most of any scenario) keep the political drama moving.
+
+---
+
+### Scenario 6 — The Merchant's Debt (20 days)
+
+**Mechanic:** Constrained offense. Drop Aldric Vane to 30 or below AND keep Marta Coin at 62+. Heat ceiling of 55. Guild Defense system actively boosts Aldric every 3 days starting Day 5.
+
+| Phase | Days | Tension | Player Focus |
+|-------|------|---------|--------------|
+| Setup | 1–5 | Low-Medium | Recon Aldric's network. Guild Defense hasn't activated yet — early window for low-heat seeding |
+| Ledger discovery | 6–9 | Medium | **The Real Ledger** fires — first major weapon against Aldric. Guild Defense activates Day 5 |
+| Whistleblower | 10–12 | Medium-High | **The Whistleblower** fires — opportunity to strengthen Marta's position or damage Aldric |
+| Counterstrike | 14–17 | High | **Aldric's Counterstrike** and **The Guard Captain's Price** fire — Aldric fights back, heat pressure intensifies |
+| Endgame | 18–20 | Critical | **The Guild Vote** fires — final confrontation. Must have Aldric at 30 and Marta at 62 by deadline |
+
+**Difficulty levers:** Days (25/20/16), credulity delta (+0.10/0/−0.10), heat rate multiplier (0.75/1.0/1.30), Aldric win max (35/30/25), Marta win min (58/62/68), Marta fail floor (25/30/35), exposed heat (65/55/45), guild defense cooldown.
+
+**Curve shape:** Constrained pressure. The low heat ceiling (55 vs. S1's 80) makes every aggressive action a risk/reward calculation. The Guild Defense system creates a ratchet — Aldric's rep actively recovers, so the player must maintain sustained pressure. Blackmail evidence (2 uses, −18 rep each) is a powerful but blunt tool that generates significant heat on merchant defenders.
 
 ---
 
@@ -193,7 +229,26 @@ All events are **day-gated** with a **probability roll** per day within the wind
 | S3 | Calder's Blunder | 15–19 | 0.55 | Day-gated |
 | S4 | A Noble Speaks | 4–7 | 0.75 | Day-gated |
 | S4 | Forged Evidence | 11–14 | 0.65 | Day-gated |
-| S4 | The Breaking Point | 16–19 | 0.70 | Day-gated |
+| S4 | The Breaking Point | 16–19 (hard: 12–14) | 0.70 | Day-gated |
+| S5 | The Smear Pamphlet | 7–9 | — | Day-gated |
+| S5 | The Market Debate | 10–13 | — | Day-gated |
+| S5 | The Endorsement Gambit | 11–12 | — | Day-gated |
+| S5 | The Bribery Scandal | 18–21 | — | Day-gated |
+| S5 | The Final Rally | 18–21 | — | Day-gated |
+| S6 | The Real Ledger | 6–9 | — | Day-gated |
+| S6 | The Whistleblower | 10–12 | 0.65 | Day-gated |
+| S6 | Aldric's Counterstrike | 14–17 | — | Day-gated |
+| S6 | The Guard Captain's Price | 15–17 | — | Day-gated |
+| S6 | The Guild Vote | 18–20 (hard: 13–15) | 0.65 | Day-gated |
+
+### Hard-Mode Event Window Overrides (SPA-1123)
+
+When a climactic event's base window exceeds the hard-mode day limit, `eventDayWindowOverrides` in the scenario's `difficultyModifiers.hard` block shifts the window earlier. The override is applied at world init before events are loaded into `MidGameEventAgent`. Currently active overrides:
+
+| Scenario | Event | Base Window | Hard Window | Hard Days |
+|----------|-------|-------------|-------------|-----------|
+| S4 | The Breaking Point | 16–19 | 12–14 | 15 |
+| S6 | The Guild Vote | 18–20 | 13–15 | 16 |
 
 **Event density:** Events are spaced so that no two windows overlap within a scenario. The three events divide each scenario into roughly four acts: pre-event setup, early escalation, mid-game pivot, and climax sprint.
 

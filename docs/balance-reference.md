@@ -29,9 +29,9 @@ Edric's extremely low credulity makes direct rumor targeting ineffective. The in
 
 | Parameter | Value | Source |
 |-----------|-------|--------|
-| **Win condition** | >= 6 NPCs in BELIEVE/SPREAD/ACT for illness rumor about Alys Herbwife | `scenario_manager.gd` S2_WIN_ILLNESS_MIN |
+| **Win condition** | >= 7 NPCs in BELIEVE/SPREAD/ACT for illness rumor about Alys Herbwife | `scenario_manager.gd` S2_WIN_ILLNESS_MIN |
 | **Fail — Maren rejects** | Sister Maren transitions to REJECT for any illness rumor about Alys = instant fail | `has_illness_rejecter()` |
-| **Fail — timeout** | Day > 20 | `scenarios.json` daysAllowed |
+| **Fail — timeout** | Day > 24 | `scenarios.json` daysAllowed |
 | **Bribery** | Enabled (2 charges) | |
 | **Alys starting reputation** | Default (50) | |
 
@@ -49,13 +49,13 @@ Edric's extremely low credulity makes direct rumor targeting ineffective. The in
 | Parameter | Value | Source |
 |-----------|-------|--------|
 | **Win condition** | `reputation(Calder Fenn) >= 75` AND `reputation(Tomas Reeve) <= 35` | `scenario_manager.gd` S3_WIN_CALDER_MIN, S3_WIN_TOMAS_MAX |
-| **Fail — Calder collapses** | `reputation(Calder Fenn) < 40` = instant fail | S3_FAIL_CALDER_BELOW |
+| **Fail — Calder collapses** | `reputation(Calder Fenn) < 35` = instant fail | S3_FAIL_CALDER_BELOW |
 | **Fail — timeout** | Day > 25 | `scenarios.json` daysAllowed |
 | **Bribery** | Enabled (2 charges) | |
-| **Starting reputations** | Calder=58, Tomas=52 | `scenarios.json` |
+| **Starting reputations** | Calder=62, Tomas=48 | `scenarios.json` |
 | **Target-shift exclusion** | Calder excluded from target-shift mutations | `scenarios.json` targetShiftExcluded |
 
-**Required reputation swings:** Calder must gain +17 (58 -> 75), Tomas must lose -17 (52 -> 35). Simultaneously, Calder must never drop below 40 (only 18 points of safety margin from start).
+**Required reputation swings:** Calder must gain +13 (62 -> 75), Tomas must lose -13 (48 -> 35). Simultaneously, Calder must never drop below 35 (27 points of safety margin from start).
 
 **Rival Agent (AI opponent):**
 
@@ -81,14 +81,14 @@ NPC selection: highest-sociability NPC at market/tavern with heat <= 50, not in 
 
 | Parameter | Value | Source |
 |-----------|-------|--------|
-| **Win condition** | All 3 protected NPCs above 45 after day 20 elapses | `scenario_manager.gd` S4_WIN_REP_MIN |
-| **Fail — reputation collapsed** | Any protected NPC drops below 45 at any time | S4_FAIL_REP_BELOW |
-| **Fail — timeout** | Day > 20 AND any protected below 45 | |
+| **Win condition** | All 3 protected NPCs at or above 48 after day 20 elapses | `scenario_manager.gd` S4_WIN_REP_MIN |
+| **Fail — reputation collapsed** | Any protected NPC drops below 40 at any time | S4_FAIL_REP_BELOW |
+| **Fail — timeout** | Day > 20 AND any protected below 48 | |
 | **Bribery** | Disabled | |
-| **Protected NPCs** | Aldous Prior (start=60), Vera Midwife (start=55), Finn Monk (start=50) | `scenarios.json` |
+| **Protected NPCs** | Aldous Prior (start=70), Vera Midwife (start=68), Finn Monk (start=68) | `scenarios.json` |
 | **Target-shift exclusion** | All 3 protected NPCs excluded from target-shift mutations | `scenarios.json` |
 
-**Critical observation:** Win threshold and fail threshold are both 50 — there is no dead zone. Finn Monk starts exactly at the fail threshold (50), meaning a single successful negative rumor could trigger instant failure.
+**Critical observation:** Win threshold is 48 and fail threshold is 40, creating an 8-point "danger zone" (40–47) where NPCs are alive but not yet meeting the win condition. All three protected NPCs start well above both thresholds (Aldous=70, Vera=68, Finn=68), giving meaningful buffer.
 
 **Inquisitor Agent (AI opponent):**
 
@@ -102,11 +102,49 @@ Target selection: always attacks the protected NPC with the **highest current re
 
 **Protected NPC vulnerability analysis:**
 
-| NPC | Start Rep | Buffer | Credulity | Loyalty | Risk Level |
-|-----|-----------|--------|-----------|---------|------------|
-| Aldous Prior | 60 | 10 pts | 0.15 (low) | 0.95 (very high) | LOW — hardest to damage |
-| Vera Midwife | 55 | 5 pts | 0.75 (high) | 0.50 (medium) | MEDIUM — credulous but moderate loyalty |
-| Finn Monk | 50 | **0 pts** | **0.95** (very high) | **0.20** (very low) | **CRITICAL** — most vulnerable NPC in the game |
+| NPC | Start Rep | Buffer (to fail) | Buffer (to win) | Credulity | Loyalty | Risk Level |
+|-----|-----------|------------------|-----------------|-----------|---------|------------|
+| Aldous Prior | 70 | 30 pts | 22 pts | 0.10 (very low) | 0.95 (very high) | LOW — hardest to damage |
+| Vera Midwife | 68 | 28 pts | 20 pts | 0.70 (high) | 0.65 (medium) | MEDIUM — credulous but decent loyalty |
+| Finn Monk | 68 | 28 pts | 20 pts | 0.60 (high) | 0.45 (low) | HIGH — credulous with low loyalty, most likely to be dragged down |
+
+---
+
+### Scenario 5 — The Election
+
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| **Win condition** | `reputation(aldric_vane) >= 65` AND highest of 3 candidates AND rivals < 45 | `scenario_config.gd` S5_WIN_ALDRIC_MIN, S5_WIN_RIVALS_MAX |
+| **Fail — Aldric collapses** | `reputation(aldric_vane) < 30` = instant fail | S5_FAIL_ALDRIC_BELOW |
+| **Fail — timeout** | Day > 21 | `scenarios.json` daysAllowed |
+| **Bribery** | Enabled (2 charges) | |
+| **Starting reputations** | Edric=58, Aldric=45, Tomas=45 | `scenarios.json` |
+| **Endorsement** | Day 13: Prior Aldous endorses the leader (+8 rep) | S5_ENDORSEMENT_DAY, S5_ENDORSEMENT_BONUS |
+| **Campaign action** | +4 rep to Aldric, 3-day cooldown | S5_CAMPAIGN_REP_BOOST, S5_CAMPAIGN_COOLDOWN |
+
+**Required reputation swings:** Aldric must gain +20 (45 -> 65). Edric must lose -14 (58 -> below 45). Tomas must stay below 45 (starts at 45 — any upward movement is a problem).
+
+**Key mechanic — endorsement:** The Day 13 endorsement is a make-or-break moment. If Aldric receives it (+8), his effective gap drops to +12. If Edric receives it, the gap widens to +21 and the scenario becomes very difficult.
+
+---
+
+### Scenario 6 — The Merchant's Debt
+
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| **Win condition** | `reputation(aldric_vane) <= 30` AND `reputation(marta_coin) >= 62` | `scenario_config.gd` S6_WIN_ALDRIC_MAX, S6_WIN_MARTA_MIN |
+| **Fail — Marta silenced** | `reputation(marta_coin) < 30` = instant fail | S6_FAIL_MARTA_BELOW |
+| **Fail — exposed** | Player heat >= 55 = instant fail | S6_EXPOSED_HEAT |
+| **Fail — timeout** | Day > 20 | `scenarios.json` daysAllowed |
+| **Bribery** | Enabled | |
+| **Starting reputations** | Aldric=55, Marta=48 | `scenarios.json` |
+| **Protected NPC** | Marta Coin (must stay >= 62 to win) | |
+
+**Required reputation swings:** Aldric must lose -25 (55 -> 30). Marta must gain +14 (48 -> 62). The heat ceiling of 55 severely constrains aggressive play.
+
+**Guild Defense system:** Aldric's merchant allies (Sybil Oats, Rufus Bolt, Bess Wicker, Idris Kemp) spread praise rumors about him every 3 days starting Day 5. This creates an active reputation recovery that the player must outpace.
+
+**Blackmail evidence:** 2 uses maximum. Each use: -18 rep to Aldric, +22 heat to Sybil/Rufus. Powerful but dangerous — two blackmail uses generate 44 heat on merchant defenders, risking exposure cascades.
 
 ---
 
@@ -143,11 +181,13 @@ Target selection: always attacks the protected NPC with the **highest current re
 
 At Master difficulty with 2 whispers/day:
 - **Scenario 1** (30 days): 60 total whispers. Generous budget; economy is not the constraint.
-- **Scenario 2** (20 days): 40 whispers + 2 bribes. Need 7 believers — economy is adequate but requires efficient seeding.
+- **Scenario 2** (24 days): 48 whispers + 2 bribes. Need 7 believers — economy is adequate but requires efficient seeding.
 - **Scenario 3** (25 days): 50 whispers + 2 bribes, but rival agent actively counteracts. Must split between PRAISE/Calder and negative/Tomas. Tightest economy relative to task.
 - **Scenario 4** (20 days): 40 whispers. Defensive use (VOUCH/PRAISE) is less token-efficient than offensive seeding. Most token-constrained scenario.
+- **Scenario 5** (21 days): 42 whispers + 2 bribes + campaign action (free, 3-day cooldown). Campaign appearances supplement the whisper budget but the three-target split creates pressure.
+- **Scenario 6** (20 days): 40 whispers + 2 bribes + 2 blackmail uses (cost 2 whispers each). Blackmail is the most token-expensive action in the game (2 whispers per use) but delivers -18 rep per shot.
 
-At Spymaster (1/day): Scenario 3 drops to 25 whispers against an accelerated rival. Scenario 4 drops to 20 whispers over 15 days against a daily inquisitor from day 13.
+At Spymaster (1/day): Scenario 3 drops to 20 whispers against an accelerated rival. Scenario 4 drops to 15 whispers over 15 days against a daily inquisitor from day 13. Scenario 6 drops to 15 whispers — barely enough for 2 blackmail uses plus a handful of rumor seeds.
 
 ---
 
@@ -210,17 +250,17 @@ Inventory cap: 3 items, oldest silently discarded on overflow.
 
 ## 5. Known Balance Concerns
 
-### CRITICAL: Scenario 4 — Finn Monk Starting at Fail Threshold
+### HIGH: Scenario 4 — Finn Monk as Primary Target
 
-Finn Monk starts at reputation 50 with the fail threshold also at 50. Combined with credulity=0.95 and loyalty=0.20, a single early heresy seed (intensity 2, believability 0.40) reaching Finn through even one credulous neighbor could push him below 50 before the player can react.
+Finn Monk starts at reputation 68 (28 points above the fail threshold of 40), but his credulity=0.60 and loyalty=0.45 make him the most vulnerable of the three protected NPCs. The Inquisitor's targeting logic (always attacks the highest-rep NPC) means Finn won't be first-targeted initially, but once Aldous or Vera dip, Finn's low loyalty makes recovery slow.
 
 **Risk factors:**
 - Inquisitor's first seed fires day 1-3 (cooldown=3 initially)
-- Finn's credulity makes him ~95% likely to transition EVALUATING -> BELIEVE for most rumors
-- His low loyalty means gamma recovery is very slow
+- Finn's credulity makes him likely to transition EVALUATING -> BELIEVE for heresy rumors
+- His lower loyalty means gamma recovery is slower than the other two
 - No bribery available in Scenario 4
 
-**Recommended analytics to watch:** Scenario 4 fail rate in first 3 days, fail rate specifically from Finn dropping below 50, percentage of Scenario 4 games where Finn is the first NPC to trigger failure.
+**Recommended analytics to watch:** Scenario 4 fail rate by protected NPC, percentage of Scenario 4 games where Finn is the first NPC to trigger failure (drops below 40).
 
 ### HIGH: Scenario 2 — Sister Maren Counter-Intelligence Calibration
 
@@ -240,11 +280,11 @@ The rival agent's late-phase behavior (days 16-25, daily seeds) previously escal
 
 **Recommended analytics:** Win rate by day-15 reputation snapshot. If wins still correlate almost entirely with early-game performance, consider also extending late-phase cooldown to 2 days.
 
-### MEDIUM: Scenario 4 — Win/Fail Threshold Equality
+### MEDIUM: Scenario 4 — Danger Zone Width
 
-Win and fail thresholds are both 50 for Scenario 4 protected NPCs. There is no "safe but not winning" zone — any moment of vulnerability is also a fail state. This makes the scenario feel like plate-spinning rather than strategic defense.
+Win threshold is 48 and fail threshold is 40, creating an 8-point danger zone (40–47). NPCs in this range are alive but not meeting the win condition — the player must recover them before the deadline. This separation (introduced in SPA-550/SPA-747) replaced the original design where win and fail were both at 50.
 
-**Consider:** A fail threshold of 45 (5-point buffer) would allow brief dips without instant failure while maintaining pressure. Would need playtesting data to confirm.
+**Monitor:** Whether the 8-point danger zone feels meaningful in practice. If players rarely occupy the 40–47 range (either staying safe or failing outright), the zone may need widening.
 
 ### MEDIUM: Whisper Token Economy on Spymaster
 
@@ -270,11 +310,9 @@ Faction events fire between days 2-7 only (MAX_EVENTS=2). In longer scenarios (S
 
 Based on the balance concerns above and the analytics infrastructure shipping at launch (SPA-273), these are the recommended tuning priorities ordered by expected player impact:
 
-### Priority 1 — Scenario 4 Finn Monk Survival Rate
-**Metric:** Percentage of Scenario 4 games where Finn triggers fail within first 5 days.
-**Action threshold:** If > 40% of Scenario 4 failures are Finn-first-5-days, consider:
-- Raising Finn's starting reputation to 55
-- Or lowering the fail threshold to 45
+### Priority 1 — Scenario 4 Protected NPC Fail Distribution
+**Metric:** Which protected NPC triggers fail (drops below 40) most often, and at what day.
+**Action threshold:** If > 60% of Scenario 4 failures come from the same NPC, consider adjusting that NPC's personality overrides or starting reputation. If most failures cluster in the first 5 days despite the 68-point starting reps, the Inquisitor's early intensity may need reduction.
 
 ### Priority 2 — Scenario 2 Maren Fail Distribution
 **Metric:** Ratio of Maren-triggered fails to timeout fails to wins.

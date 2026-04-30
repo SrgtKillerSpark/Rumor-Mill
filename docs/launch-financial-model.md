@@ -1,9 +1,11 @@
 # Launch Financial Model — Rumor Mill Early Access
 
 **Prepared by:** CFO  
-**Date:** 2026-04-04 (updated 2026-04-04, v3.0)  
+**Date:** 2026-04-04 (updated 2026-04-30, v4.0)  
 **For:** Rumor Mill — board / founding team  
-**Status:** Actionable — review before setting final EA launch date
+**Status:** 🔒 LOCKED — pricing and scenarios confirmed; no further unilateral changes
+
+> **Pricing cross-check (2026-04-30):** `docs/steam-store-page-final.md` does not specify a price (store description only — correct; price is set in Steamworks). `docs/itchio-game-page.md` lists **Free (demo)** — consistent with this model. No mismatch found.
 
 > **References:** `docs/business-setup-guide.md` (LLC and Steam setup), `docs/pre-launch-legal-financial-checklist.md` (legal/tax blockers), `docs/demo-readiness-review.md` (build status), `docs/steam-store-page-final.md` (pricing baseline)
 
@@ -11,7 +13,7 @@
 
 ## 1. Executive Summary
 
-Rumor Mill is **launch-ready from a content standpoint** (four scenarios, demo-ready per the Sprint 7 review). The financial picture is straightforward: this is a zero-marketing-spend, sweat-equity indie title with very low cash exposure. Break-even is achievable with approximately 40 Steam sales. The highest-probability outcome is modest but profitable: 400–800 units in the first 90 days at $14.99, generating $4,200–$8,400 net after Steam's cut — a strong return on a sub-$500 cash investment.
+Rumor Mill is **launch-ready from a content standpoint** (six scenarios, all playable, with tutorial, achievements, and save/load). The financial picture is straightforward: this is a zero-marketing-spend, sweat-equity indie title with very low cash exposure. Break-even is achievable with approximately 40 Steam sales. The highest-probability outcome is modest but profitable: 400–800 units in the first 90 days at $14.99, generating $4,200–$8,400 net after Steam's cut — a strong return on a sub-$500 cash investment.
 
 **Recommended launch sequence:** Free itch.io demo → Steam Early Access at **$14.99 USD** within 2–4 weeks.
 
@@ -86,12 +88,16 @@ At the moderate revenue scenario (~$7,800 net in year one), annual overhead is l
 
 **Positioning verdict:** Rumor Mill is a niche strategy/simulation title with a strong concept and four playable scenarios but limited audio polish at launch. It sits below Cultist Simulator in scope at EA stage, but above simple puzzle games. The $14.99 price point is correct: it signals premium indie quality without the risk of overpricing a content-incomplete release.
 
-### 3B — Recommended Pricing
+### 3B — Confirmed Launch Pricing (LOCKED)
 
-| Platform | Price | Rationale |
-|----------|-------|-----------|
-| **Steam Early Access** | **$14.99 USD** | Aligns with the indie strategy EA tier; matches Steamworks regional pricing baseline already documented |
-| **itch.io demo** | **Free** | Maximizes plays, wishlist conversions, and devlog audience ahead of Steam EA. No paid tier on itch.io until post-1.0 |
+> **This pricing is confirmed and locked as of 2026-04-30.** The board should flag any disagreement before the Coming Soon page goes live. Changes after the Coming Soon page is published require Valve review of the updated Steamworks configuration.
+
+| Platform | Price | Status | Rationale |
+|----------|-------|--------|-----------|
+| **Steam Early Access** | **$14.99 USD** | 🔒 Locked | Aligns with the indie strategy EA tier (Into the Breach, Cultist Simulator); signals premium quality without EA hesitancy. Launch week discount 10% → $13.49 effective. |
+| **itch.io demo** | **Free** | 🔒 Locked | Maximizes plays, wishlist conversions, and devlog audience ahead of Steam EA. No paid tier on itch.io until post-1.0. |
+| **Steam regional pricing** | **Steam Regional Templates** | 🔒 Locked | Apply Steam's baseline regional templates at $14.99 USD anchor. No manual overrides at EA stage. |
+| **1.0 price target** | **$17.99–$19.99 USD** | Planned | Increase on 1.0 release after audio integration, content updates, and critical review mass. EA buyers are not charged the difference. |
 
 ### 3C — Regional Pricing (Steam)
 
@@ -101,43 +107,94 @@ Apply Steam's Regional Pricing Templates as the baseline, then verify against th
 
 ---
 
-## 4. Revenue Projections — First 90 Days (Steam EA)
+## 4. Revenue Projections — First Week, First Month, First 90 Days (Steam EA)
 
-### 4A — Assumptions
+### 4A — Shared Assumptions
 
 - **Platform:** Steam Early Access only (itch.io is free demo; no paid revenue included)
-- **Base price:** $14.99
-- **Developer net per unit:** $14.99 × 0.70 (Steam cut) = **$10.49**
-- **Refund adjustment:** ~8% refund rate typical for early-access indie = effective net ~**$9.65 per unit**
+- **Base price:** $14.99; launch week 10% discount → $13.49 effective days 1–7
+- **Developer net per unit (post-discount, launch week):** $13.49 × 0.70 = **$9.44**
+- **Developer net per unit (full price):** $14.99 × 0.70 = **$10.49**
 - **Marketing budget:** $0 (organic: devlogs, Reddit, itch.io audience, wishlist conversion)
-- **Wishlist conversion rate:** 10–15% of wishlists convert to sales in first two weeks (Steam baseline for non-promoted titles)
 - **No paid advertising, no influencer budget**
 
-### 4B — Three Scenarios
+### 4B — First-Week Scenarios (Days 1–7)
+
+Steam launch sales follow a steep spike in the first 72 hours driven by wishlist notifications, then taper. All first-week units are sold at the 10% launch discount ($13.49).
+
+#### Scenario Assumptions — First Week
+
+| Assumption | Conservative | Base | Stretch |
+|------------|-------------|------|---------|
+| Wishlist pool at launch | ~150 wishlists | ~400 wishlists | ~1,000 wishlists |
+| Wishlist notification CTR | 18% | 22% | 28% |
+| CTR → purchase conversion | 40% | 50% | 60% |
+| Direct discovery (Steam store, Reddit, itch.io referral) | ~20 units | ~75 units | ~250 units |
+| Refund rate (first week) | 9% | 7% | 5% |
+
+**Explanation:** Wishlist pool is built from itch.io demo plays (2–4 week demo period) plus organic Reddit/devlog reach. At conservative (~150 wishlists), the game has run the demo period with modest traction. At stretch (1,000), at least one Reddit post or curator pickup generated significant pre-launch interest. CTR on wishlist notification emails is 18–28% for indie games. Purchase conversion from notification click is higher than cold-traffic because these are self-selected fans.
+
+#### First-Week Revenue Summary
+
+| Scenario | Units Sold (Week 1) | Gross Revenue | Steam Cut (30%) | Net (after refunds) |
+|----------|--------------------|--------------|-----------------|--------------------|
+| **Conservative** | ~30 | $405 | $122 | **~$260** |
+| **Base** | ~130 | $1,754 | $526 | **~$1,160** |
+| **Stretch** | ~500 | $6,745 | $2,024 | **~$4,520** |
+
+*Net = Gross × 0.70 × (1 − refund rate). Conservative refund rate 9% applied.*
+
+---
+
+### 4C — First-Month Scenarios (Days 1–30)
+
+After the launch spike (days 1–7), sales drop sharply and are sustained by: (a) Reddit/devlog residual traffic, (b) Steam "New & Trending" exposure (typically 7–14 days for qualifying titles), and (c) itch.io demo referrals.
+
+#### Scenario Assumptions — Full Month 1
+
+| Assumption | Conservative | Base | Stretch |
+|------------|-------------|------|---------|
+| Week 1 units (from above) | ~30 | ~130 | ~500 |
+| Weeks 2–4 additional units | ~50 | ~150 | ~350 |
+| Blended price (wk1 discounted, wk2-4 full) | ~$14.30 avg | ~$14.30 avg | ~$14.30 avg |
+| Refund rate (month overall) | 8% | 7% | 6% |
+| Wishlist → purchase conversion (month total) | 12% | 15% | 22% |
+
+#### First-Month Revenue Summary
+
+| Scenario | Units Sold (Month 1) | Gross Revenue | Steam Cut (30%) | Net (after refunds) |
+|----------|---------------------|--------------|-----------------|--------------------|
+| **Conservative** | ~80 | $1,144 | $343 | **~$740** |
+| **Base** | ~280 | $4,004 | $1,201 | **~$2,630** |
+| **Stretch** | ~850 | $12,155 | $3,647 | **~$8,110** |
+
+*Blended average price weighted: 50% of units at $13.49 (launch week), 50% at $14.99 (weeks 2–4). Conservative month assumes modest week 1, slower organic residual.*
+
+---
+
+### 4D — Three Scenarios (Full 90 Days)
 
 | Scenario | Units Sold (90 days) | Gross Revenue | Steam Cut (30%) | Net Developer Revenue |
 |----------|---------------------|---------------|-----------------|----------------------|
 | **Conservative** | 200 | $2,998 | $899 | **$2,098** |
-| **Moderate** | 600 | $8,994 | $2,698 | **$6,296** |
-| **Optimistic** | 1,500 | $22,485 | $6,746 | **$15,740** |
+| **Base** | 600 | $8,994 | $2,698 | **$6,296** |
+| **Stretch** | 1,500 | $22,485 | $6,746 | **$15,740** |
 
 **Notes:**
 - *Conservative* (200 units): assumes minimal social traction, itch.io demo converts ~100 wishlisters, and organic Reddit/devlog reach is modest. Realistic floor for a zero-marketing launch.
-- *Moderate* (600 units): 1–2 Reddit posts gain meaningful traction (>500 upvotes), itch.io demo generates 1,000+ plays and 300–400 wishlist conversions. Normal execution of the devlog plan.
-- *Optimistic* (1,500 units): one viral Reddit post, itch.io front-page visibility, or a small curator/streamer pickup. Not planned for but not impossible.
+- *Base* (600 units): 1–2 Reddit posts gain meaningful traction (>500 upvotes), itch.io demo generates 1,000+ plays and 300–400 wishlist conversions. Normal execution of the devlog plan.
+- *Stretch* (1,500 units): one viral Reddit post, itch.io front-page visibility, or a small curator/streamer pickup. Not planned for but not impossible.
 
-### 4C — Monthly Pacing (Moderate Scenario)
+### 4E — Monthly Pacing (Base Scenario)
 
 Steam EA sales typically follow a steep launch curve then taper:
 
 | Period | Units | Cumulative Net |
 |--------|-------|---------------|
-| Launch week (days 1–7) | ~200 | ~$2,099 |
-| Weeks 2–4 | ~150 | ~$3,672 |
-| Month 2 | ~150 | ~$5,244 |
-| Month 3 | ~100 | ~$6,296 |
-
-Valve pays monthly with a 30-day lag. **First payout expected ~60 days after launch** (end of first revenue month + Valve's 30-day cycle). Minimum payout threshold: $100.
+| Launch week (days 1–7) | ~130 | ~$1,160 |
+| Weeks 2–4 | ~150 | ~$2,630 |
+| Month 2 | ~200 | ~$4,732 |
+| Month 3 | ~120 | ~$5,988 |
 
 ### 4D — First-Year Revenue Projections (Steam EA, Full Year)
 
@@ -353,22 +410,79 @@ Valve pays monthly, 30-day lag. **Revenue earned in April → paid in late May.*
 
 ---
 
-## 9. Summary: Key Numbers
+## 9. Cash-Flow Note
+
+### 9A — Platform Cuts and Net Developer Revenue
+
+| Platform | Gross Price | Platform Cut | Developer Share | Notes |
+|----------|------------|-------------|----------------|-------|
+| **Steam EA (full)** | $14.99 | 30% ($4.50) | **$10.49/unit** | Valve's standard rate until $10M lifetime gross |
+| **Steam EA (launch discount)** | $13.49 | 30% ($4.05) | **$9.44/unit** | First 7 days only |
+| **itch.io demo** | $0.00 | 0% | $0 | No revenue; audience development only |
+| **Steam (post-$10M)** | $14.99 | 25% | $11.24/unit | Highly unlikely at EA stage — noted for completeness |
+
+### 9B — Payout Timing
+
+| Event | Timeline | Notes |
+|-------|----------|-------|
+| Revenue earned (Month 1) | Launch date → +30 days | Valve accumulates revenue |
+| Valve payment processing | End of Month 1 + 30-day hold | Valve's standard 30-day payout cycle |
+| **First ACH payout received** | **~60 days after launch** | E.g., launch 2026-05-16 → first payout ~2026-07-15 |
+| Minimum payout threshold | $100 | If revenue is below $100, rolls to next cycle |
+| itch.io payout | Per PayPal/Stripe cycle (~weekly or monthly) | Applies when paid tier introduced post-1.0 |
+
+**Cash-flow implication:** There is a 60-day gap between launch and first revenue. The total pre-launch cash outlay (~$100–650) must be covered from existing funds. At the base scenario, month-1 net is ~$2,630 — but that cash does not arrive until ~day 60 post-launch.
+
+### 9C — Runway Impact
+
+This is a zero-overhead solo project with no employees or recurring subscriptions beyond LLC costs (~$60–350/yr). "Runway" in the traditional VC sense does not apply. The relevant framing is:
+
+| Question | Answer |
+|----------|--------|
+| Can the project survive if revenue is $0 for 90 days? | **Yes** — no cash burn; development is sweat equity |
+| Does the Founder need game revenue to cover personal expenses? | Unknown — board should confirm if game revenue is supplemental or primary income |
+| Break-even on cash invested | ~29–62 units (achievable in first week at any scenario) |
+| Tax reserve to set aside | **25–30% of every net payout** — first set-aside before payout arrives |
+
+**If game revenue is primary income for the Founder:** the 60-day payout lag is the key risk. Ensure there are sufficient personal funds to cover living expenses until the first Valve payout (~mid-July 2026 for a May launch).
+
+---
+
+## 10. Top Three Financial Risks
+
+| Risk | Impact | Probability | Mitigation | Owner |
+|------|--------|-------------|-----------|-------|
+| **1. Wishlist pool too thin at Steam EA launch** — if the itch.io demo period generates <100 wishlists, first-week sales could fall below the conservative scenario (~30 units) and the launch curve may not trigger Steam's algorithmic "New & Trending" surface. | Revenue in week 1 falls below $260 net; potential death spiral if Steam algorithm does not surface the game. | Medium — plausible if demo period is short or itch.io page lacks traction | Run itch.io demo for minimum 3 weeks before Steam EA. Execute the full devlog plan (Devlogs #1 and #2) during demo period. Track itch.io play count and follow rate daily; if at <200 plays by end of demo week 1, accelerate Reddit cross-posts. Delay Steam EA launch if wishlist count is below 150 at planned launch date. | **Founder (launch timing decision)** |
+| **2. Elevated refund rate (>12%) triggered by content or expectation mismatch** — if buyers expect more content than six scenarios, or if a platform/build issue causes frequent crashes on launch, Steam's refund rate can spike. High refund rates also suppress Steam's algorithmic promotion and can trigger Valve review. | Revenue per unit collapses; Steam algorithm suppresses the game; community reviews turn negative. | Low-Medium — mitigated by existing QA, but a zero-day critical bug is always possible | Conduct a final pre-launch build verification (smoke test on clean Windows install). Ensure the itch.io demo period surfaces any critical bugs before Steam EA. Monitor Steamworks refund dashboard daily in launch week; if rate exceeds 8%, investigate immediately. Set the 12% threshold as the trigger to post a community update and pause the launch discount. | **Dev (build quality) / Founder (community response)** |
+| **3. W-9 / Steamworks tax setup not completed before launch** — if the W-9 is not accepted by Valve before the game goes live and generates revenue, Steam may hold the payout until paperwork is complete, potentially delaying the first payment by one additional 30-day cycle (an extra 30 days on top of the standard 60-day lag). | First payout delayed to ~day 90 post-launch instead of day 60. If Founder is relying on game income, this creates a cash gap. | Medium — all checklist items are still listed as Unknown; Valve's review takes 2–7 business days. | Complete W-9 submission immediately (by 2026-04-30 per [SPA-290](/SPA/issues/SPA-290) checklist). Verify Steamworks acceptance email before the Coming Soon page goes live. Do not launch until W-9 is confirmed accepted. | **Founder (action by 2026-04-30 per [SPA-290](/SPA/issues/SPA-290))** |
+
+---
+
+## 11. Summary: Key Numbers (LOCKED)
 
 | Metric | Value |
 |--------|-------|
-| Recommended EA price | **$14.99 USD** |
-| Launch week discount | **10% ($13.49 effective, 7 days only)** |
-| Developer net per Steam unit | **$10.49** (~$9.65 after ~8% refunds) |
+| **Locked EA price** | **$14.99 USD** 🔒 |
+| **itch.io demo price** | **Free** 🔒 |
+| Launch week discount | **10% → $13.49 effective, days 1–7 only** |
+| Developer net per Steam unit (full price) | **$10.49** (~$9.65 after ~8% refunds) |
+| Developer net per Steam unit (launch discount) | **$9.44** |
 | Total cash to launch (mid-range) | **~$300–500** |
 | Break-even units | **~29–62 units** |
 | Steam Direct recoupment | **~67 units** |
+| **First-week net — conservative** | **~$260** (~30 units) |
+| **First-week net — base** | **~$1,160** (~130 units) |
+| **First-week net — stretch** | **~$4,520** (~500 units) |
+| **First-month net — conservative** | **~$740** (~80 units) |
+| **First-month net — base** | **~$2,630** (~280 units) |
+| **First-month net — stretch** | **~$8,110** (~850 units) |
 | Conservative 90-day net | **~$2,100** |
-| Moderate 90-day net | **~$6,300** |
-| Optimistic 90-day net | **~$15,700** |
+| Base 90-day net | **~$6,300** |
+| Stretch 90-day net | **~$15,700** |
 | Conservative year-1 net | **~$3,900** |
-| Moderate year-1 net | **~$11,700** |
-| Optimistic year-1 net | **~$29,200** |
+| Base year-1 net | **~$11,700** |
+| Stretch year-1 net | **~$29,200** |
+| First payout timing | **~60 days post-launch** |
 | Minimum annual overhead (post-launch) | **~$60–350/yr** |
 | Launch sequence | **itch.io free demo → Steam EA (2–4 weeks)** |
 | Post-EA monetization | **Single-purchase; scenario DLC at 1.0** |
@@ -378,4 +492,4 @@ Valve pays monthly, 30-day lag. **Revenue earned in April → paid in late May.*
 
 *Not financial or legal advice. Revenue projections are estimates based on comparable indie title performance and zero-marketing launch assumptions. Consult a CPA before filing taxes. Sources: docs/business-setup-guide.md, docs/pre-launch-legal-financial-checklist.md, Steam Partner documentation, public comparable title sales data.*
 
-*Document version: 3.0 — 2026-04-04 (v1.0 origin: [SPA-248](/SPA/issues/SPA-248); v2.0 update: [SPA-266](/SPA/issues/SPA-266); v3.0 update: [SPA-277](/SPA/issues/SPA-277))*
+*Document version: 4.0 — 2026-04-30 (v1.0 origin: [SPA-248](/SPA/issues/SPA-248); v2.0 update: [SPA-266](/SPA/issues/SPA-266); v3.0 update: [SPA-277](/SPA/issues/SPA-277); v4.0 lock: [SPA-1139](/SPA/issues/SPA-1139))*

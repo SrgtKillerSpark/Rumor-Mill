@@ -84,11 +84,11 @@ OBSERVE  -->  GATHER INTEL  -->  CRAFT RUMOR  -->  SEED  -->  WATCH & ADAPT
 | | |
 |---|---|
 | **Days** | 20 |
-| **Player Objective** | Keep Aldous Prior, Vera Midwife, and Finn Monk ALL above 45 reputation for 20 days |
+| **Player Objective** | Keep Aldous Prior, Vera Midwife, and Finn Monk ALL at or above 48 reputation for 20 days |
 | **Primary Mechanic** | Pure defense against an InquisitorAgent that relentlessly seeds heresy rumors. No bribery. Inquisitor escalates in 3 phases (4-day -> 2-day -> 1-day cooldown). |
-| **What Makes It Engaging** | This flips the entire game on its head -- instead of attacking, you're protecting. The three targets have wildly different vulnerability profiles: Aldous Prior is nearly unshakeable (low credulity, high standing), Vera Midwife is moderate, and Finn Monk is dangerously credulous and easily swayed. Players must triage: who needs protection most? The Inquisitor never stops and only gets faster, creating an escalating crisis where the player must use Praise rumors and counter-narratives to shore up reputations while the Inquisitor tears them down. |
-| **Win Condition** | All three targets remain above 45 reputation when Day 20 ends |
-| **Fail Conditions** | Any of the three targets drops to 45 or below; day limit exceeded |
+| **What Makes It Engaging** | This flips the entire game on its head -- instead of attacking, you're protecting. The three targets have different vulnerability profiles: Aldous Prior is nearly unshakeable (very low credulity, very high loyalty), Vera Midwife is moderately credulous, and Finn Monk has the lowest loyalty of the three. Players must triage: who needs protection most? The Inquisitor never stops and only gets faster, creating an escalating crisis where the player must use Praise rumors and counter-narratives to shore up reputations while the Inquisitor tears them down. An 8-point "danger zone" (40–47) creates comeback opportunities without instant death. |
+| **Win Condition** | All three targets remain at or above 48 reputation when Day 20 ends |
+| **Fail Conditions** | Any of the three targets drops below 40; day limit exceeded |
 
 **Teaching goals:** Defensive strategy, triage under pressure, counter-narrative construction, long-term reputation management.
 
@@ -133,7 +133,7 @@ Heat accumulates from eavesdropping, but per-NPC heat thresholds aren't shown. P
 - S1: `Edric Fenn: 68/100 -- need < 30`
 - S2: `Believers: 2/7 -- Maren: Safe`
 - S3: `Calder: 52/75 | Tomas: 58/35`
-- S4: `Aldous: 72 | Vera: 61 | Finn: 55 -- all need > 45`
+- S4: `Aldous: 72 | Vera: 61 | Finn: 55 -- all need >= 48`
 
 **Why:** Players need to see their goal at all times. The current design forces a Journal detour to check progress. Making the target visible turns every in-game action into a clear decision: "does this move my number in the right direction?"
 
@@ -211,24 +211,88 @@ Understanding NPC archetypes is the key strategic skill. Each archetype creates 
 
 ---
 
+## Difficulty System: Apprentice / Master / Spymaster
+
+Every scenario is playable at three difficulty tiers. Difficulty modifies resource budgets, time pressure, and AI opponent pacing -- it does not change the scenario's narrative, events, or fundamental mechanics. The player selects difficulty before each scenario and can change it between runs.
+
+### Design Philosophy
+
+1. **Apprentice is training wheels, not easy mode.** The scenario is still losable. Apprentice gives more resources and time so the player can experiment with mechanics (routing, faction dynamics, heat management) without being punished for suboptimal play. The goal is learning, not coasting.
+
+2. **Master is the intended experience.** All balance tuning, event pacing, and win/fail thresholds are designed around Master. When the design docs reference a scenario's parameters without specifying difficulty, they mean Master.
+
+3. **Spymaster is for mastery expression.** Drastically reduced resources force the player to execute near-optimal strategies. Spymaster is not balanced for first attempts -- it assumes the player has already won on Master and understands the scenario's systems deeply. Sub-5% completion rates on some scenarios are acceptable.
+
+### Modifier Table
+
+All values are offsets from the Master baseline. The base daily whispers (2) and recon actions (3) are defined in `intel_store.gd`.
+
+| Parameter | Apprentice | Master | Spymaster | Source |
+|-----------|-----------|--------|-----------|--------|
+| Daily whispers | 3 (+1) | **2** | 1 (-1) | `game_state.gd` whisper_bonus |
+| Daily recon actions | 4 (+1) | **3** | 2 (-1) | `game_state.gd` action_bonus |
+| Days allowed bonus | +5 | **0** | -5 | `game_state.gd` days_bonus |
+| Heat decay/day | 8.0 | **6.0** | 3.0 | `game_state.gd` heat_decay |
+| Rival cooldown offset | +1 (slower) | **0** | -1 (faster) | `game_state.gd` rival_cooldown_offset |
+| Inquisitor cooldown offset | +1 (slower) | **0** | -1 (faster) | `game_state.gd` inquisitor_cooldown_offset |
+| Illness escalation offset | +1 (slower) | **0** | -1 (faster) | `game_state.gd` illness_escalation_offset |
+
+### Per-Scenario Overrides
+
+Each scenario also defines difficulty-specific overrides in `scenarios.json` under `difficultyModifiers.easy` and `difficultyModifiers.hard`. These adjust scenario-specific parameters (win/fail thresholds, starting reputations, credulity deltas, event window shifts) on top of the global modifiers above. See `docs/scenario-difficulty-and-events.md` for per-scenario difficulty lever details.
+
+### Key Design Constraints
+
+- **No content gating.** All six scenarios are available at all three difficulties. Difficulty is never a prerequisite.
+- **No mid-run difficulty changes.** Once a scenario starts, the difficulty tier is locked. This prevents save-scumming around difficulty walls.
+- **AI opponents scale.** Rival, Inquisitor, and IllnessEscalation agents all respond to cooldown offsets, meaning they attack faster on Spymaster and slower on Apprentice. This keeps the pacing feeling natural rather than artificially stretched or compressed.
+
+---
+
 ## Difficulty Curve Across Scenarios
 
 ```
-S1 (Tutorial)     S2 (Precision)     S3 (Two-Front)     S4 (Defense)
-   ___                ___                 ___                ___
-  /   \              / | \               /   \              /   |
- /     \            /  |  \             / RvAg\            / Inq|
-/ learn \          / Maren \           /  ↑↑↑  \          / ↑↑↑ |
-  ramp    gentle   constraint  front   pressure  frantic  relentless
+S1 (Tutorial)     S2 (Precision)     S3 (Two-Front)     S4 (Defense)      S5 (Election)      S6 (Constrained)
+   ___                ___                 ___                ___               ___                 ___
+  /   \              / | \               /   \              /   |             / D13\              / GD \
+ /     \            /  |  \             / RvAg\            / Inq|            / End  \            / Heat|
+/ learn \          / Maren \           /  ↑↑↑  \          / ↑↑↑ |          / pivot  \          / ceil |
+  ramp    gentle   constraint  front   pressure  frantic  relentless      deadline  race     constrained
 ```
 
 - **S1** ramps slowly: 7 days of pure recon, then three escalating act breaks
 - **S2** is front-loaded: Maren threat is immediate, but IllnessAgent helps mid-game
 - **S3** accelerates steadily: RivalAgent phases compress from 4-day to 1-day cooldowns
 - **S4** is relentless: Inquisitor never stops, player is always reacting
+- **S5** is political: three-candidate race with an endorsement deadline creating a mid-game pivot
+- **S6** is constrained: low heat ceiling and guild defenders make every action count
 
 ---
 
-## Appendix: Unbalanced Scenarios (Excluded from Rotation)
+### Scenario 5: The Election
 
-**Scenario 5 -- The Election** and **Scenario 6 -- The Merchant's Debt** exist in the data files but are flagged as unbalanced. They are excluded from the default scenario selection screen. These are candidates for Phase 2 expansion with proper balance tuning (see `docs/early-access-roadmap.md`).
+| | |
+|---|---|
+| **Days** | 21 |
+| **Player Objective** | Get Aldric Vane elected -- raise his reputation to 65+ while keeping both rivals (Edric Fenn and Tomas Reeve) below 45 |
+| **Primary Mechanic** | Three-candidate race with an endorsement mechanic. On Day 13, Prior Aldous endorses whoever leads with an +8 reputation bonus. Campaign appearances (+4 rep, 3-day cooldown) provide a unique action. |
+| **What Makes It Engaging** | The endorsement deadline creates a natural mid-game pivot. Before Day 13, the player races to get Aldric into the lead so he receives the +8 bonus. After it, the focus shifts to suppressing both rivals below 45 while maintaining Aldric's lead. Five mid-game events (The Smear Pamphlet, The Market Debate, The Endorsement Gambit, The Bribery Scandal, The Final Rally) create escalating political drama. Edric starts as frontrunner (rep 58) while Aldric starts behind (rep 45), so the player must close a 13-point gap. |
+| **Win Condition** | `reputation(aldric_vane) >= 65 AND aldric_vane is highest AND reputation(edric_fenn) < 45 AND reputation(tomas_reeve) < 45` |
+| **Fail Conditions** | Aldric reputation < 30 (instant); day limit exceeded |
+
+**Teaching goals:** Multi-target management with a deadline mechanic, strategic timing around the endorsement, campaign resource management.
+
+---
+
+### Scenario 6: The Merchant's Debt
+
+| | |
+|---|---|
+| **Days** | 20 |
+| **Player Objective** | Expose Aldric Vane's embezzlement -- drop his reputation to 30 or below AND keep informant Marta Coin at 62+ reputation |
+| **Primary Mechanic** | Offensive campaign against a defended target with a tight heat ceiling. Aldric's merchant allies (Guild Defense system) actively spread praise rumors about him every 3 days starting Day 5. Blackmail evidence is a powerful but limited tool (2 uses, -18 rep per use, +22 heat). |
+| **What Makes It Engaging** | The heat ceiling of 55 (guards are on Aldric's payroll) is much lower than S1's 80, making every eavesdrop and aggressive action a calculated risk. The Guild Defense system means Aldric's reputation actively recovers -- the player must outpace automated praise. Marta Coin (the informant) must stay above 62 or the evidence chain collapses, creating a defensive constraint during an offensive campaign. Five mid-game events create escalating pressure as Aldric fights back. |
+| **Win Condition** | `reputation(aldric_vane) <= 30 AND reputation(marta_coin) >= 62` |
+| **Fail Conditions** | Marta reputation < 30 (silenced, instant); player heat >= 55 (exposed, instant); day limit exceeded |
+
+**Teaching goals:** Operating under tight resource constraints, managing an active defense system, balancing offensive and defensive objectives with a low heat ceiling.

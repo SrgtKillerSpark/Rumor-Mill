@@ -93,7 +93,7 @@ Basic strategy: seed with high-credulity NPCs in the merchant district, avoid th
 
 What goes wrong: target shift. A mutation redirects the illness rumor mid-chain to a different subject, sometimes directly into Maren's network. When that fires, Maren hears a false illness claim about someone she trusts, investigates, and publicly contradicts it. Your believability craters. The contradiction spreads faster than the original rumor. You've got a few days to reseed before the scenario tips.
 
-**The Holy Inquisition (Scenario 4):** Three NPCs are under active investigation. Your job is to keep their reputations above 50 across 20 full days while the Inquisitor runs his own rumor campaign against them — seeding scandal claims that prime for heresy escalation.
+**The Holy Inquisition (Scenario 4):** Three NPCs are under active investigation. Your job is to keep their reputations at or above 48 across 20 full days while the Inquisitor runs his own rumor campaign against them — seeding scandal claims that prime for heresy escalation.
 
 The correct play is interception. Let the Inquisitor's scandal claims land, then immediately layer same-type positive claims on the same targets. Same-type stacking means your praise claims get +15% believability and +1 intensity — enough to slow the reputation bleed. If you wait until the scandals have been live for several days, the priming window for heresy opens and you're defending against a +25% believability escalation chain instead. Timing is the skill.
 

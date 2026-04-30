@@ -352,7 +352,7 @@ Check the following by end of day April 11:
 - **S4 (The Holy Inquisition)** is the third most marketable — purely defensive play is a strong positioning contrast. "You are not the aggressor" is a compelling short copy hook. Recommend mentioning in scenario lists, not as the lead.
 - **S2 (The Plague Scare)** is mechanically interesting (the Maren constraint) but reads less distinctively in a short pitch. Include in scenario lists; don't lead with it.
 
-**Note on scenario count:** The issue brief mentions "6 scenarios" — the GDD confirms S5 (The Election) and S6 (The Merchant's Debt) exist in data files but are excluded from the demo as unbalanced. All marketing copy should say **four scenarios**. Promoting unfinished or excluded content would create player confusion and support burden.
+**Note on scenario count:** The itch.io demo shipped with four scenarios (S1–S4). S5 (The Election) and S6 (The Merchant's Debt) were in data files at demo launch but not surfaced. Both shipped in the Steam Early Access build — balance passes (SPA-747) and mission briefing wiring (SPA-1020) confirmed them launch-ready. **Demo copy should say four scenarios. EA and post-launch copy should say six scenarios.**
 
 ---
 
