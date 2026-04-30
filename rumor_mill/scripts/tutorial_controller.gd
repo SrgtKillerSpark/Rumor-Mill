@@ -34,6 +34,10 @@ extends Node
 
 class_name TutorialController
 
+## Emitted when a tutorial step is completed (dismissed or action-gated).
+## Used by AnalyticsManager to log tutorial_step_completed events (SPA-1241).
+signal step_completed(step_id: String, scenario_id: String)
+
 # ── Step definitions ─────────────────────────────────────────────────────────
 
 ## Scenario 1 — 7-step action-gated tutorial (SPA-835).
@@ -398,6 +402,7 @@ func _complete_current_step() -> void:
 	if not _active or _current_step < 0 or _current_step >= _steps.size():
 		return
 	var step_def: Dictionary = _steps[_current_step]
+	step_completed.emit(step_def["id"], _scenario_id)
 	if _tutorial_sys != null:
 		_tutorial_sys.mark_seen(step_def["id"])
 	if _tutorial_banner != null and _tutorial_banner.has_method("dismiss_hint"):
@@ -427,6 +432,7 @@ func _on_banner_hint_dismissed(hint_id: String) -> void:
 		return
 	var step_def: Dictionary = _steps[_current_step]
 	if step_def["hint"] == hint_id:
+		step_completed.emit(step_def["id"], _scenario_id)
 		_advance_step()
 
 

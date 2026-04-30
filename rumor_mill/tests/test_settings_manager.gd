@@ -87,6 +87,13 @@ func run() -> void:
 		# ── set_text_size_index() ──
 		"test_set_text_size_index_small_syncs_scale",
 		"test_set_text_size_index_large_syncs_scale",
+
+		# ── SPA-1241: _take_snapshot / _diff_and_emit_changes ──
+		"test_take_snapshot_returns_dict_with_expected_keys",
+		"test_take_snapshot_values_are_strings",
+		"test_diff_no_change_emits_nothing",
+		"test_diff_volume_change_emits_setting_changed",
+		"test_diff_multiple_changes_emit_multiple_signals",
 	]
 
 	for method_name in tests:
@@ -290,3 +297,70 @@ func test_set_text_size_index_large_syncs_scale() -> bool:
 	var ok := sm.text_size_index == 2 and absf(sm.ui_scale - expected_scale) < 0.001
 	sm.free()
 	return ok
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SPA-1241: _take_snapshot / _diff_and_emit_changes
+# ══════════════════════════════════════════════════════════════════════════════
+
+func test_take_snapshot_returns_dict_with_expected_keys() -> bool:
+	var sm := _make_sm()
+	var snap: Dictionary = sm._take_snapshot()
+	sm.free()
+	var required_keys := ["master_volume", "music_volume", "ambient_volume",
+		"sfx_volume", "game_speed_index", "analytics_enabled", "resolution_index",
+		"window_mode", "ui_scale_index", "window_scale_index", "text_size_index"]
+	for key in required_keys:
+		if key not in snap:
+			return false
+	return true
+
+
+func test_take_snapshot_values_are_strings() -> bool:
+	var sm := _make_sm()
+	var snap: Dictionary = sm._take_snapshot()
+	sm.free()
+	for key in snap:
+		if not snap[key] is String:
+			return false
+	return true
+
+
+func test_diff_no_change_emits_nothing() -> bool:
+	var sm := _make_sm()
+	sm._prev_snapshot = sm._take_snapshot()
+	var emissions: Array = []
+	sm.setting_changed.connect(func(k: String, o: String, n: String) -> void:
+		emissions.append(k))
+	sm._diff_and_emit_changes()
+	sm.free()
+	return emissions.is_empty()
+
+
+func test_diff_volume_change_emits_setting_changed() -> bool:
+	var sm := _make_sm()
+	sm._prev_snapshot = sm._take_snapshot()
+	sm.music_volume = 42.0
+	var emissions: Array = []
+	sm.setting_changed.connect(func(k: String, o: String, n: String) -> void:
+		emissions.append({ "key": k, "old": o, "new": n }))
+	sm._diff_and_emit_changes()
+	sm.free()
+	if emissions.size() != 1:
+		return false
+	return emissions[0]["key"] == "music_volume" \
+		and emissions[0]["old"] == "80.0" \
+		and emissions[0]["new"] == "42.0"
+
+
+func test_diff_multiple_changes_emit_multiple_signals() -> bool:
+	var sm := _make_sm()
+	sm._prev_snapshot = sm._take_snapshot()
+	sm.music_volume = 50.0
+	sm.window_mode = 2
+	var keys: Array = []
+	sm.setting_changed.connect(func(k: String, _o: String, _n: String) -> void:
+		keys.append(k))
+	sm._diff_and_emit_changes()
+	sm.free()
+	return keys.size() == 2 and "music_volume" in keys and "window_mode" in keys

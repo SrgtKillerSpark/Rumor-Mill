@@ -257,7 +257,4 @@ func _cell_furthest_from(from_cell: Vector2i) -> Vector2i:
 
 ## Isometric tile → world position conversion.
 func cell_to_world(cell: Vector2i) -> Vector2:
-	return Vector2(
-		(cell.x - cell.y) * 32.0,  # TILE_W / 2
-		(cell.x + cell.y) * 16.0   # TILE_H / 2
-	)
+	return IsoTile.cell_to_world(cell)

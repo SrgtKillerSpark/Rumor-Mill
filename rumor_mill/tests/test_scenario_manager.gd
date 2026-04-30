@@ -428,11 +428,14 @@ static func test_win_progress_s2_one_at_threshold() -> bool:
 	return absf(sm.get_win_progress(rep, 0) - 1.0) < 0.001
 
 
-## S3 progress = 0.0 when calder_score_start is -1 (evaluate() not yet called).
+## S3 progress = 0.0 when calder hasn't moved from his starting score (SPA-1217).
+## get_win_progress() lazy-initialises calder_score_start on first call, so
+## progress is 0.0 — not stale — even before the first evaluate().
 static func test_win_progress_s3_zero_when_calder_start_unset() -> bool:
 	var sm  := _make_sm(3)
 	var rep := _rep_with([_snap("calder_fenn", 60), _snap("tomas_reeve", 50)])
-	# calder_score_start defaults to -1 before the first evaluate() call.
+	# calder_score_start is -1 before first access; lazy-init sets it to 60.
+	# Progress = (60 - 60) / (75 - 60) = 0.0.
 	return absf(sm.get_win_progress(rep, 0)) < 0.001
 
 

@@ -72,6 +72,13 @@ var text_size_index:     int   = 1   ## index into TEXT_SIZE_LABELS (0=Small, 1=
 var game_speed_index:    int   = 1   ## index into GAME_SPEED_PRESETS (0=0.5×, 1=1×, 2=2×)
 var dismissed_tooltips:  Dictionary = {}  ## Persistent tooltip dismissal tracking (tooltip_id → true).
 
+## Emitted when a user-facing setting value changes (SPA-1241).
+## All values are stringified for uniform analytics payloads.
+signal setting_changed(setting_key: String, old_value: String, new_value: String)
+
+## Snapshot of tracked settings taken after load — used to diff in save_settings().
+var _prev_snapshot: Dictionary = {}
+
 
 func _ready() -> void:
 	# Enforce minimum window size so the game never drops below 720p.
@@ -126,9 +133,11 @@ func load_settings() -> void:
 	game_speed_index = clampi(game_speed_index, 0, GAME_SPEED_PRESETS.size() - 1)
 	game_speed = GAME_SPEED_PRESETS[game_speed_index]
 	dismissed_tooltips = cfg.get_value(SECTION, "dismissed_tooltips", {})
+	_prev_snapshot = _take_snapshot()
 
 
 func save_settings() -> void:
+	_diff_and_emit_changes()
 	var cfg := ConfigFile.new()
 	cfg.set_value(SECTION, "master_volume",     master_volume)
 	cfg.set_value(SECTION, "music_volume",      music_volume)
@@ -255,6 +264,35 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_F11 or (event.keycode == KEY_ENTER and event.alt_pressed):
 			toggle_fullscreen()
 			get_viewport().set_input_as_handled()
+
+
+## Capture current user-facing settings as a String-keyed dictionary for diffing.
+func _take_snapshot() -> Dictionary:
+	return {
+		"master_volume":    str(master_volume),
+		"music_volume":     str(music_volume),
+		"ambient_volume":   str(ambient_volume),
+		"sfx_volume":       str(sfx_volume),
+		"game_speed_index": str(game_speed_index),
+		"analytics_enabled": str(analytics_enabled),
+		"resolution_index": str(resolution_index),
+		"window_mode":      str(window_mode),
+		"ui_scale_index":   str(ui_scale_index),
+		"window_scale_index": str(window_scale_index),
+		"text_size_index":  str(text_size_index),
+	}
+
+
+## Compare current values against the previous snapshot and emit setting_changed
+## for each key that differs.  Updates the snapshot afterwards.
+func _diff_and_emit_changes() -> void:
+	var current := _take_snapshot()
+	for key in current:
+		var cur_val: String = current[key]
+		var old_val: String = _prev_snapshot.get(key, cur_val)
+		if cur_val != old_val:
+			setting_changed.emit(key, old_val, cur_val)
+	_prev_snapshot = current
 
 
 ## Convert linear 0-100 to dB. Returns -80 for zero (silence).

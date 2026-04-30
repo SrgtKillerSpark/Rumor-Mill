@@ -34,8 +34,7 @@ signal npc_unhovered()
 ## Emitted once each time this NPC's heat crosses 75 going upward (danger zone).
 signal suspicion_danger(npc_name: String)
 
-const TILE_W       := 64
-const TILE_H       := 32
+## Tile dimensions live in IsoTile (iso_tile.gd) — SPA-1218.
 const SPREAD_RADIUS := 8   # tiles (manhattan distance)
 
 # ── Data set by World ────────────────────────────────────────────────────────

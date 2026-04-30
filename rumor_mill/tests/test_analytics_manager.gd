@@ -57,6 +57,12 @@ func run() -> void:
 		"test_evidence_interaction_skips_unknown_message",
 		"test_evidence_interaction_observe_does_not_enqueue",
 		"test_evidence_interaction_eavesdrop_does_not_enqueue",
+
+		# ── SPA-1241: new event handlers ──
+		"test_tutorial_step_completed_enqueues_when_logger_null",
+		"test_tutorial_step_completed_stores_correct_args",
+		"test_settings_changed_enqueues_when_logger_null",
+		"test_settings_changed_stores_correct_args",
 	]
 
 	for method_name in tests:
@@ -228,3 +234,36 @@ func test_evidence_interaction_eavesdrop_does_not_enqueue() -> bool:
 	m._on_analytics_evidence_interaction("Eavesdrop on guards", false)
 	return m._event_queue.size() == 1 \
 		and m._event_queue[0]["args"][0] == "Eavesdrop on guards"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SPA-1241: New event handlers (tutorial_step_completed, settings_changed)
+# ══════════════════════════════════════════════════════════════════════════════
+
+func test_tutorial_step_completed_enqueues_when_logger_null() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_tutorial_step_completed("gtut_explore", "scenario_1")
+	return m._event_queue.size() == 1 \
+		and m._event_queue[0]["method"] == "_on_analytics_tutorial_step_completed"
+
+
+func test_tutorial_step_completed_stores_correct_args() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_tutorial_step_completed("wtut_s2_whats_new", "scenario_2")
+	return m._event_queue[0]["args"][0] == "wtut_s2_whats_new" \
+		and m._event_queue[0]["args"][1] == "scenario_2"
+
+
+func test_settings_changed_enqueues_when_logger_null() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_settings_changed("music_volume", "80.0", "50.0")
+	return m._event_queue.size() == 1 \
+		and m._event_queue[0]["method"] == "_on_analytics_settings_changed"
+
+
+func test_settings_changed_stores_correct_args() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_settings_changed("window_mode", "0", "2")
+	return m._event_queue[0]["args"][0] == "window_mode" \
+		and m._event_queue[0]["args"][1] == "0" \
+		and m._event_queue[0]["args"][2] == "2"

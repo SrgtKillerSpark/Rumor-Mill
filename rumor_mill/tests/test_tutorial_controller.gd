@@ -60,6 +60,8 @@ func run() -> void:
 		"test_setup_scenario_5_uses_s5_steps",
 		"test_setup_scenario_6_uses_s6_steps",
 		"test_setup_unknown_scenario_falls_back_to_s1",
+		# SPA-1241: step_completed signal
+		"test_step_completed_signal_exists",
 	]
 
 	for method_name in tests:
@@ -310,3 +312,10 @@ static func test_setup_unknown_scenario_falls_back_to_s1() -> bool:
 			TutorialController.STEPS_S1.size(), ctrl._steps.size()])
 		return false
 	return true
+
+
+# ── SPA-1241: step_completed signal ──────────────────────────────────────────
+
+static func test_step_completed_signal_exists() -> bool:
+	var ctrl := _make_ctrl()
+	return ctrl.has_signal("step_completed")

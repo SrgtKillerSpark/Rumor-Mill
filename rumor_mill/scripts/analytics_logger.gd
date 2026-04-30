@@ -96,6 +96,25 @@ func log_evidence_interaction(action_type: String, success: bool, day: int, scen
 	})
 
 
+## Log a tutorial step completion (SPA-1241).
+## Tracks per-step abandonment: which steps players reach before quitting.
+func log_tutorial_step_completed(step_id: String, scenario_id: String) -> void:
+	log_event("tutorial_step_completed", {
+		"step_id":     step_id,
+		"scenario_id": scenario_id,
+	})
+
+
+## Log a user settings change (SPA-1241).
+## Tracks which settings players touch and how they change them.
+func log_settings_changed(setting_key: String, old_value: String, new_value: String) -> void:
+	log_event("settings_changed", {
+		"setting_key": setting_key,
+		"old_value":   old_value,
+		"new_value":   new_value,
+	})
+
+
 # ── Internal ─────────────────────────────────────────────────────────────────
 
 func _append_line(line: String) -> void:

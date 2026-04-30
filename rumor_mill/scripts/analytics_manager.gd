@@ -85,6 +85,12 @@ func setup(
 	else:
 		push_warning("AnalyticsManager: world.scenario_manager is null — scenario_resolved events will not be logged")
 
+	# SPA-1241: Log user settings changes via SettingsManager autoload signal.
+	if SettingsManager.has_signal("setting_changed"):
+		SettingsManager.setting_changed.connect(_on_analytics_settings_changed)
+	else:
+		push_warning("AnalyticsManager: SettingsManager missing setting_changed signal — settings_changed events will not be logged")
+
 
 func _on_analytics_rumor_seeded(
 		_rumor_id: String,
@@ -140,6 +146,30 @@ func _on_analytics_new_day(day: int) -> void:
 		if abs(snap.score - prev_score) >= 3:
 			_analytics_logger.log_reputation_delta(npc_id, prev_score, snap.score, day, _analytics_scenario_id)
 		_analytics_rep_snapshot[npc_id] = snap.score
+
+
+## SPA-1241: Wire TutorialController step_completed signal.
+## Called after the TutorialController is created (deferred from setup() because
+## the controller is instantiated later in the game-start flow).
+func wire_tutorial_controller(tutorial_ctrl: Node) -> void:
+	if tutorial_ctrl != null and tutorial_ctrl.has_signal("step_completed"):
+		tutorial_ctrl.step_completed.connect(_on_analytics_tutorial_step_completed)
+	else:
+		push_warning("AnalyticsManager: tutorial_ctrl is null or missing step_completed — tutorial_step_completed events will not be logged")
+
+
+func _on_analytics_tutorial_step_completed(step_id: String, scenario_id: String) -> void:
+	if _analytics_logger == null:
+		_enqueue("_on_analytics_tutorial_step_completed", [step_id, scenario_id])
+		return
+	_analytics_logger.log_tutorial_step_completed(step_id, scenario_id)
+
+
+func _on_analytics_settings_changed(setting_key: String, old_value: String, new_value: String) -> void:
+	if _analytics_logger == null:
+		_enqueue("_on_analytics_settings_changed", [setting_key, old_value, new_value])
+		return
+	_analytics_logger.log_settings_changed(setting_key, old_value, new_value)
 
 
 func _on_analytics_scenario_resolved(

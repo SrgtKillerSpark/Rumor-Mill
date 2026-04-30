@@ -23,6 +23,7 @@ var _rumor_panel: CanvasLayer = null
 var _journal: CanvasLayer = null
 var _visual_affordances: CanvasLayer = null
 var _recon_ctrl_ref: Node = null
+var _analytics_manager: AnalyticsManager = null  ## SPA-1241: wired via set_analytics_manager()
 
 # ── SPA-629: Rumor Panel first-time tooltip walkthrough ──────────────────────
 var _rumor_panel_tooltip: CanvasLayer = null
@@ -113,6 +114,12 @@ func setup(
 		_recon_ctrl_ref.action_performed.connect(_on_recon_action_for_tutorial)
 
 	tree_exiting.connect(_on_tree_exiting)
+
+
+## SPA-1241: Store AnalyticsManager so we can wire TutorialController.step_completed
+## when the controller is created later during start_onboarding().
+func set_analytics_manager(am: AnalyticsManager) -> void:
+	_analytics_manager = am
 
 
 func _on_tree_exiting() -> void:
@@ -679,6 +686,8 @@ func _init_s1_onboarding_flow() -> void:
 		tutorial_sys, tutorial_banner, _camera,
 		_recon_ctrl_ref, _journal, _rumor_panel, _world
 	)
+	if _analytics_manager != null:
+		_analytics_manager.wire_tutorial_controller(_tutorial_ctrl)
 	_tutorial_ctrl.start()
 
 
@@ -717,6 +726,8 @@ func _init_sx_onboarding_flow(scenario_id: String) -> void:
 		_recon_ctrl_ref, _journal, _rumor_panel, _world,
 		scenario_id
 	)
+	if _analytics_manager != null:
+		_analytics_manager.wire_tutorial_controller(_tutorial_ctrl)
 	_tutorial_ctrl.start()
 	# SPA-1020: Start timed hints now that the blocking briefing screen is gone.
 	_start_sx_timed_hints(scenario_id)

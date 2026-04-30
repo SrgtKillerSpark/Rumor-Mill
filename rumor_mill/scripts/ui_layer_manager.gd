@@ -496,6 +496,10 @@ func _init_audio() -> void:
 func _init_analytics_logger(scenario_id: String) -> void:
 	_analytics_manager = AnalyticsManager.new()
 	_analytics_manager.setup(scenario_id, _world, _day_night, _rumor_panel, recon_ctrl_ref)
+	# SPA-1241: Pass analytics manager to tutorial wiring so it can wire
+	# TutorialController.step_completed when the controller is created later.
+	if tutorial_wiring != null:
+		tutorial_wiring.set_analytics_manager(_analytics_manager)
 
 
 # ── Pause Menu ───────────────────────────────────────────────────────────────

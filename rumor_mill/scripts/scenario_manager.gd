@@ -183,9 +183,10 @@ func get_win_progress(rep: ReputationSystem, current_tick: int) -> float:
 			if calder == null or tomas == null:
 				return 0.0
 			# Calder needs to reach 75 (assume start ≈ 50); Tomas needs to drop to 35 (assume start ≈ 50).
-			# calder_score_start is -1 until the first evaluate() call; return 0 until it is initialised.
+			# Lazy-init calder_score_start on first access so HUD shows correct progress
+			# even if get_win_progress() fires before the first evaluate() call (SPA-1217).
 			if calder_score_start == -1:
-				return 0.0
+				calder_score_start = calder.score
 			var calder_start: float = float(calder_score_start)
 			var prog_calder: float = clampf(
 				(calder.score - calder_start) / (S3_WIN_CALDER_MIN - calder_start), 0.0, 1.0)
