@@ -40,6 +40,13 @@ export interface RunHeadlessOpts {
   timeoutMs?: number;
   /** Additional CLI arguments passed after --headless --path <project>. */
   extraArgs?: string[];
+  /**
+   * When true, runs a `--import --quit` pre-pass before the main headless run.
+   * This forces Godot to rebuild its import cache from current source files,
+   * ensuring in-session file edits are visible during validation rather than
+   * returning stale cached results.
+   */
+  forceReimport?: boolean;
 }
 
 // ── Binary discovery ──────────────────────────────────────────────────────────
@@ -186,6 +193,24 @@ function parseLines(text: string): { errors: ParsedError[]; warnings: ParsedWarn
  *                     contain a `project.godot` file).
  * @param opts         Optional configuration (timeoutMs, extraArgs).
  */
+/**
+ * Run a `--import --quit` pre-pass to rebuild the import cache from current
+ * source files. Errors from this step are intentionally swallowed — the pass
+ * may itself emit errors (e.g. on first run) but is only needed to update the
+ * cache; the actual validation run that follows will surface real errors.
+ */
+async function runImportPass(godotBin: string, projectPath: string): Promise<void> {
+  return new Promise((resolve) => {
+    const child = spawn(
+      godotBin,
+      ['--headless', '--path', projectPath, '--import', '--quit'],
+      { stdio: 'ignore' },
+    );
+    child.on('error', () => resolve());
+    child.on('close', () => resolve());
+  });
+}
+
 export async function runHeadless(
   projectPath: string,
   opts: RunHeadlessOpts = {},
@@ -198,6 +223,10 @@ export async function runHeadless(
     throw new Error(
       'Godot binary not found. Set the GODOT_BIN environment variable or install Godot 4.',
     );
+  }
+
+  if (opts.forceReimport) {
+    await runImportPass(godotBin, projectPath);
   }
 
   const args = ['--headless', '--path', projectPath, ...extraArgs];

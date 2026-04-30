@@ -18,6 +18,8 @@ export interface ToolResult {
 interface ValidateScriptsArgs {
   projectPath: string;
   timeoutMs?: number;
+  /** Skip the --import pre-pass. Faster but may return stale results if source files were edited in-session. */
+  skipReimport?: boolean;
 }
 
 // ── Tool definition ───────────────────────────────────────────────────────────
@@ -38,16 +40,23 @@ export const inputSchema = {
       type: 'number',
       description: 'Process timeout in milliseconds. Defaults to 30000.',
     },
+    skipReimport: {
+      type: 'boolean',
+      description:
+        'Skip the --import pre-pass that flushes the Godot import cache before validation. ' +
+        'Faster but may return stale results when source files have been edited in-session. ' +
+        'Defaults to false (pre-pass runs by default).',
+    },
   },
   required: ['projectPath'],
 };
 
 export async function handler(args: ValidateScriptsArgs): Promise<ToolResult> {
-  const { projectPath, timeoutMs } = args;
+  const { projectPath, timeoutMs, skipReimport } = args;
 
   let result: GodotRunResult;
   try {
-    result = await runHeadless(projectPath, { timeoutMs });
+    result = await runHeadless(projectPath, { timeoutMs, forceReimport: !skipReimport });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return {
