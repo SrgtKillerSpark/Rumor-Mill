@@ -8,6 +8,7 @@
 ##   • TestScenarioConditions     — win/fail evaluation for Scenarios 1–6
 ##   • TestSaveCorruption         — save/load hardening (SPA-864, SPA-896, SPA-901)
 ##   • TestSaveManager            — save_path(), prepare_load(), pending state, migration (SPA-964)
+##   • TestSaveRoundtrip          — full serialize/restore round-trips for all 6 scenarios + all agent types (SPA-1090)
 ##   • TestAchievementManager     — unlock/query API and static definition table (SPA-964)
 ##   • TestFactionEventSystem     — scheduling, activation, effects, expiry, hotspots, foreshadow, serialization (SPA-965)
 ##   • TestSpa970976Regressions   — regression guard for SPA-970/974/975/976 bug fix batch (SPA-985)
@@ -261,6 +262,7 @@ const TestRumorTrackerHud = preload("res://tests/test_rumor_tracker_hud.gd")
 const TestS4FactionShiftAgent = preload("res://tests/test_s4_faction_shift_agent.gd")
 const TestSaveCorruption = preload("res://tests/test_save_corruption.gd")
 const TestSaveManager = preload("res://tests/test_save_manager.gd")
+const TestSaveRoundtrip = preload("res://tests/test_save_roundtrip.gd")
 const TestScenario1Hud = preload("res://tests/test_scenario1_hud.gd")
 const TestScenario2Hud = preload("res://tests/test_scenario2_hud.gd")
 const TestScenario3Hud = preload("res://tests/test_scenario3_hud.gd")
@@ -318,6 +320,9 @@ func _init() -> void:
 
 	print("\n── SaveManager ──")
 	TestSaveManager.new().run()
+
+	print("\n── SaveRoundtrip ──")
+	TestSaveRoundtrip.new().run()
 
 	print("\n── AchievementManager ──")
 	TestAchievementManager.new().run()

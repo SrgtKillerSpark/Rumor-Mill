@@ -496,11 +496,12 @@ static func _serialize_rival_agent(ra: RivalAgent) -> Dictionary:
 	if ra == null:
 		return {}
 	return {
-		"active":                    ra._active,
-		"last_seed_day":             ra._last_seed_day,
-		"alternate_flag":            ra._alternate_flag,
-		"cooldown_offset":           ra.cooldown_offset,
-		"disrupt_charges_remaining": ra.disrupt_charges_remaining,
+		"active":                       ra._active,
+		"last_seed_day":                ra._last_seed_day,
+		"alternate_flag":               ra._alternate_flag,
+		"cooldown_offset":              ra.cooldown_offset,
+		"disrupt_charges_remaining":    ra.disrupt_charges_remaining,
+		"disruption_days_remaining":    ra._disruption_days_remaining,
 	}
 
 
@@ -740,11 +741,12 @@ static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> voi
 static func _restore_rival_agent(ra: RivalAgent, d: Dictionary) -> void:
 	if ra == null or d.is_empty():
 		return
-	ra._active                    = bool(d.get("active", false))
-	ra._last_seed_day             = int(d.get("last_seed_day", 0))
-	ra._alternate_flag            = bool(d.get("alternate_flag", false))
-	ra.cooldown_offset            = int(d.get("cooldown_offset", 0))
-	ra.disrupt_charges_remaining  = int(d.get("disrupt_charges_remaining", RivalAgent.MAX_DISRUPT_CHARGES))
+	ra._active                       = bool(d.get("active", false))
+	ra._last_seed_day                = int(d.get("last_seed_day", 0))
+	ra._alternate_flag               = bool(d.get("alternate_flag", false))
+	ra.cooldown_offset               = int(d.get("cooldown_offset", 0))
+	ra.disrupt_charges_remaining     = int(d.get("disrupt_charges_remaining", RivalAgent.MAX_DISRUPT_CHARGES))
+	ra._disruption_days_remaining    = int(d.get("disruption_days_remaining", 0))
 
 
 static func _restore_inquisitor_agent(ia: InquisitorAgent, d: Dictionary) -> void:
