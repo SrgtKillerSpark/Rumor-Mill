@@ -20,7 +20,7 @@ const C_HEADING       := Color(0.92, 0.78, 0.12, 1.0)   # gold
 const C_BODY          := Color(0.80, 0.72, 0.56, 1.0)   # warm parchment text
 const C_KEY           := Color(0.90, 0.84, 0.68, 1.0)   # bright parchment
 const C_SUBKEY        := Color(0.65, 0.58, 0.45, 1.0)   # mid parchment
-const C_LOCKED        := Color(0.40, 0.35, 0.28, 1.0)   # muted
+const C_LOCKED        := Color(0.60, 0.55, 0.45, 1.0)   # locked — WCAG AA: ~5.5:1 vs C_PANEL_BG
 const C_TAB_ACTIVE    := Color(0.55, 0.38, 0.18, 1.0)   # amber-brown
 const C_TAB_INACTIVE  := Color(0.20, 0.14, 0.09, 1.0)   # very dark
 

@@ -490,9 +490,8 @@ func _add_key_hint(parent: HBoxContainer, key: String, label: String, accent: Co
 	parent.add_child(hint)
 	# Gentle pulse — loops 4 times then stops (draws attention without being annoying).
 	var tw := create_tween().set_loops(4)
-	var dim := Color(accent.r, accent.g, accent.b, 0.4)
 	tw.tween_property(hint, "modulate", Color.WHITE, 0.8).set_trans(Tween.TRANS_SINE)
-	tw.tween_property(hint, "modulate", Color(dim.r, dim.g, dim.b, 0.6), 0.8).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(hint, "modulate", Color(1, 1, 1, 0.65), 0.8).set_trans(Tween.TRANS_SINE)
 	tw.finished.connect(func() -> void:
 		hint.modulate = Color.WHITE
 	)

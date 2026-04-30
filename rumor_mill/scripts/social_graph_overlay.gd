@@ -23,8 +23,8 @@ const FACTION_FILL := {
 const STATE_RING_COLOR := {
 	Rumor.RumorState.UNAWARE:       Color(0.25, 0.25, 0.25, 0.0),
 	Rumor.RumorState.EVALUATING:    Color(1.00, 1.00, 0.00, 1.0),
-	Rumor.RumorState.BELIEVE:       Color(0.10, 0.90, 0.20, 1.0),
-	Rumor.RumorState.REJECT:        Color(0.90, 0.15, 0.15, 1.0),
+	Rumor.RumorState.BELIEVE:       Color(0.00, 0.62, 0.45, 1.0),  # Wong bluish-green — colorblind-safe
+	Rumor.RumorState.REJECT:        Color(0.84, 0.37, 0.00, 1.0),  # Wong vermilion — colorblind-safe
 	Rumor.RumorState.SPREAD:        Color(1.00, 0.50, 0.00, 1.0),
 	Rumor.RumorState.ACT:           Color(0.75, 0.05, 1.00, 1.0),
 	Rumor.RumorState.DEFENDING:     Color(0.50, 0.80, 1.00, 1.0),

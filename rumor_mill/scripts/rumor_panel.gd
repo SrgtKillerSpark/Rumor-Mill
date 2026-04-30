@@ -70,7 +70,7 @@ const C_MUTABILITY        := Color(0.60, 0.75, 1.0,  1.0)  # mutability bar
 # Button colours.
 const C_BTN_NORMAL_BG := Color(0.35, 0.22, 0.08, 1.0)  # nav button default bg
 const C_BTN_BORDER    := Color(0.55, 0.38, 0.18, 1.0)  # nav button default border
-const C_BTN_HOVER_BG  := Color(0.55, 0.35, 0.12, 1.0)  # nav button hover / focus bg
+const C_BTN_HOVER_BG  := Color(0.45, 0.27, 0.08, 1.0)  # nav button hover / focus bg (WCAG AA: text ~5.5:1, border ~4.9:1)
 const C_BTN_TEXT      := Color(0.92, 0.82, 0.60, 1.0)  # nav button font
 
 # Chain indicator background colours (accent — intentionally outside parchment palette).

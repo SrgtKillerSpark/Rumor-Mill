@@ -1092,7 +1092,7 @@ func _make_button(label: String, min_width: int) -> Button:
 	var focus_style := StyleBoxFlat.new()
 	focus_style.bg_color = C_BTN_HOVER
 	focus_style.set_border_width_all(2)
-	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	focus_style.border_color = Color(1.00, 0.95, 0.60, 1.0)  # gold focus ring (WCAG AA: ~4.95:1 vs C_BTN_HOVER)
 	focus_style.set_content_margin_all(8)
 
 	btn.add_theme_stylebox_override("normal", normal)
@@ -1136,7 +1136,7 @@ func _make_tab_button(label_text: String, active: bool) -> Button:
 	var focus_style := StyleBoxFlat.new()
 	focus_style.bg_color = C_TAB_ACTIVE if active else C_TAB_INACTIVE
 	focus_style.set_border_width_all(2)
-	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	focus_style.border_color = Color(1.00, 0.95, 0.60, 1.0)  # gold focus ring (WCAG AA: ~4.95:1 vs C_BTN_HOVER)
 	focus_style.set_content_margin_all(4)
 
 	btn.add_theme_stylebox_override("normal", style)
