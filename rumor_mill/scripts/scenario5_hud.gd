@@ -15,7 +15,7 @@ extends BaseScenarioHud
 ##
 ## Wire via setup(world, day_night) from main.gd.
 
-const BAR_WIDTH  := 120
+const BAR_WIDTH  := 160
 const BAR_HEIGHT := 10
 
 const NPC_DISPLAY_NAMES := {

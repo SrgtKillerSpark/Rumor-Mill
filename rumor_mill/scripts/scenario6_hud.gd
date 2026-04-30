@@ -14,7 +14,7 @@ extends BaseScenarioHud
 ##
 ## Wire via setup(world, day_night) from main.gd.
 
-const BAR_WIDTH  := 130
+const BAR_WIDTH  := 160
 const BAR_HEIGHT := 10
 
 # Heat-bar colours — spec: yellow below 40, orange@40, red@50.
