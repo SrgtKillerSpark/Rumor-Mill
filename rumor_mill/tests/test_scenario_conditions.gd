@@ -41,12 +41,33 @@ func run() -> void:
 		"test_s4_fail_when_protected_npc_below_40",
 		"test_s4_win_at_deadline_all_above_48",
 		"test_s4_fail_at_deadline_npc_below_48",
+		# S4 boundary / edge cases (SPA-1091)
+		"test_s4_no_instant_fail_when_npc_exactly_40",
+		"test_s4_win_at_deadline_npcs_exactly_48",
+		"test_s4_no_win_before_deadline",
+		"test_s4_progress_thresholds_are_correct",
+		"test_s4_progress_min_score_tracks_lowest_npc",
 		# Scenario 5 — The Election
 		"test_s5_win_aldric_leads_rivals_below_45",
 		"test_s5_fail_on_timeout",
+		# S5 boundary / edge cases (SPA-1091)
+		"test_s5_no_win_when_aldric_64",
+		"test_s5_no_win_when_rival_exactly_45",
+		"test_s5_no_win_when_aldric_not_highest",
+		"test_s5_instant_fail_when_aldric_29",
+		"test_s5_no_instant_fail_when_aldric_exactly_30",
 		# Scenario 6 — The Merchant's Debt
 		"test_s6_win_aldric_exposed_marta_safe",
 		"test_s6_fail_on_timeout",
+		# S6 boundary / edge cases (SPA-1091)
+		"test_s6_win_when_aldric_exactly_30",
+		"test_s6_no_win_when_aldric_31",
+		"test_s6_win_when_marta_exactly_62",
+		"test_s6_no_win_when_marta_61",
+		"test_s6_instant_fail_when_marta_29",
+		"test_s6_no_instant_fail_when_marta_exactly_30",
+		"test_s6_instant_fail_on_heat_at_ceiling",
+		"test_s6_no_fail_when_heat_just_below_ceiling",
 		# get_win_progress helpers
 		"test_win_progress_s1_returns_zero_at_start",
 		"test_win_progress_s1_returns_one_at_goal",
@@ -355,6 +376,266 @@ static func test_s6_fail_on_timeout() -> bool:
 		failed_state = (sid == 6 and state == ScenarioManager.ScenarioState.FAILED))
 	sm.evaluate(rep, 30 * 24 + 1)
 	return failed_state
+
+
+# ── Scenario 4 boundary / edge-case tests (SPA-1091) ─────────────────────────
+
+## vera_midwife.score = 40 (exactly S4_FAIL_REP_BELOW) — not below 40 → still ACTIVE.
+static func test_s4_no_instant_fail_when_npc_exactly_40() -> bool:
+	var sm  := _make_sm(4)
+	var rep := _rep_with([
+		_snap("aldous_prior", 50),
+		_snap("vera_midwife", 40),   ## exactly S4_FAIL_REP_BELOW = 40; condition is score < 40
+		_snap("finn_monk",    55),
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	sm.evaluate(rep, 0)
+	return not resolved and sm.scenario_4_state == ScenarioManager.ScenarioState.ACTIVE
+
+
+## All three NPCs at exactly 48 at deadline → WIN (score < 48 is false for each).
+static func test_s4_win_at_deadline_npcs_exactly_48() -> bool:
+	var sm  := _make_sm(4, 20)
+	var rep := _rep_with([
+		_snap("aldous_prior", 48),   ## exactly S4_WIN_REP_MIN = 48
+		_snap("vera_midwife", 48),
+		_snap("finn_monk",    48),
+	])
+	var won := false
+	sm.scenario_resolved.connect(func(sid, state):
+		won = (sid == 4 and state == ScenarioManager.ScenarioState.WON))
+	sm.evaluate(rep, 20 * 24 + 1)
+	return won and sm.scenario_4_state == ScenarioManager.ScenarioState.WON
+
+
+## Day 20 (last allowed day, not > days_allowed) with all NPCs above 48 → still ACTIVE.
+## Win only triggers when current_day > days_allowed (i.e. day 21+).
+static func test_s4_no_win_before_deadline() -> bool:
+	var sm  := _make_sm(4, 20)
+	var rep := _rep_with([
+		_snap("aldous_prior", 55),
+		_snap("vera_midwife", 52),
+		_snap("finn_monk",    58),
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	# tick = 19 * 24 → current_day = 19 + 1 = 20, and 20 > 20 is false
+	sm.evaluate(rep, 19 * 24)
+	return not resolved and sm.scenario_4_state == ScenarioManager.ScenarioState.ACTIVE
+
+
+## get_scenario_4_progress() exposes the canonical 48 / 40 thresholds the HUD reads.
+static func test_s4_progress_thresholds_are_correct() -> bool:
+	var sm  := _make_sm(4)
+	var rep := _rep_with([
+		_snap("aldous_prior", 55),
+		_snap("vera_midwife", 52),
+		_snap("finn_monk",    58),
+	])
+	var prog := sm.get_scenario_4_progress(rep)
+	return prog["win_threshold"] == 48 and prog["fail_threshold"] == 40
+
+
+## get_scenario_4_progress().min_score equals the lowest of the three protected NPCs.
+static func test_s4_progress_min_score_tracks_lowest_npc() -> bool:
+	var sm  := _make_sm(4)
+	var rep := _rep_with([
+		_snap("aldous_prior", 60),
+		_snap("vera_midwife", 48),   ## lowest of the three
+		_snap("finn_monk",    70),
+	])
+	var prog := sm.get_scenario_4_progress(rep)
+	return prog["min_score"] == 48
+
+
+# ── Scenario 5 boundary / edge-case tests (SPA-1091) ─────────────────────────
+
+## aldric_vane = 64 (one short of S5_WIN_ALDRIC_MIN = 65) → still ACTIVE.
+static func test_s5_no_win_when_aldric_64() -> bool:
+	var sm  := _make_sm(5)
+	var rep := _rep_with([
+		_snap("aldric_vane", 64),   ## one below win threshold
+		_snap("edric_fenn",  40),
+		_snap("tomas_reeve", 38),
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	sm.evaluate(rep, 0)
+	return not resolved and sm.scenario_5_state == ScenarioManager.ScenarioState.ACTIVE
+
+
+## edric_fenn = 45 (exactly S5_WIN_RIVALS_MAX) — condition requires strictly < 45 → no win.
+static func test_s5_no_win_when_rival_exactly_45() -> bool:
+	var sm  := _make_sm(5)
+	var rep := _rep_with([
+		_snap("aldric_vane", 65),
+		_snap("edric_fenn",  45),   ## exactly at rivals max; win requires edric < 45
+		_snap("tomas_reeve", 38),
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	sm.evaluate(rep, 0)
+	return not resolved and sm.scenario_5_state == ScenarioManager.ScenarioState.ACTIVE
+
+
+## aldric_vane = 65 but edric_fenn = 66 (Aldric is not the highest) → no win.
+static func test_s5_no_win_when_aldric_not_highest() -> bool:
+	var sm  := _make_sm(5)
+	var rep := _rep_with([
+		_snap("aldric_vane", 65),
+		_snap("edric_fenn",  66),   ## Edric outranks Aldric — blocks win
+		_snap("tomas_reeve", 38),
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	sm.evaluate(rep, 0)
+	return not resolved and sm.scenario_5_state == ScenarioManager.ScenarioState.ACTIVE
+
+
+## aldric_vane = 29 (< S5_FAIL_ALDRIC_BELOW = 30) → instant FAIL.
+static func test_s5_instant_fail_when_aldric_29() -> bool:
+	var sm  := _make_sm(5)
+	var rep := _rep_with([
+		_snap("aldric_vane", 29),   ## below S5_FAIL_ALDRIC_BELOW = 30
+		_snap("edric_fenn",  50),
+		_snap("tomas_reeve", 48),
+	])
+	var failed_state := false
+	sm.scenario_resolved.connect(func(sid, state):
+		failed_state = (sid == 5 and state == ScenarioManager.ScenarioState.FAILED))
+	sm.evaluate(rep, 0)
+	return failed_state and sm.scenario_5_state == ScenarioManager.ScenarioState.FAILED
+
+
+## aldric_vane = 30 (exactly S5_FAIL_ALDRIC_BELOW) — condition is score < 30 → ACTIVE.
+static func test_s5_no_instant_fail_when_aldric_exactly_30() -> bool:
+	var sm  := _make_sm(5)
+	var rep := _rep_with([
+		_snap("aldric_vane", 30),   ## exactly at fail threshold; fail requires aldric < 30
+		_snap("edric_fenn",  50),
+		_snap("tomas_reeve", 48),
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	sm.evaluate(rep, 0)
+	return not resolved and sm.scenario_5_state == ScenarioManager.ScenarioState.ACTIVE
+
+
+# ── Scenario 6 boundary / edge-case tests (SPA-1091) ─────────────────────────
+
+## aldric_vane = 30 (exactly S6_WIN_ALDRIC_MAX = 30), marta_coin = 65 → WIN (≤ 30).
+static func test_s6_win_when_aldric_exactly_30() -> bool:
+	var sm  := _make_sm(6)
+	var rep := _rep_with([
+		_snap("aldric_vane", 30),   ## exactly S6_WIN_ALDRIC_MAX; win requires aldric <= 30
+		_snap("marta_coin",  65),
+	])
+	var won := false
+	sm.scenario_resolved.connect(func(sid, state):
+		won = (sid == 6 and state == ScenarioManager.ScenarioState.WON))
+	sm.evaluate(rep, 0)
+	return won and sm.scenario_6_state == ScenarioManager.ScenarioState.WON
+
+
+## aldric_vane = 31 (one above S6_WIN_ALDRIC_MAX = 30) with marta safe → ACTIVE.
+static func test_s6_no_win_when_aldric_31() -> bool:
+	var sm  := _make_sm(6)
+	var rep := _rep_with([
+		_snap("aldric_vane", 31),   ## one above win threshold — not ≤ 30
+		_snap("marta_coin",  65),
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	sm.evaluate(rep, 0)
+	return not resolved and sm.scenario_6_state == ScenarioManager.ScenarioState.ACTIVE
+
+
+## aldric = 28, marta_coin = 62 (exactly S6_WIN_MARTA_MIN = 62) → WIN (≥ 62).
+static func test_s6_win_when_marta_exactly_62() -> bool:
+	var sm  := _make_sm(6)
+	var rep := _rep_with([
+		_snap("aldric_vane", 28),
+		_snap("marta_coin",  62),   ## exactly S6_WIN_MARTA_MIN; win requires marta >= 62
+	])
+	var won := false
+	sm.scenario_resolved.connect(func(sid, state):
+		won = (sid == 6 and state == ScenarioManager.ScenarioState.WON))
+	sm.evaluate(rep, 0)
+	return won and sm.scenario_6_state == ScenarioManager.ScenarioState.WON
+
+
+## aldric = 28, marta_coin = 61 (one below S6_WIN_MARTA_MIN = 62) → ACTIVE.
+static func test_s6_no_win_when_marta_61() -> bool:
+	var sm  := _make_sm(6)
+	var rep := _rep_with([
+		_snap("aldric_vane", 28),
+		_snap("marta_coin",  61),   ## one below win threshold — not ≥ 62
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	sm.evaluate(rep, 0)
+	return not resolved and sm.scenario_6_state == ScenarioManager.ScenarioState.ACTIVE
+
+
+## marta_coin = 29 (< S6_FAIL_MARTA_BELOW = 30) → instant FAIL (silenced).
+static func test_s6_instant_fail_when_marta_29() -> bool:
+	var sm  := _make_sm(6)
+	var rep := _rep_with([
+		_snap("aldric_vane", 55),
+		_snap("marta_coin",  29),   ## below S6_FAIL_MARTA_BELOW = 30
+	])
+	var failed_state := false
+	sm.scenario_resolved.connect(func(sid, state):
+		failed_state = (sid == 6 and state == ScenarioManager.ScenarioState.FAILED))
+	sm.evaluate(rep, 0)
+	return failed_state and sm.scenario_6_state == ScenarioManager.ScenarioState.FAILED
+
+
+## marta_coin = 30 (exactly S6_FAIL_MARTA_BELOW) — condition is score < 30 → ACTIVE.
+static func test_s6_no_instant_fail_when_marta_exactly_30() -> bool:
+	var sm  := _make_sm(6)
+	var rep := _rep_with([
+		_snap("aldric_vane", 55),
+		_snap("marta_coin",  30),   ## exactly at fail threshold; fail requires marta < 30
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	sm.evaluate(rep, 0)
+	return not resolved and sm.scenario_6_state == ScenarioManager.ScenarioState.ACTIVE
+
+
+## Any NPC heat = 55.0 (exactly S6_EXPOSED_HEAT ceiling) → instant FAIL.
+static func test_s6_instant_fail_on_heat_at_ceiling() -> bool:
+	var sm    := _make_sm(6)
+	var store := PlayerIntelStore.new()
+	store.heat["sybil_oats"] = 55.0   ## exactly at S6_EXPOSED_HEAT = 55.0 → condition >= fires
+	sm.set_intel_store(store)
+	var rep := _rep_with([
+		_snap("aldric_vane", 55),
+		_snap("marta_coin",  52),
+	])
+	var failed_state := false
+	sm.scenario_resolved.connect(func(sid, state):
+		failed_state = (sid == 6 and state == ScenarioManager.ScenarioState.FAILED))
+	sm.evaluate(rep, 0)
+	return failed_state and sm.scenario_6_state == ScenarioManager.ScenarioState.FAILED
+
+
+## NPC heat = 54.9 (just below S6_EXPOSED_HEAT = 55.0) → no heat-based fail.
+static func test_s6_no_fail_when_heat_just_below_ceiling() -> bool:
+	var sm    := _make_sm(6)
+	var store := PlayerIntelStore.new()
+	store.heat["sybil_oats"] = 54.9   ## just below ceiling — condition >= 55.0 is false
+	sm.set_intel_store(store)
+	var rep := _rep_with([
+		_snap("aldric_vane", 55),
+		_snap("marta_coin",  52),
+	])
+	var resolved := false
+	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	sm.evaluate(rep, 0)
+	return not resolved and sm.scenario_6_state == ScenarioManager.ScenarioState.ACTIVE
 
 
 # ── get_win_progress tests ────────────────────────────────────────────────────

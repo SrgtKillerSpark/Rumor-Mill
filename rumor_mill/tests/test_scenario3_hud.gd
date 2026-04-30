@@ -85,7 +85,7 @@ func run() -> void:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_WIDTH == 140
+	var ok := h.BAR_WIDTH == 160
 	h.free()
 	return ok
 

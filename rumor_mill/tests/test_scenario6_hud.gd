@@ -103,7 +103,7 @@ static func test_c_heat_orange_is_orange() -> bool:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_WIDTH == 130
+	var ok := h.BAR_WIDTH == 160
 	h.free()
 	return ok
 

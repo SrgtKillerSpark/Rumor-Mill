@@ -110,7 +110,7 @@ static func test_npc_display_names_count() -> bool:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_WIDTH == 120
+	var ok := h.BAR_WIDTH == 160
 	h.free()
 	return ok
 
