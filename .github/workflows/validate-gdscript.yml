@@ -5,11 +5,13 @@ on:
     branches: ["main", "dev"]
     paths:
       - "rumor_mill/scripts/**"
+      - "rumor_mill/tests/**"
       - "rumor_mill/scenes/**"
       - "rumor_mill/project.godot"
   pull_request:
     paths:
       - "rumor_mill/scripts/**"
+      - "rumor_mill/tests/**"
       - "rumor_mill/scenes/**"
       - "rumor_mill/project.godot"
   workflow_dispatch:
@@ -25,7 +27,7 @@ jobs:
 
       - name: Install Godot 4 (headless)
         run: |
-          GODOT_VERSION="4.3"
+          GODOT_VERSION="4.6"
           GODOT_RELEASE="stable"
           FILENAME="Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64"
           URL="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/${FILENAME}.zip"

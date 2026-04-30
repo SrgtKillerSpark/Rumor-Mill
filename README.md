@@ -72,6 +72,34 @@ The exported `.exe` + `.pck` pair runs without Godot installed.
 
 ---
 
+## Developer Workflow
+
+### GDScript parse validation
+
+A headless Godot validation script prevents parse errors from reaching `main`.
+
+**Run locally (bash / macOS / Linux / Git Bash on Windows):**
+```bash
+bash rumor_mill/tools/validate_gdscript.sh
+```
+
+**Run locally (Windows Command Prompt):**
+```bat
+rumor_mill\tools\validate_gdscript.bat
+```
+
+Both scripts auto-detect the Godot binary. Pass `--godot <path>` or set `GODOT_BIN` if Godot is not on your `PATH`. Exit code `0` = clean; `1` = parse errors found (failing files printed); `2` = setup error (binary/project not found).
+
+**Install git hooks** (one-time, after cloning):
+```bash
+bash rumor_mill/tools/install_hooks.sh
+```
+This installs a `pre-commit` hook (headless Godot check on staged `.gd`/`.tscn` files) and a `pre-push` hook (lightweight static check, no Godot required).
+
+**CI:** `.github/workflows/validate-gdscript.yml` runs automatically on every push/PR touching `rumor_mill/scripts/**`, `rumor_mill/tests/**`, `rumor_mill/scenes/**`, or `project.godot`.
+
+---
+
 ## Data Files
 
 All game data lives in `rumor_mill/data/` and is bundled automatically on export:
