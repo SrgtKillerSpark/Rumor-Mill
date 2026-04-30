@@ -22,10 +22,8 @@ const C_HEADING       := Color(0.92, 0.78, 0.12, 1.0)   # gold
 const C_BODY          := Color(0.80, 0.72, 0.55, 1.0)   # warm parchment
 const C_BTN_NORMAL    := Color(0.35, 0.22, 0.08, 1.0)
 const C_BTN_HOVER     := Color(0.55, 0.35, 0.12, 1.0)
+const C_BTN_PRESSED   := Color(0.65, 0.42, 0.15, 1.0)
 const C_BTN_TEXT      := Color(0.92, 0.82, 0.60, 1.0)
-
-const PANEL_WIDTH  := 600
-const PANEL_HEIGHT := 300
 
 # ── Node refs (built in _ready) ───────────────────────────────────────────────
 
@@ -118,17 +116,14 @@ func _build_ui() -> void:
 	_backdrop.mouse_filter        = Control.MOUSE_FILTER_STOP
 	add_child(_backdrop)
 
-	# Outer panel, centered.
+	# Outer panel, centered.  Width scales to viewport (max 600 px, ≤ 45%).
 	_panel = PanelContainer.new()
-	_panel.anchor_left   = 0.5
-	_panel.anchor_top    = 0.5
-	_panel.anchor_right  = 0.5
-	_panel.anchor_bottom = 0.5
-	_panel.offset_left   = -PANEL_WIDTH  / 2.0
-	_panel.offset_top    = -PANEL_HEIGHT / 2.0
-	_panel.offset_right  =  PANEL_WIDTH  / 2.0
-	_panel.offset_bottom =  PANEL_HEIGHT / 2.0
-	_panel.custom_minimum_size = Vector2(PANEL_WIDTH, PANEL_HEIGHT)
+	var vp_size := get_viewport().get_visible_rect().size
+	var panel_w: float = minf(600.0, vp_size.x * 0.45)
+	_panel.set_anchors_preset(Control.PRESET_CENTER)
+	_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_panel.grow_vertical   = Control.GROW_DIRECTION_BOTH
+	_panel.custom_minimum_size = Vector2(panel_w, 0)
 
 	# Style the panel background.
 	var style := StyleBoxFlat.new()
@@ -208,7 +203,15 @@ func _build_ui() -> void:
 	btn_hover.content_margin_top    = 6.0
 	btn_hover.content_margin_bottom = 6.0
 	_dismiss_btn.add_theme_stylebox_override("hover",   btn_hover)
-	_dismiss_btn.add_theme_stylebox_override("pressed", btn_hover)
+
+	var btn_pressed := StyleBoxFlat.new()
+	btn_pressed.bg_color = C_BTN_PRESSED
+	btn_pressed.set_corner_radius_all(4)
+	btn_pressed.content_margin_left   = 12.0
+	btn_pressed.content_margin_right  = 12.0
+	btn_pressed.content_margin_top    = 6.0
+	btn_pressed.content_margin_bottom = 6.0
+	_dismiss_btn.add_theme_stylebox_override("pressed", btn_pressed)
 
 	var btn_focus := StyleBoxFlat.new()
 	btn_focus.bg_color = Color(0, 0, 0, 0)

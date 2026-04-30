@@ -70,8 +70,8 @@ const STATE_ICON := {
 }
 
 const OFFSET := Vector2(18, -140)  # screen offset from cursor
-const PANEL_W := 240
-const PANEL_H := 165
+var _panel_w := 240                # computed in _build_panel from viewport
+const PANEL_H := 165               # fallback height for clamping
 
 var _panel:           PanelContainer = null
 var _name_lbl:        Label          = null
@@ -165,7 +165,7 @@ func _process(_delta: float) -> void:
 	# Use the panel's actual size so auto-sized content is clamped correctly.
 	var panel_h: float = _panel.size.y if _panel.size.y > 0.0 else PANEL_H
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
-	target_x = clampf(target_x, 4.0, vp_size.x - PANEL_W - 4.0)
+	target_x = clampf(target_x, 4.0, vp_size.x - _panel.size.x - 4.0)
 	target_y = clampf(target_y, 4.0, vp_size.y - panel_h - 4.0)
 	_panel.set_position(Vector2(target_x, target_y))
 
@@ -173,8 +173,11 @@ func _process(_delta: float) -> void:
 # ── Build panel ───────────────────────────────────────────────────────────────
 
 func _build_panel() -> void:
+	# Scale tooltip width to viewport (max 320 px, ≤ 25%).
+	var vp_w: float = get_viewport().get_visible_rect().size.x
+	_panel_w = mini(int(vp_w * 0.25), 320)
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(PANEL_W, 0)
+	_panel.custom_minimum_size = Vector2(_panel_w, 0)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = C_BG
@@ -208,7 +211,7 @@ func _build_panel() -> void:
 
 	_bio_lbl = _make_label("", 12, C_MUTED)
 	_bio_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_bio_lbl.custom_minimum_size = Vector2(PANEL_W - 20, 0)
+	_bio_lbl.custom_minimum_size = Vector2(_panel_w - 20, 0)
 	vbox.add_child(_bio_lbl)
 
 	var sep2 := HSeparator.new()
@@ -242,8 +245,8 @@ func _build_panel() -> void:
 	vbox.add_child(_dead_lbl)
 
 	_hint_lbl = _make_label("Right-click to Eavesdrop", 11, C_HINT)
-	_hint_lbl.add_theme_constant_override("outline_size", 1)
-	_hint_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	_hint_lbl.add_theme_constant_override("outline_size", 3)
+	_hint_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 	vbox.add_child(_hint_lbl)
 
 	_panel.modulate.a = 0.0

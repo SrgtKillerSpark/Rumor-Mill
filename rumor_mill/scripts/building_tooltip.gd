@@ -14,7 +14,7 @@ const C_TITLE  := Color(0.92, 0.78, 0.12, 1.0)
 const C_LABEL  := Color(0.82, 0.75, 0.60, 1.0)
 
 const OFFSET       := Vector2(18, -95)
-const PANEL_W      := 240
+var _panel_w       := 240       # computed in _build_panel from viewport
 const FADE_IN_SEC  := 0.12
 const FADE_OUT_SEC := 0.10
 
@@ -112,7 +112,7 @@ func _keep_near_cursor() -> void:
 	var target_x: float = mouse_pos.x + OFFSET.x
 	var target_y: float = mouse_pos.y + OFFSET.y
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
-	target_x = clampf(target_x, 4.0, vp_size.x - PANEL_W - 4.0)
+	target_x = clampf(target_x, 4.0, vp_size.x - _panel.size.x - 4.0)
 	target_y = clampf(target_y, 4.0, vp_size.y - panel_h - 4.0)
 	_panel.set_position(Vector2(target_x, target_y))
 
@@ -135,8 +135,11 @@ func _fade_to(target_alpha: float) -> void:
 # ── Build panel ───────────────────────────────────────────────────────────────
 
 func _build_panel() -> void:
+	# Scale tooltip width to viewport (max 320 px, ≤ 25%).
+	var vp_w: float = get_viewport().get_visible_rect().size.x
+	_panel_w = mini(int(vp_w * 0.25), 320)
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(PANEL_W, 0)
+	_panel.custom_minimum_size = Vector2(_panel_w, 0)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = C_BG
@@ -168,7 +171,7 @@ func _build_panel() -> void:
 	_desc_lbl.add_theme_font_size_override("font_size", 12)
 	_desc_lbl.add_theme_color_override("font_color", C_LABEL)
 	_desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_desc_lbl.custom_minimum_size = Vector2(PANEL_W - 20, 0)
+	_desc_lbl.custom_minimum_size = Vector2(_panel_w - 20, 0)
 	vbox.add_child(_desc_lbl)
 
 	_hint_lbl = Label.new()

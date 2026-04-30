@@ -34,7 +34,7 @@ const C_BTN_NORMAL   := Color(0.30, 0.18, 0.05, 0.90)
 const C_BTN_HOVER    := Color(0.50, 0.30, 0.08, 1.0)
 const C_BTN_TEXT     := Color(0.92, 0.82, 0.60, 1.0)
 
-const BANNER_WIDTH   := 380
+var _banner_w        := 380      # computed in _ready from viewport
 const MARGIN         := 24       # px from screen edges
 const ACCENT_WIDTH   := 5        # px wide left stripe
 
@@ -62,6 +62,9 @@ var _hovered:       bool           = false  # cursor is over the banner
 
 func _ready() -> void:
 	layer = 19
+	# Scale banner width to viewport (max 420 px, ≤ 40% of viewport width).
+	var vp_w: float = get_viewport().get_visible_rect().size.x
+	_banner_w = mini(int(vp_w * 0.40), 420)
 	_build_ui()
 	visible = false
 
@@ -158,7 +161,7 @@ func _show_next() -> void:
 	_body_label.text  = body
 
 	# Position banner off-screen to the left for slide-in.
-	_container.offset_left  = -(BANNER_WIDTH + MARGIN + 20)
+	_container.offset_left  = -(_banner_w + MARGIN + 20)
 	_container.offset_right = -(MARGIN + 20)
 	visible = true
 	_hovered = false
@@ -167,7 +170,7 @@ func _show_next() -> void:
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_container, "offset_left",  MARGIN, 0.25)
-	tween.parallel().tween_property(_container, "offset_right", MARGIN + BANNER_WIDTH, 0.25)
+	tween.parallel().tween_property(_container, "offset_right", MARGIN + _banner_w, 0.25)
 
 
 func _auto_dismiss() -> void:
@@ -185,7 +188,7 @@ func _slide_out_dismiss() -> void:
 		_dismiss_tween.kill()
 	_dismiss_tween = create_tween()
 	_dismiss_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	_dismiss_tween.tween_property(_container, "offset_left",  -(BANNER_WIDTH + MARGIN + 20), 0.22)
+	_dismiss_tween.tween_property(_container, "offset_left",  -(_banner_w + MARGIN + 20), 0.22)
 	_dismiss_tween.parallel().tween_property(_container, "offset_right", -(MARGIN + 20), 0.22)
 	_dismiss_tween.tween_callback(_finish_dismiss)
 
@@ -237,7 +240,7 @@ func _build_ui() -> void:
 	# Initial resting position (bottom-left, 24 px margins).
 	# offset_bottom is negative because anchor is at bottom edge.
 	_container.offset_left   = MARGIN
-	_container.offset_right  = MARGIN + BANNER_WIDTH
+	_container.offset_right  = MARGIN + _banner_w
 	_container.offset_bottom = -MARGIN
 	_container.offset_top    = -MARGIN  # will be adjusted after content measures
 	_container.mouse_filter  = Control.MOUSE_FILTER_STOP
@@ -322,7 +325,7 @@ func _build_ui() -> void:
 	_body_label.fit_content    = true
 	_body_label.scroll_active  = false
 	_body_label.autowrap_mode  = TextServer.AUTOWRAP_WORD_SMART
-	_body_label.custom_minimum_size = Vector2(BANNER_WIDTH - ACCENT_WIDTH - 30, 0)
+	_body_label.custom_minimum_size = Vector2(_banner_w - ACCENT_WIDTH - 30, 0)
 	_body_label.add_theme_color_override("default_color",   C_BODY)
 	_body_label.add_theme_color_override("font_bold_color", C_HEADING)
 	_body_label.add_theme_font_size_override("normal_font_size", 12)

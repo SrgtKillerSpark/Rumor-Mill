@@ -175,6 +175,10 @@ func _on_draw() -> void:
 		var t: float = _active_convos[nid] / PULSE_DURATION
 		var screen_pos := _world_to_screen(npc.global_position)
 		var bubble_pos := screen_pos + Vector2(12.0, -30.0)
+		# Clamp speech bubble to stay within the viewport.
+		var vp_rect := get_viewport().get_visible_rect().size
+		bubble_pos.x = clampf(bubble_pos.x, 10.0, vp_rect.x - 28.0)
+		bubble_pos.y = clampf(bubble_pos.y, 10.0, vp_rect.y - 16.0)
 		var alpha: float = t * COL_BUBBLE.a
 
 		# Dark pill background.
