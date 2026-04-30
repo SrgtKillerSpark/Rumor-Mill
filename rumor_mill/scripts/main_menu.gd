@@ -530,12 +530,22 @@ func _build_select_panel() -> void:
 
 	vbox.add_child(_separator())
 
-	# Scenario cards
+	# Scenario cards — wrapped in a ScrollContainer so they don't overflow at 1280×720 (SPA-1109).
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+
+	var cards_vbox := VBoxContainer.new()
+	cards_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cards_vbox.add_theme_constant_override("separation", 12)
+	scroll.add_child(cards_vbox)
+
 	_scenario_cards.clear()
 	for i in _scenarios.size():
 		var sc: Dictionary = _scenarios[i]
 		var card := _build_scenario_card(sc, i)
-		vbox.add_child(card)
+		cards_vbox.add_child(card)
 		_scenario_cards.append(card)
 
 	vbox.add_child(_separator())
