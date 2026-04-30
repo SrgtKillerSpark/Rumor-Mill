@@ -2,7 +2,7 @@ extends CanvasLayer
 
 ## end_screen.gd — SPA-138 redesign + SPA-212 analytics tab.
 ##
-## 760x640 expanded panel with:
+## Up-to-760x640 responsive panel (clamped to viewport) with:
 ##   1. Win / Fail banner + scenario title
 ##   2. Italic summary narrative (SPA-128 copy)
 ##   3. Tab bar: RESULTS | REPLAY (analytics)
@@ -36,8 +36,9 @@ const C_SCORE_WIN    := Color(0.92, 0.78, 0.12, 1.0)   # gold  — score > 60
 const C_SCORE_FAIL   := Color(0.85, 0.18, 0.12, 1.0)   # crimson — score < 40
 const C_SCORE_NEU    := Color(0.85, 0.65, 0.15, 1.0)   # amber — neutral
 
-const PANEL_W := 760
-const PANEL_H := 640
+const PANEL_W_MAX := 760
+const PANEL_H_MAX := 640
+const PANEL_MARGIN := 32   # px margin from viewport edges on small screens
 
 # ── Key NPC outcomes per scenario ─────────────────────────────────────────────
 # id must match the NPC id string used in reputation_system.
@@ -211,8 +212,8 @@ const FEEDBACK_PRESETS := [
 	"Avoiding detection",
 	"Knowing which NPCs to target",
 ]
-const FEEDBACK_PANEL_W := 500
-const FEEDBACK_PANEL_H := 360
+const FEEDBACK_PANEL_W_MAX := 500
+const FEEDBACK_PANEL_H_MAX := 360
 const C_PRESET_NORMAL   := Color(0.22, 0.15, 0.10, 1.0)
 const C_PRESET_SELECTED := Color(0.55, 0.38, 0.18, 1.0)
 const FEEDBACK_CHAR_LIMIT := 200
@@ -235,7 +236,37 @@ var _tween_targets: Array = []
 func _ready() -> void:
 	layer = 30
 	_build_ui()
+	_adapt_to_viewport()
+	get_viewport().size_changed.connect(_adapt_to_viewport)
 	visible = false
+
+
+## Clamp main panel and feedback panel to fit the current viewport.
+func _adapt_to_viewport() -> void:
+	var vp_size := get_viewport().get_visible_rect().size
+	var pw := minf(PANEL_W_MAX, vp_size.x - PANEL_MARGIN * 2)
+	var ph := minf(PANEL_H_MAX, vp_size.y - PANEL_MARGIN * 2)
+	if _panel != null:
+		_panel.custom_minimum_size = Vector2(pw, ph)
+		_panel.set_offset(SIDE_LEFT,   -pw / 2.0)
+		_panel.set_offset(SIDE_RIGHT,   pw / 2.0)
+		_panel.set_offset(SIDE_TOP,    -ph / 2.0)
+		_panel.set_offset(SIDE_BOTTOM,  ph / 2.0)
+	_adapt_feedback_panel()
+
+
+## Clamp the feedback panel to the current viewport size.
+func _adapt_feedback_panel() -> void:
+	if _feedback_panel == null:
+		return
+	var vp_size := get_viewport().get_visible_rect().size
+	var fw := minf(FEEDBACK_PANEL_W_MAX, vp_size.x - PANEL_MARGIN * 2)
+	var fh := minf(FEEDBACK_PANEL_H_MAX, vp_size.y - PANEL_MARGIN * 2)
+	_feedback_panel.custom_minimum_size = Vector2(fw, fh)
+	_feedback_panel.set_offset(SIDE_LEFT,   -fw / 2.0)
+	_feedback_panel.set_offset(SIDE_RIGHT,   fw / 2.0)
+	_feedback_panel.set_offset(SIDE_TOP,    -fh / 2.0)
+	_feedback_panel.set_offset(SIDE_BOTTOM,  fh / 2.0)
 
 
 ## Wire to world, day_night, and analytics; subscribe to scenario_resolved.
@@ -308,7 +339,7 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	if _panel != null:
 		_panel.modulate.a = 0.0
 		_panel.scale = Vector2(0.92, 0.92)
-		_panel.pivot_offset = Vector2(PANEL_W / 2.0, PANEL_H / 2.0)
+		_panel.pivot_offset = _panel.custom_minimum_size / 2.0
 	visible = true
 	var _enter_tw := create_tween().set_parallel(true) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -629,9 +660,10 @@ func _populate_npc_outcomes() -> void:
 		row.add_child(name_lbl)
 
 		var score_lbl := Label.new()
-		score_lbl.text = "%3d" % score
-		score_lbl.custom_minimum_size = Vector2(36, 0)
+		score_lbl.text = str(score)
+		score_lbl.custom_minimum_size = Vector2(48, 0)
 		score_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		score_lbl.clip_text = true
 		score_lbl.add_theme_color_override("font_color", C_SUBHEADING)
 		row.add_child(score_lbl)
 
@@ -689,17 +721,12 @@ func _build_ui() -> void:
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_backdrop)
 
-	# Centred panel container.
+	# Centred panel container — sized by _adapt_to_viewport().
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(PANEL_W, PANEL_H)
 	_panel.set_anchor(SIDE_LEFT,   0.5)
 	_panel.set_anchor(SIDE_RIGHT,  0.5)
 	_panel.set_anchor(SIDE_TOP,    0.5)
 	_panel.set_anchor(SIDE_BOTTOM, 0.5)
-	_panel.set_offset(SIDE_LEFT,   -PANEL_W / 2.0)
-	_panel.set_offset(SIDE_RIGHT,   PANEL_W / 2.0)
-	_panel.set_offset(SIDE_TOP,    -PANEL_H / 2.0)
-	_panel.set_offset(SIDE_BOTTOM,  PANEL_H / 2.0)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color           = C_PANEL_BG
@@ -732,8 +759,8 @@ func _build_ui() -> void:
 
 	# ── Summary narrative (italic, centered, 15pt) ────────────────────────────
 	_narrative_lbl = RichTextLabel.new()
-	_narrative_lbl.custom_minimum_size = Vector2(0, 80)
-	_narrative_lbl.fit_content          = false
+	_narrative_lbl.custom_minimum_size = Vector2(0, 60)
+	_narrative_lbl.fit_content          = true
 	_narrative_lbl.autowrap_mode        = TextServer.AUTOWRAP_WORD_SMART
 	_narrative_lbl.bbcode_enabled       = true
 	_narrative_lbl.add_theme_color_override("default_color", C_BODY)
@@ -1181,17 +1208,13 @@ func _show_feedback_prompt() -> void:
 	_feedback_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_feedback_backdrop)
 
-	# ── Centred panel ─────────────────────────────────────────────────────────
+	# ── Centred panel — sized by _adapt_to_viewport() ────────────────────────
 	_feedback_panel = PanelContainer.new()
-	_feedback_panel.custom_minimum_size = Vector2(FEEDBACK_PANEL_W, FEEDBACK_PANEL_H)
 	_feedback_panel.set_anchor(SIDE_LEFT,   0.5)
 	_feedback_panel.set_anchor(SIDE_RIGHT,  0.5)
 	_feedback_panel.set_anchor(SIDE_TOP,    0.5)
 	_feedback_panel.set_anchor(SIDE_BOTTOM, 0.5)
-	_feedback_panel.set_offset(SIDE_LEFT,   -FEEDBACK_PANEL_W / 2.0)
-	_feedback_panel.set_offset(SIDE_RIGHT,   FEEDBACK_PANEL_W / 2.0)
-	_feedback_panel.set_offset(SIDE_TOP,    -FEEDBACK_PANEL_H / 2.0)
-	_feedback_panel.set_offset(SIDE_BOTTOM,  FEEDBACK_PANEL_H / 2.0)
+	_adapt_feedback_panel()
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color     = C_PANEL_BG
