@@ -80,7 +80,7 @@ func _momentum_arrow(current: int, prev: int) -> String:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario5Panel", 78)
+	var hbox := _make_panel("Scenario5Panel", 72)
 
 	# Title.
 	var title_lbl := Label.new()

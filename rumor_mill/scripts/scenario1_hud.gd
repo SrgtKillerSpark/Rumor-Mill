@@ -33,7 +33,7 @@ func _scenario_number() -> int:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario1Panel", 62)
+	var hbox := _make_panel("Scenario1Panel", 72)
 
 	# Scenario label.
 	var title_lbl := Label.new()

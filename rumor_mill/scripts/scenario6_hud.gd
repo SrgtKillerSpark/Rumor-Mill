@@ -75,7 +75,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario6Panel", 78)
+	var hbox := _make_panel("Scenario6Panel", 72)
 
 	# Title.
 	var title_lbl := Label.new()

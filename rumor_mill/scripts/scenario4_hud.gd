@@ -43,6 +43,7 @@ var _faction_shift_tween: Tween    = null
 # Three mini-bars show which faction shift phases have fired this run.
 var _faction_bar_fills: Dictionary = {}  # "merchant" / "bishop" / "clergy" -> ColorRect
 var _faction_phase_lbls: Dictionary = {} # same keys -> Label
+var _faction_bar_tweens: Dictionary = {} # same keys -> Tween (for 0.5s fill animation)
 var _phase_merchant_fired: bool = false
 var _phase_bishop_fired:   bool = false
 var _phase_clergy_fired:   bool = false
@@ -80,8 +81,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	# S4 panel is taller (96px) to accommodate faction bars and three NPC tracks.
-	var hbox := _make_panel("Scenario4Panel", 96)
+	var hbox := _make_panel("Scenario4Panel", 72)
 
 	# Title + defense badge.
 	var title_vbox := VBoxContainer.new()
@@ -427,15 +427,22 @@ func _update_faction_bars() -> void:
 		_phase_bishop_fired   = shift_agent._phase_2_fired
 		_phase_clergy_fired   = shift_agent._phase_3_fired
 
-	if _faction_bar_fills.has("merchant"):
-		_faction_bar_fills["merchant"].custom_minimum_size.x = \
-			FACTION_BAR_W if _phase_merchant_fired else 0
-	if _faction_bar_fills.has("bishop"):
-		_faction_bar_fills["bishop"].custom_minimum_size.x = \
-			FACTION_BAR_W if _phase_bishop_fired else 0
-	if _faction_bar_fills.has("clergy"):
-		_faction_bar_fills["clergy"].custom_minimum_size.x = \
-			FACTION_BAR_W if _phase_clergy_fired else 0
+	var _phase_fired: Dictionary = {
+		"merchant": _phase_merchant_fired,
+		"bishop":   _phase_bishop_fired,
+		"clergy":   _phase_clergy_fired,
+	}
+	for key in _phase_fired:
+		if not _faction_bar_fills.has(key):
+			continue
+		var fill: ColorRect = _faction_bar_fills[key]
+		var target_x: float = FACTION_BAR_W if _phase_fired[key] else 0.0
+		if not is_equal_approx(fill.custom_minimum_size.x, target_x):
+			var existing: Tween = _faction_bar_tweens.get(key)
+			if existing == null or not existing.is_valid():
+				var t := create_tween()
+				t.tween_property(fill, "custom_minimum_size:x", target_x, 0.5)
+				_faction_bar_tweens[key] = t
 
 	# Dim the label for un-fired phases so players see which are still pending.
 	const ACTIVE_ALPHA: float  = 1.0
