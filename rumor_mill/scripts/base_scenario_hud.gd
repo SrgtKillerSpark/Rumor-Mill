@@ -16,6 +16,10 @@ extends CanvasLayer
 
 # ── Shared palette ───────────────────────────────────────────────────────────
 const C_PANEL_BG := Color(0.15, 0.10, 0.08, 0.92)
+
+# ── Shared layout constants ───────────────────────────────────────────────────
+## Unified bar height for all scenario HUD progress bars (pixels).
+const BAR_HEIGHT := 12
 const C_HEADING  := Color(0.91, 0.85, 0.70, 1.0)
 const C_BODY     := Color(0.75, 0.70, 0.60, 1.0)
 const C_WIN      := Color(0.10, 0.75, 0.22, 1.0)

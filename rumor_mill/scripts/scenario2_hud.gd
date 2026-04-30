@@ -17,7 +17,6 @@ extends BaseScenarioHud
 const C_ILLNESS := Color(0.60, 0.85, 0.30, 1.0)  # sickly green for plague theme
 
 const BAR_WIDTH      := 160
-const BAR_HEIGHT     := 12
 const MAX_NAMES_SHOWN := 5
 
 # ── Node refs ────────────────────────────────────────────────────────────────
@@ -86,6 +85,7 @@ func _build_ui() -> void:
 	_count_lbl.text = "Believers: 0 / 7+"
 	_count_lbl.tooltip_text = "Number of townspeople who believe the illness rumor about Alys Herbwife. Win when 7 or more believe it."
 	_count_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_count_lbl.clip_text = true
 	_apply_text_outline(_count_lbl)
 	count_vbox.add_child(_count_lbl)
 
@@ -107,6 +107,7 @@ func _build_ui() -> void:
 	_pip_lbl.text = "○○○○○○○"
 	_pip_lbl.tooltip_text = "Each circle = one believer. Filled ● = believes; empty ○ = not yet."
 	_pip_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_pip_lbl.clip_text = true
 	count_vbox.add_child(_pip_lbl)
 
 	# NPC name columns.
@@ -118,6 +119,7 @@ func _build_ui() -> void:
 	_believers_lbl.add_theme_font_size_override("font_size", 12)
 	_believers_lbl.add_theme_color_override("font_color", C_ILLNESS)
 	_believers_lbl.text = "Believe: —"
+	_believers_lbl.clip_text = true
 	names_vbox.add_child(_believers_lbl)
 
 	_rejecters_lbl = Label.new()
@@ -125,6 +127,7 @@ func _build_ui() -> void:
 	_rejecters_lbl.add_theme_color_override("font_color", C_FAIL)
 	_rejecters_lbl.text = ""
 	_rejecters_lbl.visible = false
+	_rejecters_lbl.clip_text = true
 	names_vbox.add_child(_rejecters_lbl)
 
 	# SPA-592: grace-window countdown warning shown when Maren has rejected.
@@ -138,6 +141,7 @@ func _build_ui() -> void:
 		+ " the grace period expires or the scenario will fail."
 	)
 	_maren_warning_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_maren_warning_lbl.clip_text = true
 	names_vbox.add_child(_maren_warning_lbl)
 
 	# Days remaining + result.
@@ -151,6 +155,7 @@ func _build_ui() -> void:
 	_days_lbl.text = "Days remaining: 22"
 	_days_lbl.tooltip_text = "Days remaining before the autumn market closes. Fail if you run out of time."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_days_lbl.clip_text = true
 	_apply_text_outline(_days_lbl)
 	right_vbox.add_child(_days_lbl)
 
@@ -158,6 +163,7 @@ func _build_ui() -> void:
 	_result_lbl.add_theme_font_size_override("font_size", 16)
 	_result_lbl.add_theme_color_override("font_color", C_WIN)
 	_result_lbl.text = ""
+	_result_lbl.clip_text = true
 	right_vbox.add_child(_result_lbl)
 
 	var legend_lbl := Label.new()
@@ -172,6 +178,7 @@ func _build_ui() -> void:
 	_escalation_lbl.text = "Rumours: quiet so far"
 	_escalation_lbl.tooltip_text = "Illness reports are escalating on their own. Each auto-spread increases the risk Sister Maren will notice."
 	_escalation_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_escalation_lbl.clip_text = true
 	right_vbox.add_child(_escalation_lbl)
 
 	# SPA-868: Quarantine mechanic controls.
@@ -209,6 +216,7 @@ func _build_ui() -> void:
 	_quarantine_status_lbl.add_theme_color_override("font_color", Color(0.95, 0.30, 0.20, 0.90))
 	_quarantine_status_lbl.text = ""
 	_quarantine_status_lbl.visible = false
+	_quarantine_status_lbl.clip_text = true
 	q_vbox.add_child(_quarantine_status_lbl)
 
 

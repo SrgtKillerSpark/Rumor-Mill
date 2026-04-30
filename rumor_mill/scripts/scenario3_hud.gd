@@ -13,7 +13,6 @@ extends BaseScenarioHud
 ## Wire via setup(world, day_night) from main.gd.
 
 const BAR_WIDTH  := 160
-const BAR_HEIGHT := 12
 
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _calder_score_lbl: Label     = null
@@ -47,7 +46,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario3Panel", 58)
+	var hbox := _make_panel("Scenario3Panel", 62)
 
 	# Scenario label.
 	var title_lbl := Label.new()
@@ -67,6 +66,7 @@ func _build_ui() -> void:
 	_calder_score_lbl.text = "Calder Fenn  Rep: 50 / 100  Target: 75+"
 	_calder_score_lbl.tooltip_text = "Calder Fenn's reputation. Win condition: raise to 75 or higher."
 	_calder_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_calder_score_lbl.clip_text = true
 	_apply_text_outline(_calder_score_lbl)
 	calder_vbox.add_child(_calder_score_lbl)
 
@@ -90,6 +90,7 @@ func _build_ui() -> void:
 	_tomas_score_lbl.text = "Tomas Reeve  Rep: 50 / 100  Target: \u226435"
 	_tomas_score_lbl.tooltip_text = "Tomas Reeve's reputation. Win condition: drag it down to 35 or lower."
 	_tomas_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_tomas_score_lbl.clip_text = true
 	_apply_text_outline(_tomas_score_lbl)
 	tomas_vbox.add_child(_tomas_score_lbl)
 
@@ -111,12 +112,14 @@ func _build_ui() -> void:
 	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 25"
+	_days_lbl.clip_text = true
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
 	_result_lbl.add_theme_font_size_override("font_size", 16)
 	_result_lbl.add_theme_color_override("font_color", C_WIN)
 	_result_lbl.text = ""
+	_result_lbl.clip_text = true
 	right_vbox.add_child(_result_lbl)
 
 	var legend_lbl := Label.new()
@@ -131,6 +134,7 @@ func _build_ui() -> void:
 	_rival_lbl.text = "Rival: no activity yet"
 	_rival_lbl.tooltip_text = "An unseen rival is working against you — praising Tomas and scandaling Calder. Their last known action is shown here."
 	_rival_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_rival_lbl.clip_text = true
 	right_vbox.add_child(_rival_lbl)
 
 	_disrupt_btn = Button.new()
@@ -161,6 +165,7 @@ func _build_ui() -> void:
 	_scout_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.90, 0.90))
 	_scout_lbl.text = ""
 	_scout_lbl.visible = false
+	_scout_lbl.clip_text = true
 	right_vbox.add_child(_scout_lbl)
 
 	# SPA-868: Belief degradation activity display.
@@ -169,6 +174,7 @@ func _build_ui() -> void:
 	_degrade_lbl.add_theme_color_override("font_color", Color(0.85, 0.45, 0.20, 0.85))
 	_degrade_lbl.text = ""
 	_degrade_lbl.visible = false
+	_degrade_lbl.clip_text = true
 	right_vbox.add_child(_degrade_lbl)
 
 

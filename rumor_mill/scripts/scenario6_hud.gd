@@ -15,7 +15,6 @@ extends BaseScenarioHud
 ## Wire via setup(world, day_night) from main.gd.
 
 const BAR_WIDTH  := 160
-const BAR_HEIGHT := 10
 
 # Heat-bar colours — spec: yellow below 40, orange@40, red@50.
 const C_HEAT_YELLOW := Color(0.95, 0.85, 0.10, 1.0)
@@ -76,7 +75,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario6Panel", 78, 14)
+	var hbox := _make_panel("Scenario6Panel", 78)
 
 	# Title.
 	var title_lbl := Label.new()
@@ -93,11 +92,12 @@ func _build_ui() -> void:
 	hbox.add_child(aldric_vbox)
 
 	_aldric_score_lbl = Label.new()
-	_aldric_score_lbl.add_theme_font_size_override("font_size", 11)
+	_aldric_score_lbl.add_theme_font_size_override("font_size", 14)
 	_aldric_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_aldric_score_lbl.text = "Aldric Vane  Rep: 55 / 100  Target: \u226430"
 	_aldric_score_lbl.tooltip_text = "Aldric Vane's reputation. Win condition: drag to %d or below to expose his embezzlement." % ScenarioConfig.S6_WIN_ALDRIC_MAX
 	_aldric_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_aldric_score_lbl.clip_text = true
 	_apply_text_outline(_aldric_score_lbl)
 	aldric_vbox.add_child(_aldric_score_lbl)
 
@@ -113,11 +113,12 @@ func _build_ui() -> void:
 	hbox.add_child(marta_vbox)
 
 	_marta_score_lbl = Label.new()
-	_marta_score_lbl.add_theme_font_size_override("font_size", 11)
+	_marta_score_lbl.add_theme_font_size_override("font_size", 14)
 	_marta_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_marta_score_lbl.text = "Marta Coin  Rep: 52 / 100  Target: %d+" % ScenarioConfig.S6_WIN_MARTA_MIN
 	_marta_score_lbl.tooltip_text = "Marta Coin's reputation. Win condition: keep at %d or above. Below %d = instant fail (she's been silenced)." % [ScenarioConfig.S6_WIN_MARTA_MIN, ScenarioConfig.S6_FAIL_MARTA_BELOW]
 	_marta_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_marta_score_lbl.clip_text = true
 	_apply_text_outline(_marta_score_lbl)
 	marta_vbox.add_child(_marta_score_lbl)
 
@@ -133,11 +134,12 @@ func _build_ui() -> void:
 	hbox.add_child(heat_vbox)
 
 	_heat_lbl = Label.new()
-	_heat_lbl.add_theme_font_size_override("font_size", 11)
+	_heat_lbl.add_theme_font_size_override("font_size", 14)
 	_heat_lbl.add_theme_color_override("font_color", C_BODY)
 	_heat_lbl.text = "Heat: 0 / 55"
 	_heat_lbl.tooltip_text = "Your suspicion level. Guards are on Aldric's payroll — exposure threshold is %d (not the usual 80). Keep it low." % int(ScenarioConfig.S6_EXPOSED_HEAT)
 	_heat_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_heat_lbl.clip_text = true
 	_apply_text_outline(_heat_lbl)
 	heat_vbox.add_child(_heat_lbl)
 
@@ -153,17 +155,19 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 12)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 22"
 	_days_lbl.tooltip_text = "Days before the guild closes its books. Aldric must be exposed and Marta safe by deadline."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_days_lbl.clip_text = true
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
 	_result_lbl.add_theme_font_size_override("font_size", 16)
 	_result_lbl.add_theme_color_override("font_color", C_WIN)
 	_result_lbl.text = ""
+	_result_lbl.clip_text = true
 	right_vbox.add_child(_result_lbl)
 
 	var legend_lbl := Label.new()
@@ -179,6 +183,7 @@ func _build_ui() -> void:
 	_guild_defense_lbl.text = "Guild: waiting to defend Aldric"
 	_guild_defense_lbl.tooltip_text = "Aldric's merchant allies periodically seed praise rumors to protect his reputation. Counter-route your attacks through non-merchant channels."
 	_guild_defense_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_guild_defense_lbl.clip_text = true
 	right_vbox.add_child(_guild_defense_lbl)
 
 	var threat_pair := _make_progress_bar(100, 7,
@@ -195,6 +200,7 @@ func _build_ui() -> void:
 	_event_lbl.text = ""
 	_event_lbl.tooltip_text = "Next mid-game narrative event window."
 	_event_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_event_lbl.clip_text = true
 	right_vbox.add_child(_event_lbl)
 
 	# ── Blackmail Evidence verb ──────────────────────────────────────────────
@@ -211,6 +217,7 @@ func _build_ui() -> void:
 	_blackmail_lbl.add_theme_color_override("font_color", Color(0.85, 0.55, 0.20, 0.90))
 	_blackmail_lbl.text = ""
 	_blackmail_lbl.visible = false
+	_blackmail_lbl.clip_text = true
 	right_vbox.add_child(_blackmail_lbl)
 
 	# ── Event outcome toast ───────────────────────────────────────────────────

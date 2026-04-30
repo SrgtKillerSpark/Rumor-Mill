@@ -21,7 +21,6 @@ const C_BISHOP   := Color(0.90, 0.35, 0.20, 1.0)  # red   — bishop pressured
 const C_CLERGY   := Color(0.70, 0.65, 0.90, 1.0)  # violet — clergy stood firm
 
 const BAR_WIDTH        := 160
-const BAR_HEIGHT       := 10
 const FACTION_BAR_W    := 60
 const FACTION_BAR_H    :=  7
 
@@ -81,7 +80,8 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario4Panel", 96, 14)
+	# S4 panel is taller (96px) to accommodate faction bars and three NPC tracks.
+	var hbox := _make_panel("Scenario4Panel", 96)
 
 	# Title + defense badge.
 	var title_vbox := VBoxContainer.new()
@@ -123,6 +123,7 @@ func _build_ui() -> void:
 		lbl.text = "%s  Rep: 50 / 100  Target: %d+ | Fail: <%d" % [NPC_DISPLAY_NAMES.get(npc_id, npc_id), ScenarioConfig.S4_WIN_REP_MIN, ScenarioConfig.S4_FAIL_REP_BELOW]
 		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh)
 		lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+		lbl.clip_text = true
 		vbox.add_child(lbl)
 		_score_labels[npc_id] = lbl
 
@@ -196,12 +197,14 @@ func _build_ui() -> void:
 	_days_lbl.text = "Days remaining: 20"
 	_days_lbl.tooltip_text = "Days before the Inquisitor presents his findings to the Bishop. All three must be 48+ at deadline to win. Below %d at any time = instant fail." % ScenarioConfig.S4_FAIL_REP_BELOW
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_days_lbl.clip_text = true
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
 	_result_lbl.add_theme_font_size_override("font_size", 16)
 	_result_lbl.add_theme_color_override("font_color", C_WIN)
 	_result_lbl.text = ""
+	_result_lbl.clip_text = true
 	right_vbox.add_child(_result_lbl)
 
 	var legend_lbl := Label.new()
@@ -216,6 +219,7 @@ func _build_ui() -> void:
 	_inquisitor_lbl.text = "Inquisitor: no activity yet"
 	_inquisitor_lbl.tooltip_text = "The inquisitor seeds accusation and heresy rumors against the three protected NPCs. Counter with praise and defend rumors."
 	_inquisitor_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_inquisitor_lbl.clip_text = true
 	right_vbox.add_child(_inquisitor_lbl)
 
 	_faction_shift_lbl = Label.new()
@@ -224,6 +228,7 @@ func _build_ui() -> void:
 	_faction_shift_lbl.text = "Town: watching and waiting"
 	_faction_shift_lbl.tooltip_text = "Faction power shifts mid-game: merchants may rally for the accused, the Bishop can pressure the Inquisitor, and clergy may show solidarity."
 	_faction_shift_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_faction_shift_lbl.clip_text = true
 	right_vbox.add_child(_faction_shift_lbl)
 
 	# ── Anonymous Tip verb ───────────────────────────────────────────────────
@@ -241,6 +246,7 @@ func _build_ui() -> void:
 	_anon_tip_lbl.add_theme_color_override("font_color", Color(0.45, 0.85, 0.65, 0.90))
 	_anon_tip_lbl.text = ""
 	_anon_tip_lbl.visible = false
+	_anon_tip_lbl.clip_text = true
 	right_vbox.add_child(_anon_tip_lbl)
 
 	# ── Faction shift toast panel ─────────────────────────────────────────────

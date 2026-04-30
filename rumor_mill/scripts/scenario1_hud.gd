@@ -18,7 +18,6 @@ const C_DANGER  := Color(0.90, 0.30, 0.10, 1.0)   # orange-red — nearing win
 const C_CAUTION := Color(0.95, 0.80, 0.15, 1.0)   # yellow — getting close
 
 const BAR_WIDTH     := 160
-const BAR_HEIGHT    := 12
 
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _score_lbl:   Label     = null
@@ -56,6 +55,7 @@ func _build_ui() -> void:
 	_score_lbl.text = "Edric Fenn  Rep: — / 100  Target: <30"
 	_score_lbl.tooltip_text = "Lord Edric Fenn's current reputation (0–100). Win when it drops below 30."
 	_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_score_lbl.clip_text = true
 	_apply_text_outline(_score_lbl)
 	score_vbox.add_child(_score_lbl)
 
@@ -76,6 +76,7 @@ func _build_ui() -> void:
 	_caution_lbl.text = "⚠ Avoid detection"
 	_caution_lbl.tooltip_text = "Getting caught eavesdropping fails the scenario immediately."
 	_caution_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_caution_lbl.clip_text = true
 	hbox.add_child(_caution_lbl)
 
 	# Days remaining + result.
@@ -89,6 +90,7 @@ func _build_ui() -> void:
 	_days_lbl.text = "Days remaining: 30"
 	_days_lbl.tooltip_text = "Days left before the tax rolls are signed. The scenario fails on timeout."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_days_lbl.clip_text = true
 	_apply_text_outline(_days_lbl)
 	right_vbox.add_child(_days_lbl)
 
@@ -96,6 +98,7 @@ func _build_ui() -> void:
 	_result_lbl.add_theme_font_size_override("font_size", 16)
 	_result_lbl.add_theme_color_override("font_color", C_WIN)
 	_result_lbl.text = ""
+	_result_lbl.clip_text = true
 	right_vbox.add_child(_result_lbl)
 
 
