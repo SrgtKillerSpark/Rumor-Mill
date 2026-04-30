@@ -170,12 +170,15 @@ func apply_display_settings() -> void:
 			# Window scale overrides resolution in windowed mode.
 			var scale: float = WINDOW_SCALE_PRESETS[clampi(window_scale_index, 0, WINDOW_SCALE_PRESETS.size() - 1)]
 			var target := Vector2i(int(1280.0 * scale), int(720.0 * scale))
-			var screen_size := DisplayServer.screen_get_size()
-			target.x = clampi(target.x, 1280, screen_size.x)
-			target.y = clampi(target.y, 720, screen_size.y)
+			var screen_id := DisplayServer.get_primary_screen()
+			var screen_rect := DisplayServer.screen_get_usable_rect(screen_id)
+			target.x = clampi(target.x, 1280, screen_rect.size.x)
+			target.y = clampi(target.y, 720, screen_rect.size.y)
 			DisplayServer.window_set_size(target)
-			# Centre window on screen.
-			var win_pos := Vector2i((screen_size.x - target.x) / 2, (screen_size.y - target.y) / 2)
+			# Centre window on screen (account for multi-monitor offsets).
+			var win_pos := Vector2i(
+				screen_rect.position.x + (screen_rect.size.x - target.x) / 2,
+				screen_rect.position.y + (screen_rect.size.y - target.y) / 2)
 			DisplayServer.window_set_position(win_pos)
 
 

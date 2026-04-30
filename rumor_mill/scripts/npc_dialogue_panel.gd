@@ -369,7 +369,7 @@ func _rebuild_panel(npc: Node2D) -> void:
 	vbox.add_child(div)
 
 	# ── Greeting line (state-aware: prefer belief/spread/act lines when active) ─
-	var worst_state := npc.get_worst_rumor_state()
+	var worst_state: Rumor.RumorState = npc.get_worst_rumor_state()
 	var greeting_lbl := Label.new()
 	greeting_lbl.text = '"%s"' % _pick_greeting(npc_id, faction, worst_state)
 	greeting_lbl.add_theme_font_size_override("font_size", 11)

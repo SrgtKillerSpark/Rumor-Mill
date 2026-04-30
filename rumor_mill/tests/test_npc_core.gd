@@ -239,7 +239,7 @@ func test_get_state_returns_slot_state() -> bool:
 
 func test_worst_state_empty_is_unaware() -> bool:
 	var npc   := _make_npc()
-	var worst := npc.get_worst_rumor_state()
+	var worst: Rumor.RumorState = npc.get_worst_rumor_state()
 	npc.free()
 	return worst == Rumor.RumorState.UNAWARE
 
@@ -247,7 +247,7 @@ func test_worst_state_empty_is_unaware() -> bool:
 func test_worst_state_single_evaluating() -> bool:
 	var npc := _make_npc()
 	_inject_slot(npc, _make_rumor("r1", "s", Rumor.ClaimType.SCANDAL), Rumor.RumorState.EVALUATING)
-	var worst := npc.get_worst_rumor_state()
+	var worst: Rumor.RumorState = npc.get_worst_rumor_state()
 	npc.free()
 	return worst == Rumor.RumorState.EVALUATING
 
@@ -256,7 +256,7 @@ func test_worst_state_believe_beats_evaluating() -> bool:
 	var npc := _make_npc()
 	_inject_slot(npc, _make_rumor("r1", "s", Rumor.ClaimType.SCANDAL), Rumor.RumorState.EVALUATING)
 	_inject_slot(npc, _make_rumor("r2", "s", Rumor.ClaimType.ACCUSATION), Rumor.RumorState.BELIEVE)
-	var worst := npc.get_worst_rumor_state()
+	var worst: Rumor.RumorState = npc.get_worst_rumor_state()
 	npc.free()
 	return worst == Rumor.RumorState.BELIEVE
 
@@ -266,7 +266,7 @@ func test_worst_state_act_is_highest_priority() -> bool:
 	_inject_slot(npc, _make_rumor("r1", "s", Rumor.ClaimType.SCANDAL), Rumor.RumorState.SPREAD)
 	_inject_slot(npc, _make_rumor("r2", "s", Rumor.ClaimType.ACCUSATION), Rumor.RumorState.ACT)
 	_inject_slot(npc, _make_rumor("r3", "s", Rumor.ClaimType.HERESY), Rumor.RumorState.BELIEVE)
-	var worst := npc.get_worst_rumor_state()
+	var worst: Rumor.RumorState = npc.get_worst_rumor_state()
 	npc.free()
 	return worst == Rumor.RumorState.ACT
 
@@ -276,7 +276,7 @@ func test_worst_state_defending_beats_spread() -> bool:
 	_inject_slot(npc, _make_rumor("r1", "s", Rumor.ClaimType.ACCUSATION), Rumor.RumorState.SPREAD)
 	npc._is_defending = true
 	npc._worst_state_dirty = true
-	var worst := npc.get_worst_rumor_state()
+	var worst: Rumor.RumorState = npc.get_worst_rumor_state()
 	npc.free()
 	return worst == Rumor.RumorState.DEFENDING
 
@@ -284,8 +284,8 @@ func test_worst_state_defending_beats_spread() -> bool:
 func test_worst_state_cached_after_first_call() -> bool:
 	var npc := _make_npc()
 	_inject_slot(npc, _make_rumor("r1", "s", Rumor.ClaimType.PRAISE), Rumor.RumorState.BELIEVE)
-	var first  := npc.get_worst_rumor_state()
-	var second := npc.get_worst_rumor_state()
+	var first: Rumor.RumorState = npc.get_worst_rumor_state()
+	var second: Rumor.RumorState = npc.get_worst_rumor_state()
 	npc.free()
 	return first == second and first == Rumor.RumorState.BELIEVE
 
@@ -294,11 +294,11 @@ func test_worst_state_dirty_clears_cache() -> bool:
 	var npc := _make_npc()
 	var r1  := _make_rumor("r1", "s", Rumor.ClaimType.ACCUSATION)
 	var slot := _inject_slot(npc, r1, Rumor.RumorState.EVALUATING)
-	var _first := npc.get_worst_rumor_state()  # caches EVALUATING
+	var _first: Rumor.RumorState = npc.get_worst_rumor_state()  # caches EVALUATING
 	# Mutate state and mark dirty — next call must recompute.
 	slot.state = Rumor.RumorState.BELIEVE
 	npc._worst_state_dirty = true
-	var second := npc.get_worst_rumor_state()
+	var second: Rumor.RumorState = npc.get_worst_rumor_state()
 	npc.free()
 	return second == Rumor.RumorState.BELIEVE
 
@@ -365,7 +365,7 @@ func test_force_believe_sets_worst_state_dirty() -> bool:
 	var npc := _make_npc()
 	_inject_slot(npc, _make_rumor("r1", "s", Rumor.ClaimType.ACCUSATION), Rumor.RumorState.EVALUATING)
 	# Clear dirty flag first so we can detect it being set.
-	var _w := npc.get_worst_rumor_state()  # caches result, clears dirty
+	var _w: Rumor.RumorState = npc.get_worst_rumor_state()  # caches result, clears dirty
 	npc.force_believe()
 	var dirty := npc._worst_state_dirty
 	npc.free()
@@ -809,7 +809,7 @@ func test_hear_rumor_new_sets_worst_state_dirty() -> bool:
 	var npc := _make_npc()
 	var r   := _make_rumor("r1", "subj", Rumor.ClaimType.SCANDAL)
 	# Clear dirty flag first.
-	var _w := npc.get_worst_rumor_state()
+	var _w: Rumor.RumorState = npc.get_worst_rumor_state()
 	npc.hear_rumor(r, "merchant")
 	var dirty := npc._worst_state_dirty
 	npc.free()
@@ -1076,6 +1076,6 @@ func test_visual_state_unaware_when_empty() -> bool:
 func test_visual_state_matches_worst_state() -> bool:
 	var npc := _make_npc()
 	_inject_slot(npc, _make_rumor("r1", "s", Rumor.ClaimType.ACCUSATION), Rumor.RumorState.BELIEVE)
-	var ok := npc.visual_state == npc.get_worst_rumor_state()
+	var ok: bool = npc.visual_state == npc.get_worst_rumor_state()
 	npc.free()
 	return ok
