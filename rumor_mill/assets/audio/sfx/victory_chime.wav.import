@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://emp4r7kxqwb56"
-path="res://.godot/imported/victory_chime.wav-emp4r7kxqwb56.sample"
+uid="uid://rb865no6pgff"
+path="res://.godot/imported/victory_chime.wav-bbd0beb6dccd8c90547b02db2f63ccf7.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/victory_chime.wav"
-dest_files=["res://.godot/imported/victory_chime.wav-emp4r7kxqwb56.sample"]
+dest_files=["res://.godot/imported/victory_chime.wav-bbd0beb6dccd8c90547b02db2f63ccf7.sample"]
 
 [params]
 

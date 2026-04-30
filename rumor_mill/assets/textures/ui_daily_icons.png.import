@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://spa712_daily_icons"
-path="res://.godot/imported/ui_daily_icons.png-spa712.ctex"
+uid="uid://becidf77iog1t"
+path="res://.godot/imported/ui_daily_icons.png-b4b52bb765dc0762874de32a43f2d86f.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/ui_daily_icons.png"
-dest_files=["res://.godot/imported/ui_daily_icons.png-spa712.ctex"]
+dest_files=["res://.godot/imported/ui_daily_icons.png-b4b52bb765dc0762874de32a43f2d86f.ctex"]
 
 [params]
 

@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://fn3svulgcy047"
-path="res://.godot/imported/failure_bell.wav-fn3svulgcy047.sample"
+uid="uid://bsoxbsn6rr5eg"
+path="res://.godot/imported/failure_bell.wav-3c78b59a50976eba5dfec90370cce82e.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/failure_bell.wav"
-dest_files=["res://.godot/imported/failure_bell.wav-fn3svulgcy047.sample"]
+dest_files=["res://.godot/imported/failure_bell.wav-3c78b59a50976eba5dfec90370cce82e.sample"]
 
 [params]
 

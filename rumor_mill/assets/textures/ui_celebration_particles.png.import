@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://spa712_celebration_particles"
-path="res://.godot/imported/ui_celebration_particles.png-spa712.ctex"
+uid="uid://bjp0f8ftc1qlb"
+path="res://.godot/imported/ui_celebration_particles.png-c04953f539a29318c8fd86f736aa6aaf.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/ui_celebration_particles.png"
-dest_files=["res://.godot/imported/ui_celebration_particles.png-spa712.ctex"]
+dest_files=["res://.godot/imported/ui_celebration_particles.png-c04953f539a29318c8fd86f736aa6aaf.ctex"]
 
 [params]
 

@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://dqhv6fja9tp83"
-path="res://.godot/imported/reputation_shift.wav-dqhv6fja9tp83.sample"
+uid="uid://dqhv6fjbatp83"
+path="res://.godot/imported/reputation_shift.wav-ec01bdcadb48bf1d2ef06ed4f311589b.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/reputation_shift.wav"
-dest_files=["res://.godot/imported/reputation_shift.wav-dqhv6fja9tp83.sample"]
+dest_files=["res://.godot/imported/reputation_shift.wav-ec01bdcadb48bf1d2ef06ed4f311589b.sample"]
 
 [params]
 

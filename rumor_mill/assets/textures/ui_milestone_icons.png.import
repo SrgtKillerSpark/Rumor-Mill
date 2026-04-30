@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://spa712_milestone_icons"
-path="res://.godot/imported/ui_milestone_icons.png-spa712.ctex"
+uid="uid://ds62fgmaw0h36"
+path="res://.godot/imported/ui_milestone_icons.png-85a57fe6c15c9d6fbbc8ab0cb9cb3e3d.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/ui_milestone_icons.png"
-dest_files=["res://.godot/imported/ui_milestone_icons.png-spa712.ctex"]
+dest_files=["res://.godot/imported/ui_milestone_icons.png-85a57fe6c15c9d6fbbc8ab0cb9cb3e3d.ctex"]
 
 [params]
 
