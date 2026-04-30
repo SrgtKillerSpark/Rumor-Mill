@@ -15,6 +15,7 @@ extends Node
 # Signal
 # ---------------------------------------------------------------------------
 
+signal achievement_unlocked(achievement_id: String, display_name: String)
 
 # ---------------------------------------------------------------------------
 # Achievement definitions
@@ -137,6 +138,7 @@ func unlock(achievement_id: String) -> void:
 	_save()
 
 	var display_name: String = ACHIEVEMENTS[achievement_id].get("name", achievement_id)
+	achievement_unlocked.emit(achievement_id, display_name)
 
 	if _steam_active:
 		_steam.setAchievement(ACHIEVEMENTS[achievement_id]["steam_api_name"])

@@ -10,6 +10,7 @@
 ##   • TestSaveManager            — save_path(), prepare_load(), pending state, migration (SPA-964)
 ##   • TestSaveRoundtrip          — full serialize/restore round-trips for all 6 scenarios + all agent types (SPA-1090)
 ##   • TestAchievementManager     — unlock/query API and static definition table (SPA-964)
+##   • TestAchievementSignal      — achievement_unlocked signal emission, payload, dedup (SPA-1093)
 ##   • TestFactionEventSystem     — scheduling, activation, effects, expiry, hotspots, foreshadow, serialization (SPA-965)
 ##   • TestSpa970976Regressions   — regression guard for SPA-970/974/975/976 bug fix batch (SPA-985)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
@@ -166,6 +167,7 @@
 
 const TestAchievementHooks = preload("res://tests/test_achievement_hooks.gd")
 const TestAchievementManager = preload("res://tests/test_achievement_manager.gd")
+const TestAchievementSignal = preload("res://tests/test_achievement_signal.gd")
 const TestAmbientParticles = preload("res://tests/test_ambient_particles.gd")
 const TestAnalyticsLogger = preload("res://tests/test_analytics_logger.gd")
 const TestAnalyticsManager = preload("res://tests/test_analytics_manager.gd")
@@ -326,6 +328,9 @@ func _init() -> void:
 
 	print("\n── AchievementManager ──")
 	TestAchievementManager.new().run()
+
+	print("\n── AchievementSignal ──")
+	TestAchievementSignal.new().run()
 
 	print("\n── FactionEventSystem ──")
 	TestFactionEventSystem.new().run()

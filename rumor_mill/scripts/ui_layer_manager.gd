@@ -45,6 +45,7 @@ var _help_ui: HelpReminderUI = null
 var _analytics: ScenarioAnalytics = null
 var _analytics_manager: AnalyticsManager = null
 var _achievement_hooks: AchievementHooks = null
+var _achievement_toast: AchievementToast = null
 
 
 ## Create and wire every in-game HUD/overlay node.
@@ -611,6 +612,18 @@ func _init_achievement_hooks() -> void:
 	# SPA-335: record tutorial step completion at scenario end.
 	if sm != null:
 		sm.scenario_resolved.connect(_on_scenario_resolved_tutorial_steps)
+
+	# SPA-1093: Toast notification on achievement unlock.
+	_achievement_toast = AchievementToast.new()
+	_achievement_toast.name = "AchievementToast"
+	_parent.add_child(_achievement_toast)
+	AchievementManager.achievement_unlocked.connect(_on_achievement_unlocked)
+
+
+## Show the achievement toast when AchievementManager emits achievement_unlocked.
+func _on_achievement_unlocked(_achievement_id: String, display_name: String) -> void:
+	if _achievement_toast != null:
+		_achievement_toast.show_achievement(display_name)
 
 
 ## Record tutorial step completion when a scenario resolves (SPA-335).
