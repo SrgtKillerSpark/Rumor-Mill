@@ -153,7 +153,7 @@ func _input(event: InputEvent) -> void:
 func show_for_npc(npc: Node2D, screen_pos: Vector2) -> void:
 	_current_npc = npc
 	AudioManager.duck_for_dialogue()
-	_rebuild_panel(npc)
+	await _rebuild_panel(npc)
 
 	# Position: offset right of cursor, clamped to viewport.
 	var vp_size := get_viewport().get_visible_rect().size
@@ -432,7 +432,8 @@ func _rebuild_panel(npc: Node2D) -> void:
 
 	# ── Resize panel to fit content ───────────────────────────────────────────
 	_panel.size = Vector2(PANEL_W, 0.0)
-	await get_tree().process_frame
+	if not get_tree().paused:
+		await get_tree().process_frame
 	_panel.size = Vector2(PANEL_W, vbox.get_minimum_size().y + 20.0)
 
 	# Keyboard focus: grab the first enabled action button so keyboard users

@@ -247,7 +247,7 @@ func _build_search_ui() -> void:
 	_search_panel = PanelContainer.new()
 	_search_panel.name = "SGSearch"
 	_search_panel.set_anchor_and_offset(SIDE_LEFT,   0.0,  10.0)
-	_search_panel.set_anchor_and_offset(SIDE_RIGHT,  0.0, 215.0)
+	_search_panel.set_anchor_and_offset(SIDE_RIGHT,  0.0, 220.0)
 	_search_panel.set_anchor_and_offset(SIDE_TOP,    0.0,  10.0)
 	_search_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  40.0)
 
@@ -667,7 +667,7 @@ func _build_legend() -> void:
 	_legend_panel.set_anchor_and_offset(SIDE_LEFT,   1.0, -220.0)
 	_legend_panel.set_anchor_and_offset(SIDE_TOP,    0.0,  100.0)
 	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 1.0,  -10.0)
-	_legend_panel.custom_minimum_size = Vector2(210, 0)
+	_legend_panel.custom_minimum_size = Vector2(220, 0)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color     = Color(0.08, 0.05, 0.03, 0.92)
