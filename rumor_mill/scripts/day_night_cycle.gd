@@ -53,10 +53,20 @@ func _ready() -> void:
 	tick_duration_seconds = SettingsManager.game_speed
 	tick_timer.wait_time = tick_duration_seconds
 	tick_timer.timeout.connect(_on_tick_timer_timeout)
-	tick_timer.start()
+	# SPA-1098: do NOT start the timer here — main.gd will call start_ticking()
+	# after all systems are wired.  Starting early caused current_tick to
+	# accumulate during the menu / loading screen, leading to false timeout
+	# fails and stale-tick scenario evaluation bugs.
 	_apply_time_of_day(0)
 	_update_time_label()
 	_build_day_flash_overlay()
+
+
+## Begin the tick loop.  Call once from main.gd after all systems are wired.
+func start_ticking() -> void:
+	current_tick = 0
+	current_day  = 1
+	tick_timer.start()
 
 
 func _build_day_flash_overlay() -> void:

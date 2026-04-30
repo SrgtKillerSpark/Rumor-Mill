@@ -240,6 +240,11 @@ func on_player_exposed() -> void:
 func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_1_state != ScenarioState.ACTIVE:
 		return
+	# SPA-1098: skip evaluation on tick 0 — no player action has occurred yet,
+	# so a win or fail at this point is always a false positive caused by stale
+	# state, accumulated ticks, or uninitialised data.
+	if current_tick < 1:
+		return
 	var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(EDRIC_FENN_ID)
 	if snap == null:
 		return
@@ -264,6 +269,8 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_2_state != ScenarioState.ACTIVE:
 		return
+	if current_tick < 1:
+		return
 	var illness_count: int = rep.get_illness_believer_count(ALYS_HERBWIFE_ID)
 	if illness_count >= S2_WIN_ILLNESS_MIN:
 		scenario_2_state = ScenarioState.WON
@@ -283,6 +290,8 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 
 func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_3_state != ScenarioState.ACTIVE:
+		return
+	if current_tick < 1:
 		return
 	var calder: ReputationSystem.ReputationSnapshot = rep.get_snapshot(CALDER_FENN_ID)
 	var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(TOMAS_REEVE_ID)
@@ -340,6 +349,8 @@ func get_scenario_1_progress(rep: ReputationSystem) -> Dictionary:
 
 func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 	if scenario_4_state != ScenarioState.ACTIVE:
+		return
+	if current_tick < 1:
 		return
 	# Fail: any protected NPC drops below 45.
 	for npc_id in S4_PROTECTED_NPC_IDS:

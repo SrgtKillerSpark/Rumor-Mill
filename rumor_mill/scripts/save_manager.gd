@@ -144,6 +144,13 @@ static func has_pending_load() -> bool:
 	return not _pending_load_data.is_empty()
 
 
+## SPA-1098: Defensively clear any pending load data.
+## Called on new-game start to prevent stale data from a previous session
+## leaking into a fresh game via the static _pending_load_data variable.
+static func clear_pending_load() -> void:
+	_pending_load_data = {}
+
+
 ## Returns the scenario_id from pending load data.
 static func pending_scenario_id() -> String:
 	return _pending_load_data.get("scenario_id", "scenario_1")

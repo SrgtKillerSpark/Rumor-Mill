@@ -219,6 +219,17 @@ func _on_begin_game(scenario_id: String) -> void:
 	# Restore saved state if a load was triggered from the pause menu.
 	if SaveManager.has_pending_load():
 		SaveManager.apply_pending_load(world, day_night, journal)
+	else:
+		# SPA-1098: defensively clear any stale pending-load data that could
+		# leak across sessions via the static _pending_load_data variable.
+		SaveManager.clear_pending_load()
+
+	# SPA-1098: start the tick loop AFTER all systems are wired and any
+	# save data has been restored.  Previously the DayNightCycle timer
+	# started in _ready(), causing current_tick to accumulate during the
+	# menu and loading screen.
+	if day_night != null and day_night.has_method("start_ticking"):
+		day_night.start_ticking()
 
 
 
