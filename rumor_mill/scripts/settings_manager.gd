@@ -75,7 +75,7 @@ func _build_resolution_list() -> void:
 	for res in BASE_RESOLUTIONS:
 		RESOLUTIONS.append(res)
 	# Append the native screen resolution if it's not already a preset.
-	var native := DisplayServer.screen_get_size()
+	var native := DisplayServer.screen_get_size(DisplayServer.window_get_current_screen())
 	if native not in RESOLUTIONS and native.x >= 1280 and native.y >= 720:
 		RESOLUTIONS.append(native)
 		RESOLUTIONS.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.x < b.x)
@@ -139,14 +139,16 @@ func apply_display_settings() -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		_:  # WINDOW_WINDOWED
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-			var screen_size := DisplayServer.screen_get_size()
+			var screen_idx := DisplayServer.window_get_current_screen()
+			var screen_pos := DisplayServer.screen_get_position(screen_idx)
+			var screen_size := DisplayServer.screen_get_size(screen_idx)
 			if res.x < 1280 or res.y < 720 or res.x > screen_size.x or res.y > screen_size.y:
 				push_warning("SettingsManager: invalid resolution %s, clamping." % str(res))
 				res.x = clampi(res.x, 1280, screen_size.x)
 				res.y = clampi(res.y, 720, screen_size.y)
 			DisplayServer.window_set_size(res)
-			# Centre window on screen.
-			var win_pos := Vector2i((screen_size.x - res.x) / 2, (screen_size.y - res.y) / 2)
+			# Centre window on the current screen, accounting for multi-monitor offset.
+			var win_pos := screen_pos + Vector2i((screen_size.x - res.x) / 2, (screen_size.y - res.y) / 2)
 			DisplayServer.window_set_position(win_pos)
 
 
@@ -168,7 +170,7 @@ func get_resolution_label() -> String:
 	var idx: int = clampi(resolution_index, 0, RESOLUTIONS.size() - 1)
 	var res: Vector2i = RESOLUTIONS[idx]
 	var label := "%dx%d" % [res.x, res.y]
-	if res == DisplayServer.screen_get_size() and res not in BASE_RESOLUTIONS:
+	if res == DisplayServer.screen_get_size(DisplayServer.window_get_current_screen()) and res not in BASE_RESOLUTIONS:
 		label += " (Native)"
 	return label
 
