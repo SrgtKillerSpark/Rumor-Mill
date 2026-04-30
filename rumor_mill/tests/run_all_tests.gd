@@ -132,6 +132,7 @@ extends RefCounted
 ##   • TestTooltipManager         — fade/panel constants, OFFSET, initial state (SPA-1042)
 ##   • TestReconTooltipManager    — initial node refs null (SPA-1042)
 ##   • TestSuggestionToast        — palette, AUTO_DISMISS constants, _shown_at_sec (SPA-1042)
+##   • TestAchievementToast       — constants, initial queue state, enqueue-when-showing, drain no-op (SPA-1144)
 ##   • TestVisualAffordances      — palette, fade constants, initial state, _enabled default true (SPA-1042)
 ##   • TestWhatsChangedCard       — palette, initial node refs null (SPA-1042)
 ##   • TestTutorialBanner         — layout constants, palette, initial state (SPA-1042)
@@ -171,6 +172,7 @@ extends RefCounted
 const TestAchievementHooks = preload("res://tests/test_achievement_hooks.gd")
 const TestAchievementManager = preload("res://tests/test_achievement_manager.gd")
 const TestAchievementSignal = preload("res://tests/test_achievement_signal.gd")
+const TestAchievementToast = preload("res://tests/test_achievement_toast.gd")
 const TestAmbientParticles = preload("res://tests/test_ambient_particles.gd")
 const TestAnalyticsLogger = preload("res://tests/test_analytics_logger.gd")
 const TestAnalyticsManager = preload("res://tests/test_analytics_manager.gd")
@@ -333,6 +335,9 @@ func _init() -> void:
 
 	print("\n── AchievementSignal ──")
 	TestAchievementSignal.new().run()
+
+	print("\n── AchievementToast ──")
+	TestAchievementToast.new().run()
 
 	print("\n── FactionEventSystem ──")
 	TestFactionEventSystem.new().run()
