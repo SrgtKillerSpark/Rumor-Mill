@@ -1,3 +1,5 @@
+extends RefCounted
+
 ## run_all_tests.gd — Top-level test runner for Rumor Mill core systems (SPA-957).
 ##
 ## Runs all test suites in sequence and prints a consolidated summary.
@@ -165,8 +167,6 @@
 ##
 ## Run from the Godot editor:  Scene → Run Script.
 ## All suites use synthetic in-memory data — no live game nodes required.
-
-extends RefCounted
 
 const TestAchievementHooks = preload("res://tests/test_achievement_hooks.gd")
 const TestAchievementManager = preload("res://tests/test_achievement_manager.gd")
