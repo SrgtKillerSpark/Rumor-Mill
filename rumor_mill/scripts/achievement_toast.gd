@@ -6,6 +6,7 @@
 ##   - Achievement display name below, near-white
 ##   - Fade-in enter animation (0.4s EASE_OUT / TRANS_BACK)
 ##   - Auto-dismiss after AUTO_DISMISS_SEC with 0.3s fade-out
+##   - Queue: simultaneous calls are shown sequentially (SPA-1143)
 ##
 ## UILayerManager creates this node and wires AchievementManager's signal to
 ## show_achievement().
@@ -20,6 +21,10 @@ const AUTO_DISMISS_SEC := 5.0
 var _panel:        PanelContainer = null
 var _name_label:   Label          = null
 var _anim_tween:   Tween          = null
+## Queue of display_name strings waiting to be shown (SPA-1143).
+var _queue:        Array[String]  = []
+## True while a toast is animating/visible (guards queue drain).
+var _is_showing:   bool           = false
 
 
 func _init() -> void:
@@ -85,9 +90,20 @@ func _build_ui() -> void:
 	vbox.add_child(_name_label)
 
 
-## Show the toast for the given achievement display name.
-## Interrupts any in-progress animation and restarts from the beginning.
+## Queue an achievement toast.  If none is currently showing the toast appears
+## immediately; otherwise the name is added to the back of the queue and shown
+## after the current one dismisses.  Prevents overlapping toasts (SPA-1143).
 func show_achievement(display_name: String) -> void:
+	if _is_showing:
+		_queue.append(display_name)
+		return
+	_play(display_name)
+
+
+# ── Internal helpers ──────────────────────────────────────────────────────────
+
+func _play(display_name: String) -> void:
+	_is_showing      = true
 	_name_label.text = display_name
 	_panel.visible   = true
 	_panel.modulate.a = 0.0
@@ -101,4 +117,14 @@ func show_achievement(display_name: String) -> void:
 	_anim_tween.tween_interval(AUTO_DISMISS_SEC)
 	_anim_tween.tween_property(_panel, "modulate:a", 0.0, 0.3) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
-	_anim_tween.tween_callback(func() -> void: _panel.visible = false)
+	_anim_tween.tween_callback(func() -> void:
+		_panel.visible = false
+		_is_showing    = false
+		_drain_queue()
+	)
+
+
+func _drain_queue() -> void:
+	if _queue.is_empty():
+		return
+	_play(_queue.pop_front())
