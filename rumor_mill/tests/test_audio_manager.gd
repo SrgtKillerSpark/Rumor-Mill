@@ -1,4 +1,4 @@
-## test_audio_manager.gd — Unit tests for AudioManager (SPA-982, SPA-1053).
+## test_audio_manager.gd — Unit tests for AudioManager (SPA-982, SPA-1053, SPA-1411).
 ##
 ## Covers:
 ##   • Constants         — MUSIC_FILES and SFX_FILES contain required keys;
@@ -76,6 +76,13 @@ func run() -> void:
 		"test_play_sfx_null_player_no_crash",
 		"test_play_sfx_pitched_null_player_no_crash",
 		"test_set_sfx_volume_db_null_player_no_crash",
+		# Named event API (SPA-1411)
+		"test_ui_sounds_map_to_valid_sfx_keys",
+		"test_event_sounds_map_to_valid_sfx_keys",
+		"test_play_ui_no_crash_null_player",
+		"test_play_event_no_crash_null_player",
+		"test_play_ambient_sets_location",
+		"test_play_ui_fallback_passthrough",
 	]
 
 	for method_name in tests:
@@ -395,4 +402,60 @@ static func test_play_sfx_pitched_null_player_no_crash() -> bool:
 static func test_set_sfx_volume_db_null_player_no_crash() -> bool:
 	var am := _make_am()
 	am.set_sfx_volume_db(-6.0)   # must return at the _sfx_player == null guard
+	return true
+
+
+# ── Named event API (SPA-1411) ───────────────────────────────────────────────
+
+## Every value in UI_SOUNDS must be a key in SFX_FILES.
+static func test_ui_sounds_map_to_valid_sfx_keys() -> bool:
+	for ui_name: String in AudioManagerScript.UI_SOUNDS:
+		var sfx_key: String = AudioManagerScript.UI_SOUNDS[ui_name]
+		if not AudioManagerScript.SFX_FILES.has(sfx_key):
+			push_error("test_ui_sounds_map_to_valid_sfx_keys: UI_SOUNDS['%s'] → '%s' not in SFX_FILES" % [ui_name, sfx_key])
+			return false
+	return true
+
+
+## Every value in EVENT_SOUNDS must be a key in SFX_FILES.
+static func test_event_sounds_map_to_valid_sfx_keys() -> bool:
+	for event_name: String in AudioManagerScript.EVENT_SOUNDS:
+		var sfx_key: String = AudioManagerScript.EVENT_SOUNDS[event_name]
+		if not AudioManagerScript.SFX_FILES.has(sfx_key):
+			push_error("test_event_sounds_map_to_valid_sfx_keys: EVENT_SOUNDS['%s'] → '%s' not in SFX_FILES" % [event_name, sfx_key])
+			return false
+	return true
+
+
+## play_ui() must not crash when _sfx_player is null (no scene tree).
+static func test_play_ui_no_crash_null_player() -> bool:
+	var am := _make_am()
+	am._sfx_cache["ui_click"] = AudioStreamWAV.new()
+	am.play_ui("click")   # resolves to "ui_click" → hits _sfx_player null guard
+	return true
+
+
+## play_event() must not crash when _sfx_player is null.
+static func test_play_event_no_crash_null_player() -> bool:
+	var am := _make_am()
+	am._sfx_cache["rumor_spread"] = AudioStreamWAV.new()
+	am.play_event("rumor_seeded")   # resolves to "rumor_spread" → hits _sfx_player null guard
+	return true
+
+
+## play_ambient() must set _location_ambient via set_location_ambient().
+static func test_play_ambient_sets_location() -> bool:
+	var am := _make_am()
+	am.play_ambient("tavern")
+	if am._location_ambient != "tavern":
+		push_error("test_play_ambient_sets_location: _location_ambient expected 'tavern', got '%s'" % am._location_ambient)
+		return false
+	return true
+
+
+## play_ui() with an unmapped name should fall through to play_sfx(name) directly.
+## With no cache entry the function returns silently — verifying fallback path.
+static func test_play_ui_fallback_passthrough() -> bool:
+	var am := _make_am()
+	am.play_ui("nonexistent_custom_sound")   # not in UI_SOUNDS → play_sfx("nonexistent_custom_sound") → silent
 	return true

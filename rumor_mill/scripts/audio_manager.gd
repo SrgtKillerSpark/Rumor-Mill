@@ -1,6 +1,6 @@
 extends Node
 
-## audio_manager.gd — Sprint 7 + SPA-491 + SPA-917 audio polish.
+## audio_manager.gd — Sprint 7 + SPA-491 + SPA-917 + SPA-1411 audio polish.
 ##
 ## Manages three audio layers:
 ##   1. Music      — phase-aware music (morning_calm / evening_tension / night_suspense),
@@ -13,8 +13,11 @@ extends Node
 ## Missing files are silently skipped — the game runs without audio assets.
 ##
 ## Usage (from any script):
-##   AudioManager.play_sfx("recon_observe")
+##   AudioManager.play_ui("click")           # UI feedback SFX
+##   AudioManager.play_event("rumor_seeded")  # gameplay event SFX
+##   AudioManager.play_sfx("recon_observe")   # direct SFX by key
 ##   AudioManager.play_music("morning_calm", true)   # crossfade
+##   AudioManager.play_ambient("tavern")      # location ambient
 ##   AudioManager.set_location_ambient("tavern")
 ##   AudioManager.clear_location_ambient()
 ##   AudioManager.set_sfx_volume_db(-6.0)
@@ -376,6 +379,46 @@ func play_sfx_pitched(sfx_name: String, pitch_scale: float) -> void:
 			push_warning("AudioManager: play_sfx_pitched('%s') — playback unavailable (player not ready or wrong stream type)" % sfx_name)
 		return
 	pb.play_stream(stream, 0, 0.0, pitch_scale)
+
+
+# ── Public API — Named event helpers (SPA-1411) ──────────────────────────────
+
+## UI-feedback SFX names. Maps short name → SFX_FILES key.
+const UI_SOUNDS: Dictionary = {
+	"click":      "ui_click",
+	"panel_open": "rumor_panel_open",
+	"panel_close":"rumor_panel_close",
+	"error":      "rumor_fail",
+}
+
+## Gameplay-event SFX names. Maps event name → SFX_FILES key.
+const EVENT_SOUNDS: Dictionary = {
+	"rumor_seeded":      "rumor_spread",
+	"evidence_acquired": "journal_open",
+	"npc_state_change":  "reputation_shift",
+	"objective_progress":"milestone_chime",
+}
+
+## Play a UI feedback sound by short name (click, panel_open, panel_close, error).
+## Falls back to play_sfx(name) if name is not in UI_SOUNDS, allowing direct SFX
+## keys to work as well.
+func play_ui(ui_name: String) -> void:
+	var sfx_key: String = UI_SOUNDS.get(ui_name, ui_name)
+	play_sfx(sfx_key)
+
+
+## Play a gameplay event sound by event name (rumor_seeded, evidence_acquired,
+## npc_state_change, objective_progress). Falls back to play_sfx(name) for
+## unmapped names.
+func play_event(event_name: String) -> void:
+	var sfx_key: String = EVENT_SOUNDS.get(event_name, event_name)
+	play_sfx(sfx_key)
+
+
+## Convenience alias for set_location_ambient(). Crossfades ambient to a
+## scene/location-specific loop.
+func play_ambient(scene_id: String) -> void:
+	set_location_ambient(scene_id)
 
 
 # ── Public API — Volume control ────────────────────────────────────────────────
