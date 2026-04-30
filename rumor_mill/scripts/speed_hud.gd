@@ -106,7 +106,9 @@ func _refresh_buttons() -> void:
 func _build_ui() -> void:
 	var row := HBoxContainer.new()
 	row.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	row.offset_left   = -170.0
+	# SPA-1117: expand left margin to accommodate up to 4 buttons (3×48 + 72 + 3×4 sep ≈ 228px)
+	# so the row never clips off-screen left when End Day button is visible.
+	row.offset_left   = -248.0
 	row.offset_top    =  76.0
 	row.offset_right  =  -8.0
 	row.offset_bottom = 104.0
@@ -181,8 +183,16 @@ func _style_btn(btn: Button, active: bool) -> void:
 	s.set_content_margin_all(4)
 	s.set_corner_radius_all(3)
 	btn.add_theme_stylebox_override("normal",  s)
-	btn.add_theme_stylebox_override("hover",   s)
 	btn.add_theme_stylebox_override("pressed", s)
+
+	# SPA-1117: distinct hover style so inactive buttons give visual feedback.
+	var h := StyleBoxFlat.new()
+	h.bg_color = C_ACTIVE if active else Color(0.32, 0.24, 0.11, 0.95)
+	h.set_border_width_all(2 if active else 1)
+	h.border_color = C_BORDER
+	h.set_content_margin_all(4)
+	h.set_corner_radius_all(3)
+	btn.add_theme_stylebox_override("hover", h)
 
 	var f := StyleBoxFlat.new()
 	f.bg_color = C_ACTIVE if active else C_NORMAL

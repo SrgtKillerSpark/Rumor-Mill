@@ -464,8 +464,10 @@ func _build_credits_panel() -> void:
 	vbox.add_child(spacer)
 
 	var credits_body := RichTextLabel.new()
-	credits_body.fit_content = true
-	credits_body.scroll_active = false
+	# SPA-1117: fit_content=true with scroll_active=false risks overflow; let the label
+	# expand to fill available space and scroll if content exceeds the panel height.
+	credits_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	credits_body.scroll_active = true
 	credits_body.bbcode_enabled = true
 	credits_body.add_theme_font_size_override("normal_font_size", 14)
 	credits_body.add_theme_color_override("default_color", C_BODY)
