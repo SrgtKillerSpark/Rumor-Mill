@@ -279,12 +279,14 @@ func build(content_vbox: VBoxContainer, rebuild_cb: Callable) -> void:
 			day_hdr.text = "── Day %d ──" % event_day
 			day_hdr.add_theme_font_size_override("font_size", 12)
 			day_hdr.add_theme_color_override("font_color", C_SUBKEY)
+			day_hdr.clip_text = true
 			content_vbox.add_child(day_hdr)
 		var lbl := Label.new()
 		lbl.text          = "  %s  %s" % [_tick_to_day_str(ev["tick"]), ev["message"]]
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", C_BODY)
+		lbl.clip_text = true
 		content_vbox.add_child(lbl)
 		var diag: String = ev.get("diagnostic", "")
 		if not diag.is_empty():

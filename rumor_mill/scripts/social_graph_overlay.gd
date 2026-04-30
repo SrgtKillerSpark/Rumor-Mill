@@ -57,8 +57,9 @@ const HM_TILE_W := 64
 const HM_TILE_H := 32
 
 # Node drawing sizes.
-const NODE_RADIUS    := 12.0
-const RING_THICKNESS :=  4.0
+const NODE_RADIUS      := 12.0
+const RING_THICKNESS   :=  4.0
+const NPC_LABEL_MAX_W  := 80.0  # Max pill width for NPC name labels.
 
 # Search match: pulsing gold ring around the matched NPC.
 const SEARCH_MATCH_COLOR := Color(1.0, 0.85, 0.0, 1.0)
@@ -555,14 +556,15 @@ func _draw_nodes(npcs: Array) -> void:
 				rep_inline = " %d" % snap.score
 
 		var display_name := npc_name + rep_inline
-		var text_w: float = ThemeDB.fallback_font.get_string_size(
-			display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size_px).x
+		var text_w: float = minf(ThemeDB.fallback_font.get_string_size(
+			display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size_px).x,
+			NPC_LABEL_MAX_W)
 		_draw_node.draw_rect(
 			Rect2(label_pos + Vector2(-3, -12), Vector2(text_w + 6, 16)),
 			Color(0.0, 0.0, 0.0, 0.65 * node_alpha))
 		_draw_node.draw_string(
 			ThemeDB.fallback_font, label_pos, display_name,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, font_size_px,
+			HORIZONTAL_ALIGNMENT_LEFT, NPC_LABEL_MAX_W, font_size_px,
 			Color(0.95, 0.95, 0.85, 0.95 * node_alpha))
 
 		# Affinity bar (avg relationship weight — previously labelled "trust").

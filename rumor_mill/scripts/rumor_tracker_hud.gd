@@ -148,6 +148,7 @@ func _refresh() -> void:
 		overflow_lbl.text = "  + %d more..." % (player_roots.size() - MAX_ROWS)
 		overflow_lbl.add_theme_font_size_override("font_size", 10)
 		overflow_lbl.add_theme_color_override("font_color", C_LABEL)
+		overflow_lbl.clip_text = true
 		_vbox.add_child(overflow_lbl)
 
 	# Resize panel height to fit content.
@@ -202,6 +203,7 @@ func _add_rumor_row(root: Rumor, engine: PropagationEngine, npc_count: int) -> v
 	claim_lbl.text = "[%s] %s" % [claim_name, subject_name]
 	claim_lbl.add_theme_font_size_override("font_size", 11)
 	claim_lbl.add_theme_color_override("font_color", C_LABEL)
+	claim_lbl.clip_text = true
 	header.add_child(claim_lbl)
 
 	# Mutation badge.
@@ -212,6 +214,7 @@ func _add_rumor_row(root: Rumor, engine: PropagationEngine, npc_count: int) -> v
 		mut_lbl.add_theme_color_override("font_color", C_MUT_LABEL)
 		mut_lbl.tooltip_text = "Mutation depth: this rumor has %d generation(s) of variants" % mut_depth
 		mut_lbl.mouse_filter = Control.MOUSE_FILTER_STOP
+		mut_lbl.clip_text = true
 		header.add_child(mut_lbl)
 
 	# Reach bar + count.
@@ -234,6 +237,7 @@ func _add_rumor_row(root: Rumor, engine: PropagationEngine, npc_count: int) -> v
 	reach_lbl.text = "  %s  %d NPCs" % [bar_str, reach]
 	reach_lbl.add_theme_font_size_override("font_size", 10)
 	reach_lbl.add_theme_color_override("font_color", reach_color)
+	reach_lbl.clip_text = true
 	reach_row.add_child(reach_lbl)
 
 	# Key NPC badges (flash if recently reached).
@@ -246,6 +250,7 @@ func _add_rumor_row(root: Rumor, engine: PropagationEngine, npc_count: int) -> v
 			Color(1.0, 1.0, 0.3, 1.0) if is_flashing else C_KEY_NPC)
 		kn_lbl.tooltip_text = "%s (key NPC) believes this rumor" % nm
 		kn_lbl.mouse_filter = Control.MOUSE_FILTER_STOP
+		kn_lbl.clip_text = true
 		reach_row.add_child(kn_lbl)
 
 	row.add_child(HSeparator.new())
