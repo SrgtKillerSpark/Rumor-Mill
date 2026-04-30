@@ -2,7 +2,7 @@ name: Validate GDScript
 
 on:
   push:
-    branches: ["main", "dev"]
+    branches: ["main", "dev", "feature/**", "fix/**", "test/**"]
     paths:
       - "rumor_mill/scripts/**"
       - "rumor_mill/tests/**"
@@ -47,4 +47,5 @@ jobs:
         run: |
           bash rumor_mill/tools/validate_gdscript.sh \
             --godot "$GODOT_BIN" \
-            --project rumor_mill
+            --project rumor_mill \
+            --strict
