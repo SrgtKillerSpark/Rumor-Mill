@@ -578,7 +578,7 @@ func _try_observe(location_id: String) -> void:
 	var active_states := [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]
 	for npc in _world_ref.npcs:
 		if (npc.current_cell - entry_cell).length() <= 4:
-			var s := npc.get_worst_rumor_state()
+			var s: Rumor.RumorState = npc.get_worst_rumor_state()
 			var nname: String = npc.npc_data.get("name", "?")
 			if s == Rumor.RumorState.EVALUATING:
 				bribe_targets.append(nname)
