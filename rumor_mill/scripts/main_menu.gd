@@ -607,7 +607,7 @@ func _make_parchment_panel(w: int, h: int) -> PanelContainer:
 	style.border_color = Color(0.55, 0.38, 0.18, 0.85)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(6)
-	style.set_content_margin_all(28)
+	style.set_content_margin_all(20)
 	style.border_width_top = 3
 	panel.add_theme_stylebox_override("panel", style)
 	return panel
@@ -628,7 +628,7 @@ func _make_panel(w: int, h: int) -> PanelContainer:
 	style.bg_color     = C_PANEL_BG
 	style.border_color = C_PANEL_BORDER
 	style.set_border_width_all(2)
-	style.set_content_margin_all(28)
+	style.set_content_margin_all(20)
 	panel.add_theme_stylebox_override("panel", style)
 	return panel
 

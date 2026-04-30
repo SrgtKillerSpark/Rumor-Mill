@@ -88,7 +88,7 @@ func build(owner_layer: CanvasLayer) -> void:
 	panel_style.bg_color           = C_PANEL_BG
 	panel_style.border_color       = C_PANEL_BORDER
 	panel_style.set_border_width_all(2)
-	panel_style.set_content_margin_all(24)
+	panel_style.set_content_margin_all(20)
 	panel.add_theme_stylebox_override("panel", panel_style)
 	owner_layer.add_child(panel)
 
@@ -233,6 +233,7 @@ func build(owner_layer: CanvasLayer) -> void:
 	btn_next = _make_button("Next Scenario", 160)
 	btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 	btn_next.disabled = true
+	btn_next.tooltip_text = "Win this scenario to unlock."
 	btn_row.add_child(btn_next)
 
 	btn_main_menu = _make_button("Main Menu", 150)
@@ -316,7 +317,7 @@ func _make_separator() -> HSeparator:
 func _make_button(label: String, min_width: int) -> Button:
 	var btn := Button.new()
 	btn.text = label
-	btn.custom_minimum_size = Vector2(min_width, 40)
+	btn.custom_minimum_size = Vector2(min_width, 42)
 
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = C_BTN_NORMAL

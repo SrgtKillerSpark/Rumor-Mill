@@ -284,7 +284,7 @@ func populate_npc_outcomes(current_scenario_id: String, last_outcome_won: bool) 
 
 		var name_lbl := Label.new()
 		name_lbl.text = npc_name
-		name_lbl.custom_minimum_size = Vector2(130, 0)
+		name_lbl.custom_minimum_size = Vector2(160, 0)
 		name_lbl.add_theme_color_override("font_color", C_HEADING)
 		row.add_child(name_lbl)
 

@@ -284,7 +284,7 @@ func _scenario_card_style(bg: Color, border: Color, _accent: Color) -> StyleBoxF
 	s.border_color = border
 	s.set_border_width_all(1)
 	s.border_width_left = 4
-	s.set_content_margin_all(10)
+	s.set_content_margin_all(16)
 	s.content_margin_left = 14
 	return s
 
@@ -375,5 +375,5 @@ func _card_style(bg: Color, border: Color) -> StyleBoxFlat:
 	s.bg_color     = bg
 	s.border_color = border
 	s.set_border_width_all(1)
-	s.set_content_margin_all(10)
+	s.set_content_margin_all(16)
 	return s

@@ -164,10 +164,10 @@ func _build_ui() -> void:
 
 	# Centred panel — tall enough for buttons + slot picker + status line.
 	_center_panel = Panel.new()
-	_center_panel.custom_minimum_size = Vector2(300, 540)
+	_center_panel.custom_minimum_size = Vector2(340, 540)
 	_center_panel.set_anchors_preset(Control.PRESET_CENTER)
 	_center_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	_center_panel.pivot_offset = Vector2(150, 270)  # centre of 300x540
+	_center_panel.pivot_offset = Vector2(170, 270)  # centre of 340x540
 	var style := StyleBoxFlat.new()
 	style.bg_color            = Color(0.10, 0.08, 0.06, 0.96)
 	style.border_width_left   = 2

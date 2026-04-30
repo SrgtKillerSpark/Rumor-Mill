@@ -16,8 +16,10 @@ const FEEDBACK_PRESETS := [
 	"Avoiding detection",
 	"Knowing which NPCs to target",
 ]
-const FEEDBACK_PANEL_W := 500
-const FEEDBACK_PANEL_H := 360
+const FEEDBACK_PANEL_MIN_W := 420
+const FEEDBACK_PANEL_MAX_W := 560
+const FEEDBACK_PANEL_MIN_H := 300
+const FEEDBACK_PANEL_MAX_H := 420
 
 # ── Palette ───────────────────────────────────────────────────────────────────
 const C_WIN          := Color(0.92, 0.78, 0.12, 1.0)
@@ -70,15 +72,16 @@ func show_prompt(won: bool, current_scenario_id: String) -> void:
 
 	# ── Centred panel ─────────────────────────────────────────────────────────
 	_feedback_panel = PanelContainer.new()
-	_feedback_panel.custom_minimum_size = Vector2(FEEDBACK_PANEL_W, FEEDBACK_PANEL_H)
+	_feedback_panel.custom_minimum_size = Vector2(FEEDBACK_PANEL_MIN_W, FEEDBACK_PANEL_MIN_H)
+	_feedback_panel.custom_maximum_size = Vector2(FEEDBACK_PANEL_MAX_W, FEEDBACK_PANEL_MAX_H)
 	_feedback_panel.set_anchor(SIDE_LEFT,   0.5)
 	_feedback_panel.set_anchor(SIDE_RIGHT,  0.5)
 	_feedback_panel.set_anchor(SIDE_TOP,    0.5)
 	_feedback_panel.set_anchor(SIDE_BOTTOM, 0.5)
-	_feedback_panel.set_offset(SIDE_LEFT,   -FEEDBACK_PANEL_W / 2.0)
-	_feedback_panel.set_offset(SIDE_RIGHT,   FEEDBACK_PANEL_W / 2.0)
-	_feedback_panel.set_offset(SIDE_TOP,    -FEEDBACK_PANEL_H / 2.0)
-	_feedback_panel.set_offset(SIDE_BOTTOM,  FEEDBACK_PANEL_H / 2.0)
+	_feedback_panel.set_offset(SIDE_LEFT,   -FEEDBACK_PANEL_MIN_W / 2.0)
+	_feedback_panel.set_offset(SIDE_RIGHT,   FEEDBACK_PANEL_MIN_W / 2.0)
+	_feedback_panel.set_offset(SIDE_TOP,    -FEEDBACK_PANEL_MIN_H / 2.0)
+	_feedback_panel.set_offset(SIDE_BOTTOM,  FEEDBACK_PANEL_MIN_H / 2.0)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color     = C_PANEL_BG

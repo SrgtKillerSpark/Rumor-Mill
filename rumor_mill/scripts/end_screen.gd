@@ -145,11 +145,13 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	if won and not next_id.is_empty():
 		_panel.btn_next.modulate = Color.WHITE
 		_panel.btn_next.disabled = false
+		_panel.btn_next.tooltip_text = ""
 		_panel.btn_next.focus_mode = Control.FOCUS_ALL
 		_animations.start_btn_pulse(_panel.btn_next)
 	else:
 		_panel.btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		_panel.btn_next.disabled = true
+		_panel.btn_next.tooltip_text = "Win this scenario to unlock."
 		_panel.btn_next.focus_mode = Control.FOCUS_NONE
 
 	# ── SPA-899: Cross-scenario tease ────────────────────────────────────────
