@@ -97,11 +97,26 @@ func build(
 
 	vbox.add_child(_separator.call())
 
+	# Wrap the scenario card list in a ScrollContainer so the panel stays usable
+	# when the card stack is taller than the panel (e.g. on smaller windows or
+	# when all 6 scenarios are listed).
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	vbox.add_child(scroll)
+
+	var card_list := VBoxContainer.new()
+	card_list.add_theme_constant_override("separation", 12)
+	card_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(card_list)
+
 	_scenario_cards.clear()
 	for i in _scenarios.size():
 		var sc: Dictionary = _scenarios[i]
 		var card := _build_scenario_card(sc, i)
-		vbox.add_child(card)
+		card_list.add_child(card)
 		_scenario_cards.append(card)
 
 	# Wire Up/Down focus between overlay buttons.
