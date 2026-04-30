@@ -233,9 +233,17 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 		return "Save version %d is newer than game version %d. Update the game to load this save." % [
 			ver, SAVE_VERSION]
 	if ver < SAVE_VERSION:
+		# Back up the original file before applying migration steps so the
+		# pre-migration data is recoverable if migration fails or the game crashes.
+		var path := save_path(scenario_id, slot)
+		var bak_dir := DirAccess.open("user://")
+		if bak_dir != null:
+			var bak_err := bak_dir.copy(path, path + ".bak")
+			if bak_err != OK:
+				push_warning("save_manager: could not create migration backup '%s.bak' (error %d) — continuing" % [path, bak_err])
 		var migration_err := _migrate_save_data(parsed, ver)
 		if migration_err != "":
-			return migration_err
+			return "Save migration failed: " + migration_err
 
 	# Validate that essential top-level keys exist so apply_pending_load() won't crash.
 	var required_keys := ["scenario_id", "tick", "day"]
@@ -252,18 +260,29 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 	return ""
 
 
-## Migrates save data from an older version in-place.
+## Migrates save data from an older version in-place, applying each step sequentially.
 ## Returns "" on success or a human-readable error string if migration fails.
-static func _migrate_save_data(data: Dictionary, from_version: int) -> String:
-	# v0 saves (missing version field) have the same structure as v1.
-	# Stamp the version so future migrations can rely on it being present.
-	if from_version == 0:
-		push_warning("save_manager: save has no version field — treating as v0, migrating to v%d" % SAVE_VERSION)
-		data["version"] = SAVE_VERSION
-	# Future migration steps go here as SAVE_VERSION increases, e.g.:
-	# if from_version <= 1:
-	#     # add new fields introduced in v2
-	#     data["new_field"] = default_value
+static func _migrate_save_data(data: Dictionary, _from_version: int) -> String:
+	while data.get("version", 0) < SAVE_VERSION:
+		var from_ver: int = int(data.get("version", 0))
+		var step_err := _migrate_step(data, from_ver)
+		if step_err != "":
+			return "v%d: %s" % [from_ver, step_err]
+	return ""
+
+
+## Applies one migration step in-place, advancing data["version"] by one.
+## Add a new match arm here whenever SAVE_VERSION increments.
+## Returns "" on success or a human-readable error string on failure.
+static func _migrate_step(data: Dictionary, from_ver: int) -> String:
+	match from_ver:
+		0:
+			# v0 saves (missing version field) share the same structure as v1.
+			# Stamp the version so later steps can rely on it being present.
+			push_warning("save_manager: migrating save from v0 to v1")
+			data["version"] = 1
+		_:
+			return "no migration path from v%d" % from_ver
 	return ""
 
 

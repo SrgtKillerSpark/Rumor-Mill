@@ -31,6 +31,9 @@ func run() -> void:
 		"test_prepare_load_version_too_new",
 		"test_prepare_load_valid_sets_pending",
 		"test_migrate_v0_stamps_version",
+		"test_prepare_load_migrates_v0",
+		"test_prepare_load_future_version_rejected",
+		"test_migration_backup_created",
 	]
 
 	for method_name in tests:
@@ -171,5 +174,62 @@ static func test_migrate_v0_stamps_version() -> bool:
 		return false
 	if data.get("version", -1) != SaveManager.SAVE_VERSION:
 		push_error("test_migrate_v0_stamps_version: version not stamped (got %s)" % str(data.get("version")))
+		return false
+	return true
+
+
+## prepare_load() succeeds on a v0 save file (no "version" key) and migrates to SAVE_VERSION.
+static func test_prepare_load_migrates_v0() -> bool:
+	var data: Dictionary = {
+		# Intentionally omit "version" to simulate a pre-versioning v0 save.
+		"scenario_id": _TEST_SCENARIO_ID,
+		"tick": 0,
+		"day":  1,
+	}
+	if not _write_test_save(data, 1):
+		push_error("test_prepare_load_migrates_v0: could not write test file")
+		return false
+	var err := SaveManager.prepare_load(_TEST_SCENARIO_ID, 1)
+	if err != "":
+		push_error("test_prepare_load_migrates_v0: expected no error, got: %s" % err)
+		return false
+	return true
+
+
+## prepare_load() rejects a save whose version is far above SAVE_VERSION.
+static func test_prepare_load_future_version_rejected() -> bool:
+	var data := _valid_save()
+	data["version"] = SaveManager.SAVE_VERSION + 999
+	if not _write_test_save(data, 2):
+		push_error("test_prepare_load_future_version_rejected: could not write test file")
+		return false
+	var err := SaveManager.prepare_load(_TEST_SCENARIO_ID, 2)
+	if err == "":
+		push_error("test_prepare_load_future_version_rejected: expected error string, got empty")
+		return false
+	return true
+
+
+## When a migration is needed, prepare_load() creates a .bak of the original file.
+static func test_migration_backup_created() -> bool:
+	var data: Dictionary = {
+		# No "version" key — triggers migration, which creates a backup.
+		"scenario_id": _TEST_SCENARIO_ID,
+		"tick": 0,
+		"day":  1,
+	}
+	if not _write_test_save(data, 1):
+		push_error("test_migration_backup_created: could not write test file")
+		return false
+	var path := SaveManager.save_path(_TEST_SCENARIO_ID, 1)
+	var bak_path := path + ".bak"
+	# Remove any stale .bak so we verify it is created fresh by prepare_load().
+	if FileAccess.file_exists(bak_path):
+		var cleanup := DirAccess.open("user://saves/")
+		if cleanup != null:
+			cleanup.remove(bak_path.get_file())
+	var _err := SaveManager.prepare_load(_TEST_SCENARIO_ID, 1)
+	if not FileAccess.file_exists(bak_path):
+		push_error("test_migration_backup_created: expected .bak at '%s' — not found" % bak_path)
 		return false
 	return true
