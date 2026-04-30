@@ -51,7 +51,7 @@ func _build_ui() -> void:
 	hbox.add_child(score_vbox)
 
 	_score_lbl = Label.new()
-	_score_lbl.add_theme_font_size_override("font_size", 13)
+	_score_lbl.add_theme_font_size_override("font_size", 14)
 	_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_score_lbl.text = "Edric Fenn  Rep: — / 100  Target: <30"
 	_score_lbl.tooltip_text = "Lord Edric Fenn's current reputation (0–100). Win when it drops below 30."
@@ -84,7 +84,7 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 13)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 30"
 	_days_lbl.tooltip_text = "Days left before the tax rolls are signed. The scenario fails on timeout."

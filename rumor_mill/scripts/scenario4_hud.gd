@@ -20,7 +20,7 @@ const C_MERCHANT := Color(0.35, 0.80, 0.45, 1.0)  # green — merchants helped
 const C_BISHOP   := Color(0.90, 0.35, 0.20, 1.0)  # red   — bishop pressured
 const C_CLERGY   := Color(0.70, 0.65, 0.90, 1.0)  # violet — clergy stood firm
 
-const BAR_WIDTH        := 120
+const BAR_WIDTH        := 160
 const BAR_HEIGHT       := 10
 const FACTION_BAR_W    := 60
 const FACTION_BAR_H    :=  7
@@ -81,7 +81,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario4Panel", 78, 14)
+	var hbox := _make_panel("Scenario4Panel", 96, 14)
 
 	# Title + defense badge.
 	var title_vbox := VBoxContainer.new()
@@ -118,7 +118,7 @@ func _build_ui() -> void:
 		hbox.add_child(vbox)
 
 		var lbl := Label.new()
-		lbl.add_theme_font_size_override("font_size", 12)
+		lbl.add_theme_font_size_override("font_size", 14)
 		lbl.add_theme_color_override("font_color", C_BODY)
 		lbl.text = "%s  Rep: 50 / 100  Target: %d+ | Fail: <%d" % [NPC_DISPLAY_NAMES.get(npc_id, npc_id), ScenarioConfig.S4_WIN_REP_MIN, ScenarioConfig.S4_FAIL_REP_BELOW]
 		lbl.tooltip_text = NPC_TOOLTIPS.get(npc_id, "Below %d = instant fail. Must be 48+ at deadline to win." % _fail_thresh)
@@ -191,7 +191,7 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 12)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 20"
 	_days_lbl.tooltip_text = "Days before the Inquisitor presents his findings to the Bishop. All three must be 48+ at deadline to win. Below %d at any time = instant fail." % ScenarioConfig.S4_FAIL_REP_BELOW
@@ -205,7 +205,7 @@ func _build_ui() -> void:
 	right_vbox.add_child(_result_lbl)
 
 	var legend_lbl := Label.new()
-	legend_lbl.add_theme_font_size_override("font_size", 12)
+	legend_lbl.add_theme_font_size_override("font_size", 11)
 	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
 	legend_lbl.text = "[safe] >= 48  [risk] %d-47  [fail] < %d" % [ScenarioConfig.S4_FAIL_REP_BELOW, ScenarioConfig.S4_FAIL_REP_BELOW]
 	right_vbox.add_child(legend_lbl)
@@ -233,6 +233,7 @@ func _build_ui() -> void:
 	_anon_tip_btn.add_theme_font_size_override("font_size", 12)
 	_anon_tip_btn.disabled = true
 	_anon_tip_btn.pressed.connect(_on_anon_tip_pressed)
+	_apply_hud_button_style(_anon_tip_btn)
 	right_vbox.add_child(_anon_tip_btn)
 
 	_anon_tip_lbl = Label.new()

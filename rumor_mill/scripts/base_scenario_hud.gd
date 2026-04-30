@@ -118,6 +118,34 @@ func _make_panel(panel_name: String, height: int, hbox_separation: int = 16) -> 
 	return hbox
 
 
+## Apply a consistent themed StyleBox to a HUD action button (normal/hover/pressed/disabled).
+## Call immediately after Button.new() in any scenario HUD _build_ui().
+func _apply_hud_button_style(btn: Button) -> void:
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.22, 0.16, 0.10, 0.90)
+	normal.border_color = Color(0.60, 0.48, 0.30, 0.80)
+	normal.set_border_width_all(1)
+	normal.set_corner_radius_all(3)
+	normal.content_margin_left   = 8
+	normal.content_margin_right  = 8
+	normal.content_margin_top    = 3
+	normal.content_margin_bottom = 3
+	btn.add_theme_stylebox_override("normal", normal)
+
+	var hover := normal.duplicate()
+	hover.bg_color = Color(0.30, 0.22, 0.13, 0.95)
+	btn.add_theme_stylebox_override("hover", hover)
+
+	var pressed := normal.duplicate()
+	pressed.bg_color = Color(0.18, 0.13, 0.08, 0.95)
+	btn.add_theme_stylebox_override("pressed", pressed)
+
+	var disabled := normal.duplicate()
+	disabled.bg_color    = Color(0.15, 0.12, 0.09, 0.60)
+	disabled.border_color = Color(0.40, 0.35, 0.25, 0.40)
+	btn.add_theme_stylebox_override("disabled", disabled)
+
+
 ## Build a progress bar (dark background + colored fill child) with rounded corners.
 ## Returns [bar_bg, bar_fill]. Caller adds bar_bg to the desired parent.
 func _make_progress_bar(bar_width: int, bar_height: int, bg_tooltip: String = "") -> Array:

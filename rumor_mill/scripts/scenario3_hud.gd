@@ -12,7 +12,7 @@ extends BaseScenarioHud
 ##
 ## Wire via setup(world, day_night) from main.gd.
 
-const BAR_WIDTH  := 140
+const BAR_WIDTH  := 160
 const BAR_HEIGHT := 12
 
 # ── Node refs ────────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ func _build_ui() -> void:
 	hbox.add_child(calder_vbox)
 
 	_calder_score_lbl = Label.new()
-	_calder_score_lbl.add_theme_font_size_override("font_size", 13)
+	_calder_score_lbl.add_theme_font_size_override("font_size", 14)
 	_calder_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_calder_score_lbl.text = "Calder Fenn  Rep: 50 / 100  Target: 75+"
 	_calder_score_lbl.tooltip_text = "Calder Fenn's reputation. Win condition: raise to 75 or higher."
@@ -85,7 +85,7 @@ func _build_ui() -> void:
 	hbox.add_child(tomas_vbox)
 
 	_tomas_score_lbl = Label.new()
-	_tomas_score_lbl.add_theme_font_size_override("font_size", 13)
+	_tomas_score_lbl.add_theme_font_size_override("font_size", 14)
 	_tomas_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_tomas_score_lbl.text = "Tomas Reeve  Rep: 50 / 100  Target: \u226435"
 	_tomas_score_lbl.tooltip_text = "Tomas Reeve's reputation. Win condition: drag it down to 35 or lower."
@@ -108,7 +108,7 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 12)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 25"
 	right_vbox.add_child(_days_lbl)
@@ -143,6 +143,7 @@ func _build_ui() -> void:
 	_disrupt_btn.add_theme_font_size_override("font_size", 12)
 	_disrupt_btn.disabled = true
 	_disrupt_btn.pressed.connect(_on_disrupt_pressed)
+	_apply_hud_button_style(_disrupt_btn)
 	right_vbox.add_child(_disrupt_btn)
 
 	# SPA-868: Scout rival button — spend 1 recon to discover next degradation target.
@@ -152,6 +153,7 @@ func _build_ui() -> void:
 	_scout_btn.add_theme_font_size_override("font_size", 12)
 	_scout_btn.disabled = true
 	_scout_btn.pressed.connect(_on_scout_pressed)
+	_apply_hud_button_style(_scout_btn)
 	right_vbox.add_child(_scout_btn)
 
 	_scout_lbl = Label.new()

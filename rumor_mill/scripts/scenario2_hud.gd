@@ -81,7 +81,7 @@ func _build_ui() -> void:
 	hbox.add_child(count_vbox)
 
 	_count_lbl = Label.new()
-	_count_lbl.add_theme_font_size_override("font_size", 13)
+	_count_lbl.add_theme_font_size_override("font_size", 14)
 	_count_lbl.add_theme_color_override("font_color", C_BODY)
 	_count_lbl.text = "Believers: 0 / 7+"
 	_count_lbl.tooltip_text = "Number of townspeople who believe the illness rumor about Alys Herbwife. Win when 7 or more believe it."
@@ -100,7 +100,7 @@ func _build_ui() -> void:
 
 	# SPA-805: Pip row — ● filled / ○ empty circles showing believer count at a glance.
 	_pip_lbl = Label.new()
-	_pip_lbl.add_theme_font_size_override("font_size", 13)
+	_pip_lbl.add_theme_font_size_override("font_size", 14)
 	_pip_lbl.add_theme_color_override("font_color", C_ILLNESS)
 	_pip_lbl.add_theme_constant_override("outline_size", 2)
 	_pip_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
@@ -146,7 +146,7 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 13)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 22"
 	_days_lbl.tooltip_text = "Days remaining before the autumn market closes. Fail if you run out of time."
@@ -201,6 +201,7 @@ func _build_ui() -> void:
 	_quarantine_btn.add_theme_font_size_override("font_size", 11)
 	_quarantine_btn.disabled = true
 	_quarantine_btn.pressed.connect(_on_quarantine_pressed)
+	_apply_hud_button_style(_quarantine_btn)
 	q_vbox.add_child(_quarantine_btn)
 
 	_quarantine_status_lbl = Label.new()
