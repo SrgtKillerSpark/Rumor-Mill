@@ -454,18 +454,26 @@ func _build_hint_button() -> void:
 	hover_style.set_corner_radius_all(3)
 	hover_style.set_content_margin_all(2)
 	_hint_btn.add_theme_stylebox_override("hover", hover_style)
+	var focus_style := StyleBoxFlat.new()
+	focus_style.bg_color = Color(0, 0, 0, 0)
+	focus_style.draw_center = false
+	focus_style.set_border_width_all(2)
+	focus_style.border_color = Color(1.00, 0.90, 0.40, 1.0)  # gold focus ring
+	focus_style.set_corner_radius_all(3)
+	focus_style.set_content_margin_all(2)
+	_hint_btn.add_theme_stylebox_override("focus", focus_style)
 	_hint_btn.pressed.connect(_on_hint_pressed)
 	key_hint_row.add_child(_hint_btn)
 
-	# Hint display label (below counter panel, hidden by default).
+	# Hint display label (anchored below CounterPanel, hidden by default).
 	_hint_label = Label.new()
 	_hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hint_label.anchor_left = 0.55
-	_hint_label.anchor_right = 0.98
-	_hint_label.anchor_top = 0.0
-	_hint_label.anchor_bottom = 0.0
-	_hint_label.offset_top = 80.0
-	_hint_label.offset_bottom = 160.0
+	_hint_label.anchor_left = 0.0
+	_hint_label.anchor_right = 1.0
+	_hint_label.anchor_top = 1.0
+	_hint_label.anchor_bottom = 1.0
+	_hint_label.offset_top = 4.0
+	_hint_label.offset_bottom = 84.0
 	_hint_label.add_theme_font_size_override("font_size", 12)
 	_hint_label.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65, 1.0))
 	_hint_label.add_theme_constant_override("outline_size", 2)
@@ -473,7 +481,7 @@ func _build_hint_button() -> void:
 	_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hint_label.modulate.a = 0.0
 	_hint_label.visible = false
-	add_child(_hint_label)
+	$CounterPanel.add_child(_hint_label)
 
 
 func _on_hint_pressed() -> void:
