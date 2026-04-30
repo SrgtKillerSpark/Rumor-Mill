@@ -282,6 +282,11 @@ func _build_main_panel() -> void:
 		btn_quit.pressed.connect(get_tree().quit)
 		btn_row.add_child(btn_quit)
 
+	# Bottom spacer — mirrors the top spacer for symmetrical vertical padding
+	var bottom_spacer := Control.new()
+	bottom_spacer.custom_minimum_size = Vector2(0, 16)
+	vbox.add_child(bottom_spacer)
+
 
 # ── Phase 2: Scenario Select panel ───────────────────────────────────────────
 
