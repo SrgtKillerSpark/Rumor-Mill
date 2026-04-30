@@ -348,6 +348,8 @@ func _add_rumor_card(content_vbox: VBoxContainer, rumor: Rumor, npc_names: Dicti
 		claim_str, subject_name, journal_status, believers, rejectors, change_marker]
 	header_btn.toggle_mode           = false
 	header_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_btn.clip_text             = true
+	header_btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	header_btn.add_theme_font_size_override("font_size", 12)
 	header_btn.add_theme_color_override("font_color",         C_KEY)
 	header_btn.add_theme_color_override("font_pressed_color", C_HEADING)
@@ -419,6 +421,7 @@ func _add_rumor_card(content_vbox: VBoxContainer, rumor: Rumor, npc_names: Dicti
 		rumor.shelf_life_ticks,
 		bolstered_tag
 	]
+	badge_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	badge_label.add_theme_font_size_override("font_size", 12)
 	badge_label.add_theme_color_override("font_color", status_color)
 	card_vbox.add_child(badge_label)

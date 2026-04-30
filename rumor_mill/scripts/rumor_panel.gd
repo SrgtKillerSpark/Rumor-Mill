@@ -205,6 +205,7 @@ func _build_dynamic_panels() -> void:
 	# Panel 2: Claim selection.
 	_p2_scroll = ScrollContainer.new()
 	_p2_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_p2_scroll.custom_minimum_size = Vector2(0, 120)
 	_p2_scroll.visible = false
 	_claim_list = VBoxContainer.new()
 	_claim_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -214,6 +215,7 @@ func _build_dynamic_panels() -> void:
 	# Panel 3: Seed target selection.
 	_p3_scroll = ScrollContainer.new()
 	_p3_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_p3_scroll.custom_minimum_size = Vector2(0, 120)
 	_p3_scroll.visible = false
 	_seed_list = VBoxContainer.new()
 	_seed_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -521,7 +523,9 @@ func _try_confirm_seed() -> void:
 func _make_nav_button(label_text: String) -> Button:
 	var btn := Button.new()
 	btn.text = label_text
-	btn.custom_minimum_size = Vector2(100, 32)
+	btn.custom_minimum_size      = Vector2(140, 32)
+	btn.clip_text                = true
+	btn.text_overrun_behavior    = TextServer.OVERRUN_TRIM_ELLIPSIS
 	var normal := StyleBoxFlat.new()
 	normal.bg_color     = C_BTN_NORMAL_BG
 	normal.border_color = C_BTN_BORDER
