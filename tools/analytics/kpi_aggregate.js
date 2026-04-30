@@ -360,9 +360,71 @@ function kpi10(sessions) {
   return result;
 }
 
+// ── KPI 11: Tutorial Step Abandonment ────────────────────────────────────────
+//
+// Groups tutorial_step_completed events by scenario_id and step_id.
+// Drop-off rate = (completions[step N-1] - completions[step N]) / completions[step N-1]
+
+function stepNumber(id) {
+  const m = String(id).match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+function kpi11(events) {
+  const byScen = {};
+  for (const ev of events) {
+    if (ev.type !== 'tutorial_step_completed') continue;
+    const scen = String(ev.scenario_id || 'unknown');
+    if (!byScen[scen]) byScen[scen] = {};
+    const step = String(ev.step_id);
+    byScen[scen][step] = (byScen[scen][step] || 0) + 1;
+  }
+
+  const result = {};
+  for (const [scen, stepCounts] of Object.entries(byScen)) {
+    const steps = Object.keys(stepCounts).sort((a, b) => stepNumber(a) - stepNumber(b));
+    const rows = [];
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      const count = stepCounts[step];
+      const prevCount = i > 0 ? stepCounts[steps[i - 1]] : count;
+      const dropOff = i > 0 && prevCount > 0 ? (prevCount - count) / prevCount * 100 : null;
+      rows.push({ step, count, dropOff });
+    }
+    result[scen] = rows;
+  }
+  return result;
+}
+
+// ── KPI 12: Settings-Touched Percentage ──────────────────────────────────────
+//
+// Counts scenario sessions containing at least one settings_changed event.
+// Also tallies how many times each setting_key was changed.
+
+function kpi12(sessions) {
+  let touchedSessions = 0;
+  const bySetting = {};
+  for (const s of sessions) {
+    let touched = false;
+    for (const ev of s.events) {
+      if (ev.type !== 'settings_changed') continue;
+      touched = true;
+      const key = String(ev.setting_key || 'unknown');
+      bySetting[key] = (bySetting[key] || 0) + 1;
+    }
+    if (touched) touchedSessions++;
+  }
+  return {
+    totalSessions: sessions.length,
+    touchedSessions,
+    pct: sessions.length > 0 ? touchedSessions / sessions.length * 100 : 0,
+    bySetting,
+  };
+}
+
 // ── Red Flags ─────────────────────────────────────────────────────────────────
 
-function redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, sessions) {
+function redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, k11r, sessions) {
   const flags = [];
 
   // KPI 1
@@ -441,6 +503,14 @@ function redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, sessions) {
       flags.push(`⚠️  **${scen}** avg ${v.avgShifts.toFixed(1)} rep-shifts/session < 1 (static)`);
   }
 
+  // KPI 11: tutorial step drop-off > 50%
+  for (const [scen, rows] of Object.entries(k11r)) {
+    for (const row of rows) {
+      if (row.dropOff != null && row.dropOff > 50)
+        flags.push(`🚨 **${scen} ${row.step}** tutorial drop-off ${row.dropOff.toFixed(0)}% > 50% (abandonment wall)`);
+    }
+  }
+
   // Rage-quit rate across all sessions (sessions < 60 s)
   const ended = sessions.filter(s => s.ended && s.duration_sec != null);
   if (ended.length) {
@@ -466,7 +536,9 @@ function buildDigest(events, sessions, filePaths) {
   const k8r  = kpi8(sessions);
   const k9r  = kpi9(sessions);
   const k10r = kpi10(sessions);
-  const flags = redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, sessions);
+  const k11r = kpi11(events);
+  const k12r = kpi12(sessions);
+  const flags = redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, k11r, sessions);
 
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
   const out = [];
@@ -622,15 +694,45 @@ function buildDigest(events, sessions, filePaths) {
     out.push(`| ${scen} | ${easy.pct}% | ${normal.pct}% | ${hard.pct}% | ${diffs._total} | ${status} |`);
   }
 
-  // KPI 11 — stub
+  // KPI 11
   out.push(`\n## KPI 11 — Tutorial Step Abandonment\n`);
-  out.push(`> **Stub** — awaiting \`tutorial_step_completed(step_id, scenario_id)\` events.`);
-  out.push(`> Tracked under [SPA-1140](/SPA/issues/SPA-1140) engineering addendum (Lead Engineer task).\n`);
+  out.push(`Flag: drop-off > 50% between consecutive steps\n`);
+  if (!Object.keys(k11r).length) {
+    out.push(`_No data — no \`tutorial_step_completed\` events in dataset._\n`);
+  } else {
+    out.push(`| Scenario | Step | Completions | Drop-off | Status |`);
+    out.push(`|----------|------|-------------|----------|--------|`);
+    for (const [scen, rows] of Object.entries(k11r).sort()) {
+      for (const row of rows) {
+        const dropStr = row.dropOff != null ? `${row.dropOff.toFixed(1)}%` : '—';
+        let status = '✅';
+        if (row.dropOff != null && row.dropOff > 50) status = '🚨 wall';
+        else if (row.dropOff != null && row.dropOff > 25) status = '⚠️ high';
+        else if (row.dropOff == null) status = '—';
+        out.push(`| ${scen} | ${row.step} | ${row.count} | ${dropStr} | ${status} |`);
+      }
+    }
+    out.push('');
+  }
 
-  // KPI 12 — stub
+  // KPI 12
   out.push(`\n## KPI 12 — Settings-Touched Percentage\n`);
-  out.push(`> **Stub** — awaiting \`settings_changed(setting_key, old_value, new_value)\` events.`);
-  out.push(`> Tracked under [SPA-1140](/SPA/issues/SPA-1140) engineering addendum (Lead Engineer task).\n`);
+  if (!k12r.totalSessions) {
+    out.push(`_No data — no sessions in dataset._\n`);
+  } else {
+    out.push(`Sessions touching settings: **${k12r.touchedSessions} / ${k12r.totalSessions}** (${k12r.pct.toFixed(1)}%)\n`);
+    if (Object.keys(k12r.bySetting).length) {
+      out.push(`| Setting Key | Changes |`);
+      out.push(`|-------------|---------|`);
+      const sorted = Object.entries(k12r.bySetting).sort((a, b) => b[1] - a[1]);
+      for (const [key, count] of sorted) {
+        out.push(`| ${key} | ${count} |`);
+      }
+      out.push('');
+    } else {
+      out.push(`_No \`settings_changed\` events in dataset._\n`);
+    }
+  }
 
   // Red Flags
   out.push(`---\n\n## 🚩 Red Flags\n`);
