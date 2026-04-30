@@ -24,6 +24,18 @@
     "steam_api_name": "ACH_SCENARIO_4_COMPLETE"
   },
   {
+    "id": "scenario_5_complete",
+    "name": "The People's Choice",
+    "description": "Complete Scenario 5: The Election.",
+    "steam_api_name": "ACH_SCENARIO_5_COMPLETE"
+  },
+  {
+    "id": "scenario_6_complete",
+    "name": "Debts Collected",
+    "description": "Complete Scenario 6: The Merchant's Debt.",
+    "steam_api_name": "ACH_SCENARIO_6_COMPLETE"
+  },
+  {
     "id": "master_victory",
     "name": "Seasoned Schemer",
     "description": "Win any scenario on Master difficulty.",
