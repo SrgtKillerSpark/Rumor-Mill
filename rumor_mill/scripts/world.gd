@@ -790,6 +790,14 @@ func _apply_active_scenario() -> void:
 		reputation_system.recalculate_all(npcs, 0)
 		return
 
+	# Startup assertion: validate all difficulty keys match PlayerStats.DIFFICULTIES.
+	for _entry in parsed:
+		var _dm: Dictionary = _entry.get("difficultyModifiers", {})
+		for _dk: String in _dm.keys():
+			assert(_dk in PlayerStats.DIFFICULTIES,
+				"scenarios.json: unknown difficulty key '%s' in scenario '%s' — expected one of %s" % [
+					_dk, _entry.get("scenarioId", "?"), str(PlayerStats.DIFFICULTIES)])
+
 	var scenario_data: Dictionary = {}
 	for entry in parsed:
 		if entry.get("scenarioId", "") == active_scenario_id:
@@ -884,9 +892,7 @@ func _apply_active_scenario() -> void:
 			scenario_manager.override_days_allowed(adjusted)
 
 	# 7b. Scenario-specific difficulty overrides from scenarios.json.
-	var _diff_key_map := {"apprentice": "easy", "master": "normal", "spymaster": "hard"}
-	var _scen_diff_key: String = _diff_key_map.get(GameState.selected_difficulty, "normal")
-	var _scen_diff_mods: Dictionary = scenario_data.get("difficultyModifiers", {}).get(_scen_diff_key, {})
+	var _scen_diff_mods: Dictionary = scenario_data.get("difficultyModifiers", {}).get(GameState.selected_difficulty, {})
 	if scenario_manager != null and active_scenario_id == "scenario_2" and _scen_diff_mods.has("winBelieversOverride"):
 		scenario_manager.s2_win_illness_min = int(_scen_diff_mods["winBelieversOverride"])
 
@@ -1036,6 +1042,17 @@ func _apply_active_scenario() -> void:
 	# 14. Mid-game event agent — data-driven branching events from scenarios.json.
 	mid_game_event_agent = MidGameEventAgent.new()
 	var mid_events: Array = scenario_data.get("midGameEvents", [])
+	# Apply per-difficulty event day-window overrides (SPA-1123).
+	if _scen_diff_mods.has("eventDayWindowOverrides"):
+		var _ew_overrides: Dictionary = _scen_diff_mods["eventDayWindowOverrides"]
+		for ev in mid_events:
+			var ev_id: String = ev.get("id", "")
+			if _ew_overrides.has(ev_id):
+				var ov: Dictionary = _ew_overrides[ev_id]
+				if ov.has("dayWindowStart"):
+					ev["dayWindowStart"] = int(ov["dayWindowStart"])
+				if ov.has("dayWindowEnd"):
+					ev["dayWindowEnd"] = int(ov["dayWindowEnd"])
 	mid_game_event_agent.load_events(mid_events)
 	mid_game_event_agent.rival_agent_ref = rival_agent
 	mid_game_event_agent.inquisitor_agent_ref = inquisitor_agent

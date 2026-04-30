@@ -461,17 +461,17 @@
       }
     ],
     "difficultyModifiers": {
-      "easy": {
+      "apprentice": {
         "daysAllowedOverride": 36,
         "credulityDelta": 0.1,
         "heatRateMultiplier": 0.75,
         "exposedHeatOverride": 95,
         "designNote": "More time, more gullible NPCs, and a higher heat ceiling give new players room to experiment with the rumor system."
       },
-      "normal": {
+      "master": {
         "designNote": "Base values as balanced. No overrides applied."
       },
-      "hard": {
+      "spymaster": {
         "daysAllowedOverride": 25,
         "credulityDelta": -0.1,
         "heatRateMultiplier": 1.3,
@@ -1044,16 +1044,16 @@
       }
     ],
     "difficultyModifiers": {
-      "easy": {
+      "apprentice": {
         "daysAllowedOverride": 29,
         "credulityDelta": 0.1,
         "winBelieversOverride": 5,
         "designNote": "More days, more credulous NPCs, and only 5 believers needed. Maren's rejection triggers a 2-day grace window — teaches the avoidance mechanic with a wider margin."
       },
-      "normal": {
+      "master": {
         "designNote": "Base values as balanced. No overrides applied."
       },
-      "hard": {
+      "spymaster": {
         "daysAllowedOverride": 18,
         "credulityDelta": -0.1,
         "winBelieversOverride": 10,
@@ -1667,7 +1667,7 @@
       }
     ],
     "difficultyModifiers": {
-      "easy": {
+      "apprentice": {
         "daysAllowedOverride": 32,
         "credulityDelta": 0.1,
         "rivalIntensityDelta": -1,
@@ -1677,10 +1677,10 @@
         "failCalderBelow": 30,
         "designNote": "Wider thresholds, later/weaker rival, more days. The two-front war is still present but the margins are forgiving."
       },
-      "normal": {
+      "master": {
         "designNote": "Base values as balanced. No overrides applied."
       },
-      "hard": {
+      "spymaster": {
         "daysAllowedOverride": 21,
         "credulityDelta": -0.1,
         "rivalIntensityDelta": 1,
@@ -2251,7 +2251,7 @@
       }
     ],
     "difficultyModifiers": {
-      "easy": {
+      "apprentice": {
         "daysAllowedOverride": 24,
         "credulityDelta": 0.1,
         "inquisitorCooldownDelta": 2,
@@ -2265,10 +2265,10 @@
         },
         "designNote": "Higher starting reps, lower thresholds, slower/weaker inquisitor, more days. Defensive play is still required but the buffer is much wider."
       },
-      "normal": {
+      "master": {
         "designNote": "Base values as balanced. No overrides applied."
       },
-      "hard": {
+      "spymaster": {
         "daysAllowedOverride": 15,
         "credulityDelta": -0.1,
         "inquisitorCooldownDelta": -3,
@@ -2280,7 +2280,13 @@
           "vera_midwife": 60,
           "finn_monk": 63
         },
-        "designNote": "Lower starting reps, higher thresholds, faster/stronger inquisitor, fewer days. One missed defensive cycle can cascade into an instant fail. Requires triage."
+        "eventDayWindowOverrides": {
+          "s4_breaking_point": {
+            "dayWindowStart": 12,
+            "dayWindowEnd": 14
+          }
+        },
+        "designNote": "Lower starting reps, higher thresholds, faster/stronger inquisitor, fewer days. Breaking Point shifted to days 12-14 so it remains reachable within the 15-day hard limit. One missed defensive cycle can cascade into an instant fail. Requires triage."
       }
     },
     "suggestion_overrides": {
@@ -2898,7 +2904,7 @@
       }
     ],
     "difficultyModifiers": {
-      "easy": {
+      "apprentice": {
         "daysAllowedOverride": 30,
         "credulityDelta": 0.1,
         "heatRateMultiplier": 0.75,
@@ -2908,10 +2914,10 @@
         "endorsementBonusOverride": 10,
         "designNote": "More days, easier thresholds, bigger endorsement bonus, slower heat. The three-front challenge is preserved but the margins allow recovery from mistakes."
       },
-      "normal": {
+      "master": {
         "designNote": "Base values as balanced. No overrides applied."
       },
-      "hard": {
+      "spymaster": {
         "daysAllowedOverride": 19,
         "credulityDelta": -0.1,
         "heatRateMultiplier": 1.3,
@@ -3533,7 +3539,7 @@
       }
     ],
     "difficultyModifiers": {
-      "easy": {
+      "apprentice": {
         "daysAllowedOverride": 27,
         "credulityDelta": 0.1,
         "heatRateMultiplier": 0.75,
@@ -3544,10 +3550,10 @@
         "guildDefenseCooldownOverride": 5,
         "designNote": "Higher heat ceiling, easier thresholds, slower guild defense. The stealth challenge is present but forgiving. More time to build Marta's reputation before Aldric's counterstrike."
       },
-      "normal": {
+      "master": {
         "designNote": "Base values as balanced. No overrides applied."
       },
-      "hard": {
+      "spymaster": {
         "daysAllowedOverride": 16,
         "credulityDelta": -0.1,
         "heatRateMultiplier": 1.3,
@@ -3574,7 +3580,13 @@
             "loyalty": 0.75
           }
         ],
-        "designNote": "Aldric starts stronger and better defended. Marta starts weaker. Tighter heat ceiling (50), faster guild defense (every 2 days), and 18-day deadline. Requires near-perfect routing through non-merchant channels and constant Marta-boosting."
+        "eventDayWindowOverrides": {
+          "s6_the_guild_vote": {
+            "dayWindowStart": 13,
+            "dayWindowEnd": 15
+          }
+        },
+        "designNote": "Aldric starts stronger and better defended. Marta starts weaker. Tighter heat ceiling (50), faster guild defense (every 2 days), and 16-day deadline. Guild Vote shifted to days 13-15 so it remains reachable. Requires near-perfect routing through non-merchant channels and constant Marta-boosting."
       }
     },
     "suggestion_overrides": {
