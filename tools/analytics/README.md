@@ -56,25 +56,39 @@ Markdown digest printed to stdout with sections:
 
 ## Smoke fixture
 
-Two synthetic player files live under `fixtures/`:
+Synthetic player files live under `fixtures/`:
 
 | File | Sessions | Notes |
 |------|----------|-------|
 | `player_a.ndjson` | 4 | S1 win, S2 win, S3 fail+win (retry) |
 | `player_b.ndjson` | 4 | S1 easy win, S1 normal fail+win, S4 hard fail |
+| `player_c.ndjson` | 1 | S1 win with tutorial + settings events (KPI 11/12) |
+| `player_d.ndjson` | 1 | S1 early fail |
+| `watchlist_smoke.ndjson` | 4 | **Watchlist fixture** — S2 win, S2 Maren-fail, S3 win, S3 timeout-fail (day-17) |
 
-Run the smoke test:
+Run the full smoke test:
 
 ```sh
 node tools/analytics/kpi_aggregate.js tools/analytics/fixtures/*.ndjson
 ```
 
-Expected output includes:
+Run the watchlist-specific smoke test (SPA-1453):
+
+```sh
+node tools/analytics/kpi_aggregate.js tools/analytics/fixtures/watchlist_smoke.ndjson
+```
+
+Expected output from the watchlist smoke fixture:
+- **Maren-fail ratio 100%** (1/1 S2 failures caused by Maren rejection) → `🚨 reduce edge weights` on row 2-A
+- **Calder day-15 rep reconstruction**: med 65, 100% of S3 wins > 65 → `🚨 extend rival cooldown` on row 3-A
+- **S3 mid-game quit 100%** (1/1 S3 failures at day 17, in range 15–19) → `🚨 mid-game disengagement` on row 3-B
+- **Per-NPC REJECT table** showing Sister Maren at 100% fail correlation
+
+Expected output from the full fixture set:
 - S1 Normal completion 66.7% (healthy)
-- S4 eavesdrop/observe success 0.0% (red flag — Hard scenario has no observe
-  successes in the fixture, exercising the < 30% threshold)
-- S4 funnel REJECT 100% red flag (all NPCs rejected the rumor)
-- KPI 11 & 12 stub messages
+- S4 eavesdrop/observe success 0.0% (red flag — Hard scenario exercises the < 30% threshold)
+- S4 funnel REJECT 100% red flag
+- KPI 11 & 12 data from player_c / player_d
 
 > Quit-wall flags for single-failure scenarios in the fixture are expected —
 > with only one failed session a single day always concentrates 100%.  With

@@ -422,6 +422,107 @@ function kpi12(sessions) {
   };
 }
 
+// ── Watchlist: Maren-fail ratio (2-A / 2-B) ──────────────────────────────────
+//
+// A "Maren-fail" is an S2 FAILED session that contains at least one
+// npc_state_changed event where npc_name matches /maren/i with new_state=REJECT.
+// The ratio measures how often Sister Maren's counter-intelligence causes S2 losses.
+
+function wlMarenFail(sessions) {
+  const s2Failed = sessions.filter(
+    s => /^s2$/i.test(String(s.scenario_id)) && s.outcome === 'FAILED'
+  );
+  const marenFails = s2Failed.filter(s =>
+    s.events.some(
+      ev => ev.type === 'npc_state_changed' &&
+            /maren/i.test(ev.npc_name) &&
+            ev.new_state === 'REJECT'
+    )
+  );
+  return {
+    total: s2Failed.length,
+    marenFails: marenFails.length,
+    ratio: s2Failed.length ? marenFails.length / s2Failed.length * 100 : null,
+  };
+}
+
+// ── Watchlist: Calder day-15 reputation reconstruction (3-A) ─────────────────
+//
+// Accumulates reputation_delta events on npc_id matching /calder/i for days ≤ 15,
+// anchored to the first observed from_score in each S3 WON session.
+// LOSSY: reputation_delta only fires when |delta| ≥ 3; small nudges are invisible.
+
+function wlCalderDay15(sessions) {
+  const s3Won = sessions.filter(
+    s => /^s3$/i.test(String(s.scenario_id)) && s.outcome === 'WON'
+  );
+  const reps = [];
+  for (const s of s3Won) {
+    const calderDeltas = s.events
+      .filter(ev => ev.type === 'reputation_delta' && /calder/i.test(String(ev.npc_id || '')))
+      .sort((a, b) => (a.day || 0) - (b.day || 0));
+    if (!calderDeltas.length) continue;
+    if (calderDeltas[0].from_score == null) continue;
+    let rep = calderDeltas[0].from_score;
+    for (const ev of calderDeltas) {
+      if ((ev.day || 0) <= 15) rep += (ev.delta || 0);
+    }
+    reps.push(rep);
+  }
+  return {
+    wonSessions: s3Won.length,
+    samples: reps.length,
+    above65: reps.filter(r => r > 65).length,
+    med: reps.length ? median(reps) : null,
+  };
+}
+
+// ── Watchlist: S3 mid-game disengagement — day 15–19 quits (3-B) ─────────────
+
+function wlS3MidQuit(sessions) {
+  const s3Failed = sessions.filter(
+    s => /^s3$/i.test(String(s.scenario_id)) && s.outcome === 'FAILED'
+  );
+  const midQuit = s3Failed.filter(
+    s => s.day_reached != null && s.day_reached >= 15 && s.day_reached <= 19
+  );
+  return {
+    total: s3Failed.length,
+    midQuit: midQuit.length,
+    ratio: s3Failed.length ? midQuit.length / s3Failed.length * 100 : null,
+  };
+}
+
+// ── Watchlist: per-NPC REJECT → fail correlation ──────────────────────────────
+//
+// For each NPC, the fraction of ended sessions where they rejected a rumor AND
+// the session was FAILED.  High correlation = that NPC's rejection predicts loss.
+
+function wlNpcRejectFail(sessions) {
+  const byNpc = {};
+  for (const s of sessions) {
+    if (!s.ended) continue;
+    const rejectingNpcs = new Set(
+      s.events
+        .filter(ev => ev.type === 'npc_state_changed' && ev.new_state === 'REJECT')
+        .map(ev => ev.npc_name)
+    );
+    for (const npc of rejectingNpcs) {
+      if (!byNpc[npc]) byNpc[npc] = { reject: 0, rejectAndFail: 0 };
+      byNpc[npc].reject++;
+      if (s.outcome === 'FAILED') byNpc[npc].rejectAndFail++;
+    }
+  }
+  return Object.entries(byNpc)
+    .map(([npc, v]) => ({
+      npc,
+      rejectSessions: v.reject,
+      failedSessions: v.rejectAndFail,
+      correlation: v.reject ? v.rejectAndFail / v.reject * 100 : 0,
+    }))
+    .sort((a, b) => b.correlation - a.correlation || b.rejectSessions - a.rejectSessions);
+}
+
 // ── Red Flags ─────────────────────────────────────────────────────────────────
 
 function redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, k11r, sessions) {
@@ -539,6 +640,10 @@ function buildDigest(events, sessions, filePaths) {
   const k11r = kpi11(events);
   const k12r = kpi12(sessions);
   const flags = redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, k11r, sessions);
+  const wlMaren  = wlMarenFail(sessions);
+  const wlCalder = wlCalderDay15(sessions);
+  const wlS3Quit = wlS3MidQuit(sessions);
+  const wlNpc    = wlNpcRejectFail(sessions);
 
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
   const out = [];
@@ -740,6 +845,96 @@ function buildDigest(events, sessions, filePaths) {
     out.push(`_No red flags. All measured metrics within healthy thresholds._\n`);
   } else {
     for (const f of flags) out.push(`- ${f}`);
+    out.push('');
+  }
+
+  // ── Phase 1 Balance Watchlist ───────────────────────────────────────────────
+  out.push(`---\n\n## Phase 1 Balance Watchlist\n`);
+  out.push(`_Cross-reference: [phase1-balance-watchlist.md](../../docs/phase1-balance-watchlist.md)_\n`);
+
+  out.push(`### Scenario 2 — Sister Maren Counter-Intelligence\n`);
+  out.push(`| Row | Metric | Value | Threshold | Status |`);
+  out.push(`|-----|--------|-------|-----------|--------|`);
+  if (wlMaren.total === 0) {
+    out.push(`| 2-A | Maren-fail ratio | — (no S2 failures) | >60% → reduce edge weights | — |`);
+    out.push(`| 2-B | Maren ineffective | — (no S2 failures) | <10% → raise edge weights | — |`);
+  } else {
+    const ratio2 = wlMaren.ratio.toFixed(1);
+    const s2a = wlMaren.ratio > 60 ? '🚨 reduce edge weights' :
+                wlMaren.ratio < 10 ? '⚠️ check 2-B' : '✅ calibrated';
+    const s2b = wlMaren.ratio < 10 ? '🚨 raise edge weights' : '✅';
+    out.push(`| 2-A | Maren-fail ratio | ${ratio2}% (${wlMaren.marenFails}/${wlMaren.total} S2 fails) | >60% → reduce edge weights | ${s2a} |`);
+    out.push(`| 2-B | Maren ineffective | ${ratio2}% | <10% → raise edge weights | ${s2b} |`);
+  }
+  // 2-C and 2-D reference other KPIs
+  const s2cWall = (() => {
+    const hist = k2r['S2'] || k2r['s2'] || null;
+    if (!hist) return '— (no S2 failures)';
+    const total = Object.values(hist).reduce((a, b) => a + b, 0);
+    const wall  = Object.entries(hist).find(([, n]) => total && n / total > 0.40);
+    return wall ? `🚨 day-${wall[0]} wall (${(wall[1]/total*100).toFixed(0)}%)` : '✅ no wall';
+  })();
+  const s2dGap = (() => {
+    const v = k4r['S2'] || k4r['s2'] || null;
+    if (!v) return '— (no data)';
+    let status = '✅ healthy';
+    if (v.med > 4) status = '⚠️ too slow';
+    else if (v.med === 0) status = '⚠️ instant';
+    return `median ${v.med.toFixed(1)} d (n=${v.count}) — ${status}`;
+  })();
+  out.push(`| 2-C | S2 quit-day wall | ${s2cWall} | single day >40% of fails | — |`);
+  out.push(`| 2-D | S2 seed→believe gap | ${s2dGap} | 1–3 d healthy | — |`);
+
+  out.push(`\n### Scenario 3 — Late-Phase Rival Pacing\n`);
+  out.push(`| Row | Metric | Value | Threshold | Status |`);
+  out.push(`|-----|--------|-------|-----------|--------|`);
+  // 3-A
+  if (wlCalder.samples === 0) {
+    out.push(`| 3-A | Calder day-15 rep (S3 wins) | — (no npc_calder deltas) | ≥90% of wins >65 → nerf cooldown | — |`);
+  } else {
+    const above65pct = (wlCalder.above65 / wlCalder.samples * 100).toFixed(0);
+    const s3a = wlCalder.above65 / wlCalder.samples >= 0.90 ? '🚨 extend rival cooldown' : '✅';
+    out.push(`| 3-A | Calder day-15 rep (S3 wins) | med ${wlCalder.med != null ? wlCalder.med.toFixed(0) : 'N/A'}, ${above65pct}% >65 (n=${wlCalder.samples}, lossy) | ≥90% of wins >65 → nerf cooldown | ${s3a} |`);
+  }
+  // 3-B
+  if (wlS3Quit.total === 0) {
+    out.push(`| 3-B | S3 mid-game quit (d15–19) | — (no S3 failures) | >50% → disengagement | — |`);
+  } else {
+    const ratio3b = wlS3Quit.ratio != null ? wlS3Quit.ratio.toFixed(1) + '%' : 'N/A';
+    const s3b = wlS3Quit.ratio != null && wlS3Quit.ratio > 50 ? '🚨 mid-game disengagement' : '✅';
+    out.push(`| 3-B | S3 mid-game quit (d15–19) | ${ratio3b} (${wlS3Quit.midQuit}/${wlS3Quit.total} S3 fails) | >50% → disengagement | ${s3b} |`);
+  }
+  // 3-C references KPI 8
+  const s3cShifts = (() => {
+    const v = k8r['S3'] || k8r['s3'] || null;
+    if (!v) return '— (no data)';
+    let status = '✅ healthy';
+    if (v.avgShifts > 10) status = '⚠️ chaotic';
+    else if (v.avgShifts < 1) status = '⚠️ static';
+    return `avg ${v.avgShifts.toFixed(1)} shifts/session — ${status}`;
+  })();
+  out.push(`| 3-C | S3 rep-delta frequency | ${s3cShifts} | 2–5 shifts/session healthy | — |`);
+  out.push(`| 3-D | Spymaster completion (S3) | — | <5% after 500+ attempts → whisper floor | — |`);
+
+  out.push(`\n### Cross-Scenario\n`);
+  out.push(`| Row | Metric | Value | Threshold | Status |`);
+  out.push(`|-----|--------|-------|-----------|--------|`);
+  out.push(`| X-A | Spymaster completion (any) | — | <5% after 500+ attempts → floor | — |`);
+
+  // per-NPC REJECT → fail correlation
+  out.push(`\n### Per-NPC REJECT → Fail Correlation\n`);
+  out.push(`_NPCs that, when they reject a rumor, correlate strongly with session failure. Informs rows 2-A, X-A._\n`);
+  if (!wlNpc.length) {
+    out.push(`_No REJECT events in dataset._\n`);
+  } else {
+    out.push(`| NPC | Sessions w/ REJECT | Also FAILED | Correlation | Note |`);
+    out.push(`|-----|--------------------|-------------|-------------|------|`);
+    for (const v of wlNpc) {
+      const corr = v.correlation.toFixed(0) + '%';
+      const note = v.correlation >= 80 ? '⚠️ strong predictor' :
+                   v.correlation >= 50 ? '⚠️ moderate' : '—';
+      out.push(`| ${v.npc} | ${v.rejectSessions} | ${v.failedSessions} | ${corr} | ${note} |`);
+    }
     out.push('');
   }
 
