@@ -9,6 +9,19 @@
 ##
 ## Call log_event("type", { key: value, ... }) for any notable player action.
 ## All writes are silent no-ops when SettingsManager.analytics_enabled is false.
+##
+## Event surface table:
+##   scenario_selected        — session start; scenario_id, difficulty
+##   rumor_seeded             — rumor planted; subject_name, claim_id, seed_target, day, scenario_id
+##   npc_state_changed        — NPC slot transition; npc_name, rumor_id, new_state, day, scenario_id
+##   reputation_delta         — rep shift ≥ 3 pts; npc_id, from_score, to_score, delta, day, scenario_id
+##   reputation_snapshot      — daily win-NPC snapshot (SPA-1417); npc_id, score, day, scenario_id
+##   evidence_interaction     — observe/eavesdrop; action_type, success, day, scenario_id
+##   tutorial_step_completed  — tutorial progress (SPA-1241); step_id, scenario_id
+##   settings_changed         — settings change (SPA-1241); setting_key, old_value, new_value
+##   scenario_fail_trigger    — explicit fail cause (SPA-1454); scenario_id, day, fail_cause,
+##                              trigger_npc_id, trigger_rumor_id
+##   scenario_ended           — session end; scenario_id, difficulty, outcome, day_reached, duration_sec
 
 extends RefCounted
 class_name AnalyticsLogger
@@ -124,6 +137,20 @@ func log_settings_changed(setting_key: String, old_value: String, new_value: Str
 		"setting_key": setting_key,
 		"old_value":   old_value,
 		"new_value":   new_value,
+	})
+
+
+## Log the explicit cause of a scenario failure (SPA-1454).
+## fail_cause: "npc_reject" | "exposed" | "timeout" | "reputation_collapse"
+## trigger_npc_id: ID of the causal NPC, or "" if none.
+## trigger_rumor_id: ID of the triggering rumor, or "" if not applicable.
+func log_scenario_fail_trigger(scenario_id: String, day: int, fail_cause: String, trigger_npc_id: String, trigger_rumor_id: String) -> void:
+	log_event("scenario_fail_trigger", {
+		"scenario_id":      scenario_id,
+		"day":              day,
+		"fail_cause":       fail_cause,
+		"trigger_npc_id":   trigger_npc_id,
+		"trigger_rumor_id": trigger_rumor_id,
 	})
 
 

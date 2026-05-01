@@ -67,6 +67,16 @@ func run() -> void:
 		# ── SPA-1417: reputation_snapshot via new_day handler ──
 		"test_new_day_stores_day_arg_in_queue",
 		"test_new_day_queue_entry_method_name",
+
+		# ── SPA-1454: scenario_fail_trigger handler ──
+		"test_scenario_fail_trigger_enqueues_when_logger_null",
+		"test_scenario_fail_trigger_stores_method_name",
+		"test_scenario_fail_trigger_stores_scenario_id",
+		"test_scenario_fail_trigger_stores_fail_cause_npc_reject",
+		"test_scenario_fail_trigger_stores_trigger_npc_id",
+		"test_scenario_fail_trigger_stores_trigger_rumor_id",
+		"test_scenario_fail_trigger_stores_fail_cause_timeout",
+		"test_scenario_fail_trigger_stores_fail_cause_reputation_collapse",
 	]
 
 	for method_name in tests:
@@ -292,3 +302,58 @@ func test_new_day_queue_entry_method_name() -> bool:
 	var m := _make_mgr()
 	m._on_analytics_new_day(7)
 	return m._event_queue[0]["method"] == "_on_analytics_new_day"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SPA-1454: scenario_fail_trigger handler (Maren-fail / npc_reject path)
+# ══════════════════════════════════════════════════════════════════════════════
+
+func test_scenario_fail_trigger_enqueues_when_logger_null() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_scenario_fail_trigger(2, "npc_reject", "npc_maren_nun", "")
+	return m._event_queue.size() == 1
+
+
+func test_scenario_fail_trigger_stores_method_name() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_scenario_fail_trigger(2, "npc_reject", "npc_maren_nun", "")
+	return m._event_queue[0]["method"] == "_on_analytics_scenario_fail_trigger"
+
+
+func test_scenario_fail_trigger_stores_scenario_id() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_scenario_fail_trigger(2, "npc_reject", "npc_maren_nun", "")
+	return m._event_queue[0]["args"][0] == 2
+
+
+func test_scenario_fail_trigger_stores_fail_cause_npc_reject() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_scenario_fail_trigger(2, "npc_reject", "npc_maren_nun", "")
+	return m._event_queue[0]["args"][1] == "npc_reject"
+
+
+func test_scenario_fail_trigger_stores_trigger_npc_id() -> bool:
+	# Maren's NPC ID must be propagated so fail-ratio queries can filter by NPC.
+	var m := _make_mgr()
+	m._on_analytics_scenario_fail_trigger(2, "npc_reject", "npc_maren_nun", "")
+	return m._event_queue[0]["args"][2] == "npc_maren_nun"
+
+
+func test_scenario_fail_trigger_stores_trigger_rumor_id() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_scenario_fail_trigger(2, "npc_reject", "npc_maren_nun", "rumor_042")
+	return m._event_queue[0]["args"][3] == "rumor_042"
+
+
+func test_scenario_fail_trigger_stores_fail_cause_timeout() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_scenario_fail_trigger(3, "timeout", "", "")
+	return m._event_queue[0]["args"][1] == "timeout" \
+		and m._event_queue[0]["args"][2] == ""
+
+
+func test_scenario_fail_trigger_stores_fail_cause_reputation_collapse() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_scenario_fail_trigger(5, "reputation_collapse", "npc_aldric_vane", "")
+	return m._event_queue[0]["args"][1] == "reputation_collapse" \
+		and m._event_queue[0]["args"][2] == "npc_aldric_vane"

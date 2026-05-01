@@ -396,6 +396,12 @@ enum ScenarioState { ACTIVE, WON, FAILED }
 ## scenario_id: 1–6.  state: WON or FAILED.
 signal scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioState)
 
+## SPA-1454: Emitted just before scenario_resolved when outcome is FAILED.
+## fail_cause: "npc_reject" | "exposed" | "timeout" | "reputation_collapse"
+## trigger_npc_id: ID of the causal NPC, or "" if none.
+## trigger_rumor_id: ID of the triggering rumor, or "" if not applicable.
+signal scenario_fail_trigger(scenario_id: int, fail_cause: String, trigger_npc_id: String, trigger_rumor_id: String)
+
 ## Emitted once when the scenario crosses a deadline threshold (0.75 or 0.90).
 ## threshold: 0.75 or 0.90.  days_remaining: int.
 signal deadline_warning(threshold: float, days_remaining: int)
@@ -496,6 +502,7 @@ func on_player_exposed() -> void:
 	if scenario_1_state != ScenarioState.ACTIVE:
 		return
 	scenario_1_state = ScenarioState.FAILED
+	scenario_fail_trigger.emit(1, "exposed", "", "")
 	scenario_resolved.emit(1, ScenarioState.FAILED)
 
 
@@ -518,12 +525,14 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 		for npc_id in _intel_store.heat:
 			if _intel_store.heat[npc_id] >= S1_EXPOSED_HEAT:
 				scenario_1_state = ScenarioState.FAILED
+				scenario_fail_trigger.emit(1, "exposed", npc_id, "")
 				scenario_resolved.emit(1, ScenarioState.FAILED)
 				return
 	# Timeout fail: day limit exceeded (> gives the player the full last day; get_time_fraction is clamped at 1.0).
 	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		scenario_1_state = ScenarioState.FAILED
+		scenario_fail_trigger.emit(1, "timeout", "", "")
 		scenario_resolved.emit(1, ScenarioState.FAILED)
 
 
@@ -545,12 +554,14 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 			s2_maren_grace_started.emit(ScenarioConfig.S2_MAREN_GRACE_DAYS)
 		elif current_tick >= _s2_maren_first_reject_tick + ticks_per_day * ScenarioConfig.S2_MAREN_GRACE_DAYS:
 			scenario_2_state = ScenarioState.FAILED
+			scenario_fail_trigger.emit(2, "npc_reject", MAREN_NUN_ID, "")
 			scenario_resolved.emit(2, ScenarioState.FAILED)
 			return
 	# Timeout fail: day limit exceeded (> gives the player the full last day; get_time_fraction is clamped at 1.0).
 	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		scenario_2_state = ScenarioState.FAILED
+		scenario_fail_trigger.emit(2, "timeout", "", "")
 		scenario_resolved.emit(2, ScenarioState.FAILED)
 
 
@@ -563,6 +574,7 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		scenario_3_state = ScenarioState.FAILED
+		scenario_fail_trigger.emit(3, "timeout", "", "")
 		scenario_resolved.emit(3, ScenarioState.FAILED)
 		return
 
@@ -585,6 +597,7 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 
 	if calder.score < S3_FAIL_CALDER_BELOW:
 		scenario_3_state = ScenarioState.FAILED
+		scenario_fail_trigger.emit(3, "reputation_collapse", CALDER_FENN_ID, "")
 		scenario_resolved.emit(3, ScenarioState.FAILED)
 
 
@@ -624,6 +637,7 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 			continue
 		if snap.score < S4_FAIL_REP_BELOW:
 			scenario_4_state = ScenarioState.FAILED
+			scenario_fail_trigger.emit(4, "reputation_collapse", npc_id, "")
 			scenario_resolved.emit(4, ScenarioState.FAILED)
 			return
 	# Deadline reached: resolve win or fail (> gives the player the full last day; get_time_fraction is clamped at 1.0).
@@ -640,6 +654,7 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 			scenario_resolved.emit(4, ScenarioState.WON)
 		else:
 			scenario_4_state = ScenarioState.FAILED
+			scenario_fail_trigger.emit(4, "timeout", "", "")
 			scenario_resolved.emit(4, ScenarioState.FAILED)
 
 
@@ -690,6 +705,7 @@ func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 	# prevent the scenario from ever resolving.
 	if current_day > _days_allowed:
 		scenario_5_state = ScenarioState.FAILED
+		scenario_fail_trigger.emit(5, "timeout", "", "")
 		scenario_resolved.emit(5, ScenarioState.FAILED)
 		return
 
@@ -732,6 +748,7 @@ func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 	# FAIL: Aldric drops below 30 (instant fail — campaign collapses).
 	if aldric.score < S5_FAIL_ALDRIC_BELOW:
 		scenario_5_state = ScenarioState.FAILED
+		scenario_fail_trigger.emit(5, "reputation_collapse", ALDRIC_VANE_ID, "")
 		scenario_resolved.emit(5, ScenarioState.FAILED)
 
 
@@ -766,6 +783,7 @@ func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 	var current_day: int = current_tick / ticks_per_day + 1
 	if current_day > _days_allowed:
 		scenario_6_state = ScenarioState.FAILED
+		scenario_fail_trigger.emit(6, "timeout", "", "")
 		scenario_resolved.emit(6, ScenarioState.FAILED)
 		return
 
@@ -776,6 +794,7 @@ func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 		for npc_id in _intel_store.heat:
 			if _intel_store.heat[npc_id] >= _s6_ceiling:
 				scenario_6_state = ScenarioState.FAILED
+				scenario_fail_trigger.emit(6, "exposed", npc_id, "")
 				scenario_resolved.emit(6, ScenarioState.FAILED)
 				return
 
@@ -793,6 +812,7 @@ func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 	# FAIL: Marta drops below 30 (instant fail — she's been silenced).
 	if marta.score < S6_FAIL_MARTA_BELOW:
 		scenario_6_state = ScenarioState.FAILED
+		scenario_fail_trigger.emit(6, "reputation_collapse", MARTA_COIN_ID, "")
 		scenario_resolved.emit(6, ScenarioState.FAILED)
 
 

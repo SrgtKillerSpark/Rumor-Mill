@@ -9,6 +9,10 @@
 ##   • Bounded pre-setup queue (max QUEUE_CAP entries) buffers events that arrive
 ##     before setup() is called and replays them once the logger is ready.
 ##
+## New in SPA-1454:
+##   • scenario_fail_trigger wired from ScenarioManager — emits once per FAILED
+##     resolution with fail_cause and trigger_npc_id for direct balance analysis.
+##
 ## Usage (from main.gd):
 ##   _analytics_manager = AnalyticsManager.new()
 ##   _analytics_manager.setup(scenario_id, world, day_night, rumor_panel, recon_ctrl)
@@ -82,6 +86,8 @@ func setup(
 	var sm: ScenarioManager = world.scenario_manager
 	if sm != null:
 		sm.scenario_resolved.connect(_on_analytics_scenario_resolved)
+		# SPA-1454: Log explicit fail cause just before scenario_resolved fires.
+		sm.scenario_fail_trigger.connect(_on_analytics_scenario_fail_trigger)
 	else:
 		push_warning("AnalyticsManager: world.scenario_manager is null — scenario_resolved events will not be logged")
 
@@ -181,6 +187,22 @@ func _on_analytics_settings_changed(setting_key: String, old_value: String, new_
 		_enqueue("_on_analytics_settings_changed", [setting_key, old_value, new_value])
 		return
 	_analytics_logger.log_settings_changed(setting_key, old_value, new_value)
+
+
+## SPA-1454: Log explicit fail cause. Fired by ScenarioManager just before
+## scenario_resolved when outcome=FAILED, so the event always precedes scenario_ended.
+func _on_analytics_scenario_fail_trigger(
+		scenario_id: int,
+		fail_cause: String,
+		trigger_npc_id: String,
+		trigger_rumor_id: String
+) -> void:
+	if _analytics_logger == null:
+		_enqueue("_on_analytics_scenario_fail_trigger", [scenario_id, fail_cause, trigger_npc_id, trigger_rumor_id])
+		return
+	var day: int = _day_night.current_day if _day_night != null and "current_day" in _day_night else 0
+	_analytics_logger.log_scenario_fail_trigger(
+		"scenario_%d" % scenario_id, day, fail_cause, trigger_npc_id, trigger_rumor_id)
 
 
 func _on_analytics_scenario_resolved(
