@@ -1,7 +1,7 @@
 # Launch Financial Model — Rumor Mill Early Access
 
 **Prepared by:** CFO  
-**Date:** 2026-04-04 (updated 2026-04-30, v4.0)  
+**Date:** 2026-04-04 (updated 2026-04-30, v5.0 — Day 5 refresh per [SPA-1470](/SPA/issues/SPA-1470))  
 **For:** Rumor Mill — board / founding team  
 **Status:** 🔒 LOCKED — pricing and scenarios confirmed; no further unilateral changes
 
@@ -13,7 +13,9 @@
 
 ## 1. Executive Summary
 
-Rumor Mill is **launch-ready from a content standpoint** (six scenarios, all playable, with tutorial, achievements, and save/load). The financial picture is straightforward: this is a zero-marketing-spend, sweat-equity indie title with very low cash exposure. Break-even is achievable with approximately 40 Steam sales. The highest-probability outcome is modest but profitable: 400–800 units in the first 90 days at $14.99, generating $4,200–$8,400 net after Steam's cut — a strong return on a sub-$500 cash investment.
+Rumor Mill **launched on Steam Early Access on 2026-04-25** with six scenarios, tutorial, achievements, and save/load. As of 2026-04-30 (Day 5), the launch discount window (10% → $13.49) is active through 2026-05-01. The financial picture is straightforward: this is a zero-marketing-spend, sweat-equity indie title with very low cash exposure. Break-even is achievable with approximately 40 Steam sales. The highest-probability outcome is modest but profitable: 400–800 units in the first 90 days at $14.99, generating $4,200–$8,400 net after Steam's cut — a strong return on a sub-$500 cash investment.
+
+> **Day 5 status:** Steamworks actuals (units sold, refund rate, wishlist conversion) are pending board input — see [§12 Pending Steamworks Inputs](#12-pending-steamworks-inputs-as-of-2026-04-30) below. All non-Steamworks inputs have been updated to confirmed as-of-2026-04-30 values in this revision.
 
 **Recommended launch sequence:** Free itch.io demo → Steam Early Access at **$14.99 USD** within 2–4 weeks.
 
@@ -38,7 +40,7 @@ All development cost is **sweat equity** (solo developer). Zero cash outlay on l
 
 | Item | Required For | Estimated Cost | Notes |
 |------|-------------|----------------|-------|
-| Steam Direct fee | Steam EA | **$100** | Recoupable at $1,000 gross. One-time per game. |
+| Steam Direct fee | Steam EA | **$100** ✅ Paid | Recoupable at $1,000 gross (~67 units). One-time per game. Game launched 2026-04-25. |
 | EIN (IRS.gov) | Both platforms | **$0** | Free, ~5 min online |
 | LLC formation (home state, mid-range) | Recommended | **$100–200** | One-time filing fee |
 | Registered agent service | Optional | **$0–150/yr** | Keeps personal address off public filings |
@@ -86,7 +88,7 @@ At the moderate revenue scenario (~$7,800 net in year one), annual overhead is l
 - Cultist Simulator's itch.io pricing ($14.99) is a strong validation that the $14.99 Steam EA price also holds on itch.io if a paid itch tier is introduced post-demo.
 - The $14.99 EA entry point correctly positions Rumor Mill as a premium indie title without triggering buyer hesitation about content completeness.
 
-**Positioning verdict:** Rumor Mill is a niche strategy/simulation title with a strong concept and four playable scenarios but limited audio polish at launch. It sits below Cultist Simulator in scope at EA stage, but above simple puzzle games. The $14.99 price point is correct: it signals premium indie quality without the risk of overpricing a content-incomplete release.
+**Positioning verdict:** Rumor Mill is a niche strategy/simulation title with a strong concept and six playable scenarios but limited audio polish at launch. It sits at or slightly above Cultist Simulator in scenario depth at EA stage, and well above simple puzzle games. The $14.99 price point is correct: it signals premium indie quality without the risk of overpricing a content-incomplete release.
 
 ### 3B — Confirmed Launch Pricing (LOCKED)
 
@@ -269,23 +271,25 @@ Ongoing overhead is negligible against any reasonable sales volume. The business
 
 Items from `docs/pre-launch-legal-financial-checklist.md` that are **unresolved and required before revenue**:
 
-### Blocking for Steam EA Launch
+### Pre-Launch Checklist Status (as of 2026-04-30)
+
+The game launched on Steam EA on 2026-04-25. Items that were hard-blockers are marked as completed-at-launch below. **ACH payout confirmation is still needed from the board** — without it the first Valve disbursement may be delayed.
+
+| Item | Status | Notes |
+|------|--------|-------|
+| W-9 submitted and accepted by Valve | ✅ Completed-at-launch | Game launched = Valve accepted W-9. Verify acceptance email in Steamworks inbox for records. |
+| Regional pricing set in Steamworks | ✅ Completed-at-launch | Game is live at $14.99 USD with Steam regional templates. |
+| Privacy policy hosted at public URL | ✅ Completed-at-launch | Required by Valve before page went live. |
+| 30-day Steam review window elapsed | ✅ Completed | Game launched 2026-04-25 — review window was completed. |
+| Coming Soon page live ≥ 14 days before launch | ✅ Completed | Required for launch to have occurred. |
+| ACH payout configured in Steamworks | ⬜ **Unconfirmed — board action needed** | Cannot confirm without Steamworks dashboard access. Must be configured before the June 2026 payout cycle. **Founder should verify now.** |
+
+### itch.io Demo Status
 
 | Item | Status | Action Required |
 |------|--------|----------------|
-| W-9 submitted and accepted by Valve | ⬜ Unknown | Submit via Steamworks → Account → Tax Information. Use LLC EIN. Allow 2–7 days for Valve verification. **Cannot receive revenue without this.** |
-| ACH payout configured in Steamworks | ⬜ Unknown | Add business bank account (Mercury) routing + account numbers. Must match LLC entity name exactly. |
-| Regional pricing set in Steamworks | ⬜ Unknown | Set $14.99 USD base + apply Steam Regional Pricing Templates. Do before Coming Soon page. |
-| Privacy policy hosted at public URL | ⬜ Unknown | Minimal policy (template in §3D of checklist) is sufficient. GitHub Pages is fastest. **Steam page cannot go live without this URL.** |
-| 30-day Steam review window elapsed | ⬜ Depends on registration date | Must begin registration now if not already started. |
-| Coming Soon page live ≥ 14 days before launch | ⬜ Unknown | Publish Coming Soon as soon as the review window opens. |
-
-### Blocking for itch.io Demo (if any revenue/PWYW)
-
-| Item | Status | Action Required |
-|------|--------|----------------|
-| itch.io payout method configured | ⬜ Unknown | Dashboard → Payouts → connect PayPal or Stripe. Required before any paid tier. For free demo: optional but set up now. |
-| itch.io revenue model = "itch.io as MOR" | ⬜ Unknown | Account Settings → Payment Options. Confirm itch.io is merchant of record (recommended). |
+| itch.io payout method configured | ⬜ Unknown | Not required for free demo (no revenue), but set up before any paid tier post-1.0. |
+| itch.io revenue model = "itch.io as MOR" | ⬜ Unknown | Account Settings → Payment Options. Confirm before any paid tier. |
 
 ### Not Yet Blocking (Address Before 1.0 or First Revenue Quarter)
 
@@ -329,7 +333,7 @@ Items from `docs/pre-launch-legal-financial-checklist.md` that are **unresolved 
 **For Early Access:** Keep it a clean single-purchase game. Do not introduce any paid DLC, season passes, or optional purchases during EA. Reasons:
 - EA buyers are investing in the game's future — paid DLC during EA creates resentment.
 - Steam reviews will call out monetization aggressiveness; this kills conversion for a discovery-stage title.
-- The current content (4 scenarios) fully justifies $14.99 as a complete purchase.
+- The current content (6 scenarios) fully justifies $14.99 as a complete purchase.
 
 **Post-1.0 monetization options (evaluated):**
 
@@ -425,13 +429,14 @@ Valve pays monthly, 30-day lag. **Revenue earned in April → paid in late May.*
 
 | Event | Timeline | Notes |
 |-------|----------|-------|
-| Revenue earned (Month 1) | Launch date → +30 days | Valve accumulates revenue |
+| **Confirmed launch date** | **2026-04-25** | Steam Early Access went live. Launch discount (10% → $13.49) active through **2026-05-01** (day 7). |
+| Revenue earned (Month 1) | 2026-04-25 → 2026-05-25 | Valve accumulates revenue |
 | Valve payment processing | End of Month 1 + 30-day hold | Valve's standard 30-day payout cycle |
-| **First ACH payout received** | **~60 days after launch** | E.g., launch 2026-05-16 → first payout ~2026-07-15 |
+| **First ACH payout received** | **~2026-06-25** | 60 days from confirmed 2026-04-25 launch |
 | Minimum payout threshold | $100 | If revenue is below $100, rolls to next cycle |
 | itch.io payout | Per PayPal/Stripe cycle (~weekly or monthly) | Applies when paid tier introduced post-1.0 |
 
-**Cash-flow implication:** There is a 60-day gap between launch and first revenue. The total pre-launch cash outlay (~$100–650) must be covered from existing funds. At the base scenario, month-1 net is ~$2,630 — but that cash does not arrive until ~day 60 post-launch.
+**Cash-flow implication:** There is a ~60-day gap between launch and first revenue. The first Valve ACH transfer is expected **~2026-06-25**. The total pre-launch cash outlay (~$100–650) must be covered from existing funds until then. At the base scenario, month-1 net is ~$2,630 — but that cash does not arrive until ~2026-06-25.
 
 ### 9C — Runway Impact
 
@@ -490,6 +495,56 @@ This is a zero-overhead solo project with no employees or recurring subscription
 
 ---
 
+---
+
+## 12. Pending Steamworks Inputs (as of 2026-04-30)
+
+The following model inputs require Steamworks actuals. They cannot be derived from in-game AnalyticsManager data. Board/Founder must provide these to unblock [SPA-1306](/SPA/issues/SPA-1306) and [SPA-1191](/SPA/issues/SPA-1191).
+
+| # | Input | Placeholder Used in Model | Source | Owner / Action to Unblock |
+|---|-------|--------------------------|--------|--------------------------|
+| 1 | Day 1–5 units sold (daily breakdown) | Scenario projections (conservative ~30 units / base ~130 units in week 1) | Steamworks → Sales & Activation Reports | **Founder** — export daily sales CSV from Steamworks and post to [SPA-1306](/SPA/issues/SPA-1306) |
+| 2 | Day 1–5 gross revenue ($) | Derived from unit count × $13.49 discount price | Steamworks → Sales & Activation Reports | **Founder** — same export as above |
+| 3 | Actual refund count and refund rate (%) | Conservative model assumes 9%; base 7% | Steamworks → Refunds | **Founder** — post refund count + rate to [SPA-1306](/SPA/issues/SPA-1306) |
+| 4 | Wishlist count at launch (pre-April 25 snapshot) | Conservative ~150; base ~400; stretch ~1,000 | Steamworks → Wishlists | **Founder** — pull the wishlist count from Steamworks at or near launch date |
+| 5 | Wishlist-to-purchase conversion rate (Day 1–5) | Conservative 10–15%; base 15–22% | Manual calc: (units sold ÷ wishlist count) | Computable once items 1 and 4 are provided |
+| 6 | Traffic sources breakdown (where buyers found the game) | Organic only assumed (Reddit, itch.io, devlog) | Steamworks → Traffic & Conversions | **Founder** — post top-5 traffic sources by units |
+| 7 | Geographic breakdown (top 5 markets) | No assumption — model is US-anchor only | Steamworks → Geography | **Founder** — useful for evaluating regional pricing adjustments |
+| 8 | Peak CCU (concurrent users) and CCU by day | Not modeled | Steamworks → Sales → All Time Peak CCU | **Founder** — post Day 1–5 peak CCU figures |
+| 9 | Steam "New & Trending" placement (yes/no, dates) | Not modeled; assumed possible in base/stretch | Steamworks store page visibility data | **Founder** — confirm whether the game appeared in "New & Trending" |
+| 10 | ACH payout account confirmed (Steamworks accepted) | Assumed configured; first payout ~2026-06-25 | Steamworks → Account → Payout Info | **Founder** — confirm ACH details are active; flag if any Valve verification is pending |
+
+**Action for board:** Post Day 1–5 Steamworks exports (items 1–3) as a comment on [SPA-1306](/SPA/issues/SPA-1306) and tag the CFO. Items 4–10 are useful but not blocking for revenue reconciliation.
+
+---
+
+## 13. Telemetry KPI Cross-Check (Financial Relevance)
+
+Cross-referenced against `docs/post-launch-telemetry-plan.md` as of 2026-04-30.
+
+### Financially Relevant KPIs — Coverage Assessment
+
+| KPI | Financial Relevance | Captured by AnalyticsManager? | Notes |
+|-----|--------------------|-----------------------------|-------|
+| **Refund rate** | High — threshold >12% triggers community response and discount pause (§8C) | ❌ **Not captured** | Platform-level metric; Steamworks only. Expected: AnalyticsManager cannot see post-purchase refund signals. |
+| **Wishlist-to-purchase conversion** | High — determines whether wishlist pool translates to revenue at launch | ❌ **Not captured** | Steamworks metric (requires both wishlist count and unit sales). AnalyticsManager only sees in-session events. |
+| **Peak CCU** | Medium — proxy for community health and future DLC demand signal | ❌ **Not captured** | Steamworks metric. AnalyticsManager has no session_start/session_end event to reconstruct CCU. |
+| Scenario completion rate (by scenario, by difficulty) | Medium — if completion rates are very low (e.g., <20%), refund risk rises | ✅ Captured — KPI #1 in telemetry plan | `scenario_selected` + `scenario_ended` events. |
+| Session duration / rage-quit rate | Medium — sessions <60s are a direct refund-risk signal | ✅ Captured — KPI #3 in telemetry plan | `scenario_ended.duration_sec`. Rage-quit threshold: <60s. |
+| Difficulty distribution | Low-Medium — >50% Easy selection signals the base game may feel too hard, which can drive refunds | ✅ Captured — KPI #10 in telemetry plan | `scenario_selected.difficulty`. |
+
+### Gaps Flagged for Game Designer / Lead Engineer
+
+Two in-game proxy metrics for refund risk are not formally defined as watchlist items in the telemetry plan but should be monitored in the first 72 hours:
+
+1. **Rage-quit rate** (`scenario_ended.duration_sec < 60`): Not surfaced explicitly as a standalone KPI in `docs/post-launch-telemetry-plan.md`. The "First 72 Hours Dashboard" lists it as a red-flag threshold (>10% rage-quit rate) but it is not included in the 12 formal KPIs. Recommend adding it as KPI #13 or explicitly calling it out in the weekly Monday review.
+
+2. **Scenario 1 completion rate as a leading refund indicator**: If the tutorial scenario completion rate drops below 40% on Normal, that is both a balance flag AND a refund risk. The telemetry plan captures this (KPI #1) but does not explicitly link it to the refund rate threshold in §8C of this model. Suggest the Game Designer flag any S1 completion rate below 40% in the weekly telemetry digest and notify the board so the refund dashboard can be checked in parallel.
+
+**Bottom line:** Refund rate, conversion, and peak CCU must come from Steamworks — AnalyticsManager cannot and should not capture these. The in-game analytics do provide leading indicators (rage-quit, completion rates) that correlate with refund risk and are already tracked. No new events are required for financial monitoring; just add the rage-quit KPI to the weekly review checklist.
+
+---
+
 *Not financial or legal advice. Revenue projections are estimates based on comparable indie title performance and zero-marketing launch assumptions. Consult a CPA before filing taxes. Sources: docs/business-setup-guide.md, docs/pre-launch-legal-financial-checklist.md, Steam Partner documentation, public comparable title sales data.*
 
-*Document version: 4.0 — 2026-04-30 (v1.0 origin: [SPA-248](/SPA/issues/SPA-248); v2.0 update: [SPA-266](/SPA/issues/SPA-266); v3.0 update: [SPA-277](/SPA/issues/SPA-277); v4.0 lock: [SPA-1139](/SPA/issues/SPA-1139))*
+*Document version: 5.0 — 2026-04-30 (v1.0 origin: [SPA-248](/SPA/issues/SPA-248); v2.0 update: [SPA-266](/SPA/issues/SPA-266); v3.0 update: [SPA-277](/SPA/issues/SPA-277); v4.0 lock: [SPA-1139](/SPA/issues/SPA-1139); v5.0 Day 5 refresh: [SPA-1470](/SPA/issues/SPA-1470))*
