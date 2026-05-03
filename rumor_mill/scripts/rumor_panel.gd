@@ -72,8 +72,14 @@ var _status_label: Label           = null
 
 # ── References ────────────────────────────────────────────────────────────────
 
-var _world_ref:       Node2D           = null
-var _intel_store_ref: PlayerIntelStore = null
+var _world_ref:          Node2D           = null
+var _intel_store_ref:    PlayerIntelStore = null
+var _analytics_manager                   = null  ## SPA-1530: set via set_analytics_manager()
+
+## SPA-1539: Maren's direct social-graph neighbours (NPC id → edge weight).
+## Populated in setup(); used to show a proximity warning when the player
+## selects a seed target that is adjacent to Maren in the social graph.
+var _maren_neighbours: Dictionary = {}
 
 # Texture atlases.
 var _portrait_tex:   Texture2D = null
@@ -142,6 +148,11 @@ func _init_modules() -> void:
 	# setup() calls that need refs are deferred to setup() below.
 
 
+## SPA-1530: Receive analytics manager reference so evidence_used events can be logged.
+func set_analytics_manager(am) -> void:
+	_analytics_manager = am
+
+
 func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
 	_world_ref       = world
 	_intel_store_ref = intel_store
@@ -149,6 +160,9 @@ func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
 	_subject_list.setup(world, intel_store, _portrait_tex)
 	_claim_list_m.setup(world, _claim_icon_tex)
 	_seed_list_m.setup(world, intel_store, _estimates)
+	# SPA-1539: cache Maren's neighbours so seed-target proximity warnings can be shown.
+	if world != null and world.get("social_graph") != null:
+		_maren_neighbours = world.social_graph.get_neighbours(ScenarioManager.MAREN_NUN_ID)
 
 
 func toggle() -> void:
@@ -342,7 +356,10 @@ func _rebuild_seed_list() -> void:
 			_selected_seed_npc = npc_id
 			_confirm_pending   = false
 			_stop_confirm_glow()
-			_btn_next.text     = "Confirm & Seed",
+			_btn_next.text     = "Confirm & Seed"
+			# SPA-1539: warn when the chosen seed target is a direct Maren neighbour.
+			if not _maren_neighbours.is_empty() and _maren_neighbours.has(npc_id):
+				_flash_status("⚠ This NPC is close to Maren — rumor may be countered quickly"),
 		func(npc_id: String) -> void:  # on_hover_enter
 			_on_seed_hover_enter(npc_id),
 		func() -> void:  # on_hover_exit
@@ -505,6 +522,13 @@ func _try_confirm_seed() -> void:
 
 	if _selected_evidence_item != null and _intel_store_ref != null:
 		_intel_store_ref.consume_evidence(_selected_evidence_item)
+		if _analytics_manager != null:
+			_analytics_manager.log_evidence_used(
+				_selected_evidence_item.type.to_lower().replace(" ", "_"),
+				_selected_claim_id,
+				_get_npc_name(_selected_seed_npc),
+				_get_npc_name(_selected_subject)
+			)
 
 	var subj_name := _get_npc_name(_selected_subject)
 	var seed_name := _get_npc_name(_selected_seed_npc)
