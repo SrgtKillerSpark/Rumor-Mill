@@ -110,6 +110,41 @@ Once `tutorial_step_completed` and `settings_changed` are emitted by the
 runtime, extend `kpi11()` and `kpi12()` in `kpi_aggregate.js` following the
 same session-grouping pattern used by the existing KPIs.
 
+## Phase 1 Daily Digest
+
+The **Phase 1 Digest Runner** (`tools/balance/phase1_digest.js`) wires
+`kpi_aggregate.js` and `trigger_detector.js` together into a single markdown
+report for Day-N balance reviews.
+
+```sh
+# Single file — prints digest to stdout
+node tools/balance/phase1_digest.js tools/analytics/fixtures/day6_s2_apprentice.ndjson
+
+# Multiple files
+node tools/balance/phase1_digest.js tools/analytics/fixtures/*.ndjson
+
+# Write to file
+node tools/balance/phase1_digest.js --out digest-day6.md tools/analytics/fixtures/day6_s2_apprentice.ndjson
+```
+
+The digest includes:
+
+1. **Watchlist trigger summary** — one row per trigger from
+   `docs/phase1-balance-watchlist.spec.yaml` with status icons
+   (✅ within / ⚠ watch / 🔴 fired).
+2. **Notable signals** — bullet list from fired triggers and KPI red flags.
+3. **Per-lane KPI table** — completion rate, day-of-quit histogram, session
+   duration, and watchlist metrics.
+4. **Volume** — files, sessions, events, and trigger evaluation counts.
+
+Exit code 1 means one or more triggers fired; 0 means all clear.
+
+Run the smoke tests (includes trigger detector + digest tests):
+
+```sh
+bash tools/balance/test_triggers.sh
+```
+
 ## Weekly review workflow
 
 1. Collect `analytics.json` files from players (itch.io feedback form / direct
