@@ -184,8 +184,7 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 			EndScreenPanelBuilder.PANEL_W / 2.0,
 			EndScreenPanelBuilder.PANEL_H / 2.0)
 	TransitionManager.fade_in(0.35)
-	var _enter_tw := create_tween().set_parallel(true) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	var _enter_tw: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	if _panel.backdrop != null:
 		_enter_tw.tween_property(_panel.backdrop, "modulate:a", 1.0, 0.35)
 	if _panel.panel != null:
