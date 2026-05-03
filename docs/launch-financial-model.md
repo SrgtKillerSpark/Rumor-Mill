@@ -545,6 +545,60 @@ Two in-game proxy metrics for refund risk are not formally defined as watchlist 
 
 ---
 
+---
+
+## 14. Day 5 Non-Steamworks Cost Variance (Apr 25 → May 3, 2026)
+
+**Prepared:** 2026-05-03 per [SPA-1511](/SPA/issues/SPA-1511)  
+**Scope:** Operational cost actuals for the 9-day window since Steam EA launch. Steamworks revenue lines (units, gross, refunds) are excluded pending Founder input; see [§12](#12-pending-steamworks-inputs-as-of-2026-04-30) and [SPA-1306](/SPA/issues/SPA-1306).
+
+> **How to read this table:** "Forecast" is the model's explicit or implicit baseline from §2A–§2C. "Actual" is either confirmed from observable project state or marked **Needs input** where only the Founder/board has access to the billing dashboard. "Delta" uses the midpoint forecast when a range is given.
+
+### 14A — Variance Table
+
+| # | Line Item | Model Forecast | Actual (Apr 25–May 3) | Delta | Commentary |
+|---|-----------|---------------|----------------------|-------|------------|
+| 1 | **Cloud / hosting** | $0 (§2A — GitHub Pages, no backend) | **$0 ✅** | $0 | Privacy policy and any static assets hosted on GitHub Pages — free tier, no backend server required for a desktop game. Confirmed $0. |
+| 2 | **GitHub Actions CI minutes** | $0 implicit (free tier assumed) | **~$0–2 ✅** | ~$0–2 | Workflow `validate-gdscript.yml` triggered on push to `main`, `dev`, `feature/**`, `fix/**`, `test/**`. ~74 qualifying commits in window × ~3 min/run = ~222 min. Public repo = $0 (GitHub free). Private repo worst-case: 222 min × $0.008/min = **~$1.78**, under any free-tier threshold. No watchlist action. |
+| 3 | **Agent compute (Paperclip / Claude Code)** | $0–50 total (§2A — development period estimate) | **⚠️ Needs input** | Unknown | Active agent sessions ran throughout the launch window (SPA-1415 through SPA-1511 series). The §2A estimate was for the entire pre-launch development period; post-launch operational agent spend is unforecasted. **Founder/board: pull the Anthropic API or Paperclip billing dashboard for Apr 25–May 3 and post actual to [SPA-1511](/SPA/issues/SPA-1511).** |
+| 4 | **Steam Direct fee** | $100 one-time (§2B — paid pre-launch) | **$100 ✅** | $0 | Paid at launch on 2026-04-25. No variance; sunk cost already in model. No additional Steam fees in this window. |
+| 5 | **Audio assets** | $0 (§2A — placeholders, not yet purchased) | **$0 ✅** | $0 | No audio assets purchased during launch window. Silent placeholders remain in build. |
+| 6 | **Art / UI assets** | $0 (§2A — in-house) | **$0 ✅** | $0 | All art in-house. No commissions or asset purchases identified in this window. |
+| 7 | **Third-party services / subscriptions** | $0 (no subscriptions listed in model) | **$0 ✅** | $0 | No new SaaS, analytics, or marketing tools introduced. Paperclip is the only tooling with operational cost (covered under item 3). |
+| 8 | **LLC formation filing fee** | $100–200 (§2B — H1 high priority) | **⚠️ Needs input** | Unknown | Filing status remains unconfirmed as of 2026-05-03. If filed during this window, actual cost is $100–200 — within forecast range, no variance. **Founder: confirm filing status.** |
+| 9 | **Registered agent service** | $0–150/yr (§2B — optional) | **⚠️ Needs input** | Unknown | Decision pending. If engaged during this window, would add $0–150 annualized. No watchlist flag until decision is confirmed. |
+| 10 | **One-off launch marketing costs** | $0 (organic only; zero paid advertising) | **$0 ✅** | $0 | Social copy drafted (SPA-1467), screenshots organized — all internal labor (sweat equity). No paid ads, influencer fees, or PR services used. |
+| 11 | **Business bank account** | $0 (§2B — Mercury, no monthly fees) | **$0 ✅** | $0 | Mercury account has no monthly fee. Confirmed $0. |
+| — | **Confirmed cash spend, Apr 25–May 3** | $0 (new cash in window) | **$0–2 confirmed** | ~$0–2 | All confirmed-actual lines are $0 except CI (≤$2). Steam Direct is a sunk pre-launch cost, not new spend in this window. |
+
+### 14B — Watchlist Items (>20% Over Forecast)
+
+No confirmed line exceeds the 20% watchlist threshold during Apr 25–May 3.
+
+| Item | Status | Note |
+|------|--------|------|
+| **Agent compute (#3)** | 🟡 **Pending — potential watchlist** | The §2A estimate ($0–50) was scoped to pre-launch development, not post-launch operations. If 9 days of active Paperclip agent sessions cost more than ~$6 (20% above the daily pro-rata of the $50 ceiling), this becomes a watchlist item. Cannot confirm until billing data is supplied. **Mitigation if over forecast:** establish a monthly agent compute budget cap and shift lower-priority research tasks to async/batched runs rather than real-time heartbeats. |
+| **LLC formation (#8)** | 🟢 **Within range if filed** | $100–200 is within the forecasted range regardless of timing. No watchlist action even if filed this window. |
+
+### 14C — Open Action Items (Founder)
+
+| # | Action | Why It Matters | Urgency |
+|---|--------|---------------|---------|
+| A | Pull Anthropic API / Paperclip billing for Apr 25–May 3 and post to [SPA-1511](/SPA/issues/SPA-1511) | Only unknown cost line; needed to confirm no overage before Steamworks half of the picture arrives | High |
+| B | Confirm LLC filing status | Closes the last unresolved §2B line item | High |
+| C | Confirm registered agent decision | Closes §2B / §2C recurring cost | Medium |
+
+### 14D — Readiness for Full Week 1 Reconciliation
+
+This variance review completes the **non-Steamworks half** of the Week 1 financial picture. The Steamworks half (units, gross, refunds, wishlist conversion) remains blocked on Founder input to [SPA-1306](/SPA/issues/SPA-1306). Once both halves are available, [SPA-1191](/SPA/issues/SPA-1191) can produce the complete Week 1 P&L reconciliation.
+
+| Half | Status |
+|------|--------|
+| Non-Steamworks cost actuals (this section) | ✅ Complete — $0–2 confirmed; agent compute pending Founder input (Action A above) |
+| Steamworks revenue actuals | ❌ Blocked — pending Founder export to [SPA-1306](/SPA/issues/SPA-1306) |
+
+---
+
 *Not financial or legal advice. Revenue projections are estimates based on comparable indie title performance and zero-marketing launch assumptions. Consult a CPA before filing taxes. Sources: docs/business-setup-guide.md, docs/pre-launch-legal-financial-checklist.md, Steam Partner documentation, public comparable title sales data.*
 
-*Document version: 5.0 — 2026-04-30 (v1.0 origin: [SPA-248](/SPA/issues/SPA-248); v2.0 update: [SPA-266](/SPA/issues/SPA-266); v3.0 update: [SPA-277](/SPA/issues/SPA-277); v4.0 lock: [SPA-1139](/SPA/issues/SPA-1139); v5.0 Day 5 refresh: [SPA-1470](/SPA/issues/SPA-1470))*
+*Document version: 6.0 — 2026-05-03 (v1.0 origin: [SPA-248](/SPA/issues/SPA-248); v2.0 update: [SPA-266](/SPA/issues/SPA-266); v3.0 update: [SPA-277](/SPA/issues/SPA-277); v4.0 lock: [SPA-1139](/SPA/issues/SPA-1139); v5.0 Day 5 refresh: [SPA-1470](/SPA/issues/SPA-1470); v6.0 Day 5 cost variance: [SPA-1511](/SPA/issues/SPA-1511))*
