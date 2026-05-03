@@ -155,7 +155,7 @@ func toggle() -> void:
 	if _panel_tween != null and _panel_tween.is_valid():
 		_panel_tween.kill()
 	if panel.visible:
-		AudioManager.play_sfx("rumor_panel_close")
+		AudioManager.play_ui("panel_close")
 		_on_seed_hover_exit()
 		# Slide out to left.
 		_panel_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
@@ -166,7 +166,7 @@ func toggle() -> void:
 			panel.position.x += 30.0
 		)
 	else:
-		AudioManager.play_sfx("rumor_panel_open")
+		AudioManager.play_ui("panel_open")
 		_open_panel(PANEL_SUBJECT)
 		panel.visible = true
 		# Slide in from left.
@@ -552,7 +552,7 @@ func _make_nav_button(label_text: String) -> Button:
 	btn.add_theme_stylebox_override("pressed", pressed_style)
 	btn.add_theme_color_override("font_color", C_BTN_TEXT)
 	btn.add_theme_font_size_override("font_size", 12)
-	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))
+	btn.pressed.connect(func() -> void: AudioManager.play_ui("click"))
 	btn.mouse_entered.connect(func() -> void: AudioManager.play_sfx_pitched("ui_click", 2.0))
 	return btn
 

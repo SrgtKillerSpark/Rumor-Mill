@@ -392,7 +392,7 @@ func _make_action_button(text: String) -> Button:
 
 	btn.pivot_offset = btn.custom_minimum_size * 0.5
 	btn.pressed.connect(func() -> void:
-		AudioManager.play_sfx("ui_click")
+		AudioManager.play_ui("click")
 		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		tw.tween_property(btn, "scale", Vector2(0.95, 0.95), 0.06)

@@ -238,6 +238,6 @@ func _build_help_button() -> void:
 
 
 func _on_help_pressed() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	if _controls_ref != null and _controls_ref.has_method("toggle"):
 		_controls_ref.toggle()

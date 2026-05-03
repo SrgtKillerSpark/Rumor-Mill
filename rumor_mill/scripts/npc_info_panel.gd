@@ -388,7 +388,7 @@ func _refresh_action_states(data: Dictionary) -> void:
 func _trigger_action(action_key: String) -> void:
 	if _current_npc == null or not is_instance_valid(_current_npc):
 		return
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	# SPA-992: Brief scale pop on the pressed button for tactile confirmation.
 	for i in ACTIONS.size():
 		if ACTIONS[i]["key"] == action_key and i < _action_btns.size():

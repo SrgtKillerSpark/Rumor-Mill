@@ -461,7 +461,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if lc_npc != null:
 			lc_npc.call("flash_click")
 			lc_npc.call("show_name_popup")  # SPA-777: brief name + faction label on click
-			AudioManager.play_sfx("ui_click")
+			AudioManager.play_ui("click")
 			if _follow_npc == lc_npc:
 				# Re-click same NPC clears follow.
 				_follow_npc.call("set_selected", false)
@@ -490,7 +490,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var clicked_npc := _hit_test_npc(world_pos)
 	if clicked_npc != null:
 		clicked_npc.call("flash_click")  # SPA-826: visual pop on right-click
-		AudioManager.play_sfx("ui_click")
+		AudioManager.play_ui("click")
 		# SPA-683: show the conversation dialogue panel instead of a direct action.
 		if _dialogue_panel != null:
 			_dialogue_panel.show_for_npc(clicked_npc, screen_pos)

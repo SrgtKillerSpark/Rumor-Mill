@@ -319,7 +319,7 @@ func _on_rumor_event(message: String, tick: int) -> void:
 	if main_msg.contains("→ Believe"):
 		AudioManager.on_rumor_success()
 	elif main_msg.contains("→ Spread"):
-		AudioManager.play_sfx("rumor_spread")
+		AudioManager.play_event("rumor_seeded")
 	elif main_msg.contains("→ Act"):
 		AudioManager.play_sfx("victory_chime")
 	elif main_msg.contains("→ Reject"):
@@ -373,7 +373,7 @@ func _on_first_belief_flip(npc_name: String, new_state_name: String, _rumor_id: 
 
 	# Audio: reputation_down pitched down 2 semitones (2^(-2/12) ≈ 0.891) + conviction chime.
 	AudioManager.play_sfx_pitched("reputation_down", 0.891)
-	AudioManager.play_sfx("milestone_chime")
+	AudioManager.play_event("objective_progress")
 
 	# Visual: NPC dark-vignette flash + thought-bubble conviction override.
 	if _world != null and "npcs" in _world:
@@ -401,7 +401,7 @@ func _on_first_belief_flip(npc_name: String, new_state_name: String, _rumor_id: 
 ## Shows "RUMOR WILDFIRE" milestone popup with amber particles and audio burst.
 func _on_cascade_triggered(rumor_id: String, believer_count: int) -> void:
 	# Audio burst: milestone chime + pitched-up reputation_up for excitement.
-	AudioManager.play_sfx("milestone_chime")
+	AudioManager.play_event("objective_progress")
 	AudioManager.play_sfx_pitched("reputation_up", 1.12)
 
 	# Milestone popup — amber/orange color, scaled particle count by believer count.

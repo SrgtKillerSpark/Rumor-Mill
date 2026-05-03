@@ -494,7 +494,7 @@ func _start_danger_pulse() -> void:
 func _show_faction_shift_toast(text: String) -> void:
 	if _toast_panel == null or _toast_lbl == null:
 		return
-	AudioManager.play_sfx("reputation_shift")
+	AudioManager.play_event("npc_state_change")
 	if _toast_tween != null and _toast_tween.is_valid():
 		_toast_tween.kill()
 	_toast_lbl.text = text

@@ -116,7 +116,7 @@ func _display_popup(text: String, color: Color, milestone_id: String) -> void:
 				reward_text = "+%d whisper token%s" % [ramount, "s" if ramount > 1 else ""]
 
 	# ── SFX ─────────────────────────────────────────────────────────────────
-	AudioManager.play_sfx("milestone_chime")
+	AudioManager.play_event("objective_progress")
 
 	# ── Log to journal ──────────────────────────────────────────────────────
 	if _journal_ref != null and _journal_ref.has_method("push_milestone_event"):

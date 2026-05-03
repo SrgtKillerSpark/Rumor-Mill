@@ -161,7 +161,7 @@ func _build_entry(
 	btn.add_theme_font_size_override("font_size", 12)
 	var captured_id := npc_id
 	btn.pressed.connect(func():
-		AudioManager.play_sfx("ui_click")
+		AudioManager.play_ui("click")
 		on_select.call(captured_id)
 	)
 	vbox.add_child(btn)

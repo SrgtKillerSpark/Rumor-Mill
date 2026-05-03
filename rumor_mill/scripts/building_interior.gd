@@ -128,6 +128,8 @@ func show_interior() -> void:
 	if _open or _transitioning:
 		return
 	_refresh_npc_roster()
+	if not _building_key.is_empty():
+		AudioManager.play_ambient(_building_key)
 	_transitioning = true
 
 	# Prepare initial states for the animation.
@@ -167,6 +169,7 @@ func close_interior() -> void:
 		return
 	_transitioning = true
 	_open = false
+	AudioManager.clear_location_ambient()
 
 	if _anim_tween != null and _anim_tween.is_valid():
 		_anim_tween.kill()

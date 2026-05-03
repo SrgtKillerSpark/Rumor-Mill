@@ -589,7 +589,7 @@ func _make_pause_btn(label_text: String, font_color: Color) -> Button:
 	btn.add_theme_color_override("font_disabled_color", Color(0.55, 0.50, 0.40, 0.5))
 	btn.pivot_offset = btn.custom_minimum_size * 0.5
 	btn.pressed.connect(func() -> void:
-		AudioManager.play_sfx("ui_click")
+		AudioManager.play_ui("click")
 		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		tw.tween_property(btn, "scale", Vector2(0.95, 0.95), 0.06)
 		tw.tween_property(btn, "scale", Vector2.ONE, 0.10)

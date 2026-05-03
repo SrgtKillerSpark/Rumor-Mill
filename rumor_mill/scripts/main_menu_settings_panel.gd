@@ -297,7 +297,7 @@ func _on_game_speed_changed(value: float) -> void:
 
 
 func _on_resolution_cycle() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	SettingsManager.resolution_index = (SettingsManager.resolution_index + 1) % SettingsManager.RESOLUTIONS.size()
 	SettingsManager.apply_display_settings()
 	SettingsManager.save_settings()
@@ -308,7 +308,7 @@ func _on_resolution_cycle() -> void:
 
 
 func _on_window_mode_cycle() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	SettingsManager.window_mode = (SettingsManager.window_mode + 1) % 3
 	SettingsManager.apply_display_settings()
 	SettingsManager.save_settings()
@@ -319,7 +319,7 @@ func _on_window_mode_cycle() -> void:
 
 
 func _on_window_scale_cycle() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	SettingsManager.window_scale_index = (SettingsManager.window_scale_index + 1) % SettingsManager.WINDOW_SCALE_PRESETS.size()
 	SettingsManager.apply_display_settings()
 	SettingsManager.save_settings()
@@ -330,7 +330,7 @@ func _on_window_scale_cycle() -> void:
 
 
 func _on_ui_scale_cycle() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	SettingsManager.ui_scale_index = (SettingsManager.ui_scale_index + 1) % SettingsManager.UI_SCALE_PRESETS.size()
 	SettingsManager.ui_scale = SettingsManager.UI_SCALE_PRESETS[SettingsManager.ui_scale_index]
 	SettingsManager.apply_ui_scale()

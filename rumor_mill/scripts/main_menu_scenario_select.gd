@@ -345,7 +345,7 @@ func _on_card_pressed(idx: int) -> void:
 	selected_idx = idx
 	card.add_theme_stylebox_override("panel", _card_style(C_CARD_HOVER, C_CARD_SEL))
 	selected_scenario = _scenarios[idx]
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 
 
 func _on_play_anyway_pressed(idx: int) -> void:

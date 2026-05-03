@@ -135,7 +135,7 @@ func toggle() -> void:
 
 
 func _open() -> void:
-	AudioManager.play_sfx("journal_open")
+	AudioManager.play_event("evidence_acquired")
 	_is_open            = true
 	_overlay_bg.visible = true
 	_parchment.visible  = true

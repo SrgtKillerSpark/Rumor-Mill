@@ -214,7 +214,7 @@ func _unhandled_input(event: InputEvent) -> void:
 # ── Dismiss ───────────────────────────────────────────────────────────────────
 
 func _dismiss() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	var tw := create_tween()
 	tw.tween_property(_backdrop, "color:a", 0.0, 0.3) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)

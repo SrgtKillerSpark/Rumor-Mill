@@ -466,7 +466,7 @@ func _unhandled_input(event: InputEvent) -> void:
 # ── Dismiss ───────────────────────────────────────────────────────────────────
 
 func _dismiss() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	if _pulse_tween != null and _pulse_tween.is_valid():
 		_pulse_tween.kill()
 	var tw := create_tween()

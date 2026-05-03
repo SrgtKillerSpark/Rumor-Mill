@@ -940,7 +940,7 @@ func _build_hint_button() -> void:
 
 
 func _on_hint_pressed() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	var hint := _generate_contextual_hint()
 	_hint_label.text = hint
 	_hint_label.visible = true

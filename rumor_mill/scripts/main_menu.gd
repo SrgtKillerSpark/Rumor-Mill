@@ -667,7 +667,7 @@ func _make_button(label_text: String, w: int) -> Button:
 	btn.add_theme_stylebox_override("pressed", pressed_style)
 	btn.add_theme_stylebox_override("focus",   focus_style)
 	btn.add_theme_color_override("font_color", C_BTN_TEXT)
-	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))
+	btn.pressed.connect(func() -> void: AudioManager.play_ui("click"))
 	btn.mouse_entered.connect(func() -> void: AudioManager.play_sfx_pitched("ui_click", 2.0))
 	return btn
 
