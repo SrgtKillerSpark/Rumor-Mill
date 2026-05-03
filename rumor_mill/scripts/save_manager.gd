@@ -286,6 +286,15 @@ static func _migrate_step(data: Dictionary, from_ver: int) -> String:
 	return ""
 
 
+## SPA-1544: Reset per-session static state at the start of a fresh New Game.
+## Clears any leftover pending-load data and resets the session-was-loaded flag
+## so TutorialController and similar consumers see a clean new-game session.
+## Must be called from main.gd before scenario data loads.
+static func clear_new_game_statics() -> void:
+	_session_was_loaded = false
+	_pending_load_data  = {}
+
+
 ## Returns true if there is pending save data waiting to be applied.
 static func has_pending_load() -> bool:
 	return not _pending_load_data.is_empty()

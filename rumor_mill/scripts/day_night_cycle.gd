@@ -310,6 +310,27 @@ func set_paused(paused: bool) -> void:
 		tick_timer.start()
 
 
+## SPA-1544: Reset day/tick counters to Day 1 / Tick 0 and stop the timer.
+## Called from main.gd _on_begin_game() before scenario data loads to discard
+## any ticks that accumulated while the player was navigating the main menu.
+## The timer is restarted by set_paused(false) when the mission briefing dismisses.
+func reset_for_new_game() -> void:
+	# Kill any in-progress day-transition tweens so the overlay resets cleanly.
+	if _day_flash_tween != null and _day_flash_tween.is_valid():
+		_day_flash_tween.kill()
+	if _day_banner_tween != null and _day_banner_tween.is_valid():
+		_day_banner_tween.kill()
+	if _day_obj_tween != null and _day_obj_tween.is_valid():
+		_day_obj_tween.kill()
+	tick_timer.stop()
+	_transition_paused = false
+	current_tick        = 0
+	current_day         = 1
+	_current_phase_name = ""
+	_apply_time_of_day(0, true)
+	_update_time_label()
+
+
 ## SPA-757: Skip remaining ticks in the current day and advance to the next dawn.
 ## Emits day_changed / day_transition_started as if the day had ended normally,
 ## then fires game_tick for each skipped tick so listeners stay in sync.

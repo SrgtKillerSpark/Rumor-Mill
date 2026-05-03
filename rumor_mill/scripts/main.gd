@@ -101,6 +101,13 @@ func _on_begin_game(scenario_id: String) -> void:
 	await TransitionManager.fade_in(0.35)
 	await get_tree().create_timer(1.5).timeout
 
+	# SPA-1544: Reset day/tick counters — DayNightCycle timer runs during the
+	# main menu and would otherwise report current_day > 1 at scenario start.
+	# Also clear SaveManager session-load flag so fresh games never appear as
+	# loaded saves to TutorialController and other consumers.
+	day_night.reset_for_new_game()
+	SaveManager.clear_new_game_statics()
+
 	# Apply the chosen scenario's edge/personality/reputation overrides.
 	world.active_scenario_id = scenario_id
 	world._apply_active_scenario()
