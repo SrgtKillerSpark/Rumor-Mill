@@ -65,8 +65,18 @@ Synthetic player files live under `fixtures/`:
 | `player_c.ndjson` | 1 | S1 win with tutorial + settings events (KPI 11/12) |
 | `player_d.ndjson` | 1 | S1 early fail |
 | `watchlist_smoke.ndjson` | 4 | **Watchlist fixture** — S2 win, S2 Maren-fail, S3 win, S3 timeout-fail (day-17) |
+| `evidence_events_smoke.ndjson` | 3 | Evidence smoke — S2 Normal/Hard + S3 Normal, mixed acquired + used |
+| `evidence_happy_path.ndjson` | — | **Evidence regression** — happy path: 2 forged_document + 1 witness_account acquired and used, full field set |
+| `evidence_acquired_only.ndjson` | — | **Evidence regression** — mixed: acquired but never used; acqToUseRatio should show ratio=0 |
+| `evidence_malformed.ndjson` | — | **Evidence regression** — edge: invalid JSON lines + missing fields skipped without crash |
 
-Run the full smoke test:
+Run the full test suite (smoke + evidence aggregation regression tests):
+
+```sh
+bash tools/analytics/test_kpi_aggregate.sh
+```
+
+Run the full smoke test only:
 
 ```sh
 node tools/analytics/kpi_aggregate.js tools/analytics/fixtures/*.ndjson
