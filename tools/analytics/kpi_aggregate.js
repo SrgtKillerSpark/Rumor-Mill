@@ -422,6 +422,124 @@ function kpi12(sessions) {
   };
 }
 
+// ── Evidence Acquired Aggregation ────────────────────────────────────────────
+//
+// Processes `evidence_acquired` events (SPA-1530).
+// Returns:
+//   counts     – acquisition count per evidence_type × scenario_id × difficulty
+//   dayHist    – histogram of day per evidence_type
+//   sourceRatio – source_action breakdown per evidence_type
+
+function evidenceAcquiredAgg(events) {
+  const acqMap = {};
+  const dayHistMap = {};
+  const sourceMap = {};
+
+  for (const ev of events) {
+    if (ev.type !== 'evidence_acquired') continue;
+    const t   = String(ev.evidence_type  || 'unknown');
+    const s   = String(ev.scenario_id    || 'unknown');
+    const d   = String(ev.difficulty     || 'unknown');
+    const key = `${t}|${s}|${d}`;
+
+    if (!acqMap[key]) acqMap[key] = { evidence_type: t, scenario_id: s, difficulty: d, count: 0 };
+    acqMap[key].count++;
+
+    if (!dayHistMap[t]) dayHistMap[t] = {};
+    const day = String(ev.day ?? 'unknown');
+    dayHistMap[t][day] = (dayHistMap[t][day] || 0) + 1;
+
+    if (!sourceMap[t]) sourceMap[t] = {};
+    const src = String(ev.source_action || 'unknown');
+    sourceMap[t][src] = (sourceMap[t][src] || 0) + 1;
+  }
+
+  return {
+    counts: Object.values(acqMap).sort(
+      (a, b) => a.evidence_type.localeCompare(b.evidence_type) ||
+                a.scenario_id.localeCompare(b.scenario_id)     ||
+                a.difficulty.localeCompare(b.difficulty)
+    ),
+    dayHist: dayHistMap,
+    sourceRatio: sourceMap,
+  };
+}
+
+// ── Evidence Used Aggregation ─────────────────────────────────────────────────
+//
+// Processes `evidence_used` events (SPA-1530).
+// Returns:
+//   counts        – usage count per evidence_type × scenario_id × difficulty
+//   claimCrossTab – evidence_type × claim_id cross-tab
+//   targetCrossTab– evidence_type × seed_target cross-tab
+//   dayHist       – histogram of day per evidence_type
+//   acqToUseRatio – COUNT(used) / COUNT(acquired) per type
+
+function evidenceUsedAgg(events, acqResult) {
+  const usedMap    = {};
+  const claimMap   = {};
+  const targetMap  = {};
+  const dayHistMap = {};
+  const usedCountByType = {};
+
+  for (const ev of events) {
+    if (ev.type !== 'evidence_used') continue;
+    const t   = String(ev.evidence_type  || 'unknown');
+    const s   = String(ev.scenario_id    || 'unknown');
+    const d   = String(ev.difficulty     || 'unknown');
+    const key = `${t}|${s}|${d}`;
+
+    if (!usedMap[key]) usedMap[key] = { evidence_type: t, scenario_id: s, difficulty: d, count: 0 };
+    usedMap[key].count++;
+
+    const claimId  = String(ev.claim_id    || 'unknown');
+    const claimKey = `${t}|${claimId}`;
+    if (!claimMap[claimKey]) claimMap[claimKey] = { evidence_type: t, claim_id: claimId, count: 0 };
+    claimMap[claimKey].count++;
+
+    const target    = String(ev.seed_target || 'unknown');
+    const targetKey = `${t}|${target}`;
+    if (!targetMap[targetKey]) targetMap[targetKey] = { evidence_type: t, seed_target: target, count: 0 };
+    targetMap[targetKey].count++;
+
+    if (!dayHistMap[t]) dayHistMap[t] = {};
+    const day = String(ev.day ?? 'unknown');
+    dayHistMap[t][day] = (dayHistMap[t][day] || 0) + 1;
+
+    usedCountByType[t] = (usedCountByType[t] || 0) + 1;
+  }
+
+  // Build per-type acquisition totals from already-computed acqResult
+  const acqCountByType = {};
+  for (const row of acqResult.counts) {
+    acqCountByType[row.evidence_type] = (acqCountByType[row.evidence_type] || 0) + row.count;
+  }
+
+  const acqToUseRatio = {};
+  const allTypes = new Set([...Object.keys(acqCountByType), ...Object.keys(usedCountByType)]);
+  for (const t of allTypes) {
+    const acq  = acqCountByType[t]  || 0;
+    const used = usedCountByType[t] || 0;
+    acqToUseRatio[t] = { acquired: acq, used, ratio: acq > 0 ? used / acq : null };
+  }
+
+  return {
+    counts: Object.values(usedMap).sort(
+      (a, b) => a.evidence_type.localeCompare(b.evidence_type) ||
+                a.scenario_id.localeCompare(b.scenario_id)     ||
+                a.difficulty.localeCompare(b.difficulty)
+    ),
+    claimCrossTab: Object.values(claimMap).sort(
+      (a, b) => a.evidence_type.localeCompare(b.evidence_type) || a.claim_id.localeCompare(b.claim_id)
+    ),
+    targetCrossTab: Object.values(targetMap).sort(
+      (a, b) => a.evidence_type.localeCompare(b.evidence_type) || a.seed_target.localeCompare(b.seed_target)
+    ),
+    dayHist: dayHistMap,
+    acqToUseRatio,
+  };
+}
+
 // ── Watchlist: Maren-fail ratio (2-A / 2-B) ──────────────────────────────────
 //
 // A "Maren-fail" is an S2 FAILED session where Sister Maren caused the loss.
@@ -666,6 +784,8 @@ function buildDigest(events, sessions, filePaths) {
   const k10r = kpi10(sessions);
   const k11r = kpi11(events);
   const k12r = kpi12(sessions);
+  const evAcq  = evidenceAcquiredAgg(events);
+  const evUsed = evidenceUsedAgg(events, evAcq);
   const flags = redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, k11r, sessions);
   const wlMaren  = wlMarenFail(sessions);
   const wlCalder = wlCalderDay15(sessions);
@@ -866,6 +986,98 @@ function buildDigest(events, sessions, filePaths) {
     }
   }
 
+  // Evidence Acquired
+  out.push(`\n## Evidence Acquired\n`);
+  out.push(`_New events from [SPA-1530](/SPA/issues/SPA-1530) — acquisition rate, day histogram, source breakdown._\n`);
+  if (!evAcq.counts.length) {
+    out.push(`_No \`evidence_acquired\` events in dataset._\n`);
+  } else {
+    out.push(`### Acquisition Rate (per type × scenario × difficulty)\n`);
+    out.push(`| Evidence Type | Scenario | Difficulty | Count |`);
+    out.push(`|---------------|----------|------------|-------|`);
+    for (const row of evAcq.counts) {
+      out.push(`| ${row.evidence_type} | ${row.scenario_id} | ${row.difficulty} | ${row.count} |`);
+    }
+
+    out.push(`\n### Day Histogram (when items are acquired)\n`);
+    for (const [t, hist] of Object.entries(evAcq.dayHist)) {
+      out.push(`**${t}**`);
+      const days = Object.keys(hist).sort((a, b) => Number(a) - Number(b));
+      const total = Object.values(hist).reduce((s, n) => s + n, 0);
+      for (const d of days) {
+        const n = hist[d];
+        const bar = '█'.repeat(Math.max(1, Math.round(n / total * 20)));
+        out.push(`  Day ${String(d).padEnd(3)} ${bar.padEnd(20)} ${String((n / total * 100).toFixed(0)).padStart(3)}% (n=${n})`);
+      }
+      out.push('');
+    }
+
+    out.push(`### Source Action Ratio (per type)\n`);
+    out.push(`| Evidence Type | Source Action | Count | Share |`);
+    out.push(`|---------------|---------------|-------|-------|`);
+    for (const [t, srcMap] of Object.entries(evAcq.sourceRatio)) {
+      const total = Object.values(srcMap).reduce((s, n) => s + n, 0);
+      const sorted = Object.entries(srcMap).sort((a, b) => b[1] - a[1]);
+      for (const [src, n] of sorted) {
+        out.push(`| ${t} | ${src} | ${n} | ${(n / total * 100).toFixed(1)}% |`);
+      }
+    }
+    out.push('');
+  }
+
+  // Evidence Used
+  out.push(`\n## Evidence Used\n`);
+  out.push(`_New events from [SPA-1530](/SPA/issues/SPA-1530) — usage rate, claim/target cross-tabs, hoarding ratio._\n`);
+  if (!evUsed.counts.length) {
+    out.push(`_No \`evidence_used\` events in dataset._\n`);
+  } else {
+    out.push(`### Usage Count (per type × scenario × difficulty)\n`);
+    out.push(`| Evidence Type | Scenario | Difficulty | Count |`);
+    out.push(`|---------------|----------|------------|-------|`);
+    for (const row of evUsed.counts) {
+      out.push(`| ${row.evidence_type} | ${row.scenario_id} | ${row.difficulty} | ${row.count} |`);
+    }
+
+    out.push(`\n### Cross-tab: Evidence Type × Claim ID\n`);
+    out.push(`| Evidence Type | Claim ID | Count |`);
+    out.push(`|---------------|----------|-------|`);
+    for (const row of evUsed.claimCrossTab) {
+      out.push(`| ${row.evidence_type} | ${row.claim_id} | ${row.count} |`);
+    }
+
+    out.push(`\n### Cross-tab: Evidence Type × Seed Target\n`);
+    out.push(`| Evidence Type | Seed Target | Count |`);
+    out.push(`|---------------|-------------|-------|`);
+    for (const row of evUsed.targetCrossTab) {
+      out.push(`| ${row.evidence_type} | ${row.seed_target} | ${row.count} |`);
+    }
+
+    out.push(`\n### Day Histogram (when items are used)\n`);
+    for (const [t, hist] of Object.entries(evUsed.dayHist)) {
+      out.push(`**${t}**`);
+      const days = Object.keys(hist).sort((a, b) => Number(a) - Number(b));
+      const total = Object.values(hist).reduce((s, n) => s + n, 0);
+      for (const d of days) {
+        const n = hist[d];
+        const bar = '█'.repeat(Math.max(1, Math.round(n / total * 20)));
+        out.push(`  Day ${String(d).padEnd(3)} ${bar.padEnd(20)} ${String((n / total * 100).toFixed(0)).padStart(3)}% (n=${n})`);
+      }
+      out.push('');
+    }
+
+    out.push(`### Acquisition-to-Use Ratio (hoarding indicator)\n`);
+    out.push(`| Evidence Type | Acquired | Used | Ratio | Note |`);
+    out.push(`|---------------|----------|------|-------|------|`);
+    for (const [t, v] of Object.entries(evUsed.acqToUseRatio)) {
+      const ratioStr = v.ratio != null ? (v.ratio * 100).toFixed(1) + '%' : 'N/A';
+      const note = v.ratio == null ? '—' :
+                   v.ratio < 0.33 ? '⚠️ hoarding' :
+                   v.ratio > 0.90 ? '⚠️ spending all' : '✅';
+      out.push(`| ${t} | ${v.acquired} | ${v.used} | ${ratioStr} | ${note} |`);
+    }
+    out.push('');
+  }
+
   // Red Flags
   out.push(`---\n\n## 🚩 Red Flags\n`);
   if (!flags.length) {
@@ -981,17 +1193,82 @@ function buildDigest(events, sessions, filePaths) {
   return out.join('\n');
 }
 
+// ── JSON builder ──────────────────────────────────────────────────────────────
+
+function buildJson(events, sessions, filePaths) {
+  const k1r  = kpi1(sessions);
+  const k2r  = kpi2(sessions);
+  const k3r  = kpi3(sessions);
+  const k4r  = kpi4(sessions);
+  const k5r  = kpi5(events);
+  const k6r  = kpi6(sessions);
+  const k7r  = kpi7(events);
+  const k8r  = kpi8(sessions);
+  const k9r  = kpi9(sessions);
+  const k10r = kpi10(sessions);
+  const k11r = kpi11(events);
+  const k12r = kpi12(sessions);
+  const evAcq  = evidenceAcquiredAgg(events);
+  const evUsed = evidenceUsedAgg(events, evAcq);
+  const flags = redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, k11r, sessions);
+  const wlMaren  = wlMarenFail(sessions);
+  const wlCalder = wlCalderDay15(sessions);
+  const wlS3Quit = wlS3MidQuit(sessions);
+  const wlNpc    = wlNpcRejectFail(sessions);
+
+  return {
+    generated: new Date().toISOString(),
+    input: {
+      files: filePaths.length,
+      sessions: sessions.length,
+      events: events.length,
+      completedSessions: sessions.filter(s => s.ended).length,
+      incompleteSessions: sessions.filter(s => !s.ended).length,
+    },
+    kpi1_completion_rate: k1r,
+    kpi2_day_of_quit: k2r,
+    kpi3_session_duration: k3r,
+    kpi4_seed_to_believer: k4r,
+    kpi5_adoption_funnel: k5r,
+    kpi6_recon_action_rate: k6r,
+    kpi7_recon_success_rate: k7r,
+    kpi8_reputation_volatility: k8r,
+    kpi9_attempt_sequence: k9r,
+    kpi10_difficulty_distribution: k10r,
+    kpi11_tutorial_abandonment: k11r,
+    kpi12_settings_touched: k12r,
+    evidence_acquired: evAcq,
+    evidence_used: evUsed,
+    watchlist: {
+      maren_fail: wlMaren,
+      calder_day15: wlCalder,
+      s3_mid_quit: wlS3Quit,
+      npc_reject_fail: wlNpc,
+    },
+    red_flags: flags,
+  };
+}
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
-const args = process.argv.slice(2);
+const rawArgs = process.argv.slice(2);
+const jsonMode = rawArgs.includes('--json');
+const args = rawArgs.filter(a => a !== '--json');
+
 if (!args.length) {
   process.stderr.write(
-    'Usage: node tools/analytics/kpi_aggregate.js <file.ndjson> [file2.ndjson ...]\n' +
-    'Example: node tools/analytics/kpi_aggregate.js tools/analytics/fixtures/*.ndjson\n'
+    'Usage: node tools/analytics/kpi_aggregate.js [--json] <file.ndjson> [file2.ndjson ...]\n' +
+    'Example: node tools/analytics/kpi_aggregate.js tools/analytics/fixtures/*.ndjson\n' +
+    '         node tools/analytics/kpi_aggregate.js --json tools/analytics/fixtures/*.ndjson\n'
   );
   process.exit(1);
 }
 
 const events  = loadFiles(args);
 const sessions = groupSessions(events);
-process.stdout.write(buildDigest(events, sessions, args) + '\n');
+
+if (jsonMode) {
+  process.stdout.write(JSON.stringify(buildJson(events, sessions, args), null, 2) + '\n');
+} else {
+  process.stdout.write(buildDigest(events, sessions, args) + '\n');
+}
