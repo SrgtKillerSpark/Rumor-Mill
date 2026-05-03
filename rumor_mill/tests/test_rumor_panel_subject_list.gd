@@ -212,8 +212,6 @@ func test_setup_assigns_refs() -> bool:
 	var world := Node2D.new()
 	var store := PlayerIntelStore.new()
 	s.setup(world, store, null)
-	var ok := s._world_ref == world \
-		  and s._intel_store_ref == store \
-		  and s._portrait_tex == null
+	var ok: bool = s._world_ref == world and s._intel_store_ref == store and s._portrait_tex == null
 	world.free()
 	return ok

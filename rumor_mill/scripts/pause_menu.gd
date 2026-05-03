@@ -140,8 +140,7 @@ func _close() -> void:
 	_is_open = false
 	if _open_tween != null and _open_tween.is_valid():
 		_open_tween.kill()
-	var tw := create_tween().set_parallel(true) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	var tw: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	if _bg_rect != null:
 		tw.tween_property(_bg_rect, "modulate:a", 0.0, 0.12)

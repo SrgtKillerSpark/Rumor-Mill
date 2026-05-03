@@ -544,8 +544,7 @@ func _hit_test_location(world_pos: Vector2) -> String:
 
 func _try_observe(location_id: String) -> void:
 	# Forged Document: double-spend at market/guild when ≥2 actions remain.
-	var forged_doc := _intel_store.recon_actions_remaining >= 2 \
-		and (location_id == "market" or location_id == "guild")
+	var forged_doc: bool = _intel_store.recon_actions_remaining >= 2 and (location_id == "market" or location_id == "guild")
 
 	if not _intel_store.try_spend_action():
 		emit_signal("action_performed", "No Recon Actions remaining today.", false)

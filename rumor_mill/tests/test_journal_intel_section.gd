@@ -117,9 +117,7 @@ func test_setup_assigns_refs() -> bool:
 	var intel      := PlayerIntelStore.new()
 	var day_night  := Node.new()
 	s.setup(world, intel, day_night)
-	var ok := s._world_ref == world \
-		  and s._intel_store_ref == intel \
-		  and s._day_night_ref == day_night
+	var ok: bool = s._world_ref == world and s._intel_store_ref == intel and s._day_night_ref == day_night
 	world.free()
 	day_night.free()
 	return ok

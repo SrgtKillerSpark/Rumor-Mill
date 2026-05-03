@@ -282,9 +282,7 @@ func test_get_window_mode_label_windowed() -> bool:
 func test_set_text_size_index_small_syncs_scale() -> bool:
 	var sm := _make_sm()
 	sm.set_text_size_index(0)  # Small → UI_SCALE_PRESETS[0] = 0.75
-	var ok := sm.text_size_index == 0 \
-		and sm.ui_scale_index == SettingsManagerScript.TEXT_SIZE_SCALE_INDICES[0] \
-		and absf(sm.ui_scale - SettingsManagerScript.UI_SCALE_PRESETS[sm.ui_scale_index]) < 0.001
+	var ok: bool = sm.text_size_index == 0 and sm.ui_scale_index == SettingsManagerScript.TEXT_SIZE_SCALE_INDICES[0] and absf(sm.ui_scale - SettingsManagerScript.UI_SCALE_PRESETS[sm.ui_scale_index]) < 0.001
 	sm.free()
 	return ok
 

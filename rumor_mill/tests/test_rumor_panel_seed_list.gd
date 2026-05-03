@@ -148,8 +148,6 @@ func test_setup_assigns_refs() -> bool:
 	var store     := PlayerIntelStore.new()
 	var estimates := Estimates_Klass.new()
 	s.setup(world, store, estimates)
-	var ok := s._world_ref == world \
-		  and s._intel_store_ref == store \
-		  and s._estimates == estimates
+	var ok: bool = s._world_ref == world and s._intel_store_ref == store and s._estimates == estimates
 	world.free()
 	return ok

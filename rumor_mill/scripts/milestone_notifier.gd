@@ -140,8 +140,7 @@ func _display_popup(text: String, color: Color, milestone_id: String) -> void:
 	var target_y: float = float(POPUP_Y)
 	_popup_root.modulate.a = 0.0
 	_popup_root.position.y = target_y - 18.0
-	var tw_in := create_tween().set_parallel(true) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	var tw_in: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw_in.tween_property(_popup_root, "modulate:a", 1.0, 0.28)
 	tw_in.tween_property(_popup_root, "position:y", target_y, 0.28)
 
@@ -160,8 +159,7 @@ func _dismiss_current() -> void:
 		_show_next()
 		return
 
-	var tw_out := create_tween().set_parallel(true) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	var tw_out: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw_out.tween_property(_popup_root, "modulate:a", 0.0, 0.38)
 	tw_out.tween_property(_popup_root, "position:y", _popup_root.position.y - 16.0, 0.38)
 	tw_out.chain().tween_callback(func() -> void:

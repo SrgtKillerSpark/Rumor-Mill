@@ -906,8 +906,7 @@ func test_rebuild_dict_populates_from_all_npcs_ref() -> bool:
 	var peer1 := _make_npc("peer_a")
 	var peer2 := _make_npc("peer_b")
 	npc.all_npcs_ref = [peer1, peer2]
-	var ok := npc._npc_id_dict.has("peer_a") and npc._npc_id_dict.has("peer_b") \
-		and npc._npc_id_dict["peer_a"] == peer1 and npc._npc_id_dict["peer_b"] == peer2
+	var ok: bool = npc._npc_id_dict.has("peer_a") and npc._npc_id_dict.has("peer_b") and npc._npc_id_dict["peer_a"] == peer1 and npc._npc_id_dict["peer_b"] == peer2
 	peer1.free()
 	peer2.free()
 	npc.free()

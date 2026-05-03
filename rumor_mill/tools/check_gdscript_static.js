@@ -13,6 +13,10 @@
 //      project.godot's [autoload] section
 //   4. Variables assigned without `var` whose only `var` declaration in the
 //      same function is inside a conditional / loop block (scope mismatch)
+//   5. `var x := expr \` with backslash continuation — GDScript 4.6 type
+//      inference fails on multi-line `:=` when operands include typed
+//      accessors, chained `and`/`or`, or method chains.  Fix: use explicit
+//      type `var x: Type = ...` (SPA-1543 / SPA-1556).
 //
 // Usage:
 //   node rumor_mill/tools/check_gdscript_static.js [--project <path>] [--fix-hint]
@@ -154,7 +158,7 @@ function findGdFiles(dir) {
     try { entries = fs.readdirSync(current, { withFileTypes: true }); }
     catch { return; }
     for (const e of entries) {
-      if (e.name.startsWith('.')) continue;
+      if (e.name.startsWith('.') || e.name === 'fixtures') continue;
       const full = path.join(current, e.name);
       if (e.isDirectory()) { walk(full); }
       else if (e.isFile() && e.name.endsWith('.gd')) { results.push(full); }
@@ -518,6 +522,27 @@ function checkBlockScopeVars(filePath, lines) {
   }
 }
 
+// ── Check 5: inferred-type with backslash continuation (SPA-1543 / SPA-1556)─
+// GDScript 4.6 fails type inference on `var x := <multi-line expr>` when the
+// RHS spans lines via `\` continuation and includes typed dict getters, chained
+// `and`/`or`, or method chains.  Flags any `var <name> := ... \` line.
+// Fix: replace `:=` with an explicit type annotation, e.g. `var x: bool = ...`.
+function checkInferredTypeBackslash(filePath, lines) {
+  const re = /^(\s*)var\s+([A-Za-z_][A-Za-z0-9_]*)\s*:=\s*.+\\\s*$/;
+  for (let i = 0; i < lines.length; i++) {
+    const m = re.exec(lines[i]);
+    if (!m) continue;
+    // Skip full-line comments
+    if (/^\s*#/.test(lines[i])) continue;
+    const varName = m[2];
+    reportError(filePath, i + 1,
+      `'var ${varName} := ... \\' uses inferred type with backslash continuation — ` +
+      `GDScript 4.6 type inference fails on multi-line := expressions (SPA-1543)`,
+      `Use explicit type: 'var ${varName}: <Type> = ...' and collapse to a single line`
+    );
+  }
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 // Returns true when a file lives inside a tests/ directory.
@@ -548,6 +573,7 @@ function checkFile(filePath, knownClassNames, autoloads, allLocalTypes) {
     checkUndeclaredAutoloadUsage(filePath, lines, autoloads, knownClassNames, allLocalTypes);
   }
   checkBlockScopeVars(filePath, lines);
+  checkInferredTypeBackslash(filePath, lines);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────

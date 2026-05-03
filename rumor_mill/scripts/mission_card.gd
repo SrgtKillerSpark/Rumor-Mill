@@ -63,8 +63,7 @@ func setup(card_data: Dictionary) -> void:
 	# Animate in: fade + slide down.
 	_popup_root.modulate.a  = 0.0
 	_popup_root.position.y  = POPUP_Y - 18.0
-	var tw_in := create_tween().set_parallel(true) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	var tw_in: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw_in.tween_property(_popup_root, "modulate:a", 1.0, 0.30)
 	tw_in.tween_property(_popup_root, "position:y", POPUP_Y, 0.30)
 
@@ -96,8 +95,7 @@ func _dismiss() -> void:
 		dismissed.emit()
 		queue_free()
 		return
-	var tw_out := create_tween().set_parallel(true) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	var tw_out: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw_out.tween_property(_popup_root, "modulate:a", 0.0, 0.32)
 	tw_out.tween_property(_popup_root, "position:y", _popup_root.position.y - 14.0, 0.32)
 	tw_out.chain().tween_callback(func() -> void:
