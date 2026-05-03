@@ -26,6 +26,7 @@ var _bar_bg:            ColorRect = null
 var _believers_lbl:     Label     = null
 var _rejecters_lbl:     Label     = null
 var _maren_warning_lbl: Label     = null
+var _maren_watch_lbl:   Label     = null
 var _escalation_lbl:    Label     = null
 
 ## SPA-805: pip row — filled ● / empty ○ circles showing believer progress.
@@ -144,6 +145,21 @@ func _build_ui() -> void:
 	_maren_warning_lbl.clip_text = true
 	names_vbox.add_child(_maren_warning_lbl)
 
+	# SPA-1540: Persistent Maren watch state — visible before grace fires so the mechanic
+	# is discoverable. Dimmed when dormant; turns amber and expands when defending.
+	_maren_watch_lbl = Label.new()
+	_maren_watch_lbl.add_theme_font_size_override("font_size", 11)
+	_maren_watch_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.55))
+	_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
+	_maren_watch_lbl.tooltip_text = (
+		"Sister Maren may counter the illness rumor if it reaches her circle."
+		+ " When active, she suppresses credulity among her neighbors."
+		+ " A 2-day grace window applies after she first rejects."
+	)
+	_maren_watch_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_maren_watch_lbl.clip_text = true
+	names_vbox.add_child(_maren_watch_lbl)
+
 	# Days remaining + result.
 	var right_vbox := VBoxContainer.new()
 	right_vbox.add_theme_constant_override("separation", 2)
@@ -194,7 +210,7 @@ func _build_ui() -> void:
 
 	_quarantine_dropdown = OptionButton.new()
 	_quarantine_dropdown.add_theme_font_size_override("font_size", 11)
-	_quarantine_dropdown.tooltip_text = "Select a building to quarantine. Costs 2 Whisper tokens."
+	_quarantine_dropdown.tooltip_text = "Select a building to quarantine. Costs 1 Recon Action + 1 Whisper Token."
 	_quarantine_dropdown.custom_minimum_size = Vector2(110, 0)
 	q_vbox.add_child(_quarantine_dropdown)
 
@@ -235,6 +251,8 @@ func _refresh() -> void:
 	var believers: Array = progress["illness_believer_ids"]
 	var rejecters: Array = progress["illness_rejecter_ids"]
 	var state            = progress["state"]
+	# SPA-1540: Maren is DEFENDING once she appears in the rejecters list.
+	var maren_defending: bool = ScenarioManager.MAREN_NUN_ID in rejecters
 
 	_count_lbl.text = "Believers: %d / %d+" % [count, threshold]
 
@@ -251,9 +269,10 @@ func _refresh() -> void:
 		var names: Array = []
 		for npc_id in believers.slice(0, MAX_NAMES_SHOWN):
 			# SPA-592: flag NPCs directly connected to Maren — seeding them risked this chain.
+			# SPA-1540: swap (!) for [🛡] when Maren is actively suppressing her neighbors.
 			var display := _display_name(npc_id)
 			if _maren_neighbours.has(npc_id):
-				display += " (!)"
+				display += " [🛡]" if maren_defending else " (!)"
 			names.append(display)
 		var suffix := ""
 		if believers.size() > MAX_NAMES_SHOWN:
@@ -265,7 +284,11 @@ func _refresh() -> void:
 	if rejecters.size() > 0:
 		var names: Array = []
 		for npc_id in rejecters.slice(0, MAX_NAMES_SHOWN):
-			names.append(_display_name(npc_id))
+			# SPA-1540: tag neighbors being actively suppressed by Maren's counter-intel.
+			var r_display := _display_name(npc_id)
+			if maren_defending and _maren_neighbours.has(npc_id):
+				r_display += " [🛡]"
+			names.append(r_display)
 		var suffix := ""
 		if rejecters.size() > MAX_NAMES_SHOWN:
 			suffix = " +%d more" % (rejecters.size() - MAX_NAMES_SHOWN)
@@ -289,6 +312,15 @@ func _refresh() -> void:
 		"VICTORY — The plague scare spreads",
 		"FAILED — The truth prevails")
 	_update_quarantine_button()
+
+	# SPA-1540: Keep the persistent Maren watch indicator in sync each tick.
+	if _maren_watch_lbl != null:
+		if maren_defending:
+			_maren_watch_lbl.text = "🛡 Maren is actively countering rumors among her neighbors"
+			_maren_watch_lbl.add_theme_color_override("font_color", Color(0.95, 0.55, 0.10, 1.0))
+		else:
+			_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
+			_maren_watch_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.55))
 
 
 # ── Escalation activity ───────────────────────────────────────────────────────
@@ -369,7 +401,7 @@ func _get_selected_building() -> String:
 	return _quarantine_dropdown.get_item_metadata(idx)
 
 
-## Player clicked "Quarantine" — spend 2 whisper tokens and quarantine the building.
+## Player clicked "Quarantine" — spend 1 Recon Action + 1 Whisper Token and quarantine the building.
 func _on_quarantine_pressed() -> void:
 	if _world_ref == null:
 		return
