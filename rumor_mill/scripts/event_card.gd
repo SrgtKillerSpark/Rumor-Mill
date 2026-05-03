@@ -148,7 +148,7 @@ func _build_ui(label: String, description: String, day: int) -> void:
 	# Description body.
 	_body_lbl = RichTextLabel.new()
 	_body_lbl.bbcode_enabled = true
-	_body_lbl.fit_content           = true
+	_body_lbl.fit_content           = false
 	_body_lbl.custom_minimum_size   = Vector2(0, 0)
 	_body_lbl.custom_maximum_size   = Vector2(0, 120)
 	_body_lbl.scroll_active         = true

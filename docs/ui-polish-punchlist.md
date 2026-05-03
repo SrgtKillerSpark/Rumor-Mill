@@ -29,7 +29,7 @@
 | 3 | **Days-remaining label font size inconsistency.** S1-S4 use 14pt, S5-S6 use 12pt. | scenario5_hud.gd:119, scenario6_hud.gd:104 | Small |
 | 4 | **BAR_HEIGHT inconsistency.** S1-S3 use 12px, S4-S6 use 10px. Subtle but perceptible. | scenario4_hud.gd:35, scenario5_hud.gd:31, scenario6_hud.gd:27 | Small |
 | 5 | **HBox separation inconsistency.** S1-S3 use 16px, S4-S6 use 14px. | scenario4_hud.gd:68, scenario5_hud.gd:65, scenario6_hud.gd:50 | Small |
-| 6 | **Event toast height too short for wrapped text.** S4 toast is 22px, S6 toast is 28px. AUTOWRAP_WORD_SMART is set on S6 label but parent panel can't display a second line. Long event descriptions are clipped. | scenario4_hud.gd:109-110, scenario6_hud.gd:336-337/359 | Medium |
+| 6 | ~~**Event toast height too short for wrapped text.** S4 toast is 22px, S6 toast is 28px. AUTOWRAP_WORD_SMART is set on S6 label but parent panel can't display a second line. Long event descriptions are clipped.~~ **RESOLVED SPA-1517** — Both toast panels raised to 44px (SIDE_TOP=90, SIDE_BOTTOM=134). | scenario4_hud.gd:265-266, scenario6_hud.gd:236-237 | Medium |
 | 7 | **No `clip_text` on dynamic labels.** Caution, days, believers, rejecters, rival, scout, degrade, anonymous-tip, event, campaign, blackmail, guild-defense labels all lack `clip_text = true`. Long dynamic text can bleed past panel edges. | scenario1_hud.gd:60/66, scenario2_hud.gd:234/237, scenario3_hud.gd:79/90/94, scenario4_hud.gd:137/154, scenario5_hud.gd:158/177, scenario6_hud.gd:330/345 | Medium |
 | 8 | **S4 faction phase bars appear instantly (no tween).** When a phase fires, the bar snaps from 0 to full width. Should animate over ~0.5s. | scenario4_hud.gd:373 | Small |
 | 9 | **Rival gap bar divides by magic constant 30.** If reputation gap exceeds 30, bar is clamped at 100%. No documentation on why 30. | scenario5_hud.gd:148 | Small |
@@ -66,11 +66,11 @@
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
 | 22 | **Journal slide animation uses hardcoded 40px offset.** Not viewport-relative; feels different at different scales. | journal.gd:151 | Small |
-| 23 | **Rumor panel status label has no width constraint.** Long reward/risk text can overflow panel bounds. `autowrap` set but no `custom_minimum_size`. | rumor_panel.gd:491-500 | Medium |
+| 23 | ~~**Rumor panel status label has no width constraint.** Long reward/risk text can overflow panel bounds. `autowrap` set but no `custom_minimum_size`.~~ **RESOLVED SPA-1517** — `custom_maximum_size = Vector2(0, 40)` added to cap height at ~3 lines. | rumor_panel.gd:230 | Medium |
 | 24 | **Rumor panel subject portrait hardcoded to 48x60px.** No DPI scaling. | rumor_panel_subject_list.gd:95 | Small |
 | 25 | **Journal font-size hierarchy is muddy.** Factions section uses 18 -> 14 -> 13 -> 13. The jump from header to sub-items is too subtle. | journal_factions_section.gd:52/63/67 | Small |
 | 26 | **Timeline event labels have no `clip_text`.** Long event messages can overflow. | journal_timeline_section.gd:268 | Small |
-| 27 | **Rumor tracker side panel has `MAX_ROWS=4` and 240px width.** Concatenated claim+subject text can overflow. No truncation guard. | rumor_tracker_hud.gd:160/189 | Medium |
+| 27 | ~~**Rumor tracker side panel has `MAX_ROWS=4` and 240px width.** Concatenated claim+subject text can overflow. No truncation guard.~~ **RESOLVED SPA-1517** — `clip_text = true` added to `claim_lbl` (line 206) and `mut_lbl` (line 217). | rumor_tracker_hud.gd:206/217 | Medium |
 
 ### Social Graph Overlay
 
@@ -97,7 +97,7 @@
 | 36 | **Mission briefing card uses hardcoded offsets (+-310px).** Not viewport-relative. On 1600x900, card appears slightly off-center. | mission_briefing.gd:146-148 | Small |
 | 37 | **Event choice modal panel is 700px wide with no viewport safety.** No max-width cap relative to viewport. | event_choice_modal.gd:164-166 | Small |
 | 38 | **Ready overlay card hardcoded to 580px wide (+-290).** Same issue as mission briefing. | ready_overlay.gd:89-92 | Small |
-| 39 | **Event card body RTL has `fit_content=true` with no size bounds.** Very long event descriptions expand panel unbounded. | event_card.gd:154 | Medium |
+| 39 | ~~**Event card body RTL has `fit_content=true` with no size bounds.** Very long event descriptions expand panel unbounded.~~ **RESOLVED SPA-1517** — `fit_content` set to `false`; `custom_maximum_size = Vector2(0, 120)` and `scroll_active = true` already present, now fully effective. | event_card.gd:151 | Medium |
 
 ### Other UI Components
 
@@ -122,8 +122,38 @@ Fixed in SPA-1143 / SPA-1144 (commit `8276a23`). Achievement and suggestion toas
 ### 2. ~~Scenario HUD consistency pass (Issues #1, #2, #3, #4, #5, #7) -- Medium~~ RESOLVED
 Fixed in SPA-1145 (commit `0de2c81`). Unified BAR_HEIGHT=12, score font_size=14, days font_size=14, hbox_separation=16 across all six scenarios. S3 panel height corrected to 62px. `clip_text=true` added to all dynamic labels.
 
-### 3. Event toast clipping and text overflow (Issues #6, #7, #39, #23) -- Medium
-**Still open.** Event toasts in S4 (22px) and S6 (28px) are too short for wrapped text. The S6 toast has autowrap enabled but the parent panel can only show one line. Similarly, rumor panel status labels, event card bodies, and rumor tracker entries have no width/height constraints, so long dynamic text overflows. **Recommended fix:** increase toast panel height to at least 44px (two-line capacity), add `clip_text=true` or `custom_maximum_size` guards on all dynamic labels, and enable `scroll_active=true` on event card bodies.
+### 3. ~~Event toast clipping and text overflow (Issues #6, #23, #27, #39) -- Medium~~ RESOLVED
+Fixed in SPA-1517. S4 and S6 toast panels raised to 44px. `custom_maximum_size = Vector2(0, 40)` added to rumor panel status label. `fit_content = false` applied to event card body (existing `custom_maximum_size`/`scroll_active` now fully effective). `clip_text = true` guards added to rumor tracker claim/mutation labels.
+
+---
+
+## Community Feedback Triage — Days 5–7 (SPA-1515)
+
+*Source: `docs/community-feedback-log.md` Digest Entry Days 5–7, compiled 2026-04-30.*
+*Triage date: 2026-05-03*
+
+Items below were extracted from player feedback and are **net-new** — not duplicates of issues #1–47 above.
+
+### Tutorial & Onboarding
+
+| # | Issue | Source Quote | Severity | Fix Suggestion |
+|---|-------|-------------|----------|----------------|
+| 48 | **Heat system not covered in tutorial.** Players discover the heat/suspicion mechanic mid-playthrough by getting caught — not through the onboarding sequence. Tutorial covers rumor seeding and the social graph but skips heat accumulation entirely. (4 independent reports) | "didn't realize my movements were being tracked"; "I had no idea why NPCs started avoiding me" | **P1** | Add a tutorial banner step (or tooltip-gated moment) that introduces heat accumulation before the player's first high-risk action. Low-effort, high-clarity win — reuse existing `tutorial_banner.gd` sequence. |
+
+### In-Game Feedback & Discoverability
+
+| # | Issue | Source Quote | Severity | Fix Suggestion |
+|---|-------|-------------|----------|----------------|
+| 49 | **No in-game UI feedback when a rumor target-shifts.** When propagation mutates a rumor's target, there is no toast, journal entry, or visual cue explaining that the shift happened or why. Group A players (9 reports, mostly Apprentice/Master) perceive target-shift as a bug rather than an intentional mechanic. Group B (Spymaster players) understand it but still want mitigation info. | "feels like a bug"; mechanic "reads as a design bug to [newer players] until explained" | **P1** | Surface a brief toast or rumor-panel annotation when target-shift fires (e.g. "Rumor about {old_target} has shifted to {new_target} — NPCs reinterpret whispers as they spread"). Optionally link to a journal glossary entry on propagation mechanics. |
+| 50 | **Scenario-select teaser text truncation hides useful context.** (Amplifies existing issue #13.) Multiple players across channels noted scenario descriptions feel incomplete. Community reports validate the 180-char truncation is actively noticed. | (Implicit from feedback patterns — players ask "what is this scenario about?" after reading the select screen) | **P2** | Raise #13 priority; enable `scroll_active = true` on the description label or increase `custom_maximum_size.y` to show the full teaser. |
+
+---
+
+## Top 3 P1s from Community Feedback Triage (SPA-1515)
+
+1. **#48 — Heat system tutorial gap.** 4 reports. Players are blindsided by the core heat mechanic. Fix: add a tutorial banner step covering heat before the first high-risk action.
+2. **#49 — Target-shift has no in-game UI feedback.** 9 reports (largest UX cluster). Players think target-shift is a bug. Fix: surface a toast/annotation when propagation mutates a rumor's target.
+3. **#3 (existing, text overflow) + #50 (amplified) — Event/toast/scenario text clipping.** The open issue #6/#7/#39/#23 cluster plus community validation of #13 truncation. Fix: the overflow pass in "Top 3 Fixes" §3 above, plus scroll-enabling #13.
 
 ---
 
