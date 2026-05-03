@@ -424,21 +424,25 @@ function kpi12(sessions) {
 
 // ── Watchlist: Maren-fail ratio (2-A / 2-B) ──────────────────────────────────
 //
-// A "Maren-fail" is an S2 FAILED session that contains at least one
-// npc_state_changed event where npc_name matches /maren/i with new_state=REJECT.
-// The ratio measures how often Sister Maren's counter-intelligence causes S2 losses.
+// A "Maren-fail" is an S2 FAILED session where Sister Maren caused the loss.
+// Primary: scenario_fail_trigger.trigger_npc_id === 'npc_maren_nun' (direct attribution).
+// Fallback: npc_state_changed REJECT on a Maren NPC (indirect, for pre-SPA-1454 data).
 
 function wlMarenFail(sessions) {
   const s2Failed = sessions.filter(
     s => /^s2$/i.test(String(s.scenario_id)) && s.outcome === 'FAILED'
   );
-  const marenFails = s2Failed.filter(s =>
-    s.events.some(
+  const marenFails = s2Failed.filter(s => {
+    // Prefer direct attribution via scenario_fail_trigger
+    if (s.events.some(ev => ev.type === 'scenario_fail_trigger' && ev.trigger_npc_id === 'npc_maren_nun'))
+      return true;
+    // Fallback: indirect correlation via npc_state_changed REJECT
+    return s.events.some(
       ev => ev.type === 'npc_state_changed' &&
             /maren/i.test(ev.npc_name) &&
             ev.new_state === 'REJECT'
-    )
-  );
+    );
+  });
   return {
     total: s2Failed.length,
     marenFails: marenFails.length,
@@ -448,16 +452,38 @@ function wlMarenFail(sessions) {
 
 // ── Watchlist: Calder day-15 reputation reconstruction (3-A) ─────────────────
 //
-// Accumulates reputation_delta events on npc_id matching /calder/i for days ≤ 15,
-// anchored to the first observed from_score in each S3 WON session.
-// LOSSY: reputation_delta only fires when |delta| ≥ 3; small nudges are invisible.
+// Primary: reputation_snapshot events on npc_id matching /calder/i at day ≤ 15.
+// Emitted losslessly once per day per NPC (SPA-1417); uses the latest snapshot
+// at or before day 15.
+// Fallback: accumulate reputation_delta (lossy — only fires when |delta| ≥ 3).
 
 function wlCalderDay15(sessions) {
   const s3Won = sessions.filter(
     s => /^s3$/i.test(String(s.scenario_id)) && s.outcome === 'WON'
   );
   const reps = [];
+  let snapshotSamples = 0;
   for (const s of s3Won) {
+    // Prefer lossless reputation_snapshot events
+    const calderSnaps = s.events
+      .filter(
+        ev => ev.type === 'reputation_snapshot' &&
+              /calder/i.test(String(ev.npc_id || '')) &&
+              (ev.day || 0) <= 15
+      )
+      .sort((a, b) => (a.day || 0) - (b.day || 0));
+
+    if (calderSnaps.length) {
+      const snap = calderSnaps[calderSnaps.length - 1]; // latest at-or-before day 15
+      const score = snap.score != null ? snap.score : snap.reputation;
+      if (score != null) {
+        reps.push(score);
+        snapshotSamples++;
+        continue;
+      }
+    }
+
+    // Fallback: reconstruct from reputation_delta (lossy, ≥3pt threshold)
     const calderDeltas = s.events
       .filter(ev => ev.type === 'reputation_delta' && /calder/i.test(String(ev.npc_id || '')))
       .sort((a, b) => (a.day || 0) - (b.day || 0));
@@ -472,6 +498,7 @@ function wlCalderDay15(sessions) {
   return {
     wonSessions: s3Won.length,
     samples: reps.length,
+    snapshotSamples,
     above65: reps.filter(r => r > 65).length,
     med: reps.length ? median(reps) : null,
   };
@@ -890,11 +917,14 @@ function buildDigest(events, sessions, filePaths) {
   out.push(`|-----|--------|-------|-----------|--------|`);
   // 3-A
   if (wlCalder.samples === 0) {
-    out.push(`| 3-A | Calder day-15 rep (S3 wins) | — (no npc_calder deltas) | ≥90% of wins >65 → nerf cooldown | — |`);
+    out.push(`| 3-A | Calder day-15 rep (S3 wins) | — (no calder rep data) | ≥90% of wins >65 → nerf cooldown | — |`);
   } else {
     const above65pct = (wlCalder.above65 / wlCalder.samples * 100).toFixed(0);
     const s3a = wlCalder.above65 / wlCalder.samples >= 0.90 ? '🚨 extend rival cooldown' : '✅';
-    out.push(`| 3-A | Calder day-15 rep (S3 wins) | med ${wlCalder.med != null ? wlCalder.med.toFixed(0) : 'N/A'}, ${above65pct}% >65 (n=${wlCalder.samples}, lossy) | ≥90% of wins >65 → nerf cooldown | ${s3a} |`);
+    const method = wlCalder.snapshotSamples === wlCalder.samples ? 'lossless'
+                 : wlCalder.snapshotSamples > 0 ? `${wlCalder.snapshotSamples}/${wlCalder.samples} lossless`
+                 : 'lossy fallback';
+    out.push(`| 3-A | Calder day-15 rep (S3 wins) | med ${wlCalder.med != null ? wlCalder.med.toFixed(0) : 'N/A'}, ${above65pct}% >65 (n=${wlCalder.samples}, ${method}) | ≥90% of wins >65 → nerf cooldown | ${s3a} |`);
   }
   // 3-B
   if (wlS3Quit.total === 0) {

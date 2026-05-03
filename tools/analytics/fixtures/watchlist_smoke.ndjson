@@ -19,6 +19,7 @@
 {"type":"npc_state_changed","npc_name":"Priest","rumor_id":"wl_s2f_001","new_state":"REJECT","day":2,"scenario_id":"S2","ts":"2026-04-10T12:17:00Z"}
 {"type":"npc_state_changed","npc_name":"Noble Lady","rumor_id":"wl_s2f_001","new_state":"REJECT","day":3,"scenario_id":"S2","ts":"2026-04-10T12:25:00Z"}
 {"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":75,"to_score":72,"delta":-3,"day":3,"scenario_id":"S2","ts":"2026-04-10T12:26:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"S2","trigger_npc_id":"npc_maren_nun","fail_cause":"counter_intelligence","day":8,"ts":"2026-04-10T12:49:00Z"}
 {"type":"scenario_ended","scenario_id":"S2","difficulty":"Normal","outcome":"FAILED","day_reached":8,"duration_sec":480,"ts":"2026-04-10T12:50:00Z"}
 {"type":"scenario_selected","scenario_id":"S3","difficulty":"Normal","ts":"2026-04-10T13:00:00Z"}
 {"type":"rumor_seeded","subject_name":"Chancellor Calder","claim_id":"wl_s3w_001","seed_target":"npc_scribe","day":1,"scenario_id":"S3","ts":"2026-04-10T13:05:00Z"}
@@ -28,8 +29,11 @@
 {"type":"npc_state_changed","npc_name":"Scribe","rumor_id":"wl_s3w_001","new_state":"SPREAD","day":5,"scenario_id":"S3","ts":"2026-04-10T13:40:00Z"}
 {"type":"npc_state_changed","npc_name":"Librarian","rumor_id":"wl_s3w_001","new_state":"BELIEVE","day":6,"scenario_id":"S3","ts":"2026-04-10T13:50:00Z"}
 {"type":"reputation_delta","npc_id":"npc_calder","from_score":80,"to_score":74,"delta":-6,"day":5,"scenario_id":"S3","ts":"2026-04-10T13:41:00Z"}
+{"type":"reputation_snapshot","npc_id":"npc_calder","score":74,"day":5,"scenario_id":"S3","ts":"2026-04-10T13:42:00Z"}
 {"type":"evidence_interaction","action_type":"observe","success":true,"day":7,"scenario_id":"S3","ts":"2026-04-10T13:55:00Z"}
 {"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":10,"scenario_id":"S3","ts":"2026-04-10T14:05:00Z"}
+{"type":"reputation_snapshot","npc_id":"npc_calder","score":74,"day":10,"scenario_id":"S3","ts":"2026-04-10T14:06:00Z"}
+{"type":"reputation_snapshot","npc_id":"npc_calder","score":74,"day":15,"scenario_id":"S3","ts":"2026-04-10T14:25:00Z"}
 {"type":"reputation_delta","npc_id":"npc_calder","from_score":74,"to_score":68,"delta":-6,"day":18,"scenario_id":"S3","ts":"2026-04-10T14:40:00Z"}
 {"type":"scenario_ended","scenario_id":"S3","difficulty":"Normal","outcome":"WON","day_reached":20,"duration_sec":1200,"ts":"2026-04-10T15:00:00Z"}
 {"type":"scenario_selected","scenario_id":"S3","difficulty":"Normal","ts":"2026-04-10T15:30:00Z"}
@@ -38,6 +42,7 @@
 {"type":"evidence_interaction","action_type":"observe","success":false,"day":2,"scenario_id":"S3","ts":"2026-04-10T15:45:00Z"}
 {"type":"npc_state_changed","npc_name":"Guard","rumor_id":"wl_s3t_001","new_state":"REJECT","day":3,"scenario_id":"S3","ts":"2026-04-10T15:50:00Z"}
 {"type":"reputation_delta","npc_id":"npc_calder","from_score":80,"to_score":77,"delta":-3,"day":5,"scenario_id":"S3","ts":"2026-04-10T15:55:00Z"}
+{"type":"reputation_snapshot","npc_id":"npc_calder","score":77,"day":5,"scenario_id":"S3","ts":"2026-04-10T15:56:00Z"}
 {"type":"evidence_interaction","action_type":"eavesdrop","success":false,"day":8,"scenario_id":"S3","ts":"2026-04-10T16:05:00Z"}
 {"type":"evidence_interaction","action_type":"eavesdrop","success":false,"day":12,"scenario_id":"S3","ts":"2026-04-10T16:20:00Z"}
 {"type":"scenario_ended","scenario_id":"S3","difficulty":"Normal","outcome":"FAILED","day_reached":17,"duration_sec":900,"ts":"2026-04-10T16:30:00Z"}
