@@ -65,8 +65,9 @@ signal valid_eavesdrop_hovered
 ## SPA-775: Emitted when the Read the Room popup opens for a building.
 signal read_the_room_shown(location_id: String)
 
-var _world_ref:       Node2D           = null
-var _intel_store:     PlayerIntelStore = null
+var _world_ref:          Node2D           = null
+var _intel_store:        PlayerIntelStore = null
+var _analytics_manager                   = null  ## SPA-1530: set via set_analytics_manager()
 
 # ── Hover state ───────────────────────────────────────────────────────────────
 var _hovered_npc:      Node2D = null
@@ -104,6 +105,11 @@ var _follow_ticks_remaining: int = 0
 # ── Overhear Snippet (SPA-761) ────────────────────────────────────────────────
 ## pair_key (sorted npc ids joined by "|") → last tick a snippet was shown.
 var _overhear_cooldowns: Dictionary = {}
+
+
+## SPA-1530: Receive analytics manager reference so evidence events can be logged directly.
+func set_analytics_manager(am) -> void:
+	_analytics_manager = am
 
 
 ## Register the NPC conversation dialogue panel (SPA-683).
@@ -595,6 +601,8 @@ func _try_observe(location_id: String) -> void:
 			"Forged Document", 0.20, 0.0,
 			["ACCUSATION", "SCANDAL", "HERESY"], tick)
 		_intel_store.add_evidence(ev)
+		if _analytics_manager != null:
+			_analytics_manager.log_evidence_acquired("forged_document", "observe_building")
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Forged Document acquired."
 	elif tick % 24 > 18 \
@@ -603,6 +611,8 @@ func _try_observe(location_id: String) -> void:
 			"Incriminating Artifact", 0.25, 0.0,
 			["SCANDAL", "HERESY"], tick)
 		_intel_store.add_evidence(ev)
+		if _analytics_manager != null:
+			_analytics_manager.log_evidence_acquired("incriminating_artifact", "observe_building")
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Incriminating Artifact acquired."
 
@@ -711,6 +721,8 @@ func _try_eavesdrop(target: Node2D) -> void:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Witness Account", 0.15, -0.15, [], tick)
 		_intel_store.add_evidence(ev)
+		if _analytics_manager != null:
+			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc")
 		_flash_npc_evidence_acquired(target)
 		msg += "\n[+] Witness Account acquired."
 

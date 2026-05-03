@@ -205,6 +205,45 @@ func _on_analytics_scenario_fail_trigger(
 		"scenario_%d" % scenario_id, day, fail_cause, trigger_npc_id, trigger_rumor_id)
 
 
+## SPA-1530: Log evidence item acquisition from recon actions.
+## Called directly by recon_controller after each _intel_store.add_evidence() call.
+func log_evidence_acquired(evidence_type: String, source_action: String) -> void:
+	if _analytics_logger == null:
+		_enqueue("log_evidence_acquired", [evidence_type, source_action])
+		return
+	var day: int = _day_night.current_day if _day_night != null and "current_day" in _day_night else 0
+	_analytics_logger.log_event("evidence_acquired", {
+		"evidence_type": evidence_type,
+		"source_action":  source_action,
+		"day":           day,
+		"scenario_id":   _analytics_scenario_id,
+		"difficulty":    GameState.selected_difficulty,
+	})
+
+
+## SPA-1530: Log evidence item consumption at rumor seed confirmation.
+## Called directly by rumor_panel after _intel_store.consume_evidence().
+func log_evidence_used(
+		evidence_type: String,
+		claim_id: String,
+		seed_target: String,
+		subject: String
+) -> void:
+	if _analytics_logger == null:
+		_enqueue("log_evidence_used", [evidence_type, claim_id, seed_target, subject])
+		return
+	var day: int = _day_night.current_day if _day_night != null and "current_day" in _day_night else 0
+	_analytics_logger.log_event("evidence_used", {
+		"evidence_type": evidence_type,
+		"claim_id":      claim_id,
+		"seed_target":   seed_target,
+		"subject":       subject,
+		"day":           day,
+		"scenario_id":   _analytics_scenario_id,
+		"difficulty":    GameState.selected_difficulty,
+	})
+
+
 func _on_analytics_scenario_resolved(
 		scenario_id: int,
 		state: ScenarioManager.ScenarioState
