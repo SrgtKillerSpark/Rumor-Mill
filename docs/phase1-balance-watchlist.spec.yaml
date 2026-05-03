@@ -1,0 +1,365 @@
+# Phase 1 Balance Watchlist — Trigger Specifications
+# Issue: SPA-1514
+# Author: Game Designer
+# Date: 2026-05-03
+#
+# Each trigger defines:
+#   id            — watchlist row reference
+#   name          — human-readable label
+#   events        — source event type(s) from AnalyticsManager
+#   filter        — field-level predicates to select relevant events
+#   aggregation   — how to reduce matched events into a single metric
+#   threshold     — condition that fires the trigger
+#   min_sample    — minimum sample size before evaluating (avoids noise)
+#   action        — what to do when fired
+#   config_path   — file to edit (if applicable)
+#   owner         — responsible role
+#
+# The kpi_aggregate.js CLI should load this file and evaluate each trigger
+# after computing per-session data. A trigger fires only when:
+#   1. min_sample is met, AND
+#   2. threshold condition is true for 2+ consecutive review cycles.
+
+---
+triggers:
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SCENARIO 2 — Sister Maren Counter-Intelligence
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - id: "2-A"
+    name: "Maren dominates S2 losses"
+    events: ["npc_state_changed", "scenario_ended"]
+    filter:
+      scenario_ended:
+        scenario_id: "scenario_2"
+        outcome: "FAILED"
+      npc_state_changed:
+        npc_name: "/maren/i"
+        new_state: "REJECT"
+    aggregation: |
+      For each FAILED S2 session, check if it contains at least one
+      npc_state_changed event matching the filter (Maren REJECT).
+      maren_fail_ratio = count(S2_failed_sessions_with_maren_reject) / count(S2_failed_sessions)
+    metric: "maren_fail_ratio"
+    threshold:
+      operator: ">"
+      value: 0.60
+    min_sample:
+      metric: "S2_failed_sessions"
+      min: 30
+    action: "Reduce Maren-Alys edge weights from 0.35/0.30 to 0.25/0.20 in scenarios.json"
+    config_path: "rumor_mill/data/scenarios.json"
+    owner: "Game Designer"
+
+  - id: "2-B"
+    name: "Maren is a non-factor in S2"
+    events: ["npc_state_changed", "scenario_ended"]
+    filter:
+      scenario_ended:
+        scenario_id: "scenario_2"
+        outcome: "FAILED"
+      npc_state_changed:
+        npc_name: "/maren/i"
+        new_state: "REJECT"
+    aggregation: |
+      Same derivation as 2-A but opposite threshold.
+      maren_fail_ratio = count(S2_failed_sessions_with_maren_reject) / count(S2_failed_sessions)
+    metric: "maren_fail_ratio"
+    threshold:
+      operator: "<"
+      value: 0.10
+    min_sample:
+      metric: "S2_failed_sessions"
+      min: 50
+    action: "Raise Maren-Alys edge weights from 0.35/0.30 to 0.45/0.40 in scenarios.json"
+    config_path: "rumor_mill/data/scenarios.json"
+    owner: "Game Designer"
+
+  - id: "2-C"
+    name: "S2 difficulty wall detection"
+    events: ["scenario_ended"]
+    filter:
+      scenario_ended:
+        scenario_id: "scenario_2"
+        outcome: "FAILED"
+    aggregation: |
+      Histogram of day_reached across all FAILED S2 sessions.
+      For each day D: concentration = count(day_reached == D) / count(S2_failed_sessions)
+    metric: "max_day_concentration"
+    threshold:
+      operator: ">"
+      value: 0.40
+    min_sample:
+      metric: "S2_failed_sessions"
+      min: 40
+    action: |
+      Investigate wall location:
+        - If wall is days 5-8: adjust IllnessEscalationAgent initial cooldown
+        - If wall is days 13-16: review Alys Fights Back event balance
+    config_path: null
+    owner: "Game Designer"
+
+  - id: "2-D"
+    name: "S2 rumor propagation stalling"
+    events: ["rumor_seeded", "npc_state_changed"]
+    filter:
+      rumor_seeded:
+        scenario_id: "scenario_2"
+      npc_state_changed:
+        scenario_id: "scenario_2"
+    aggregation: |
+      For each rumor_seeded event (by claim_id), find the first
+      npc_state_changed with new_state=BELIEVE and matching rumor_id.
+      seed_to_believe_gap = min(believe_day) - seed_day
+      Report median across all matched seed→believe pairs.
+      Also: reject_rate = count(REJECT) / (count(BELIEVE) + count(REJECT))
+    metric: "seed_to_believe_median"
+    threshold:
+      any_of:
+        - field: "seed_to_believe_median"
+          operator: ">"
+          value: 4
+        - field: "reject_rate"
+          operator: ">"
+          value: 0.80
+    min_sample:
+      metric: "seed_believe_pairs"
+      min: 20
+    action: "Review NPC credulity values in npcs.json for S2 cast"
+    config_path: "rumor_mill/data/npcs.json"
+    owner: "Game Designer"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SCENARIO 3 — Late-Phase Rival Pacing
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - id: "3-A"
+    name: "Day-15 reputation determines all S3 outcomes"
+    events: ["reputation_delta", "scenario_ended"]
+    filter:
+      reputation_delta:
+        npc_id: "/calder/i"
+        scenario_id: "scenario_3"
+      scenario_ended:
+        scenario_id: "scenario_3"
+        outcome: "WON"
+    aggregation: |
+      For each S3 WON session:
+        1. Find all reputation_delta events for Calder with day <= 15
+        2. Reconstruct day-15 score: first_from_score + sum(deltas where day <= 15)
+      pct_above_65 = count(sessions where reconstructed_score > 65) / count(S3_won_sessions)
+      NOTE: Lossy — reputation_delta only fires when |delta| >= 3.
+      Use reputation_snapshot event (SPA-1417) when available for exact values.
+    metric: "pct_s3_wins_calder_above_65_at_day15"
+    threshold:
+      operator: ">="
+      value: 0.90
+    min_sample:
+      metric: "S3_won_sessions_with_calder_deltas"
+      min: 25
+    action: "Extend late-phase rival cooldown from 1 to 2 days in rival_agent.gd phase-3 config"
+    config_path: "rumor_mill/scripts/rival_agent.gd"
+    owner: "Lead Engineer"
+
+  - id: "3-B"
+    name: "S3 mid-game disengagement (days 15-19)"
+    events: ["scenario_ended"]
+    filter:
+      scenario_ended:
+        scenario_id: "scenario_3"
+        outcome: "FAILED"
+    aggregation: |
+      mid_quit_ratio = count(day_reached >= 15 AND day_reached <= 19) / count(S3_failed_sessions)
+    metric: "mid_quit_ratio"
+    threshold:
+      operator: ">"
+      value: 0.50
+    min_sample:
+      metric: "S3_failed_sessions"
+      min: 30
+    action: "Confirms no-comeback hypothesis — proceed with 3-A cooldown change"
+    config_path: null
+    owner: "Game Designer"
+
+  - id: "3-C"
+    name: "Rival disruption overwhelming in S3 phase 3"
+    events: ["reputation_delta"]
+    filter:
+      reputation_delta:
+        scenario_id: "scenario_3"
+        day_range: [16, 27]
+        delta_sign: "negative"
+    aggregation: |
+      Select reputation_delta events in S3 where day is 16-27 and delta < 0.
+      mean_neg_delta = mean(abs(delta)) for those events
+      neg_events_per_day = count(matching events) / 12  (days 16-27 = 12 days)
+    metric: "mean_neg_delta_and_frequency"
+    threshold:
+      all_of:
+        - field: "mean_neg_delta"
+          operator: ">"
+          value: 6
+        - field: "neg_events_per_day"
+          operator: ">"
+          value: 1.0
+    min_sample:
+      metric: "S3_sessions_reaching_day_16"
+      min: 20
+    action: "Reduce phase-3 intensity cap from 3 to 2 in rival_agent.gd"
+    config_path: "rumor_mill/scripts/rival_agent.gd"
+    owner: "Lead Engineer"
+
+  - id: "3-D"
+    name: "Spymaster S3 completion floor"
+    events: ["scenario_selected", "scenario_ended"]
+    filter:
+      scenario_selected:
+        scenario_id: "scenario_3"
+        difficulty: "spymaster"
+      scenario_ended:
+        scenario_id: "scenario_3"
+    aggregation: |
+      spymaster_s3_completion = count(outcome=WON, difficulty=spymaster, scenario_3) /
+                                count(scenario_selected, difficulty=spymaster, scenario_3)
+    metric: "spymaster_s3_completion_rate"
+    threshold:
+      operator: "<"
+      value: 0.05
+    min_sample:
+      metric: "spymaster_S3_attempts"
+      min: 500
+    action: "Introduce whisper floor of 2/day for S3 on Spymaster difficulty"
+    config_path: "rumor_mill/scripts/game_state.gd"
+    owner: "Lead Engineer"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CROSS-SCENARIO — Spymaster Whisper Economy
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - id: "X-A"
+    name: "Spymaster completion floor (any scenario)"
+    events: ["scenario_selected", "scenario_ended"]
+    filter:
+      scenario_selected:
+        difficulty: "spymaster"
+      scenario_ended: {}
+    aggregation: |
+      Per scenario_id:
+        spymaster_completion = count(outcome=WON, difficulty=spymaster) /
+                               count(scenario_selected, difficulty=spymaster)
+      Evaluate independently for each scenario_id.
+    metric: "spymaster_completion_rate_per_scenario"
+    threshold:
+      operator: "<"
+      value: 0.05
+    min_sample:
+      metric: "spymaster_attempts_for_that_scenario"
+      min: 500
+    action: "Add whisper floor of 2/day for the affected scenario on Spymaster difficulty"
+    config_path: "rumor_mill/scripts/game_state.gd"
+    owner: "Lead Engineer"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SCENARIO 4 — Finn-fail rate (per issue scope requirement)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - id: "4-A"
+    name: "Finn dominates S4 losses"
+    events: ["npc_state_changed", "scenario_ended"]
+    filter:
+      scenario_ended:
+        scenario_id: "scenario_4"
+        outcome: "FAILED"
+      npc_state_changed:
+        npc_name: "/finn/i"
+        new_state: "REJECT"
+    aggregation: |
+      Same pattern as 2-A for Maren, applied to Finn in S4.
+      finn_fail_ratio = count(S4_failed_sessions_with_finn_reject) / count(S4_failed_sessions)
+    metric: "finn_fail_ratio"
+    threshold:
+      operator: ">"
+      value: 0.60
+    min_sample:
+      metric: "S4_failed_sessions"
+      min: 30
+    action: "Reduce Finn edge weights in scenarios.json S4 config (same pattern as 2-A Maren fix)"
+    config_path: "rumor_mill/data/scenarios.json"
+    owner: "Game Designer"
+
+  - id: "4-B"
+    name: "Finn is a non-factor in S4"
+    events: ["npc_state_changed", "scenario_ended"]
+    filter:
+      scenario_ended:
+        scenario_id: "scenario_4"
+        outcome: "FAILED"
+      npc_state_changed:
+        npc_name: "/finn/i"
+        new_state: "REJECT"
+    aggregation: |
+      finn_fail_ratio = count(S4_failed_sessions_with_finn_reject) / count(S4_failed_sessions)
+    metric: "finn_fail_ratio"
+    threshold:
+      operator: "<"
+      value: 0.10
+    min_sample:
+      metric: "S4_failed_sessions"
+      min: 50
+    action: "Raise Finn edge weights in scenarios.json S4 config"
+    config_path: "rumor_mill/data/scenarios.json"
+    owner: "Game Designer"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CROSS-SCENARIO — Day-of-quit walls & completion rate
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - id: "GEN-WALL"
+    name: "Difficulty wall detection (any scenario)"
+    events: ["scenario_ended"]
+    filter:
+      scenario_ended:
+        outcome: "FAILED"
+    aggregation: |
+      Per scenario_id: histogram of day_reached.
+      max_day_concentration = max(count(day_reached == D) / total_fails) for any D.
+    metric: "max_day_concentration_per_scenario"
+    threshold:
+      operator: ">"
+      value: 0.40
+    min_sample:
+      metric: "failed_sessions_for_that_scenario"
+      min: 40
+    action: "Investigate wall day and scenario-specific mechanics at that phase"
+    config_path: null
+    owner: "Game Designer"
+
+  - id: "GEN-COMP"
+    name: "Completion rate per scenario+difficulty"
+    events: ["scenario_selected", "scenario_ended"]
+    filter:
+      scenario_selected: {}
+      scenario_ended: {}
+    aggregation: |
+      Per (scenario_id, difficulty):
+        completion_rate = count(outcome=WON) / count(scenario_selected)
+    metric: "completion_rate"
+    threshold:
+      any_of:
+        - field: "completion_rate"
+          operator: "<"
+          value: 0.25
+          context: "Normal difficulty — too hard"
+        - field: "completion_rate"
+          operator: ">"
+          value: 0.85
+          context: "Normal difficulty — too easy"
+    min_sample:
+      metric: "sessions_for_that_scenario_difficulty"
+      min: 30
+    action: |
+      If < 25%: investigate difficulty wall, NPC resistance, resource scarcity.
+      If > 85%: consider raising NPC skepticism or reducing whisper budget.
+    config_path: null
+    owner: "Game Designer"
