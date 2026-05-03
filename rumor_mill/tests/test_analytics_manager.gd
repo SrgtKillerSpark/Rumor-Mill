@@ -6,6 +6,7 @@
 ##   • _flush_queue(): no-op on empty queue, clears queue after replay
 ##   • Handler queuing: each signal handler enqueues when _analytics_logger is null
 ##   • Handler passthrough: _on_analytics_evidence_interaction skips non-observe/eavesdrop
+##   • SPA-1530: log_evidence_acquired / log_evidence_used enqueue and field storage
 ##
 ## Strategy: AnalyticsManager extends RefCounted — no Node, no scene tree.
 ## Handlers are called directly as regular methods.
@@ -77,6 +78,18 @@ func run() -> void:
 		"test_scenario_fail_trigger_stores_trigger_rumor_id",
 		"test_scenario_fail_trigger_stores_fail_cause_timeout",
 		"test_scenario_fail_trigger_stores_fail_cause_reputation_collapse",
+
+		# ── SPA-1530: evidence_acquired / evidence_used handlers ──
+		"test_log_evidence_acquired_enqueues_when_logger_null",
+		"test_log_evidence_acquired_stores_method_name",
+		"test_log_evidence_acquired_stores_evidence_type",
+		"test_log_evidence_acquired_stores_source_action",
+		"test_log_evidence_used_enqueues_when_logger_null",
+		"test_log_evidence_used_stores_method_name",
+		"test_log_evidence_used_stores_evidence_type",
+		"test_log_evidence_used_stores_claim_id",
+		"test_log_evidence_used_stores_seed_target",
+		"test_log_evidence_used_stores_subject",
 	]
 
 	for method_name in tests:
@@ -357,3 +370,67 @@ func test_scenario_fail_trigger_stores_fail_cause_reputation_collapse() -> bool:
 	m._on_analytics_scenario_fail_trigger(5, "reputation_collapse", "npc_aldric_vane", "")
 	return m._event_queue[0]["args"][1] == "reputation_collapse" \
 		and m._event_queue[0]["args"][2] == "npc_aldric_vane"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SPA-1530: evidence_acquired / evidence_used handlers
+# ══════════════════════════════════════════════════════════════════════════════
+
+func test_log_evidence_acquired_enqueues_when_logger_null() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_acquired("forged_document", "observe_building")
+	return m._event_queue.size() == 1
+
+
+func test_log_evidence_acquired_stores_method_name() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_acquired("forged_document", "observe_building")
+	return m._event_queue[0]["method"] == "log_evidence_acquired"
+
+
+func test_log_evidence_acquired_stores_evidence_type() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_acquired("witness_account", "eavesdrop_npc")
+	return m._event_queue[0]["args"][0] == "witness_account"
+
+
+func test_log_evidence_acquired_stores_source_action() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_acquired("incriminating_artifact", "observe_building")
+	return m._event_queue[0]["args"][1] == "observe_building"
+
+
+func test_log_evidence_used_enqueues_when_logger_null() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_used("forged_document", "SCANDAL", "npc_aldric_merchant", "npc_calder_noble")
+	return m._event_queue.size() == 1
+
+
+func test_log_evidence_used_stores_method_name() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_used("forged_document", "SCANDAL", "npc_aldric_merchant", "npc_calder_noble")
+	return m._event_queue[0]["method"] == "log_evidence_used"
+
+
+func test_log_evidence_used_stores_evidence_type() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_used("witness_account", "HERESY", "npc_maren_nun", "npc_calder_noble")
+	return m._event_queue[0]["args"][0] == "witness_account"
+
+
+func test_log_evidence_used_stores_claim_id() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_used("forged_document", "ACCUSATION", "npc_aldric_merchant", "npc_calder_noble")
+	return m._event_queue[0]["args"][1] == "ACCUSATION"
+
+
+func test_log_evidence_used_stores_seed_target() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_used("forged_document", "SCANDAL", "npc_aldric_merchant", "npc_calder_noble")
+	return m._event_queue[0]["args"][2] == "npc_aldric_merchant"
+
+
+func test_log_evidence_used_stores_subject() -> bool:
+	var m := _make_mgr()
+	m.log_evidence_used("forged_document", "SCANDAL", "npc_aldric_merchant", "npc_calder_noble")
+	return m._event_queue[0]["args"][3] == "npc_calder_noble"
