@@ -291,10 +291,11 @@ function checkClassNameRefs(filePath, lines, knownClassNames, autoloads) {
 
   function isKnown(name) {
     return (
-      GODOT_BUILTINS.has(name) ||
-      autoloads.has(name)      ||
-      knownClassNames.has(name)||
-      fileLocalTypes.has(name)
+      GODOT_BUILTINS.has(name)      ||
+      autoloads.has(name)           ||
+      knownClassNames.has(name)     ||
+      fileLocalTypes.has(name)      ||
+      PROJECT_KNOWN_TYPES.has(name)
     );
   }
 
@@ -517,6 +518,22 @@ function checkBlockScopeVars(filePath, lines) {
   }
 }
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+// Returns true when a file lives inside a tests/ directory.
+// Test files commonly use `const XScript = preload(...)` which creates
+// PascalCase identifiers that look like autoload singletons — skip Check 3.
+function isTestFile(filePath) {
+  const rel = path.relative(PROJECT_DIR, filePath).replace(/\\/g, '/');
+  return rel.startsWith('tests/') || rel.includes('/tests/');
+}
+
+// Known project-specific types that lack a `class_name` declaration but are
+// referenced legitimately in type annotations (e.g. `-> World:`).
+const PROJECT_KNOWN_TYPES = new Set([
+  'World',
+]);
+
 // ── Per-file driver ───────────────────────────────────────────────────────────
 function checkFile(filePath, knownClassNames, autoloads, allLocalTypes) {
   let text;
@@ -527,7 +544,9 @@ function checkFile(filePath, knownClassNames, autoloads, allLocalTypes) {
 
   checkBareExtensionSingletons(filePath, lines);
   checkClassNameRefs(filePath, lines, knownClassNames, autoloads);
-  checkUndeclaredAutoloadUsage(filePath, lines, autoloads, knownClassNames, allLocalTypes);
+  if (!isTestFile(filePath)) {
+    checkUndeclaredAutoloadUsage(filePath, lines, autoloads, knownClassNames, allLocalTypes);
+  }
   checkBlockScopeVars(filePath, lines);
 }
 
