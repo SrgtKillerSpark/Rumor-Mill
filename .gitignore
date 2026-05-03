@@ -11,3 +11,6 @@ Thumbs.db
 # Builds
 export/
 builds/
+
+# Temporary file written by the MCP validate_scripts tool during headless validation
+.mcp_validate_scripts.gd
