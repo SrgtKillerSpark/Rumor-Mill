@@ -198,6 +198,10 @@ func setup_world(world: Node2D) -> void:
 			if _day_night.has_signal("day_transition_started"):
 				_day_night.day_transition_started.connect(_suggestion_engine._on_dawn)
 
+	# SPA-1518: Show a suggestion toast whenever a rumor's target shifts during propagation.
+	if world.has_signal("rumor_target_shifted"):
+		world.rumor_target_shifted.connect(_on_rumor_target_shifted)
+
 	# SPA-943: Populate win target immediately now that _world_ref is available.
 	_win_tracker.refresh_tick()
 
@@ -452,6 +456,14 @@ func _on_suggestion_hint_ready(text: String) -> void:
 func _on_hint_dismissed(was_fast: bool) -> void:
 	if _suggestion_engine != null:
 		_suggestion_engine.notify_hint_dismissed(was_fast)
+
+
+## SPA-1518: Queue a toast whenever a rumor's target shifts during propagation.
+func _on_rumor_target_shifted(old_name: String, new_name: String, _rumor_id: String) -> void:
+	if _suggestion_toast != null:
+		_suggestion_toast.show_hint(
+			"Rumor about %s has shifted to %s — whispers mutate as they spread." % [old_name, new_name]
+		)
 
 
 # ── Faction influence mini-panel ──────────────────────────────────────────────

@@ -14,6 +14,9 @@ signal cascade_triggered(rumor_id: String, believer_count: int)
 ## SPA-911: Emitted the first time a player-seeded rumor reaches a key/influential NPC.
 ## npc_name: display name.  rumor_id: the player's original rumor (rp_ prefix).
 signal rumor_reached_key_npc(npc_name: String, rumor_id: String)
+## SPA-1518: Emitted when a rumor's target shifts during propagation.
+## old_name / new_name are the NPC display names; rumor_id is the new mutated copy.
+signal rumor_target_shifted(old_name: String, new_name: String, rumor_id: String)
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -584,6 +587,8 @@ func _init_propagation_engine() -> void:
 	propagation_engine = PropagationEngine.new()
 	for npc in npcs:
 		npc.propagation_engine_ref = propagation_engine
+	# SPA-1518: Wire target-shift events to world signal for UI feedback.
+	propagation_engine.target_shifted.connect(_on_propagation_target_shifted)
 
 
 func _build_schedule(faction: String, start_cell: Vector2i) -> Array[Vector2i]:
@@ -1349,6 +1354,27 @@ func vouch_for_npc(voucher_npc_id: String, subject_npc_id: String) -> bool:
 		"[VOUCH] %s is now defending %s against the inquisitor's claims." % [voucher_name, subject_npc_id],
 		day_night.current_tick if day_night != null else 0)
 	return true
+
+
+# ── SPA-1518: Propagation engine target-shift → UI feedback ──────────────────
+
+func _on_propagation_target_shifted(old_target_id: String, new_target_id: String, rumor_id: String) -> void:
+	# Resolve display names from the NPC roster.
+	var old_name := old_target_id
+	var new_name := new_target_id
+	for npc in npcs:
+		var nid: String = npc.npc_data.get("id", "")
+		if nid == old_target_id:
+			old_name = npc.npc_data.get("name", old_target_id)
+		elif nid == new_target_id:
+			new_name = npc.npc_data.get("name", new_target_id)
+	var tick: int = day_night.current_tick if day_night != null else 0
+	# Feed the journal timeline.
+	emit_signal("rumor_event",
+		"[TARGET SHIFT] Rumor about %s redirected to %s — whispers mutate as they spread. [%s]" % [old_name, new_name, rumor_id],
+		tick)
+	# Notify UI (objective HUD suggestion toast).
+	emit_signal("rumor_target_shifted", old_name, new_name, rumor_id)
 
 
 # ── NPC event → rumor_event aggregation ─────────────────────────────────────

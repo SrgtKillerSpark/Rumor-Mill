@@ -61,6 +61,10 @@ var target_shift_excluded_ids: Array[String] = []
 var lineage: Dictionary = {}
 var _mutation_counter: int = 0
 
+## Emitted when a target-shift mutation fires during try_mutate().
+## old_target_id / new_target_id are subject_npc_ids; rumor_id is the new mutated copy.
+signal target_shifted(old_target_id: String, new_target_id: String, rumor_id: String)
+
 ## Reference to the player intel store for heat tracking. Set by World.
 var intel_store_ref: PlayerIntelStore = null
 
@@ -291,6 +295,10 @@ func try_mutate(
 		"mutation_type": ",".join(mut_tags),
 		"tick":          tick,
 	}
+
+	# SPA-1518: Notify listeners when a target-shift mutation fires.
+	if new_subject != source.subject_npc_id:
+		target_shifted.emit(source.subject_npc_id, new_subject, new_id)
 
 	return mutated
 
