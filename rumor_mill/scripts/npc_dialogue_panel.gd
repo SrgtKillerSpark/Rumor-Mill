@@ -133,11 +133,6 @@ func _build_canvas() -> void:
 func _input(event: InputEvent) -> void:
 	if _panel == null or not _panel.visible:
 		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE:
-			_dismiss()
-			get_viewport().set_input_as_handled()
-			return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT \
 			and event.pressed:
 		# Dismiss if click lands outside the panel rect.
@@ -152,8 +147,7 @@ func _input(event: InputEvent) -> void:
 ## Show the conversation panel for the given NPC, positioned near screen_pos.
 func show_for_npc(npc: Node2D, screen_pos: Vector2) -> void:
 	_current_npc = npc
-	AudioManager.duck_for_dialogue()
-	await _rebuild_panel(npc)
+	_rebuild_panel(npc)
 
 	# Position: offset right of cursor, clamped to viewport.
 	var vp_size := get_viewport().get_visible_rect().size
@@ -161,14 +155,8 @@ func show_for_npc(npc: Node2D, screen_pos: Vector2) -> void:
 	var sz      := _panel.size
 	pos.x = clampf(pos.x, 4.0, vp_size.x - sz.x - 4.0)
 	pos.y = clampf(pos.y, 4.0, vp_size.y - sz.y - 4.0)
-	# Entrance animation: fade in + slight upward slide for a smooth open feel.
-	_panel.modulate.a = 0.0
-	_panel.position   = pos + Vector2(0.0, 10.0)
-	_panel.visible    = true
-	var _open_tw := _panel.create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_open_tw.set_parallel(true)
-	_open_tw.tween_property(_panel, "modulate:a", 1.0, 0.18)
-	_open_tw.tween_property(_panel, "position", pos, 0.18)
+	_panel.position = pos
+	_panel.visible  = true
 
 
 ## Hide the panel without emitting dismissed.
@@ -176,7 +164,6 @@ func hide_panel() -> void:
 	if _panel != null:
 		_panel.visible = false
 	_current_npc = null
-	AudioManager.restore_from_dialogue()
 
 
 # ── Panel construction ────────────────────────────────────────────────────────
@@ -368,29 +355,14 @@ func _rebuild_panel(npc: Node2D) -> void:
 	div.custom_minimum_size = Vector2(0.0, 1.0)
 	vbox.add_child(div)
 
-	# ── Greeting line (state-aware: prefer belief/spread/act lines when active) ─
-	var worst_state: Rumor.RumorState = npc.get_worst_rumor_state()
+	# ── Greeting line ─────────────────────────────────────────────────────────
 	var greeting_lbl := Label.new()
-	greeting_lbl.text = '"%s"' % _pick_greeting(npc_id, faction, worst_state)
+	greeting_lbl.text = '"%s"' % _pick_greeting(npc_id, faction)
 	greeting_lbl.add_theme_font_size_override("font_size", 11)
 	greeting_lbl.add_theme_color_override("font_color", C_GREETING)
 	greeting_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	greeting_lbl.custom_minimum_size = Vector2(PANEL_W - 20.0, 0.0)
 	vbox.add_child(greeting_lbl)
-
-	# ── Belief state hint ─────────────────────────────────────────────────────
-	var belief_hint := _belief_state_hint(worst_state)
-	if not belief_hint.is_empty():
-		var hint_lbl := Label.new()
-		hint_lbl.text = belief_hint
-		hint_lbl.add_theme_font_size_override("font_size", 10)
-		hint_lbl.add_theme_color_override("font_color", Color(0.58, 0.50, 0.32, 0.82))
-		hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		hint_lbl.custom_minimum_size = Vector2(PANEL_W - 20.0, 0.0)
-		vbox.add_child(hint_lbl)
-
-	# ── Social connections ────────────────────────────────────────────────────
-	_build_social_context(npc, vbox)
 
 	# ── Second divider ────────────────────────────────────────────────────────
 	var div2 := ColorRect.new()
@@ -414,7 +386,8 @@ func _rebuild_panel(npc: Node2D) -> void:
 	vbox.add_child(seed_btn)
 
 	# Bribe: only shown when NPC is EVALUATING and resources allow.
-	var show_bribe: bool = _intel_store.bribe_charges > 0 and npc.get_worst_rumor_state() == Rumor.RumorState.EVALUATING
+	var show_bribe: bool = _intel_store.bribe_charges > 0 \
+		and npc.get_worst_rumor_state() == Rumor.RumorState.EVALUATING
 	if show_bribe:
 		var can_bribe: bool = _intel_store.recon_actions_remaining > 0 and _intel_store.whisper_tokens_remaining > 0
 		var bribe_btn := _make_button(
@@ -430,16 +403,8 @@ func _rebuild_panel(npc: Node2D) -> void:
 
 	# ── Resize panel to fit content ───────────────────────────────────────────
 	_panel.size = Vector2(PANEL_W, 0.0)
-	if not get_tree().paused:
-		await get_tree().process_frame
+	await get_tree().process_frame
 	_panel.size = Vector2(PANEL_W, vbox.get_minimum_size().y + 20.0)
-
-	# Keyboard focus: grab the first enabled action button so keyboard users
-	# can interact immediately without reaching for the mouse.
-	for child in vbox.get_children():
-		if child is Button and not child.disabled and child.focus_mode != Control.FOCUS_NONE:
-			child.grab_focus()
-			break
 
 
 # ── Button factory ────────────────────────────────────────────────────────────
@@ -448,7 +413,7 @@ func _make_button(label: String, enabled: bool, is_leave: bool = false) -> Butto
 	var btn := Button.new()
 	btn.text = label
 	btn.disabled = not enabled
-	btn.focus_mode = Control.FOCUS_ALL
+	btn.focus_mode = Control.FOCUS_NONE
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.add_theme_color_override(
 		"font_color",
@@ -502,16 +467,6 @@ func _make_button(label: String, enabled: bool, is_leave: bool = false) -> Butto
 	style_disabled.set_corner_radius_all(2)
 	btn.add_theme_stylebox_override("disabled", style_disabled)
 
-	# Focus ring — gold border for keyboard navigation visibility.
-	var style_focus := StyleBoxFlat.new()
-	style_focus.bg_color = C_BTN_HOVER
-	style_focus.set_border_width_all(2)
-	style_focus.border_color = Color(1.00, 0.90, 0.40, 1.0)
-	style_focus.set_content_margin_all(5.0)
-	if not is_leave:
-		style_focus.set_corner_radius_all(2)
-	btn.add_theme_stylebox_override("focus", style_focus)
-
 	return btn
 
 
@@ -530,89 +485,16 @@ func _make_portrait_texture(col: int, row: int) -> AtlasTexture:
 
 # ── Greeting picker ───────────────────────────────────────────────────────────
 
-func _pick_greeting(npc_id: String, faction: String, state: Rumor.RumorState = Rumor.RumorState.UNAWARE) -> String:
+func _pick_greeting(npc_id: String, faction: String) -> String:
+	# Prefer the NPC's own ambient lines from npc_dialogue.json.
 	if _dialogue_data.has(npc_id):
-		# Prefer state-specific lines when the NPC has an active belief.
-		var state_cat := _state_to_dialogue_category(state)
-		if not state_cat.is_empty():
-			var state_lines: Array = _dialogue_data[npc_id].get(state_cat, [])
-			if state_lines.size() > 0:
-				return state_lines[randi() % state_lines.size()]
-		var ambient: Array = _dialogue_data[npc_id].get("ambient", [])
+		var ambient = _dialogue_data[npc_id].get("ambient", [])
 		if ambient.size() > 0:
 			return ambient[randi() % ambient.size()]
 
 	# Fall back to faction-generic lines.
 	var lines: Array = FALLBACK_GREETINGS.get(faction, FALLBACK_DEFAULT)
 	return lines[randi() % lines.size()]
-
-
-## Maps a rumor state to the npc_dialogue.json category used for that state.
-## Returns empty string for states with no dedicated dialogue (UNAWARE, EXPIRED).
-func _state_to_dialogue_category(state: Rumor.RumorState) -> String:
-	match state:
-		Rumor.RumorState.EVALUATING:  return "hear"
-		Rumor.RumorState.BELIEVE:     return "believe"
-		Rumor.RumorState.SPREAD:      return "spread"
-		Rumor.RumorState.ACT:         return "act"
-		Rumor.RumorState.REJECT:      return "reject"
-		Rumor.RumorState.DEFENDING:   return "defending"
-	return ""
-
-
-## Returns a short ambient context line reflecting the NPC's current belief state.
-## Shown below the greeting to give the player social-body-language cues.
-func _belief_state_hint(state: Rumor.RumorState) -> String:
-	match state:
-		Rumor.RumorState.EVALUATING:
-			return "[ Weighing something heard recently... ]"
-		Rumor.RumorState.BELIEVE:
-			return "[ Carries conviction — has formed an opinion. ]"
-		Rumor.RumorState.SPREAD:
-			return "[ Leaning close, eager to share a word. ]"
-		Rumor.RumorState.ACT:
-			return "[ Tension in their posture — ready to act. ]"
-		Rumor.RumorState.REJECT:
-			return "[ Guarded and dismissive today. ]"
-		Rumor.RumorState.DEFENDING:
-			return "[ Standing firm, protective of someone. ]"
-		Rumor.RumorState.CONTRADICTED:
-			return "[ Visibly unsettled — conflicting stories. ]"
-	return ""
-
-
-## Builds a small "Known associates" subsection from the NPC's social graph edges.
-func _build_social_context(npc: Node2D, vbox: VBoxContainer) -> void:
-	if npc.social_graph_ref == null:
-		return
-	var npc_id: String = npc.npc_data.get("id", "")
-	var top: Array = npc.social_graph_ref.get_top_neighbours(npc_id, 2)
-	if top.is_empty():
-		return
-
-	# Build id→name lookup from world npcs.
-	var name_by_id: Dictionary = {}
-	if _world_ref != null:
-		for other in _world_ref.npcs:
-			name_by_id[other.npc_data.get("id", "")] = other.npc_data.get("name", "?")
-
-	var section_lbl := Label.new()
-	section_lbl.text = "Known associates:"
-	section_lbl.add_theme_font_size_override("font_size", 9)
-	section_lbl.add_theme_color_override("font_color", Color(0.52, 0.45, 0.30, 0.78))
-	vbox.add_child(section_lbl)
-
-	for pair in top:
-		var other_id: String = pair[0]
-		var weight: float    = pair[1]
-		var other_name: String = name_by_id.get(other_id, "Unknown")
-		var bars   := clampi(roundi(weight * 3.0), 1, 3)
-		var bar_str := "▪".repeat(bars) + "·".repeat(3 - bars)
-		var row_lbl := Label.new()
-		row_lbl.text = "  %s %s" % [bar_str, other_name]
-		row_lbl.add_theme_font_size_override("font_size", 10)
-		row_lbl.add_theme_color_override("font_color", Color(0.72, 0.65, 0.48, 1.0))
-		vbox.add_child(row_lbl)
 
 
 # ── Conversation partner check (mirrors recon_controller) ─────────────────────
@@ -674,5 +556,4 @@ func _dismiss() -> void:
 	if _panel != null:
 		_panel.visible = false
 	_current_npc = null
-	AudioManager.restore_from_dialogue()
 	dismissed.emit()

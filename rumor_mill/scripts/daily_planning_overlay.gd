@@ -8,6 +8,8 @@ extends CanvasLayer
 ## DayNightCycle.  Selected priorities are forwarded to ObjectiveHUD
 ## tier2_container and evaluated at end-of-day for bonus rewards.
 
+signal planning_completed(selected_priorities: Array[String])
+
 # ── Priority definitions ─────────────────────────────────────────────────────
 # Each entry: { id, label, eval_key, bonus_desc }
 # eval_key is checked against simple game-state counters at end-of-day.
@@ -55,9 +57,6 @@ var _slide_tween: Tween = null
 var _btn_glow_tween: Tween = null
 var _nudge_label: Label = null  # "Select at least one priority" nudge
 var _skip_btn: Button = null    # Explicit "Skip Planning" button
-# SPA-894: Dawn header sunrise sweep tween.
-var _sunrise_tween: Tween = null
-var _phase_label: Label = null  # time-of-day indicator
 
 # ── Audio preloads (optional; gracefully skipped if missing) ─────────────────
 var _sfx_checkbox: AudioStreamPlayer = null
@@ -96,9 +95,6 @@ func _ready() -> void:
 
 	# Build explicit Skip Planning button next to SkipLabel hint.
 	_build_skip_button()
-
-	# SPA-894: Phase indicator label below dawn header.
-	_build_phase_label()
 
 	# Lightweight click sound for checkbox toggling.
 	_build_checkbox_sfx()
@@ -191,9 +187,6 @@ func _show_overlay(day: int) -> void:
 		_slide_tween.tween_property(_planning_panel, "anchor_top", target_top, 0.4)
 		_slide_tween.parallel().tween_property(_planning_panel, "anchor_bottom", 1.0, 0.4)
 
-	# SPA-894: Sunrise colour sweep on the dawn header for visual warmth.
-	_animate_sunrise_header(day)
-
 
 func _hide_overlay() -> void:
 	if not _is_showing:
@@ -274,6 +267,7 @@ func _on_begin_day_pressed() -> void:
 			.set_ease(Tween.EASE_IN)
 
 	_push_priorities_to_hud()
+	planning_completed.emit(_current_day_priorities)
 	# Small delay to let the button animation land before closing.
 	var close_tw := create_tween()
 	close_tw.tween_interval(0.12)
@@ -321,19 +315,6 @@ func _gather_overnight_events() -> Array[String]:
 	if _world == null:
 		return lines
 
-	# Mid-game event aftermath bulletin (SPA-1019).
-	var mgea: MidGameEventAgent = _world.mid_game_event_agent if "mid_game_event_agent" in _world else null
-	if mgea != null:
-		var aftermath: Dictionary = mgea.consume_aftermath()
-		if not aftermath.is_empty():
-			var event_name: String = aftermath.get("event_name", "")
-			var bulletin: String = aftermath.get("bulletinAftermath", "")
-			if not bulletin.is_empty():
-				if not event_name.is_empty():
-					lines.append("- [%s] %s" % [event_name, bulletin])
-				else:
-					lines.append("- %s" % bulletin)
-
 	# Reputation changes.
 	var rep: ReputationSystem = _world.reputation_system if "reputation_system" in _world else null
 	if rep != null:
@@ -373,72 +354,6 @@ func _gather_overnight_events() -> Array[String]:
 	if rejectors > 0:
 		lines.append("- %d NPC%s rejected your rumor" % [
 			rejectors, "" if rejectors == 1 else "s"])
-
-	# SPA-852: overnight stat rows from dusk snapshot.
-	var dusk_snap: Dictionary = _world._dusk_snapshot if "_dusk_snapshot" in _world else {}
-	var world_npcs: Array = _world.npcs if "npcs" in _world else []
-
-	# 1. Overnight believer count: delta between dusk and dawn.
-	if not dusk_snap.is_empty():
-		var dusk_counts: Dictionary = dusk_snap.get("believer_count_by_rumor", {})
-		var dusk_total: int = 0
-		for rid in dusk_counts:
-			dusk_total += int(dusk_counts[rid])
-		var dawn_total := 0
-		for npc in world_npcs:
-			for slot in npc.rumor_slots.values():
-				if slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
-					dawn_total += 1
-		var delta_b: int = dawn_total - dusk_total
-		if delta_b > 0:
-			lines.append("- +%d new believer%s overnight" % [delta_b, "s" if delta_b != 1 else ""])
-		elif delta_b < 0:
-			lines.append("- %d fewer believer%s overnight" % [abs(delta_b), "s" if abs(delta_b) != 1 else ""])
-
-	# 2. Reputation delta for the scenario target NPC.
-	var rep_sys: ReputationSystem = _world.reputation_system if "reputation_system" in _world else null
-	var scen_mgr: ScenarioManager = _world.scenario_manager if "scenario_manager" in _world else null
-	if rep_sys != null and scen_mgr != null and not dusk_snap.is_empty():
-		var dusk_target_rep: int = int(dusk_snap.get("target_reputation_score", -1))
-		if dusk_target_rep >= 0:
-			var brief: Dictionary = scen_mgr.get_strategic_brief()
-			var target_id: String = brief.get("targetNpcId", "")
-			if not target_id.is_empty():
-				var snap_now: ReputationSystem.ReputationSnapshot = rep_sys.get_snapshot(target_id)
-				if snap_now != null:
-					var rep_now: int = snap_now.score
-					var rep_delta: int = rep_now - dusk_target_rep
-					var target_name: String = target_id.replace("_", " ").capitalize()
-					var delta_sign: String = "+" if rep_delta >= 0 else ""
-					lines.append("- %s reputation: %d → %d (%s%d)" % [
-						target_name, dusk_target_rep, rep_now, delta_sign, rep_delta])
-
-	# 3. Spread summary: count unique rumors by highest-priority state.
-	var rumor_state_map: Dictionary = {}
-	for npc in world_npcs:
-		for slot in npc.rumor_slots.values():
-			var rid: String = slot.rumor.id if slot.rumor != null else ""
-			if rid.is_empty():
-				continue
-			if slot.state in [Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
-				rumor_state_map[rid] = "spreading"
-			elif slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.EVALUATING]:
-				if rumor_state_map.get(rid, "") != "spreading":
-					rumor_state_map[rid] = "stalled"
-			elif slot.state in [Rumor.RumorState.EXPIRED, Rumor.RumorState.CONTRADICTED]:
-				if not rumor_state_map.has(rid):
-					rumor_state_map[rid] = "expired"
-	var n_spreading := 0
-	var n_stalled := 0
-	var n_expired := 0
-	for rid in rumor_state_map:
-		match rumor_state_map[rid]:
-			"spreading": n_spreading += 1
-			"stalled":   n_stalled += 1
-			"expired":   n_expired += 1
-	if n_spreading > 0 or n_stalled > 0 or n_expired > 0:
-		lines.append("- Rumors active: %d spreading, %d stalled, %d expired" % [
-			n_spreading, n_stalled, n_expired])
 
 	return lines
 
@@ -683,51 +598,3 @@ func apply_load_data(data: Dictionary) -> void:
 	# Restore HUD display of loaded priorities.
 	if not _current_day_priorities.is_empty():
 		_push_priorities_to_hud()
-
-
-# ── SPA-894: Dawn header sunrise sweep ──────────────────────────────────────
-
-## Animate the dawn header text colour from a cool night-blue through warm
-## sunrise amber, creating a smooth "sun rising" feel when the overlay appears.
-func _animate_sunrise_header(day: int) -> void:
-	if _dawn_header == null:
-		return
-	if _sunrise_tween != null and _sunrise_tween.is_valid():
-		_sunrise_tween.kill()
-	# Start with a dim night-sky blue.
-	var night_color := Color(0.40, 0.50, 0.70, 1.0)
-	var dawn_color  := Color(0.95, 0.75, 0.30, 1.0)  # warm gold
-	_dawn_header.add_theme_color_override("font_color", night_color)
-	_sunrise_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_sunrise_tween.tween_property(
-		_dawn_header, "theme_override_colors/font_color", dawn_color, 1.2
-	)
-
-	# Update phase label with the current day.
-	if _phase_label != null:
-		_phase_label.text = "☀ Morning Phase — Plan your approach for Day %d" % day
-		_phase_label.modulate.a = 0.0
-		var ptw := create_tween()
-		ptw.tween_interval(0.4)
-		ptw.tween_property(_phase_label, "modulate:a", 1.0, 0.5) \
-			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-
-
-## Build a compact phase-of-day indicator label below the dawn header.
-func _build_phase_label() -> void:
-	if _dawn_header == null:
-		return
-	_phase_label = Label.new()
-	_phase_label.text = ""
-	_phase_label.add_theme_font_size_override("font_size", 12)
-	_phase_label.add_theme_color_override("font_color", Color(0.80, 0.68, 0.40, 0.85))
-	_phase_label.add_theme_constant_override("outline_size", 1)
-	_phase_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
-	_phase_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_phase_label.modulate.a = 0.0
-	# Insert right after the dawn header in the left column.
-	var left_col: VBoxContainer = _dawn_header.get_parent()
-	if left_col != null:
-		var idx := _dawn_header.get_index() + 1
-		left_col.add_child(_phase_label)
-		left_col.move_child(_phase_label, idx)
