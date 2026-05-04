@@ -765,6 +765,18 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 10,
 	},
+	# ── SPA-1658: Heat intro — shown before first high-risk action in S2-S6 ──
+	"ctx_heat_intro": {
+		"title": "Suspicion & Heat",
+		"body":  (
+			"Every [b]Observe[/b] and [b]Eavesdrop[/b] action raises [b]heat[/b] on nearby NPCs.  "
+			+ "If any NPC's suspicion reaches [b]80[/b], the Guard Captain identifies you "
+			+ "and the mission [b]fails instantly[/b].  "
+			+ "Vary your targets and wait a day between repeated actions on the same NPC "
+			+ "— suspicion fades overnight."
+		),
+		"auto_dismiss_secs": 10,
+	},
 	# ── Scenario 1: Heat / exposure warning ──────────────────────────────────
 	"ctx_heat_warning": {
 		"title": "You Are Drawing Attention",

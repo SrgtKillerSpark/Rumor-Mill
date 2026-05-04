@@ -28,11 +28,11 @@ func run() -> void:
 	var tests := [
 		# Step constant sizes
 		"test_steps_s1_has_7_steps",
-		"test_steps_s2_has_3_steps",
-		"test_steps_s3_has_3_steps",
-		"test_steps_s4_has_3_steps",
-		"test_steps_s5_has_2_steps",
-		"test_steps_s6_has_2_steps",
+		"test_steps_s2_has_4_steps",
+		"test_steps_s3_has_4_steps",
+		"test_steps_s4_has_4_steps",
+		"test_steps_s5_has_3_steps",
+		"test_steps_s6_has_3_steps",
 		# STEPS alias
 		"test_steps_alias_same_size_as_s1",
 		"test_steps_alias_same_ids_as_s1",
@@ -45,6 +45,14 @@ func run() -> void:
 		"test_steps_s4_all_have_id_and_hint",
 		"test_steps_s5_all_have_id_and_hint",
 		"test_steps_s6_all_have_id_and_hint",
+		# SPA-1658: Heat intro step
+		"test_heat_intro_is_first_step_s2",
+		"test_heat_intro_is_first_step_s3",
+		"test_heat_intro_is_first_step_s4",
+		"test_heat_intro_is_first_step_s5",
+		"test_heat_intro_is_first_step_s6",
+		"test_heat_intro_not_in_s1",
+		"test_heat_intro_hint_data_exists",
 		# Initial state (no setup)
 		"test_initial_is_not_active",
 		"test_initial_step_is_minus_one",
@@ -101,37 +109,37 @@ static func test_steps_s1_has_7_steps() -> bool:
 	return true
 
 
-static func test_steps_s2_has_3_steps() -> bool:
-	if TutorialController.STEPS_S2.size() != 3:
-		push_error("test_steps_s2_has_3_steps: expected 3, got %d" % TutorialController.STEPS_S2.size())
+static func test_steps_s2_has_4_steps() -> bool:
+	if TutorialController.STEPS_S2.size() != 4:
+		push_error("test_steps_s2_has_4_steps: expected 4, got %d" % TutorialController.STEPS_S2.size())
 		return false
 	return true
 
 
-static func test_steps_s3_has_3_steps() -> bool:
-	if TutorialController.STEPS_S3.size() != 3:
-		push_error("test_steps_s3_has_3_steps: expected 3, got %d" % TutorialController.STEPS_S3.size())
+static func test_steps_s3_has_4_steps() -> bool:
+	if TutorialController.STEPS_S3.size() != 4:
+		push_error("test_steps_s3_has_4_steps: expected 4, got %d" % TutorialController.STEPS_S3.size())
 		return false
 	return true
 
 
-static func test_steps_s4_has_3_steps() -> bool:
-	if TutorialController.STEPS_S4.size() != 3:
-		push_error("test_steps_s4_has_3_steps: expected 3, got %d" % TutorialController.STEPS_S4.size())
+static func test_steps_s4_has_4_steps() -> bool:
+	if TutorialController.STEPS_S4.size() != 4:
+		push_error("test_steps_s4_has_4_steps: expected 4, got %d" % TutorialController.STEPS_S4.size())
 		return false
 	return true
 
 
-static func test_steps_s5_has_2_steps() -> bool:
-	if TutorialController.STEPS_S5.size() != 2:
-		push_error("test_steps_s5_has_2_steps: expected 2, got %d" % TutorialController.STEPS_S5.size())
+static func test_steps_s5_has_3_steps() -> bool:
+	if TutorialController.STEPS_S5.size() != 3:
+		push_error("test_steps_s5_has_3_steps: expected 3, got %d" % TutorialController.STEPS_S5.size())
 		return false
 	return true
 
 
-static func test_steps_s6_has_2_steps() -> bool:
-	if TutorialController.STEPS_S6.size() != 2:
-		push_error("test_steps_s6_has_2_steps: expected 2, got %d" % TutorialController.STEPS_S6.size())
+static func test_steps_s6_has_3_steps() -> bool:
+	if TutorialController.STEPS_S6.size() != 3:
+		push_error("test_steps_s6_has_3_steps: expected 3, got %d" % TutorialController.STEPS_S6.size())
 		return false
 	return true
 
@@ -310,6 +318,63 @@ static func test_setup_unknown_scenario_falls_back_to_s1() -> bool:
 	if ctrl._steps.size() != TutorialController.STEPS_S1.size():
 		push_error("test_setup_unknown_scenario_falls_back_to_s1: expected S1 size %d, got %d" % [
 			TutorialController.STEPS_S1.size(), ctrl._steps.size()])
+		return false
+	return true
+
+
+# ── SPA-1658: Heat intro step tests ──────────────────────────────────────────
+
+static func test_heat_intro_is_first_step_s2() -> bool:
+	if TutorialController.STEPS_S2[0]["id"] != "ctx_heat_intro":
+		push_error("test_heat_intro_is_first_step_s2: first step is '%s', expected 'ctx_heat_intro'" % TutorialController.STEPS_S2[0]["id"])
+		return false
+	return true
+
+
+static func test_heat_intro_is_first_step_s3() -> bool:
+	if TutorialController.STEPS_S3[0]["id"] != "ctx_heat_intro":
+		push_error("test_heat_intro_is_first_step_s3: first step is '%s', expected 'ctx_heat_intro'" % TutorialController.STEPS_S3[0]["id"])
+		return false
+	return true
+
+
+static func test_heat_intro_is_first_step_s4() -> bool:
+	if TutorialController.STEPS_S4[0]["id"] != "ctx_heat_intro":
+		push_error("test_heat_intro_is_first_step_s4: first step is '%s', expected 'ctx_heat_intro'" % TutorialController.STEPS_S4[0]["id"])
+		return false
+	return true
+
+
+static func test_heat_intro_is_first_step_s5() -> bool:
+	if TutorialController.STEPS_S5[0]["id"] != "ctx_heat_intro":
+		push_error("test_heat_intro_is_first_step_s5: first step is '%s', expected 'ctx_heat_intro'" % TutorialController.STEPS_S5[0]["id"])
+		return false
+	return true
+
+
+static func test_heat_intro_is_first_step_s6() -> bool:
+	if TutorialController.STEPS_S6[0]["id"] != "ctx_heat_intro":
+		push_error("test_heat_intro_is_first_step_s6: first step is '%s', expected 'ctx_heat_intro'" % TutorialController.STEPS_S6[0]["id"])
+		return false
+	return true
+
+
+static func test_heat_intro_not_in_s1() -> bool:
+	for step_def in TutorialController.STEPS_S1:
+		if step_def["id"] == "ctx_heat_intro":
+			push_error("test_heat_intro_not_in_s1: heat intro should not appear in S1 (heat disabled)")
+			return false
+	return true
+
+
+static func test_heat_intro_hint_data_exists() -> bool:
+	var sys := TutorialSystem.new()
+	var hint: Dictionary = sys.get_hint("ctx_heat_intro")
+	if hint.is_empty():
+		push_error("test_heat_intro_hint_data_exists: ctx_heat_intro not found in TutorialSystem hint data")
+		return false
+	if not hint.has("title") or not hint.has("body"):
+		push_error("test_heat_intro_hint_data_exists: ctx_heat_intro missing title or body")
 		return false
 	return true
 

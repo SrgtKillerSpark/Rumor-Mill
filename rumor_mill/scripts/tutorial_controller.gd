@@ -51,35 +51,40 @@ const STEPS_S1: Array = [
 	{ "id": "gtut_complete",       "hint": "gtut_complete" },
 ]
 
-## Scenario 2 — Plague Scare: mechanic shift + Maren warning (3 steps).
+## Scenario 2 — Plague Scare: heat intro + mechanic shift + Maren warning (4 steps).
 const STEPS_S2: Array = [
+	{ "id": "ctx_heat_intro",         "hint": "ctx_heat_intro" },
 	{ "id": "wtut_s2_mechanic_shift", "hint": "wtut_s2_mechanic_shift" },
 	{ "id": "wtut_s2_whats_new",      "hint": "wtut_s2_whats_new" },
 	{ "id": "ctx_s2_maren_warning",   "hint": "ctx_s2_maren_warning" },
 ]
 
-## Scenario 3 — Succession: two targets + rival agent (3 steps).
+## Scenario 3 — Succession: heat intro + two targets + rival agent (4 steps).
 const STEPS_S3: Array = [
+	{ "id": "ctx_heat_intro",     "hint": "ctx_heat_intro" },
 	{ "id": "wtut_s3_whats_new",   "hint": "wtut_s3_whats_new" },
 	{ "id": "ctx_s3_dual_targets", "hint": "ctx_s3_dual_targets" },
 	{ "id": "ctx_s3_rival_intro",  "hint": "ctx_s3_rival_intro" },
 ]
 
-## Scenario 4 — Holy Inquisition: defense goal + inquisitor (3 steps).
+## Scenario 4 — Holy Inquisition: heat intro + defense goal + inquisitor (4 steps).
 const STEPS_S4: Array = [
+	{ "id": "ctx_heat_intro",           "hint": "ctx_heat_intro" },
 	{ "id": "wtut_s4_whats_new",        "hint": "wtut_s4_whats_new" },
 	{ "id": "ctx_s4_defense_goal",      "hint": "ctx_s4_defense_goal" },
 	{ "id": "ctx_s4_inquisitor_info",   "hint": "ctx_s4_inquisitor_info" },
 ]
 
-## Scenario 5 — Election: three-way race (2 steps).
+## Scenario 5 — Election: heat intro + three-way race (3 steps).
 const STEPS_S5: Array = [
+	{ "id": "ctx_heat_intro",         "hint": "ctx_heat_intro" },
 	{ "id": "wtut_s5_whats_new",      "hint": "wtut_s5_whats_new" },
 	{ "id": "ctx_s5_three_way_race",  "hint": "ctx_s5_three_way_race" },
 ]
 
-## Scenario 6 — Merchant's Debt: heat ceiling + protect Marta (2 steps).
+## Scenario 6 — Merchant's Debt: heat intro + heat ceiling + protect Marta (3 steps).
 const STEPS_S6: Array = [
+	{ "id": "ctx_heat_intro",     "hint": "ctx_heat_intro" },
 	{ "id": "wtut_s6_whats_new",   "hint": "wtut_s6_whats_new" },
 	{ "id": "ctx_s6_heat_ceiling", "hint": "ctx_s6_heat_ceiling" },
 ]
