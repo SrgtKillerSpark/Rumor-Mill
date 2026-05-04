@@ -2,7 +2,7 @@
 # install_hooks.sh — install git hooks for GDScript validation
 #
 # Installs two hooks:
-#   pre-commit — runs validate_gdscript.sh (requires Godot) on staged .gd/.tscn files
+#   pre-commit — runs check_gdscript_static.js (fast, no Godot) + validate_gdscript.sh (optional Godot)
 #   pre-push   — runs check_gdscript_static.js (no Godot required) on all .gd files
 #
 # Usage: bash rumor_mill/tools/install_hooks.sh
@@ -20,29 +20,68 @@ if [[ ! -d "$HOOK_DIR" ]]; then
   exit 1
 fi
 
-# ── pre-commit: headless Godot validation ─────────────────────────────────────
+# ── pre-commit: static check + optional headless Godot validation ─────────────
 PRECOMMIT="$HOOK_DIR/pre-commit"
 cat > "$PRECOMMIT" << 'EOF'
 #!/usr/bin/env bash
-# Pre-commit hook: GDScript headless validation (requires Godot)
+# Pre-commit hook: GDScript static analysis + headless validation
 # Installed by rumor_mill/tools/install_hooks.sh
+#
+# Runs two checks when .gd files are staged:
+#   1. check_gdscript_static.js — fast Node.js linter (no Godot required)
+#   2. validate_gdscript.sh — headless Godot validation (skipped if Godot absent)
+#
+# Bypass for emergencies: git commit --no-verify
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Only run if any .gd files are staged
+STAGED_GD=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.gd$' || true)
+if [[ -z "$STAGED_GD" ]]; then
+  exit 0
+fi
+
+ERRORS=0
+
+# ── Step 1: Static analysis (fast, no Godot) ─────────────────────────────────
+STATIC_SCRIPT="$REPO_ROOT/rumor_mill/tools/check_gdscript_static.js"
+
+if [[ -f "$STATIC_SCRIPT" ]]; then
+  if command -v node &>/dev/null; then
+    echo "pre-commit: running GDScript static check..."
+    if ! node "$STATIC_SCRIPT" --project "$REPO_ROOT/rumor_mill" --fix-hint; then
+      echo ""
+      echo "✗ Static check failed — commit blocked."
+      echo "  Fix the errors above or bypass with: git commit --no-verify"
+      ERRORS=1
+    fi
+  else
+    echo "WARNING: node not found — skipping static GDScript check." >&2
+  fi
+else
+  echo "WARNING: check_gdscript_static.js not found — skipping static check." >&2
+fi
+
+# ── Step 2: Headless Godot validation (optional, skipped if Godot missing) ────
 VALIDATE_SCRIPT="$REPO_ROOT/rumor_mill/tools/validate_gdscript.sh"
 
-if [[ ! -f "$VALIDATE_SCRIPT" ]]; then
-  echo "WARNING: validate_gdscript.sh not found — skipping headless GDScript check." >&2
-  exit 0
+if [[ -f "$VALIDATE_SCRIPT" ]]; then
+  # Only run headless validation if <= 20 staged .gd files (speed gate)
+  STAGED_COUNT=$(echo "$STAGED_GD" | wc -l | tr -d ' ')
+  if [[ $STAGED_COUNT -le 20 ]]; then
+    echo "pre-commit: running headless Godot validation..."
+    if ! bash "$VALIDATE_SCRIPT" --project "$REPO_ROOT/rumor_mill"; then
+      echo ""
+      echo "✗ Headless validation failed — commit blocked."
+      echo "  Fix the errors above or bypass with: git commit --no-verify"
+      ERRORS=1
+    fi
+  else
+    echo "pre-commit: $STAGED_COUNT .gd files staged — skipping headless validation (too many; will run in CI)."
+  fi
 fi
 
-# Only run if any .gd or .tscn files are staged
-STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(gd|tscn)$' || true)
-if [[ -z "$STAGED" ]]; then
-  exit 0
-fi
-
-echo "Running GDScript headless validation on staged changes..."
-bash "$VALIDATE_SCRIPT" --project "$REPO_ROOT/rumor_mill"
+exit $ERRORS
 EOF
 chmod +x "$PRECOMMIT"
 echo "Pre-commit hook installed at: $PRECOMMIT"
@@ -86,4 +125,4 @@ chmod +x "$PREPUSH"
 echo "Pre-push hook installed at:   $PREPUSH"
 
 echo ""
-echo "Hooks installed. Static check runs on every push; headless check on every commit (requires Godot)."
+echo "Hooks installed. Static check + optional headless validation on every commit; static check on every push."
