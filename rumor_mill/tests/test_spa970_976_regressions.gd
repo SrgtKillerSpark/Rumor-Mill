@@ -204,7 +204,7 @@ static func test_spa976_score_lbl_carries_win_condition_text() -> bool:
 ## Read a script from res://scripts/<name> and return its full text.
 ## Returns an empty string and pushes an error on failure.
 static func _read_script(script_name: String) -> String:
-	var path := "res://scripts/%s" % script_name
+	var path := "res://scripts/%s" % script_name  # dynamic lookup — scripts exist at runtime
 	var f := FileAccess.open(path, FileAccess.READ)
 	if f == null:
 		push_error("_read_script: could not open '%s'" % path)

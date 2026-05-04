@@ -5,7 +5,7 @@
 ## centroid, and a z_index relative to the ground layer.
 ##
 ## Props are registered here as the design brief; artists produce the sprites at
-## res://assets/sprites/props/<id>.png.  A future DistrictPropsSpawner node can
+## assets/sprites/props/<id>.png (relative to project root).  A future DistrictPropsSpawner node can
 ## read this registry to instantiate Sprite2D nodes at world start.
 ##
 ## District → theme mapping (SPA-925):

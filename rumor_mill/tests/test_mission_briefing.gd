@@ -251,7 +251,7 @@ static func test_initial_brief_empty() -> bool:
 
 # ── setup() objectiveCard binding (SPA-1086) ─────────────────────────────────
 ## setup() must read _objective_one_liner from objectiveCard.mission.
-## Pass npc_data={} to avoid the portrait branch which calls load("res://...").
+## Pass npc_data={} to avoid the portrait branch which calls load() on a resource path.
 
 static func test_setup_mission_from_objective_card() -> bool:
 	var mb := _make_mb()
@@ -326,7 +326,7 @@ static func test_setup_stores_brief() -> bool:
 
 
 ## setup() must store the npc_data dictionary in _npc_data.
-## Pass npc_data={} so _build_portrait (which calls load("res://...")) is skipped.
+## Pass npc_data={} so _build_portrait (which calls load() on a resource path) is skipped.
 static func test_setup_stores_npc_data() -> bool:
 	var mb := _make_mb()
 	mb.setup("obj", "win", {}, {}, {})
