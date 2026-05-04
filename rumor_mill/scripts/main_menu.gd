@@ -406,7 +406,7 @@ func _process(delta: float) -> void:
 
 func _build_main_panel() -> void:
 	# SPA-685: Redesigned parchment scroll with medieval manuscript title.
-	_panel_main = _make_parchment_panel(440, 520)
+	_panel_main = _make_parchment_panel(440, 600)
 	add_child(_panel_main)
 
 	var vbox := VBoxContainer.new()
