@@ -18,6 +18,10 @@ extends RefCounted
 ##   • TestSpa1106NewGameRegression — fresh New Game must never trigger instant-victory (SPA-1106)
 ##   • TestSpa1544NewGameStateIsolation — DayNightCycle reset, SaveManager statics, MilestoneTracker
 ##                                        S1 threshold fix (SPA-1544)
+##   • TestSpa1599AnalyticsDisabledGating — A4 acceptance criterion: evidence acquisition emits no
+##                                          event when analytics disabled; positive control (SPA-1599)
+##   • TestSpa1613EvidenceAcquired       — evidence_acquired NDJSON field shape for all 3 fire sites,
+##                                          no double-emission guard, pre-setup queuing (SPA-1613)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
 ##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text,
@@ -290,6 +294,8 @@ const TestSocialGraphOverlay = preload("res://tests/test_social_graph_overlay.gd
 const TestSpa970976Regressions = preload("res://tests/test_spa970_976_regressions.gd")
 const TestSpa1106NewGameRegression = preload("res://tests/test_spa1106_new_game_regression.gd")
 const TestSpa1544NewGameStateIsolation = preload("res://tests/test_spa1544_new_game_state_isolation.gd")
+const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_analytics_disabled_gating.gd")
+const TestSpa1613EvidenceAcquired = preload("res://tests/test_spa1613_evidence_acquired.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
 const TestStrategicOverview = preload("res://tests/test_strategic_overview.gd")
@@ -353,6 +359,12 @@ func _init() -> void:
 
 	print("\n── SPA-1544 NewGame State Isolation ──")
 	TestSpa1544NewGameStateIsolation.new().run()
+
+	print("\n── SPA-1599 Analytics-Disabled Gating (A4) ──")
+	TestSpa1599AnalyticsDisabledGating.new().run()
+
+	print("\n── SPA-1613 evidence_acquired field shape + fire sites ──")
+	TestSpa1613EvidenceAcquired.new().run()
 
 	print("\n── TutorialSystem ──")
 	TestTutorialSystem.new().run()
