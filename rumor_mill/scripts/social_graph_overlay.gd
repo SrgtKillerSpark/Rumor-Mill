@@ -20,7 +20,9 @@ const FACTION_FILL := {
 	"clergy":   Color(0.88, 0.88, 0.88, 1.0),   # pale grey-white
 }
 
-const STATE_RING_COLOR := {
+# Declared as var (not const) — GDScript cannot use cross-class enum values
+# as const dictionary keys in all Godot 4.x versions (parse error in 4.3).
+var STATE_RING_COLOR := {
 	Rumor.RumorState.UNAWARE:       Color(0.25, 0.25, 0.25, 0.0),
 	Rumor.RumorState.EVALUATING:    Color(1.00, 1.00, 0.00, 1.0),
 	Rumor.RumorState.BELIEVE:       Color(0.00, 0.62, 0.45, 1.0),  # Wong bluish-green — colorblind-safe

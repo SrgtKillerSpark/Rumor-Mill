@@ -210,7 +210,9 @@ const _MIN_EVAL_TICKS: int = 3
 
 # Sprite modulate tints per worst rumor state — subtle colour shifts so the
 # player can read NPC state at a glance without squinting at the state badge.
-const STATE_TINT := {
+# Declared as var (not const) — GDScript cannot use cross-class enum values
+# as const dictionary keys in all Godot 4.x versions (parse error in 4.3).
+var STATE_TINT := {
 	Rumor.RumorState.UNAWARE:    Color(1.00, 1.00, 1.00, 1.0),  # normal
 	Rumor.RumorState.EVALUATING: Color(1.00, 1.00, 0.70, 1.0),  # warm yellow
 	Rumor.RumorState.BELIEVE:    Color(0.70, 1.00, 0.72, 1.0),  # soft green
