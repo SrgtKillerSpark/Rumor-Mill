@@ -45,6 +45,20 @@ function fmtSec(sec) {
   return `${m}m ${s}s`;
 }
 
+// ── Scenario ID normalisation ────────────────────────────────────────────────
+//
+// Fixtures emit both short ("S2") and long ("scenario_2") formats.
+// Normalise to the short uppercase form ("S2") at load time so all downstream
+// regex patterns, dictionary lookups, and watchlist filters match consistently.
+
+function normaliseScenarioId(id) {
+  if (id == null) return id;
+  const s = String(id);
+  const m = s.match(/^scenario[_\s-]?(\d+)$/i);
+  if (m) return `S${m[1]}`;
+  return s;
+}
+
 // ── Event loading ─────────────────────────────────────────────────────────────
 
 function loadFiles(filePaths) {
@@ -56,6 +70,7 @@ function loadFiles(filePaths) {
       try {
         const ev = JSON.parse(line);
         ev._source = fp;
+        if (ev.scenario_id != null) ev.scenario_id = normaliseScenarioId(ev.scenario_id);
         events.push(ev);
       } catch {
         // skip malformed lines silently
