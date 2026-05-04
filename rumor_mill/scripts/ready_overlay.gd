@@ -80,7 +80,10 @@ func _build_shell() -> void:
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_backdrop)
 
-	# Centered briefing card (580 px wide per spec, auto-height).
+	# Centered briefing card — viewport-relative sizing.
+	var vp_size := get_viewport().get_visible_rect().size
+	var half_w := roundf(vp_size.x * 0.227)   # ~45.3% width (was 580px at 1280)
+	var half_h := roundf(vp_size.y * 0.333)    # ~66.7% height (was 480px at 720)
 	_card = Panel.new()
 	_card.anchor_left   = 0.5
 	_card.anchor_right  = 0.5
