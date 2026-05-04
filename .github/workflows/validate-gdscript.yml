@@ -67,8 +67,11 @@ jobs:
             cat "$SMOKE_LOG"
             exit 1
           fi
-          # Check for fatal errors (parse errors, autoload crashes)
-          FATAL=$(grep -E "^(ERROR|SCRIPT ERROR).*res://|^Parse error:|FATAL" "$SMOKE_LOG" || true)
+          # Check for fatal errors (parse errors, autoload crashes).
+          # Exclude GDExtension load failures (missing godotsteam .dll in CI) —
+          # they match ERROR:.*res:// but are not GDScript or boot errors.
+          FATAL=$(grep -E "^(ERROR|SCRIPT ERROR).*res://|^Parse error:|FATAL" "$SMOKE_LOG" \
+            | grep -v "GDExtension\|Error loading extension" || true)
           if [[ -n "$FATAL" ]]; then
             echo "✗ Smoke-launch detected fatal errors during boot:"
             echo "$FATAL"
