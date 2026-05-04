@@ -19,8 +19,6 @@ const C_LEGEND_DIM       := Color(0.55, 0.55, 0.50, 0.85) # legend label "Target
 const C_ILLNESS_DIM      := Color(0.60, 0.85, 0.30, 0.80) # escalation label default (80% alpha variant of C_ILLNESS)
 const C_QUARANTINE_ALERT := Color(0.95, 0.30, 0.20, 0.90) # quarantine status label
 const C_ESCALATION_FLARE := Color(1.0,  0.75, 0.10, 1.0)  # escalation event flash color
-const C_DEFENDING_ACCENT  := Color(0.95, 0.55, 0.10, 1.0)  # Maren actively countering: alert amber
-const C_DEFENDING_DORMANT := Color(0.55, 0.55, 0.50, 0.55)  # Maren watch: dormant/dim state
 const C_TOAST_TEXT        := Color(0.80, 0.70, 0.50, 1.0)   # de-conversion toast label text
 
 const BAR_WIDTH      := 160

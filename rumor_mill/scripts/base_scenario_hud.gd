@@ -29,7 +29,9 @@ const C_HEADING  := Color(0.91, 0.85, 0.70, 1.0)
 const C_BODY     := Color(0.75, 0.70, 0.60, 1.0)
 const C_WIN      := Color(0.10, 0.75, 0.22, 1.0)
 const C_FAIL     := Color(0.85, 0.15, 0.15, 1.0)
-const C_NEUTRAL  := Color(0.85, 0.55, 0.10, 1.0)
+const C_NEUTRAL            := Color(0.85, 0.55, 0.10, 1.0)
+const C_DEFENDING_ACCENT   := Color(0.95, 0.55, 0.10, 1.0)  # Maren actively countering: alert amber
+const C_DEFENDING_DORMANT  := Color(0.55, 0.55, 0.50, 0.55) # Maren watch: dormant/dim state
 
 # ── Shared state ─────────────────────────────────────────────────────────────
 var _world_ref:       Node2D       = null
