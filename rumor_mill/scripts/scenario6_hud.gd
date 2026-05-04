@@ -16,6 +16,11 @@ extends BaseScenarioHud
 
 const BAR_WIDTH  := 160
 
+const TOAST_CORNER_RADIUS := 4
+const TOAST_PANEL_INSET_H := 8
+const TOAST_PANEL_TOP     := 90
+const TOAST_PANEL_BOTTOM  := 134
+
 # Heat-bar colours — spec: yellow below 40, orange@40, red@50.
 const C_HEAT_YELLOW := Color(0.95, 0.85, 0.10, 1.0)
 const C_HEAT_ORANGE := Color(0.90, 0.50, 0.05, 1.0)
@@ -225,16 +230,16 @@ func _build_ui() -> void:
 	_event_toast_panel = Panel.new()
 	var ev_toast_style := StyleBoxFlat.new()
 	ev_toast_style.bg_color = Color(0.10, 0.08, 0.06, 0.93)
-	ev_toast_style.set_corner_radius_all(4)
+	ev_toast_style.set_corner_radius_all(TOAST_CORNER_RADIUS)
 	_event_toast_panel.add_theme_stylebox_override("panel", ev_toast_style)
 	_event_toast_panel.set_anchor(SIDE_LEFT,   0.0)
 	_event_toast_panel.set_anchor(SIDE_RIGHT,  1.0)
 	_event_toast_panel.set_anchor(SIDE_TOP,    0.0)
 	_event_toast_panel.set_anchor(SIDE_BOTTOM, 0.0)
-	_event_toast_panel.set_offset(SIDE_LEFT,   8)
-	_event_toast_panel.set_offset(SIDE_RIGHT, -8)
-	_event_toast_panel.set_offset(SIDE_TOP,   90)
-	_event_toast_panel.set_offset(SIDE_BOTTOM, 134)
+	_event_toast_panel.set_offset(SIDE_LEFT,    TOAST_PANEL_INSET_H)
+	_event_toast_panel.set_offset(SIDE_RIGHT,  -TOAST_PANEL_INSET_H)
+	_event_toast_panel.set_offset(SIDE_TOP,     TOAST_PANEL_TOP)
+	_event_toast_panel.set_offset(SIDE_BOTTOM,  TOAST_PANEL_BOTTOM)
 	_event_toast_panel.visible = false
 	add_child(_event_toast_panel)
 
@@ -245,8 +250,8 @@ func _build_ui() -> void:
 	_event_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	_event_toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_event_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_event_toast_lbl.set_offset(SIDE_LEFT,  8)
-	_event_toast_lbl.set_offset(SIDE_RIGHT, -8)
+	_event_toast_lbl.set_offset(SIDE_LEFT,   TOAST_PANEL_INSET_H)
+	_event_toast_lbl.set_offset(SIDE_RIGHT, -TOAST_PANEL_INSET_H)
 	_event_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_event_toast_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_event_toast_panel.add_child(_event_toast_lbl)
