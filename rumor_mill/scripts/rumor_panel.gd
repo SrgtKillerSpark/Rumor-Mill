@@ -353,6 +353,16 @@ func _rebuild_seed_list() -> void:
 		_selected_seed_npc,
 		_selected_evidence_item,
 		func(npc_id: String) -> void:  # on_select_seed
+			# SPA-1580: log target shift when evidence is pending and seed target changes.
+			if _selected_evidence_item != null \
+					and not _selected_seed_npc.is_empty() \
+					and _selected_seed_npc != npc_id \
+					and _analytics_manager != null:
+				_analytics_manager.log_evidence_target_shift(
+					_selected_evidence_item.type.to_lower().replace(" ", "_"),
+					_selected_seed_npc,
+					npc_id
+				)
 			_selected_seed_npc = npc_id
 			_confirm_pending   = false
 			_stop_confirm_glow()

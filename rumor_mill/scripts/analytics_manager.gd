@@ -164,6 +164,16 @@ func _on_analytics_new_day(day: int) -> void:
 	else:
 		push_warning("AnalyticsManager: _world.scenario_manager is null — reputation_snapshot for day %d skipped" % day)
 
+	# SPA-1580: Emit evidence-economy decay ticks and threshold crossings.
+	var intel_store: PlayerIntelStore = _world.intel_store if "intel_store" in _world else null
+	if intel_store != null:
+		for ev in intel_store.decay_evidence_items(day):
+			if ev["kind"] == "decay":
+				log_evidence_decay_tick(ev["evidence_type"], ev["prev"], ev["new"])
+			elif ev["kind"] == "threshold":
+				log_evidence_threshold_cross(
+					ev["evidence_type"], ev["direction"], ev["threshold"], ev["confidence"])
+
 
 ## SPA-1241: Wire TutorialController step_completed signal.
 ## Called after the TutorialController is created (deferred from setup() because
