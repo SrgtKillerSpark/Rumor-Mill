@@ -471,17 +471,17 @@ func _infer_fail_reason(scenario_id: int) -> String:
 		var rep: ReputationSystem = _world_ref.reputation_system
 		if rep != null:
 			var aldric := rep.get_snapshot(ScenarioManager.ALDRIC_VANE_ID)
-			if aldric != null and aldric.score < ScenarioManager.S5_FAIL_ALDRIC_BELOW:
+			if aldric != null and aldric.score < sm.S5_FAIL_ALDRIC_BELOW:
 				return "aldric_destroyed"
 	if scenario_id == 6:
 		var rep: ReputationSystem = _world_ref.reputation_system
 		if rep != null:
 			var marta := rep.get_snapshot(ScenarioManager.MARTA_COIN_ID)
-			if marta != null and marta.score < ScenarioManager.S6_FAIL_MARTA_BELOW:
+			if marta != null and marta.score < sm.S6_FAIL_MARTA_BELOW:
 				return "marta_silenced"
 		if _world_ref.intel_store != null:
 			for npc_id in _world_ref.intel_store.heat:
-				if _world_ref.intel_store.heat[npc_id] >= ScenarioManager.S6_EXPOSED_HEAT:
+				if _world_ref.intel_store.heat[npc_id] >= sm.S6_EXPOSED_HEAT:
 					return "exposed"
 	# Check days elapsed vs allowed.
 	if _day_night_ref != null and sm.get_days_allowed() > 0:
@@ -731,7 +731,7 @@ func _build_bonus_stat(scenario_id: int) -> void:
 					_world_ref.reputation_system
 				)
 				var max_heat: float = progress.get("max_heat", 0.0)
-				bonus_value_text = "%d / %d" % [int(max_heat), int(ScenarioManager.S6_EXPOSED_HEAT)]
+				bonus_value_text = "%d / %d" % [int(max_heat), int(_world_ref.scenario_manager.S6_EXPOSED_HEAT)]
 			else:
 				bonus_value_text = "—"
 		_:

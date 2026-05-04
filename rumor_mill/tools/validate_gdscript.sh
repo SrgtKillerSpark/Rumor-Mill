@@ -108,7 +108,10 @@ set -e
 #   SCRIPT ERROR: res://scripts/foo.gd:42 - …
 # Engine-level shutdown noise (BUG: Unreferenced static string, RID leaks,
 # PagedAllocator, Thread cleanup) does NOT contain res:// and is excluded.
-ERROR_LINES=$(grep -E "^(ERROR|SCRIPT ERROR).*res://|^Parse error:" "$TMPLOG" || true)
+# GDExtension load failures (e.g. missing godotsteam .dll in CI) are also
+# excluded — they match "ERROR:.*res://" but are not GDScript parse errors.
+ERROR_LINES=$(grep -E "^(ERROR|SCRIPT ERROR).*res://|^Parse error:" "$TMPLOG" \
+  | grep -v "GDExtension\|Error loading extension" || true)
 WARNING_LINES=$(grep -E "^WARNING:.*res://" "$TMPLOG" || true)
 
 # Count errors
