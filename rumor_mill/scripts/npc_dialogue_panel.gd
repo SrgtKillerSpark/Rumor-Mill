@@ -403,7 +403,7 @@ func _rebuild_panel(npc: Node2D) -> void:
 
 	# ── Resize panel to fit content ───────────────────────────────────────────
 	_panel.size = Vector2(PANEL_W, 0.0)
-	await get_tree().process_frame
+	await get_tree().create_timer(0.0).timeout
 	_panel.size = Vector2(PANEL_W, vbox.get_minimum_size().y + 20.0)
 
 
