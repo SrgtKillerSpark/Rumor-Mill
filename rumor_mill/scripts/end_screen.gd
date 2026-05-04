@@ -180,9 +180,7 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 	if _panel.panel != null:
 		_panel.panel.modulate.a = 0.0
 		_panel.panel.scale = Vector2(0.92, 0.92)
-		_panel.panel.pivot_offset = Vector2(
-			EndScreenPanelBuilder.PANEL_W / 2.0,
-			EndScreenPanelBuilder.PANEL_H / 2.0)
+		_panel.panel.pivot_offset = _panel.panel.custom_minimum_size / 2.0
 	TransitionManager.fade_in(0.35)
 	var _enter_tw: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	if _panel.backdrop != null:
