@@ -553,6 +553,10 @@ func _build_select_panel() -> void:
 		cards_vbox.add_child(card)
 		_scenario_cards.append(card)
 
+	# SPA-1636: Wire focus_neighbor between card overlay buttons for keyboard nav.
+	# Cards are already in the tree (panel added at line 513), so get_path() is safe.
+	_wire_scenario_card_focus()
+
 	vbox.add_child(_separator())
 
 	# Bottom row: Back + Next
@@ -701,6 +705,29 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	card.add_child(inner)
 	card.add_child(btn)  # overlay last so it captures mouse events
 	return card
+
+
+## SPA-1636: Wire focus_neighbor on scenario card overlay buttons so keyboard
+## navigation (up/down arrows) cycles through all cards correctly.
+func _wire_scenario_card_focus() -> void:
+	if _scenario_cards.size() < 2:
+		return
+	for i in _scenario_cards.size():
+		var card: PanelContainer = _scenario_cards[i]
+		# The overlay Button is the last child of each card (added after inner VBox).
+		var btn: Button = card.get_child(card.get_child_count() - 1) as Button
+		if btn == null:
+			continue
+		var prev_idx: int = (i - 1) % _scenario_cards.size()
+		var next_idx: int = (i + 1) % _scenario_cards.size()
+		var prev_card: PanelContainer = _scenario_cards[prev_idx]
+		var next_card: PanelContainer = _scenario_cards[next_idx]
+		var prev_btn: Button = prev_card.get_child(prev_card.get_child_count() - 1) as Button
+		var next_btn: Button = next_card.get_child(next_card.get_child_count() - 1) as Button
+		if prev_btn:
+			btn.focus_neighbor_top = prev_btn.get_path()
+		if next_btn:
+			btn.focus_neighbor_bottom = next_btn.get_path()
 
 
 ## SPA-589: Card style with a coloured left accent stripe for scenario difficulty.
