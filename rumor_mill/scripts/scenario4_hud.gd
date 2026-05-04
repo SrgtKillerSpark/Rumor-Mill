@@ -24,6 +24,12 @@ const BAR_WIDTH        := 160
 const FACTION_BAR_W    := 60
 const FACTION_BAR_H    :=  7
 
+const TOAST_CORNER_RADIUS  := 4
+const TOAST_PANEL_INSET_H  := 8    # left/right offset for toast panel
+const TOAST_PANEL_TOP      := 90
+const TOAST_PANEL_BOTTOM   := 134
+const TOAST_TEXT_INSET     := 6    # label left/right offset inside toast
+
 const NPC_DISPLAY_NAMES := {
 	"aldous_prior": "Aldous Prior",
 	"vera_midwife": "Vera Midwife",
@@ -254,16 +260,16 @@ func _build_ui() -> void:
 	_toast_panel = Panel.new()
 	var toast_style := StyleBoxFlat.new()
 	toast_style.bg_color = Color(0.12, 0.10, 0.08, 0.92)
-	toast_style.set_corner_radius_all(4)
+	toast_style.set_corner_radius_all(TOAST_CORNER_RADIUS)
 	_toast_panel.add_theme_stylebox_override("panel", toast_style)
 	_toast_panel.set_anchor(SIDE_LEFT,   0.0)
 	_toast_panel.set_anchor(SIDE_RIGHT,  1.0)
 	_toast_panel.set_anchor(SIDE_TOP,    0.0)
 	_toast_panel.set_anchor(SIDE_BOTTOM, 0.0)
-	_toast_panel.set_offset(SIDE_LEFT,   8)
-	_toast_panel.set_offset(SIDE_RIGHT, -8)
-	_toast_panel.set_offset(SIDE_TOP,   90)
-	_toast_panel.set_offset(SIDE_BOTTOM, 134)
+	_toast_panel.set_offset(SIDE_LEFT,    TOAST_PANEL_INSET_H)
+	_toast_panel.set_offset(SIDE_RIGHT,  -TOAST_PANEL_INSET_H)
+	_toast_panel.set_offset(SIDE_TOP,    TOAST_PANEL_TOP)
+	_toast_panel.set_offset(SIDE_BOTTOM, TOAST_PANEL_BOTTOM)
 	_toast_panel.visible = false
 	add_child(_toast_panel)
 
@@ -274,8 +280,8 @@ func _build_ui() -> void:
 	_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	_toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_toast_lbl.set_offset(SIDE_LEFT,  6)
-	_toast_lbl.set_offset(SIDE_RIGHT, -6)
+	_toast_lbl.set_offset(SIDE_LEFT,   TOAST_TEXT_INSET)
+	_toast_lbl.set_offset(SIDE_RIGHT, -TOAST_TEXT_INSET)
 	_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_toast_panel.add_child(_toast_lbl)
