@@ -78,8 +78,8 @@ func _process(_delta: float) -> void:
 	var ty: float = mouse_pos.y + OFFSET.y
 	var panel_h: float = _panel.size.y if _panel.size.y > 0.0 else 80.0
 	var vp: Vector2 = get_viewport().get_visible_rect().size
-	tx = clampf(tx, 4.0, vp.x - PANEL_W - 4.0)
-	ty = clampf(ty, 4.0, vp.y - panel_h - 4.0)
+	tx = clampf(tx, 8.0, vp.x - PANEL_W - 8.0)
+	ty = clampf(ty, 8.0, vp.y - panel_h - 8.0)
 	_panel.set_position(Vector2(tx, ty))
 
 

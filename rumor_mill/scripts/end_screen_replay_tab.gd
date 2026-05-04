@@ -162,7 +162,7 @@ func _build_influence_section(parent: VBoxContainer) -> void:
 
 		var name_lbl := Label.new()
 		name_lbl.text = str(entry.get("name", "?"))
-		name_lbl.custom_minimum_size = Vector2(160, 0)
+		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		name_lbl.add_theme_font_size_override("font_size", 12)
 		name_lbl.add_theme_color_override("font_color", C_HEADING)
 		row.add_child(name_lbl)

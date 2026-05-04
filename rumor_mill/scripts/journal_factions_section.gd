@@ -94,7 +94,7 @@ func build(content_vbox: VBoxContainer) -> void:
 
 		var mood_lbl := Label.new()
 		mood_lbl.text = "  Faction mood: %s" % mood
-		mood_lbl.add_theme_font_size_override("font_size", 13)
+		mood_lbl.add_theme_font_size_override("font_size", 12)
 		mood_lbl.add_theme_color_override("font_color", mood_color)
 		content_vbox.add_child(mood_lbl)
 
@@ -115,7 +115,7 @@ func build(content_vbox: VBoxContainer) -> void:
 				var nlbl := Label.new()
 				nlbl.text = "    " + npc_name
 				nlbl.custom_minimum_size = Vector2(130, 0)
-				nlbl.add_theme_font_size_override("font_size", 13)
+				nlbl.add_theme_font_size_override("font_size", 12)
 				nlbl.add_theme_color_override("font_color", C_KEY)
 				row.add_child(nlbl)
 

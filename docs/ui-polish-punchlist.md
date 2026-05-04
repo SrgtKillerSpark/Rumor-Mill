@@ -48,10 +48,10 @@
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
 | 14 | ~~**End screen panel is fixed 760x640px.** Doesn't adapt to viewport. On 1600x900+ it becomes a small island; on sub-1024 it could clip.~~ **RESOLVED SPA-1179** — fixed PANEL_W/PANEL_H replaced with PANEL_MIN_W(640)/PANEL_MIN_H(560)/PANEL_MAX_W(1100)/PANEL_MAX_H(900)/PANEL_VP_W(0.62)/PANEL_VP_H(0.88). `build()` reads viewport size and clamps within min/max. Tests updated in `test_end_screen_panel_builder.gd`. | end_screen_panel_builder.gd:31-38 | Medium |
-| 15 | **Button height mismatch.** End screen buttons are 40px, pause menu buttons are 42px. 2px inconsistency. | end_screen_panel_builder.gd:265-266 vs main_menu.gd:365 | Small |
+| 15 | ~~**Button height mismatch.** End screen buttons are 40px, pause menu buttons are 42px. 2px inconsistency.~~ **RESOLVED SPA-1660** — end_screen_panel_builder._make_button unified to 42px (matching main_menu). | end_screen_panel_builder.gd:265-266 vs main_menu.gd:365 | Small |
 | 16 | **Disabled "Next Scenario" button has no tooltip.** Greyed out at 35% opacity with no explanation. Should say e.g. "Win this scenario to unlock." | end_screen_panel_builder.gd:205-208 | Small |
-| 17 | **NPC name label width hardcoded to 130px.** Long or localized names will truncate. | end_screen_scoring.gd:264 | Small |
-| 18 | **Top-influencer name width hardcoded to 140px.** Same localization risk. | end_screen_replay_tab.gd:162-163 | Small |
+| 17 | ~~**NPC name label width hardcoded to 130px.** Long or localized names will truncate.~~ **RESOLVED SPA-1660** — removed fixed 160px width; name_lbl now uses SIZE_EXPAND_FILL to fill available row space. | end_screen_scoring.gd:264 | Small |
+| 18 | ~~**Top-influencer name width hardcoded to 140px.** Same localization risk.~~ **RESOLVED SPA-1660** — removed fixed 160px width; name_lbl now uses SIZE_EXPAND_FILL to fill available row space. | end_screen_replay_tab.gd:162-163 | Small |
 | 19 | **Feedback panel is fixed 500x360px.** No responsive sizing. | end_screen_feedback.gd:19-20 | Small |
 
 ### Pause Menu & Settings
@@ -68,7 +68,7 @@
 | 22 | **Journal slide animation uses hardcoded 40px offset.** Not viewport-relative; feels different at different scales. | journal.gd:151 | Small |
 | 23 | ~~**Rumor panel status label has no width constraint.** Long reward/risk text can overflow panel bounds. `autowrap` set but no `custom_minimum_size`.~~ **RESOLVED SPA-1517** — `custom_maximum_size = Vector2(0, 40)` added to cap height at ~3 lines. | rumor_panel.gd:230 | Medium |
 | 24 | **Rumor panel subject portrait hardcoded to 48x60px.** No DPI scaling. | rumor_panel_subject_list.gd:95 | Small |
-| 25 | **Journal font-size hierarchy is muddy.** Factions section uses 18 -> 14 -> 13 -> 13. The jump from header to sub-items is too subtle. | journal_factions_section.gd:52/63/67 | Small |
+| 25 | ~~**Journal font-size hierarchy is muddy.** Factions section uses 18 -> 14 -> 13 -> 13. The jump from header to sub-items is too subtle.~~ **RESOLVED SPA-1660** — mood_lbl and NPC name labels dropped from 13→12, giving clear 18→14→12 hierarchy. | journal_factions_section.gd:52/63/67 | Small |
 | 26 | **Timeline event labels have no `clip_text`.** Long event messages can overflow. | journal_timeline_section.gd:268 | Small |
 | 27 | ~~**Rumor tracker side panel has `MAX_ROWS=4` and 240px width.** Concatenated claim+subject text can overflow. No truncation guard.~~ **RESOLVED SPA-1517** — `clip_text = true` added to `claim_lbl` (line 206) and `mut_lbl` (line 217). | rumor_tracker_hud.gd:206/217 | Medium |
 
@@ -86,7 +86,7 @@
 | 30 | **Achievement toasts can overlap.** No queue/stacking system. If multiple achievements fire in quick succession, they render on top of each other. | achievement_toast.gd (entire file) | Large |
 | 31 | **Suggestion toasts can overlap.** Same problem — PanelContainer siblings at the same screen position with no vertical offset management. | suggestion_toast.gd:11-12 | Large |
 | 32 | ~~**Tooltip manager and HUD tooltip use different canvas layers (100 vs 25).** If both are active, tooltip_manager always wins. Inconsistent tooltip behavior.~~ **RESOLVED SPA-1179** — `hud_tooltip.gd` raised from layer 25 to layer 99. Documented precedence in both files: `hud_tooltip`(99) = auto-detected hover tooltips; `TooltipManager`(100) = explicit data-driven tooltips, always wins by design. Both scripts now have matching inline doc comments. | tooltip_manager.gd, hud_tooltip.gd | Medium |
-| 33 | **Tooltip edge-clamping uses 4px buffer.** Too tight at 1366x768; tooltips can appear to hug screen edge. | tooltip_manager.gd:77, hud_tooltip.gd:205-212 | Small |
+| 33 | ~~**Tooltip edge-clamping uses 4px buffer.** Too tight at 1366x768; tooltips can appear to hug screen edge.~~ **RESOLVED SPA-1660** — tooltip_manager.gd raised from 4px to 8px (matching hud_tooltip.gd which already used 8px). | tooltip_manager.gd:77, hud_tooltip.gd:205-212 | Small |
 | 34 | **Building tooltip uses 4 different font sizes (16/13/12/12).** Visual hierarchy between description and NPC count is unclear. | building_tooltip.gd:158-185 | Small |
 | 35 | **NPC tooltip state icon has no fallback image.** Missing texture shows empty box. | npc_tooltip.gd:251-252 | Small |
 
