@@ -82,16 +82,18 @@ GODOT_TIMEOUT="${GODOT_TIMEOUT:-60}"
 TMPLOG="$(mktemp /tmp/godot_validate_XXXXXX.log)"
 trap 'rm -f "$TMPLOG"' EXIT
 
-# Use GNU timeout if available; fall back to direct run with a background kill.
+# Use --quit so Godot exits after the first idle frame: all scripts are parsed
+# and _ready() runs (catching initialisation errors), but the game loop never
+# runs, so runtime gameplay errors cannot produce false CI failures.
+# This mirrors the pre-commit guard (pre-commit-gdscript.sh).
 set +e
 if command -v timeout &>/dev/null 2>&1; then
-  timeout "$GODOT_TIMEOUT" "$GODOT_BIN" --headless --path "$PROJECT_DIR" > "$TMPLOG" 2>&1
+  timeout "$GODOT_TIMEOUT" "$GODOT_BIN" --headless --path "$PROJECT_DIR" --quit > "$TMPLOG" 2>&1
   GODOT_EXIT=$?
-  # timeout exits 124 when it kills the process — treat that as a clean exit
-  # (the game ran long enough to load all scripts; we check for errors below).
+  # timeout exits 124 when it kills the process — treat that as a clean exit.
   [[ $GODOT_EXIT -eq 124 ]] && GODOT_EXIT=0
 else
-  "$GODOT_BIN" --headless --path "$PROJECT_DIR" > "$TMPLOG" 2>&1 &
+  "$GODOT_BIN" --headless --path "$PROJECT_DIR" --quit > "$TMPLOG" 2>&1 &
   GODOT_PID=$!
   sleep "$GODOT_TIMEOUT"
   kill "$GODOT_PID" 2>/dev/null || true
