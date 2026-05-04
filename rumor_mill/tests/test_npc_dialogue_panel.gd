@@ -108,6 +108,12 @@ func run() -> void:
 		"test_fallback_greetings_has_noble_key",
 		"test_fallback_greetings_has_clergy_key",
 		"test_fallback_default_is_ellipsis_array",
+
+		# _compute_panel_pos — SPA-1667 viewport-relative clamping
+		"test_panel_pos_top_clamp",
+		"test_panel_pos_right_clamp",
+		"test_panel_pos_viewport_relative_x_scales_with_width",
+		"test_panel_pos_viewport_relative_y_scales_with_height",
 	]
 
 	for method_name in tests:
@@ -513,3 +519,48 @@ static func test_fallback_default_is_ellipsis_array() -> bool:
 	var ok := p.FALLBACK_DEFAULT.size() == 1 and p.FALLBACK_DEFAULT[0] == "…"
 	p.free()
 	return ok
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# _compute_panel_pos — SPA-1667 viewport-relative clamping
+# ══════════════════════════════════════════════════════════════════════════════
+
+## Cursor near the top of the viewport → panel y is clamped to the 4px guard.
+static func test_panel_pos_top_clamp() -> bool:
+	var pos := NpcDialoguePanelScript._compute_panel_pos(
+		Vector2(1280.0, 720.0),
+		Vector2(100.0, 5.0),   # cursor very near top
+		Vector2(260.0, 300.0)  # tall panel
+	)
+	return is_equal_approx(pos.y, 4.0)
+
+
+## Cursor near the right edge → panel x is clamped to vp_w - panel_w - 4.
+static func test_panel_pos_right_clamp() -> bool:
+	var pos := NpcDialoguePanelScript._compute_panel_pos(
+		Vector2(1280.0, 720.0),
+		Vector2(1200.0, 400.0),
+		Vector2(260.0, 100.0)
+	)
+	return is_equal_approx(pos.x, 1280.0 - 260.0 - 4.0)
+
+
+## x offset at 1920-wide is proportionally larger than at 1280-wide (viewport-relative).
+static func test_panel_pos_viewport_relative_x_scales_with_width() -> bool:
+	# Use a centred cursor with a small panel so no clamping fires.
+	var pos_1280 := NpcDialoguePanelScript._compute_panel_pos(
+		Vector2(1280.0, 720.0), Vector2(300.0, 400.0), Vector2(10.0, 10.0))
+	var pos_1920 := NpcDialoguePanelScript._compute_panel_pos(
+		Vector2(1920.0, 1080.0), Vector2(300.0, 400.0), Vector2(10.0, 10.0))
+	return pos_1920.x > pos_1280.x
+
+
+## y offset at 1080-tall is proportionally larger (more negative) than at 720-tall.
+static func test_panel_pos_viewport_relative_y_scales_with_height() -> bool:
+	# Use a centred cursor with a small panel so no clamping fires.
+	var pos_720 := NpcDialoguePanelScript._compute_panel_pos(
+		Vector2(1280.0, 720.0), Vector2(640.0, 500.0), Vector2(10.0, 10.0))
+	var pos_1080 := NpcDialoguePanelScript._compute_panel_pos(
+		Vector2(1920.0, 1080.0), Vector2(640.0, 500.0), Vector2(10.0, 10.0))
+	# y_off is negative; larger viewport → more negative y → lower numeric value
+	return pos_1080.y < pos_720.y

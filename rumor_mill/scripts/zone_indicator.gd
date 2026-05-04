@@ -59,9 +59,11 @@ func _build_ui() -> void:
 	_panel = PanelContainer.new()
 	_panel.name = "ZonePanel"
 
-	# Anchor bottom-left.
+	# Anchor bottom-left. Right edge is viewport-relative so it doesn't overflow
+	# at narrow viewports (SPA-1667). ≈ 200 px at 1280-wide.
+	var vp_w := get_viewport().get_visible_rect().size.x
 	_panel.set_anchor_and_offset(SIDE_LEFT,   0.0,  12.0)
-	_panel.set_anchor_and_offset(SIDE_RIGHT,  0.0, 200.0)
+	_panel.set_anchor_and_offset(SIDE_RIGHT,  0.0,  vp_w * 0.156)
 	_panel.set_anchor_and_offset(SIDE_BOTTOM, 1.0, -12.0)
 	_panel.set_anchor_and_offset(SIDE_TOP,    1.0, -40.0)
 

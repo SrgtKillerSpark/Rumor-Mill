@@ -144,18 +144,26 @@ func _input(event: InputEvent) -> void:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+## Pure helper — compute viewport-clamped panel position from cursor coordinates.
+## Offsets are viewport-relative so they stay proportional across 1280–1920 viewports.
+## Exposed as a static for unit testing (SPA-1667).
+static func _compute_panel_pos(vp_size: Vector2, screen_pos: Vector2, panel_size: Vector2) -> Vector2:
+	var x_off := vp_size.x * 0.009    # ≈ 12 px at 1280
+	var y_off := -(vp_size.y * 0.111)  # ≈ -80 px at 720
+	var pos   := screen_pos + Vector2(x_off, y_off)
+	pos.x = clampf(pos.x, 4.0, vp_size.x - panel_size.x - 4.0)
+	pos.y = clampf(pos.y, 4.0, vp_size.y - panel_size.y - 4.0)
+	return pos
+
+
 ## Show the conversation panel for the given NPC, positioned near screen_pos.
 func show_for_npc(npc: Node2D, screen_pos: Vector2) -> void:
 	_current_npc = npc
 	_rebuild_panel(npc)
 
-	# Position: offset right of cursor, clamped to viewport.
+	# Position: viewport-relative offset, clamped to viewport (SPA-1667).
 	var vp_size := get_viewport().get_visible_rect().size
-	var pos     := screen_pos + Vector2(12.0, -80.0)
-	var sz      := _panel.size
-	pos.x = clampf(pos.x, 4.0, vp_size.x - sz.x - 4.0)
-	pos.y = clampf(pos.y, 4.0, vp_size.y - sz.y - 4.0)
-	_panel.position = pos
+	_panel.position = _compute_panel_pos(vp_size, screen_pos, _panel.size)
 	_panel.visible  = true
 
 
