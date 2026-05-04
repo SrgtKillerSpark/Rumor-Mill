@@ -532,6 +532,7 @@ func _try_confirm_seed() -> void:
 
 	if _selected_evidence_item != null and _intel_store_ref != null:
 		_intel_store_ref.consume_evidence(_selected_evidence_item)
+		_intel_store_ref.start_evidence_cooldown(_selected_seed_npc, GameState.selected_difficulty)  ## SPA-1585
 		if _analytics_manager != null:
 			_analytics_manager.log_evidence_used(
 				_selected_evidence_item.type.to_lower().replace(" ", "_"),

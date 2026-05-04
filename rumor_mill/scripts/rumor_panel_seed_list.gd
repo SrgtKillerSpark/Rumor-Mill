@@ -107,7 +107,7 @@ func build(
 		var claim_type_upper := _get_claim_type_upper(selected_claim_id)
 		var compatible := _intel_store_ref.get_compatible_evidence(claim_type_upper)
 		_add_evidence_section(
-			container, compatible, selected_evidence_item,
+			container, compatible, selected_evidence_item, selected_seed_npc,
 			on_evidence_select, on_evidence_clear
 		)
 
@@ -395,6 +395,7 @@ func _add_evidence_section(
 		container:              VBoxContainer,
 		compatible:             Array,
 		selected_evidence_item,
+		selected_seed_npc:      String,
 		on_evidence_select:     Callable,
 		on_evidence_clear:      Callable
 ) -> void:
@@ -416,6 +417,23 @@ func _add_evidence_section(
 		# Coordinator connects to this flag externally via poll or callback.
 		# Signal firing is left to the coordinator's on_evidence_tutorial check.
 
+	# SPA-1585: Check target-shift cooldown. Grey out evidence if locked to a different target.
+	var is_locked: bool = false
+	if _intel_store_ref != null and not selected_seed_npc.is_empty():
+		is_locked = _intel_store_ref.is_evidence_locked_for_target(selected_seed_npc)
+
+	if is_locked:
+		var cooldown_info: Dictionary = _intel_store_ref.get_evidence_cooldown_info()
+		var days_left: int = cooldown_info.get("days_remaining", 0)
+		var cooldown_lbl := Label.new()
+		cooldown_lbl.text = "  ⏳ Evidence locked: used on a different target (%d day%s remaining)" % [
+			days_left, "s" if days_left != 1 else ""
+		]
+		cooldown_lbl.add_theme_font_size_override("font_size", 12)
+		cooldown_lbl.add_theme_color_override("font_color", C_STATUS_WARN)
+		cooldown_lbl.tooltip_text = "Target-shift cooldown: evidence was recently used on a different NPC.\nSelect the same target or wait for the cooldown to expire."
+		container.add_child(cooldown_lbl)
+
 	# When evidence is already attached, show a compact summary under the header.
 	if selected_evidence_item != null:
 		var attached_lbl := Label.new()
@@ -428,7 +446,7 @@ func _add_evidence_section(
 		container.add_child(attached_lbl)
 
 	for item in compatible:
-		container.add_child(_build_evidence_entry(item, selected_evidence_item, on_evidence_select, on_evidence_clear))
+		container.add_child(_build_evidence_entry(item, selected_evidence_item, is_locked, on_evidence_select, on_evidence_clear))
 
 	if selected_evidence_item != null:
 		var clear_btn := Button.new()
@@ -445,11 +463,16 @@ func _add_evidence_section(
 func _build_evidence_entry(
 		item,
 		selected_evidence_item,
+		is_locked:          bool,
 		on_evidence_select: Callable,
 		on_evidence_clear:  Callable
 ) -> Control:
 	var outer := PanelContainer.new()
-	if item == selected_evidence_item:
+	if is_locked:
+		# SPA-1585: Grey out the entire entry when a target-shift cooldown is active.
+		outer.modulate = Color(0.55, 0.55, 0.55, 0.75)
+		outer.tooltip_text = "Evidence locked: used on a different target recently.\nWait for the cooldown to expire or target the same NPC."
+	elif item == selected_evidence_item:
 		var style := StyleBoxFlat.new()
 		style.bg_color = C_SELECTED_EVIDENCE_BG
 		outer.add_theme_stylebox_override("panel", style)
@@ -489,14 +512,17 @@ func _build_evidence_entry(
 
 	var btn := Button.new()
 	btn.add_theme_font_size_override("font_size", 12)
-	if item == selected_evidence_item:
+	if is_locked:
+		btn.text = "Unavailable (cooldown active)"
+		btn.disabled = true
+	elif item == selected_evidence_item:
 		btn.text = "✓ Attached"
 	else:
 		btn.text = "Attach"
-	var captured_item = item
-	btn.pressed.connect(func() -> void:
-		on_evidence_select.call(captured_item)
-	)
+		var captured_item = item
+		btn.pressed.connect(func() -> void:
+			on_evidence_select.call(captured_item)
+		)
 	vbox.add_child(btn)
 
 	return outer

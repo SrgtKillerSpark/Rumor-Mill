@@ -707,6 +707,7 @@ func _on_day_changed(_day: int) -> void:
 	_daily_cascade_fired.clear()
 	if intel_store != null:
 		intel_store.replenish()
+		intel_store.decay_evidence_cooldowns()  ## SPA-1585
 	# SPA-874: Recompute illness hotspot buildings and push to NPCs.
 	_update_illness_hotspots()
 	if rival_agent != null and scenario_manager != null:
@@ -1281,6 +1282,7 @@ func seed_rumor_from_player(
 	if evidence_item != null:
 		rumor.current_believability = minf(1.0, rumor.current_believability + evidence_item.believability_bonus)
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
+		rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
 		rumor.bolstered_by_evidence = true
 
 	# Chain detection: check if this subject already has an active rumor that

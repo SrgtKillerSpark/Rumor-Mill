@@ -599,6 +599,7 @@ func _try_observe(location_id: String) -> void:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Forged Document", 0.20, 0.0,
 			["ACCUSATION", "SCANDAL", "HERESY"], tick)
+		ev.shelf_life_extension = 40  ## SPA-1585
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
 			_analytics_manager.log_evidence_acquired("forged_document", "observe_building")
@@ -719,6 +720,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 	if witness_account:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Witness Account", 0.15, -0.15, [], tick)
+		ev.shelf_life_extension = 80  ## SPA-1585
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
 			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc")

@@ -56,6 +56,10 @@ var evidence_inventory: Array = []
 ## Running total of evidence items consumed this run (for end-screen stats).
 var evidence_used_count: int = 0
 
+## SPA-1585: Per-target evidence cooldown. Maps target_npc_id → days_remaining.
+## When any entry has days > 0, evidence cannot be attached to a different target.
+var _evidence_target_cooldown: Dictionary = {}
+
 ## SPA-1581: Evidence confidence decay thresholds and rate.
 ## confidence ≥ CONFIDENCE_FRESH_MIN → "fresh"  (green HUD badge)
 ## confidence ≥ CONFIDENCE_AGING_MIN → "aging"  (amber HUD badge)
@@ -283,6 +287,7 @@ class EvidenceItem:
 	var acquired_tick: int
 	var confidence: float = 1.0           ## SPA-1580: current evidence quality (0.0–1.0).
 	var _decay_emitted_on_day: int = -1   ## SPA-1580: anti-double-fire guard for save/load.
+	var shelf_life_extension: int = 0     ## SPA-1585: extra ticks added to rumor shelf_life_ticks on attachment.
 
 	func _init(
 			ev_type: String,
@@ -372,3 +377,47 @@ func decay_evidence_items(current_day: int) -> Array:
 		var new_tier:  String = get_confidence_tier(next)
 		evidence_confidence_changed.emit(item.type, prev, next, new_tier, new_tier != prev_tier)
 	return events
+
+
+# ---------------------------------------------------------------------------
+# SPA-1585: Evidence target-shift cooldown
+# ---------------------------------------------------------------------------
+
+## Start a cooldown preventing evidence use on a different target for N days.
+## N is determined by difficulty: Apprentice=0, Normal=2, Master=3, Spymaster=4.
+## A cooldown of 0 (Apprentice) is a no-op.
+func start_evidence_cooldown(target_npc_id: String, difficulty: String) -> void:
+	var days: int = _cooldown_days_for_difficulty(difficulty)
+	if days > 0:
+		_evidence_target_cooldown[target_npc_id] = days
+
+
+## Decrement all active cooldowns by 1 day. Called at dawn from World._on_day_changed().
+func decay_evidence_cooldowns() -> void:
+	for npc_id in _evidence_target_cooldown.keys():
+		_evidence_target_cooldown[npc_id] = maxi(0, _evidence_target_cooldown[npc_id] - 1)
+
+
+## Returns true when there is an active cooldown for a target other than target_npc_id.
+## Returns false when no cooldown is active, or the cooldown is for this same target.
+func is_evidence_locked_for_target(target_npc_id: String) -> bool:
+	for npc_id in _evidence_target_cooldown:
+		if _evidence_target_cooldown[npc_id] > 0 and npc_id != target_npc_id:
+			return true
+	return false
+
+
+## Returns the active cooldown entry {target_npc_id, days_remaining}, or {} if none.
+func get_evidence_cooldown_info() -> Dictionary:
+	for npc_id in _evidence_target_cooldown:
+		if _evidence_target_cooldown[npc_id] > 0:
+			return {"target_npc_id": npc_id, "days_remaining": _evidence_target_cooldown[npc_id]}
+	return {}
+
+
+static func _cooldown_days_for_difficulty(difficulty: String) -> int:
+	match difficulty:
+		"normal":    return 2
+		"master":    return 3
+		"spymaster": return 4
+		_:           return 0  ## Apprentice and unknown: no cooldown
