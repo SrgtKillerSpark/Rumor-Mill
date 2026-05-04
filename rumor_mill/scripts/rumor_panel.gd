@@ -242,7 +242,6 @@ func _build_dynamic_panels() -> void:
 	_status_label.add_theme_color_override("font_color", Color(1.0, 0.65, 0.20, 1.0))
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_label.custom_minimum_size = Vector2(200, 0)
-	_status_label.custom_maximum_size = Vector2(0, 40)
 	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_status_label.visible = false
 	vbox.add_child(_status_label)
