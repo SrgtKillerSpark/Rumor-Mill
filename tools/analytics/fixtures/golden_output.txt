@@ -1,0 +1,115 @@
+Reading fixtures from: C:\Users\KAOS\.paperclip\instances\default\workspaces\95ac9c4a-f262-4866-9351-8d95d3f3f5f1\Rumor-Mill\tools\analytics\fixtures
+
+Loaded: 90 acquired, 54 used, 36 scenario_ended
+
+## 1. Acquisition Counts: evidence_type × scenario_id × difficulty
+evidence_type | scenario_id | difficulty | count
+----------------------------------------------------------------------
+forged_document | scenario_2 | apprentice | 5
+forged_document | scenario_2 | master | 5
+forged_document | scenario_3 | apprentice | 5
+forged_document | scenario_3 | master | 5
+forged_document | scenario_4 | apprentice | 5
+forged_document | scenario_4 | master | 5
+incriminating_artifact | scenario_2 | apprentice | 5
+incriminating_artifact | scenario_2 | master | 5
+incriminating_artifact | scenario_3 | apprentice | 5
+incriminating_artifact | scenario_3 | master | 5
+incriminating_artifact | scenario_4 | apprentice | 5
+incriminating_artifact | scenario_4 | master | 5
+witness_account | scenario_2 | apprentice | 5
+witness_account | scenario_2 | master | 5
+witness_account | scenario_3 | apprentice | 5
+witness_account | scenario_3 | master | 5
+witness_account | scenario_4 | apprentice | 5
+witness_account | scenario_4 | master | 5
+
+## 2. Day Histogram per Evidence Type
+  forged_document:
+    day=1: 1
+    day=2: 2
+    day=3: 3
+    day=4: 4
+    day=5: 5
+    day=6: 5
+    day=7: 4
+    day=8: 3
+    day=9: 2
+    day=10: 1
+  incriminating_artifact:
+    day=1: 1
+    day=6: 1
+    day=7: 2
+    day=8: 3
+    day=9: 4
+    day=10: 5
+    day=11: 5
+    day=12: 4
+    day=13: 3
+    day=14: 2
+  witness_account:
+    day=1: 5
+    day=2: 5
+    day=3: 4
+    day=4: 3
+    day=5: 2
+    day=6: 1
+    day=11: 1
+    day=12: 2
+    day=13: 3
+    day=14: 4
+
+## 3. Source-Action Ratio per Evidence Type
+  forged_document (n=30):
+    observe_building: 30 (100.0%)
+  incriminating_artifact (n=30):
+    observe_building: 30 (100.0%)
+  witness_account (n=30):
+    eavesdrop_npc: 30 (100.0%)
+
+## 4. Usage Counts: evidence_type × scenario_id × difficulty
+evidence_type | scenario_id | difficulty | count
+----------------------------------------------------------------------
+forged_document | scenario_2 | apprentice | 3
+forged_document | scenario_2 | master | 3
+forged_document | scenario_3 | apprentice | 3
+forged_document | scenario_3 | master | 3
+forged_document | scenario_4 | apprentice | 3
+forged_document | scenario_4 | master | 3
+incriminating_artifact | scenario_2 | apprentice | 3
+incriminating_artifact | scenario_2 | master | 3
+incriminating_artifact | scenario_3 | apprentice | 3
+incriminating_artifact | scenario_3 | master | 3
+incriminating_artifact | scenario_4 | apprentice | 3
+incriminating_artifact | scenario_4 | master | 3
+witness_account | scenario_2 | apprentice | 3
+witness_account | scenario_2 | master | 3
+witness_account | scenario_3 | apprentice | 3
+witness_account | scenario_3 | master | 3
+witness_account | scenario_4 | apprentice | 3
+witness_account | scenario_4 | master | 3
+
+## 5. Evidence Type × Claim ID
+                     | ACC-01               | HER-01               | PRA-01               | SCA-01               | VOU-01              
+---------------------------------------------------------------------------------------------------------------------------------------
+forged_document      | 4                    | 4                    | 3                    | 4                    | 3                   
+incriminating_artifact | 4                    | 3                    | 4                    | 3                    | 4                   
+witness_account      | 3                    | 4                    | 4                    | 4                    | 3                   
+
+## 6. Evidence Type × Seed Target
+                     | Aldous               | Alys                 | Calder               | Finn                 | Maren                | Vera                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+forged_document      | 3                    | 3                    | 3                    | 3                    | 3                    | 3                   
+incriminating_artifact | 3                    | 3                    | 3                    | 3                    | 3                    | 3                   
+witness_account      | 3                    | 3                    | 3                    | 3                    | 3                    | 3                   
+
+## 7. Acquisition-to-Use Ratio per Evidence Type
+evidence_type | acquired | used | ratio
+------------------------------------------------------------
+forged_document           | 30       | 18   | 0.60
+incriminating_artifact    | 30       | 18   | 0.60
+witness_account           | 30       | 18   | 0.60
+
+---
+Aggregation complete.
+Total events processed: 180

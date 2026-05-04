@@ -406,7 +406,7 @@ func _process(delta: float) -> void:
 
 func _build_main_panel() -> void:
 	# SPA-685: Redesigned parchment scroll with medieval manuscript title.
-	_panel_main = _make_parchment_panel(440, 520)
+	_panel_main = _make_parchment_panel(440, 600)
 	add_child(_panel_main)
 
 	var vbox := VBoxContainer.new()
@@ -414,14 +414,15 @@ func _build_main_panel() -> void:
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_panel_main.add_child(vbox)
 
+	# SPA-1099: Top expand-fill spacer — absorbs vertical space symmetrically
+	# with spacer_bottom so content is centered inside the full-rect VBox.
+	var spacer_top := Control.new()
+	spacer_top.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(spacer_top)
+
 	# SPA-685: Top decorative flourish — ornamental manuscript border.
 	var top_flourish := _make_manuscript_flourish()
 	vbox.add_child(top_flourish)
-
-	# Spacer above title
-	var spacer_top := Control.new()
-	spacer_top.custom_minimum_size = Vector2(0, 6)
-	vbox.add_child(spacer_top)
 
 	# SPA-685: Medieval manuscript title — larger, with decorative framing.
 	var title := Label.new()
@@ -500,9 +501,10 @@ func _build_main_panel() -> void:
 		btn_quit.pressed.connect(get_tree().quit)
 		btn_row.add_child(btn_quit)
 
-	# SPA-1099: Bottom spacer — symmetrizes vertical padding with spacer_top.
+	# SPA-1099: Bottom expand-fill spacer — mirrors spacer_top to center
+	# all content vertically within the full-rect VBox.
 	var spacer_bottom := Control.new()
-	spacer_bottom.custom_minimum_size = Vector2(0, 6)
+	spacer_bottom.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(spacer_bottom)
 
 

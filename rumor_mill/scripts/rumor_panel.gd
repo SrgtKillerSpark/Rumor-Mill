@@ -668,7 +668,7 @@ func _rebuild_seed_list() -> void:
 
 	# Chain indicator — show when seeding would create a rumor chain.
 	var chain_info := _detect_current_chain()
-	var chain_type: PropagationEngine.ChainType = chain_info.get("chain_type", PropagationEngine.ChainType.NONE)
+	var chain_type: int = chain_info.get("chain_type", PropagationEngine.ChainType.NONE)
 	if chain_type != PropagationEngine.ChainType.NONE:
 		_add_chain_indicator(chain_type)
 
@@ -978,7 +978,7 @@ func _detect_current_chain() -> Dictionary:
 
 
 ## Builds the chain indicator banner at the top of Panel 3's seed list.
-func _add_chain_indicator(chain_type: PropagationEngine.ChainType) -> void:
+func _add_chain_indicator(chain_type: int) -> void:
 	var banner := PanelContainer.new()
 	var style := StyleBoxFlat.new()
 	match chain_type:

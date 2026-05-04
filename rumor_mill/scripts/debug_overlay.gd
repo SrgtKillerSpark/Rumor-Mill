@@ -7,7 +7,9 @@ extends CanvasLayer
 ## F4 — toggle lineage tree panel
 
 # State badge colours
-const STATE_COLORS := {
+# Declared as var (not const) — GDScript cannot use cross-class enum values
+# as const dictionary keys in all Godot 4.x versions (parse error in 4.3).
+var STATE_COLORS := {
 	Rumor.RumorState.UNAWARE:    Color(0.5, 0.5, 0.5, 0.9),
 	Rumor.RumorState.EVALUATING: Color(1.0, 1.0, 0.0, 0.9),
 	Rumor.RumorState.BELIEVE:    Color(0.0, 0.9, 0.2, 0.9),

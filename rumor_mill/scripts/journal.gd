@@ -1727,7 +1727,7 @@ func _build_objectives_section() -> void:
 		aldric_score_str, aldric_band_str,
 		edric_s5_str, edric_s5_band,
 		tomas_s5_str, tomas_s5_band,
-		ScenarioManager.S5_ENDORSEMENT_DAY, sm.S5_ENDORSEMENT_BONUS if sm != null else 8]
+		sm.S5_ENDORSEMENT_DAY if sm != null else 13, sm.S5_ENDORSEMENT_BONUS if sm != null else 8]
 	s5_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s5_win_body.add_theme_font_size_override("font_size", 12)
 	s5_win_body.add_theme_color_override("font_color", s5_win_color)

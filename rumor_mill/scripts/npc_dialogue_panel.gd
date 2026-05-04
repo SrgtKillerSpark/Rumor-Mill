@@ -386,7 +386,7 @@ func _rebuild_panel(npc: Node2D) -> void:
 	vbox.add_child(seed_btn)
 
 	# Bribe: only shown when NPC is EVALUATING and resources allow.
-	var show_bribe := _intel_store.bribe_charges > 0 \
+	var show_bribe: bool = _intel_store.bribe_charges > 0 \
 		and npc.get_worst_rumor_state() == Rumor.RumorState.EVALUATING
 	if show_bribe:
 		var can_bribe := _intel_store.recon_actions_remaining > 0 \

@@ -787,9 +787,9 @@ func _compute_win_progress() -> float:
 	match sid:
 		"scenario_1":
 			var p: Dictionary = _scenario_manager.get_scenario_1_progress(_reputation_system)
-			var score: int  = p.get("edric_score", ScenarioManager.S1_EDRIC_START_SCORE)
-			var start: int  = p.get("start_score",  ScenarioManager.S1_EDRIC_START_SCORE)
-			var target: int = p.get("win_threshold", ScenarioManager.S1_WIN_EDRIC_BELOW)
+			var score: int  = p.get("edric_score", _scenario_manager.S1_EDRIC_START_SCORE)
+			var start: int  = p.get("start_score",  _scenario_manager.S1_EDRIC_START_SCORE)
+			var target: int = p.get("win_threshold", _scenario_manager.S1_WIN_EDRIC_BELOW)
 			# From start → target: progress = (start - score) / (start - target)
 			return clampf(float(start - score) / float(max(start - target, 1)), 0.0, 1.0)
 		"scenario_2":
@@ -816,7 +816,7 @@ func _compute_win_progress() -> float:
 			var pa: float = clampf((aldric5 - 48.0) / (65.0 - 48.0), 0.0, 1.0)
 			var pe: float = clampf((58.0 - edric5) / (58.0 - 45.0), 0.0, 1.0)
 			var win_rivals_max: float = float(p5.get("win_rivals_max", 45))
-				var pt: float = clampf((45.0 - tomas5) / maxf(45.0 - win_rivals_max, 1.0), 0.0, 1.0)
+			var pt: float = clampf((45.0 - tomas5) / maxf(45.0 - win_rivals_max, 1.0), 0.0, 1.0)
 			return minf(pa, minf(pe, pt))
 		"scenario_6":
 			var p6: Dictionary = _scenario_manager.get_scenario_6_progress(_reputation_system)
@@ -1024,7 +1024,7 @@ func _refresh_threat() -> void:
 	# S6: threat = heat approaching lower ceiling of 60.
 	elif _scenario_manager._active_scenario == 6:
 		var heat: float = _intel_store.get_heat("player") if _intel_store != null else 0.0
-		threat = clampf(heat / ScenarioManager.S6_EXPOSED_HEAT, 0.0, 1.0)
+		threat = clampf(heat / _scenario_manager.S6_EXPOSED_HEAT, 0.0, 1.0)
 		var time_frac: float = _scenario_manager.get_time_fraction(
 			_day_night.current_tick if _day_night != null else 0)
 		threat = maxf(threat, time_frac * 0.5)
@@ -1574,58 +1574,6 @@ func _on_suggestion_hint_ready(text: String) -> void:
 func _on_hint_dismissed(was_fast: bool) -> void:
 	if _suggestion_engine != null:
 		_suggestion_engine.notify_hint_dismissed(was_fast)
-
-
-# ── SPA-767: Tooltips for ObjectiveHUD elements ─────────────────────────────
-
-func _setup_tooltips() -> void:
-	# Day counter row — explain what the day tracker means.
-	var day_row: HBoxContainer = $Panel/VBox/DayRow
-	day_row.tooltip_text = "Day Counter\nShows the current day and time. Days remaining until your deadline are shown to the right.\nThe color shifts from green to red as the deadline approaches."
-	day_row.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# Goal label — explain the current objective.
-	goal_label.tooltip_text = "Current Objective\nYour primary goal for this scenario. Complete it before the deadline to win."
-	goal_label.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# Win progress bar — explain what the green bar tracks.
-	var win_bg: ColorRect = $Panel/VBox/WinProgressBG
-	win_bg.tooltip_text = "Win Progress\nTracks how close you are to achieving your objective.\nFill the bar to complete your goal."
-	win_bg.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# Tempo/day progress bar — explain the day timeline.
-	var tempo_bg: ColorRect = $Panel/VBox/DayProgressBG
-	tempo_bg.tooltip_text = "Day Timeline\nShows the time of day. Actions happen in real-time as the day progresses.\nResources refresh at dawn."
-	tempo_bg.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# Milestone label.
-	milestone_label.tooltip_text = "Milestone\nShows your current progress milestone. Reaching milestones unlocks new narrative events."
-	milestone_label.mouse_filter = Control.MOUSE_FILTER_PASS
-
-
-# ── SPA-767: Visual hierarchy enhancements ───────────────────────────────────
-
-func _enhance_visual_hierarchy() -> void:
-	# Make the goal label visually dominant — larger, bolder, with glow.
-	goal_label.add_theme_font_size_override("font_size", 18)
-	goal_label.add_theme_constant_override("outline_size", 3)
-	goal_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
-
-	# Add a subtle left accent bar to the main panel for visual weight.
-	var panel: Panel = $Panel
-	var accent := ColorRect.new()
-	accent.color = Color(0.92, 0.78, 0.12, 0.75)  # gold accent
-	accent.anchor_left = 0.0
-	accent.anchor_top = 0.0
-	accent.anchor_right = 0.0
-	accent.anchor_bottom = 1.0
-	accent.offset_right = 3.0
-	accent.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(accent)
-
-	# Emphasize the win progress bar with a brighter border.
-	var win_bg: ColorRect = $Panel/VBox/WinProgressBG
-	win_bg.custom_minimum_size.y = 14.0  # slightly taller for prominence
 
 
 # ── SPA-797: Failure proximity warning system ────────────────────────────────

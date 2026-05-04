@@ -164,7 +164,7 @@ func _show_overlay(day: int) -> void:
 
 	# Fade in backdrop + slide up panel.
 	visible = true
-	modulate.a = 0.0
+	set("modulate", Color(1, 1, 1, 0.0))  # CanvasLayer.modulate not in GDScript static scope; use set()
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
 	if _slide_tween != null and _slide_tween.is_valid():
