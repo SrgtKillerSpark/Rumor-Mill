@@ -14,11 +14,20 @@ extends BaseScenarioHud
 ## Wire via setup(world, day_night) from main.gd.
 
 # ── S2-specific palette ──────────────────────────────────────────────────────
-const C_ILLNESS := Color(0.60, 0.85, 0.30, 1.0)  # sickly green for plague theme
+const C_ILLNESS          := Color(0.60, 0.85, 0.30, 1.0)  # sickly green for plague theme
+const C_LEGEND_DIM       := Color(0.55, 0.55, 0.50, 0.85) # legend label "Target: 7+ believers"
+const C_ILLNESS_DIM      := Color(0.60, 0.85, 0.30, 0.80) # escalation label default (80% alpha variant of C_ILLNESS)
+const C_QUARANTINE_ALERT := Color(0.95, 0.30, 0.20, 0.90) # quarantine status label
+const C_ESCALATION_FLARE := Color(1.0,  0.75, 0.10, 1.0)  # escalation event flash color
 
 const BAR_WIDTH      := 160
-const BAR_HEIGHT     := 12
 const MAX_NAMES_SHOWN := 5
+
+# ── Toast-panel geometry ─────────────────────────────────────────────────────
+const HUD_PANEL_HEIGHT    := 72   # height of the HUD strip built by _make_panel
+const TOAST_GAP           := 4    # gap between HUD bottom and toast top
+const TOAST_PANEL_HEIGHT  := 24   # visible toast strip height
+const TOAST_CORNER_RADIUS := 4    # corner radius for the toast StyleBoxFlat
 
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _count_lbl:         Label     = null
@@ -27,7 +36,15 @@ var _bar_bg:            ColorRect = null
 var _believers_lbl:     Label     = null
 var _rejecters_lbl:     Label     = null
 var _maren_warning_lbl: Label     = null
+var _maren_watch_lbl:   Label     = null
 var _escalation_lbl:    Label     = null
+
+## SPA-1565: True while Maren is in DEFENDING state — gates neighbor rejection toasts.
+var _maren_is_defending: bool = false
+## SPA-1565: Toast surfaced when a Maren neighbor rejects while she is defending.
+var _deconv_toast_panel: Panel = null
+var _deconv_toast_lbl:   Label = null
+var _deconv_toast_tween: Tween = null
 
 ## SPA-805: pip row — filled ● / empty ○ circles showing believer progress.
 var _pip_lbl: Label = null
@@ -35,6 +52,11 @@ var _pip_lbl: Label = null
 ## SPA-592: Maren's direct social-graph neighbours (NPC id → edge weight).
 ## Populated in _on_setup_extra; used to flag seed-target risk in the believers list.
 var _maren_neighbours: Dictionary = {}
+
+## SPA-868: Quarantine mechanic UI elements.
+var _quarantine_btn:   Button       = null
+var _quarantine_dropdown: OptionButton = null
+var _quarantine_status_lbl: Label   = null
 
 
 func _scenario_number() -> int:
@@ -51,12 +73,29 @@ func _on_setup_extra(world: Node2D) -> void:
 	# SPA-592: connect to grace-window signal so the HUD can show the countdown warning.
 	if world != null and world.get("scenario_manager") != null:
 		world.scenario_manager.s2_maren_grace_started.connect(_on_maren_grace_started)
+	# SPA-1552: connect to Maren's rumor_state_changed so we can flash a status line
+	# the moment she enters DEFENDING (event-driven, not just polled in _refresh).
+	# SPA-1565: also connect to each of Maren's neighbors for de-conversion detection.
+	if world != null and "npcs" in world:
+		for npc in world.npcs:
+			if npc.get("npc_data") == null:
+				continue
+			var npc_id: String = npc.npc_data.get("id", "")
+			if npc_id == ScenarioManager.MAREN_NUN_ID and npc.has_signal("rumor_state_changed"):
+				npc.rumor_state_changed.connect(_on_maren_rumor_state_changed)
+			elif _maren_neighbours.has(npc_id) and npc.has_signal("rumor_state_changed"):
+				npc.rumor_state_changed.connect(_on_neighbor_rumor_state_changed)
+	# SPA-868: populate quarantine building dropdown.
+	if world != null and _quarantine_dropdown != null:
+		var q_sys = world.get("quarantine_system")
+		if q_sys != null and q_sys.is_active():
+			_populate_quarantine_dropdown(world)
 
 
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario2Panel", 62)
+	var hbox := _make_panel("Scenario2Panel", HUD_PANEL_HEIGHT)
 
 	# Scenario label.
 	var title_lbl := Label.new()
@@ -71,11 +110,12 @@ func _build_ui() -> void:
 	hbox.add_child(count_vbox)
 
 	_count_lbl = Label.new()
-	_count_lbl.add_theme_font_size_override("font_size", 13)
+	_count_lbl.add_theme_font_size_override("font_size", 14)
 	_count_lbl.add_theme_color_override("font_color", C_BODY)
 	_count_lbl.text = "Believers: 0 / 7+"
 	_count_lbl.tooltip_text = "Number of townspeople who believe the illness rumor about Alys Herbwife. Win when 7 or more believe it."
 	_count_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_count_lbl.clip_text = true
 	_apply_text_outline(_count_lbl)
 	count_vbox.add_child(_count_lbl)
 
@@ -90,13 +130,14 @@ func _build_ui() -> void:
 
 	# SPA-805: Pip row — ● filled / ○ empty circles showing believer count at a glance.
 	_pip_lbl = Label.new()
-	_pip_lbl.add_theme_font_size_override("font_size", 13)
+	_pip_lbl.add_theme_font_size_override("font_size", 14)
 	_pip_lbl.add_theme_color_override("font_color", C_ILLNESS)
 	_pip_lbl.add_theme_constant_override("outline_size", 2)
 	_pip_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	_pip_lbl.text = "○○○○○○○"
 	_pip_lbl.tooltip_text = "Each circle = one believer. Filled ● = believes; empty ○ = not yet."
 	_pip_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_pip_lbl.clip_text = true
 	count_vbox.add_child(_pip_lbl)
 
 	# NPC name columns.
@@ -108,6 +149,7 @@ func _build_ui() -> void:
 	_believers_lbl.add_theme_font_size_override("font_size", 12)
 	_believers_lbl.add_theme_color_override("font_color", C_ILLNESS)
 	_believers_lbl.text = "Believe: —"
+	_believers_lbl.clip_text = true
 	names_vbox.add_child(_believers_lbl)
 
 	_rejecters_lbl = Label.new()
@@ -115,6 +157,7 @@ func _build_ui() -> void:
 	_rejecters_lbl.add_theme_color_override("font_color", C_FAIL)
 	_rejecters_lbl.text = ""
 	_rejecters_lbl.visible = false
+	_rejecters_lbl.clip_text = true
 	names_vbox.add_child(_rejecters_lbl)
 
 	# SPA-592: grace-window countdown warning shown when Maren has rejected.
@@ -128,7 +171,23 @@ func _build_ui() -> void:
 		+ " the grace period expires or the scenario will fail."
 	)
 	_maren_warning_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_maren_warning_lbl.clip_text = true
 	names_vbox.add_child(_maren_warning_lbl)
+
+	# SPA-1540: Persistent Maren watch state — visible before grace fires so the mechanic
+	# is discoverable. Dimmed when dormant; turns amber and expands when defending.
+	_maren_watch_lbl = Label.new()
+	_maren_watch_lbl.add_theme_font_size_override("font_size", 11)
+	_maren_watch_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.55))  # TODO(SPA-1590): replace with C_DEFENDING_ACCENT (dormant variant)
+	_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
+	_maren_watch_lbl.tooltip_text = (
+		"Sister Maren may counter the illness rumor if it reaches her circle."
+		+ " When active, she suppresses credulity among her neighbors."
+		+ " A 2-day grace window applies after she first rejects."
+	)
+	_maren_watch_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_maren_watch_lbl.clip_text = true
+	names_vbox.add_child(_maren_watch_lbl)
 
 	# Days remaining + result.
 	var right_vbox := VBoxContainer.new()
@@ -136,11 +195,12 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 13)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 22"
 	_days_lbl.tooltip_text = "Days remaining before the autumn market closes. Fail if you run out of time."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_days_lbl.clip_text = true
 	_apply_text_outline(_days_lbl)
 	right_vbox.add_child(_days_lbl)
 
@@ -148,21 +208,95 @@ func _build_ui() -> void:
 	_result_lbl.add_theme_font_size_override("font_size", 16)
 	_result_lbl.add_theme_color_override("font_color", C_WIN)
 	_result_lbl.text = ""
+	_result_lbl.clip_text = true
 	right_vbox.add_child(_result_lbl)
 
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 12)
-	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
+	legend_lbl.add_theme_color_override("font_color", C_LEGEND_DIM)
 	legend_lbl.text = "Target: 7+ believers"
 	right_vbox.add_child(legend_lbl)
 
 	_escalation_lbl = Label.new()
 	_escalation_lbl.add_theme_font_size_override("font_size", 12)
-	_escalation_lbl.add_theme_color_override("font_color", Color(0.60, 0.85, 0.30, 0.80))
+	_escalation_lbl.add_theme_color_override("font_color", C_ILLNESS_DIM)
 	_escalation_lbl.text = "Rumours: quiet so far"
 	_escalation_lbl.tooltip_text = "Illness reports are escalating on their own. Each auto-spread increases the risk Sister Maren will notice."
 	_escalation_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_escalation_lbl.clip_text = true
 	right_vbox.add_child(_escalation_lbl)
+
+	# SPA-868: Quarantine mechanic controls.
+	var q_vbox := VBoxContainer.new()
+	q_vbox.add_theme_constant_override("separation", 2)
+	hbox.add_child(q_vbox)
+
+	var q_title := Label.new()
+	q_title.text = "Quarantine Zone"
+	q_title.add_theme_font_size_override("font_size", 12)
+	q_title.add_theme_color_override("font_color", C_HEADING)
+	q_vbox.add_child(q_title)
+
+	_quarantine_dropdown = OptionButton.new()
+	_quarantine_dropdown.add_theme_font_size_override("font_size", 11)
+	_quarantine_dropdown.tooltip_text = "Select a building to quarantine. Costs 1 Recon Action + 1 Whisper Token."
+	_quarantine_dropdown.custom_minimum_size = Vector2(110, 0)
+	q_vbox.add_child(_quarantine_dropdown)
+
+	_quarantine_btn = Button.new()
+	_quarantine_btn.text = "Quarantine (1R+1W)"
+	_quarantine_btn.tooltip_text = (
+		"Spend 1 Recon Action + 1 Whisper Token to quarantine the selected building for 2 days."
+		+ " Outside NPCs will avoid the area. Chapel NPCs freeze in place."
+		+ " Only one active quarantine at a time; 3-day cooldown per building after expiry."
+	)
+	_quarantine_btn.add_theme_font_size_override("font_size", 11)
+	_quarantine_btn.disabled = true
+	_quarantine_btn.pressed.connect(_on_quarantine_pressed)
+	_apply_hud_button_style(_quarantine_btn)
+	q_vbox.add_child(_quarantine_btn)
+
+	_quarantine_status_lbl = Label.new()
+	_quarantine_status_lbl.add_theme_font_size_override("font_size", 11)
+	_quarantine_status_lbl.add_theme_color_override("font_color", C_QUARANTINE_ALERT)
+	_quarantine_status_lbl.text = ""
+	_quarantine_status_lbl.visible = false
+	_quarantine_status_lbl.clip_text = true
+	q_vbox.add_child(_quarantine_status_lbl)
+
+	# SPA-1565: de-conversion toast — appears just below the HUD strip when a Maren
+	# neighbor rejects the illness rumor while she is actively defending.
+	var toast_style := StyleBoxFlat.new()
+	toast_style.bg_color = Color(0.10, 0.08, 0.06, 0.88)  # TODO(SPA-1590): replace with ToastContainer constant
+	toast_style.set_corner_radius_all(TOAST_CORNER_RADIUS)
+	toast_style.content_margin_left   = 8   # TODO(SPA-1590): replace with ToastContainer constant
+	toast_style.content_margin_right  = 8   # TODO(SPA-1590): replace with ToastContainer constant
+	toast_style.content_margin_top    = 4   # TODO(SPA-1590): replace with ToastContainer constant
+	toast_style.content_margin_bottom = 4   # TODO(SPA-1590): replace with ToastContainer constant
+	_deconv_toast_panel = Panel.new()
+	_deconv_toast_panel.add_theme_stylebox_override("panel", toast_style)
+	_deconv_toast_panel.set_anchor(SIDE_LEFT,   0.0)
+	_deconv_toast_panel.set_anchor(SIDE_RIGHT,  1.0)
+	_deconv_toast_panel.set_anchor(SIDE_TOP,    0.0)
+	_deconv_toast_panel.set_anchor(SIDE_BOTTOM, 0.0)
+	_deconv_toast_panel.set_offset(SIDE_LEFT,   8)    # TODO(SPA-1590): replace with ToastContainer constant
+	_deconv_toast_panel.set_offset(SIDE_RIGHT, -8)    # TODO(SPA-1590): replace with ToastContainer constant
+	_deconv_toast_panel.set_offset(SIDE_TOP,    HUD_PANEL_HEIGHT + TOAST_GAP)                              # TODO(SPA-1590): replace with ToastContainer constant (HUD height + gap)
+	_deconv_toast_panel.set_offset(SIDE_BOTTOM, HUD_PANEL_HEIGHT + TOAST_GAP + TOAST_PANEL_HEIGHT)         # TODO(SPA-1590): replace with ToastContainer constant (toast height)
+	_deconv_toast_panel.visible = false
+	add_child(_deconv_toast_panel)
+	_deconv_toast_lbl = Label.new()
+	_deconv_toast_lbl.add_theme_font_size_override("font_size", 11)
+	_deconv_toast_lbl.add_theme_color_override("font_color", C_TOAST_TEXT)
+	_deconv_toast_lbl.add_theme_constant_override("outline_size", 2)
+	_deconv_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_deconv_toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_deconv_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_deconv_toast_lbl.set_offset(SIDE_LEFT,  6)   # TODO(SPA-1590): replace with ToastContainer constant
+	_deconv_toast_lbl.set_offset(SIDE_RIGHT, -6)  # TODO(SPA-1590): replace with ToastContainer constant
+	_deconv_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_deconv_toast_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	_deconv_toast_panel.add_child(_deconv_toast_lbl)
 
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
@@ -180,6 +314,8 @@ func _refresh() -> void:
 	var believers: Array = progress["illness_believer_ids"]
 	var rejecters: Array = progress["illness_rejecter_ids"]
 	var state            = progress["state"]
+	# SPA-1540: Maren is DEFENDING once she appears in the rejecters list.
+	var maren_defending: bool = ScenarioManager.MAREN_NUN_ID in rejecters
 
 	_count_lbl.text = "Believers: %d / %d+" % [count, threshold]
 
@@ -196,9 +332,10 @@ func _refresh() -> void:
 		var names: Array = []
 		for npc_id in believers.slice(0, MAX_NAMES_SHOWN):
 			# SPA-592: flag NPCs directly connected to Maren — seeding them risked this chain.
+			# SPA-1540: swap (!) for [🛡] when Maren is actively suppressing her neighbors.
 			var display := _display_name(npc_id)
 			if _maren_neighbours.has(npc_id):
-				display += " (!)"
+				display += " [🛡]" if maren_defending else " (!)"
 			names.append(display)
 		var suffix := ""
 		if believers.size() > MAX_NAMES_SHOWN:
@@ -210,7 +347,11 @@ func _refresh() -> void:
 	if rejecters.size() > 0:
 		var names: Array = []
 		for npc_id in rejecters.slice(0, MAX_NAMES_SHOWN):
-			names.append(_display_name(npc_id))
+			# SPA-1540: tag neighbors being actively suppressed by Maren's counter-intel.
+			var r_display := _display_name(npc_id)
+			if maren_defending and _maren_neighbours.has(npc_id):
+				r_display += " [🛡]"
+			names.append(r_display)
 		var suffix := ""
 		if rejecters.size() > MAX_NAMES_SHOWN:
 			suffix = " +%d more" % (rejecters.size() - MAX_NAMES_SHOWN)
@@ -233,6 +374,18 @@ func _refresh() -> void:
 	_update_result_label(state,
 		"VICTORY — The plague scare spreads",
 		"FAILED — The truth prevails")
+	_update_quarantine_button()
+
+	# SPA-1540/SPA-1552/SPA-1565: Keep the persistent Maren watch indicator in sync each tick.
+	# [🛡] tags on affected NPC names above provide per-NPC suppression visibility.
+	_maren_is_defending = maren_defending
+	if _maren_watch_lbl != null:
+		if maren_defending:
+			_maren_watch_lbl.text = "🛡 Maren is actively countering rumors among her neighbors."
+			_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_ACCENT)
+		else:
+			_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
+			_maren_watch_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.55))  # TODO(SPA-1590): replace with C_DEFENDING_ACCENT (dormant variant)
 
 
 # ── Escalation activity ───────────────────────────────────────────────────────
@@ -242,7 +395,7 @@ func notify_illness_escalated(day: int, _claim_type: String, _subject_id: String
 	if _escalation_lbl == null:
 		return
 	_escalation_lbl.text = "Rumours: Day %d — illness spreading on its own" % day
-	_escalation_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.10, 1.0))
+	_escalation_lbl.add_theme_color_override("font_color", C_ESCALATION_FLARE)
 	var tween := create_tween()
 	tween.tween_property(_escalation_lbl, "modulate:a", 0.25, 0.12)
 	tween.tween_property(_escalation_lbl, "modulate:a", 1.0,  0.30)
@@ -250,11 +403,136 @@ func notify_illness_escalated(day: int, _claim_type: String, _subject_id: String
 
 # ── SPA-592: Grace window warning ─────────────────────────────────────────────
 
+# ── SPA-868: Quarantine mechanic ──────────────────────────────────────────────
+
+## Populate the building dropdown from the world's building entries.
+func _populate_quarantine_dropdown(world: Node2D) -> void:
+	if _quarantine_dropdown == null:
+		return
+	_quarantine_dropdown.clear()
+	var building_names: Array = ["tavern", "market", "chapel", "manor", "blacksmith",
+		"mill", "storage", "guardpost", "town_hall", "well"]
+	for bname in building_names:
+		if world._building_entries.has(bname):
+			_quarantine_dropdown.add_item(bname.replace("_", " ").capitalize())
+			_quarantine_dropdown.set_item_metadata(_quarantine_dropdown.item_count - 1, bname)
+
+
+## Update quarantine button enabled state each refresh.
+func _update_quarantine_button() -> void:
+	if _quarantine_btn == null or _world_ref == null:
+		return
+	var q_sys = _world_ref.get("quarantine_system")
+	var intel = _world_ref.get("intel_store")
+	if q_sys == null or not q_sys.is_active():
+		_quarantine_btn.disabled = true
+		return
+	# SPA-874: Requires 1 Recon Action + 1 Whisper Token.
+	var has_recon: bool = intel != null and intel.recon_actions_remaining >= QuarantineSystem.QUARANTINE_RECON_COST
+	var has_whisper: bool = intel != null and intel.whisper_tokens_remaining >= QuarantineSystem.QUARANTINE_WHISPER_COST
+	var selected_building: String = _get_selected_building()
+	var already_quarantined: bool = not selected_building.is_empty() and q_sys.is_quarantined(selected_building)
+	# SPA-874: Block when another quarantine is already active or on cooldown.
+	var another_active: bool = not q_sys.get_quarantined_buildings().is_empty() and not already_quarantined
+	var tick: int = _day_night_ref.current_tick if _day_night_ref != null else 0
+	var on_cooldown: bool = not selected_building.is_empty() and q_sys.is_on_cooldown(selected_building, tick)
+	_quarantine_btn.disabled = not has_recon or not has_whisper or already_quarantined \
+		or selected_building.is_empty() or another_active or on_cooldown
+
+	# Update status label for active quarantines and cooldowns.
+	var active: Array = q_sys.get_quarantined_buildings()
+	if active.is_empty():
+		# SPA-874: show cooldown hint when selected building is on cooldown.
+		if on_cooldown:
+			_quarantine_status_lbl.text = "%s: 3-day cooldown" % selected_building.replace("_", " ").capitalize()
+			_quarantine_status_lbl.visible = true
+		else:
+			_quarantine_status_lbl.visible = false
+	else:
+		var names: Array = []
+		for b in active:
+			names.append(b.replace("_", " ").capitalize())
+		_quarantine_status_lbl.text = "Active: " + ", ".join(names)
+		_quarantine_status_lbl.visible = true
+
+
+## Get the internal building name from the currently selected dropdown item.
+func _get_selected_building() -> String:
+	if _quarantine_dropdown == null or _quarantine_dropdown.item_count == 0:
+		return ""
+	var idx: int = _quarantine_dropdown.selected
+	if idx < 0:
+		return ""
+	return _quarantine_dropdown.get_item_metadata(idx)
+
+
+## Player clicked "Quarantine" — spend 1 Recon Action + 1 Whisper Token and quarantine the building.
+func _on_quarantine_pressed() -> void:
+	if _world_ref == null:
+		return
+	var q_sys = _world_ref.get("quarantine_system")
+	var intel: PlayerIntelStore = _world_ref.get("intel_store")
+	if q_sys == null or intel == null:
+		return
+	var building_name: String = _get_selected_building()
+	if building_name.is_empty():
+		return
+	var tick: int = 0
+	if _day_night_ref != null:
+		tick = _day_night_ref.current_tick
+	q_sys.try_quarantine(building_name, intel, tick)
+	_update_quarantine_button()
+
+
+## SPA-1552/SPA-1565: Called when Maren's rumor-slot state changes. On DEFENDING transition,
+## set the defending flag and flash the watch label. Ongoing state is polled in _refresh().
+func _on_maren_rumor_state_changed(_npc_name: String, state: String, _rid: String, _extra: String) -> void:
+	if state != "DEFENDING":
+		return
+	_maren_is_defending = true
+	if _maren_watch_lbl == null:
+		return
+	_maren_watch_lbl.text = "🛡 Maren is actively countering rumors among her neighbors."
+	_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_ACCENT)
+	var tween := create_tween()
+	tween.tween_property(_maren_watch_lbl, "modulate:a", 0.15, 0.12)
+	tween.tween_property(_maren_watch_lbl, "modulate:a", 1.0,  0.30)
+	tween.tween_property(_maren_watch_lbl, "modulate:a", 0.15, 0.12)
+	tween.tween_property(_maren_watch_lbl, "modulate:a", 1.0,  0.30)
+
+
+## SPA-1565: Called when any of Maren's social-graph neighbors changes worst rumor state.
+## When they reject while she is actively defending, surface a de-conversion toast.
+func _on_neighbor_rumor_state_changed(npc_name: String, state: String, _rid: String, _extra: String) -> void:
+	if state != "reject" or not _maren_is_defending:
+		return
+	_show_deconv_toast("🛡 %s stopped believing — Maren's counter-influence" % npc_name)
+
+
+## SPA-1565: Flash a brief toast below the HUD explaining the Maren-driven de-conversion.
+func _show_deconv_toast(text: String) -> void:
+	if _deconv_toast_panel == null or _deconv_toast_lbl == null:
+		return
+	if _deconv_toast_tween != null and _deconv_toast_tween.is_valid():
+		_deconv_toast_tween.kill()
+	_deconv_toast_lbl.text = text
+	_deconv_toast_panel.modulate.a = 1.0
+	_deconv_toast_panel.visible = true
+	_deconv_toast_tween = create_tween()
+	_deconv_toast_tween.tween_interval(3.0)
+	_deconv_toast_tween.tween_property(_deconv_toast_panel, "modulate:a", 0.0, 0.5)
+	_deconv_toast_tween.tween_callback(func() -> void: _deconv_toast_panel.visible = false)
+
+
 ## Called when Maren first rejects, starting the 2-day grace window.
+## SPA-1564: Extends warning text with a one-line recovery hint (UX win #2b).
 func _on_maren_grace_started(days_remaining: int) -> void:
 	if _maren_warning_lbl == null:
 		return
-	_maren_warning_lbl.text = "⚠ Maren rejected — %d days to reach 7 believers!" % days_remaining
+	_maren_warning_lbl.text = (
+		"⚠ Maren rejected — %d days to reach 7 believers!" % days_remaining
+		+ "\nTip: quarantine near Maren to slow counter-spread, or seed isolated NPCs."
+	)
 	_maren_warning_lbl.visible = true
 	# Flash the warning to draw the player's eye.
 	var tween := create_tween()

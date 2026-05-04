@@ -14,13 +14,24 @@ extends CanvasLayer
 ##   override _refresh()                 (read game state, update labels/bars)
 ##   override _on_setup_extra(world)     (wire extra signals — S3, S4 only)
 
+# ── Canvas layer ─────────────────────────────────────────────────────────────
+## Canonical CanvasLayer value set in _ready(). Tested by test_spa1179_z_order_layers.gd.
+## Layer order: journal(12) < scenario(14) < objective(15) < speed(16).
+const LAYER := 14
+
 # ── Shared palette ───────────────────────────────────────────────────────────
 const C_PANEL_BG := Color(0.15, 0.10, 0.08, 0.92)
+
+# ── Shared layout constants ───────────────────────────────────────────────────
+## Unified bar height for all scenario HUD progress bars (pixels).
+const BAR_HEIGHT := 12
 const C_HEADING  := Color(0.91, 0.85, 0.70, 1.0)
 const C_BODY     := Color(0.75, 0.70, 0.60, 1.0)
 const C_WIN      := Color(0.10, 0.75, 0.22, 1.0)
 const C_FAIL     := Color(0.85, 0.15, 0.15, 1.0)
 const C_NEUTRAL  := Color(0.85, 0.55, 0.10, 1.0)
+const C_DEFENDING_ACCENT := Color(0.95, 0.55, 0.10, 1.0)  # amber-gold for DEFENDING state indicators
+const C_TOAST_TEXT := Color(0.80, 0.70, 0.50, 1.0)         # softer parchment-gold for toast label text
 
 # ── Shared state ─────────────────────────────────────────────────────────────
 var _world_ref:     Node2D = null
@@ -116,6 +127,34 @@ func _make_panel(panel_name: String, height: int, hbox_separation: int = 16) -> 
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	panel.add_child(hbox)
 	return hbox
+
+
+## Apply a consistent themed StyleBox to a HUD action button (normal/hover/pressed/disabled).
+## Call immediately after Button.new() in any scenario HUD _build_ui().
+func _apply_hud_button_style(btn: Button) -> void:
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.22, 0.16, 0.10, 0.90)
+	normal.border_color = Color(0.60, 0.48, 0.30, 0.80)
+	normal.set_border_width_all(1)
+	normal.set_corner_radius_all(3)
+	normal.content_margin_left   = 8
+	normal.content_margin_right  = 8
+	normal.content_margin_top    = 3
+	normal.content_margin_bottom = 3
+	btn.add_theme_stylebox_override("normal", normal)
+
+	var hover := normal.duplicate()
+	hover.bg_color = Color(0.30, 0.22, 0.13, 0.95)
+	btn.add_theme_stylebox_override("hover", hover)
+
+	var pressed := normal.duplicate()
+	pressed.bg_color = Color(0.18, 0.13, 0.08, 0.95)
+	btn.add_theme_stylebox_override("pressed", pressed)
+
+	var disabled := normal.duplicate()
+	disabled.bg_color    = Color(0.15, 0.12, 0.09, 0.60)
+	disabled.border_color = Color(0.40, 0.35, 0.25, 0.40)
+	btn.add_theme_stylebox_override("disabled", disabled)
 
 
 ## Build a progress bar (dark background + colored fill child) with rounded corners.
