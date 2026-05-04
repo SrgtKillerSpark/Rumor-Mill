@@ -227,14 +227,13 @@ func _build_scenario_card(sc: Dictionary, idx: int) -> PanelContainer:
 	if teaser == "":
 		var full_text: String = sc.get("startingText", "")
 		teaser = full_text.split("\n")[0] if "\n" in full_text else full_text
-	if teaser.length() > 180:
-		teaser = teaser.substr(0, 177) + "..."
 
 	var desc_rtl := RichTextLabel.new()
 	desc_rtl.bbcode_enabled = true
 	desc_rtl.text = "[i]%s[/i]" % teaser if not locked else teaser
-	desc_rtl.fit_content = true
-	desc_rtl.scroll_active = false
+	desc_rtl.fit_content = false
+	desc_rtl.scroll_active = true
+	desc_rtl.custom_minimum_size = Vector2(0, 60)
 	desc_rtl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_rtl.add_theme_font_size_override("normal_font_size", 12)
 	desc_rtl.add_theme_color_override("default_color", C_MUTED if locked else C_BODY)
