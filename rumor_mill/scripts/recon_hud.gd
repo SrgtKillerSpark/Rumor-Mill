@@ -109,6 +109,22 @@ var _low_whisper_warned: bool = false
 var _low_pulse_tween_action:  Tween = null
 var _low_pulse_tween_whisper: Tween = null
 
+# ── SPA-1581: Evidence confidence indicator ──────────────────────────────────
+## Placeholder icons for confidence tiers — replaced by Creative Director assets (SPA-1572).
+const CONF_ICON_FRESH  := "●"
+const CONF_ICON_AGING  := "◐"
+const CONF_ICON_STALE  := "○"
+const CONF_COLOR_FRESH := Color(0.20, 0.85, 0.40, 1.0)   # green
+const CONF_COLOR_AGING := Color(0.90, 0.65, 0.15, 1.0)   # amber
+const CONF_COLOR_STALE := Color(0.85, 0.25, 0.20, 1.0)   # red
+const CONF_PANEL_ROW_H := 16   # px per evidence item row
+
+var _evidence_panel:        Panel         = null
+var _evidence_vbox:         VBoxContainer = null
+var _evidence_item_rows:    Array         = []   # Array[Label], one per inventory slot
+var _evidence_last_count:   int           = -1   # track for rebuild-on-change
+var _evidence_flash_tween:  Tween         = null
+
 # ── Recent Actions feed ──────────────────────────────────────────────────────
 const FEED_MAX_ENTRIES := 5
 
@@ -137,6 +153,7 @@ func _ready() -> void:
 	_build_hint_button()
 	_build_flash_overlay()
 	_build_feed_panel()
+	_build_evidence_panel()
 	_tooltip_mgr = ReconTooltipManager.new()
 	_tooltip_mgr.setup(
 		$CounterPanel,
@@ -158,6 +175,9 @@ func setup(intel_store: PlayerIntelStore, rumor_panel: CanvasLayer) -> void:
 	_intel_store_ref = intel_store
 	_rumor_panel_ref = rumor_panel
 	_refresh_pips()
+	# SPA-1581: Subscribe to confidence decay signal for threshold-cross flash.
+	if intel_store != null and intel_store.has_signal("evidence_confidence_changed"):
+		intel_store.evidence_confidence_changed.connect(_on_evidence_confidence_changed)
 
 
 ## Called by main.gd to provide world reference for contextual hint generation.
@@ -884,6 +904,157 @@ func _refresh_pips() -> void:
 
 	# SPA-870: Update key hint availability (grey out unavailable actions).
 	_refresh_key_hint_availability()
+
+	# SPA-1581: Update evidence confidence indicator.
+	_refresh_evidence()
+
+
+# ── SPA-1581: Evidence confidence indicator ───────────────────────────────────
+
+## Build a compact floating panel positioned below the counter panel.
+## Shown only when the player holds evidence items.
+func _build_evidence_panel() -> void:
+	_evidence_panel = Panel.new()
+	_evidence_panel.name = "EvidenceConfPanel"
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.05, 0.03, 0.90)
+	style.set_border_width_all(1)
+	style.border_color = Color(0.50, 0.35, 0.15, 0.60)
+	style.set_corner_radius_all(4)
+	_evidence_panel.add_theme_stylebox_override("panel", style)
+	# Align with counter panel, positioned just below it.
+	var cp: Panel = $CounterPanel
+	_evidence_panel.anchor_left   = 1.0
+	_evidence_panel.anchor_right  = 1.0
+	_evidence_panel.anchor_top    = 0.0
+	_evidence_panel.anchor_bottom = 0.0
+	_evidence_panel.offset_left   = cp.offset_left
+	_evidence_panel.offset_right  = cp.offset_right
+	var panel_top: float = cp.offset_bottom + 4.0
+	_evidence_panel.offset_top    = panel_top
+	_evidence_panel.offset_bottom = panel_top   # expanded in _refresh_evidence
+	_evidence_panel.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	_evidence_panel.visible       = false
+	add_child(_evidence_panel)
+
+	_evidence_vbox = VBoxContainer.new()
+	_evidence_vbox.add_theme_constant_override("separation", 1)
+	_evidence_vbox.anchor_left   = 0.0
+	_evidence_vbox.anchor_right  = 1.0
+	_evidence_vbox.anchor_top    = 0.0
+	_evidence_vbox.anchor_bottom = 0.0
+	_evidence_vbox.offset_left   = 4
+	_evidence_vbox.offset_top    = 3
+	_evidence_vbox.offset_right  = -4
+	_evidence_vbox.offset_bottom = 0   # not used (panel height drives sizing)
+	_evidence_panel.add_child(_evidence_vbox)
+
+	# Section header.
+	var hdr := Label.new()
+	hdr.text = "EVIDENCE"
+	hdr.add_theme_font_size_override("font_size", 9)
+	hdr.add_theme_color_override("font_color", Color(0.55, 0.48, 0.35, 0.70))
+	hdr.add_theme_constant_override("outline_size", 1)
+	hdr.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
+	hdr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_evidence_vbox.add_child(hdr)
+
+
+## Poll evidence inventory each frame; rebuild rows when count changes and
+## update tier labels in place otherwise.
+func _refresh_evidence() -> void:
+	if _evidence_panel == null or _intel_store_ref == null:
+		return
+	var items: Array = _intel_store_ref.evidence_inventory
+	if items.is_empty():
+		_evidence_panel.visible = false
+		_evidence_last_count    = 0
+		return
+	_evidence_panel.visible = true
+	var n: int = items.size()
+	if n != _evidence_last_count:
+		_evidence_last_count = n
+		_rebuild_evidence_rows(items)
+	else:
+		for i in _evidence_item_rows.size():
+			if i >= items.size():
+				break
+			_update_evidence_row(
+				_evidence_item_rows[i],
+				items[i].type,
+				PlayerIntelStore.get_confidence_tier(items[i].confidence),
+				items[i].confidence
+			)
+
+
+func _rebuild_evidence_rows(items: Array) -> void:
+	# Remove old item rows (keep header at index 0).
+	var children := _evidence_vbox.get_children()
+	for i in range(1, children.size()):
+		children[i].queue_free()
+	_evidence_item_rows.clear()
+
+	for item in items:
+		var lbl := Label.new()
+		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_constant_override("outline_size", 1)
+		lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_evidence_vbox.add_child(lbl)
+		_evidence_item_rows.append(lbl)
+		_update_evidence_row(
+			lbl, item.type,
+			PlayerIntelStore.get_confidence_tier(item.confidence),
+			item.confidence
+		)
+
+	# Resize panel: header row (~14px) + items (~16px each) + top/bottom padding (~6px).
+	var total_h := 14 + items.size() * CONF_PANEL_ROW_H + 6
+	_evidence_panel.offset_bottom = _evidence_panel.offset_top + total_h
+
+
+func _update_evidence_row(lbl: Label, ev_type: String, tier: String, confidence: float) -> void:
+	var icon:  String
+	var color: Color
+	match tier:
+		"fresh":
+			icon  = CONF_ICON_FRESH
+			color = CONF_COLOR_FRESH
+		"aging":
+			icon  = CONF_ICON_AGING
+			color = CONF_COLOR_AGING
+		_:
+			icon  = CONF_ICON_STALE
+			color = CONF_COLOR_STALE
+	lbl.text = "%s %s  %d%%" % [icon, ev_type, int(confidence * 100.0)]
+	lbl.add_theme_color_override("font_color", color)
+
+
+## Called when intel_store emits evidence_confidence_changed.
+## Flashes the matching row to signal the tier crossing.
+func _on_evidence_confidence_changed(
+		evidence_type: String, _prev: float, _new_conf: float,
+		_tier: String, crossed_threshold: bool
+) -> void:
+	if not crossed_threshold:
+		return
+	for i in _evidence_item_rows.size():
+		var inv := _intel_store_ref.evidence_inventory if _intel_store_ref != null else []
+		if i < inv.size() and inv[i].type == evidence_type:
+			_flash_evidence_row(_evidence_item_rows[i])
+			break
+
+
+func _flash_evidence_row(lbl: Label) -> void:
+	if lbl == null or not is_instance_valid(lbl):
+		return
+	if _evidence_flash_tween != null and _evidence_flash_tween.is_valid():
+		_evidence_flash_tween.kill()
+	_evidence_flash_tween = create_tween()
+	_evidence_flash_tween.tween_property(lbl, "modulate:a", 0.1, 0.12)
+	_evidence_flash_tween.tween_property(lbl, "modulate:a", 1.0, 0.22)
+	_evidence_flash_tween.tween_property(lbl, "modulate:a", 0.1, 0.12)
+	_evidence_flash_tween.tween_property(lbl, "modulate:a", 1.0, 0.22)
 
 
 # ── "What should I do?" hint button ──────────────────────────────────────────

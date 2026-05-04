@@ -326,10 +326,21 @@ func get_compatible_evidence(claim_type_upper: String) -> Array:
 	return result
 
 
+## SPA-1581: Return "fresh", "aging", or "stale" for a given confidence value.
+static func get_confidence_tier(confidence: float) -> String:
+	if confidence >= CONFIDENCE_FRESH_MIN:
+		return "fresh"
+	elif confidence >= CONFIDENCE_AGING_MIN:
+		return "aging"
+	return "stale"
+
+
 ## SPA-1580: Decay confidence on each held evidence item for the given game day.
 ## Returns an Array of Dicts describing events to emit; caller (AnalyticsManager)
 ## is responsible for calling log_evidence_decay_tick / log_evidence_threshold_cross.
 ## The _decay_emitted_on_day guard prevents double-fire on save/load within the same day.
+## SPA-1581: Also emits evidence_confidence_changed for each decayed item so the HUD
+## can subscribe directly without going through the AnalyticsManager event loop.
 func decay_evidence_items(current_day: int) -> Array:
 	var events: Array = []
 	for item in evidence_inventory:
@@ -356,4 +367,8 @@ func decay_evidence_items(current_day: int) -> Array:
 				"threshold":     EVIDENCE_THRESHOLD,
 				"confidence":    next,
 			})
+		# SPA-1581: Emit HUD signal using three-tier system (fresh/aging/stale).
+		var prev_tier: String = get_confidence_tier(prev)
+		var new_tier:  String = get_confidence_tier(next)
+		evidence_confidence_changed.emit(item.type, prev, next, new_tier, new_tier != prev_tier)
 	return events
