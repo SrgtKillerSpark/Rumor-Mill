@@ -446,10 +446,14 @@ func _on_maren_rumor_state_changed(_npc_name: String, state: String, _rid: Strin
 
 
 ## Called when Maren first rejects, starting the 2-day grace window.
+## SPA-1564: Extends warning text with a one-line recovery hint (UX win #2b).
 func _on_maren_grace_started(days_remaining: int) -> void:
 	if _maren_warning_lbl == null:
 		return
-	_maren_warning_lbl.text = "⚠ Maren rejected — %d days to reach 7 believers!" % days_remaining
+	_maren_warning_lbl.text = (
+		"⚠ Maren rejected — %d days to reach 7 believers!" % days_remaining
+		+ "\nTip: quarantine near Maren to slow counter-spread, or seed isolated NPCs."
+	)
 	_maren_warning_lbl.visible = true
 	# Flash the warning to draw the player's eye.
 	var tween := create_tween()
