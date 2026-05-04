@@ -56,6 +56,15 @@ func _on_setup_extra(world: Node2D) -> void:
 	# SPA-592: connect to grace-window signal so the HUD can show the countdown warning.
 	if world != null and world.get("scenario_manager") != null:
 		world.scenario_manager.s2_maren_grace_started.connect(_on_maren_grace_started)
+	# SPA-1552: connect to Maren's rumor_state_changed so we can flash a status line
+	# the moment she enters DEFENDING (event-driven, not just polled in _refresh).
+	if world != null and "npcs" in world:
+		for npc in world.npcs:
+			if npc.get("npc_data") != null \
+					and npc.npc_data.get("id", "") == ScenarioManager.MAREN_NUN_ID \
+					and npc.has_signal("rumor_state_changed"):
+				npc.rumor_state_changed.connect(_on_maren_rumor_state_changed)
+				break
 	# SPA-868: populate quarantine building dropdown.
 	if world != null and _quarantine_dropdown != null:
 		var q_sys = world.get("quarantine_system")
@@ -313,10 +322,12 @@ func _refresh() -> void:
 		"FAILED — The truth prevails")
 	_update_quarantine_button()
 
-	# SPA-1540: Keep the persistent Maren watch indicator in sync each tick.
+	# SPA-1540/SPA-1552: Keep the persistent Maren watch indicator in sync each tick.
+	# Text "Sister Maren is defending the faithful" matches the SPA-1552 status-line spec.
+	# [🛡] tags on affected NPC names above provide per-NPC suppression visibility.
 	if _maren_watch_lbl != null:
 		if maren_defending:
-			_maren_watch_lbl.text = "🛡 Maren is actively countering rumors among her neighbors"
+			_maren_watch_lbl.text = "🛡 Sister Maren is defending the faithful"
 			_maren_watch_lbl.add_theme_color_override("font_color", Color(0.95, 0.55, 0.10, 1.0))
 		else:
 			_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
@@ -417,6 +428,21 @@ func _on_quarantine_pressed() -> void:
 		tick = _day_night_ref.current_tick
 	q_sys.try_quarantine(building_name, intel, tick)
 	_update_quarantine_button()
+
+
+## SPA-1552: Called when Maren's rumor-slot state changes. On first DEFENDING transition
+## (Maren is actively counter-seeding), flash the watch label so the player sees the event.
+## Ongoing shield display for affected NPC names is handled by _refresh().
+func _on_maren_rumor_state_changed(_npc_name: String, state: String, _rid: String, _extra: String) -> void:
+	if state != "DEFENDING" or _maren_watch_lbl == null:
+		return
+	_maren_watch_lbl.text = "🛡 Sister Maren is defending the faithful"
+	_maren_watch_lbl.add_theme_color_override("font_color", Color(0.95, 0.55, 0.10, 1.0))
+	var tween := create_tween()
+	tween.tween_property(_maren_watch_lbl, "modulate:a", 0.15, 0.12)
+	tween.tween_property(_maren_watch_lbl, "modulate:a", 1.0,  0.30)
+	tween.tween_property(_maren_watch_lbl, "modulate:a", 0.15, 0.12)
+	tween.tween_property(_maren_watch_lbl, "modulate:a", 1.0,  0.30)
 
 
 ## Called when Maren first rejects, starting the 2-day grace window.
