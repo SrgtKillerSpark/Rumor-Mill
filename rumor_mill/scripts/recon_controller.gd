@@ -610,6 +610,7 @@ func _try_observe(location_id: String) -> void:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Incriminating Artifact", 0.25, 0.0,
 			["SCANDAL", "HERESY"], tick)
+		ev.shelf_life_extension = 0  ## SPA-1611: no shelf-life bonus for artifacts
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
 			_analytics_manager.log_evidence_acquired("incriminating_artifact", "observe_building")

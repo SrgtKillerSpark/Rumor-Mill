@@ -28,6 +28,9 @@ const HUD_PANEL_HEIGHT    := 72   # height of the HUD strip built by _make_panel
 const TOAST_GAP           := 4    # gap between HUD bottom and toast top
 const TOAST_PANEL_HEIGHT  := 24   # visible toast strip height
 const TOAST_CORNER_RADIUS := 4    # corner radius for the toast StyleBoxFlat
+const TOAST_MARGIN_H      := 8    # StyleBoxFlat content_margin left/right
+const TOAST_MARGIN_V      := 4    # StyleBoxFlat content_margin top/bottom
+const TOAST_TEXT_INSET    := 6    # label SIDE_LEFT / SIDE_RIGHT pixel inset inside toast
 
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _count_lbl:         Label     = null
@@ -271,10 +274,10 @@ func _build_ui() -> void:
 	var toast_style := StyleBoxFlat.new()
 	toast_style.bg_color = C_TOAST_BG
 	toast_style.set_corner_radius_all(TOAST_CORNER_RADIUS)
-	toast_style.content_margin_left   = 8
-	toast_style.content_margin_right  = 8
-	toast_style.content_margin_top    = 4
-	toast_style.content_margin_bottom = 4
+	toast_style.content_margin_left   = TOAST_MARGIN_H
+	toast_style.content_margin_right  = TOAST_MARGIN_H
+	toast_style.content_margin_top    = TOAST_MARGIN_V
+	toast_style.content_margin_bottom = TOAST_MARGIN_V
 	_deconv_toast_panel = Panel.new()
 	_deconv_toast_panel.add_theme_stylebox_override("panel", toast_style)
 	_deconv_toast_panel.custom_minimum_size.y = TOAST_PANEL_HEIGHT
@@ -287,8 +290,8 @@ func _build_ui() -> void:
 	_deconv_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	_deconv_toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_deconv_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_deconv_toast_lbl.set_offset(SIDE_LEFT,  6)
-	_deconv_toast_lbl.set_offset(SIDE_RIGHT, -6)
+	_deconv_toast_lbl.set_offset(SIDE_LEFT,   TOAST_TEXT_INSET)
+	_deconv_toast_lbl.set_offset(SIDE_RIGHT, -TOAST_TEXT_INSET)
 	_deconv_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_deconv_toast_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	_deconv_toast_panel.add_child(_deconv_toast_lbl)
