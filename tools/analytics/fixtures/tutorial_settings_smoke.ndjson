@@ -1,0 +1,19 @@
+{"type":"scenario_selected","scenario_id":"scenario_1","difficulty":"Normal","ts":"2026-05-01T09:00:00Z"}
+{"type":"tutorial_step_completed","step_id":"gtut_opening","scenario_id":"scenario_1","ts":"2026-05-01T09:00:05Z"}
+{"type":"tutorial_step_completed","step_id":"gtut_explore","scenario_id":"scenario_1","ts":"2026-05-01T09:01:00Z"}
+{"type":"tutorial_step_completed","step_id":"gtut_observe_intel","scenario_id":"scenario_1","ts":"2026-05-01T09:02:30Z"}
+{"type":"tutorial_step_completed","step_id":"gtut_eavesdrop","scenario_id":"scenario_1","ts":"2026-05-01T09:04:00Z"}
+{"type":"tutorial_step_completed","step_id":"gtut_craft_rumor","scenario_id":"scenario_1","ts":"2026-05-01T09:06:00Z"}
+{"type":"settings_changed","setting_key":"music_volume","old_value":"80","new_value":"60","ts":"2026-05-01T09:07:00Z"}
+{"type":"settings_changed","setting_key":"game_speed_index","old_value":"1","new_value":"2","ts":"2026-05-01T09:07:10Z"}
+{"type":"tutorial_step_completed","step_id":"gtut_watch_spread","scenario_id":"scenario_1","ts":"2026-05-01T09:08:00Z"}
+{"type":"tutorial_step_completed","step_id":"gtut_complete","scenario_id":"scenario_1","ts":"2026-05-01T09:08:10Z"}
+{"type":"rumor_seeded","subject_name":"Edric Fenn","claim_id":"rumor_t01","seed_target":"npc_inn_keeper","day":1,"scenario_id":"scenario_1","ts":"2026-05-01T09:06:00Z"}
+{"type":"npc_state_changed","npc_name":"Inn Keeper","rumor_id":"rumor_t01","new_state":"BELIEVE","day":2,"scenario_id":"scenario_1","ts":"2026-05-01T09:20:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_1","difficulty":"Normal","outcome":"WON","day_reached":5,"duration_sec":600,"ts":"2026-05-01T09:50:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-01T10:00:00Z"}
+{"type":"tutorial_step_completed","step_id":"wtut_s2_mechanic_shift","scenario_id":"scenario_2","ts":"2026-05-01T10:00:05Z"}
+{"type":"tutorial_step_completed","step_id":"wtut_s2_whats_new","scenario_id":"scenario_2","ts":"2026-05-01T10:00:10Z"}
+{"type":"tutorial_step_completed","step_id":"ctx_s2_maren_warning","scenario_id":"scenario_2","ts":"2026-05-01T10:00:15Z"}
+{"type":"settings_changed","setting_key":"sfx_volume","old_value":"80","new_value":"100","ts":"2026-05-01T10:01:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"FAILED","day_reached":8,"duration_sec":720,"ts":"2026-05-01T11:00:00Z"}

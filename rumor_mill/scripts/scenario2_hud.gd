@@ -14,7 +14,11 @@ extends BaseScenarioHud
 ## Wire via setup(world, day_night) from main.gd.
 
 # ── S2-specific palette ──────────────────────────────────────────────────────
-const C_ILLNESS := Color(0.60, 0.85, 0.30, 1.0)  # sickly green for plague theme
+const C_ILLNESS          := Color(0.60, 0.85, 0.30, 1.0)  # sickly green for plague theme
+const C_LEGEND_DIM       := Color(0.55, 0.55, 0.50, 0.85) # legend label "Target: 7+ believers"
+const C_ILLNESS_DIM      := Color(0.60, 0.85, 0.30, 0.80) # escalation label default (80% alpha variant of C_ILLNESS)
+const C_QUARANTINE_ALERT := Color(0.95, 0.30, 0.20, 0.90) # quarantine status label
+const C_ESCALATION_FLARE := Color(1.0,  0.75, 0.10, 1.0)  # escalation event flash color
 
 const BAR_WIDTH      := 160
 const MAX_NAMES_SHOWN := 5
@@ -203,13 +207,13 @@ func _build_ui() -> void:
 
 	var legend_lbl := Label.new()
 	legend_lbl.add_theme_font_size_override("font_size", 12)
-	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
+	legend_lbl.add_theme_color_override("font_color", C_LEGEND_DIM)
 	legend_lbl.text = "Target: 7+ believers"
 	right_vbox.add_child(legend_lbl)
 
 	_escalation_lbl = Label.new()
 	_escalation_lbl.add_theme_font_size_override("font_size", 12)
-	_escalation_lbl.add_theme_color_override("font_color", Color(0.60, 0.85, 0.30, 0.80))
+	_escalation_lbl.add_theme_color_override("font_color", C_ILLNESS_DIM)
 	_escalation_lbl.text = "Rumours: quiet so far"
 	_escalation_lbl.tooltip_text = "Illness reports are escalating on their own. Each auto-spread increases the risk Sister Maren will notice."
 	_escalation_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -248,7 +252,7 @@ func _build_ui() -> void:
 
 	_quarantine_status_lbl = Label.new()
 	_quarantine_status_lbl.add_theme_font_size_override("font_size", 11)
-	_quarantine_status_lbl.add_theme_color_override("font_color", Color(0.95, 0.30, 0.20, 0.90))
+	_quarantine_status_lbl.add_theme_color_override("font_color", C_QUARANTINE_ALERT)
 	_quarantine_status_lbl.text = ""
 	_quarantine_status_lbl.visible = false
 	_quarantine_status_lbl.clip_text = true
@@ -385,7 +389,7 @@ func notify_illness_escalated(day: int, _claim_type: String, _subject_id: String
 	if _escalation_lbl == null:
 		return
 	_escalation_lbl.text = "Rumours: Day %d — illness spreading on its own" % day
-	_escalation_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.10, 1.0))
+	_escalation_lbl.add_theme_color_override("font_color", C_ESCALATION_FLARE)
 	var tween := create_tween()
 	tween.tween_property(_escalation_lbl, "modulate:a", 0.25, 0.12)
 	tween.tween_property(_escalation_lbl, "modulate:a", 1.0,  0.30)
