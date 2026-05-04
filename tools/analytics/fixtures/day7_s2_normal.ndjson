@@ -1,0 +1,74 @@
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T14:00:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r01","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T14:02:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7_s2n_r01","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T14:11:00Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"d7_s2n_r01","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T14:12:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"observe_building","day":2,"scenario_id":"scenario_2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"d7_s2n_r01","new_state":"SPREAD","day":3,"scenario_id":"scenario_2","ts":"2026-05-04T14:20:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":70,"delta":-8,"day":4,"scenario_id":"scenario_2","ts":"2026-05-04T14:30:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"d7_s2n_r01","seed_target":"alys_herbwife","subject":"Sister Maren","day":5,"scenario_id":"scenario_2","difficulty":"Normal"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"WON","day_reached":9,"duration_sec":710,"ts":"2026-05-04T14:48:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T15:00:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r02","seed_target":"npc_acolyte","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T15:02:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7_s2n_r02","new_state":"REJECT","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T15:08:00Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"d7_s2n_r02","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T15:15:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":74,"delta":-4,"day":2,"scenario_id":"scenario_2","ts":"2026-05-04T15:16:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":4,"ts":"2026-05-04T15:24:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"FAILED","day_reached":4,"duration_sec":380,"ts":"2026-05-04T15:25:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T15:35:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r03","seed_target":"npc_merchant","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T15:37:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7_s2n_r03","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T15:46:00Z"}
+{"type":"npc_state_changed","npc_name":"Merchant","rumor_id":"d7_s2n_r03","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T15:47:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":5,"ts":"2026-05-04T15:55:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"FAILED","day_reached":5,"duration_sec":395,"ts":"2026-05-04T15:56:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T16:05:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r04","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T16:07:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7_s2n_r04","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T16:16:00Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"d7_s2n_r04","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T16:17:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-04T16:25:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":5,"ts":"2026-05-04T16:33:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"FAILED","day_reached":5,"duration_sec":410,"ts":"2026-05-04T16:34:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T16:45:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r05","seed_target":"npc_fishwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T16:47:00Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"d7_s2n_r05","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T16:56:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7_s2n_r05","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T16:57:00Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"d7_s2n_r05","new_state":"SPREAD","day":3,"scenario_id":"scenario_2","ts":"2026-05-04T17:05:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":5,"ts":"2026-05-04T17:13:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"FAILED","day_reached":5,"duration_sec":420,"ts":"2026-05-04T17:14:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T17:25:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r06","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T17:27:00Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"d7_s2n_r06","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T17:36:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7_s2n_r06","new_state":"REJECT","day":3,"scenario_id":"scenario_2","ts":"2026-05-04T17:44:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":71,"delta":-7,"day":4,"scenario_id":"scenario_2","ts":"2026-05-04T17:52:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":6,"ts":"2026-05-04T18:00:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"FAILED","day_reached":6,"duration_sec":450,"ts":"2026-05-04T18:01:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T18:12:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r07","seed_target":"npc_acolyte","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T18:14:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7_s2n_r07","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T18:23:00Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"d7_s2n_r07","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T18:24:00Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"d7_s2n_r07","new_state":"SPREAD","day":3,"scenario_id":"scenario_2","ts":"2026-05-04T18:32:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":5,"ts":"2026-05-04T18:40:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"FAILED","day_reached":5,"duration_sec":410,"ts":"2026-05-04T18:41:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T18:52:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r08","seed_target":"npc_carpenter","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T18:54:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7_s2n_r08","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T19:03:00Z"}
+{"type":"npc_state_changed","npc_name":"Carpenter","rumor_id":"d7_s2n_r08","new_state":"REJECT","day":3,"scenario_id":"scenario_2","ts":"2026-05-04T19:10:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-04T19:11:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":5,"ts":"2026-05-04T19:19:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"FAILED","day_reached":5,"duration_sec":400,"ts":"2026-05-04T19:20:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T19:30:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r09","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T19:32:00Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"d7_s2n_r09","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T19:41:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","day":2,"scenario_id":"scenario_2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"d7_s2n_r09","new_state":"SPREAD","day":3,"scenario_id":"scenario_2","ts":"2026-05-04T19:49:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"observe_building","day":3,"scenario_id":"scenario_2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Dockworker","rumor_id":"d7_s2n_r09","new_state":"BELIEVE","day":4,"scenario_id":"scenario_2","ts":"2026-05-04T19:59:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":74,"delta":-4,"day":5,"scenario_id":"scenario_2","ts":"2026-05-04T20:07:00Z"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"d7_s2n_r09","seed_target":"alys_herbwife","subject":"Sister Maren","day":6,"scenario_id":"scenario_2","difficulty":"Normal"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"WON","day_reached":11,"duration_sec":760,"ts":"2026-05-04T20:28:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Normal","ts":"2026-05-04T20:40:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7_s2n_r10","seed_target":"npc_priest","day":1,"scenario_id":"scenario_2","ts":"2026-05-04T20:42:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7_s2n_r10","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T20:51:00Z"}
+{"type":"npc_state_changed","npc_name":"Priest","rumor_id":"d7_s2n_r10","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-04T20:52:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":74,"delta":-4,"day":3,"scenario_id":"scenario_2","ts":"2026-05-04T21:00:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":5,"ts":"2026-05-04T21:08:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Normal","outcome":"FAILED","day_reached":5,"duration_sec":415,"ts":"2026-05-04T21:09:00Z"}

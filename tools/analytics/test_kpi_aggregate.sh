@@ -15,3 +15,7 @@ echo "  PASS  smoke exits 0 on all fixtures"
 echo ""
 echo "=== evidence aggregation regression tests (SPA-1535) ==="
 node "$SCRIPT_DIR/test_evidence_agg.js"
+
+echo ""
+echo "=== evidence parity regression tests (SPA-1593) ==="
+node "$SCRIPT_DIR/test_evidence_parity.js"
