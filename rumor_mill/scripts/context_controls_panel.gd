@@ -104,7 +104,7 @@ func _build_panel() -> void:
 	_panel.anchor_bottom = 1.0
 	_panel.offset_left = 6.0
 	_panel.offset_top = -36.0
-	_panel.offset_right = minf(780.0, get_viewport_rect().size.x - 6.0)
+	_panel.offset_right = minf(780.0, get_viewport().get_visible_rect().size.x - 6.0)
 	_panel.offset_bottom = -6.0
 
 	var style := StyleBoxFlat.new()
