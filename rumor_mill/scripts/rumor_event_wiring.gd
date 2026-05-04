@@ -54,6 +54,8 @@ func setup(
 		_world.socially_dead_triggered.connect(_on_socially_dead_triggered)
 		if _world.has_signal("cascade_triggered"):
 			_world.cascade_triggered.connect(_on_cascade_triggered)
+		if _world.has_signal("rumor_target_shifted"):
+			_world.rumor_target_shifted.connect(_on_rumor_target_shifted)
 		if "npcs" in _world:
 			for npc in _world.npcs:
 				if npc.has_signal("rumor_transmitted"):
@@ -508,6 +510,55 @@ func _on_socially_dead_triggered(_npc_id: String, npc_name: String, _tick: int) 
 		_recon_hud.show_toast("%s is SOCIALLY DEAD — reputation permanently frozen" % npc_name, false)
 	if _recon_hud != null and _recon_hud.has_method("show_milestone"):
 		_recon_hud.show_milestone("☠ %s — SOCIALLY DEAD" % npc_name, Color(0.85, 0.15, 0.15, 1.0))
+
+
+## SPA-1664: Show a parchment toast + feed entry when propagation shifts a rumor's target.
+## Uses a muted amber-purple style to distinguish it from gold spread toasts.
+func _on_rumor_target_shifted(old_name: String, new_name: String, _rumor_id: String) -> void:
+	var msg := "Rumor about %s has shifted to %s — NPCs reinterpret whispers as they spread." % [old_name, new_name]
+	_show_target_shift_toast(msg, 4.5)
+	if _recon_hud != null and _recon_hud.has_method("push_feed_entry"):
+		_recon_hud.push_feed_entry("Target shift: %s → %s" % [old_name, new_name], false)
+
+
+## SPA-1664: Amber-purple parchment toast for target-shift events.
+## Distinct colour from gold spread toasts so the player can tell the mechanic apart.
+func _show_target_shift_toast(text: String, duration: float) -> void:
+	var cl := CanvasLayer.new()
+	cl.name  = "TargetShiftToast"
+	cl.layer = 19
+	add_child(cl)
+
+	var panel := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.42, 0.28, 0.62, 0.93)  # muted amber-purple
+	style.set_corner_radius_all(5)
+	style.content_margin_left   = 14.0
+	style.content_margin_right  = 14.0
+	style.content_margin_top    = 8.0
+	style.content_margin_bottom = 8.0
+	panel.add_theme_stylebox_override("panel", style)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	panel.offset_top = 108.0  # below the spread toast row
+	cl.add_child(panel)
+
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", Color(0.96, 0.90, 1.0, 1.0))  # pale lavender text
+	lbl.add_theme_constant_override("outline_size", 1)
+	lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.45))
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.custom_minimum_size = Vector2(320.0, 0.0)
+	panel.add_child(lbl)
+
+	panel.modulate.a = 0.0
+	var tween := cl.create_tween()
+	tween.tween_property(panel, "modulate:a", 1.0, 0.35) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_interval(duration)
+	tween.tween_property(panel, "modulate:a", 0.0, 0.40).set_ease(Tween.EASE_IN)
+	tween.tween_callback(cl.queue_free)
 
 
 # ── Internal helpers ─────────────────────────────────────────────────────────
