@@ -17,6 +17,16 @@ on:
   workflow_dispatch:
 
 jobs:
+  static-check:
+    name: GDScript static checker (no Godot required)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run static checker regression tests (SPA-1560)
+        run: bash rumor_mill/tools/test_static_checks.sh
+
   validate:
     name: GDScript parse & type check
     runs-on: ubuntu-latest
