@@ -5,8 +5,9 @@
 ##   • Layout constants: BAR_WIDTH, BAR_HEIGHT, MAX_NAMES_SHOWN
 ##   • _scenario_number(): returns 2
 ##   • Initial node refs null (no scene tree, _ready() not called)
-##   • Initial state: _maren_neighbours = {}
+##   • Initial state: _maren_neighbours = {}, _maren_is_defending = false
 ##   • Inherited state: _world_ref, _day_night_ref, _result_lbl, _days_lbl
+##   • SPA-1565: DEFENDING flag plumbed to HUD signal; neighbor rejection toast gated
 ##
 ## Run from the Godot editor: Scene → Run Script.
 
@@ -51,11 +52,19 @@ func run() -> void:
 		"test_initial_quarantine_status_lbl_null",
 		# Initial state
 		"test_initial_maren_neighbours_empty",
+		"test_initial_maren_is_defending_false",
+		"test_initial_deconv_toast_panel_null",
+		"test_initial_deconv_toast_lbl_null",
 		# Inherited state
 		"test_initial_world_ref_null",
 		"test_initial_day_night_ref_null",
 		"test_initial_result_lbl_null",
 		"test_initial_days_lbl_null",
+		# SPA-1565: DEFENDING flag plumbed to HUD signal
+		"test_on_maren_state_changed_defending_sets_flag",
+		"test_on_maren_state_changed_non_defending_no_flag",
+		"test_neighbor_reject_no_toast_when_not_defending",
+		"test_defending_watch_text_contains_countering",
 	]
 
 	for method_name in tests:
@@ -226,5 +235,71 @@ static func test_initial_result_lbl_null() -> bool:
 static func test_initial_days_lbl_null() -> bool:
 	var h := _make_hud()
 	var ok := h._days_lbl == null
+	h.free()
+	return ok
+
+
+# ── SPA-1565: DEFENDING flag plumbed to HUD signal ───────────────────────────
+
+static func test_initial_maren_is_defending_false() -> bool:
+	var h := _make_hud()
+	var ok := h._maren_is_defending == false
+	h.free()
+	return ok
+
+
+static func test_initial_deconv_toast_panel_null() -> bool:
+	var h := _make_hud()
+	var ok := h._deconv_toast_panel == null
+	h.free()
+	return ok
+
+
+static func test_initial_deconv_toast_lbl_null() -> bool:
+	var h := _make_hud()
+	var ok := h._deconv_toast_lbl == null
+	h.free()
+	return ok
+
+
+## Verify _maren_is_defending is set when DEFENDING signal fires (even without scene tree).
+static func test_on_maren_state_changed_defending_sets_flag() -> bool:
+	var h := _make_hud()
+	h._on_maren_rumor_state_changed("Sister Maren", "DEFENDING", "rid_test", "")
+	var ok := h._maren_is_defending == true
+	h.free()
+	return ok
+
+
+## Non-DEFENDING transitions must not set the flag.
+static func test_on_maren_state_changed_non_defending_no_flag() -> bool:
+	var h := _make_hud()
+	h._on_maren_rumor_state_changed("Sister Maren", "reject", "rid_test", "")
+	var ok := h._maren_is_defending == false
+	h.free()
+	return ok
+
+
+## Neighbor rejection with _maren_is_defending=false must not crash and must not
+## change any visible state (toast panel stays null without _ready).
+static func test_neighbor_reject_no_toast_when_not_defending() -> bool:
+	var h := _make_hud()
+	h._on_neighbor_rumor_state_changed("Tomas", "reject", "rid_test", "")
+	# _deconv_toast_panel is still null (no _ready) and no crash occurred.
+	var ok := h._deconv_toast_panel == null
+	h.free()
+	return ok
+
+
+## When DEFENDING is signalled, the watch label text (once _build_ui runs) should
+## reference countering. Without scene tree the label stays null — we verify the
+## constant string directly on the HUD constant for regression safety.
+static func test_defending_watch_text_contains_countering() -> bool:
+	var h := _make_hud()
+	# Simulate the label existing so we can verify the text set by the signal handler.
+	h._maren_watch_lbl = Label.new()
+	h._on_maren_rumor_state_changed("Sister Maren", "DEFENDING", "", "")
+	var ok := "countering" in h._maren_watch_lbl.text
+	h._maren_watch_lbl.free()
 	h.free()
 	return ok

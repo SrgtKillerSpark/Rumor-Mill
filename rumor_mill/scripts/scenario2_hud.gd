@@ -29,6 +29,13 @@ var _maren_warning_lbl: Label     = null
 var _maren_watch_lbl:   Label     = null
 var _escalation_lbl:    Label     = null
 
+## SPA-1565: True while Maren is in DEFENDING state — gates neighbor rejection toasts.
+var _maren_is_defending: bool = false
+## SPA-1565: Toast surfaced when a Maren neighbor rejects while she is defending.
+var _deconv_toast_panel: Panel = null
+var _deconv_toast_lbl:   Label = null
+var _deconv_toast_tween: Tween = null
+
 ## SPA-805: pip row — filled ● / empty ○ circles showing believer progress.
 var _pip_lbl: Label = null
 
@@ -58,13 +65,16 @@ func _on_setup_extra(world: Node2D) -> void:
 		world.scenario_manager.s2_maren_grace_started.connect(_on_maren_grace_started)
 	# SPA-1552: connect to Maren's rumor_state_changed so we can flash a status line
 	# the moment she enters DEFENDING (event-driven, not just polled in _refresh).
+	# SPA-1565: also connect to each of Maren's neighbors for de-conversion detection.
 	if world != null and "npcs" in world:
 		for npc in world.npcs:
-			if npc.get("npc_data") != null \
-					and npc.npc_data.get("id", "") == ScenarioManager.MAREN_NUN_ID \
-					and npc.has_signal("rumor_state_changed"):
+			if npc.get("npc_data") == null:
+				continue
+			var npc_id: String = npc.npc_data.get("id", "")
+			if npc_id == ScenarioManager.MAREN_NUN_ID and npc.has_signal("rumor_state_changed"):
 				npc.rumor_state_changed.connect(_on_maren_rumor_state_changed)
-				break
+			elif _maren_neighbours.has(npc_id) and npc.has_signal("rumor_state_changed"):
+				npc.rumor_state_changed.connect(_on_neighbor_rumor_state_changed)
 	# SPA-868: populate quarantine building dropdown.
 	if world != null and _quarantine_dropdown != null:
 		var q_sys = world.get("quarantine_system")
@@ -244,6 +254,40 @@ func _build_ui() -> void:
 	_quarantine_status_lbl.clip_text = true
 	q_vbox.add_child(_quarantine_status_lbl)
 
+	# SPA-1565: de-conversion toast — appears just below the HUD strip when a Maren
+	# neighbor rejects the illness rumor while she is actively defending.
+	var toast_style := StyleBoxFlat.new()
+	toast_style.bg_color = Color(0.10, 0.08, 0.06, 0.88)
+	toast_style.set_corner_radius_all(4)
+	toast_style.content_margin_left   = 8
+	toast_style.content_margin_right  = 8
+	toast_style.content_margin_top    = 4
+	toast_style.content_margin_bottom = 4
+	_deconv_toast_panel = Panel.new()
+	_deconv_toast_panel.add_theme_stylebox_override("panel", toast_style)
+	_deconv_toast_panel.set_anchor(SIDE_LEFT,   0.0)
+	_deconv_toast_panel.set_anchor(SIDE_RIGHT,  1.0)
+	_deconv_toast_panel.set_anchor(SIDE_TOP,    0.0)
+	_deconv_toast_panel.set_anchor(SIDE_BOTTOM, 0.0)
+	_deconv_toast_panel.set_offset(SIDE_LEFT,   8)
+	_deconv_toast_panel.set_offset(SIDE_RIGHT, -8)
+	_deconv_toast_panel.set_offset(SIDE_TOP,   76)
+	_deconv_toast_panel.set_offset(SIDE_BOTTOM, 100)
+	_deconv_toast_panel.visible = false
+	add_child(_deconv_toast_panel)
+	_deconv_toast_lbl = Label.new()
+	_deconv_toast_lbl.add_theme_font_size_override("font_size", 11)
+	_deconv_toast_lbl.add_theme_color_override("font_color", Color(0.80, 0.70, 0.50, 1.0))
+	_deconv_toast_lbl.add_theme_constant_override("outline_size", 2)
+	_deconv_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_deconv_toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_deconv_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_deconv_toast_lbl.set_offset(SIDE_LEFT,  6)
+	_deconv_toast_lbl.set_offset(SIDE_RIGHT, -6)
+	_deconv_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_deconv_toast_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	_deconv_toast_panel.add_child(_deconv_toast_lbl)
+
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
 
@@ -322,12 +366,12 @@ func _refresh() -> void:
 		"FAILED — The truth prevails")
 	_update_quarantine_button()
 
-	# SPA-1540/SPA-1552: Keep the persistent Maren watch indicator in sync each tick.
-	# Text "Sister Maren is defending the faithful" matches the SPA-1552 status-line spec.
+	# SPA-1540/SPA-1552/SPA-1565: Keep the persistent Maren watch indicator in sync each tick.
 	# [🛡] tags on affected NPC names above provide per-NPC suppression visibility.
+	_maren_is_defending = maren_defending
 	if _maren_watch_lbl != null:
 		if maren_defending:
-			_maren_watch_lbl.text = "🛡 Sister Maren is defending the faithful"
+			_maren_watch_lbl.text = "🛡 Maren is actively countering rumors among her neighbors."
 			_maren_watch_lbl.add_theme_color_override("font_color", Color(0.95, 0.55, 0.10, 1.0))
 		else:
 			_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
@@ -430,19 +474,44 @@ func _on_quarantine_pressed() -> void:
 	_update_quarantine_button()
 
 
-## SPA-1552: Called when Maren's rumor-slot state changes. On first DEFENDING transition
-## (Maren is actively counter-seeding), flash the watch label so the player sees the event.
-## Ongoing shield display for affected NPC names is handled by _refresh().
+## SPA-1552/SPA-1565: Called when Maren's rumor-slot state changes. On DEFENDING transition,
+## set the defending flag and flash the watch label. Ongoing state is polled in _refresh().
 func _on_maren_rumor_state_changed(_npc_name: String, state: String, _rid: String, _extra: String) -> void:
-	if state != "DEFENDING" or _maren_watch_lbl == null:
+	if state != "DEFENDING":
 		return
-	_maren_watch_lbl.text = "🛡 Sister Maren is defending the faithful"
+	_maren_is_defending = true
+	if _maren_watch_lbl == null:
+		return
+	_maren_watch_lbl.text = "🛡 Maren is actively countering rumors among her neighbors."
 	_maren_watch_lbl.add_theme_color_override("font_color", Color(0.95, 0.55, 0.10, 1.0))
 	var tween := create_tween()
 	tween.tween_property(_maren_watch_lbl, "modulate:a", 0.15, 0.12)
 	tween.tween_property(_maren_watch_lbl, "modulate:a", 1.0,  0.30)
 	tween.tween_property(_maren_watch_lbl, "modulate:a", 0.15, 0.12)
 	tween.tween_property(_maren_watch_lbl, "modulate:a", 1.0,  0.30)
+
+
+## SPA-1565: Called when any of Maren's social-graph neighbors changes worst rumor state.
+## When they reject while she is actively defending, surface a de-conversion toast.
+func _on_neighbor_rumor_state_changed(npc_name: String, state: String, _rid: String, _extra: String) -> void:
+	if state != "reject" or not _maren_is_defending:
+		return
+	_show_deconv_toast("🛡 %s stopped believing — Maren's counter-influence" % npc_name)
+
+
+## SPA-1565: Flash a brief toast below the HUD explaining the Maren-driven de-conversion.
+func _show_deconv_toast(text: String) -> void:
+	if _deconv_toast_panel == null or _deconv_toast_lbl == null:
+		return
+	if _deconv_toast_tween != null and _deconv_toast_tween.is_valid():
+		_deconv_toast_tween.kill()
+	_deconv_toast_lbl.text = text
+	_deconv_toast_panel.modulate.a = 1.0
+	_deconv_toast_panel.visible = true
+	_deconv_toast_tween = create_tween()
+	_deconv_toast_tween.tween_interval(3.0)
+	_deconv_toast_tween.tween_property(_deconv_toast_panel, "modulate:a", 0.0, 0.5)
+	_deconv_toast_tween.tween_callback(func() -> void: _deconv_toast_panel.visible = false)
 
 
 ## Called when Maren first rejects, starting the 2-day grace window.
