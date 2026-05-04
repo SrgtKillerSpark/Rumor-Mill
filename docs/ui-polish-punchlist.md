@@ -109,7 +109,7 @@
 | 43 | **Tutorial banner accent stripe is 5px.** May be imperceptible at higher DPI/resolution. | tutorial_banner.gd:43 | Small |
 | 44 | **Loading tips label `custom_minimum_size` is 640x60 with `fit_content=true`.** Long tips can exceed 60px height. | loading_tips.gd:81 | Small |
 | 45 | **Zone indicator offset_right hardcoded to 200px.** Can overflow at narrow viewports. | zone_indicator.gd:62-66 | Small |
-| 46 | **NPC info panel close animation (0.14s) faster than open (0.18s).** Feels abrupt. | npc_info_panel.gd:99/110 | Small |
+| 46 | ~~**NPC info panel close animation (0.14s) faster than open (0.18s).** Feels abrupt.~~ ✅ Fixed: close duration set to 0.18s to match open. | npc_info_panel.gd:99/110 | Small |
 | 47 | **Thought-bubble legend uses hard pixel offsets (-180, -280, -90).** No grow-direction ensures proper scaling. | thought_bubble_legend.gd:72-75 | Small |
 
 ---

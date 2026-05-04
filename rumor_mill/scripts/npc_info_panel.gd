@@ -107,7 +107,7 @@ func hide_panel() -> void:
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
 	_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	_tween.tween_property(_panel, "modulate:a", 0.0, 0.14)
+	_tween.tween_property(_panel, "modulate:a", 0.0, 0.18)
 	_tween.tween_callback(func() -> void: visible = false)
 
 
