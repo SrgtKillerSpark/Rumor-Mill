@@ -32,11 +32,15 @@ const C_FAIL     := Color(0.85, 0.15, 0.15, 1.0)
 const C_NEUTRAL  := Color(0.85, 0.55, 0.10, 1.0)
 
 # ── Shared state ─────────────────────────────────────────────────────────────
-var _world_ref:     Node2D = null
-var _day_night_ref: Node   = null
-var _result_lbl:    Label  = null
-var _days_lbl:      Label  = null
-var _diff_lbl:      Label  = null
+var _world_ref:       Node2D       = null
+var _day_night_ref:   Node         = null
+var _result_lbl:      Label        = null
+var _days_lbl:        Label        = null
+var _diff_lbl:        Label        = null
+## Shared toast area anchored just below the main HUD panel. Subclass HUDs add
+## toast Panels as children; VBoxContainer stacks them vertically. Populated by
+## _make_panel() so it is always ready before _build_ui() appends toasts.
+var _toast_container: VBoxContainer = null
 
 
 func _ready() -> void:
@@ -118,6 +122,15 @@ func _make_panel(panel_name: String, height: int, hbox_separation: int = 16) -> 
 	panel.offset_left   = 8
 	panel.offset_right  = -8
 	add_child(panel)
+
+	_toast_container = VBoxContainer.new()
+	_toast_container.name = "ToastContainer"
+	_toast_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_toast_container.offset_top    = height + 4
+	_toast_container.offset_bottom = height + 4 + 100
+	_toast_container.offset_left   = 8
+	_toast_container.offset_right  = -8
+	add_child(_toast_container)
 
 	var hbox := HBoxContainer.new()
 	hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

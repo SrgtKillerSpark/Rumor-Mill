@@ -19,6 +19,9 @@ const C_LEGEND_DIM       := Color(0.55, 0.55, 0.50, 0.85) # legend label "Target
 const C_ILLNESS_DIM      := Color(0.60, 0.85, 0.30, 0.80) # escalation label default (80% alpha variant of C_ILLNESS)
 const C_QUARANTINE_ALERT := Color(0.95, 0.30, 0.20, 0.90) # quarantine status label
 const C_ESCALATION_FLARE := Color(1.0,  0.75, 0.10, 1.0)  # escalation event flash color
+const C_DEFENDING_ACCENT  := Color(0.95, 0.55, 0.10, 1.0)  # Maren actively countering: alert amber
+const C_DEFENDING_DORMANT := Color(0.55, 0.55, 0.50, 0.55)  # Maren watch: dormant/dim state
+const C_TOAST_TEXT        := Color(0.80, 0.70, 0.50, 1.0)   # de-conversion toast label text
 
 const BAR_WIDTH      := 160
 const MAX_NAMES_SHOWN := 5
@@ -178,7 +181,7 @@ func _build_ui() -> void:
 	# is discoverable. Dimmed when dormant; turns amber and expands when defending.
 	_maren_watch_lbl = Label.new()
 	_maren_watch_lbl.add_theme_font_size_override("font_size", 11)
-	_maren_watch_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.55))  # TODO(SPA-1590): replace with C_DEFENDING_ACCENT (dormant variant)
+	_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_DORMANT)
 	_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
 	_maren_watch_lbl.tooltip_text = (
 		"Sister Maren may counter the illness rumor if it reaches her circle."
@@ -266,34 +269,29 @@ func _build_ui() -> void:
 
 	# SPA-1565: de-conversion toast — appears just below the HUD strip when a Maren
 	# neighbor rejects the illness rumor while she is actively defending.
+	# SPA-1590: reparented into _toast_container; uses custom_minimum_size.y instead of
+	# hardcoded SIDE_TOP/SIDE_BOTTOM offsets so position adapts if HUD strip height changes.
 	var toast_style := StyleBoxFlat.new()
-	toast_style.bg_color = Color(0.10, 0.08, 0.06, 0.88)  # TODO(SPA-1590): replace with ToastContainer constant
+	toast_style.bg_color = Color(0.10, 0.08, 0.06, 0.88)
 	toast_style.set_corner_radius_all(TOAST_CORNER_RADIUS)
-	toast_style.content_margin_left   = 8   # TODO(SPA-1590): replace with ToastContainer constant
-	toast_style.content_margin_right  = 8   # TODO(SPA-1590): replace with ToastContainer constant
-	toast_style.content_margin_top    = 4   # TODO(SPA-1590): replace with ToastContainer constant
-	toast_style.content_margin_bottom = 4   # TODO(SPA-1590): replace with ToastContainer constant
+	toast_style.content_margin_left   = 8
+	toast_style.content_margin_right  = 8
+	toast_style.content_margin_top    = 4
+	toast_style.content_margin_bottom = 4
 	_deconv_toast_panel = Panel.new()
 	_deconv_toast_panel.add_theme_stylebox_override("panel", toast_style)
-	_deconv_toast_panel.set_anchor(SIDE_LEFT,   0.0)
-	_deconv_toast_panel.set_anchor(SIDE_RIGHT,  1.0)
-	_deconv_toast_panel.set_anchor(SIDE_TOP,    0.0)
-	_deconv_toast_panel.set_anchor(SIDE_BOTTOM, 0.0)
-	_deconv_toast_panel.set_offset(SIDE_LEFT,   8)    # TODO(SPA-1590): replace with ToastContainer constant
-	_deconv_toast_panel.set_offset(SIDE_RIGHT, -8)    # TODO(SPA-1590): replace with ToastContainer constant
-	_deconv_toast_panel.set_offset(SIDE_TOP,    HUD_PANEL_HEIGHT + TOAST_GAP)                              # TODO(SPA-1590): replace with ToastContainer constant (HUD height + gap)
-	_deconv_toast_panel.set_offset(SIDE_BOTTOM, HUD_PANEL_HEIGHT + TOAST_GAP + TOAST_PANEL_HEIGHT)         # TODO(SPA-1590): replace with ToastContainer constant (toast height)
+	_deconv_toast_panel.custom_minimum_size.y = TOAST_PANEL_HEIGHT
 	_deconv_toast_panel.visible = false
-	add_child(_deconv_toast_panel)
+	_toast_container.add_child(_deconv_toast_panel)
 	_deconv_toast_lbl = Label.new()
 	_deconv_toast_lbl.add_theme_font_size_override("font_size", 11)
-	_deconv_toast_lbl.add_theme_color_override("font_color", Color(0.80, 0.70, 0.50, 1.0))  # TODO(SPA-1590): replace with C_TOAST_TEXT
+	_deconv_toast_lbl.add_theme_color_override("font_color", C_TOAST_TEXT)
 	_deconv_toast_lbl.add_theme_constant_override("outline_size", 2)
 	_deconv_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	_deconv_toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_deconv_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_deconv_toast_lbl.set_offset(SIDE_LEFT,  6)   # TODO(SPA-1590): replace with ToastContainer constant
-	_deconv_toast_lbl.set_offset(SIDE_RIGHT, -6)  # TODO(SPA-1590): replace with ToastContainer constant
+	_deconv_toast_lbl.set_offset(SIDE_LEFT,  6)
+	_deconv_toast_lbl.set_offset(SIDE_RIGHT, -6)
 	_deconv_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_deconv_toast_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	_deconv_toast_panel.add_child(_deconv_toast_lbl)
@@ -382,10 +380,10 @@ func _refresh() -> void:
 	if _maren_watch_lbl != null:
 		if maren_defending:
 			_maren_watch_lbl.text = "🛡 Maren is actively countering rumors among her neighbors."
-			_maren_watch_lbl.add_theme_color_override("font_color", Color(0.95, 0.55, 0.10, 1.0))  # TODO(SPA-1590): replace with C_DEFENDING_ACCENT
+			_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_ACCENT)
 		else:
 			_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
-			_maren_watch_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.55))  # TODO(SPA-1590): replace with C_DEFENDING_ACCENT (dormant variant)
+			_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_DORMANT)
 
 
 # ── Escalation activity ───────────────────────────────────────────────────────
@@ -493,7 +491,7 @@ func _on_maren_rumor_state_changed(_npc_name: String, state: String, _rid: Strin
 	if _maren_watch_lbl == null:
 		return
 	_maren_watch_lbl.text = "🛡 Maren is actively countering rumors among her neighbors."
-	_maren_watch_lbl.add_theme_color_override("font_color", Color(0.95, 0.55, 0.10, 1.0))  # TODO(SPA-1590): replace with C_DEFENDING_ACCENT
+	_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_ACCENT)
 	var tween := create_tween()
 	tween.tween_property(_maren_watch_lbl, "modulate:a", 0.15, 0.12)
 	tween.tween_property(_maren_watch_lbl, "modulate:a", 1.0,  0.30)
