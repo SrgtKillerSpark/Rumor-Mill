@@ -32,6 +32,8 @@ const C_FAIL     := Color(0.85, 0.15, 0.15, 1.0)
 const C_NEUTRAL            := Color(0.85, 0.55, 0.10, 1.0)
 const C_DEFENDING_ACCENT   := Color(0.95, 0.55, 0.10, 1.0)  # Maren actively countering: alert amber
 const C_DEFENDING_DORMANT  := Color(0.55, 0.55, 0.50, 0.55) # Maren watch: dormant/dim state
+const C_TOAST_BG           := Color(0.10, 0.08, 0.06, 0.88) # toast panel background
+const C_TOAST_TEXT         := Color(0.80, 0.70, 0.50, 1.0)  # toast label text
 
 # ── Shared state ─────────────────────────────────────────────────────────────
 var _world_ref:       Node2D       = null

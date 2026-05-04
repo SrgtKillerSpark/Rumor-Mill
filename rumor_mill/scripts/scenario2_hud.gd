@@ -19,7 +19,6 @@ const C_LEGEND_DIM       := Color(0.55, 0.55, 0.50, 0.85) # legend label "Target
 const C_ILLNESS_DIM      := Color(0.60, 0.85, 0.30, 0.80) # escalation label default (80% alpha variant of C_ILLNESS)
 const C_QUARANTINE_ALERT := Color(0.95, 0.30, 0.20, 0.90) # quarantine status label
 const C_ESCALATION_FLARE := Color(1.0,  0.75, 0.10, 1.0)  # escalation event flash color
-const C_TOAST_TEXT        := Color(0.80, 0.70, 0.50, 1.0)   # de-conversion toast label text
 
 const BAR_WIDTH      := 160
 const MAX_NAMES_SHOWN := 5
@@ -270,7 +269,7 @@ func _build_ui() -> void:
 	# SPA-1590: reparented into _toast_container; uses custom_minimum_size.y instead of
 	# hardcoded SIDE_TOP/SIDE_BOTTOM offsets so position adapts if HUD strip height changes.
 	var toast_style := StyleBoxFlat.new()
-	toast_style.bg_color = Color(0.10, 0.08, 0.06, 0.88)
+	toast_style.bg_color = C_TOAST_BG
 	toast_style.set_corner_radius_all(TOAST_CORNER_RADIUS)
 	toast_style.content_margin_left   = 8
 	toast_style.content_margin_right  = 8
