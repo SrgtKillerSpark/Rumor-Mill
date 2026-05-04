@@ -1,0 +1,229 @@
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T10:02:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r01","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T10:11:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r01c","seed_target":"miller_wife","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T10:20:00.000Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":4,"scenario_id":"scenario_2","difficulty":"Apprentice","shelf_life_ticks":120}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r01","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T10:28:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r01","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T10:40:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"p1585_s2_r01c","new_state":"BELIEVE","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T10:48:00.000Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"p1585_s2_r01","seed_target":"alys_herbwife","subject":"Sister Maren","day":6,"scenario_id":"scenario_2","difficulty":"Apprentice"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":8,"scenario_id":"scenario_2","ts":"2026-05-05T11:03:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":9,"scenario_id":"scenario_2","ts":"2026-05-05T11:13:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":10,"duration_sec":760,"ts":"2026-05-05T11:16:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T11:30:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r02","seed_target":"npc_acolyte","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T11:39:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r02c","seed_target":"alys_herbwife","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T11:48:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"p1585_s2_r02","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T11:56:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"p1585_s2_r02","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T12:08:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r02c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T12:16:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"p1585_s2_r02","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T12:21:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-05T12:29:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":12,"scenario_id":"scenario_2","ts":"2026-05-05T12:44:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":13,"scenario_id":"scenario_2","ts":"2026-05-05T12:54:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":14,"duration_sec":920,"ts":"2026-05-05T12:57:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T13:11:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r03","seed_target":"npc_fishwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T13:20:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r03c","seed_target":"miller_wife","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T13:29:00.000Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":3,"scenario_id":"scenario_2","difficulty":"Apprentice","shelf_life_ticks":120}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"p1585_s2_r03","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T13:37:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"p1585_s2_r03","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T13:49:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"p1585_s2_r03c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T13:57:00.000Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"p1585_s2_r03","seed_target":"alys_herbwife","subject":"Sister Maren","day":5,"scenario_id":"scenario_2","difficulty":"Apprentice"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":7,"scenario_id":"scenario_2","ts":"2026-05-05T14:12:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":8,"scenario_id":"scenario_2","ts":"2026-05-05T14:22:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":9,"duration_sec":730,"ts":"2026-05-05T14:25:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T14:39:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r04","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T14:48:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r04c","seed_target":"npc_innkeeper","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T14:57:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r04","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T15:05:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r04","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T15:17:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Inn Keeper","rumor_id":"p1585_s2_r04c","new_state":"BELIEVE","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T15:25:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":10,"scenario_id":"scenario_2","ts":"2026-05-05T15:40:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":11,"scenario_id":"scenario_2","ts":"2026-05-05T15:50:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":12,"duration_sec":850,"ts":"2026-05-05T15:53:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T16:07:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r05","seed_target":"npc_carpenter","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T16:16:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r05c","seed_target":"npc_washwoman","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T16:25:00.000Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":3,"scenario_id":"scenario_2","difficulty":"Apprentice","shelf_life_ticks":120}
+{"type":"npc_state_changed","npc_name":"Carpenter","rumor_id":"p1585_s2_r05","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T16:33:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Carpenter","rumor_id":"p1585_s2_r05","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T16:45:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Washwoman","rumor_id":"p1585_s2_r05c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T16:53:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"p1585_s2_r05","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T16:58:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-05T17:06:00.000Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"p1585_s2_r05","seed_target":"alys_herbwife","subject":"Sister Maren","day":12,"scenario_id":"scenario_2","difficulty":"Apprentice"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":14,"scenario_id":"scenario_2","ts":"2026-05-05T17:21:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":15,"scenario_id":"scenario_2","ts":"2026-05-05T17:31:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":16,"duration_sec":1050,"ts":"2026-05-05T17:34:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T17:48:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r06","seed_target":"npc_acolyte","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T17:57:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"p1585_s2_r06","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T18:05:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"p1585_s2_r06","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T18:10:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-05T18:18:00.000Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":4,"ts":"2026-05-05T18:28:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":4,"duration_sec":380,"ts":"2026-05-05T18:31:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T18:45:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r07","seed_target":"npc_merchant","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T18:54:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Merchant","rumor_id":"p1585_s2_r07","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T19:02:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"p1585_s2_r07","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T19:07:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-05T19:15:00.000Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":5,"ts":"2026-05-05T19:25:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":5,"duration_sec":410,"ts":"2026-05-05T19:28:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T19:42:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r08","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T19:51:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r08c","seed_target":"dockworker","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T20:00:00.000Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":3,"scenario_id":"scenario_2","difficulty":"Apprentice","shelf_life_ticks":120}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r08","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T20:08:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r08","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T20:20:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Dockworker","rumor_id":"p1585_s2_r08c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T20:28:00.000Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"p1585_s2_r08","seed_target":"alys_herbwife","subject":"Sister Maren","day":7,"scenario_id":"scenario_2","difficulty":"Apprentice"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":9,"scenario_id":"scenario_2","ts":"2026-05-05T20:43:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":10,"scenario_id":"scenario_2","ts":"2026-05-05T20:53:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":11,"duration_sec":810,"ts":"2026-05-05T20:56:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T21:10:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r09","seed_target":"npc_innkeeper","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T21:19:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r09c","seed_target":"tavern_regular","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T21:28:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Inn Keeper","rumor_id":"p1585_s2_r09","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T21:36:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Tavern Regular","rumor_id":"p1585_s2_r09c","new_state":"BELIEVE","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T21:44:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":24,"duration_sec":1560,"ts":"2026-05-05T21:47:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T22:01:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r10","seed_target":"miller_wife","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T22:10:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r10c","seed_target":"alys_herbwife","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T22:19:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"p1585_s2_r10","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T22:27:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"p1585_s2_r10","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-05T22:39:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r10c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T22:47:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":6,"scenario_id":"scenario_2","ts":"2026-05-05T23:02:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":7,"scenario_id":"scenario_2","ts":"2026-05-05T23:12:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":8,"duration_sec":700,"ts":"2026-05-05T23:15:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-05T23:29:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r11","seed_target":"npc_priest","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T23:38:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Priest","rumor_id":"p1585_s2_r11","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T23:46:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"p1585_s2_r11","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T23:51:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-05T23:59:00.000Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":5,"ts":"2026-05-06T00:09:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":5,"duration_sec":395,"ts":"2026-05-06T00:12:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T00:26:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r12","seed_target":"npc_carpenter","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T00:35:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r12c","seed_target":"npc_merchant","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T00:44:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Carpenter","rumor_id":"p1585_s2_r12","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T00:52:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Merchant","rumor_id":"p1585_s2_r12c","new_state":"BELIEVE","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T01:00:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":24,"duration_sec":1540,"ts":"2026-05-06T01:03:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T01:17:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r13","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T01:26:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r13c","seed_target":"npc_acolyte","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T01:35:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r13d","seed_target":"miller_wife","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T01:44:00.000Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":5,"scenario_id":"scenario_2","difficulty":"Apprentice","shelf_life_ticks":120}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r13","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T01:52:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r13","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T02:04:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"p1585_s2_r13c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T02:12:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"p1585_s2_r13d","new_state":"BELIEVE","day":5,"scenario_id":"scenario_2","ts":"2026-05-06T02:20:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"p1585_s2_r13","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T02:25:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-06T02:33:00.000Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"p1585_s2_r13","seed_target":"alys_herbwife","subject":"Sister Maren","day":14,"scenario_id":"scenario_2","difficulty":"Apprentice"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":16,"scenario_id":"scenario_2","ts":"2026-05-06T02:48:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":17,"scenario_id":"scenario_2","ts":"2026-05-06T02:58:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":18,"duration_sec":1120,"ts":"2026-05-06T03:01:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T03:15:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r14","seed_target":"npc_fishwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T03:24:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"p1585_s2_r14","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T03:32:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"p1585_s2_r14","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T03:37:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-06T03:45:00.000Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":5,"ts":"2026-05-06T03:55:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":5,"duration_sec":415,"ts":"2026-05-06T03:58:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T04:12:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r15","seed_target":"npc_innkeeper","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T04:21:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r15c","seed_target":"alys_herbwife","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T04:30:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Inn Keeper","rumor_id":"p1585_s2_r15","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T04:38:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Inn Keeper","rumor_id":"p1585_s2_r15","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T04:50:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r15c","new_state":"BELIEVE","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T04:58:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":8,"scenario_id":"scenario_2","ts":"2026-05-06T05:13:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":9,"scenario_id":"scenario_2","ts":"2026-05-06T05:23:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":10,"duration_sec":780,"ts":"2026-05-06T05:26:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T05:40:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r16","seed_target":"miller_wife","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T05:49:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r16c","seed_target":"dockworker","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T05:58:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"p1585_s2_r16","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T06:06:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Dockworker","rumor_id":"p1585_s2_r16c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T06:14:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":24,"duration_sec":1580,"ts":"2026-05-06T06:17:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T06:31:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r17","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T06:40:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r17c","seed_target":"npc_washwoman","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T06:49:00.000Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":3,"scenario_id":"scenario_2","difficulty":"Apprentice","shelf_life_ticks":120}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r17","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T06:57:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r17","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T07:09:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Washwoman","rumor_id":"p1585_s2_r17c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T07:17:00.000Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"p1585_s2_r17","seed_target":"alys_herbwife","subject":"Sister Maren","day":5,"scenario_id":"scenario_2","difficulty":"Apprentice"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":7,"scenario_id":"scenario_2","ts":"2026-05-06T07:32:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":8,"scenario_id":"scenario_2","ts":"2026-05-06T07:42:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":9,"duration_sec":720,"ts":"2026-05-06T07:45:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T07:59:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r18","seed_target":"npc_carpenter","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T08:08:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r18c","seed_target":"npc_acolyte","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T08:17:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Carpenter","rumor_id":"p1585_s2_r18","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T08:25:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"p1585_s2_r18c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T08:33:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"p1585_s2_r18","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T08:38:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-06T08:46:00.000Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_2","trigger_npc_id":"npc_maren_nun","fail_cause":"maren_grace_expired","day":6,"ts":"2026-05-06T08:56:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":6,"duration_sec":460,"ts":"2026-05-06T08:59:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T09:13:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r19","seed_target":"npc_fishwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T09:22:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r19c","seed_target":"npc_merchant","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T09:31:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"p1585_s2_r19","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T09:39:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"p1585_s2_r19","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T09:51:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Merchant","rumor_id":"p1585_s2_r19c","new_state":"BELIEVE","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T09:59:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":11,"scenario_id":"scenario_2","ts":"2026-05-06T10:14:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":12,"scenario_id":"scenario_2","ts":"2026-05-06T10:24:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":13,"duration_sec":890,"ts":"2026-05-06T10:27:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T10:41:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r20","seed_target":"npc_priest","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T10:50:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r20c","seed_target":"dockworker","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T10:59:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Priest","rumor_id":"p1585_s2_r20","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T11:07:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Dockworker","rumor_id":"p1585_s2_r20c","new_state":"BELIEVE","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T11:15:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":24,"duration_sec":1560,"ts":"2026-05-06T11:18:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T11:32:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r21","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T11:41:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r21c","seed_target":"miller_wife","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T11:50:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r21d","seed_target":"npc_innkeeper","day":5,"scenario_id":"scenario_2","ts":"2026-05-06T11:59:00.000Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":6,"scenario_id":"scenario_2","difficulty":"Apprentice","shelf_life_ticks":120}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r21","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T12:07:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r21","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T12:19:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"p1585_s2_r21c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T12:27:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Inn Keeper","rumor_id":"p1585_s2_r21d","new_state":"BELIEVE","day":6,"scenario_id":"scenario_2","ts":"2026-05-06T12:35:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"p1585_s2_r21","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T12:40:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":73,"delta":-5,"day":3,"scenario_id":"scenario_2","ts":"2026-05-06T12:48:00.000Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"p1585_s2_r21","seed_target":"alys_herbwife","subject":"Sister Maren","day":11,"scenario_id":"scenario_2","difficulty":"Apprentice"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":13,"scenario_id":"scenario_2","ts":"2026-05-06T13:03:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":14,"scenario_id":"scenario_2","ts":"2026-05-06T13:13:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":15,"duration_sec":980,"ts":"2026-05-06T13:16:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T13:30:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r22","seed_target":"npc_merchant","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T13:39:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r22c","seed_target":"npc_carpenter","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T13:48:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Merchant","rumor_id":"p1585_s2_r22","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T13:56:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Carpenter","rumor_id":"p1585_s2_r22c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T14:04:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":24,"duration_sec":1570,"ts":"2026-05-06T14:07:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T14:21:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r23","seed_target":"alys_herbwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T14:30:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r23c","seed_target":"npc_acolyte","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T14:39:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r23","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T14:47:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r23","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T14:59:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"p1585_s2_r23c","new_state":"BELIEVE","day":5,"scenario_id":"scenario_2","ts":"2026-05-06T15:07:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":9,"scenario_id":"scenario_2","ts":"2026-05-06T15:22:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":10,"scenario_id":"scenario_2","ts":"2026-05-06T15:32:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":11,"duration_sec":820,"ts":"2026-05-06T15:35:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T15:49:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r24","seed_target":"npc_washwoman","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T15:58:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r24c","seed_target":"npc_fishwife","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T16:07:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Washwoman","rumor_id":"p1585_s2_r24","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T16:15:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"p1585_s2_r24c","new_state":"BELIEVE","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T16:23:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"FAILED","day_reached":24,"duration_sec":1550,"ts":"2026-05-06T16:26:00.000Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Apprentice","ts":"2026-05-06T16:40:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r25","seed_target":"miller_wife","day":1,"scenario_id":"scenario_2","ts":"2026-05-06T16:49:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r25c","seed_target":"alys_herbwife","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T16:58:00.000Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"p1585_s2_r25d","seed_target":"dockworker","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T17:07:00.000Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":5,"scenario_id":"scenario_2","difficulty":"Apprentice","shelf_life_ticks":120}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"p1585_s2_r25","new_state":"BELIEVE","day":2,"scenario_id":"scenario_2","ts":"2026-05-06T17:15:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"p1585_s2_r25","new_state":"SPREAD","day":4,"scenario_id":"scenario_2","ts":"2026-05-06T17:27:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"p1585_s2_r25c","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-06T17:35:00.000Z"}
+{"type":"npc_state_changed","npc_name":"Dockworker","rumor_id":"p1585_s2_r25d","new_state":"BELIEVE","day":5,"scenario_id":"scenario_2","ts":"2026-05-06T17:43:00.000Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"p1585_s2_r25","seed_target":"alys_herbwife","subject":"Sister Maren","day":8,"scenario_id":"scenario_2","difficulty":"Apprentice"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":73,"to_score":64,"delta":-9,"day":10,"scenario_id":"scenario_2","ts":"2026-05-06T17:58:00.000Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":64,"to_score":52,"delta":-12,"day":11,"scenario_id":"scenario_2","ts":"2026-05-06T18:08:00.000Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Apprentice","outcome":"WON","day_reached":12,"duration_sec":840,"ts":"2026-05-06T18:11:00.000Z"}
