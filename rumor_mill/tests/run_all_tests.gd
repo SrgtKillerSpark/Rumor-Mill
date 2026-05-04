@@ -22,6 +22,8 @@ extends RefCounted
 ##                                          event when analytics disabled; positive control (SPA-1599)
 ##   • TestSpa1613EvidenceAcquired       — evidence_acquired NDJSON field shape for all 3 fire sites,
 ##                                          no double-emission guard, pre-setup queuing (SPA-1613)
+##   • TestSpa1614EvidenceUsedEmission   — evidence_used emission, field presence + values, disabled gate (SPA-1614)
+##   • SmokePhase2Evidence               — end-to-end Phase 2 smoke: 3 acquisitions + 1 usage vs SPA-1522 spec (SPA-1617)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
 ##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text,
@@ -295,7 +297,9 @@ const TestSpa970976Regressions = preload("res://tests/test_spa970_976_regression
 const TestSpa1106NewGameRegression = preload("res://tests/test_spa1106_new_game_regression.gd")
 const TestSpa1544NewGameStateIsolation = preload("res://tests/test_spa1544_new_game_state_isolation.gd")
 const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_analytics_disabled_gating.gd")
-const TestSpa1613EvidenceAcquired = preload("res://tests/test_spa1613_evidence_acquired.gd")
+const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evidence_acquired.gd")
+const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
+const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
 const TestStrategicOverview = preload("res://tests/test_strategic_overview.gd")
@@ -365,6 +369,12 @@ func _init() -> void:
 
 	print("\n── SPA-1613 evidence_acquired field shape + fire sites ──")
 	TestSpa1613EvidenceAcquired.new().run()
+
+	print("\n── SPA-1614 evidence_used emission + shape ──")
+	TestSpa1614EvidenceUsedEmission.new().run()
+
+	print("\n── SPA-1617 Phase 2 evidence telemetry smoke (end-to-end) ──")
+	SmokePhase2Evidence.new().run()
 
 	print("\n── TutorialSystem ──")
 	TestTutorialSystem.new().run()

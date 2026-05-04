@@ -1,0 +1,4 @@
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"observe_building","day":0,"scenario_id":"scenario_2","difficulty":"apprentice"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":0,"scenario_id":"scenario_2","difficulty":"apprentice"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","day":0,"scenario_id":"scenario_2","difficulty":"apprentice"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"SCANDAL","seed_target":"npc_maren_nun","subject":"npc_calder_noble","day":0,"scenario_id":"scenario_2","difficulty":"apprentice"}
