@@ -244,6 +244,58 @@ func log_evidence_used(
 	})
 
 
+## SPA-1574: Log evidence confidence decay tick (fires each day evidence ages).
+## Called by the evidence-economy system at end-of-day processing.
+func log_evidence_decay_tick(evidence_type: String, prev_confidence: float, new_confidence: float) -> void:
+	if _analytics_logger == null:
+		_enqueue("log_evidence_decay_tick", [evidence_type, prev_confidence, new_confidence])
+		return
+	var day: int = _day_night.current_day if _day_night != null and "current_day" in _day_night else 0
+	_analytics_logger.log_event("evidence_decay_tick", {
+		"evidence_type":    evidence_type,
+		"prev_confidence":  prev_confidence,
+		"new_confidence":   new_confidence,
+		"day":             day,
+		"scenario_id":     _analytics_scenario_id,
+		"difficulty":      GameState.selected_difficulty,
+	})
+
+
+## SPA-1574: Log evidence confidence threshold crossing (e.g. usable→stale).
+## Called by the evidence-economy system when confidence crosses a tier boundary.
+func log_evidence_threshold_cross(evidence_type: String, direction: String, threshold: float, confidence: float) -> void:
+	if _analytics_logger == null:
+		_enqueue("log_evidence_threshold_cross", [evidence_type, direction, threshold, confidence])
+		return
+	var day: int = _day_night.current_day if _day_night != null and "current_day" in _day_night else 0
+	_analytics_logger.log_event("evidence_threshold_cross", {
+		"evidence_type":  evidence_type,
+		"direction":      direction,
+		"threshold":      threshold,
+		"confidence":     confidence,
+		"day":           day,
+		"scenario_id":   _analytics_scenario_id,
+		"difficulty":    GameState.selected_difficulty,
+	})
+
+
+## SPA-1574: Log evidence target shift (player re-assigns evidence to a different NPC).
+## Called by rumor_panel when the player moves evidence from one seed target to another.
+func log_evidence_target_shift(evidence_type: String, from_target: String, to_target: String) -> void:
+	if _analytics_logger == null:
+		_enqueue("log_evidence_target_shift", [evidence_type, from_target, to_target])
+		return
+	var day: int = _day_night.current_day if _day_night != null and "current_day" in _day_night else 0
+	_analytics_logger.log_event("evidence_target_shift", {
+		"evidence_type":  evidence_type,
+		"from_target":    from_target,
+		"to_target":      to_target,
+		"day":           day,
+		"scenario_id":   _analytics_scenario_id,
+		"difficulty":    GameState.selected_difficulty,
+	})
+
+
 func _on_analytics_scenario_resolved(
 		scenario_id: int,
 		state: ScenarioManager.ScenarioState

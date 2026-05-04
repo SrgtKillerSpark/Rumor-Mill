@@ -1,0 +1,46 @@
+{"type":"scenario_selected","scenario_id":"S2","difficulty":"Normal","ts":"2026-05-03T09:00:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Merewyn","claim_id":"rumor_p2_001","seed_target":"npc_aldric_merchant","day":1,"scenario_id":"S2","ts":"2026-05-03T09:05:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S2","ts":"2026-05-03T09:06:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S2","ts":"2026-05-03T09:10:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"observe_building","day":2,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","day":3,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Aldric Merchant","rumor_id":"rumor_p2_001","new_state":"BELIEVE","day":3,"scenario_id":"S2","ts":"2026-05-03T09:20:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":3,"scenario_id":"S2","ts":"2026-05-03T09:22:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":4,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"reputation_delta","npc_id":"npc_sister_merewyn","from_score":80,"to_score":73,"delta":-7,"day":3,"scenario_id":"S2","ts":"2026-05-03T09:25:00Z"}
+{"type":"npc_state_changed","npc_name":"Aldric Merchant","rumor_id":"rumor_p2_001","new_state":"SPREAD","day":4,"scenario_id":"S2","ts":"2026-05-03T09:30:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"rumor_p2_001","seed_target":"npc_aldric_merchant","subject":"Sister Merewyn","day":5,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Sister Merewyn","claim_id":"rumor_p2_002","seed_target":"npc_maren_nun","day":5,"scenario_id":"S2","ts":"2026-05-03T09:35:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":5,"scenario_id":"S2","ts":"2026-05-03T09:36:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":6,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"rumor_p2_002","new_state":"REJECT","day":6,"scenario_id":"S2","ts":"2026-05-03T09:40:00Z"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"rumor_p2_002","seed_target":"npc_maren_nun","subject":"Sister Merewyn","day":7,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"reputation_delta","npc_id":"npc_sister_merewyn","from_score":73,"to_score":64,"delta":-9,"day":7,"scenario_id":"S2","ts":"2026-05-03T09:45:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":7,"scenario_id":"S2","ts":"2026-05-03T09:46:00Z"}
+{"type":"npc_state_changed","npc_name":"Priest","rumor_id":"rumor_p2_002","new_state":"BELIEVE","day":8,"scenario_id":"S2","ts":"2026-05-03T09:50:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"rumor_p2_002","seed_target":"npc_maren_nun","subject":"Sister Merewyn","day":9,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"reputation_delta","npc_id":"npc_sister_merewyn","from_score":64,"to_score":55,"delta":-9,"day":9,"scenario_id":"S2","ts":"2026-05-03T09:55:00Z"}
+{"type":"scenario_ended","scenario_id":"S2","difficulty":"Normal","outcome":"WON","day_reached":10,"duration_sec":900,"ts":"2026-05-03T10:00:00Z"}
+{"type":"scenario_selected","scenario_id":"S3","difficulty":"Hard","ts":"2026-05-03T10:30:00Z"}
+{"type":"rumor_seeded","subject_name":"Chancellor Voss","claim_id":"rumor_p2_003","seed_target":"npc_scribe","day":1,"scenario_id":"S3","ts":"2026-05-03T10:35:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S3","ts":"2026-05-03T10:36:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":2,"scenario_id":"S3","ts":"2026-05-03T10:40:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":2,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","day":4,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"npc_state_changed","npc_name":"Scribe","rumor_id":"rumor_p2_003","new_state":"BELIEVE","day":3,"scenario_id":"S3","ts":"2026-05-03T10:45:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":false,"day":4,"scenario_id":"S3","ts":"2026-05-03T10:50:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"rumor_p2_003","seed_target":"npc_scribe","subject":"Chancellor Voss","day":5,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"reputation_delta","npc_id":"npc_chancellor_voss","from_score":75,"to_score":67,"delta":-8,"day":5,"scenario_id":"S3","ts":"2026-05-03T10:55:00Z"}
+{"type":"npc_state_changed","npc_name":"Scribe","rumor_id":"rumor_p2_003","new_state":"SPREAD","day":6,"scenario_id":"S3","ts":"2026-05-03T11:00:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"observe_building","day":8,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":8,"scenario_id":"S3","ts":"2026-05-03T11:05:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":9,"scenario_id":"S3","ts":"2026-05-03T11:10:00Z"}
+{"type":"reputation_delta","npc_id":"npc_chancellor_voss","from_score":67,"to_score":60,"delta":-7,"day":10,"scenario_id":"S3","ts":"2026-05-03T11:15:00Z"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"rumor_p2_003","seed_target":"npc_scribe","subject":"Chancellor Voss","day":12,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"evidence_decay_tick","evidence_type":"forged_document","prev_confidence":1.0,"new_confidence":0.85,"day":6,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"evidence_decay_tick","evidence_type":"witness_account","prev_confidence":0.9,"new_confidence":0.72,"day":7,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"evidence_threshold_cross","evidence_type":"witness_account","direction":"down","threshold":0.75,"confidence":0.72,"day":7,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"evidence_decay_tick","evidence_type":"forged_document","prev_confidence":0.85,"new_confidence":0.70,"day":9,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"evidence_threshold_cross","evidence_type":"forged_document","direction":"down","threshold":0.75,"confidence":0.70,"day":9,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"evidence_target_shift","evidence_type":"incriminating_artifact","from_target":"npc_scribe","to_target":"npc_chancellor_voss","day":10,"scenario_id":"S3","difficulty":"Hard"}
+{"type":"scenario_ended","scenario_id":"S3","difficulty":"Hard","outcome":"FAILED","day_reached":15,"duration_sec":1200,"ts":"2026-05-03T11:30:00Z"}

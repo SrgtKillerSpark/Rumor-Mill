@@ -10,8 +10,8 @@
  * section keyed to the thresholds in docs/post-launch-telemetry-plan.md
  * (SPA-1140).
  *
- * KPIs 11 and 12 stub gracefully until tutorial_step_completed and
- * settings_changed events are wired in by the Lead Engineer task.
+ * KPI 11 aggregates tutorial_step_completed events (wired in SPA-1553).
+ * KPI 12 aggregates settings_changed events (wired in SPA-1553).
  *
  * No external dependencies — stdlib only.
  */
@@ -540,6 +540,121 @@ function evidenceUsedAgg(events, acqResult) {
   };
 }
 
+// ── Phase 2: Evidence Decay Tick Aggregation ─────────────────────────────────
+//
+// Processes `evidence_decay_tick` events (SPA-1574).
+// Returns:
+//   ticksPerType   – count of decay ticks per evidence_type × scenario_id
+//   avgDecayRate   – mean (prev_confidence - new_confidence) per type
+//   dayDistribution – histogram of day when decay ticks fire per type
+
+function evidenceDecayTickAgg(events) {
+  const tickMap = {};
+  const decayRates = {};
+  const dayHistMap = {};
+
+  for (const ev of events) {
+    if (ev.type !== 'evidence_decay_tick') continue;
+    const t   = String(ev.evidence_type || 'unknown');
+    const s   = String(ev.scenario_id   || 'unknown');
+    const key = `${t}|${s}`;
+
+    if (!tickMap[key]) tickMap[key] = { evidence_type: t, scenario_id: s, count: 0 };
+    tickMap[key].count++;
+
+    if (!decayRates[t]) decayRates[t] = [];
+    const rate = (ev.prev_confidence || 0) - (ev.new_confidence || 0);
+    decayRates[t].push(rate);
+
+    if (!dayHistMap[t]) dayHistMap[t] = {};
+    const day = String(ev.day ?? 'unknown');
+    dayHistMap[t][day] = (dayHistMap[t][day] || 0) + 1;
+  }
+
+  const avgDecayRate = {};
+  for (const [t, rates] of Object.entries(decayRates)) {
+    avgDecayRate[t] = rates.reduce((a, b) => a + b, 0) / rates.length;
+  }
+
+  return {
+    ticksPerType: Object.values(tickMap).sort(
+      (a, b) => a.evidence_type.localeCompare(b.evidence_type) || a.scenario_id.localeCompare(b.scenario_id)
+    ),
+    avgDecayRate,
+    dayDistribution: dayHistMap,
+  };
+}
+
+// ── Phase 2: Evidence Threshold Cross Aggregation ────────────────────────────
+//
+// Processes `evidence_threshold_cross` events (SPA-1574).
+// Returns:
+//   crossings    – count per evidence_type × direction × scenario_id
+//   thresholdHit – count per threshold value (which tier boundaries are crossed most)
+
+function evidenceThresholdCrossAgg(events) {
+  const crossMap = {};
+  const thresholdHit = {};
+
+  for (const ev of events) {
+    if (ev.type !== 'evidence_threshold_cross') continue;
+    const t   = String(ev.evidence_type || 'unknown');
+    const dir = String(ev.direction     || 'unknown');
+    const s   = String(ev.scenario_id   || 'unknown');
+    const key = `${t}|${dir}|${s}`;
+
+    if (!crossMap[key]) crossMap[key] = { evidence_type: t, direction: dir, scenario_id: s, count: 0 };
+    crossMap[key].count++;
+
+    const thresh = String(ev.threshold ?? 'unknown');
+    thresholdHit[thresh] = (thresholdHit[thresh] || 0) + 1;
+  }
+
+  return {
+    crossings: Object.values(crossMap).sort(
+      (a, b) => a.evidence_type.localeCompare(b.evidence_type) ||
+                a.direction.localeCompare(b.direction) ||
+                a.scenario_id.localeCompare(b.scenario_id)
+    ),
+    thresholdHit,
+  };
+}
+
+// ── Phase 2: Evidence Target Shift Aggregation ───────────────────────────────
+//
+// Processes `evidence_target_shift` events (SPA-1574).
+// Returns:
+//   shifts       – count per evidence_type × scenario_id
+//   flowPairs    – count per (from_target → to_target) pair
+
+function evidenceTargetShiftAgg(events) {
+  const shiftMap = {};
+  const flowMap  = {};
+
+  for (const ev of events) {
+    if (ev.type !== 'evidence_target_shift') continue;
+    const t   = String(ev.evidence_type || 'unknown');
+    const s   = String(ev.scenario_id   || 'unknown');
+    const key = `${t}|${s}`;
+
+    if (!shiftMap[key]) shiftMap[key] = { evidence_type: t, scenario_id: s, count: 0 };
+    shiftMap[key].count++;
+
+    const from = String(ev.from_target || 'unknown');
+    const to   = String(ev.to_target   || 'unknown');
+    const flowKey = `${from}→${to}`;
+    if (!flowMap[flowKey]) flowMap[flowKey] = { from_target: from, to_target: to, count: 0 };
+    flowMap[flowKey].count++;
+  }
+
+  return {
+    shifts: Object.values(shiftMap).sort(
+      (a, b) => a.evidence_type.localeCompare(b.evidence_type) || a.scenario_id.localeCompare(b.scenario_id)
+    ),
+    flowPairs: Object.values(flowMap).sort((a, b) => b.count - a.count),
+  };
+}
+
 // ── Watchlist: Maren-fail ratio (2-A / 2-B) ──────────────────────────────────
 //
 // A "Maren-fail" is an S2 FAILED session where Sister Maren caused the loss.
@@ -786,6 +901,9 @@ function buildDigest(events, sessions, filePaths) {
   const k12r = kpi12(sessions);
   const evAcq  = evidenceAcquiredAgg(events);
   const evUsed = evidenceUsedAgg(events, evAcq);
+  const evDecay     = evidenceDecayTickAgg(events);
+  const evThreshold = evidenceThresholdCrossAgg(events);
+  const evShift     = evidenceTargetShiftAgg(events);
   const flags = redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, k11r, sessions);
   const wlMaren  = wlMarenFail(sessions);
   const wlCalder = wlCalderDay15(sessions);
@@ -1078,6 +1196,51 @@ function buildDigest(events, sessions, filePaths) {
     out.push('');
   }
 
+  // Phase 2: Evidence Economy
+  out.push(`\n## Phase 2 — Evidence Economy (SPA-1574)\n`);
+  out.push(`_Decay ticks, threshold crossings, and target shifts._\n`);
+
+  if (!evDecay.ticksPerType.length && !evThreshold.crossings.length && !evShift.shifts.length) {
+    out.push(`_No Phase 2 evidence-economy events in dataset._\n`);
+  } else {
+    if (evDecay.ticksPerType.length) {
+      out.push(`### Decay Ticks\n`);
+      out.push(`| Evidence Type | Scenario | Ticks | Avg Decay/Tick |`);
+      out.push(`|---------------|----------|-------|----------------|`);
+      for (const row of evDecay.ticksPerType) {
+        const avg = evDecay.avgDecayRate[row.evidence_type];
+        out.push(`| ${row.evidence_type} | ${row.scenario_id} | ${row.count} | ${avg != null ? avg.toFixed(3) : 'N/A'} |`);
+      }
+      out.push('');
+    }
+
+    if (evThreshold.crossings.length) {
+      out.push(`### Threshold Crossings\n`);
+      out.push(`| Evidence Type | Direction | Scenario | Count |`);
+      out.push(`|---------------|-----------|----------|-------|`);
+      for (const row of evThreshold.crossings) {
+        out.push(`| ${row.evidence_type} | ${row.direction} | ${row.scenario_id} | ${row.count} |`);
+      }
+      out.push(`\nThreshold hit counts: ${JSON.stringify(evThreshold.thresholdHit)}\n`);
+    }
+
+    if (evShift.shifts.length) {
+      out.push(`### Target Shifts\n`);
+      out.push(`| Evidence Type | Scenario | Shifts |`);
+      out.push(`|---------------|----------|--------|`);
+      for (const row of evShift.shifts) {
+        out.push(`| ${row.evidence_type} | ${row.scenario_id} | ${row.count} |`);
+      }
+      if (evShift.flowPairs.length) {
+        out.push(`\n**Flow pairs:**`);
+        for (const fp of evShift.flowPairs) {
+          out.push(`  ${fp.from_target} → ${fp.to_target}: ${fp.count}`);
+        }
+      }
+      out.push('');
+    }
+  }
+
   // Red Flags
   out.push(`---\n\n## 🚩 Red Flags\n`);
   if (!flags.length) {
@@ -1210,6 +1373,9 @@ function buildJson(events, sessions, filePaths) {
   const k12r = kpi12(sessions);
   const evAcq  = evidenceAcquiredAgg(events);
   const evUsed = evidenceUsedAgg(events, evAcq);
+  const evDecay     = evidenceDecayTickAgg(events);
+  const evThreshold = evidenceThresholdCrossAgg(events);
+  const evShift     = evidenceTargetShiftAgg(events);
   const flags = redFlags(k1r, k2r, k3r, k4r, k5r, k6r, k7r, k8r, k11r, sessions);
   const wlMaren  = wlMarenFail(sessions);
   const wlCalder = wlCalderDay15(sessions);
@@ -1239,6 +1405,9 @@ function buildJson(events, sessions, filePaths) {
     kpi12_settings_touched: k12r,
     evidence_acquired: evAcq,
     evidence_used: evUsed,
+    evidence_decay_tick: evDecay,
+    evidence_threshold_cross: evThreshold,
+    evidence_target_shift: evShift,
     watchlist: {
       maren_fail: wlMaren,
       calder_day15: wlCalder,
