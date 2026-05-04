@@ -100,12 +100,13 @@ func _on_setup_extra(world: Node2D) -> void:
 func _build_ui() -> void:
 	var hbox := _make_panel("Scenario2Panel", HUD_PANEL_HEIGHT)
 
-	# Scenario label.
+	# Scenario label — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 2:"
+	title_lbl.text = "Scenario 2 — Day 1 — Morning"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	hbox.add_child(title_lbl)
+	_title_lbl = title_lbl
 
 	# Believer count + progress bar.
 	var count_vbox := VBoxContainer.new()

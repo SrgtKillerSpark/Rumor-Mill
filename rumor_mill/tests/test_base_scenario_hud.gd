@@ -2,10 +2,11 @@
 ##
 ## Covers:
 ##   • Shared palette constants: C_PANEL_BG, C_HEADING, C_BODY, C_WIN, C_FAIL, C_NEUTRAL
-##   • Initial instance state: _world_ref, _day_night_ref, _result_lbl, _days_lbl, _diff_lbl
+##   • Initial instance state: _world_ref, _day_night_ref, _result_lbl, _days_lbl, _diff_lbl, _title_lbl
 ##   • _has_world_deps(): returns false when _world_ref is null
 ##   • _scenario_number(): base returns 0
 ##   • _display_name(): snake_case → Title Case conversion
+##   • _phase_for_hour(): returns correct phase string for each time band
 ##
 ## BaseScenarioHud extends CanvasLayer. _ready() is NOT called (node is not
 ## added to the scene tree), so UI nodes built by _build_ui() remain null.
@@ -42,6 +43,7 @@ func run() -> void:
 		"test_initial_result_lbl_null",
 		"test_initial_days_lbl_null",
 		"test_initial_diff_lbl_null",
+		"test_initial_title_lbl_null",
 		# _has_world_deps()
 		"test_has_world_deps_false_when_world_null",
 		# _scenario_number()
@@ -51,6 +53,12 @@ func run() -> void:
 		"test_display_name_two_words",
 		"test_display_name_three_words",
 		"test_display_name_no_underscores",
+		# _phase_for_hour()
+		"test_phase_for_hour_night_pre_dawn",
+		"test_phase_for_hour_morning",
+		"test_phase_for_hour_afternoon",
+		"test_phase_for_hour_evening",
+		"test_phase_for_hour_night_late",
 	]
 
 	for method_name in tests:
@@ -146,6 +154,13 @@ static func test_initial_diff_lbl_null() -> bool:
 	return ok
 
 
+static func test_initial_title_lbl_null() -> bool:
+	var h := _make_hud()
+	var ok := h._title_lbl == null
+	h.free()
+	return ok
+
+
 # ── _has_world_deps() ─────────────────────────────────────────────────────────
 
 ## With _world_ref == null the guard must return false immediately.
@@ -192,5 +207,42 @@ static func test_display_name_three_words() -> bool:
 static func test_display_name_no_underscores() -> bool:
 	var h := _make_hud()
 	var ok := h._display_name("marta") == "Marta"
+	h.free()
+	return ok
+
+
+# ── _phase_for_hour() ────────────────────────────────────────────────────────
+
+static func test_phase_for_hour_night_pre_dawn() -> bool:
+	var h := _make_hud()
+	var ok := h._phase_for_hour(3) == "Night"
+	h.free()
+	return ok
+
+
+static func test_phase_for_hour_morning() -> bool:
+	var h := _make_hud()
+	var ok := h._phase_for_hour(8) == "Morning"
+	h.free()
+	return ok
+
+
+static func test_phase_for_hour_afternoon() -> bool:
+	var h := _make_hud()
+	var ok := h._phase_for_hour(14) == "Afternoon"
+	h.free()
+	return ok
+
+
+static func test_phase_for_hour_evening() -> bool:
+	var h := _make_hud()
+	var ok := h._phase_for_hour(17) == "Evening"
+	h.free()
+	return ok
+
+
+static func test_phase_for_hour_night_late() -> bool:
+	var h := _make_hud()
+	var ok := h._phase_for_hour(22) == "Night"
 	h.free()
 	return ok

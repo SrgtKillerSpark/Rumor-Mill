@@ -35,14 +35,15 @@ func _scenario_number() -> int:
 func _build_ui() -> void:
 	var hbox := _make_panel("Scenario1Panel", 72)
 
-	# Scenario label.
+	# Scenario label — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 1:"
+	title_lbl.text = "Scenario 1 — Day 1 — Morning"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	title_lbl.tooltip_text = "The Alderman's Ruin — ruin Lord Edric Fenn's reputation before the tax rolls are signed."
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
+	_title_lbl = title_lbl
 
 	# Rep score + bar.
 	var score_vbox := VBoxContainer.new()

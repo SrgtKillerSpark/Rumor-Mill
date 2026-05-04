@@ -50,14 +50,15 @@ func _on_setup_extra(world: Node2D) -> void:
 func _build_ui() -> void:
 	var hbox := _make_panel("Scenario5Panel", 78, 14)
 
-	# Title.
+	# Title — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 5:"
+	title_lbl.text = "Scenario 5 — Day 1 — Morning"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	title_lbl.tooltip_text = "The Election — get Aldric Vane elected alderman. He must reach 65+ and be highest; both rivals below 45."
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
+	_title_lbl = title_lbl
 
 	# Aldric track (patron's candidate — boost).
 	var aldric_vbox := VBoxContainer.new()

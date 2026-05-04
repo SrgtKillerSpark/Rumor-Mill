@@ -41,6 +41,9 @@ var _day_night_ref:   Node         = null
 var _result_lbl:      Label        = null
 var _days_lbl:        Label        = null
 var _diff_lbl:        Label        = null
+## Scenario title label — set by each subclass _build_ui(). Updated each tick
+## to show "Scenario N — Day X — Phase" via _update_title().
+var _title_lbl:       Label        = null
 ## Shared toast area anchored just below the main HUD panel. Subclass HUDs add
 ## toast Panels as children; VBoxContainer stacks them vertically. Populated by
 ## _make_panel() so it is always ready before _build_ui() appends toasts.
@@ -65,6 +68,7 @@ func setup(world: Node2D, day_night: Node) -> void:
 		world.scenario_manager.scenario_resolved.connect(_on_scenario_resolved)
 	_on_setup_extra(world)
 	_refresh()
+	_update_title()
 
 
 ## Override in subclasses that need extra signal wiring (S3: rival; S4: inquisitor).
@@ -241,6 +245,34 @@ func _display_name(npc_id: String) -> String:
 	return npc_id.replace("_", " ").capitalize()
 
 
+## Return the named phase for the given hour-of-day tick.
+## Mirrors day_night_cycle._get_phase_name() boundaries.
+static func _phase_for_hour(hour: int) -> String:
+	if hour >= 20:
+		return "Night"
+	elif hour >= 16:
+		return "Evening"
+	elif hour >= 12:
+		return "Afternoon"
+	elif hour >= 6:
+		return "Morning"
+	else:
+		return "Night"
+
+
+## Update _title_lbl to "Scenario N — Day X — Phase". No-op when label or
+## day_night ref is missing (e.g. during unit tests without a scene tree).
+func _update_title() -> void:
+	if _title_lbl == null or _day_night_ref == null:
+		return
+	var day: int  = _day_night_ref.current_day
+	var tick: int = _day_night_ref.current_tick
+	var tpd: int  = _day_night_ref.ticks_per_day if _day_night_ref.ticks_per_day > 0 else 24
+	var hour: int = tick % tpd
+	var phase: String = _phase_for_hour(hour)
+	_title_lbl.text = "Scenario %d — Day %d — %s" % [_scenario_number(), day, phase]
+
+
 ## Build a small difficulty badge anchored to the top-right corner.
 ## Displays the active difficulty preset so the player can see it during play.
 func _build_difficulty_badge() -> void:
@@ -274,6 +306,7 @@ func _build_difficulty_badge() -> void:
 # ── Signal handlers ──────────────────────────────────────────────────────────
 
 func _on_game_tick(_tick: int) -> void:
+	_update_title()
 	_refresh()
 
 

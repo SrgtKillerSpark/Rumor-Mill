@@ -82,14 +82,15 @@ func _on_setup_extra(world: Node2D) -> void:
 func _build_ui() -> void:
 	var hbox := _make_panel("Scenario6Panel", 72)
 
-	# Title.
+	# Title — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 6:"
+	title_lbl.text = "Scenario 6 — Day 1 — Morning"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	title_lbl.tooltip_text = "The Merchant's Debt — expose Aldric Vane (rep \u2264 %d) while protecting Marta Coin (rep \u2265 %d). Heat ceiling is %d." % [ScenarioConfig.S6_WIN_ALDRIC_MAX, ScenarioConfig.S6_WIN_MARTA_MIN, int(ScenarioConfig.S6_EXPOSED_HEAT)]
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
+	_title_lbl = title_lbl
 
 	# Aldric track (target — expose / undermine).
 	var aldric_vbox := VBoxContainer.new()

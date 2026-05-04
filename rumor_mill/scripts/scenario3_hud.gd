@@ -41,12 +41,13 @@ func _on_setup_extra(world: Node2D) -> void:
 func _build_ui() -> void:
 	var hbox := _make_panel("Scenario3Panel", 58)
 
-	# Scenario label.
+	# Scenario label — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 3:"
+	title_lbl.text = "Scenario 3 — Day 1 — Morning"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	hbox.add_child(title_lbl)
+	_title_lbl = title_lbl
 
 	# Calder track.
 	var calder_vbox := VBoxContainer.new()

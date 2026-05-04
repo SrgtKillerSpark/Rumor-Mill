@@ -94,13 +94,15 @@ func _build_ui() -> void:
 	title_vbox.add_theme_constant_override("separation", 2)
 	hbox.add_child(title_vbox)
 
+	# Scenario label — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 4:"
+	title_lbl.text = "Scenario 4 — Day 1 — Morning"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	title_lbl.tooltip_text = "The Holy Inquisition — keep all three accused above 48 reputation for 20 days. Below %d = instant fail." % ScenarioConfig.S4_FAIL_REP_BELOW
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	title_vbox.add_child(title_lbl)
+	_title_lbl = title_lbl
 
 	# Shield badge — sky-blue accent marking this as a defense scenario.
 	var shield_badge := Label.new()
