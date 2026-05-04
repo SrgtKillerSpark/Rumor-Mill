@@ -151,7 +151,9 @@ function parseAutoloads(projectGodotPath) {
 }
 
 // ── Collect all .gd files recursively ────────────────────────────────────────
-function findGdFiles(dir) {
+// excludeAddons=true → skip addons/ directory (for lint targets)
+// excludeAddons=false → include addons/ so class_names from plugins are known
+function findGdFiles(dir, excludeAddons = true) {
   const results = [];
   function walk(current) {
     let entries;
@@ -159,6 +161,7 @@ function findGdFiles(dir) {
     catch { return; }
     for (const e of entries) {
       if (e.name.startsWith('.') || e.name === 'fixtures') continue;
+      if (excludeAddons && e.name === 'addons') continue;
       const full = path.join(current, e.name);
       if (e.isDirectory()) { walk(full); }
       else if (e.isFile() && e.name.endsWith('.gd')) { results.push(full); }
@@ -583,12 +586,13 @@ console.log(`  Project: ${PROJECT_DIR}`);
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
 const autoloads     = parseAutoloads(PROJECT_GODOT);
-const gdFiles       = findGdFiles(PROJECT_DIR);
-const knownClasses  = collectClassNames(gdFiles);
+const gdFiles       = findGdFiles(PROJECT_DIR);           // lint targets (no addons)
+const allGdFiles    = findGdFiles(PROJECT_DIR, false);    // all files incl. addons for class lookup
+const knownClasses  = collectClassNames(allGdFiles);
 
 // Collect inner classes and named enums from every .gd file for check 3
 const allLocalTypes = new Set();
-for (const fp of gdFiles) {
+for (const fp of allGdFiles) {
   let text;
   try { text = fs.readFileSync(fp, 'utf8'); } catch { continue; }
   for (const name of collectFileLocalTypes(text.split('\n'))) {

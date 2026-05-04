@@ -37,7 +37,9 @@ enum ChainType { NONE, SAME_TYPE, ESCALATION, CONTRADICTION }
 
 # Escalation pairs: seeding the value type when the key type is already active
 # on the same subject triggers an escalation chain.
-const ESCALATION_PAIRS: Dictionary = {
+# Declared as var (not const) — GDScript cannot use cross-class enum values
+# as const dictionary keys in all Godot 4.x versions (parse error in 4.3).
+var ESCALATION_PAIRS: Dictionary = {
 	Rumor.ClaimType.SCANDAL:  Rumor.ClaimType.HERESY,
 	Rumor.ClaimType.ILLNESS:  Rumor.ClaimType.DEATH,
 }

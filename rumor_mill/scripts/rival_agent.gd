@@ -14,16 +14,12 @@ class_name RivalAgent
 signal rival_acted(day: int, claim_type: String, subject_id: String)
 ## Emitted when the player successfully disrupts the rival.
 signal rival_disrupted(day: int)
-## SPA-868: Emitted when the rival degrades an NPC's belief by one tier.
-signal belief_degraded(day: int, npc_id: String, old_state: int, new_state: int)
 
 const TOMAS_REEVE_ID := "tomas_reeve"
 const CALDER_FENN_ID := "calder_fenn"
 
 ## Number of extra cooldown days added while a disruption is active.
 const DISRUPTION_COOLDOWN_BONUS := 3
-## SPA-874: Maximum disruption uses per scenario (charges are NOT dawn-refreshed).
-const MAX_DISRUPT_CHARGES := 3
 
 var _active: bool = false
 var _last_seed_day: int = 0
@@ -31,19 +27,10 @@ var _alternate_flag: bool = false  # flips each seed during days 8–15
 
 ## Days remaining on the current disruption effect (0 = no disruption).
 var _disruption_days_remaining: int = 0
-## SPA-874: Remaining one-time disruption charges for this scenario run.
-var disrupt_charges_remaining: int = MAX_DISRUPT_CHARGES
 
 ## Difficulty modifier applied to every cooldown tier (positive = slower rival).
 ## Set by World._apply_active_scenario() before activate() is called.
 var cooldown_offset: int = 0
-
-## SPA-868: Pre-computed next degradation target NPC id (set at end of each tick).
-## Empty if no valid target exists. Revealed to player via scout action.
-var _next_degrade_target_id: String = ""
-
-## SPA-868: Last action description for Journal timeline integration.
-var last_action_description: String = ""
 
 
 func activate() -> void:
@@ -51,9 +38,6 @@ func activate() -> void:
 	_last_seed_day = 0
 	_alternate_flag = false
 	_disruption_days_remaining = 0
-	_next_degrade_target_id = ""
-	last_action_description = ""
-	disrupt_charges_remaining = MAX_DISRUPT_CHARGES  # SPA-874: reset charges on scenario start
 
 
 ## Called once per in-game day from World._on_day_changed().
@@ -65,19 +49,11 @@ func tick(current_day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
 	# Decay disruption effect one day at a time.
 	if _disruption_days_remaining > 0:
 		_disruption_days_remaining -= 1
-
-	# SPA-868: Daily belief degradation — rival undermines one NPC's belief each day.
-	_degrade_one_belief(current_day, world)
-
 	var cooldown := _get_cooldown(current_day)
 	if current_day - _last_seed_day < cooldown:
-		# Pre-compute next degradation target for scouting.
-		_next_degrade_target_id = _pick_degrade_target(world)
 		return
 	_seed_counter_rumor(current_day, world, scenario_mgr)
 	_last_seed_day = current_day
-	# Pre-compute next degradation target for scouting.
-	_next_degrade_target_id = _pick_degrade_target(world)
 
 
 func _get_cooldown(day: int) -> int:
@@ -96,22 +72,22 @@ func _get_cooldown(day: int) -> int:
 
 ## Apply a counter-intel disruption that slows the rival for DISRUPTION_COOLDOWN_BONUS days.
 ## Costs the caller one recon action (checked and spent by the caller before calling this).
-## Returns false if a disruption is already active, the rival hasn't acted yet, or no
-## charges remain (SPA-874: limited to MAX_DISRUPT_CHARGES uses per scenario).
+## Returns false if a disruption is already active or the rival hasn't acted yet.
 func apply_disruption(current_day: int) -> bool:
-	if not can_be_disrupted():
+	if not _active:
 		return false
-	disrupt_charges_remaining -= 1  # SPA-874: consume one charge
+	if _last_seed_day == 0:
+		return false  # Rival hasn't acted yet — nothing concrete to disrupt
+	if _disruption_days_remaining > 0:
+		return false  # Already disrupted; wait for it to expire
 	_disruption_days_remaining = DISRUPTION_COOLDOWN_BONUS
 	rival_disrupted.emit(current_day)
 	return true
 
 
 ## Returns true when the rival can currently be disrupted by the player.
-## SPA-874: Also requires at least one charge remaining.
 func can_be_disrupted() -> bool:
-	return _active and _last_seed_day > 0 and _disruption_days_remaining <= 0 \
-		and disrupt_charges_remaining > 0
+	return _active and _last_seed_day > 0 and _disruption_days_remaining <= 0
 
 
 func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
@@ -147,10 +123,10 @@ func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -
 
 			# Rival goal: push Tomas up, Calder down.
 			# calder_gap: distance above the fail floor (smaller = nearer to fail)
-			var calder_gap: int = calder_score - ScenarioConfig.S3_FAIL_CALDER_BELOW
+			var calder_gap: int = calder_score - scenario_mgr.S3_FAIL_CALDER_BELOW
 			# tomas_gap: distance below the win ceiling for Tomas (smaller = Tomas
 			# is already low, so rival should push him up)
-			var tomas_gap: int = ScenarioConfig.S3_WIN_TOMAS_MAX - tomas_score
+			var tomas_gap: int = scenario_mgr.S3_WIN_TOMAS_MAX - tomas_score
 
 			if tomas_gap <= 0:
 				# Tomas already above ceiling - focus on attacking Calder
@@ -222,72 +198,3 @@ func _pick_seed_npc(world: Node) -> String:
 			best_npc = npc
 
 	return best_npc.npc_data.get("id", "") if best_npc != null else ""
-
-
-# ── SPA-868: Belief degradation ──────────────────────────────────────────────
-
-## State demotion mapping: current state → one tier lower.
-## ACT→SPREAD, SPREAD→BELIEVE, BELIEVE→EVALUATING.
-const _DEGRADE_MAP := {
-	Rumor.RumorState.ACT:     Rumor.RumorState.SPREAD,
-	Rumor.RumorState.SPREAD:  Rumor.RumorState.BELIEVE,
-	Rumor.RumorState.BELIEVE: Rumor.RumorState.EVALUATING,
-}
-
-## Pick a random NPC currently in BELIEVE/SPREAD/ACT for any player-seeded rumor.
-## Prefers NPCs whose belief helps the player (scandal on Tomas or praise on Calder).
-func _pick_degrade_target(world: Node) -> String:
-	var candidates: Array = []  # Array of {npc_id, rumor_id, state}
-	for npc in world.npcs:
-		var npc_id: String = npc.npc_data.get("id", "")
-		for rid in npc.rumor_slots:
-			var slot = npc.rumor_slots[rid]
-			if slot.state in _DEGRADE_MAP:
-				# Only target player-originated rumors (not rival-seeded ones).
-				if slot.rumor != null and slot.rumor.lineage_parent_id != "rival":
-					candidates.append({"npc_id": npc_id, "rumor_id": rid, "state": slot.state})
-	if candidates.is_empty():
-		return ""
-	# Random pick from candidates.
-	var pick: Dictionary = candidates[randi() % candidates.size()]
-	return pick["npc_id"]
-
-
-## Degrade one NPC's belief state by one tier each day.
-func _degrade_one_belief(current_day: int, world: Node) -> void:
-	var target_id: String = _next_degrade_target_id if not _next_degrade_target_id.is_empty() else _pick_degrade_target(world)
-	if target_id.is_empty():
-		return
-
-	for npc in world.npcs:
-		if npc.npc_data.get("id", "") != target_id:
-			continue
-		# Find the first degradable slot (player-seeded rumor in BELIEVE/SPREAD/ACT).
-		for rid in npc.rumor_slots:
-			var slot = npc.rumor_slots[rid]
-			if slot.state in _DEGRADE_MAP and slot.rumor != null and slot.rumor.lineage_parent_id != "rival":
-				var old_state: int = slot.state
-				slot.state = _DEGRADE_MAP[old_state]
-				slot.ticks_in_state = 0
-				last_action_description = "Rival degraded %s's belief (Day %d)" % [
-					npc.npc_data.get("name", target_id), current_day]
-				belief_degraded.emit(current_day, target_id, old_state, slot.state)
-				return
-		break
-
-
-# ── SPA-868: Rival scouting ─────────────────────────────────────────────────
-
-## Spend 1 recon action to discover the rival's next degradation target.
-## Returns the NPC id of the next target, or "" if no target exists.
-## The caller must check and spend the recon action before calling this.
-func scout_next_target(current_day: int) -> String:
-	if not _active:
-		return ""
-	var target: String = _next_degrade_target_id
-	return target
-
-
-## Returns the pre-computed next degradation target (for UI display after scouting).
-func get_scouted_target() -> String:
-	return _next_degrade_target_id

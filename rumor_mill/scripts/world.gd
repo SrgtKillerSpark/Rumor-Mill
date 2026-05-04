@@ -1287,7 +1287,7 @@ func seed_rumor_from_player(
 
 	# Chain detection: check if this subject already has an active rumor that
 	# creates a same-type, escalation, or contradiction chain.
-	var chain_type: PropagationEngine.ChainType = PropagationEngine.ChainType.NONE
+	var chain_type: int = PropagationEngine.ChainType.NONE
 	if propagation_engine != null:
 		var chain_info := propagation_engine.detect_chain(subject_npc_id, claim_type)
 		chain_type = propagation_engine.apply_chain_bonus(rumor, chain_info)

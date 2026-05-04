@@ -452,17 +452,17 @@ func _infer_fail_reason(scenario_id: int) -> String:
 	if scenario_id == 3:
 		var rep: ReputationSystem = _world_ref.reputation_system
 		if rep != null:
-			var calder := rep.get_snapshot(ScenarioManager.CALDER_FENN_ID)
+			var calder := rep.get_snapshot(sm.CALDER_FENN_ID)
 			if calder != null and calder.score < sm.S3_FAIL_CALDER_BELOW:
 				return "calder_implicated"
 	if scenario_id == 2:
 		var rep: ReputationSystem = _world_ref.reputation_system
-		if rep != null and rep.has_illness_rejecter(ScenarioManager.ALYS_HERBWIFE_ID, ScenarioManager.MAREN_NUN_ID):
+		if rep != null and rep.has_illness_rejecter(sm.ALYS_HERBWIFE_ID, sm.MAREN_NUN_ID):
 			return "contradicted"
 	if scenario_id == 4:
 		var rep: ReputationSystem = _world_ref.reputation_system
 		if rep != null:
-			for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+			for npc_id in sm.S4_PROTECTED_NPC_IDS:
 				var snap := rep.get_snapshot(npc_id)
 				if snap != null and snap.score < sm.S4_FAIL_REP_BELOW:
 					return "reputation_collapsed"

@@ -20,11 +20,13 @@ const FACTION_FILL := {
 	"clergy":   Color(0.88, 0.88, 0.88, 1.0),   # pale grey-white
 }
 
-const STATE_RING_COLOR := {
+# Declared as var (not const) — GDScript cannot use cross-class enum values
+# as const dictionary keys in all Godot 4.x versions (parse error in 4.3).
+var STATE_RING_COLOR := {
 	Rumor.RumorState.UNAWARE:       Color(0.25, 0.25, 0.25, 0.0),
 	Rumor.RumorState.EVALUATING:    Color(1.00, 1.00, 0.00, 1.0),
-	Rumor.RumorState.BELIEVE:       Color(0.00, 0.45, 0.70, 1.0),  # blue — colorblind-safe (replaces green)
-	Rumor.RumorState.REJECT:        Color(0.84, 0.37, 0.00, 1.0),  # vermilion — colorblind-safe (replaces red)
+	Rumor.RumorState.BELIEVE:       Color(0.00, 0.62, 0.45, 1.0),  # Wong bluish-green — colorblind-safe
+	Rumor.RumorState.REJECT:        Color(0.84, 0.37, 0.00, 1.0),  # Wong vermilion — colorblind-safe
 	Rumor.RumorState.SPREAD:        Color(1.00, 0.50, 0.00, 1.0),
 	Rumor.RumorState.ACT:           Color(0.75, 0.05, 1.00, 1.0),
 	Rumor.RumorState.DEFENDING:     Color(0.50, 0.80, 1.00, 1.0),
@@ -57,9 +59,8 @@ const HM_TILE_W := 64
 const HM_TILE_H := 32
 
 # Node drawing sizes.
-const NODE_RADIUS      := 12.0
-const RING_THICKNESS   :=  4.0
-const NPC_LABEL_MAX_W  := 80.0  # Max pill width for NPC name labels.
+const NODE_RADIUS    := 12.0
+const RING_THICKNESS :=  4.0
 
 # Search match: pulsing gold ring around the matched NPC.
 const SEARCH_MATCH_COLOR := Color(1.0, 0.85, 0.0, 1.0)
@@ -103,9 +104,6 @@ var _search_text:      String = ""
 var _search_target_id: String = ""
 var _search_input:     LineEdit        = null
 var _search_panel:     PanelContainer  = null
-
-# ── NPC id → Node2D lookup (rebuilt each _on_draw for O(1) access) ───────────
-var _npc_lookup: Dictionary = {}
 
 # ── Legend filter state ───────────────────────────────────────────────────────
 
@@ -193,7 +191,6 @@ func _toggle_overlay() -> void:
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
 	if visible_overlay:
-		AudioManager.play_sfx("journal_open")
 		visible = true
 		_legend_panel.visible = true
 		_search_panel.visible = true
@@ -212,7 +209,6 @@ func _toggle_overlay() -> void:
 func _close_overlay() -> void:
 	_set_heatmap_mode(false)
 	visible_overlay = false
-	AudioManager.play_sfx("journal_close")
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
 	_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
@@ -247,7 +243,7 @@ func _build_search_ui() -> void:
 	_search_panel = PanelContainer.new()
 	_search_panel.name = "SGSearch"
 	_search_panel.set_anchor_and_offset(SIDE_LEFT,   0.0,  10.0)
-	_search_panel.set_anchor_and_offset(SIDE_RIGHT,  0.0, 230.0)
+	_search_panel.set_anchor_and_offset(SIDE_RIGHT,  0.0, 215.0)
 	_search_panel.set_anchor_and_offset(SIDE_TOP,    0.0,  10.0)
 	_search_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  40.0)
 
@@ -366,11 +362,6 @@ func _on_draw() -> void:
 	var npcs: Array = _world_ref.npcs
 	if npcs.is_empty():
 		return
-	# Build id→node lookup once per draw call (O(n)) instead of scanning
-	# per-edge inside _draw_edges (was O(n × edges) per frame).
-	_npc_lookup.clear()
-	for npc in npcs:
-		_npc_lookup[npc.npc_data.get("id", "")] = npc
 	var sg: SocialGraph = _world_ref.social_graph
 	if sg != null:
 		_draw_edges(npcs, sg)
@@ -543,7 +534,7 @@ func _draw_nodes(npcs: Array) -> void:
 		# Name label — dark pill for legibility.
 		var npc_name: String = npc.npc_data.get("name", "?").split(" ")[0]
 		var label_pos := screen_pos + Vector2(-NODE_RADIUS * 1.2, NODE_RADIUS + 12.0)
-		var font_size_px := clamp(roundi(13.0 * _zoom_level), 10, 18)
+		var font_size_px := 13
 
 		# When zoomed in above 1.2x show rep score inline with the name.
 		var rep_inline := ""
@@ -556,15 +547,14 @@ func _draw_nodes(npcs: Array) -> void:
 				rep_inline = " %d" % snap.score
 
 		var display_name := npc_name + rep_inline
-		var text_w: float = minf(ThemeDB.fallback_font.get_string_size(
-			display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size_px).x,
-			NPC_LABEL_MAX_W)
+		var text_w: float = ThemeDB.fallback_font.get_string_size(
+			display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size_px).x
 		_draw_node.draw_rect(
 			Rect2(label_pos + Vector2(-3, -12), Vector2(text_w + 6, 16)),
 			Color(0.0, 0.0, 0.0, 0.65 * node_alpha))
 		_draw_node.draw_string(
 			ThemeDB.fallback_font, label_pos, display_name,
-			HORIZONTAL_ALIGNMENT_LEFT, NPC_LABEL_MAX_W, font_size_px,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, font_size_px,
 			Color(0.95, 0.95, 0.85, 0.95 * node_alpha))
 
 		# Affinity bar (avg relationship weight — previously labelled "trust").
@@ -662,12 +652,12 @@ func _count_active_rumor_slots(npc: Node2D) -> int:
 func _build_legend() -> void:
 	_legend_panel = PanelContainer.new()
 	_legend_panel.name = "SGLegend"
-	# Anchored to right + bottom so it never overflows on any viewport size (SPA-1113).
+	# Positioned below milestone notification area to avoid overlap (SPA-713).
 	_legend_panel.set_anchor_and_offset(SIDE_RIGHT,  1.0, -10.0)
-	_legend_panel.set_anchor_and_offset(SIDE_LEFT,   1.0, -230.0)
+	_legend_panel.set_anchor_and_offset(SIDE_LEFT,   1.0, -220.0)
 	_legend_panel.set_anchor_and_offset(SIDE_TOP,    0.0,  100.0)
-	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 1.0,  -10.0)
-	_legend_panel.custom_minimum_size = Vector2(220, 0)
+	_legend_panel.set_anchor_and_offset(SIDE_BOTTOM, 0.0,  620.0)
+	_legend_panel.custom_minimum_size = Vector2(210, 515)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color     = Color(0.08, 0.05, 0.03, 0.92)
@@ -677,8 +667,7 @@ func _build_legend() -> void:
 	_legend_panel.add_theme_stylebox_override("panel", panel_style)
 
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(190, 0)
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(190, 500)
 	scroll.vertical_scroll_mode   = ScrollContainer.SCROLL_MODE_AUTO
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_legend_panel.add_child(scroll)
@@ -733,8 +722,8 @@ func _build_legend() -> void:
 
 	_legend_header(_sg_legend_box, "Rumor State  [color=gray](click to highlight)[/color]")
 	_state_btn(_sg_legend_box, Rumor.RumorState.EVALUATING,   Color(1.00, 1.00, 0.00), "Evaluating")
-	_state_btn(_sg_legend_box, Rumor.RumorState.BELIEVE,      Color(0.00, 0.45, 0.70), "Believe")
-	_state_btn(_sg_legend_box, Rumor.RumorState.REJECT,       Color(0.84, 0.37, 0.00), "Reject")
+	_state_btn(_sg_legend_box, Rumor.RumorState.BELIEVE,      Color(0.10, 0.90, 0.20), "Believe")
+	_state_btn(_sg_legend_box, Rumor.RumorState.REJECT,       Color(0.90, 0.15, 0.15), "Reject")
 	_state_btn(_sg_legend_box, Rumor.RumorState.SPREAD,       Color(1.00, 0.50, 0.00), "Spread")
 	_state_btn(_sg_legend_box, Rumor.RumorState.ACT,          Color(0.75, 0.05, 1.00), "Act")
 	_state_btn(_sg_legend_box, Rumor.RumorState.DEFENDING,    Color(0.50, 0.80, 1.00), "Defending")
@@ -899,8 +888,11 @@ func _world_to_screen(world_pos: Vector2) -> Vector2:
 	return center + (base_screen - center) * _zoom_level + _pan_offset
 
 
-func _find_npc_by_id(_npcs: Array, npc_id: String) -> Node2D:
-	return _npc_lookup.get(npc_id, null)
+func _find_npc_by_id(npcs: Array, npc_id: String) -> Node2D:
+	for npc in npcs:
+		if npc.npc_data.get("id", "") == npc_id:
+			return npc
+	return null
 
 
 # ── Faction Influence Heatmap ─────────────────────────────────────────────────

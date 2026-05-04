@@ -76,14 +76,12 @@ func _eval_s1(_current_tick: int) -> void:
 	var score: int = snap.score
 
 	# Reputation crossing key thresholds (descending).
-	# SPA-1544: Edric starts at S1_EDRIC_START_SCORE (50), so thresholds ≥ 50
-	# fired on the very first evaluate() call.  Gate the first milestone on
-	# actual progress below the starting score; collapse the two redundant
-	# 55/50 thresholds into a single "first blood" toast.
-	if score < ScenarioConfig.S1_EDRIC_START_SCORE:
+	if score <= 60:
 		_fire("s1_rep_60", "Whispers take hold — Edric's standing is shaken", C_PROGRESS)
-	if score <= 44:
+	if score <= 55:
 		_fire("s1_rep_55", "The cracks deepen — Edric's allies grow uneasy", C_PROGRESS)
+	if score <= 50:
+		_fire("s1_rep_50", "The town doubts Lord Fenn", C_PROGRESS)
 	if score <= 40:
 		_fire("s1_rep_40", "Edric is losing allies — keep pushing", C_PROGRESS)
 	if score <= 35:
@@ -147,7 +145,7 @@ func _eval_s3(_current_tick: int) -> void:
 func _eval_s4(current_tick: int) -> void:
 	var min_score: int = 100
 	var weakest_name: String = ""
-	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+	for npc_id in _scenario_mgr.S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot(npc_id)
 		if snap == null:
 			continue
@@ -165,18 +163,18 @@ func _eval_s4(current_tick: int) -> void:
 		_fire("s4_day15_safe", "Day 15 — 5 more days. Stay vigilant!", C_WARNING)
 
 	# Danger milestones.
-	if min_score <= ScenarioConfig.S4_CAUTION_REP and min_score > ScenarioConfig.S4_FAIL_REP_BELOW:
+	if min_score <= 52 and min_score > _scenario_mgr.S4_FAIL_REP_BELOW:
 		_fire("s4_close_call", "⚠ %s is dangerously close to the threshold!" % weakest_name, C_DANGER)
-	if min_score <= ScenarioConfig.S4_WIN_REP_MIN and min_score > ScenarioConfig.S4_FAIL_REP_BELOW:
+	if min_score <= 48 and min_score > _scenario_mgr.S4_FAIL_REP_BELOW:
 		_fire("s4_critical", "⚠ CRITICAL — %s is about to fall!" % weakest_name, C_DANGER)
 
 
 # ── Scenario 5: The Election ────────────────────────────────────────────────
 
 func _eval_s5(current_tick: int) -> void:
-	var aldric: ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot(ScenarioConfig.ALDRIC_VANE_ID)
-	var edric:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot(ScenarioConfig.EDRIC_FENN_ID)
-	var tomas:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot(ScenarioConfig.TOMAS_REEVE_ID)
+	var aldric: ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("aldric_vane")
+	var edric:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("edric_fenn")
+	var tomas:  ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot("tomas_reeve")
 	if aldric == null or edric == null or tomas == null:
 		return
 
@@ -194,7 +192,7 @@ func _eval_s5(current_tick: int) -> void:
 
 	# Endorsement timing.
 	var day: int = _scenario_mgr.get_current_day(current_tick)
-	if day >= 12 and day < ScenarioConfig.S5_ENDORSEMENT_DAY:
+	if day >= 12 and day < _scenario_mgr.S5_ENDORSEMENT_DAY:
 		_fire("s5_endorsement_soon", "The Prior's endorsement is days away — ensure Aldric leads!", C_WARNING)
 
 	# Aldric danger.
@@ -202,7 +200,7 @@ func _eval_s5(current_tick: int) -> void:
 		_fire("s5_aldric_danger", "⚠ Aldric's reputation is collapsing — act now!", C_DANGER)
 
 	# Both rivals still strong.
-	if edric.score >= 50 and tomas.score >= ScenarioConfig.S5_WIN_RIVALS_MAX and day >= 10:
+	if edric.score >= 50 and tomas.score >= 45 and day >= 10:
 		_fire("s5_rivals_strong", "⚠ Both rivals are still in the race — step up the attacks", C_WARNING)
 
 
@@ -247,7 +245,7 @@ func _eval_s6(_current_tick: int) -> void:
 
 # ── Progress toasts (configurable per scenario via scenarios.json) ─────────
 
-## Fires toast notifications at 10% progress intervals toward the win condition.
+## Fires toast notifications at 25%, 50%, and 75% progress toward the win condition.
 ## Thresholds and messages are loaded from the milestoneToasts array in scenarios.json.
 ## Each toast fires exactly once per session via the _fired guard.
 func _eval_progress_toasts(current_tick: int) -> void:

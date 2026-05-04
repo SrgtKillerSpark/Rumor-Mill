@@ -7,7 +7,7 @@ extends CanvasLayer
 ##
 ## API:
 ##   TooltipManager.show_at(key: String)  — show tooltip for the given key
-##   TooltipManager.hide_tooltip()         — fade the tooltip out
+##   TooltipManager.hide_tooltip()        — fade the tooltip out
 
 # ── Palette (parchment / medieval aesthetic) ──────────────────────────────────
 const C_BG     := Color(0.10, 0.07, 0.05, 0.93)
@@ -29,11 +29,7 @@ var _data:         Dictionary     = {}
 
 
 func _ready() -> void:
-	# SPA-1179 #32: layer 100 — above every other UI layer, including hud_tooltip(99).
-	# Tooltip layer precedence: hud_tooltip(99) < tooltip_manager(100).
-	# hud_tooltip handles auto-detected hover tooltips; this singleton handles
-	# explicit data-driven tooltips via show_at(key).
-	layer = 100
+	layer = 100  # above every other UI layer
 	_load_data()
 	_build_panel()
 
@@ -78,8 +74,8 @@ func _process(_delta: float) -> void:
 	var ty: float = mouse_pos.y + OFFSET.y
 	var panel_h: float = _panel.size.y if _panel.size.y > 0.0 else 80.0
 	var vp: Vector2 = get_viewport().get_visible_rect().size
-	tx = clampf(tx, 8.0, vp.x - PANEL_W - 8.0)
-	ty = clampf(ty, 8.0, vp.y - panel_h - 8.0)
+	tx = clampf(tx, 4.0, vp.x - PANEL_W - 4.0)
+	ty = clampf(ty, 4.0, vp.y - panel_h - 4.0)
 	_panel.set_position(Vector2(tx, ty))
 
 

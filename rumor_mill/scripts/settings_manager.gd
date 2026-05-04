@@ -30,17 +30,6 @@ const DEFAULT_UI_SCALE           := 1.0    ## 1.0 = 100%, range 0.75–1.5
 ## Available UI scale presets.
 const UI_SCALE_PRESETS := [0.75, 0.85, 1.0, 1.15, 1.25, 1.5]
 
-## Text size presets (Small/Medium/Large) — each maps to a UI_SCALE_PRESETS index.
-const TEXT_SIZE_LABELS := ["Small", "Medium", "Large"]
-const TEXT_SIZE_SCALE_INDICES := [0, 2, 4]  ## maps to 0.75, 1.0, 1.25
-
-## Game speed presets: tick_duration_seconds for 0.5×, 1×, 2× gameplay speed.
-const GAME_SPEED_LABELS  := ["0.5×", "1×", "2×"]
-const GAME_SPEED_PRESETS := [2.0, 1.0, 0.5]
-
-## Window scale presets — multiplier of base 1280×720 viewport for windowed mode.
-const WINDOW_SCALE_PRESETS := [1.0, 1.5, 2.0]
-
 ## Window mode constants.
 const WINDOW_WINDOWED   := 0   ## Regular window with title bar and decorations.
 const WINDOW_BORDERLESS := 1   ## Borderless fullscreen (windowed fullscreen).
@@ -67,17 +56,7 @@ var resolution_index:    int   = DEFAULT_RESOLUTION_INDEX
 var window_mode:         int   = DEFAULT_WINDOW_MODE
 var ui_scale:            float = DEFAULT_UI_SCALE
 var ui_scale_index:      int   = 2   ## index into UI_SCALE_PRESETS (default 1.0)
-var window_scale_index:  int   = 0   ## index into WINDOW_SCALE_PRESETS (default 1x)
-var text_size_index:     int   = 1   ## index into TEXT_SIZE_LABELS (0=Small, 1=Medium, 2=Large)
-var game_speed_index:    int   = 1   ## index into GAME_SPEED_PRESETS (0=0.5×, 1=1×, 2=2×)
 var dismissed_tooltips:  Dictionary = {}  ## Persistent tooltip dismissal tracking (tooltip_id → true).
-
-## Emitted when a user-facing setting value changes (SPA-1241).
-## All values are stringified for uniform analytics payloads.
-signal setting_changed(setting_key: String, old_value: String, new_value: String)
-
-## Snapshot of tracked settings taken after load — used to diff in save_settings().
-var _prev_snapshot: Dictionary = {}
 
 
 func _ready() -> void:
@@ -96,7 +75,7 @@ func _build_resolution_list() -> void:
 	for res in BASE_RESOLUTIONS:
 		RESOLUTIONS.append(res)
 	# Append the native screen resolution if it's not already a preset.
-	var native := DisplayServer.screen_get_size()
+	var native := DisplayServer.screen_get_size(DisplayServer.window_get_current_screen())
 	if native not in RESOLUTIONS and native.x >= 1280 and native.y >= 720:
 		RESOLUTIONS.append(native)
 		RESOLUTIONS.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.x < b.x)
@@ -106,10 +85,10 @@ func load_settings() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(SAVE_PATH) != OK:
 		return  # File absent — use defaults
-	master_volume     = clampf(cfg.get_value(SECTION, "master_volume",     DEFAULT_MASTER_VOL), 0.0, 100.0)
-	music_volume      = clampf(cfg.get_value(SECTION, "music_volume",      DEFAULT_MUSIC_VOL), 0.0, 100.0)
-	ambient_volume    = clampf(cfg.get_value(SECTION, "ambient_volume",    DEFAULT_AMBIENT_VOL), 0.0, 100.0)
-	sfx_volume        = clampf(cfg.get_value(SECTION, "sfx_volume",        DEFAULT_SFX_VOL), 0.0, 100.0)
+	master_volume     = cfg.get_value(SECTION, "master_volume",     DEFAULT_MASTER_VOL)
+	music_volume      = cfg.get_value(SECTION, "music_volume",      DEFAULT_MUSIC_VOL)
+	ambient_volume    = cfg.get_value(SECTION, "ambient_volume",    DEFAULT_AMBIENT_VOL)
+	sfx_volume        = cfg.get_value(SECTION, "sfx_volume",        DEFAULT_SFX_VOL)
 	game_speed        = cfg.get_value(SECTION, "game_speed",        DEFAULT_GAME_SPEED)
 	analytics_enabled = cfg.get_value(SECTION, "analytics_enabled", DEFAULT_ANALYTICS_ENABLED)
 	resolution_index  = cfg.get_value(SECTION, "resolution_index",  DEFAULT_RESOLUTION_INDEX)
@@ -118,26 +97,13 @@ func load_settings() -> void:
 	var _legacy_fs: bool = cfg.get_value(SECTION, "fullscreen", false)
 	window_mode = cfg.get_value(SECTION, "window_mode",
 		WINDOW_FULLSCREEN if _legacy_fs else DEFAULT_WINDOW_MODE)
-	window_mode = clampi(window_mode, WINDOW_WINDOWED, WINDOW_FULLSCREEN)
 	ui_scale_index = cfg.get_value(SECTION, "ui_scale_index", 2)
 	ui_scale_index = clampi(ui_scale_index, 0, UI_SCALE_PRESETS.size() - 1)
 	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
-	window_scale_index = cfg.get_value(SECTION, "window_scale_index", 0)
-	window_scale_index = clampi(window_scale_index, 0, WINDOW_SCALE_PRESETS.size() - 1)
-	text_size_index = cfg.get_value(SECTION, "text_size_index", 1)
-	text_size_index = clampi(text_size_index, 0, TEXT_SIZE_LABELS.size() - 1)
-	# Sync ui_scale to text_size selection if it was persisted.
-	ui_scale_index = TEXT_SIZE_SCALE_INDICES[text_size_index]
-	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
-	game_speed_index = cfg.get_value(SECTION, "game_speed_index", 1)
-	game_speed_index = clampi(game_speed_index, 0, GAME_SPEED_PRESETS.size() - 1)
-	game_speed = GAME_SPEED_PRESETS[game_speed_index]
 	dismissed_tooltips = cfg.get_value(SECTION, "dismissed_tooltips", {})
-	_prev_snapshot = _take_snapshot()
 
 
 func save_settings() -> void:
-	_diff_and_emit_changes()
 	var cfg := ConfigFile.new()
 	cfg.set_value(SECTION, "master_volume",     master_volume)
 	cfg.set_value(SECTION, "music_volume",      music_volume)
@@ -148,9 +114,6 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "resolution_index",  resolution_index)
 	cfg.set_value(SECTION, "window_mode",       window_mode)
 	cfg.set_value(SECTION, "ui_scale_index",    ui_scale_index)
-	cfg.set_value(SECTION, "window_scale_index", window_scale_index)
-	cfg.set_value(SECTION, "text_size_index",   text_size_index)
-	cfg.set_value(SECTION, "game_speed_index",  game_speed_index)
 	cfg.set_value(SECTION, "dismissed_tooltips", dismissed_tooltips)
 	cfg.save(SAVE_PATH)
 
@@ -176,18 +139,16 @@ func apply_display_settings() -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		_:  # WINDOW_WINDOWED
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-			# Window scale overrides resolution in windowed mode.
-			var scale: float = WINDOW_SCALE_PRESETS[clampi(window_scale_index, 0, WINDOW_SCALE_PRESETS.size() - 1)]
-			var target := Vector2i(int(1280.0 * scale), int(720.0 * scale))
-			var screen_id := DisplayServer.get_primary_screen()
-			var screen_rect := DisplayServer.screen_get_usable_rect(screen_id)
-			target.x = clampi(target.x, 1280, screen_rect.size.x)
-			target.y = clampi(target.y, 720, screen_rect.size.y)
-			DisplayServer.window_set_size(target)
-			# Centre window on screen (account for multi-monitor offsets).
-			var win_pos := Vector2i(
-				screen_rect.position.x + (screen_rect.size.x - target.x) / 2,
-				screen_rect.position.y + (screen_rect.size.y - target.y) / 2)
+			var screen_idx := DisplayServer.window_get_current_screen()
+			var screen_pos := DisplayServer.screen_get_position(screen_idx)
+			var screen_size := DisplayServer.screen_get_size(screen_idx)
+			if res.x < 1280 or res.y < 720 or res.x > screen_size.x or res.y > screen_size.y:
+				push_warning("SettingsManager: invalid resolution %s, clamping." % str(res))
+				res.x = clampi(res.x, 1280, screen_size.x)
+				res.y = clampi(res.y, 720, screen_size.y)
+			DisplayServer.window_set_size(res)
+			# Centre window on the current screen, accounting for multi-monitor offset.
+			var win_pos := screen_pos + Vector2i((screen_size.x - res.x) / 2, (screen_size.y - res.y) / 2)
 			DisplayServer.window_set_position(win_pos)
 
 
@@ -209,34 +170,9 @@ func get_resolution_label() -> String:
 	var idx: int = clampi(resolution_index, 0, RESOLUTIONS.size() - 1)
 	var res: Vector2i = RESOLUTIONS[idx]
 	var label := "%dx%d" % [res.x, res.y]
-	if res == DisplayServer.screen_get_size() and res not in BASE_RESOLUTIONS:
+	if res == DisplayServer.screen_get_size(DisplayServer.window_get_current_screen()) and res not in BASE_RESOLUTIONS:
 		label += " (Native)"
 	return label
-
-
-## Get the label for the current window scale preset.
-func get_window_scale_label() -> String:
-	var scale: float = WINDOW_SCALE_PRESETS[clampi(window_scale_index, 0, WINDOW_SCALE_PRESETS.size() - 1)]
-	if scale == int(scale):
-		return "%dx" % int(scale)
-	return "%.1fx" % scale
-
-
-## Get the display label for the current text size preset.
-func get_text_size_label() -> String:
-	return TEXT_SIZE_LABELS[clampi(text_size_index, 0, TEXT_SIZE_LABELS.size() - 1)]
-
-
-## Set text size index and sync ui_scale to the mapped preset.
-func set_text_size_index(idx: int) -> void:
-	text_size_index = clampi(idx, 0, TEXT_SIZE_LABELS.size() - 1)
-	ui_scale_index  = TEXT_SIZE_SCALE_INDICES[text_size_index]
-	ui_scale        = UI_SCALE_PRESETS[ui_scale_index]
-
-
-## Get the display label for the current game speed preset.
-func get_game_speed_label() -> String:
-	return GAME_SPEED_LABELS[clampi(game_speed_index, 0, GAME_SPEED_LABELS.size() - 1)]
 
 
 ## Get the display label for the current window mode.
@@ -247,7 +183,7 @@ func get_window_mode_label() -> String:
 		_: return "Windowed"
 
 
-## Toggle between windowed and the current fullscreen mode via F11 / Alt+Enter.
+## Toggle between windowed and the current fullscreen mode via F11.
 ## If currently windowed, switches to borderless fullscreen.
 ## If currently fullscreen (any mode), switches back to windowed.
 func toggle_fullscreen() -> void:
@@ -261,38 +197,9 @@ func toggle_fullscreen() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_F11 or (event.keycode == KEY_ENTER and event.alt_pressed):
+		if event.keycode == KEY_F11:
 			toggle_fullscreen()
 			get_viewport().set_input_as_handled()
-
-
-## Capture current user-facing settings as a String-keyed dictionary for diffing.
-func _take_snapshot() -> Dictionary:
-	return {
-		"master_volume":    str(master_volume),
-		"music_volume":     str(music_volume),
-		"ambient_volume":   str(ambient_volume),
-		"sfx_volume":       str(sfx_volume),
-		"game_speed_index": str(game_speed_index),
-		"analytics_enabled": str(analytics_enabled),
-		"resolution_index": str(resolution_index),
-		"window_mode":      str(window_mode),
-		"ui_scale_index":   str(ui_scale_index),
-		"window_scale_index": str(window_scale_index),
-		"text_size_index":  str(text_size_index),
-	}
-
-
-## Compare current values against the previous snapshot and emit setting_changed
-## for each key that differs.  Updates the snapshot afterwards.
-func _diff_and_emit_changes() -> void:
-	var current := _take_snapshot()
-	for key in current:
-		var cur_val: String = current[key]
-		var old_val: String = _prev_snapshot.get(key, cur_val)
-		if cur_val != old_val:
-			setting_changed.emit(key, old_val, cur_val)
-	_prev_snapshot = current
 
 
 ## Convert linear 0-100 to dB. Returns -80 for zero (silence).

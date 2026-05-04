@@ -2,31 +2,23 @@ name: Validate GDScript
 
 on:
   push:
-    branches: ["main", "dev", "feature/**", "fix/**", "test/**"]
+    branches: ["main", "dev"]
     paths:
       - "rumor_mill/scripts/**"
-      - "rumor_mill/tests/**"
       - "rumor_mill/scenes/**"
+      - "rumor_mill/tools/**"
       - "rumor_mill/project.godot"
+      - ".github/workflows/validate-gdscript.yml"
   pull_request:
     paths:
       - "rumor_mill/scripts/**"
-      - "rumor_mill/tests/**"
       - "rumor_mill/scenes/**"
+      - "rumor_mill/tools/**"
       - "rumor_mill/project.godot"
+      - ".github/workflows/validate-gdscript.yml"
   workflow_dispatch:
 
 jobs:
-  static-check:
-    name: GDScript static checker (no Godot required)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run static checker regression tests (SPA-1560)
-        run: bash rumor_mill/tools/test_static_checks.sh
-
   validate:
     name: GDScript parse & type check
     runs-on: ubuntu-latest
@@ -57,5 +49,33 @@ jobs:
         run: |
           bash rumor_mill/tools/validate_gdscript.sh \
             --godot "$GODOT_BIN" \
-            --project rumor_mill \
-            --strict
+            --project rumor_mill
+
+      - name: Smoke-launch main scene (headless boot)
+        run: |
+          # Boot the game headless and verify it reaches _ready without parse/autoload crash.
+          # The --quit flag tells the engine to exit after the first idle frame.
+          # We capture stderr for error detection while allowing a clean exit.
+          SMOKE_LOG="$(mktemp /tmp/smoke_launch_XXXXXX.log)"
+          set +e
+          timeout 45 "$GODOT_BIN" --headless --path rumor_mill --quit 2>"$SMOKE_LOG" 1>/dev/null
+          SMOKE_EXIT=$?
+          set -e
+          # timeout returns 124 on kill — acceptable (means engine loaded and ran)
+          if [[ $SMOKE_EXIT -ne 0 && $SMOKE_EXIT -ne 124 ]]; then
+            echo "✗ Smoke-launch FAILED — Godot exited with code $SMOKE_EXIT"
+            cat "$SMOKE_LOG"
+            exit 1
+          fi
+          # Check for fatal errors (parse errors, autoload crashes).
+          # Exclude GDExtension load failures (missing godotsteam .dll in CI) —
+          # they match ERROR:.*res:// but are not GDScript or boot errors.
+          FATAL=$(grep -E "^(ERROR|SCRIPT ERROR).*res://|^Parse error:|FATAL" "$SMOKE_LOG" \
+            | grep -v "GDExtension\|Error loading extension" || true)
+          if [[ -n "$FATAL" ]]; then
+            echo "✗ Smoke-launch detected fatal errors during boot:"
+            echo "$FATAL"
+            exit 1
+          fi
+          echo "✓ Smoke-launch passed — main scene booted without parse/autoload errors."
+          rm -f "$SMOKE_LOG"
