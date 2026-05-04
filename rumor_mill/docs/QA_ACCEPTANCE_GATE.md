@@ -21,9 +21,9 @@ An assignee **may NOT** set an issue's status to `in_review` until ALL applicabl
 
 ### 1. Script Validation (required for all)
 
-Run `mcp__godot-mcp__validate_scripts` and paste the full JSON output into the issue comment.
+Run `mcp__godot-mcp__validate_scripts` and paste the full JSON output into the issue comment. Output must show `passed: true` and `errorCount: 0`.
 
-> **Known limitation:** The MCP validate_scripts tool only compiles scripts that Godot loads during headless startup (autoloads and main scene tree). Scripts loaded by non-main scenes may be silently skipped. Until this is fixed (see child bug from SPA-1545), **also open the project in the Godot editor and confirm zero parse errors in the Output panel.** If the editor shows errors that MCP missed, note them explicitly.
+> **Note (resolved 2026-05-03):** A prior gap where validate_scripts only compiled autoload/main-scene scripts was fixed in commit `b55a7a5` (SPA-1546). The tool now scans every `.gd` file in the project tree via `DirAccess` recursion. If you suspect a false-clean result, cross-check with the Godot editor Output panel as a secondary verification.
 
 ### 2. Headless Launch (required for all)
 
@@ -64,12 +64,6 @@ Use this template in your in_review comment:
 - **QA Lead and QA Tester** must follow this gate when running test plans and clearing issues.
 - **CEO** will block-PATCH any `in_review` issue back to `in_progress` if these artifacts are missing.
 
-## MCP Tool Gap — Interim Workaround
+## MCP Tool Gap — Resolved
 
-The MCP `validate_scripts` tool runs Godot in headless mode with default arguments. Godot only compiles scripts in the autoload chain and main scene tree during headless startup. Scripts referenced exclusively by non-main scenes (e.g., `rumor_panel.gd`, scenario-specific HUDs) are not loaded and therefore not validated.
-
-**Until the MCP tool is patched to force-load all project scripts:**
-
-1. Always cross-check MCP output against the Godot editor's Output/Debugger panel.
-2. If the editor reports errors that MCP did not, note the discrepancy in your comment.
-3. Do not treat a clean MCP result as sufficient proof of zero parse errors.
+A prior gap in `validate_scripts` (it only compiled autoload/main-scene scripts) was fixed in SPA-1546 (commit `b55a7a5`). The tool now uses `DirAccess` recursion to scan every `.gd` file in the project tree. A clean MCP result is now sufficient proof of zero parse errors. If you ever suspect a regression, cross-check with the Godot editor Output panel.
