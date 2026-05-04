@@ -29,7 +29,7 @@ You almost never should bypass. The only valid cases:
 
 ## 2. CI smoke-launch (remote)
 
-The `validate-gdscript.yml` workflow runs on every push to `main`/`dev` and on PRs touching scripts/scenes. It has two steps:
+The `validate-gdscript.yml` workflow runs on every push to `main`/`dev` and on PRs touching `scripts/`, `scenes/`, `tools/`, `project.godot`, or the workflow file itself. It has two steps:
 
 1. **GDScript validation** — static headless parse check (same as pre-commit).
 2. **Smoke-launch** — boots the main scene (`res://scenes/Main.tscn`) headless and asserts no parse failures or autoload crashes occurred during `_ready`.
