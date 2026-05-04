@@ -14,3 +14,33 @@ builds/
 
 # Temporary file written by the MCP validate_scripts tool during headless validation
 .mcp_validate_scripts.gd
+
+# Paperclip agent artifacts — issue/comment/patch caches written at repo root during heartbeats.
+# These are transient API responses, never source files. Patterns are deliberately narrow:
+# the project legitimately tracks JSON under tools/ and *.ndjson fixtures.
+iss_*.json
+issue_*.json
+issues_*.json
+sp[0-9]*.json
+patch_*.json
+comment_*.json
+body_*.json
+agents.json
+agents_list.json
+dash.json
+queue_*.json
+recent_done.json
+search_*.json
+todos.json
+
+# Windows %TEMP% path fragments that end up at repo root (e.g. UsersKAOSAppDataLocalTemp*)
+UsersKAOS*.json
+
+# Agent comment markdown dumps at repo root
+comment_*.md
+
+# Paperclip MCP config (agent-local, not project config)
+.mcp.json
+
+# Agent scratch directory
+.scratch/
