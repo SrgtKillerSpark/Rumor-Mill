@@ -23,6 +23,12 @@ const C_ESCALATION_FLARE := Color(1.0,  0.75, 0.10, 1.0)  # escalation event fla
 const BAR_WIDTH      := 160
 const MAX_NAMES_SHOWN := 5
 
+# ── Toast-panel geometry ─────────────────────────────────────────────────────
+const HUD_PANEL_HEIGHT    := 72   # height of the HUD strip built by _make_panel
+const TOAST_GAP           := 4    # gap between HUD bottom and toast top
+const TOAST_PANEL_HEIGHT  := 24   # visible toast strip height
+const TOAST_CORNER_RADIUS := 4    # corner radius for the toast StyleBoxFlat
+
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _count_lbl:         Label     = null
 var _bar:               ColorRect = null
@@ -89,7 +95,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario2Panel", 72)
+	var hbox := _make_panel("Scenario2Panel", HUD_PANEL_HEIGHT)
 
 	# Scenario label.
 	var title_lbl := Label.new()
@@ -262,7 +268,7 @@ func _build_ui() -> void:
 	# neighbor rejects the illness rumor while she is actively defending.
 	var toast_style := StyleBoxFlat.new()
 	toast_style.bg_color = Color(0.10, 0.08, 0.06, 0.88)  # TODO(SPA-1590): replace with ToastContainer constant
-	toast_style.set_corner_radius_all(4)
+	toast_style.set_corner_radius_all(TOAST_CORNER_RADIUS)
 	toast_style.content_margin_left   = 8   # TODO(SPA-1590): replace with ToastContainer constant
 	toast_style.content_margin_right  = 8   # TODO(SPA-1590): replace with ToastContainer constant
 	toast_style.content_margin_top    = 4   # TODO(SPA-1590): replace with ToastContainer constant
@@ -275,8 +281,8 @@ func _build_ui() -> void:
 	_deconv_toast_panel.set_anchor(SIDE_BOTTOM, 0.0)
 	_deconv_toast_panel.set_offset(SIDE_LEFT,   8)    # TODO(SPA-1590): replace with ToastContainer constant
 	_deconv_toast_panel.set_offset(SIDE_RIGHT, -8)    # TODO(SPA-1590): replace with ToastContainer constant
-	_deconv_toast_panel.set_offset(SIDE_TOP,   76)    # TODO(SPA-1590): replace with ToastContainer constant (HUD height + gap)
-	_deconv_toast_panel.set_offset(SIDE_BOTTOM, 100)  # TODO(SPA-1590): replace with ToastContainer constant (toast height)
+	_deconv_toast_panel.set_offset(SIDE_TOP,    HUD_PANEL_HEIGHT + TOAST_GAP)                              # TODO(SPA-1590): replace with ToastContainer constant (HUD height + gap)
+	_deconv_toast_panel.set_offset(SIDE_BOTTOM, HUD_PANEL_HEIGHT + TOAST_GAP + TOAST_PANEL_HEIGHT)         # TODO(SPA-1590): replace with ToastContainer constant (toast height)
 	_deconv_toast_panel.visible = false
 	add_child(_deconv_toast_panel)
 	_deconv_toast_lbl = Label.new()
