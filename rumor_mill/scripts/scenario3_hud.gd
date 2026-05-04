@@ -247,6 +247,6 @@ func _on_disrupt_pressed() -> void:
 		return
 	var current_day: int = 0
 	if _day_night_ref != null:
-		current_day = _day_night_ref.current_tick / ScenarioManager.TICKS_PER_DAY + 1
+		current_day = _day_night_ref.current_tick / _world_ref.scenario_manager.TICKS_PER_DAY + 1
 	rival.apply_disruption(current_day)
 	_update_disrupt_button()

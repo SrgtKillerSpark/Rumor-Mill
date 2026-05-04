@@ -1443,7 +1443,7 @@ func _build_objectives_section() -> void:
 		"  Lord Edric Fenn reputation drops below %d.\n"
 		+ "  Current:  %s / 100  — %s  %s\n"
 		+ "  Target:   < %d (Disgraced — faction loyalty collapses)"
-	) % [ScenarioManager.S1_WIN_EDRIC_BELOW, edric_score_str, edric_band_str, s1_win_status, ScenarioManager.S1_WIN_EDRIC_BELOW]
+	) % [sm.S1_WIN_EDRIC_BELOW, edric_score_str, edric_band_str, s1_win_status, sm.S1_WIN_EDRIC_BELOW]
 	win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	win_body.add_theme_font_size_override("font_size", 12)
 	win_body.add_theme_color_override("font_color", s1_win_color)
@@ -1518,7 +1518,7 @@ func _build_objectives_section() -> void:
 	s2_fail_hdr.add_theme_color_override("font_color", C_CONTRADICTED)
 	_content_vbox.add_child(s2_fail_hdr)
 
-	var maren_rejected := rep != null and rep.has_illness_rejecter(ScenarioManager.ALYS_HERBWIFE_ID, ScenarioManager.MAREN_NUN_ID)
+	var maren_rejected := rep != null and rep.has_illness_rejecter(sm.ALYS_HERBWIFE_ID, sm.MAREN_NUN_ID)
 	var s2_timed_out   := s2_days_remaining == 0
 
 	var s2_fail_body := Label.new()
@@ -1567,9 +1567,9 @@ func _build_objectives_section() -> void:
 		+ "  FAIL: Calder Fenn < 40\n\n"
 		+ "  Calder Fenn:   %s / 100  — %s  (target: \u2265%d)\n"
 		+ "  Tomas Reeve:   %s / 100  — %s  (target: \u2264%d)"
-	) % [ScenarioManager.S3_WIN_CALDER_MIN, ScenarioManager.S3_WIN_TOMAS_MAX,
-		calder_score_str, calder_band_str, ScenarioManager.S3_WIN_CALDER_MIN,
-		tomas_score_str, tomas_band_str, ScenarioManager.S3_WIN_TOMAS_MAX]
+	) % [sm.S3_WIN_CALDER_MIN, sm.S3_WIN_TOMAS_MAX,
+		calder_score_str, calder_band_str, sm.S3_WIN_CALDER_MIN,
+		tomas_score_str, tomas_band_str, sm.S3_WIN_TOMAS_MAX]
 	s3_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s3_body.add_theme_font_size_override("font_size", 12)
 	s3_body.add_theme_color_override("font_color", C_BODY)
@@ -1635,11 +1635,11 @@ func _build_objectives_section() -> void:
 		+ "  Vera Midwife:  %s / 100  \u2014 %s\n"
 		+ "  Finn Monk:     %s / 100  \u2014 %s\n"
 		+ "  Floor: \u2265 %d  (all three must stay above this)"
-	) % [S4_DAYS, ScenarioManager.S4_WIN_REP_MIN, s4_win_status,
+	) % [S4_DAYS, sm.S4_WIN_REP_MIN, s4_win_status,
 		aldous_score_str, aldous_band_str,
 		vera_score_str, vera_band_str,
 		finn_score_str, finn_band_str,
-		ScenarioManager.S4_WIN_REP_MIN]
+		sm.S4_WIN_REP_MIN]
 	s4_win_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s4_win_body.add_theme_font_size_override("font_size", 12)
 	s4_win_body.add_theme_color_override("font_color", s4_win_color)
@@ -1657,7 +1657,7 @@ func _build_objectives_section() -> void:
 	s4_fail_body.text = (
 		"  [ ] Any accused NPC drops below %d reputation\n"
 		+ "  [ ] %d days elapsed without all three surviving  (days remaining: %d)"
-	) % [ScenarioManager.S4_FAIL_REP_BELOW, S4_DAYS, s4_days_remaining]
+	) % [sm.S4_FAIL_REP_BELOW, S4_DAYS, s4_days_remaining]
 	s4_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s4_fail_body.add_theme_font_size_override("font_size", 12)
 	s4_fail_body.add_theme_color_override("font_color", C_BODY)

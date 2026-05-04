@@ -145,7 +145,7 @@ func _eval_s3(_current_tick: int) -> void:
 func _eval_s4(current_tick: int) -> void:
 	var min_score: int = 100
 	var weakest_name: String = ""
-	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+	for npc_id in _scenario_mgr.S4_PROTECTED_NPC_IDS:
 		var snap: ReputationSystem.ReputationSnapshot = _rep_system.get_snapshot(npc_id)
 		if snap == null:
 			continue

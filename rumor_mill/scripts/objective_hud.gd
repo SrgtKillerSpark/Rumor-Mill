@@ -999,12 +999,12 @@ func _refresh_threat() -> void:
 	# S4: threat = inverse of weakest protected NPC's score margin above 45.
 	elif _scenario_manager._active_scenario == 4:
 		var min_margin: int = 100
-		for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+		for npc_id in _scenario_manager.S4_PROTECTED_NPC_IDS:
 			if _reputation_system == null:
 				break
 			var snap: ReputationSystem.ReputationSnapshot = _reputation_system.get_snapshot(npc_id)
 			if snap != null:
-				var margin: int = snap.score - ScenarioManager.S4_FAIL_REP_BELOW
+				var margin: int = snap.score - _scenario_manager.S4_FAIL_REP_BELOW
 				if margin < min_margin:
 					min_margin = margin
 		threat = clampf(1.0 - float(max(min_margin, 0)) / 30.0, 0.0, 1.0)

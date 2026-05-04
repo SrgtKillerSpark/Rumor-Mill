@@ -69,7 +69,7 @@ func _build_ui() -> void:
 		"vera_midwife": "Vera Midwife's reputation. Below 40 = instant fail. Must be 45+ at deadline to win.",
 		"finn_monk":    "Finn Monk's reputation. Below 40 = instant fail. Must be 45+ at deadline to win.",
 	}
-	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+	for npc_id in preload("res://scripts/scenario_manager.gd").S4_PROTECTED_NPC_IDS:
 		var vbox := VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 2)
 		hbox.add_child(vbox)
@@ -147,7 +147,7 @@ func _refresh() -> void:
 	var fail_thr: int         = progress["fail_threshold"]
 	var state                 = progress["state"]
 
-	for npc_id in ScenarioManager.S4_PROTECTED_NPC_IDS:
+	for npc_id in sm.S4_PROTECTED_NPC_IDS:
 		var score: int = scores.get(npc_id, 50)
 		if _score_labels.has(npc_id):
 			_score_labels[npc_id].text = "%s  Rep: %d / 100  Floor: %d" % [
