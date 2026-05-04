@@ -668,8 +668,8 @@
       {
         "npcA": "alys_herbwife",
         "npcB": "maren_nun",
-        "weightAtoB": 0.35,
-        "weightBtoA": 0.3
+        "weightAtoB": 0.25,
+        "weightBtoA": 0.2
       },
       {
         "npcA": "alys_herbwife",
