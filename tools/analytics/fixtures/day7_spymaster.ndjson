@@ -1,0 +1,61 @@
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Spymaster","ts":"2026-05-05T19:15:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7c_s2sp_r01","seed_target":"npc_acolyte","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T19:17:00Z"}
+{"type":"npc_state_changed","npc_name":"Acolyte","rumor_id":"d7c_s2sp_r01","new_state":"DOUBT","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T19:19:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7c_s2sp_r01","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T19:27:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":78,"delta":0,"day":3,"scenario_id":"scenario_2","ts":"2026-05-05T19:33:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Spymaster","outcome":"FAILED","day_reached":5,"duration_sec":900,"ts":"2026-05-05T19:30:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Spymaster","ts":"2026-05-05T19:32:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7c_s2sp_r02","seed_target":"npc_miller_wife","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T19:34:00Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"d7c_s2sp_r02","new_state":"DOUBT","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T19:36:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7c_s2sp_r02","new_state":"REJECT","day":2,"scenario_id":"scenario_2","ts":"2026-05-05T19:44:00Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"d7c_s2sp_r02","new_state":"DOUBT","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T19:50:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":78,"delta":0,"day":2,"scenario_id":"scenario_2","ts":"2026-05-05T19:44:30Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Spymaster","outcome":"FAILED","day_reached":4,"duration_sec":840,"ts":"2026-05-05T19:47:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_2","difficulty":"Spymaster","ts":"2026-05-05T19:49:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Maren","claim_id":"d7c_s2sp_r03","seed_target":"npc_fishwife","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T19:51:00Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"d7c_s2sp_r03","new_state":"DOUBT","day":1,"scenario_id":"scenario_2","ts":"2026-05-05T19:53:00Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"d7c_s2sp_r03","new_state":"BELIEVE","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T20:03:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"d7c_s2sp_r03","new_state":"REJECT","day":3,"scenario_id":"scenario_2","ts":"2026-05-05T20:05:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_maren","from_score":78,"to_score":76,"delta":-2,"day":4,"scenario_id":"scenario_2","ts":"2026-05-05T20:09:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_2","difficulty":"Spymaster","outcome":"FAILED","day_reached":6,"duration_sec":840,"ts":"2026-05-05T20:03:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_3","difficulty":"Spymaster","ts":"2026-05-05T20:05:00Z"}
+{"type":"rumor_seeded","subject_name":"Calder","claim_id":"d7c_s3sp_r01","seed_target":"npc_market_trader","day":1,"scenario_id":"scenario_3","ts":"2026-05-05T20:07:00Z"}
+{"type":"npc_state_changed","npc_name":"Market Trader","rumor_id":"d7c_s3sp_r01","new_state":"DOUBT","day":1,"scenario_id":"scenario_3","ts":"2026-05-05T20:09:00Z"}
+{"type":"npc_state_changed","npc_name":"Calder","rumor_id":"d7c_s3sp_r01","new_state":"REJECT","day":2,"scenario_id":"scenario_3","ts":"2026-05-05T20:17:00Z"}
+{"type":"reputation_delta","npc_id":"npc_calder","from_score":75,"to_score":75,"delta":0,"day":3,"scenario_id":"scenario_3","ts":"2026-05-05T20:23:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_3","difficulty":"Spymaster","outcome":"FAILED","day_reached":7,"duration_sec":900,"ts":"2026-05-05T20:20:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_3","difficulty":"Spymaster","ts":"2026-05-05T20:22:00Z"}
+{"type":"rumor_seeded","subject_name":"Calder","claim_id":"d7c_s3sp_r02","seed_target":"npc_weaver","day":1,"scenario_id":"scenario_3","ts":"2026-05-05T20:24:00Z"}
+{"type":"rumor_seeded","subject_name":"Calder","claim_id":"d7c_s3sp_r02b","seed_target":"npc_town_crier","day":3,"scenario_id":"scenario_3","ts":"2026-05-05T20:34:00Z"}
+{"type":"npc_state_changed","npc_name":"Weaver","rumor_id":"d7c_s3sp_r02","new_state":"BELIEVE","day":2,"scenario_id":"scenario_3","ts":"2026-05-05T20:32:00Z"}
+{"type":"npc_state_changed","npc_name":"Town Crier","rumor_id":"d7c_s3sp_r02b","new_state":"DOUBT","day":4,"scenario_id":"scenario_3","ts":"2026-05-05T20:42:00Z"}
+{"type":"npc_state_changed","npc_name":"Calder","rumor_id":"d7c_s3sp_r02","new_state":"REJECT","day":4,"scenario_id":"scenario_3","ts":"2026-05-05T20:44:00Z"}
+{"type":"reputation_delta","npc_id":"npc_calder","from_score":75,"to_score":73,"delta":-2,"day":4,"scenario_id":"scenario_3","ts":"2026-05-05T20:44:30Z"}
+{"type":"scenario_ended","scenario_id":"scenario_3","difficulty":"Spymaster","outcome":"FAILED","day_reached":8,"duration_sec":960,"ts":"2026-05-05T20:38:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_3","difficulty":"Spymaster","ts":"2026-05-05T20:40:00Z"}
+{"type":"rumor_seeded","subject_name":"Calder","claim_id":"d7c_s3sp_r03","seed_target":"npc_alderman","day":1,"scenario_id":"scenario_3","ts":"2026-05-05T20:42:00Z"}
+{"type":"npc_state_changed","npc_name":"Alderman","rumor_id":"d7c_s3sp_r03","new_state":"DOUBT","day":2,"scenario_id":"scenario_3","ts":"2026-05-05T20:52:00Z"}
+{"type":"npc_state_changed","npc_name":"Alderman","rumor_id":"d7c_s3sp_r03","new_state":"REJECT","day":3,"scenario_id":"scenario_3","ts":"2026-05-05T21:00:00Z"}
+{"type":"reputation_delta","npc_id":"npc_calder","from_score":75,"to_score":75,"delta":0,"day":4,"scenario_id":"scenario_3","ts":"2026-05-05T21:04:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_3","difficulty":"Spymaster","outcome":"FAILED","day_reached":6,"duration_sec":1020,"ts":"2026-05-05T20:57:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Spymaster","ts":"2026-05-05T20:59:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7c_s4sp_r01","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T21:01:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7c_s4sp_r01","new_state":"REJECT","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T21:03:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":62,"delta":0,"day":2,"scenario_id":"scenario_4","ts":"2026-05-05T21:09:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Spymaster","outcome":"FAILED","day_reached":5,"duration_sec":840,"ts":"2026-05-05T21:13:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Spymaster","ts":"2026-05-05T21:15:00Z"}
+{"type":"rumor_seeded","subject_name":"Aldous Prior","claim_id":"d7c_s4sp_r02","seed_target":"npc_aldous_prior","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T21:17:00Z"}
+{"type":"npc_state_changed","npc_name":"Aldous Prior","rumor_id":"d7c_s4sp_r02","new_state":"DOUBT","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T21:25:00Z"}
+{"type":"npc_state_changed","npc_name":"Aldous Prior","rumor_id":"d7c_s4sp_r02","new_state":"REJECT","day":3,"scenario_id":"scenario_4","ts":"2026-05-05T21:33:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7c_s4sp_r02b","seed_target":"npc_vera_midwife","day":3,"scenario_id":"scenario_4","ts":"2026-05-05T21:35:00Z"}
+{"type":"npc_state_changed","npc_name":"Vera Midwife","rumor_id":"d7c_s4sp_r02b","new_state":"DOUBT","day":4,"scenario_id":"scenario_4","ts":"2026-05-05T21:43:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":62,"delta":0,"day":4,"scenario_id":"scenario_4","ts":"2026-05-05T21:43:30Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Spymaster","outcome":"FAILED","day_reached":6,"duration_sec":840,"ts":"2026-05-05T21:29:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Spymaster","ts":"2026-05-05T21:31:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7c_s4sp_r03","seed_target":"npc_vera_midwife","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T21:33:00Z"}
+{"type":"rumor_seeded","subject_name":"Vera Midwife","claim_id":"d7c_s4sp_r03b","seed_target":"npc_aldous_prior","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T21:41:00Z"}
+{"type":"npc_state_changed","npc_name":"Vera Midwife","rumor_id":"d7c_s4sp_r03","new_state":"DOUBT","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T21:43:00Z"}
+{"type":"npc_state_changed","npc_name":"Aldous Prior","rumor_id":"d7c_s4sp_r03b","new_state":"DOUBT","day":3,"scenario_id":"scenario_4","ts":"2026-05-05T21:51:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7c_s4sp_r03","new_state":"REJECT","day":3,"scenario_id":"scenario_4","ts":"2026-05-05T21:53:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":60,"delta":-2,"day":3,"scenario_id":"scenario_4","ts":"2026-05-05T21:53:30Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Spymaster","outcome":"FAILED","day_reached":4,"duration_sec":900,"ts":"2026-05-05T21:46:00Z"}
