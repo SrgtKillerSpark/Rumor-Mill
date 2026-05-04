@@ -500,6 +500,11 @@ func _build_main_panel() -> void:
 		btn_quit.pressed.connect(get_tree().quit)
 		btn_row.add_child(btn_quit)
 
+	# SPA-1099: Bottom spacer — symmetrizes vertical padding with spacer_top.
+	var spacer_bottom := Control.new()
+	spacer_bottom.custom_minimum_size = Vector2(0, 6)
+	vbox.add_child(spacer_bottom)
+
 
 # ── Phase 2: Scenario Select panel ───────────────────────────────────────────
 
