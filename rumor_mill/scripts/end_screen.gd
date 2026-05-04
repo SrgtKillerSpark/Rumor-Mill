@@ -1040,6 +1040,7 @@ func _build_ui() -> void:
 	_btn_next.pressed.connect(_on_next_scenario)
 	_btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 	_btn_next.disabled = true
+	_btn_next.tooltip_text = "Win this scenario to unlock."
 	btn_row.add_child(_btn_next)
 
 	_btn_main_menu = _make_button("Main Menu", 150)

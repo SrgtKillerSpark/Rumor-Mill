@@ -175,14 +175,14 @@ func _build_panel() -> void:
 	vbox.add_child(_desc_lbl)
 
 	_npc_count_lbl = Label.new()
-	_npc_count_lbl.add_theme_font_size_override("font_size", 12)
+	_npc_count_lbl.add_theme_font_size_override("font_size", 13)
 	_npc_count_lbl.add_theme_color_override("font_color", Color(0.82, 0.75, 0.55, 1.0))
 	_npc_count_lbl.visible = false
 	vbox.add_child(_npc_count_lbl)
 
 	_hint_lbl = Label.new()
 	_hint_lbl.text = "Right-click to Observe  (uses 1 Action)"
-	_hint_lbl.add_theme_font_size_override("font_size", 12)
+	_hint_lbl.add_theme_font_size_override("font_size", 13)
 	_hint_lbl.add_theme_color_override("font_color", C_HINT)
 	_hint_lbl.add_theme_constant_override("outline_size", 2)
 	_hint_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))

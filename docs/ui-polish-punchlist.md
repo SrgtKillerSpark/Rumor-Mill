@@ -49,7 +49,7 @@
 |---|-------|---------------|----------|
 | 14 | ~~**End screen panel is fixed 760x640px.** Doesn't adapt to viewport. On 1600x900+ it becomes a small island; on sub-1024 it could clip.~~ **RESOLVED SPA-1179** — fixed PANEL_W/PANEL_H replaced with PANEL_MIN_W(640)/PANEL_MIN_H(560)/PANEL_MAX_W(1100)/PANEL_MAX_H(900)/PANEL_VP_W(0.62)/PANEL_VP_H(0.88). `build()` reads viewport size and clamps within min/max. Tests updated in `test_end_screen_panel_builder.gd`. | end_screen_panel_builder.gd:31-38 | Medium |
 | 15 | ~~**Button height mismatch.** End screen buttons are 40px, pause menu buttons are 42px. 2px inconsistency.~~ **RESOLVED SPA-1660** — end_screen_panel_builder._make_button unified to 42px (matching main_menu). | end_screen_panel_builder.gd:265-266 vs main_menu.gd:365 | Small |
-| 16 | **Disabled "Next Scenario" button has no tooltip.** Greyed out at 35% opacity with no explanation. Should say e.g. "Win this scenario to unlock." | end_screen_panel_builder.gd:205-208 | Small |
+| 16 | ~~**Disabled "Next Scenario" button has no tooltip.** Greyed out at 35% opacity with no explanation. Should say e.g. "Win this scenario to unlock."~~ **RESOLVED SPA-1666** — `tooltip_text = "Win this scenario to unlock."` added to `_btn_next` in `end_screen.gd` (active code path). | end_screen.gd:1043 | Small |
 | 17 | ~~**NPC name label width hardcoded to 130px.** Long or localized names will truncate.~~ **RESOLVED SPA-1660** — removed fixed 160px width; name_lbl now uses SIZE_EXPAND_FILL to fill available row space. | end_screen_scoring.gd:264 | Small |
 | 18 | ~~**Top-influencer name width hardcoded to 140px.** Same localization risk.~~ **RESOLVED SPA-1660** — removed fixed 160px width; name_lbl now uses SIZE_EXPAND_FILL to fill available row space. | end_screen_replay_tab.gd:162-163 | Small |
 | 19 | **Feedback panel is fixed 500x360px.** No responsive sizing. | end_screen_feedback.gd:19-20 | Small |
@@ -87,8 +87,8 @@
 | 31 | **Suggestion toasts can overlap.** Same problem — PanelContainer siblings at the same screen position with no vertical offset management. | suggestion_toast.gd:11-12 | Large |
 | 32 | ~~**Tooltip manager and HUD tooltip use different canvas layers (100 vs 25).** If both are active, tooltip_manager always wins. Inconsistent tooltip behavior.~~ **RESOLVED SPA-1179** — `hud_tooltip.gd` raised from layer 25 to layer 99. Documented precedence in both files: `hud_tooltip`(99) = auto-detected hover tooltips; `TooltipManager`(100) = explicit data-driven tooltips, always wins by design. Both scripts now have matching inline doc comments. | tooltip_manager.gd, hud_tooltip.gd | Medium |
 | 33 | ~~**Tooltip edge-clamping uses 4px buffer.** Too tight at 1366x768; tooltips can appear to hug screen edge.~~ **RESOLVED SPA-1660** — tooltip_manager.gd raised from 4px to 8px (matching hud_tooltip.gd which already used 8px). | tooltip_manager.gd:77, hud_tooltip.gd:205-212 | Small |
-| 34 | **Building tooltip uses 4 different font sizes (16/13/12/12).** Visual hierarchy between description and NPC count is unclear. | building_tooltip.gd:158-185 | Small |
-| 35 | **NPC tooltip state icon has no fallback image.** Missing texture shows empty box. | npc_tooltip.gd:251-252 | Small |
+| 34 | ~~**Building tooltip uses 4 different font sizes (16/13/12/12).** Visual hierarchy between description and NPC count is unclear.~~ **RESOLVED SPA-1666** — `_npc_count_lbl` and `_hint_lbl` raised from 12→13 giving a clean 2-tier hierarchy: 16 header, 13 body. | building_tooltip.gd:178/185 | Small |
+| 35 | ~~**NPC tooltip state icon has no fallback image.** Missing texture shows empty box.~~ **RESOLVED SPA-1666** — `_state_icon_rect.visible = false` added in the else branch of the atlas-load block; rect is explicitly shown (`visible = true`) when texture is available. | npc_tooltip.gd:351-353 | Small |
 
 ### Event & Mission Modals
 
@@ -104,13 +104,13 @@
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
 | 40 | **Controls-reference panel offset_right hardcoded to 780px.** Extends off-screen at 1024px-wide viewports. | context_controls_panel.gd:107 | Medium |
-| 41 | **NPC dialogue panel uses hardcoded screen offset `Vector2(12, -80)`.** Doesn't adapt to viewport aspect ratio. No vertical clamp for tall panels. | npc_dialogue_panel.gd:160-163 | Medium |
+| 41 | ~~**NPC dialogue panel uses hardcoded screen offset `Vector2(12, -80)`.** Doesn't adapt to viewport aspect ratio. No vertical clamp for tall panels.~~ **RESOLVED SPA-1667** — Extracted `_compute_panel_pos` static helper; offset converted to `vp_size * (0.009, -0.111)` (≈12×-80 at 1280×720). Full viewport clamp retained. Unit tests added in `test_npc_dialogue_panel.gd`. | npc_dialogue_panel.gd:148-159 | Medium |
 | 42 | **NPC dialogue panel `await process_frame` can hang if game is paused.** UI freeze risk. | npc_dialogue_panel.gd:435 | Medium |
 | 43 | **Tutorial banner accent stripe is 5px.** May be imperceptible at higher DPI/resolution. | tutorial_banner.gd:43 | Small |
 | 44 | **Loading tips label `custom_minimum_size` is 640x60 with `fit_content=true`.** Long tips can exceed 60px height. | loading_tips.gd:81 | Small |
-| 45 | **Zone indicator offset_right hardcoded to 200px.** Can overflow at narrow viewports. | zone_indicator.gd:62-66 | Small |
+| 45 | ~~**Zone indicator offset_right hardcoded to 200px.** Can overflow at narrow viewports.~~ **RESOLVED SPA-1667** — `SIDE_RIGHT` offset replaced with `vp_w * 0.156` (≈200 px at 1280-wide). | zone_indicator.gd:62-67 | Small |
 | 46 | ~~**NPC info panel close animation (0.14s) faster than open (0.18s).** Feels abrupt.~~ ✅ Fixed: close duration set to 0.18s to match open. | npc_info_panel.gd:99/110 | Small |
-| 47 | **Thought-bubble legend uses hard pixel offsets (-180, -280, -90).** No grow-direction ensures proper scaling. | thought_bubble_legend.gd:72-75 | Small |
+| 47 | ~~**Thought-bubble legend uses hard pixel offsets (-180, -280, -90).** No grow-direction ensures proper scaling.~~ **RESOLVED SPA-1667** — Offsets converted to viewport-relative fractions (`vp.x * 0.141`, `vp.y * 0.389`, `vp.y * 0.125`). `grow_horizontal`/`grow_vertical` already set. | thought_bubble_legend.gd:68-80 | Small |
 
 ---
 
