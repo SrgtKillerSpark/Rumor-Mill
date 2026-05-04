@@ -88,7 +88,7 @@ func build(owner_layer: CanvasLayer) -> void:
 	panel_style.bg_color           = C_PANEL_BG
 	panel_style.border_color       = C_PANEL_BORDER
 	panel_style.set_border_width_all(2)
-	panel_style.set_content_margin_all(20)
+	panel_style.set_content_margin_all(UILayoutConstants.MARGIN_STANDARD)
 	panel.add_theme_stylebox_override("panel", panel_style)
 	owner_layer.add_child(panel)
 

@@ -80,6 +80,7 @@ extends RefCounted
 ##   • TestObjectiveHud           — urgency colour constants, CALLOUT_TOOLTIP_ID, initial state,
 ##                                  _get_urgency_color() all four bands, entrance animation guard (SPA-1024)
 ##   • TestMain                   — initial state, @onready scene refs null, _camera_shake null guard (SPA-1024)
+##   • TestUILayoutConstants      — MARGIN_STANDARD/TIGHT values, clamp_to_viewport min/mid/max (SPA-1669)
 ##   • TestUILayerManager         — scene/public/private refs null, _on_player_exposed and flush null guards (SPA-1024)
 ##   • TestTutorialWiring         — all gate booleans false, counters zero, node refs null,
 ##                                  wire_pause_menu null guard (SPA-1024)
@@ -315,6 +316,7 @@ const TestTutorialController = preload("res://tests/test_tutorial_controller.gd"
 const TestTutorialHud = preload("res://tests/test_tutorial_hud.gd")
 const TestTutorialSystem = preload("res://tests/test_tutorial_system.gd")
 const TestTutorialWiring = preload("res://tests/test_tutorial_wiring.gd")
+const TestUILayoutConstants = preload("res://tests/test_ui_layout_constants.gd")
 const TestUILayerManager = preload("res://tests/test_ui_layer_manager.gd")
 const TestVisualAffordances = preload("res://tests/test_visual_affordances.gd")
 const TestWeatherSystem = preload("res://tests/test_weather_system.gd")
@@ -542,6 +544,9 @@ func _init() -> void:
 	TestMain.new().run()
 
 	print("\n── UILayerManager ──")
+	print("\n── UILayoutConstants ──")
+	TestUILayoutConstants.new().run()
+
 	TestUILayerManager.new().run()
 
 	print("\n── TutorialWiring ──")

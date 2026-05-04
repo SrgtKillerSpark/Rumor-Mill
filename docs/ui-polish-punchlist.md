@@ -39,7 +39,7 @@
 
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
-| 11 | **Menu panel widths are hardcoded (440-700px).** At viewports below ~800px wide, the 700px credits/settings panel would exceed viewport. Not critical with canvas_items stretch but limits future aspect-ratio support. | main_menu.gd:440-441 | Small |
+| 11 | ~~**Menu panel widths are hardcoded (440-700px).** At viewports below ~800px wide, the 700px credits/settings panel would exceed viewport. Not critical with canvas_items stretch but limits future aspect-ratio support.~~ **RESOLVED SPA-1669** — all `main_menu.gd` panels (main, select, briefing, intro, settings, credits, stats) and `main_menu_scenario_select.gd` now use `UILayoutConstants.clamp_to_viewport()` with per-panel min/max/vp-fraction constants. Panels never exceed viewport at any tested resolution. | main_menu.gd, main_menu_scenario_select.gd, ui_layout_constants.gd | Small |
 | 12 | ~~**Narrative RichTextLabel uses `fit_content=true` with `custom_maximum_size.y=120`.** If wrapped narrative text exceeds 120px, it overflows. No scroll fallback.~~ **RESOLVED SPA-1179** — the relevant label is `_intro_body` in `main_menu_briefing_panel.gd` (code was refactored from `main_menu.gd`). `scroll_active` changed from `false` to `true`; `SIZE_EXPAND_FILL` added so the label grows to fill the panel before scrolling. | main_menu_briefing_panel.gd:208 | Medium |
 | 13 | **Scenario-select description truncated to 180 chars with no scroll.** If full teaser text is longer, users only see a cut version. `scroll_active = false`. | main_menu_scenario_select.gd:133-140 | Small |
 
@@ -58,8 +58,8 @@
 
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
-| 20 | **Pause menu panel hardcoded to 300x540px.** Content-heavy scenarios may need more width; narrow for slot picker labels. | pause_menu.gd:213 | Small |
-| 21 | **Content margin inconsistency across panels.** Values range from 10px (scenario-select cards) to 28px (main menu panels) with no clear rationale. | main_menu.gd:464, main_menu_scenario_select.gd:287, end_screen_panel_builder.gd:82 | Small |
+| 20 | ~~**Pause menu panel hardcoded to 300x540px.** Content-heavy scenarios may need more width; narrow for slot picker labels.~~ **RESOLVED SPA-1669** — pause panel now uses `UILayoutConstants.clamp_to_viewport()` with min 260×420 / max 380×540 / vp fractions 0.28/0.75. Content margin set to `MARGIN_STANDARD` (20 px). | pause_menu.gd, ui_layout_constants.gd | Small |
+| 21 | ~~**Content margin inconsistency across panels.** Values range from 10px (scenario-select cards) to 28px (main menu panels) with no clear rationale.~~ **RESOLVED SPA-1669** — new `UILayoutConstants` class defines `MARGIN_STANDARD` (20 px) for primary panels and `MARGIN_TIGHT` (12 px) for cards/compact elements. Applied consistently across `main_menu.gd`, `main_menu_scenario_select.gd`, `pause_menu.gd`, and `end_screen_panel_builder.gd`. | ui_layout_constants.gd, main_menu.gd, main_menu_scenario_select.gd, pause_menu.gd, end_screen_panel_builder.gd | Small |
 
 ### Journal & Rumor Panel
 

@@ -80,6 +80,29 @@ const SCENARIO_DESCRIPTOR := {
 	"scenario_6": "Stealth mode — guards are on the enemy payroll.",
 }
 
+# SPA-1669 #11: Responsive panel sizing — min/max pixel bounds and viewport
+# fractions.  Each call site computes actual w/h via
+# UILayoutConstants.clamp_to_viewport() before passing to _make_*_panel().
+const MAIN_PANEL_MIN_W    := 340;  const MAIN_PANEL_MAX_W    := 440
+const MAIN_PANEL_MIN_H    := 480;  const MAIN_PANEL_MAX_H    := 600
+const MAIN_PANEL_VP_W     := 0.35; const MAIN_PANEL_VP_H     := 0.83
+
+const WIDE_PANEL_MIN_W    := 500;  const WIDE_PANEL_MAX_W    := 700
+const WIDE_PANEL_MIN_H    := 400;  const WIDE_PANEL_MAX_H    := 520
+const WIDE_PANEL_VP_W     := 0.55; const WIDE_PANEL_VP_H     := 0.72
+
+const MED_PANEL_MIN_W     := 380;  const MED_PANEL_MAX_W     := 600
+const MED_PANEL_MIN_H     := 400;  const MED_PANEL_MAX_H     := 580
+const MED_PANEL_VP_W      := 0.47; const MED_PANEL_VP_H      := 0.81
+
+const NARROW_PANEL_MIN_W  := 360;  const NARROW_PANEL_MAX_W  := 480
+const NARROW_PANEL_MIN_H  := 380;  const NARROW_PANEL_MAX_H  := 580
+const NARROW_PANEL_VP_W   := 0.38; const NARROW_PANEL_VP_H   := 0.81
+
+const STATS_PANEL_MIN_W   := 480;  const STATS_PANEL_MAX_W   := 680
+const STATS_PANEL_MIN_H   := 400;  const STATS_PANEL_MAX_H   := 520
+const STATS_PANEL_VP_W    := 0.53; const STATS_PANEL_VP_H    := 0.72
+
 enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS }
 
 # ── State ─────────────────────────────────────────────────────────────────────
@@ -405,8 +428,11 @@ func _process(delta: float) -> void:
 # ── Phase 1: Main Menu panel ──────────────────────────────────────────────────
 
 func _build_main_panel() -> void:
-	# SPA-685: Redesigned parchment scroll with medieval manuscript title.
-	_panel_main = _make_parchment_panel(440, 600)
+	# SPA-685 / SPA-1669 #11: Responsive parchment scroll.
+	var vp := get_viewport().get_visible_rect().size
+	var pw := UILayoutConstants.clamp_to_viewport(vp.x, MAIN_PANEL_VP_W, MAIN_PANEL_MIN_W, MAIN_PANEL_MAX_W)
+	var ph := UILayoutConstants.clamp_to_viewport(vp.y, MAIN_PANEL_VP_H, MAIN_PANEL_MIN_H, MAIN_PANEL_MAX_H)
+	_panel_main = _make_parchment_panel(pw, ph)
 	add_child(_panel_main)
 
 	var vbox := VBoxContainer.new()
@@ -511,7 +537,10 @@ func _build_main_panel() -> void:
 # ── Phase 2: Scenario Select panel ───────────────────────────────────────────
 
 func _build_select_panel() -> void:
-	_panel_select = _make_parchment_panel(700, 520)
+	var vps := get_viewport().get_visible_rect().size
+	var sw := UILayoutConstants.clamp_to_viewport(vps.x, WIDE_PANEL_VP_W, WIDE_PANEL_MIN_W, WIDE_PANEL_MAX_W)
+	var sh := UILayoutConstants.clamp_to_viewport(vps.y, WIDE_PANEL_VP_H, WIDE_PANEL_MIN_H, WIDE_PANEL_MAX_H)
+	_panel_select = _make_parchment_panel(sw, sh)
 	add_child(_panel_select)
 
 	var vbox := VBoxContainer.new()
@@ -805,7 +834,10 @@ func _on_play_anyway_pressed(idx: int) -> void:
 # ── Phase 3: Briefing panel ───────────────────────────────────────────────────
 
 func _build_briefing_panel() -> void:
-	_panel_briefing = _make_panel(600, 540)
+	var vpb := get_viewport().get_visible_rect().size
+	var bw := UILayoutConstants.clamp_to_viewport(vpb.x, MED_PANEL_VP_W, MED_PANEL_MIN_W, MED_PANEL_MAX_W)
+	var bh := UILayoutConstants.clamp_to_viewport(vpb.y, MED_PANEL_VP_H, MED_PANEL_MIN_H, MED_PANEL_MAX_H)
+	_panel_briefing = _make_panel(bw, bh)
 	add_child(_panel_briefing)
 
 	var vbox := VBoxContainer.new()
@@ -1166,7 +1198,10 @@ func _on_briefing_next_pressed() -> void:
 # ── Phase 4: Scenario Intro panel ─────────────────────────────────────────────
 
 func _build_intro_panel() -> void:
-	_panel_intro = _make_panel(700, 460)
+	var vpi := get_viewport().get_visible_rect().size
+	var iw := UILayoutConstants.clamp_to_viewport(vpi.x, WIDE_PANEL_VP_W, WIDE_PANEL_MIN_W, WIDE_PANEL_MAX_W)
+	var ih := UILayoutConstants.clamp_to_viewport(vpi.y, WIDE_PANEL_VP_H, WIDE_PANEL_MIN_H, WIDE_PANEL_MAX_H)
+	_panel_intro = _make_panel(iw, ih)
 	add_child(_panel_intro)
 
 	var vbox := VBoxContainer.new()
@@ -1235,7 +1270,10 @@ func _on_intro_begin_pressed() -> void:
 # ── Phase 5: Settings panel ───────────────────────────────────────────────────
 
 func _build_settings_panel() -> void:
-	_panel_settings = _make_panel(480, 580)
+	var vpc := get_viewport().get_visible_rect().size
+	var cw := UILayoutConstants.clamp_to_viewport(vpc.x, NARROW_PANEL_VP_W, NARROW_PANEL_MIN_W, NARROW_PANEL_MAX_W)
+	var ch := UILayoutConstants.clamp_to_viewport(vpc.y, NARROW_PANEL_VP_H, NARROW_PANEL_MIN_H, NARROW_PANEL_MAX_H)
+	_panel_settings = _make_panel(cw, ch)
 	add_child(_panel_settings)
 
 	var vbox := VBoxContainer.new()
@@ -1542,7 +1580,10 @@ func _on_ui_scale_cycle() -> void:
 # ── Phase 6: Credits panel ────────────────────────────────────────────────────
 
 func _build_credits_panel() -> void:
-	_panel_credits = _make_panel(480, 480)
+	var vpcr := get_viewport().get_visible_rect().size
+	var crw := UILayoutConstants.clamp_to_viewport(vpcr.x, NARROW_PANEL_VP_W, NARROW_PANEL_MIN_W, NARROW_PANEL_MAX_W)
+	var crh := UILayoutConstants.clamp_to_viewport(vpcr.y, NARROW_PANEL_VP_H, NARROW_PANEL_MIN_H, NARROW_PANEL_MAX_H)
+	_panel_credits = _make_panel(crw, crh)
 	add_child(_panel_credits)
 
 	var vbox := VBoxContainer.new()
@@ -1606,7 +1647,10 @@ func _build_credits_panel() -> void:
 # ── Phase 7: Statistics panel ─────────────────────────────────────────────────
 
 func _build_stats_panel() -> void:
-	_panel_stats = _make_panel(680, 520)
+	var vpst := get_viewport().get_visible_rect().size
+	var stw := UILayoutConstants.clamp_to_viewport(vpst.x, STATS_PANEL_VP_W, STATS_PANEL_MIN_W, STATS_PANEL_MAX_W)
+	var sth := UILayoutConstants.clamp_to_viewport(vpst.y, STATS_PANEL_VP_H, STATS_PANEL_MIN_H, STATS_PANEL_MAX_H)
+	_panel_stats = _make_panel(stw, sth)
 	add_child(_panel_stats)
 
 	# Content is built dynamically in _rebuild_stats_content() to reflect live data.
@@ -1819,7 +1863,8 @@ func _build_version_label() -> void:
 
 # ── UI helpers ────────────────────────────────────────────────────────────────
 
-## SPA-589: Creates a parchment-styled centred panel with warmer tones and a scroll-edge feel.
+## SPA-589 / SPA-1669: Creates a parchment-styled centred panel with warmer
+## tones and a scroll-edge feel.  Accepts pre-computed (viewport-clamped) w/h.
 func _make_parchment_panel(w: int, h: int) -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(w, h)
@@ -1837,14 +1882,14 @@ func _make_parchment_panel(w: int, h: int) -> PanelContainer:
 	style.border_color       = Color(0.55, 0.38, 0.18, 0.85)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(6)
-	style.set_content_margin_all(28)
+	style.set_content_margin_all(UILayoutConstants.MARGIN_STANDARD)
 	# Top border slightly thicker for scroll-top effect.
 	style.border_width_top = 3
 	panel.add_theme_stylebox_override("panel", style)
 	return panel
 
 
-## Creates a centred PanelContainer of the given size.
+## Creates a centred PanelContainer.  Accepts pre-computed (viewport-clamped) w/h.
 func _make_panel(w: int, h: int) -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(w, h)
@@ -1861,7 +1906,7 @@ func _make_panel(w: int, h: int) -> PanelContainer:
 	style.bg_color           = C_PANEL_BG
 	style.border_color       = C_PANEL_BORDER
 	style.set_border_width_all(2)
-	style.set_content_margin_all(28)
+	style.set_content_margin_all(UILayoutConstants.MARGIN_STANDARD)
 	panel.add_theme_stylebox_override("panel", style)
 	return panel
 

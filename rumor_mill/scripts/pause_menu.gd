@@ -19,6 +19,11 @@ const C_BTN_PRESSED  := Color(0.22, 0.13, 0.05, 1.0)
 const C_BTN_BORDER   := Color(0.55, 0.38, 0.18, 1.0)
 const C_BTN_TEXT     := Color(0.95, 0.91, 0.80, 1.0)
 
+# SPA-1669 #20: Responsive pause panel sizing (was hardcoded 340×540).
+const PAUSE_PANEL_MIN_W := 260;  const PAUSE_PANEL_MAX_W := 380
+const PAUSE_PANEL_MIN_H := 420;  const PAUSE_PANEL_MAX_H := 540
+const PAUSE_PANEL_VP_W  := 0.28; const PAUSE_PANEL_VP_H  := 0.75
+
 var _is_open: bool = false
 var _scenario_id: String = ""
 var _how_to_play: CanvasLayer = null
@@ -161,23 +166,21 @@ func _build_ui() -> void:
 	_bg_rect.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_bg_rect)
 
-	# Centred panel — tall enough for buttons + slot picker + status line.
+	# SPA-1669 #20: Responsive centred panel — viewport-clamped sizing.
+	var vp_size := get_viewport().get_visible_rect().size
+	var pw := UILayoutConstants.clamp_to_viewport(vp_size.x, PAUSE_PANEL_VP_W, PAUSE_PANEL_MIN_W, PAUSE_PANEL_MAX_W)
+	var ph := UILayoutConstants.clamp_to_viewport(vp_size.y, PAUSE_PANEL_VP_H, PAUSE_PANEL_MIN_H, PAUSE_PANEL_MAX_H)
 	_center_panel = Panel.new()
-	_center_panel.custom_minimum_size = Vector2(340, 540)
+	_center_panel.custom_minimum_size = Vector2(pw, ph)
 	_center_panel.set_anchors_preset(Control.PRESET_CENTER)
 	_center_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	_center_panel.pivot_offset = Vector2(170, 270)  # centre of 340x540
+	_center_panel.pivot_offset = Vector2(pw / 2.0, ph / 2.0)
 	var style := StyleBoxFlat.new()
 	style.bg_color            = Color(0.10, 0.08, 0.06, 0.96)
-	style.border_width_left   = 2
-	style.border_width_right  = 2
-	style.border_width_top    = 2
-	style.border_width_bottom = 2
+	style.set_border_width_all(2)
 	style.border_color        = Color(0.65, 0.55, 0.35, 1.0)
-	style.corner_radius_top_left     = 6
-	style.corner_radius_top_right    = 6
-	style.corner_radius_bottom_left  = 6
-	style.corner_radius_bottom_right = 6
+	style.set_corner_radius_all(6)
+	style.set_content_margin_all(UILayoutConstants.MARGIN_STANDARD)
 	_center_panel.add_theme_stylebox_override("panel", style)
 	add_child(_center_panel)
 

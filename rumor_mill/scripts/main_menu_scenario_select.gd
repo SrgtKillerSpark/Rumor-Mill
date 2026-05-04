@@ -45,6 +45,11 @@ const SCENARIO_DESCRIPTOR := {
 	"scenario_6": "Stealth mode — guards are on the enemy payroll.",
 }
 
+# SPA-1669 #11: Responsive panel sizing (mirrors main_menu.gd WIDE_PANEL).
+const SELECT_PANEL_MIN_W := 500;  const SELECT_PANEL_MAX_W := 700
+const SELECT_PANEL_MIN_H := 400;  const SELECT_PANEL_MAX_H := 520
+const SELECT_PANEL_VP_W  := 0.55; const SELECT_PANEL_VP_H  := 0.72
+
 # ── Public refs ───────────────────────────────────────────────────────────────
 var panel: Control = null
 var selected_scenario: Dictionary = {}
@@ -74,7 +79,11 @@ func build(
 	_is_scenario_locked   = is_locked_fn
 	_unlock_requires_title = unlock_title_fn
 
-	panel = _make_parchment_panel(700, 520)
+	# SPA-1669 #11: Responsive sizing — viewport-clamped panel dimensions.
+	var vp_size := DisplayServer.window_get_size()
+	var pw := UILayoutConstants.clamp_to_viewport(float(vp_size.x), SELECT_PANEL_VP_W, SELECT_PANEL_MIN_W, SELECT_PANEL_MAX_W)
+	var ph := UILayoutConstants.clamp_to_viewport(float(vp_size.y), SELECT_PANEL_VP_H, SELECT_PANEL_MIN_H, SELECT_PANEL_MAX_H)
+	panel = _make_parchment_panel(pw, ph)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 12)
@@ -283,12 +292,13 @@ func _scenario_card_style(bg: Color, border: Color, _accent: Color) -> StyleBoxF
 	s.border_color = border
 	s.set_border_width_all(1)
 	s.border_width_left = 4
-	s.set_content_margin_all(16)
-	s.content_margin_left = 14
+	# SPA-1669 #21: Use shared TIGHT margin; left reduced by accent border width.
+	s.set_content_margin_all(UILayoutConstants.MARGIN_TIGHT)
+	s.content_margin_left = UILayoutConstants.MARGIN_TIGHT - 2
 	return s
 
 
-## Build the parchment-styled centred panel used for main and select phases.
+## Build the parchment-styled centred panel.  Accepts pre-computed w/h.
 func _make_parchment_panel(w: int, h: int) -> PanelContainer:
 	var p := PanelContainer.new()
 	p.custom_minimum_size = Vector2(w, h)
@@ -305,7 +315,7 @@ func _make_parchment_panel(w: int, h: int) -> PanelContainer:
 	style.border_color = C_PANEL_BORDER
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(6)
-	style.set_content_margin_all(28)
+	style.set_content_margin_all(UILayoutConstants.MARGIN_STANDARD)
 	style.border_width_top = 3
 	p.add_theme_stylebox_override("panel", style)
 	return p
