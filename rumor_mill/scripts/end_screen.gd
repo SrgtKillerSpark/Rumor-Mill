@@ -1652,6 +1652,7 @@ func _show_what_went_wrong(scenario_id: int, fail_reason: String) -> void:
 func _on_play_again() -> void:
 	var pause_menu_script = preload("res://scripts/pause_menu.gd")
 	pause_menu_script._pending_restart_id = _current_scenario_id
+	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()
 
 
@@ -1661,10 +1662,12 @@ func _on_next_scenario() -> void:
 		return
 	var pause_menu_script = preload("res://scripts/pause_menu.gd")
 	pause_menu_script._pending_restart_id = next_id
+	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()
 
 
 func _on_main_menu() -> void:
 	var pause_menu_script = preload("res://scripts/pause_menu.gd")
 	pause_menu_script._pending_restart_id = ""
+	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()
