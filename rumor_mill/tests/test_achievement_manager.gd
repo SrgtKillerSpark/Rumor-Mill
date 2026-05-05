@@ -17,6 +17,7 @@
 class_name TestAchievementManager
 extends RefCounted
 
+const AchievementManagerScript := preload("res://scripts/achievement_manager.gd")
 
 func run() -> void:
 	var passed := 0
@@ -49,8 +50,8 @@ func run() -> void:
 
 ## Returns a fresh AchievementManager with no unlocks and no Steam or file context.
 ## _ready() is intentionally not called; the node is never added to the scene tree.
-static func _make_mgr() -> AchievementManager:
-	return AchievementManager.new()
+static func _make_mgr() -> Node:
+	return AchievementManagerScript.new()
 
 
 # ── tests ────────────────────────────────────────────────────────────────────
@@ -121,8 +122,8 @@ static func test_get_all_reflects_unlock() -> bool:
 
 ## Every key in the static ACHIEVEMENTS constant has the required definition fields.
 static func test_achievements_have_required_fields() -> bool:
-	for ach_id in AchievementManager.ACHIEVEMENTS:
-		var ach: Dictionary = AchievementManager.ACHIEVEMENTS[ach_id]
+	for ach_id in AchievementManagerScript.ACHIEVEMENTS:
+		var ach: Dictionary = AchievementManagerScript.ACHIEVEMENTS[ach_id]
 		for field in ["name", "description", "steam_api_name"]:
 			if not ach.has(field):
 				push_error("test_achievements_have_required_fields: '%s' missing '%s'" % [ach_id, field])

@@ -13,6 +13,7 @@
 class_name TestAchievementSignal
 extends RefCounted
 
+const AchievementManagerScript := preload("res://scripts/achievement_manager.gd")
 
 func run() -> void:
 	var passed := 0
@@ -40,8 +41,8 @@ func run() -> void:
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
-static func _make_mgr() -> AchievementManager:
-	return AchievementManager.new()
+static func _make_mgr() -> Node:
+	return AchievementManagerScript.new()
 
 
 # ── tests ────────────────────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ static func test_signal_carries_display_name() -> bool:
 		captured_name = dname
 	)
 	mgr.unlock("ghost")
-	var expected: String = AchievementManager.ACHIEVEMENTS["ghost"]["name"]
+	var expected: String = AchievementManagerScript.ACHIEVEMENTS["ghost"]["name"]
 	if captured_name != expected:
 		push_error("test_signal_carries_display_name: expected '%s', got '%s'" % [expected, captured_name])
 		return false
