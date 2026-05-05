@@ -171,7 +171,7 @@ func _build_entry(
 
 func _make_portrait_rect(portrait_id: int) -> TextureRect:
 	var rect := TextureRect.new()
-	var _vp_h: float = get_viewport().get_visible_rect().size.y
+	var _vp_h: float = _world_ref.get_viewport().get_visible_rect().size.y
 	# SPA-1683 #24: viewport-relative portrait size; ≈48×60px at 720p.
 	rect.custom_minimum_size = Vector2(
 		clamp(_vp_h * 0.0667, 40.0, 64.0),
