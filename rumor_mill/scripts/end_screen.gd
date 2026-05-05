@@ -424,6 +424,8 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 
 	# SPA-784: Defeat makes Try Again prominent; victory focuses Play Again.
 	if not won and _btn_again != null:
+		# SPA-1804: Rename CTA to "Try Again" on defeat.
+		_btn_again.text = "Try Again"
 		# Enlarge Try Again button for defeat to draw attention.
 		_btn_again.add_theme_font_size_override("font_size", 18)
 		_btn_again.custom_minimum_size = Vector2(180, 48)
