@@ -485,6 +485,7 @@ static func _serialize_intel_store(store: PlayerIntelStore) -> Dictionary:
 		"free_campaign_charges":    store.free_campaign_charges,
 		"bonus_expose_uses":        store.bonus_expose_uses,
 		"blackmail_uses_count":     store.blackmail_uses_count,
+		"evidence_target_cooldown": store._evidence_target_cooldown.duplicate(),
 	}
 
 
@@ -732,6 +733,8 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 			int(ed.get("acquired_tick", 0))
 		)
 		store.evidence_inventory.append(item)
+
+	store._evidence_target_cooldown = d.get("evidence_target_cooldown", {}).duplicate()
 
 
 static func _restore_reputation(rs: ReputationSystem, d: Dictionary) -> void:
