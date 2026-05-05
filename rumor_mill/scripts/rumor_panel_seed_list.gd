@@ -111,6 +111,12 @@ func build(
 			on_evidence_select, on_evidence_clear
 		)
 
+	# SPA-1727: Pre-seed Maren proximity check for S2.
+	var is_s2: bool = _world_ref != null and _world_ref.get("active_scenario_id") == "scenario_2"
+	var maren_neighbours: Dictionary = {}
+	if is_s2 and _world_ref.get("social_graph") != null:
+		maren_neighbours = _world_ref.social_graph.get_neighbours(ScenarioManager.MAREN_NUN_ID)
+
 	# SPA-758: Determine recommended seed target on first Panel 3 open in S1.
 	var recommended_id: String = ""
 	var is_s1: bool = _world_ref != null and _world_ref.get("active_scenario_id") == "scenario_1"
@@ -137,6 +143,7 @@ func build(
 		var entry := _build_seed_entry(
 			npc, npc_id, npc_name, faction,
 			npc_id == recommended_id,
+			is_s2 and maren_neighbours.has(npc_id),
 			selected_seed_npc, selected_claim_id, selected_subject,
 			selected_evidence_item,
 			on_select_seed, on_hover_enter, on_hover_exit, on_pop_confirm
@@ -152,6 +159,7 @@ func _build_seed_entry(
 		npc_name:               String,
 		faction:                String,
 		is_recommended:         bool,
+		is_maren_neighbour:     bool,
 		selected_seed_npc:      String,
 		selected_claim_id:      String,
 		selected_subject:       String,
@@ -310,6 +318,15 @@ func _build_seed_entry(
 			heat_warn.add_theme_font_size_override("font_size", 11)
 			heat_warn.add_theme_color_override("font_color", C_STATUS_WARN)
 			vbox.add_child(heat_warn)
+
+	# SPA-1727: Maren proximity warning — only shown in Scenario 2.
+	if is_maren_neighbour:
+		var maren_warn := Label.new()
+		maren_warn.text = "  ⚠ Close to Sister Maren's circle"
+		maren_warn.add_theme_font_size_override("font_size", 11)
+		maren_warn.add_theme_color_override("font_color", C_STATUS_WARN)
+		maren_warn.tooltip_text = "Seeding this NPC risks the rumor reaching Sister Maren through social connections."
+		vbox.add_child(maren_warn)
 
 	vbox.add_child(HSeparator.new())
 
