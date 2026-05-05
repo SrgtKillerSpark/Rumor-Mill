@@ -2,10 +2,14 @@
 ##
 ## Covers:
 ##   • Palette constants: C_BG, C_BORDER, C_BADGE, C_BODY, C_LABEL, C_ACTION
-##   • Layout constants: POPUP_W, POPUP_H, POPUP_Y, VW, AUTO_DISMISS, PARTICLE_CNT
+##   • Layout constants: POPUP_W_FRAC, POPUP_H_FRAC, POPUP_Y_FRAC,
+##                       AUTO_DISMISS, PARTICLE_CNT
+##   • Computed vars initial state: _popup_w/_popup_h/_popup_y == 0.0
 ##   • Initial state: refs null, _is_dismissed=false
 ##
-## NOTE: setup() builds and adds nodes — requires scene tree, not tested here.
+## NOTE: The card was refactored from fixed pixel constants (POPUP_W/H/Y, VW)
+## to viewport-relative fractions (POPUP_W_FRAC/H_FRAC/Y_FRAC) prior to SPA-1798.
+## setup() builds and adds nodes — requires scene tree, not tested here.
 ##
 ## Run from the Godot editor: Scene → Run Script.
 
@@ -33,13 +37,14 @@ func run() -> void:
 		"test_c_border_gold",
 		"test_c_badge_gold",
 		"test_c_action_green",
-		# Layout constants
-		"test_popup_w",
-		"test_popup_h",
-		"test_popup_y",
-		"test_vw",
+		# Layout fraction constants (refactored from fixed pixel values pre-SPA-1798)
+		"test_popup_w_frac",
+		"test_popup_h_frac",
+		"test_popup_y_frac",
 		"test_auto_dismiss",
 		"test_particle_cnt",
+		# Computed vars initial state
+		"test_popup_y_var_initially_zero",
 		# Initial state
 		"test_initial_popup_root_null",
 		"test_initial_dismiss_tween_null",
@@ -88,32 +93,27 @@ static func test_c_action_green() -> bool:
 	return ok
 
 
-# ── Layout constants ──────────────────────────────────────────────────────────
+# ── Layout fraction constants ─────────────────────────────────────────────────
+# The card was refactored from fixed pixel constants (POPUP_W/H/Y, VW) to
+# viewport-relative fractions before SPA-1798.  Tests updated accordingly.
 
-static func test_popup_w() -> bool:
+static func test_popup_w_frac() -> bool:
 	var mc := _make_mc()
-	var ok: bool = mc.POPUP_W == 540
+	var ok: bool = is_equal_approx(mc.POPUP_W_FRAC, 0.422)
 	mc.free()
 	return ok
 
 
-static func test_popup_h() -> bool:
+static func test_popup_h_frac() -> bool:
 	var mc := _make_mc()
-	var ok: bool = mc.POPUP_H == 168
+	var ok: bool = is_equal_approx(mc.POPUP_H_FRAC, 0.233)
 	mc.free()
 	return ok
 
 
-static func test_popup_y() -> bool:
+static func test_popup_y_frac() -> bool:
 	var mc := _make_mc()
-	var ok: bool = mc.POPUP_Y == 72.0
-	mc.free()
-	return ok
-
-
-static func test_vw() -> bool:
-	var mc := _make_mc()
-	var ok: bool = mc.VW == 1280
+	var ok: bool = is_equal_approx(mc.POPUP_Y_FRAC, 0.10)
 	mc.free()
 	return ok
 
@@ -128,6 +128,18 @@ static func test_auto_dismiss() -> bool:
 static func test_particle_cnt() -> bool:
 	var mc := _make_mc()
 	var ok: bool = mc.PARTICLE_CNT == 22
+	mc.free()
+	return ok
+
+
+# ── Computed vars initial state ───────────────────────────────────────────────
+
+static func test_popup_y_var_initially_zero() -> bool:
+	## _popup_y is populated by setup() from _vp_h * POPUP_Y_FRAC.  On a bare
+	## instance (setup() not yet called) it must be 0.0.  The SPA-1798 fix corrected
+	## line 79 to reference this var instead of the undefined name POPUP_Y.
+	var mc := _make_mc()
+	var ok: bool = mc._popup_y == 0.0
 	mc.free()
 	return ok
 
