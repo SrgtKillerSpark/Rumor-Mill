@@ -61,6 +61,9 @@ var _npc_id_dict: Dictionary = {}
 var _walkable_sample: Array[Vector2i] = []
 var social_graph_ref: SocialGraph = null
 var propagation_engine_ref: PropagationEngine = null
+## Shallow copy of World's illness hotspot dict (building_name → true).
+## Re-pushed by World._update_illness_hotspots() each day tick; NPCs must not mutate it.
+var illness_hotspot_buildings: Dictionary = {}
 
 # ── Schedule archetype ───────────────────────────────────────────────────────
 var archetype: NpcSchedule.ScheduleArchetype = NpcSchedule.ScheduleArchetype.INDEPENDENT
