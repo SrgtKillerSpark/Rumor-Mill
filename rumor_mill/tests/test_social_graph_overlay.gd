@@ -166,7 +166,8 @@ static func test_faction_fill_has_all_factions() -> bool:
 
 ## STATE_RING_COLOR must cover every member of the RumorState enum.
 static func test_state_ring_color_covers_all_states() -> bool:
-	var src: Dictionary = SocialGraphOverlayScript.STATE_RING_COLOR
+	var overlay := SocialGraphOverlayScript.new()
+	var src: Dictionary = overlay.STATE_RING_COLOR
 	var expected_states: Array = [
 		Rumor.RumorState.UNAWARE,      Rumor.RumorState.EVALUATING,
 		Rumor.RumorState.BELIEVE,      Rumor.RumorState.REJECT,
