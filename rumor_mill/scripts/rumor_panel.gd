@@ -1139,7 +1139,7 @@ func _build_evidence_entry(item) -> Control:
 			_rebuild_seed_list()
 			if _analytics_ref != null:
 				_analytics_ref.log_evidence_attached(
-						captured_item.type, captured_item.credulity_boost,
+						captured_item.type.to_snake_case(), captured_item.credulity_boost,
 						_selected_subject, _world_ref.current_day, _world_ref.scenario_id)
 		)
 	vbox.add_child(btn)
