@@ -1280,16 +1280,24 @@ func seed_rumor_from_player(
 
 	# Apply evidence bonuses at creation time (not recalculated on subsequent ticks).
 	if evidence_item != null:
-		rumor.current_believability = minf(1.0, rumor.current_believability + evidence_item.believability_bonus)
+		# SPA-1756: Witness Account may be used during an active target-shift cooldown
+		# at half effectiveness (+0.075 believability, +0.025 credulity boost).
+		# Shelf-life extension and mutability modifier are unaffected by bypass mode.
+		var bypass_active: bool = (intel_store != null
+				and intel_store.is_evidence_bypass_active(seed_target_npc_id, evidence_item))
+		var bel_bonus: float = evidence_item.believability_bonus * (0.5 if bypass_active else 1.0)
+		var cred_boost: float = evidence_item.credulity_boost * (0.5 if bypass_active else 1.0)
+
+		rumor.current_believability = minf(1.0, rumor.current_believability + bel_bonus)
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
 		# SPA-1718: Phase 2 mechanics (shelf-life extension, credulity boost) only
 		# apply when the evidence_economy_v2 feature flag is ON.
 		if GameState.evidence_economy_v2:
 			rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
-			rumor.evidence_credulity_boost = evidence_item.credulity_boost
+			rumor.evidence_credulity_boost = cred_boost
 			rumor.seed_target_npc_id = seed_target_npc_id
 		rumor.bolstered_by_evidence = true
-		rumor.evidence_credulity_boost = evidence_item.credulity_boost  ## SPA-1711
+		rumor.evidence_credulity_boost = cred_boost  ## SPA-1711 / SPA-1756
 		rumor.seed_target_npc_id = seed_target_npc_id                   ## SPA-1711
 
 	# Chain detection: check if this subject already has an active rumor that

@@ -236,13 +236,15 @@ Minimum 3 ticks in EVALUATING before roll fires.
 
 ## 4. Evidence Item Impact
 
-| Item | Believability Bonus | Mutability Mod | Compatible Claims | Acquisition |
-|------|-------------------|----------------|-------------------|-------------|
-| Forged Document | **+0.20** | 0.0 | ACCUSATION, SCANDAL, HERESY | Observe Market/Guild with >= 2 recon actions |
-| Incriminating Artifact | **+0.25** | 0.0 | SCANDAL, HERESY | Observe Manor/Chapel after tick > 18 (post-6pm) |
-| Witness Account | **+0.15** | **-0.15** | Any | Re-eavesdrop same NPC pair >= 24 ticks after first |
+| Item | Believability Bonus | Mutability Mod | Shelf Extension | Credulity Boost | Cooldown Bypass | Compatible Claims | Acquisition |
+|------|-------------------|----------------|-----------------|-----------------|-----------------|-------------------|-------------|
+| Forged Document | **+0.20** | 0.0 | +40 ticks | +0.10 | No | ACCUSATION, SCANDAL, HERESY | Observe Market/Guild with >= 2 recon actions |
+| Incriminating Artifact | **+0.25** | 0.0 | +0 | +0.15 | No | SCANDAL, HERESY | Observe Manor/Chapel after tick > 18 (post-6pm) |
+| Witness Account | **+0.15** | **-0.15** | +80 ticks | +0.05 | **Yes (½ effect)** | Any | Re-eavesdrop same NPC pair >= 24 ticks after first |
 
 Evidence is applied at rumor creation time and not recalculated. The Witness Account's -0.15 mutability modifier is the only way to reduce mutation chance, making it strategically valuable for precision campaigns.
+
+**Witness Account cooldown-bypass (SPA-1756):** When a target-shift cooldown is active for a different NPC, the Witness Account may still be used at half effectiveness: +0.075 believability and +0.025 credulity boost (vs. the normal +0.15 / +0.05). Shelf-life extension (+80 ticks) and mutability modifier (-0.15) are unaffected by bypass mode. No other evidence type can bypass the cooldown. The UI shows "Attach (½ Effect)" with the remaining cooldown days as a tooltip.
 
 Inventory cap: 3 items, oldest silently discarded on overflow.
 
@@ -299,6 +301,8 @@ At 1 whisper/day:
 Forged Document (+0.20) and Incriminating Artifact (+0.25) have very similar effects. The Artifact's +0.05 advantage over the Document, combined with its time restriction (post-6pm only), may not create a meaningful strategic choice. Players will likely just use whichever they find first.
 
 **Consider:** Differentiating the items further — e.g., Artifact could also reduce mutability, or Document could be usable on a wider claim set.
+
+**M5 baseline update (SPA-1756):** Witness Account usage rate matched Forged Document (57%) and trailed Artifact (75%) in S3 Normal and S5 Master playthroughs. The 3-day Master cooldown blocked the intended Witness Account window entirely in S5, with the item displaced unused. The cooldown-bypass mechanic (SPA-1756) gives Witness Account a temporal advantage unavailable to other evidence types. Re-evaluate usage parity after the next Master baseline.
 
 ### LOW: Faction Event Timing
 

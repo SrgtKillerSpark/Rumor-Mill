@@ -217,22 +217,35 @@ After using evidence on a seed targeting NPC X, the player cannot use evidence o
 
 ## 4. Evidence Differentiation Summary
 
-After Phase 2 tuning, the three evidence types have distinct strategic identities:
+After Phase 2 tuning (including M5 baseline fixes — SPA-1756), the three evidence types have distinct strategic identities:
 
 | | Forged Document | Incriminating Artifact | Witness Account |
 |---|---|---|---|
-| **Believability boost** | +0.20 | +0.25 | +0.15 |
+| **Believability boost** | +0.20 | +0.25 | +0.15 (½ during bypass) |
 | **Mutability modifier** | 0.0 | 0.0 | -0.15 |
 | **Shelf-life extension** | +40 ticks (~1.7 days) | +0 | +80 ticks (~3.3 days) |
-| **Credulity boost** | +0.10 | +0.15 | +0.05 |
+| **Credulity boost** | +0.10 | +0.15 | +0.05 (½ during bypass) |
+| **Cooldown bypass** | No | No | **Yes — usable at ½ effect during active cooldown** |
 | **Claim compatibility** | ACCUSATION, SCANDAL, HERESY | SCANDAL, HERESY | Any |
 | **Acquisition source** | Market/Guild observe (double-spend) | Manor/Chapel evening observe | Eavesdrop (prior intel ≥24 ticks) |
-| **Strategic identity** | All-rounder: moderate boost, moderate duration, wide claim pool | Spike: highest boost + credulity override, but no durability and narrow claims | Slow burn: low initial impact but longest duration, any claim, at cost of mutability |
+| **Strategic identity** | All-rounder: moderate boost, moderate duration, wide claim pool | Spike: highest boost + credulity override, but no durability and narrow claims | Slow burn: low initial impact but longest duration + temporal flexibility via cooldown bypass |
 
 **Player-facing heuristic:**
 - **Document** = safe default. Works on most claims, decent boost, decent duration.
 - **Artifact** = high-value play. Best for convincing resistant NPCs of scandals/heresies. Short-lived.
-- **Witness Account** = long game. Best for persistent pressure campaigns. The mutability cost means the target can't easily shake the rumor, but the low credulity boost means initial spread is slower.
+- **Witness Account** = long game *and* flexible timing. Best for persistent pressure campaigns. The mutability cost means the target can't easily shake the rumor. Uniquely, it can be used during a target-shift cooldown at half effectiveness — giving the "any claim" advantage a temporal dimension unavailable to other evidence types.
+
+### 4.1 Cooldown-Bypass Mechanic (SPA-1756)
+
+**Problem (M5 baseline):** Witness Account usage rate (57%) equalled Forged Document and trailed Artifact (75%) in S3 Normal and S5 Master. The 3-day Master cooldown blocked the intended evidence window in S5; the item was displaced unused. Its "any claim" breadth provided no differentiation in tight-cooldown scenarios.
+
+**Solution:** `EvidenceItem.supports_cooldown_bypass = true` on Witness Account only. When `is_evidence_bypass_active()` returns true (active cooldown + item supports bypass), `world.gd`'s `seed_rumor_from_player` applies `believability_bonus × 0.5` (+0.075) and `credulity_boost × 0.5` (+0.025). Shelf-life extension (+80) and mutability modifier (-0.15) are unaffected.
+
+**UI:** Bypass-capable items show amber tint (not grey) in `rumor_panel.gd` with button text "Attach (½ Effect)" and tooltip showing cooldown days remaining. Hard-locked items (Document, Artifact) remain greyed out as before.
+
+**Implementation files:** `intel_store.gd` (`EvidenceItem.supports_cooldown_bypass`, `is_evidence_bypass_active()`), `recon_controller.gd` (Witness Account creation), `world.gd` (`seed_rumor_from_player`), `rumor_panel.gd` (`_build_evidence_entry`).
+
+**Tests:** 10 new regression tests in `test_phase2_evidence_economy.gd` covering field values, bypass activation conditions, half-effectiveness math, and shelf/mutability invariants.
 
 ---
 

@@ -1076,15 +1076,25 @@ func _build_evidence_entry(item) -> Control:
 		style.bg_color = C_SELECTED_EVIDENCE_BG
 		outer.add_theme_stylebox_override("panel", style)
 
-	# SPA-1717: Check if evidence is locked by target-shift cooldown.
+	# SPA-1717/SPA-1756: Check if evidence is locked by target-shift cooldown.
+	# Witness Account (supports_cooldown_bypass) is never hard-locked; it shows a
+	# half-effectiveness warning instead so the player can still attach it.
 	var cooldown_locked: bool = false
+	var cooldown_bypass: bool = false
 	var cooldown_tooltip: String = ""
 	if _intel_store_ref != null and _intel_store_ref.is_evidence_locked_for_target(_selected_subject):
-		cooldown_locked = true
-		var cooldown_info: Dictionary = _intel_store_ref.get_evidence_cooldown_info()
-		var days_left: int = cooldown_info.get("days_remaining", 0)
-		cooldown_tooltip = "Evidence locked - target cooldown: %dd remaining" % days_left
-		outer.modulate = Color(1.0, 1.0, 1.0, 0.4)
+		if item.supports_cooldown_bypass:
+			cooldown_bypass = true
+			var cooldown_info: Dictionary = _intel_store_ref.get_evidence_cooldown_info()
+			var days_left: int = cooldown_info.get("days_remaining", 0)
+			cooldown_tooltip = "Cooldown bypass - half effectiveness (%dd remaining)" % days_left
+			outer.modulate = Color(1.0, 0.85, 0.5, 0.85)
+		else:
+			cooldown_locked = true
+			var cooldown_info: Dictionary = _intel_store_ref.get_evidence_cooldown_info()
+			var days_left: int = cooldown_info.get("days_remaining", 0)
+			cooldown_tooltip = "Evidence locked - target cooldown: %dd remaining" % days_left
+			outer.modulate = Color(1.0, 1.0, 1.0, 0.4)
 
 	var vbox := VBoxContainer.new()
 	outer.add_child(vbox)
@@ -1125,6 +1135,10 @@ func _build_evidence_entry(item) -> Control:
 		# SPA-1717: Greyed-out, unselectable with cooldown tooltip.
 		btn.text         = "Attach"
 		btn.disabled     = true
+		btn.tooltip_text = cooldown_tooltip
+	elif cooldown_bypass:
+		# SPA-1756: Bypass-capable item shows half-effectiveness label + tooltip.
+		btn.text         = "Attach (½ Effect)" if item != _selected_evidence_item else "✓ Attached (½)"
 		btn.tooltip_text = cooldown_tooltip
 	elif item == _selected_evidence_item:
 		btn.text = "✓ Attached"

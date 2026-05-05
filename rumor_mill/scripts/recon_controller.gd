@@ -723,8 +723,9 @@ func _try_eavesdrop(target: Node2D) -> void:
 	if witness_account:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Witness Account", 0.15, -0.15, [], tick)
-		ev.shelf_life_extension = 80  ## SPA-1585
-		ev.credulity_boost = 0.05     ## SPA-1711
+		ev.shelf_life_extension = 80         ## SPA-1585
+		ev.credulity_boost = 0.05            ## SPA-1711
+		ev.supports_cooldown_bypass = true   ## SPA-1756: bypass target-shift cooldown at half effectiveness
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
 			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc")

@@ -287,8 +287,9 @@ class EvidenceItem:
 	var acquired_tick: int
 	var confidence: float = 1.0           ## SPA-1580: current evidence quality (0.0–1.0).
 	var _decay_emitted_on_day: int = -1   ## SPA-1580: anti-double-fire guard for save/load.
-	var shelf_life_extension: int = 0     ## SPA-1585: extra ticks added to rumor shelf_life_ticks on attachment.
-	var credulity_boost: float = 0.0      ## SPA-1711: belief-chance boost applied to the seed target NPC.
+	var shelf_life_extension: int = 0          ## SPA-1585: extra ticks added to rumor shelf_life_ticks on attachment.
+	var credulity_boost: float = 0.0           ## SPA-1711: belief-chance boost applied to the seed target NPC.
+	var supports_cooldown_bypass: bool = false ## SPA-1756: when true, usable during active target-shift cooldown at half effectiveness.
 
 	func _init(
 			ev_type: String,
@@ -418,6 +419,18 @@ func get_evidence_cooldown_info() -> Dictionary:
 		if _evidence_target_cooldown[npc_id] > 0:
 			return {"target_npc_id": npc_id, "days_remaining": _evidence_target_cooldown[npc_id]}
 	return {}
+
+
+## SPA-1756: Returns true when evidence_item supports cooldown bypass AND an active
+## target-shift cooldown for a *different* target is in effect for target_npc_id.
+## The caller (world.gd) uses this to apply half-effectiveness bonuses instead of
+## blocking the use entirely.
+func is_evidence_bypass_active(target_npc_id: String, evidence_item: EvidenceItem) -> bool:
+	if not GameState.evidence_economy_v2:
+		return false
+	if not evidence_item.supports_cooldown_bypass:
+		return false
+	return is_evidence_locked_for_target(target_npc_id)
 
 
 static func _cooldown_days_for_difficulty(difficulty: String) -> int:
