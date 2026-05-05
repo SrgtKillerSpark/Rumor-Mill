@@ -16,10 +16,12 @@ const FEEDBACK_PRESETS := [
 	"Avoiding detection",
 	"Knowing which NPCs to target",
 ]
-const FEEDBACK_PANEL_MIN_W := 420
-const FEEDBACK_PANEL_MAX_W := 560
-const FEEDBACK_PANEL_MIN_H := 300
-const FEEDBACK_PANEL_MAX_H := 420
+const FEEDBACK_PANEL_MIN_W  := 420
+const FEEDBACK_PANEL_MAX_W  := 560
+const FEEDBACK_PANEL_MIN_H  := 300
+const FEEDBACK_PANEL_MAX_H  := 420
+const FEEDBACK_PANEL_VP_W   := 0.38  # ~490 px at 1280-wide (SPA-1675 #19)
+const FEEDBACK_PANEL_VP_H   := 0.50  # ~360 px at 720-tall  (SPA-1675 #19)
 
 # ── Palette ───────────────────────────────────────────────────────────────────
 const C_WIN          := Color(0.92, 0.78, 0.12, 1.0)
@@ -70,18 +72,20 @@ func show_prompt(won: bool, current_scenario_id: String) -> void:
 	_feedback_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_parent.add_child(_feedback_backdrop)
 
-	# ── Centred panel ─────────────────────────────────────────────────────────
+	# ── Centred panel — SPA-1669 responsive sizing (#19) ─────────────────────
+	var vp_size := _parent.get_viewport().get_visible_rect().size
+	var pw := UILayoutConstants.clamp_to_viewport(vp_size.x, FEEDBACK_PANEL_VP_W, FEEDBACK_PANEL_MIN_W, FEEDBACK_PANEL_MAX_W)
+	var ph := UILayoutConstants.clamp_to_viewport(vp_size.y, FEEDBACK_PANEL_VP_H, FEEDBACK_PANEL_MIN_H, FEEDBACK_PANEL_MAX_H)
 	_feedback_panel = PanelContainer.new()
-	_feedback_panel.custom_minimum_size = Vector2(FEEDBACK_PANEL_MIN_W, FEEDBACK_PANEL_MIN_H)
-	_feedback_panel.custom_maximum_size = Vector2(FEEDBACK_PANEL_MAX_W, FEEDBACK_PANEL_MAX_H)
+	_feedback_panel.custom_minimum_size = Vector2(pw, ph)
 	_feedback_panel.set_anchor(SIDE_LEFT,   0.5)
 	_feedback_panel.set_anchor(SIDE_RIGHT,  0.5)
 	_feedback_panel.set_anchor(SIDE_TOP,    0.5)
 	_feedback_panel.set_anchor(SIDE_BOTTOM, 0.5)
-	_feedback_panel.set_offset(SIDE_LEFT,   -FEEDBACK_PANEL_MIN_W / 2.0)
-	_feedback_panel.set_offset(SIDE_RIGHT,   FEEDBACK_PANEL_MIN_W / 2.0)
-	_feedback_panel.set_offset(SIDE_TOP,    -FEEDBACK_PANEL_MIN_H / 2.0)
-	_feedback_panel.set_offset(SIDE_BOTTOM,  FEEDBACK_PANEL_MIN_H / 2.0)
+	_feedback_panel.set_offset(SIDE_LEFT,   -pw / 2.0)
+	_feedback_panel.set_offset(SIDE_RIGHT,   pw / 2.0)
+	_feedback_panel.set_offset(SIDE_TOP,    -ph / 2.0)
+	_feedback_panel.set_offset(SIDE_BOTTOM,  ph / 2.0)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color     = C_PANEL_BG

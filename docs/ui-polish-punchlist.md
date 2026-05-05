@@ -41,7 +41,7 @@
 |---|-------|---------------|----------|
 | 11 | ~~**Menu panel widths are hardcoded (440-700px).** At viewports below ~800px wide, the 700px credits/settings panel would exceed viewport. Not critical with canvas_items stretch but limits future aspect-ratio support.~~ **RESOLVED SPA-1669** — all `main_menu.gd` panels (main, select, briefing, intro, settings, credits, stats) and `main_menu_scenario_select.gd` now use `UILayoutConstants.clamp_to_viewport()` with per-panel min/max/vp-fraction constants. Panels never exceed viewport at any tested resolution. | main_menu.gd, main_menu_scenario_select.gd, ui_layout_constants.gd | Small |
 | 12 | ~~**Narrative RichTextLabel uses `fit_content=true` with `custom_maximum_size.y=120`.** If wrapped narrative text exceeds 120px, it overflows. No scroll fallback.~~ **RESOLVED SPA-1179** — the relevant label is `_intro_body` in `main_menu_briefing_panel.gd` (code was refactored from `main_menu.gd`). `scroll_active` changed from `false` to `true`; `SIZE_EXPAND_FILL` added so the label grows to fill the panel before scrolling. | main_menu_briefing_panel.gd:208 | Medium |
-| 13 | **Scenario-select description truncated to 180 chars with no scroll.** If full teaser text is longer, users only see a cut version. `scroll_active = false`. | main_menu_scenario_select.gd:133-140 | Small |
+| 13 | ~~**Scenario-select description truncated to 180 chars with no scroll.**~~ **RESOLVED SPA-1651** — 180-char truncation removed; `scroll_active = true` on the description `RichTextLabel`. | main_menu_scenario_select.gd:240-249 | Small |
 
 ### End Screen
 
@@ -52,7 +52,7 @@
 | 16 | ~~**Disabled "Next Scenario" button has no tooltip.** Greyed out at 35% opacity with no explanation. Should say e.g. "Win this scenario to unlock."~~ **RESOLVED SPA-1666** — `tooltip_text = "Win this scenario to unlock."` added to `_btn_next` in `end_screen.gd` (active code path). | end_screen.gd:1043 | Small |
 | 17 | ~~**NPC name label width hardcoded to 130px.** Long or localized names will truncate.~~ **RESOLVED SPA-1660** — removed fixed 160px width; name_lbl now uses SIZE_EXPAND_FILL to fill available row space. | end_screen_scoring.gd:264 | Small |
 | 18 | ~~**Top-influencer name width hardcoded to 140px.** Same localization risk.~~ **RESOLVED SPA-1660** — removed fixed 160px width; name_lbl now uses SIZE_EXPAND_FILL to fill available row space. | end_screen_replay_tab.gd:162-163 | Small |
-| 19 | **Feedback panel is fixed 500x360px.** No responsive sizing. | end_screen_feedback.gd:19-20 | Small |
+| 19 | ~~**Feedback panel is fixed 500x360px.**~~ **RESOLVED SPA-1675** — `UILayoutConstants.clamp_to_viewport()` applied; vp-fractions 0.38w/0.50h with min 420×300 / max 560×420. | end_screen_feedback.gd:19-20 | Small |
 
 ### Pause Menu & Settings
 
@@ -69,7 +69,7 @@
 | 23 | ~~**Rumor panel status label has no width constraint.** Long reward/risk text can overflow panel bounds. `autowrap` set but no `custom_minimum_size`.~~ **RESOLVED SPA-1517** — `custom_maximum_size = Vector2(0, 40)` added to cap height at ~3 lines. | rumor_panel.gd:230 | Medium |
 | 24 | **Rumor panel subject portrait hardcoded to 48x60px.** No DPI scaling. | rumor_panel_subject_list.gd:95 | Small |
 | 25 | ~~**Journal font-size hierarchy is muddy.** Factions section uses 18 -> 14 -> 13 -> 13. The jump from header to sub-items is too subtle.~~ **RESOLVED SPA-1660** — mood_lbl and NPC name labels dropped from 13→12, giving clear 18→14→12 hierarchy. | journal_factions_section.gd:52/63/67 | Small |
-| 26 | **Timeline event labels have no `clip_text`.** Long event messages can overflow. | journal_timeline_section.gd:268 | Small |
+| 26 | ~~**Timeline event labels have no `clip_text`.**~~ **RESOLVED SPA-1148** — `clip_text = true` added to day-break header and event message labels. | journal_timeline_section.gd:282/289 | Small |
 | 27 | ~~**Rumor tracker side panel has `MAX_ROWS=4` and 240px width.** Concatenated claim+subject text can overflow. No truncation guard.~~ **RESOLVED SPA-1517** — `clip_text = true` added to `claim_lbl` (line 206) and `mut_lbl` (line 217). | rumor_tracker_hud.gd:206/217 | Medium |
 
 ### Social Graph Overlay
@@ -77,7 +77,7 @@
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
 | 28 | **Search panel width fixed at 215px; legend panel at 220px (with conflicting 210px min-size).** Neither adapts to viewport. Contradictory sizing is confusing. | social_graph_overlay.gd:379/710-711 | Medium |
-| 29 | **NPC name labels drawn with no width constraint.** Long names can overflow their background rect. | social_graph_overlay.gd:835/854 | Small |
+| 29 | ~~**NPC name labels drawn with no width constraint.**~~ **RESOLVED SPA-1675** — `NPC_LABEL_MAX_W=80.0` constant added; `text_w` clamped with `minf()`; `draw_string` width arg set to `NPC_LABEL_MAX_W`. | social_graph_overlay.gd:63/553/559 | Small |
 
 ### Tooltips & Toasts
 
