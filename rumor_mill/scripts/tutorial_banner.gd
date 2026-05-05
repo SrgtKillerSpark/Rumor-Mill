@@ -304,6 +304,11 @@ func _build_ui() -> void:
 	_container.mouse_exited.connect(_on_banner_mouse_exited)
 	add_child(_container)
 
+	# SPA-1683 #43: scale accent stripe relative to viewport so it remains
+	# visible at higher DPI/resolutions.  ACCENT_WIDTH (5) is the minimum.
+	var _vp_h: float = get_viewport().get_visible_rect().size.y
+	var _accent_w: int = maxi(ACCENT_WIDTH, int(_vp_h * 0.007))
+
 	# Accent stripe (left edge, full height).
 	_accent = ColorRect.new()
 	_accent.color                 = C_ACCENT
@@ -311,7 +316,7 @@ func _build_ui() -> void:
 	_accent.anchor_top            = 0.0
 	_accent.anchor_right          = 0.0
 	_accent.anchor_bottom         = 1.0
-	_accent.offset_right          = ACCENT_WIDTH
+	_accent.offset_right          = _accent_w
 	_accent.mouse_filter          = Control.MOUSE_FILTER_IGNORE
 	_container.add_child(_accent)
 
@@ -340,7 +345,7 @@ func _build_ui() -> void:
 	var vbox := VBoxContainer.new()
 	vbox.anchor_right   = 1.0
 	vbox.anchor_bottom  = 1.0
-	vbox.offset_left    = ACCENT_WIDTH + 10
+	vbox.offset_left    = _accent_w + 10
 	vbox.offset_right   = -8
 	vbox.offset_top     = 8
 	vbox.offset_bottom  = -8

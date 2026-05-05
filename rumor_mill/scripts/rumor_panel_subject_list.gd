@@ -171,7 +171,12 @@ func _build_entry(
 
 func _make_portrait_rect(portrait_id: int) -> TextureRect:
 	var rect := TextureRect.new()
-	rect.custom_minimum_size = Vector2(48, 60)
+	var _vp_h: float = get_viewport().get_visible_rect().size.y
+	# SPA-1683 #24: viewport-relative portrait size; ≈48×60px at 720p.
+	rect.custom_minimum_size = Vector2(
+		clamp(_vp_h * 0.0667, 40.0, 64.0),
+		clamp(_vp_h * 0.0833, 50.0, 72.0)
+	)
 	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	if _portrait_tex != null:

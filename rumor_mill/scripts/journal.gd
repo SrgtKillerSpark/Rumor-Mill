@@ -173,8 +173,10 @@ func _open() -> void:
 	# Animate open: fade bg + slide parchment from right.
 	_overlay_bg.modulate.a = 0.0
 	_parchment.modulate.a = 0.0
-	_parchment.position.x += 40.0
-	var _open_pos_x: float = _parchment.position.x - 40.0
+	var _vp_h: float = get_viewport().get_visible_rect().size.y
+	var _slide_offset: float = _vp_h * 0.056   # ≈40px at 720p (SPA-1683 #22)
+	_parchment.position.x += _slide_offset
+	var _open_pos_x: float = _parchment.position.x - _slide_offset
 	if _panel_tween != null and _panel_tween.is_valid():
 		_panel_tween.kill()
 	_panel_tween = create_tween().set_parallel(true) \

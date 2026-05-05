@@ -79,8 +79,8 @@ func _build_ui() -> void:
 
 	_tip_label = RichTextLabel.new()
 	_tip_label.custom_minimum_size = Vector2(640, 60)
-	_tip_label.fit_content = true
-	_tip_label.scroll_active = false
+	_tip_label.fit_content = false      # SPA-1683 #44: allow scroll to handle tall tips
+	_tip_label.scroll_active = true
 	_tip_label.bbcode_enabled = true
 	_tip_label.add_theme_font_size_override("normal_font_size", 15)
 	_tip_label.add_theme_color_override("default_color", C_TIP)
