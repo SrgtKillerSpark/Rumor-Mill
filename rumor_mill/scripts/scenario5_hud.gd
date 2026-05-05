@@ -15,7 +15,11 @@ extends BaseScenarioHud
 ##
 ## Wire via setup(world, day_night) from main.gd.
 
-const BAR_WIDTH  := 120
+const BAR_WIDTH  := 160
+const BAR_HEIGHT := 10
+
+const CAMPAIGN_REP_BOOST := ScenarioConfig.S5_CAMPAIGN_REP_BOOST
+const CAMPAIGN_COOLDOWN  := ScenarioConfig.S5_CAMPAIGN_COOLDOWN
 
 const NPC_DISPLAY_NAMES := {
 	"aldric_vane": "Aldric Vane",
@@ -34,6 +38,13 @@ var _edric_bar_bg:     ColorRect = null
 var _tomas_bar:        ColorRect = null
 var _tomas_bar_bg:     ColorRect = null
 var _endorse_lbl:      Label     = null
+var _campaign_btn:     Button    = null
+var _campaign_lbl:     Label     = null
+
+# ── Momentum trackers ─────────────────────────────────────────────────────────
+var _prev_aldric_score: int = -1
+var _prev_edric_score:  int = -1
+var _prev_tomas_score:  int = -1
 
 
 func _scenario_number() -> int:
@@ -231,3 +242,15 @@ func _on_endorsement(candidate_id: String, bonus: int) -> void:
 	var tween := create_tween()
 	tween.tween_property(_endorse_lbl, "modulate:a", 0.25, 0.12)
 	tween.tween_property(_endorse_lbl, "modulate:a", 1.0, 0.30)
+
+
+# ── Momentum helpers ──────────────────────────────────────────────────────────
+
+func _momentum_arrow(current: int, prev: int) -> String:
+	if prev < 0:
+		return ""
+	if current > prev:
+		return " ↑"
+	if current < prev:
+		return " ↓"
+	return " →"
