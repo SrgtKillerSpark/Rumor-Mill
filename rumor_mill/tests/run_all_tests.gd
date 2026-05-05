@@ -284,6 +284,7 @@ const TestS2EscalationNpcName = preload("res://tests/test_s2_escalation_npc_name
 const TestS4FactionShiftAgent = preload("res://tests/test_s4_faction_shift_agent.gd")
 const TestSaveCorruption = preload("res://tests/test_save_corruption.gd")
 const TestSaveManager = preload("res://tests/test_save_manager.gd")
+const TestSaveMigrationV1ToV2 = preload("res://tests/test_save_migration_v1_to_v2.gd")
 const TestSaveRoundtrip = preload("res://tests/test_save_roundtrip.gd")
 const TestScenario1Hud = preload("res://tests/test_scenario1_hud.gd")
 const TestScenario2Hud = preload("res://tests/test_scenario2_hud.gd")
@@ -349,6 +350,9 @@ func _init() -> void:
 
 	print("\n── SaveManager ──")
 	TestSaveManager.new().run()
+
+	print("\n── SaveMigrationV1ToV2 ──")
+	TestSaveMigrationV1ToV2.new().run()
 
 	print("\n── SaveRoundtrip ──")
 	TestSaveRoundtrip.new().run()
