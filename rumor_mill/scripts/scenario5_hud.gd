@@ -48,7 +48,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario5Panel", 78, 14)
+	var hbox := _make_panel("Scenario5Panel", BASE_HUD_HEIGHT)
 
 	# Title — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
@@ -66,11 +66,12 @@ func _build_ui() -> void:
 	hbox.add_child(aldric_vbox)
 
 	_aldric_score_lbl = Label.new()
-	_aldric_score_lbl.add_theme_font_size_override("font_size", 11)
+	_aldric_score_lbl.add_theme_font_size_override("font_size", 14)
 	_aldric_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_aldric_score_lbl.text = "Aldric Vane  Rep: 48 / 100  Target: 65+"
 	_aldric_score_lbl.tooltip_text = "Aldric Vane's reputation. Win condition: raise to 65+ AND be the highest of all three candidates."
 	_aldric_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_aldric_score_lbl.clip_text = true
 	_apply_text_outline(_aldric_score_lbl)
 	aldric_vbox.add_child(_aldric_score_lbl)
 
@@ -86,11 +87,12 @@ func _build_ui() -> void:
 	hbox.add_child(edric_vbox)
 
 	_edric_score_lbl = Label.new()
-	_edric_score_lbl.add_theme_font_size_override("font_size", 11)
+	_edric_score_lbl.add_theme_font_size_override("font_size", 14)
 	_edric_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_edric_score_lbl.text = "Edric Fenn  Rep: 58 / 100  Target: <45"
 	_edric_score_lbl.tooltip_text = "Edric Fenn's reputation. Win condition: drag below 45."
 	_edric_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_edric_score_lbl.clip_text = true
 	_apply_text_outline(_edric_score_lbl)
 	edric_vbox.add_child(_edric_score_lbl)
 
@@ -106,11 +108,12 @@ func _build_ui() -> void:
 	hbox.add_child(tomas_vbox)
 
 	_tomas_score_lbl = Label.new()
-	_tomas_score_lbl.add_theme_font_size_override("font_size", 11)
+	_tomas_score_lbl.add_theme_font_size_override("font_size", 14)
 	_tomas_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_tomas_score_lbl.text = "Tomas Reeve  Rep: 45 / 100  Target: <45"
 	_tomas_score_lbl.tooltip_text = "Tomas Reeve's reputation. Win condition: drag below 45."
 	_tomas_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_tomas_score_lbl.clip_text = true
 	_apply_text_outline(_tomas_score_lbl)
 	tomas_vbox.add_child(_tomas_score_lbl)
 
@@ -126,11 +129,12 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 12)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 25"
 	_days_lbl.tooltip_text = "Days before the election. Aldric must meet all win conditions by the deadline."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_days_lbl.clip_text = true
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
@@ -152,6 +156,7 @@ func _build_ui() -> void:
 	_endorse_lbl.text = "Endorsement: day %d (pending)" % _e_day
 	_endorse_lbl.tooltip_text = "On day %d, Prior Aldous endorses the candidate with the highest reputation — granting a +%d bonus. Make sure Aldric leads by then." % [_e_day, 8]
 	_endorse_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_endorse_lbl.clip_text = true
 	right_vbox.add_child(_endorse_lbl)
 
 

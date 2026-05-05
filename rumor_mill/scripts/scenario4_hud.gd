@@ -87,7 +87,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario4Panel", 72)
+	var hbox := _make_panel("Scenario4Panel", BASE_HUD_HEIGHT)
 
 	# Title + defense badge.
 	var title_vbox := VBoxContainer.new()

@@ -24,13 +24,13 @@
 
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
-| 1 | **Inconsistent panel heights across scenarios.** S1-S2: 62px, S3: 58px, S4: 96px, S5-S6: 78px. Jumps are visually jarring when switching scenarios. | scenario1_hud.gd:44, scenario3_hud.gd:56, scenario4_hud.gd:68, scenario5_hud.gd:65, scenario6_hud.gd:50 | Medium |
-| 2 | **Score label font size inconsistency.** S1-S4 use 14pt, S5-S6 use 11pt. Creates an unintentional visual hierarchy break. | scenario5_hud.gd:78/86/94, scenario6_hud.gd:65/74 | Medium |
-| 3 | **Days-remaining label font size inconsistency.** S1-S4 use 14pt, S5-S6 use 12pt. | scenario5_hud.gd:119, scenario6_hud.gd:104 | Small |
-| 4 | **BAR_HEIGHT inconsistency.** S1-S3 use 12px, S4-S6 use 10px. Subtle but perceptible. | scenario4_hud.gd:35, scenario5_hud.gd:31, scenario6_hud.gd:27 | Small |
-| 5 | **HBox separation inconsistency.** S1-S3 use 16px, S4-S6 use 14px. | scenario4_hud.gd:68, scenario5_hud.gd:65, scenario6_hud.gd:50 | Small |
+| 1 | ~~**Inconsistent panel heights across scenarios.** S1-S2: 62px, S3: 58px, S4: 96px, S5-S6: 78px. Jumps are visually jarring when switching scenarios.~~ **RESOLVED SPA-1680** — `BASE_HUD_HEIGHT = 78` constant added to `BaseScenarioHud`; all six scenarios now reference it. | scenario1_hud.gd:44, scenario3_hud.gd:56, scenario4_hud.gd:68, scenario5_hud.gd:65, scenario6_hud.gd:50 | Medium |
+| 2 | ~~**Score label font size inconsistency.** S1-S4 use 14pt, S5-S6 use 11pt. Creates an unintentional visual hierarchy break.~~ **RESOLVED SPA-1680** — All score labels unified to 14pt across S1–S6. | scenario5_hud.gd:78/86/94, scenario6_hud.gd:65/74 | Medium |
+| 3 | ~~**Days-remaining label font size inconsistency.** S1-S4 use 14pt, S5-S6 use 12pt.~~ **RESOLVED SPA-1680** — All days-remaining labels unified to 14pt. | scenario5_hud.gd:119, scenario6_hud.gd:104 | Small |
+| 4 | ~~**BAR_HEIGHT inconsistency.** S1-S3 use 12px, S4-S6 use 10px. Subtle but perceptible.~~ **RESOLVED SPA-1680** — `BAR_HEIGHT = 12` defined once in `BaseScenarioHud`; all scenarios inherit it. | scenario4_hud.gd:35, scenario5_hud.gd:31, scenario6_hud.gd:27 | Small |
+| 5 | ~~**HBox separation inconsistency.** S1-S3 use 16px, S4-S6 use 14px.~~ **RESOLVED SPA-1680** — All scenarios now use the `_make_panel` default of 16px separation. | scenario4_hud.gd:68, scenario5_hud.gd:65, scenario6_hud.gd:50 | Small |
 | 6 | ~~**Event toast height too short for wrapped text.** S4 toast is 22px, S6 toast is 28px. AUTOWRAP_WORD_SMART is set on S6 label but parent panel can't display a second line. Long event descriptions are clipped.~~ **RESOLVED SPA-1517** — Both toast panels raised to 44px (SIDE_TOP=90, SIDE_BOTTOM=134). | scenario4_hud.gd:265-266, scenario6_hud.gd:236-237 | Medium |
-| 7 | **No `clip_text` on dynamic labels.** Caution, days, believers, rejecters, rival, scout, degrade, anonymous-tip, event, campaign, blackmail, guild-defense labels all lack `clip_text = true`. Long dynamic text can bleed past panel edges. | scenario1_hud.gd:60/66, scenario2_hud.gd:234/237, scenario3_hud.gd:79/90/94, scenario4_hud.gd:137/154, scenario5_hud.gd:158/177, scenario6_hud.gd:330/345 | Medium |
+| 7 | ~~**No `clip_text` on dynamic labels.** Caution, days, believers, rejecters, rival, scout, degrade, anonymous-tip, event, campaign, blackmail, guild-defense labels all lack `clip_text = true`. Long dynamic text can bleed past panel edges.~~ **RESOLVED SPA-1680** — `clip_text = true` added to all dynamic labels across S1–S6. | scenario1_hud.gd:60/66, scenario2_hud.gd:234/237, scenario3_hud.gd:79/90/94, scenario4_hud.gd:137/154, scenario5_hud.gd:158/177, scenario6_hud.gd:330/345 | Medium |
 | 8 | **S4 faction phase bars appear instantly (no tween).** When a phase fires, the bar snaps from 0 to full width. Should animate over ~0.5s. | scenario4_hud.gd:373 | Small |
 | 9 | **Rival gap bar divides by magic constant 30.** If reputation gap exceeds 30, bar is clamped at 100%. No documentation on why 30. | scenario5_hud.gd:148 | Small |
 | 10 | ~~**Z-order: objective HUD (layer 4) and speed HUD (layer 5) render below scenario HUDs (layer 14).** At higher resolutions where panels expand, scenario HUD can occlude speed/objective controls.~~ **RESOLVED SPA-1179** — objective_hud raised to layer 15, speed_hud to layer 16, callout_overlay to 17. LAYER constants added to all three files; tested in `test_spa1179_z_order_layers.gd`. | base_scenario_hud.gd, objective_hud.gd, speed_hud.gd | Medium |
@@ -120,7 +120,7 @@
 Fixed in SPA-1143 / SPA-1144 (commit `8276a23`). Achievement and suggestion toasts now queue sequentially instead of overlapping. Regression test added in `test_achievement_toast.gd`.
 
 ### 2. ~~Scenario HUD consistency pass (Issues #1, #2, #3, #4, #5, #7) -- Medium~~ RESOLVED
-Fixed in SPA-1145 (commit `0de2c81`). Unified BAR_HEIGHT=12, score font_size=14, days font_size=14, hbox_separation=16 across all six scenarios. S3 panel height corrected to 62px. `clip_text=true` added to all dynamic labels.
+Fixed in SPA-1680. `BASE_HUD_HEIGHT=78` constant in `BaseScenarioHud`; all six scenarios use it. Unified BAR_HEIGHT=12, score font_size=14, days font_size=14, hbox_separation=16 across all six scenarios. `clip_text=true` added to all dynamic labels.
 
 ### 3. ~~Event toast clipping and text overflow (Issues #6, #23, #27, #39) -- Medium~~ RESOLVED
 Fixed in SPA-1517. S4 and S6 toast panels raised to 44px. `custom_maximum_size = Vector2(0, 40)` added to rumor panel status label. `fit_content = false` applied to event card body (existing `custom_maximum_size`/`scroll_active` now fully effective). `clip_text = true` guards added to rumor tracker claim/mutation labels.

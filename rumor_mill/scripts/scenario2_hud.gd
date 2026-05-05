@@ -24,7 +24,7 @@ const BAR_WIDTH      := 160
 const MAX_NAMES_SHOWN := 5
 
 # ── Toast-panel geometry ─────────────────────────────────────────────────────
-const HUD_PANEL_HEIGHT    := 72   # height of the HUD strip built by _make_panel
+const HUD_PANEL_HEIGHT    := 78   # height of the HUD strip built by _make_panel (matches BASE_HUD_HEIGHT)
 const TOAST_GAP           := 4    # gap between HUD bottom and toast top
 const TOAST_PANEL_HEIGHT  := 24   # visible toast strip height
 const TOAST_CORNER_RADIUS := 4    # corner radius for the toast StyleBoxFlat

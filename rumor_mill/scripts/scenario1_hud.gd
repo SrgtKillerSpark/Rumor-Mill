@@ -33,7 +33,7 @@ func _scenario_number() -> int:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario1Panel", 72)
+	var hbox := _make_panel("Scenario1Panel", BASE_HUD_HEIGHT)
 
 	# Scenario label — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()

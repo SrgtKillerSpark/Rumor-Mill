@@ -23,6 +23,9 @@ const LAYER := 14
 const C_PANEL_BG := Color(0.15, 0.10, 0.08, 0.92)
 
 # ── Shared layout constants ───────────────────────────────────────────────────
+## Unified panel height for all scenario HUDs (pixels). Sized to accommodate
+## the most content-heavy scenarios (S5/S6) without overflow.
+const BASE_HUD_HEIGHT := 78
 ## Unified bar height for all scenario HUD progress bars (pixels).
 const BAR_HEIGHT := 12
 const C_HEADING  := Color(0.91, 0.85, 0.70, 1.0)

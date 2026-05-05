@@ -39,7 +39,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario3Panel", 58)
+	var hbox := _make_panel("Scenario3Panel", BASE_HUD_HEIGHT)
 
 	# Scenario label — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
@@ -55,11 +55,12 @@ func _build_ui() -> void:
 	hbox.add_child(calder_vbox)
 
 	_calder_score_lbl = Label.new()
-	_calder_score_lbl.add_theme_font_size_override("font_size", 13)
+	_calder_score_lbl.add_theme_font_size_override("font_size", 14)
 	_calder_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_calder_score_lbl.text = "Calder Fenn  Rep: 50 / 100  Target: 75+"
 	_calder_score_lbl.tooltip_text = "Calder Fenn's reputation. Win condition: raise to 75 or higher."
 	_calder_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_calder_score_lbl.clip_text = true
 	_apply_text_outline(_calder_score_lbl)
 	calder_vbox.add_child(_calder_score_lbl)
 
@@ -78,11 +79,12 @@ func _build_ui() -> void:
 	hbox.add_child(tomas_vbox)
 
 	_tomas_score_lbl = Label.new()
-	_tomas_score_lbl.add_theme_font_size_override("font_size", 13)
+	_tomas_score_lbl.add_theme_font_size_override("font_size", 14)
 	_tomas_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_tomas_score_lbl.text = "Tomas Reeve  Rep: 50 / 100  Target: \u226435"
 	_tomas_score_lbl.tooltip_text = "Tomas Reeve's reputation. Win condition: drag it down to 35 or lower."
 	_tomas_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_tomas_score_lbl.clip_text = true
 	_apply_text_outline(_tomas_score_lbl)
 	tomas_vbox.add_child(_tomas_score_lbl)
 
@@ -101,9 +103,10 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 12)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 25"
+	_days_lbl.clip_text = true
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
@@ -124,6 +127,7 @@ func _build_ui() -> void:
 	_rival_lbl.text = "Rival: no activity yet"
 	_rival_lbl.tooltip_text = "An unseen rival is working against you — praising Tomas and scandaling Calder. Their last known action is shown here."
 	_rival_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_rival_lbl.clip_text = true
 	right_vbox.add_child(_rival_lbl)
 
 	_disrupt_btn = Button.new()

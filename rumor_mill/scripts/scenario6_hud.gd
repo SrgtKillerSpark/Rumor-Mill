@@ -80,7 +80,7 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario6Panel", 72)
+	var hbox := _make_panel("Scenario6Panel", BASE_HUD_HEIGHT)
 
 	# Title — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
