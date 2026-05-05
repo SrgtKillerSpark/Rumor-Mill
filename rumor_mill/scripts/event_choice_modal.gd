@@ -59,6 +59,7 @@ var _dismiss_btn:   Button         = null
 
 var _current_event_id: String = ""
 var _showing_outcome: bool = false
+var _panel_w: int = PANEL_WIDTH
 
 
 func _ready() -> void:
@@ -159,12 +160,15 @@ func _build_ui() -> void:
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_backdrop)
 
-	# Panel — centred.
+	# Panel — centred, viewport-relative size (SPA-1676 #37).
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(PANEL_WIDTH, PANEL_HEIGHT)
+	var _ecm_vp := get_viewport().get_visible_rect().size
+	_panel_w = UILayoutConstants.clamp_to_viewport(_ecm_vp.x, 0.55, 480, 700)
+	var _ecm_ph := UILayoutConstants.clamp_to_viewport(_ecm_vp.y, 0.47, 320, 420)
+	_panel.custom_minimum_size = Vector2(float(_panel_w), float(_ecm_ph))
 	_panel.set_anchors_preset(Control.PRESET_CENTER)
-	_panel.position = Vector2(-PANEL_WIDTH / 2.0, -PANEL_HEIGHT / 2.0)
-	_panel.size = Vector2(PANEL_WIDTH, PANEL_HEIGHT)
+	_panel.position = Vector2(-float(_panel_w) / 2.0, -float(_ecm_ph) / 2.0)
+	_panel.size = Vector2(float(_panel_w), float(_ecm_ph))
 
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = C_PANEL_BG
@@ -250,7 +254,7 @@ func _build_ui() -> void:
 func _make_choice_button(text: String) -> Button:
 	var btn := Button.new()
 	btn.text = text
-	btn.custom_minimum_size = Vector2(PANEL_WIDTH - 60, 40)
+	btn.custom_minimum_size = Vector2(float(_panel_w) - 60, 40)
 
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = C_BTN_NORMAL
@@ -305,7 +309,7 @@ func _make_preview_label() -> Label:
 	lbl.add_theme_font_size_override("font_size", 12)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lbl.custom_minimum_size = Vector2(PANEL_WIDTH - 80, 0)
+	lbl.custom_minimum_size = Vector2(float(_panel_w) - 80, 0)
 	lbl.visible = false
 	return lbl
 

@@ -143,10 +143,13 @@ func _build_shell() -> void:
 	_card.anchor_right  = 0.5
 	_card.anchor_top    = 0.5
 	_card.anchor_bottom = 0.5
-	_card.offset_left   = -310.0
-	_card.offset_right  =  310.0
-	_card.offset_top    = -270.0
-	_card.offset_bottom =  270.0
+	var _mb_vp   := get_viewport().get_visible_rect().size
+	var _mb_hw   := float(UILayoutConstants.clamp_to_viewport(_mb_vp.x, 0.225, 240, 310))
+	var _mb_hh   := float(UILayoutConstants.clamp_to_viewport(_mb_vp.y, 0.30,  210, 270))
+	_card.offset_left   = -_mb_hw
+	_card.offset_right  =  _mb_hw
+	_card.offset_top    = -_mb_hh
+	_card.offset_bottom =  _mb_hh
 	var card_style := StyleBoxFlat.new()
 	card_style.bg_color = C_CARD_BG
 	card_style.border_color = C_CARD_BORDER
