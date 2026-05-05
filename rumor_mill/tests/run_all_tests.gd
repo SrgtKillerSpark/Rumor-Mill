@@ -34,6 +34,10 @@ extends RefCounted
 ##                                          magnitude, seed-target gating, multi-rumor isolation (SPA-1739)
 ##   • TestPhase2SliceECooldownGaps      — Slice E cooldown gaps E4 (Apprentice no-cooldown) and
 ##                                          E5 (evidence-free seed does not arm cooldown) (SPA-1740)
+##   • TestRumorPanelEvidenceCooldownUi  — RumorPanel evidence cooldown UI (SPA-1732)
+##   • TestPhase2SliceATelemetry         — Slice A telemetry acceptance criteria A1–A9 (SPA-1743)
+##   • TestPhase2SliceFFeatureFlag       — Slice F feature-flag acceptance criteria F1–F5 (SPA-1742)
+##   • TestPhase2CrossCutting            — Phase 2 cross-cutting criteria X1–X3 (SPA-1743)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
 ##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text,
@@ -319,6 +323,10 @@ const TestRumorPanelEvidenceCooldown   = preload("res://tests/test_rumor_panel_e
 const TestPhase2SliceCShelfLife        = preload("res://tests/test_phase2_slice_c_shelf_life.gd")
 const TestPhase2SliceDCredulityBoost   = preload("res://tests/test_phase2_slice_d_credulity_boost.gd")
 const TestPhase2SliceECooldownGaps     = preload("res://tests/test_phase2_slice_e_cooldown_gaps.gd")
+const TestRumorPanelEvidenceCooldownUi = preload("res://tests/test_rumor_panel_evidence_cooldown_ui.gd")
+const TestPhase2SliceATelemetry        = preload("res://tests/test_phase2_slice_a_telemetry.gd")
+const TestPhase2SliceFFeatureFlag      = preload("res://tests/test_phase2_slice_f_feature_flag.gd")
+const TestPhase2CrossCutting           = preload("res://tests/test_phase2_cross_cutting.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
 const TestStrategicOverview = preload("res://tests/test_strategic_overview.gd")
@@ -413,6 +421,18 @@ func _init() -> void:
 
 	print("\n── SPA-1740 Phase 2 Slice E cooldown gaps (E4 Apprentice, E5 no-evidence) ──")
 	TestPhase2SliceECooldownGaps.new().run()
+
+	print("\n── SPA-1732 RumorPanel evidence cooldown UI ──")
+	TestRumorPanelEvidenceCooldownUi.new().run()
+
+	print("\n── SPA-1743 Phase 2 Slice A telemetry (A1–A9) ──")
+	TestPhase2SliceATelemetry.new().run()
+
+	print("\n── SPA-1742 Phase 2 Slice F feature flags (F1–F5) ──")
+	TestPhase2SliceFFeatureFlag.new().run()
+
+	print("\n── SPA-1743 Phase 2 cross-cutting (X1–X3) ──")
+	TestPhase2CrossCutting.new().run()
 
 	print("\n── TutorialSystem ──")
 	TestTutorialSystem.new().run()
