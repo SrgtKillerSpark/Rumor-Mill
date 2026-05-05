@@ -26,6 +26,9 @@ extends RefCounted
 ##                                             field presence, halved bonus values, bypass-only gate (SPA-1773)
 ##   • TestSpa1811MarenOrbitHalos        — Maren orbit membership, negative-case (non-S2), all three
 ##                                          risk-tier colors, orphan-cleanup, draw-guard no-crash (SPA-1811)
+##   • TestSpa1822EndScreenShipRegression — CTA "Play Again"/"Try Again" text, Escape dismissal priority,
+##                                          fade-then-reload handler wiring, panel centering + responsive
+##                                          layout constants at 720p/1080p/ultrawide (SPA-1804/1805/1806/1809)
 ##   • SmokePhase2Evidence               — end-to-end Phase 2 smoke: 3 acquisitions + 1 usage vs SPA-1522 spec (SPA-1617)
 ##   • TestSpa1685_1691_1693FixCoverage  — process_mode ALWAYS on dialogue canvas (SPA-1685),
 ##                                          illness_hotspot_buildings declared (SPA-1691),
@@ -327,6 +330,7 @@ const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evide
 const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
 const TestSpa1773WitnessAccountUsedEmission = preload("res://tests/test_spa1773_witness_account_used_emission.gd")
 const TestSpa1811MarenOrbitHalos       = preload("res://tests/test_spa1811_maren_orbit_halos.gd")
+const TestSpa1822EndScreenShipRegression = preload("res://tests/test_spa1822_end_screen_ship_regression.gd")
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
 const TestSpa1725EvidenceAttached      = preload("res://tests/test_spa1725_evidence_attached.gd")
@@ -419,6 +423,9 @@ func _init() -> void:
 
 	print("\n── SPA-1811 Maren orbit risk halos regression ──")
 	TestSpa1811MarenOrbitHalos.new().run()
+
+	print("\n── SPA-1822 End-screen ship regression (SPA-1804/1805/1806/1809) ──")
+	TestSpa1822EndScreenShipRegression.new().run()
 
 	print("\n── SPA-1617 Phase 2 evidence telemetry smoke (end-to-end) ──")
 	SmokePhase2Evidence.new().run()
