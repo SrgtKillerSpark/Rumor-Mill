@@ -1,0 +1,12 @@
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"observe_building","day":1,"scenario_id":"S1","difficulty":"Normal","ts":"2026-05-05T09:05:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":2,"scenario_id":"S1","difficulty":"Normal","ts":"2026-05-05T09:20:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":3,"scenario_id":"S1","difficulty":"Normal","ts":"2026-05-05T09:38:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":6,"scenario_id":"S1","difficulty":"Normal","ts":"2026-05-05T10:42:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"observe_building","day":1,"scenario_id":"S2","difficulty":"Normal","ts":"2026-05-05T12:06:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":2,"scenario_id":"S2","difficulty":"Normal","ts":"2026-05-05T12:20:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":3,"scenario_id":"S2","difficulty":"Normal","ts":"2026-05-05T12:40:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":6,"scenario_id":"S2","difficulty":"Normal","ts":"2026-05-05T13:44:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"observe_building","day":1,"scenario_id":"S4","difficulty":"Normal","ts":"2026-05-05T15:07:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":2,"scenario_id":"S4","difficulty":"Normal","ts":"2026-05-05T15:21:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":3,"scenario_id":"S4","difficulty":"Normal","ts":"2026-05-05T15:40:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":6,"scenario_id":"S4","difficulty":"Normal","ts":"2026-05-05T16:51:00Z"}

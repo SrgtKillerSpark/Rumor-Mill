@@ -1,0 +1,43 @@
+{"type":"scenario_selected","scenario_id":"S4","difficulty":"Normal","ts":"2026-05-05T15:00:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S4","ts":"2026-05-05T15:07:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"observe_building","day":1,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Aldous Prior","claim_id":"s4n_pra01","seed_target":"maren_nun","day":1,"scenario_id":"S4","ts":"2026-05-05T15:14:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S4","ts":"2026-05-05T15:21:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":2,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Maren Nun","rumor_id":"s4n_pra01","new_state":"BELIEVE","day":2,"scenario_id":"S4","ts":"2026-05-05T15:28:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"s4n_her01","seed_target":"constance_widow","day":2,"scenario_id":"S4","ts":"2026-05-05T15:33:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":3,"scenario_id":"S4","ts":"2026-05-05T15:40:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":3,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s4n_pra01","seed_target":"maren_nun","subject":"Aldous Prior","day":3,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Constance Widow","rumor_id":"s4n_her01","new_state":"BELIEVE","day":3,"scenario_id":"S4","ts":"2026-05-05T15:47:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":68,"to_score":60,"delta":-8,"day":3,"scenario_id":"S4","ts":"2026-05-05T15:54:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":false,"day":4,"scenario_id":"S4","ts":"2026-05-05T16:01:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":4,"scenario_id":"S4","ts":"2026-05-05T16:04:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"s4n_pra02","seed_target":"constance_widow","day":4,"scenario_id":"S4","ts":"2026-05-05T16:10:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s4n_pra02","seed_target":"constance_widow","subject":"Finn Monk","day":4,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Constance Widow","rumor_id":"s4n_pra02","new_state":"BELIEVE","day":4,"scenario_id":"S4","ts":"2026-05-05T16:17:00Z"}
+{"type":"evidence_decay_tick","evidence_type":"witness_account","prev_confidence":1.0,"new_confidence":0.85,"day":5,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Vera Midwife","claim_id":"s4n_her02","seed_target":"nell_picker","day":5,"scenario_id":"S4","ts":"2026-05-05T16:24:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":5,"scenario_id":"S4","ts":"2026-05-05T16:30:00Z"}
+{"type":"npc_state_changed","npc_name":"Nell Picker","rumor_id":"s4n_her02","new_state":"BELIEVE","day":5,"scenario_id":"S4","ts":"2026-05-05T16:37:00Z"}
+{"type":"reputation_delta","npc_id":"npc_vera_midwife","from_score":68,"to_score":60,"delta":-8,"day":5,"scenario_id":"S4","ts":"2026-05-05T16:44:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":6,"scenario_id":"S4","ts":"2026-05-05T16:51:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":6,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Vera Midwife","claim_id":"s4n_pra03","seed_target":"nell_picker","day":6,"scenario_id":"S4","ts":"2026-05-05T16:57:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"s4n_pra03","seed_target":"nell_picker","subject":"Vera Midwife","day":6,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Nell Picker","rumor_id":"s4n_pra03","new_state":"BELIEVE","day":6,"scenario_id":"S4","ts":"2026-05-05T17:04:00Z"}
+{"type":"npc_state_changed","npc_name":"Nell Picker","rumor_id":"s4n_pra03","new_state":"SPREAD","day":6,"scenario_id":"S4","ts":"2026-05-05T17:08:00Z"}
+{"type":"reputation_delta","npc_id":"npc_vera_midwife","from_score":60,"to_score":68,"delta":8,"day":6,"scenario_id":"S4","ts":"2026-05-05T17:15:00Z"}
+{"type":"npc_state_changed","npc_name":"Maren Nun","rumor_id":"s4n_pra01","new_state":"SPREAD","day":7,"scenario_id":"S4","ts":"2026-05-05T17:22:00Z"}
+{"type":"evidence_threshold_cross","evidence_type":"witness_account","direction":"down","threshold":0.75,"confidence":0.70,"day":7,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":8,"scenario_id":"S4","ts":"2026-05-05T17:29:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldous_prior","from_score":70,"to_score":72,"delta":2,"day":8,"scenario_id":"S4","ts":"2026-05-05T17:36:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":60,"to_score":68,"delta":8,"day":9,"scenario_id":"S4","ts":"2026-05-05T17:43:00Z"}
+{"type":"evidence_target_shift","evidence_type":"incriminating_artifact","from_target":"nell_picker","to_target":"constance_widow","day":9,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"evidence_decay_tick","evidence_type":"forged_document","prev_confidence":0.9,"new_confidence":0.75,"day":11,"scenario_id":"S4","difficulty":"Normal"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":12,"scenario_id":"S4","ts":"2026-05-05T17:50:00Z"}
+{"type":"reputation_delta","npc_id":"npc_vera_midwife","from_score":68,"to_score":72,"delta":4,"day":12,"scenario_id":"S4","ts":"2026-05-05T17:57:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":14,"scenario_id":"S4","ts":"2026-05-05T18:04:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldous_prior","from_score":72,"to_score":75,"delta":3,"day":18,"scenario_id":"S4","ts":"2026-05-05T18:11:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":68,"to_score":70,"delta":2,"day":19,"scenario_id":"S4","ts":"2026-05-05T18:18:00Z"}
+{"type":"scenario_ended","scenario_id":"S4","difficulty":"Normal","outcome":"WON","day_reached":20,"duration_sec":1800,"ts":"2026-05-05T18:25:00Z"}
