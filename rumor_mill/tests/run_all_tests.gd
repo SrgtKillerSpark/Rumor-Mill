@@ -30,6 +30,8 @@ extends RefCounted
 ##   • TestRumorPanelEvidenceCooldown    — evidence item greyed out during cooldown: E1/E2/E3/E6 (SPA-1717)
 ##   • TestPhase2SliceCShelfLife         — Slice C acceptance criteria C1–C4: shelf-life extension
 ##                                          per evidence type + Phase-1 save compatibility (SPA-1736)
+##   • TestPhase2SliceDCredulityBoost    — Slice D acceptance criteria D1–D4: credulity boost
+##                                          magnitude, seed-target gating, multi-rumor isolation (SPA-1739)
 ##   • TestPhase2SliceECooldownGaps      — Slice E cooldown gaps E4 (Apprentice no-cooldown) and
 ##                                          E5 (evidence-free seed does not arm cooldown) (SPA-1740)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
@@ -315,6 +317,7 @@ const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evide
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
 const TestRumorPanelEvidenceCooldown   = preload("res://tests/test_rumor_panel_evidence_cooldown.gd")
 const TestPhase2SliceCShelfLife        = preload("res://tests/test_phase2_slice_c_shelf_life.gd")
+const TestPhase2SliceDCredulityBoost   = preload("res://tests/test_phase2_slice_d_credulity_boost.gd")
 const TestPhase2SliceECooldownGaps     = preload("res://tests/test_phase2_slice_e_cooldown_gaps.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
@@ -404,6 +407,9 @@ func _init() -> void:
 
 	print("\n── SPA-1736 Phase 2 Slice C shelf-life extension (C1–C4) ──")
 	TestPhase2SliceCShelfLife.new().run()
+
+	print("\n── SPA-1739 Phase 2 Slice D credulity boost (D1–D4) ──")
+	TestPhase2SliceDCredulityBoost.new().run()
 
 	print("\n── SPA-1740 Phase 2 Slice E cooldown gaps (E4 Apprentice, E5 no-evidence) ──")
 	TestPhase2SliceECooldownGaps.new().run()
