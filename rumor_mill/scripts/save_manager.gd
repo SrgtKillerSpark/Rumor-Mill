@@ -49,7 +49,11 @@ static func get_save_info(scenario_id: String, slot: int) -> Dictionary:
 		return {}
 	var text := f.get_as_text()
 	f.close()
-	var parsed: Variant = JSON.parse_string(text)
+	# Use JSON instance (not parse_string) to avoid engine-level error output on corrupt input.
+	var json := JSON.new()
+	if json.parse(text) != OK:
+		return {}
+	var parsed: Variant = json.get_data()
 	if not (parsed is Dictionary):
 		return {}
 	return {
@@ -210,6 +214,10 @@ static func session_was_loaded() -> bool:
 ## Parse and validate a save file; store data as pending for apply_pending_load().
 ## Returns "" on success, or a human-readable error string on failure.
 static func prepare_load(scenario_id: String, slot: int) -> String:
+	# Clear pending state upfront so any early-return failure leaves an empty state,
+	# ensuring has_pending_load() is false after any rejection.
+	_pending_load_data = {}
+
 	if not has_save(scenario_id, slot):
 		return "No save found for this scenario."
 
@@ -232,6 +240,8 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 	if ver > SAVE_VERSION:
 		return "Save version %d is newer than game version %d. Update the game to load this save." % [
 			ver, SAVE_VERSION]
+	if ver < 1:
+		return "Save version %d is too old to load (minimum supported version is 1). Please start a new game." % ver
 	if ver < SAVE_VERSION:
 		# Back up the original file before applying migration steps so the
 		# pre-migration data is recoverable if migration fails or the game crashes.
