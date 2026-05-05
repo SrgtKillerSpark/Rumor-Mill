@@ -425,6 +425,7 @@ static func _serialize_propagation(pe: PropagationEngine) -> Dictionary:
 			"mutability":               r.mutability,
 			"created_tick":             r.created_tick,
 			"shelf_life_ticks":         r.shelf_life_ticks,
+			"_ticks_decayed":           r._ticks_decayed,
 			"current_believability":    r.current_believability,
 			"lineage_parent_id":        r.lineage_parent_id,
 			"bolstered_by_evidence":    r.bolstered_by_evidence,
@@ -658,6 +659,7 @@ static func _restore_propagation(pe: PropagationEngine, d: Dictionary) -> void:
 			int(rd["shelf_life_ticks"]),
 			rd.get("lineage_parent_id", "")
 		)
+		r._ticks_decayed           = int(rd.get("_ticks_decayed", 0))
 		r.current_believability    = float(rd.get("current_believability", r.current_believability))
 		r.bolstered_by_evidence    = bool(rd.get("bolstered_by_evidence", false))
 		r.evidence_credulity_boost = float(rd.get("evidence_credulity_boost", 0.0))
