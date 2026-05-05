@@ -575,9 +575,15 @@ function checkMissingUid(filePath, lines) {
 // Scans for `Identifier.SCREAMING_CONST` patterns where Identifier resolves to a
 // project class_name, and verifies that SCREAMING_CONST is actually declared as a
 // `const` in that file.  Skips Godot built-ins and unresolvable identifiers.
+//
+// Extended (SPA-1867):
+//   - Also catches _SCREAMING_CASE identifiers (e.g. _DEGRADE_MAP)
+//   - Differentiates "declared as var" (static access on instance field) from
+//     truly missing constants
 function checkRemovedConstants(filePath, lines, knownClassNames, autoloads) {
-  // Pattern: PascalCase.SCREAMING_CASE (at least 2 uppercase + underscores)
-  const re = /\b([A-Z][A-Za-z0-9_]*?)\.([A-Z][A-Z0-9_]{1,})\b/g;
+  // Pattern: PascalCase.SCREAMING_CASE or PascalCase._SCREAMING_CASE
+  // (at least 2 uppercase + underscores, optionally prefixed with _)
+  const re = /\b([A-Z][A-Za-z0-9_]*?)\.(_{0,2}[A-Z][A-Z0-9_]{1,})\b/g;
 
   for (let i = 0; i < lines.length; i++) {
     const code = stripLine(lines[i]);
@@ -608,13 +614,10 @@ function checkRemovedConstants(filePath, lines, knownClassNames, autoloads) {
       let targetText;
       try { targetText = fs.readFileSync(targetFile, 'utf8'); } catch { continue; }
 
+      const escapedName = constName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const constPattern = new RegExp(
-        `^(?:const|enum)\\s+${constName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+        `^(?:const|enum)\\s+${escapedName}\\b`,
         'm'
-      );
-      // Also check for enum members: `enum Foo { ..., CONST_NAME, ... }`
-      const enumMemberPattern = new RegExp(
-        `\\b${constName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`
       );
       const hasConst = constPattern.test(targetText);
 
@@ -622,10 +625,24 @@ function checkRemovedConstants(filePath, lines, knownClassNames, autoloads) {
         // Check if it's an enum value (SCREAMING_CASE inside an enum block)
         const enumValueDeclared = checkEnumValue(targetText, constName);
         if (!enumValueDeclared) {
-          reportError(filePath, i + 1,
-            `'${className}.${constName}' — constant '${constName}' not found in class '${className}' (${path.basename(targetFile)}) — possible removed or renamed constant (SPA-1678)`,
-            `Check if '${constName}' was removed/renamed in '${path.basename(targetFile)}', or use the replacement constant`
+          // SPA-1867: Check if it's declared as a `var` (static access on instance field)
+          const varPattern = new RegExp(
+            `^(?:@export[\\w()\\s]*\\s+)?var\\s+${escapedName}\\b`,
+            'm'
           );
+          const isDeclaredAsVar = varPattern.test(targetText);
+
+          if (isDeclaredAsVar) {
+            reportError(filePath, i + 1,
+              `'${className}.${constName}' — '${constName}' is declared as 'var' in '${className}' (${path.basename(targetFile)}) but accessed statically — only 'const' members can be accessed via ClassName.MEMBER (SPA-1867)`,
+              `Change '${constName}' to 'const' in '${path.basename(targetFile)}', or access it on an instance instead of the class`
+            );
+          } else {
+            reportError(filePath, i + 1,
+              `'${className}.${constName}' — constant '${constName}' not found in class '${className}' (${path.basename(targetFile)}) — possible removed or renamed constant (SPA-1678)`,
+              `Check if '${constName}' was removed/renamed in '${path.basename(targetFile)}', or use the replacement constant`
+            );
+          }
         }
       }
     }

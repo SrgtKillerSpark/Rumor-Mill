@@ -46,6 +46,8 @@ node rumor_mill/tools/check_gdscript_static.js [--project <path>] [--fix-hint]
 5. Inferred-type with backslash continuation (SPA-1543)
 6. **Missing `.uid` file for `class_name` declarations** (SPA-1677)
 7. **Removed/missing constant references** — `ClassName.SCREAMING_CONST` not found in target (SPA-1678/1684)
+   - ✓ Catches `_SCREAMING_CASE` prefixed identifiers (e.g. `_DEGRADE_MAP`) (SPA-1867)
+   - ✓ Differentiates `var` fields accessed statically from truly missing constants (SPA-1867)
 
 ## 3. CI smoke-launch (remote)
 
@@ -67,6 +69,8 @@ The smoke-launch catches errors the static check cannot: autoload init order, sc
 | Unresolved type annotations | ✓ (check 2) | ✓ | ✓ |
 | Missing `.uid` for `class_name` (SPA-1677) | ✓ (check 6) | — | — |
 | Removed/missing constant refs (SPA-1678) | ✓ (check 7) | — | ✓ |
+| `_SCREAMING_CASE` constant refs in test files (SPA-1867) | ✓ (check 7) | — | ✓ |
+| `var` field accessed as static const (SPA-1867) | ✓ (check 7) | — | — |
 | Bare extension-singleton usage | ✓ (check 1) | — | — |
 | Undeclared autoload usage | ✓ (check 3) | — | — |
 | Block-scope variable mismatch | ✓ (check 4) | — | — |
