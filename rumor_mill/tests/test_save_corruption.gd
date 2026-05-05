@@ -17,7 +17,7 @@ extends GutTest
 # Constants mirrored from SaveManager for assertion clarity
 # ---------------------------------------------------------------------------
 
-const SAVE_VERSION := 1   # must match SaveManager.SAVE_VERSION
+const SAVE_VERSION := 2   # must match SaveManager.SAVE_VERSION
 const TMP_SCENARIO := "gut_tmp_scenario"
 
 # ---------------------------------------------------------------------------

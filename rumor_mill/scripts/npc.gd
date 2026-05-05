@@ -768,6 +768,12 @@ func _tick_evaluating(
 
 	believe_chance = clamp(believe_chance, 0.0, 1.0)
 
+	# SPA-1718: Phase 2 credulity boost — only for the NPC the rumor was seeded to,
+	# and only when the evidence_economy_v2 flag is ON.
+	if GameState.evidence_economy_v2 and rumor.evidence_credulity_boost > 0.0 \
+			and npc_data.get("id", "") == rumor.seed_target_npc_id:
+		believe_chance = clampf(believe_chance + rumor.evidence_credulity_boost, 0.0, 1.0)
+
 	if randf() < believe_chance:
 		slot.state = Rumor.RumorState.BELIEVE
 		slot.ticks_in_state = 0

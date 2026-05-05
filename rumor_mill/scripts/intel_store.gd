@@ -401,7 +401,10 @@ func decay_evidence_cooldowns() -> void:
 
 ## Returns true when there is an active cooldown for a target other than target_npc_id.
 ## Returns false when no cooldown is active, or the cooldown is for this same target.
+## SPA-1718: Always returns false when evidence_economy_v2 flag is OFF.
 func is_evidence_locked_for_target(target_npc_id: String) -> bool:
+	if not GameState.evidence_economy_v2:
+		return false
 	for npc_id in _evidence_target_cooldown:
 		if _evidence_target_cooldown[npc_id] > 0 and npc_id != target_npc_id:
 			return true

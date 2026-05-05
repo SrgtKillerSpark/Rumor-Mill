@@ -1282,7 +1282,12 @@ func seed_rumor_from_player(
 	if evidence_item != null:
 		rumor.current_believability = minf(1.0, rumor.current_believability + evidence_item.believability_bonus)
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
-		rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
+		# SPA-1718: Phase 2 mechanics (shelf-life extension, credulity boost) only
+		# apply when the evidence_economy_v2 feature flag is ON.
+		if GameState.evidence_economy_v2:
+			rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
+			rumor.evidence_credulity_boost = evidence_item.credulity_boost
+			rumor.seed_target_npc_id = seed_target_npc_id
 		rumor.bolstered_by_evidence = true
 		rumor.evidence_credulity_boost = evidence_item.credulity_boost  ## SPA-1711
 		rumor.seed_target_npc_id = seed_target_npc_id                   ## SPA-1711
