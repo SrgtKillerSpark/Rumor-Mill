@@ -240,8 +240,8 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 	if ver > SAVE_VERSION:
 		return "Save version %d is newer than game version %d. Update the game to load this save." % [
 			ver, SAVE_VERSION]
-	if ver < 1:
-		return "Save version %d is too old to load (minimum supported version is 1). Please start a new game." % ver
+	if ver < 0:
+		return "Save version %d is invalid. Please start a new game." % ver
 	if ver < SAVE_VERSION:
 		# Back up the original file before applying migration steps so the
 		# pre-migration data is recoverable if migration fails or the game crashes.
