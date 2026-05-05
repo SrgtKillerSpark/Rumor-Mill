@@ -773,7 +773,7 @@ static func _restore_rival_agent(ra: RivalAgent, d: Dictionary) -> void:
 	ra._last_seed_day                = int(d.get("last_seed_day", 0))
 	ra._alternate_flag               = bool(d.get("alternate_flag", false))
 	ra.cooldown_offset               = int(d.get("cooldown_offset", 0))
-	ra.disrupt_charges_remaining     = int(d.get("disrupt_charges_remaining", RivalAgent.MAX_DISRUPT_CHARGES))
+	ra.disrupt_charges_remaining     = int(d.get("disrupt_charges_remaining", 3))
 	ra._disruption_days_remaining    = int(d.get("disruption_days_remaining", 0))
 
 
