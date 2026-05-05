@@ -2,9 +2,9 @@
 
 **Prepared by:** CFO  
 **Date:** 2026-04-03  
-**Last updated:** 2026-04-24 (SPA-290 — added action plan, owners, and target dates)  
+**Last updated:** 2026-05-05 (SPA-290 — post-launch audit; Steam EA live ~2026-04-30)  
 **For:** Rumor Mill — board / founding team  
-**Status:** Actionable — complete before any public release (itch.io early demo or Steam launch)
+**Status:** Post-launch — Steam EA is live. Pre-launch blockers cleared. Three board-owned items remain open.
 
 > **Prerequisite:** Complete the business formation and Steam setup steps in [`docs/business-setup-guide.md`](./business-setup-guide.md) before this checklist. This document covers what comes *after* the LLC and developer accounts are in place.
 
@@ -12,36 +12,36 @@
 
 ## Master Action Plan
 
-> **Board: please confirm the Status column for each row.** All items are marked ⬜ Unknown pending your confirmation. Update this table directly or reply on [SPA-290](/SPA/issues/SPA-290).
+> **Post-launch audit — 2026-05-05.** Steam EA is live (Day 5). Pre-launch blockers cleared at launch. Remaining open items in H-track require board/Founder action. Update this table or reply on [SPA-290](/SPA/issues/SPA-290).
 
-**Target launch sequence:** itch.io free demo → **2026-05-02** · Steam EA → **2026-05-16**
+**Launch result:** Steam EA launched ~2026-04-30. itch.io demo status: unconfirmed.
 
-### Blocking for Steam EA
+### Steam EA Blockers (Pre-Launch) — All Cleared ✓
 
-| # | Item | Owner | Status | Target Date | Notes |
-|---|------|-------|--------|-------------|-------|
-| S1 | W-9 submitted and accepted by Valve (use EIN, not SSN) | Founder | ⬜ Unknown | **2026-04-28** | Cannot receive any revenue without this. Steamworks → Account → Tax Information. Allow 2–7 days for Valve review. |
-| S2 | ACH payout configured in Steamworks (Mercury account) | Founder | ⬜ Unknown | **2026-04-28** | LLC entity name must match bank account exactly. |
-| S3 | Regional pricing set ($14.99 USD base + Steam Regional Templates) | Founder | ⬜ Unknown | **2026-04-30** | Must be set before Coming Soon page can go live. |
-| S4 | Privacy policy hosted at a public URL | Founder | ⬜ Unknown | **2026-04-28** | Steam page cannot go live without this URL. GitHub Pages is fastest. See §3D for template. |
-| S5 | 30-day Steam review window started | Founder | ⬜ Unknown | **Start by 2026-04-17** (overdue if not started) | Must be in progress now. If not yet started, begin immediately — the 30-day clock is the longest blocker. |
-| S6 | Coming Soon page live ≥ 14 days before launch date | Founder | ⬜ Unknown | **By 2026-05-02** (for a 2026-05-16 launch) | Publish as soon as the review window opens. |
+| # | Item | Owner | Status | Notes |
+|---|------|-------|--------|-------|
+| S1 | W-9 submitted and accepted by Valve (use EIN, not SSN) | Founder | ✅ Done (inferred — Steam EA live) | Revenue cannot flow until this is confirmed by Valve. Board to confirm if EIN or SSN was used. |
+| S2 | ACH payout configured in Steamworks (Mercury account) | Founder | ✅ Done (inferred — Steam EA live) | Confirm LLC entity name matches bank account exactly for payout reconciliation. |
+| S3 | Regional pricing set ($14.99 USD base + Steam Regional Templates) | Founder | ✅ Done (inferred — Steam EA live) | Store page is live; pricing must be set. |
+| S4 | Privacy policy hosted at a public URL | Founder | ✅ Done (inferred — Steam EA live) | Steam store page approved; privacy policy URL must be present. |
+| S5 | 30-day Steam review window completed | Founder | ✅ Done (inferred — Steam EA live) | 30-day window must have elapsed for EA to go live. |
+| S6 | Coming Soon page live ≥ 14 days before launch date | Founder | ✅ Done (inferred — Steam EA live) | Page was live prior to launch. |
 
-### Blocking for itch.io Demo (if any revenue / PWYW)
-
-| # | Item | Owner | Status | Target Date | Notes |
-|---|------|-------|--------|-------------|-------|
-| I1 | itch.io payout method configured (PayPal or Stripe) | Founder | ⬜ Unknown | **2026-04-28** | itch.io Dashboard → Payouts. Required before any paid tier. Set up now even for free demo. |
-| I2 | itch.io revenue model set to "itch.io as MOR" | Founder | ⬜ Unknown | **2026-04-28** | Account Settings → Payment Options. Recommended to avoid solo MOR complexity. |
-
-### High Priority (Not Blocking Day 1, but Time-Sensitive)
+### itch.io Demo — Status Unconfirmed
 
 | # | Item | Owner | Status | Target Date | Notes |
 |---|------|-------|--------|-------------|-------|
-| H1 | LLC formation filed (home state) | Founder | ⬜ Unknown | **2026-04-30** | ~$100–200 filing fee; 1–3 weeks processing. Required before Steam EA payout to protect personal assets. Start now if not filed. |
-| H2 | `THIRD_PARTY_LICENSES.txt` created in repo | Dev / CFO | ⬜ Unknown | **2026-05-02** | Must include Godot MIT attribution. Update when final audio assets are integrated. See §2D template. |
-| H3 | Tax set-aside plan: 25–30% of net receipts in dedicated savings | Founder | ⬜ Unknown | **Before first payout (~2026-06-15)** | First Valve payout expected ~60 days after launch. Set up the savings account now. |
-| H4 | CPA consultation booked | Founder | ⬜ Unknown | **Before 2026-07-01** | Recommended before first taxable year. ~$200–400 one-hour consult pays for itself. |
+| I1 | itch.io payout method configured (PayPal or Stripe) | Founder | ⬜ Unknown | Confirm ASAP | Required before any paid tier or PWYW. |
+| I2 | itch.io revenue model set to "itch.io as MOR" | Founder | ⬜ Unknown | Confirm ASAP | Account Settings → Payment Options. |
+
+### Post-Launch Open Items (Board Action Required)
+
+| # | Item | Owner | Status | Deadline | Notes |
+|---|------|-------|--------|----------|-------|
+| H1 | LLC formation filed (home state) | Founder | ⬜ Unknown — **OVERDUE** | Was 2026-04-30; 5 days overdue | ~$100–200 filing fee; 1–3 weeks processing. Revenue is flowing (or imminent) without entity protection. File immediately if not done. |
+| H2 | `THIRD_PARTY_LICENSES.txt` created in repo | Dev / CFO | ✅ Done | Completed before launch | File exists at `rumor_mill/THIRD_PARTY_LICENSES.txt` — includes Godot MIT license. Bundled in build. |
+| H3 | Tax set-aside plan: 25–30% of net receipts in dedicated savings | Founder | ⬜ Unknown | **Before first payout (~2026-06-29)** | First Valve payout ~60 days after launch. Open a dedicated savings account now and route net receipts there. |
+| H4 | CPA consultation booked | Founder | ⬜ Unknown | **Before 2026-07-01** | Revenue is live. Consult a CPA before year-end to manage pass-through income, quarterly estimated taxes, and any S-Corp election. |
 
 ### Low Priority (Defer to 1.0)
 
