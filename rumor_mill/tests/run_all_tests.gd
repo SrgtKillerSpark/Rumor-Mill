@@ -27,6 +27,9 @@ extends RefCounted
 ##   • TestSpa1685_1691_1693FixCoverage  — process_mode ALWAYS on dialogue canvas (SPA-1685),
 ##                                          illness_hotspot_buildings declared (SPA-1691),
 ##                                          quarantine_ref declared (SPA-1693)
+##   • TestSpa1725EvidenceAttached       — evidence_attached NDJSON event shape: evidence_type
+##                                          snake_case normalisation, credulity_boost, target_npc_id,
+##                                          day, scenario_id (SPA-1725)
 ##   • TestRumorPanelEvidenceCooldown    — evidence item greyed out during cooldown: E1/E2/E3/E6 (SPA-1717)
 ##   • TestPhase2SliceCShelfLife         — Slice C acceptance criteria C1–C4: shelf-life extension
 ##                                          per evidence type + Phase-1 save compatibility (SPA-1736)
@@ -37,6 +40,9 @@ extends RefCounted
 ##   • TestRumorPanelEvidenceCooldownUi  — RumorPanel evidence cooldown UI (SPA-1732)
 ##   • TestPhase2SliceATelemetry         — Slice A telemetry acceptance criteria A1–A9 (SPA-1743)
 ##   • TestPhase2SliceFFeatureFlag       — Slice F feature-flag acceptance criteria F1–F5 (SPA-1742)
+##   • TestPhase2EvidenceEconomy         — Phase 2 evidence-economy mechanics: Slice C shelf-life,
+##                                          Slice D credulity boost, Slice E target-shift cooldown
+##                                          (SPA-1706)
 ##   • TestPhase2CrossCutting            — Phase 2 cross-cutting criteria X1–X3 (SPA-1743)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
@@ -319,6 +325,7 @@ const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evide
 const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
+const TestSpa1725EvidenceAttached      = preload("res://tests/test_spa1725_evidence_attached.gd")
 const TestRumorPanelEvidenceCooldown   = preload("res://tests/test_rumor_panel_evidence_cooldown.gd")
 const TestPhase2SliceCShelfLife        = preload("res://tests/test_phase2_slice_c_shelf_life.gd")
 const TestPhase2SliceDCredulityBoost   = preload("res://tests/test_phase2_slice_d_credulity_boost.gd")
@@ -327,6 +334,7 @@ const TestRumorPanelEvidenceCooldownUi = preload("res://tests/test_rumor_panel_e
 const TestPhase2SliceATelemetry        = preload("res://tests/test_phase2_slice_a_telemetry.gd")
 const TestPhase2SliceFFeatureFlag      = preload("res://tests/test_phase2_slice_f_feature_flag.gd")
 const TestPhase2CrossCutting           = preload("res://tests/test_phase2_cross_cutting.gd")
+const TestPhase2EvidenceEconomy        = preload("res://tests/test_phase2_evidence_economy.gd")
 const TestPhase2EvidenceEconomyV2Gating = preload("res://tests/test_phase2_evidence_economy_v2_gating.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
@@ -411,6 +419,9 @@ func _init() -> void:
 	print("\n── SPA-1685/1691/1693 post-launch fix coverage ──")
 	TestSpa1685_1691_1693FixCoverage.new().run()
 
+	print("\n── SPA-1725 evidence_attached event shape + snake_case normalisation ──")
+	TestSpa1725EvidenceAttached.new().run()
+
 	print("\n── SPA-1717 RumorPanel evidence cooldown UI (E1/E2/E3/E6) ──")
 	TestRumorPanelEvidenceCooldown.new().run()
 
@@ -434,6 +445,9 @@ func _init() -> void:
 
 	print("\n── SPA-1743 Phase 2 cross-cutting (X1–X3) ──")
 	TestPhase2CrossCutting.new().run()
+
+	print("\n── SPA-1706 Phase 2 evidence-economy (Slice C/D/E) ──")
+	TestPhase2EvidenceEconomy.new().run()
 
 	print("\n── SPA-1757 Phase 2 evidence_economy_v2 Normal+ gating ──")
 	TestPhase2EvidenceEconomyV2Gating.new().run()
