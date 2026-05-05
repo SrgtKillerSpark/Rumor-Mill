@@ -8,6 +8,10 @@
 ##   • Initial state: _maren_neighbours = {}, _maren_is_defending = false
 ##   • Inherited state: _world_ref, _day_night_ref, _result_lbl, _days_lbl
 ##   • SPA-1565: DEFENDING flag plumbed to HUD signal; neighbor rejection toast gated
+##   • SPA-1701 B1: _maren_watch_lbl exists and C_DEFENDING_DORMANT is dimmed
+##   • SPA-1701 B2: _on_maren_grace_started shows warning with hint text
+##   • SPA-1701 B3: non-S2 HUD has no _maren_watch_lbl property
+##   • SPA-1702: Suppression indicator visible when DEFENDING, absent otherwise/non-S2
 ##
 ## Run from the Godot editor: Scene → Run Script.
 
@@ -15,6 +19,7 @@ class_name TestScenario2Hud
 extends RefCounted
 
 const Scenario2HudScript := preload("res://scripts/scenario2_hud.gd")
+const Scenario1HudScript := preload("res://scripts/scenario1_hud.gd")
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -65,6 +70,18 @@ func run() -> void:
 		"test_on_maren_state_changed_non_defending_no_flag",
 		"test_neighbor_reject_no_toast_when_not_defending",
 		"test_defending_watch_text_contains_countering",
+		# SPA-1701 B1: pre-trigger watch label
+		"test_initial_maren_watch_lbl_null",
+		"test_c_defending_dormant_is_dimmed",
+		# SPA-1701 B2: grace-window warning includes hint text
+		"test_on_maren_grace_started_makes_warning_visible",
+		"test_on_maren_grace_started_warning_includes_tip",
+		# SPA-1701 B3: non-S2 scenario has no watch label
+		"test_scenario1_hud_has_no_maren_watch_lbl",
+		# SPA-1702: Suppression indicator visibility during Maren grace window
+		"test_suppression_active_indicator_shown_when_defending",
+		"test_suppression_indicator_absent_when_not_defending",
+		"test_suppression_indicator_absent_on_non_s2",
 	]
 
 	for method_name in tests:
@@ -301,5 +318,98 @@ static func test_defending_watch_text_contains_countering() -> bool:
 	h._on_maren_rumor_state_changed("Sister Maren", "DEFENDING", "", "")
 	var ok := "countering" in h._maren_watch_lbl.text
 	h._maren_watch_lbl.free()
+	h.free()
+	return ok
+
+
+# ── SPA-1701 B1: pre-trigger watch label ─────────────────────────────────────
+
+## _maren_watch_lbl must be null before _build_ui() runs (no scene tree).
+static func test_initial_maren_watch_lbl_null() -> bool:
+	var h := _make_hud()
+	var ok := h._maren_watch_lbl == null
+	h.free()
+	return ok
+
+
+## C_DEFENDING_DORMANT must have low alpha so the dormant state appears dimmed.
+static func test_c_defending_dormant_is_dimmed() -> bool:
+	var h := _make_hud()
+	# alpha ≤ 0.60 confirms the dormant color is visually suppressed.
+	var ok := h.C_DEFENDING_DORMANT.a <= 0.60
+	h.free()
+	return ok
+
+
+# ── SPA-1701 B2: grace-window warning includes hint text ─────────────────────
+
+## After _on_maren_grace_started fires, the warning label must become visible.
+static func test_on_maren_grace_started_makes_warning_visible() -> bool:
+	var h := _make_hud()
+	h._maren_warning_lbl = Label.new()
+	h._on_maren_grace_started(2)
+	var ok := h._maren_warning_lbl.visible == true
+	h._maren_warning_lbl.free()
+	h.free()
+	return ok
+
+
+## The grace-window warning text must contain a contextual recovery hint ("Tip").
+static func test_on_maren_grace_started_warning_includes_tip() -> bool:
+	var h := _make_hud()
+	h._maren_warning_lbl = Label.new()
+	h._on_maren_grace_started(2)
+	var ok := "Tip" in h._maren_warning_lbl.text
+	h._maren_warning_lbl.free()
+	h.free()
+	return ok
+
+
+# ── SPA-1701 B3: non-S2 scenario has no watch label ──────────────────────────
+
+## Scenario 1 HUD must not expose _maren_watch_lbl — the mechanic is S2-only.
+static func test_scenario1_hud_has_no_maren_watch_lbl() -> bool:
+	var h := Scenario1HudScript.new()
+	# Use get() so a missing property returns null instead of crashing.
+	var ok := h.get("_maren_watch_lbl") == null
+	h.free()
+	return ok
+
+
+# ── SPA-1702: Suppression indicator visibility ────────────────────────────────
+
+## When Maren enters DEFENDING, the watch label shows both the shield icon and
+## "countering" text — confirming the active suppression indicator is visible.
+static func test_suppression_active_indicator_shown_when_defending() -> bool:
+	var h := _make_hud()
+	h._maren_watch_lbl = Label.new()
+	h._on_maren_rumor_state_changed("Sister Maren", "DEFENDING", "", "")
+	var text: String = h._maren_watch_lbl.text
+	var ok := "🛡" in text and "countering" in text
+	h._maren_watch_lbl.free()
+	h.free()
+	return ok
+
+
+## When Maren is NOT defending, the watch label must show dormant text and must
+## NOT contain the active "countering" indicator.
+static func test_suppression_indicator_absent_when_not_defending() -> bool:
+	var h := _make_hud()
+	h._maren_watch_lbl = Label.new()
+	h._maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
+	# No DEFENDING signal — text must remain dormant, not active.
+	var text: String = h._maren_watch_lbl.text
+	var ok := "dormant" in text and not ("countering" in text)
+	h._maren_watch_lbl.free()
+	h.free()
+	return ok
+
+
+## Non-S2 HUDs have no _maren_neighbours property — the gate predicate that
+## appends [🛡] to NPC names is unreachable on any scenario other than S2.
+static func test_suppression_indicator_absent_on_non_s2() -> bool:
+	var h := Scenario1HudScript.new()
+	# get() returns null when the property does not exist on the script.
+	var ok := h.get("_maren_neighbours") == null
 	h.free()
 	return ok

@@ -17,6 +17,12 @@
 //      inference fails on multi-line `:=` when operands include typed
 //      accessors, chained `and`/`or`, or method chains.  Fix: use explicit
 //      type `var x: Type = ...` (SPA-1543 / SPA-1556).
+//   6. Missing .uid file for class_name declarations — Godot 4.x requires
+//      a .gd.uid sidecar for cross-script UID resolution.  If missing,
+//      scene load cascades fail (SPA-1677).
+//   7. Removed/missing constant references — `ClassName.SCREAMING_CONST`
+//      where the constant is not declared in the target class_name file.
+//      Catches renamed/removed constants before runtime (SPA-1678/1684).
 //
 // Usage:
 //   node rumor_mill/tools/check_gdscript_static.js [--project <path>] [--fix-hint]
@@ -546,6 +552,105 @@ function checkInferredTypeBackslash(filePath, lines) {
   }
 }
 
+// ── Check 6: missing .uid file for class_name declarations (SPA-1677) ───────
+// Godot 4.x generates a `.gd.uid` file for every script with `class_name`.
+// If the UID file is missing, other scripts that import/reference the class via
+// UID will fail at scene load even though static parse passes.
+function checkMissingUid(filePath, lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^class_name\s+([A-Za-z_][A-Za-z0-9_]*)/);
+    if (!m) continue;
+    const uidPath = filePath + '.uid';
+    if (!fs.existsSync(uidPath)) {
+      reportError(filePath, i + 1,
+        `'class_name ${m[1]}' declared but no .uid file exists at '${path.basename(filePath)}.uid' — Godot will fail to resolve cross-script UID references (SPA-1677)`,
+        `Open this file in the Godot editor and re-save, or run 'godot --headless --import --quit' to regenerate UIDs`
+      );
+    }
+    break; // only one class_name per file
+  }
+}
+
+// ── Check 7: removed/missing constant references (SPA-1678/1684) ────────────
+// Scans for `Identifier.SCREAMING_CONST` patterns where Identifier resolves to a
+// project class_name, and verifies that SCREAMING_CONST is actually declared as a
+// `const` in that file.  Skips Godot built-ins and unresolvable identifiers.
+function checkRemovedConstants(filePath, lines, knownClassNames, autoloads) {
+  // Pattern: PascalCase.SCREAMING_CASE (at least 2 uppercase + underscores)
+  const re = /\b([A-Z][A-Za-z0-9_]*?)\.([A-Z][A-Z0-9_]{1,})\b/g;
+
+  for (let i = 0; i < lines.length; i++) {
+    const code = stripLine(lines[i]);
+    if (!code.trim()) continue;
+
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(code)) !== null) {
+      const className = m[1];
+      const constName = m[2];
+
+      // Skip Godot built-ins — we can't introspect their constants statically
+      if (GODOT_BUILTINS.has(className)) continue;
+      // Skip autoloads — they may define constants dynamically
+      if (autoloads.has(className)) continue;
+      // Skip extension singletons
+      if (EXTENSION_SINGLETONS.includes(className)) continue;
+
+      // Only check if the identifier resolves to a known project class_name
+      const targetFile = knownClassNames.get(className);
+      if (!targetFile) continue;
+
+      // Check if preceded by `.` (nested access like SomeClass.InnerEnum.VALUE)
+      const beforeMatch = code.slice(0, m.index);
+      if (beforeMatch.endsWith('.')) continue;
+
+      // Read the target file and look for the constant declaration
+      let targetText;
+      try { targetText = fs.readFileSync(targetFile, 'utf8'); } catch { continue; }
+
+      const constPattern = new RegExp(
+        `^(?:const|enum)\\s+${constName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+        'm'
+      );
+      // Also check for enum members: `enum Foo { ..., CONST_NAME, ... }`
+      const enumMemberPattern = new RegExp(
+        `\\b${constName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`
+      );
+      const hasConst = constPattern.test(targetText);
+
+      if (!hasConst) {
+        // Check if it's an enum value (SCREAMING_CASE inside an enum block)
+        const enumValueDeclared = checkEnumValue(targetText, constName);
+        if (!enumValueDeclared) {
+          reportError(filePath, i + 1,
+            `'${className}.${constName}' — constant '${constName}' not found in class '${className}' (${path.basename(targetFile)}) — possible removed or renamed constant (SPA-1678)`,
+            `Check if '${constName}' was removed/renamed in '${path.basename(targetFile)}', or use the replacement constant`
+          );
+        }
+      }
+    }
+  }
+}
+
+// Helper: check if a SCREAMING_CASE name is declared as an enum value
+function checkEnumValue(fileText, valueName) {
+  const lines = fileText.split('\n');
+  let inEnum = false;
+  for (const line of lines) {
+    if (/^\s*enum\s+/.test(line) || /^\s*enum\s*\{/.test(line)) {
+      inEnum = true;
+    }
+    if (inEnum) {
+      // Check if this line contains the enum value name
+      const re = new RegExp(`\\b${valueName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+      if (re.test(stripLine(line))) return true;
+      // End of enum block
+      if (line.includes('}')) inEnum = false;
+    }
+  }
+  return false;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 // Returns true when a file lives inside a tests/ directory.
@@ -577,6 +682,10 @@ function checkFile(filePath, knownClassNames, autoloads, allLocalTypes) {
   }
   checkBlockScopeVars(filePath, lines);
   checkInferredTypeBackslash(filePath, lines);
+  if (!isTestFile(filePath)) {
+    checkMissingUid(filePath, lines);
+  }
+  checkRemovedConstants(filePath, lines, knownClassNames, autoloads);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
