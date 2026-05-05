@@ -336,6 +336,33 @@ Based on the balance concerns above and the analytics infrastructure shipping at
 
 ---
 
+## 7. Phase 2 Difficulty Gating Decisions
+
+### evidence_economy_v2 bonuses gated to Normal+ (SPA-1757)
+
+**Decision (2026-05-05):** `shelf_life_extension` and `credulity_boost` bonuses are restricted to Normal, Master, and Spymaster difficulties. Apprentice players receive base `believability_bonus` and `mutability_modifier` only.
+
+**Rationale:**
+- S1 Apprentice M5 baseline: 5 evidence acquired, 3 used (0.60 hoarding ratio). Run resolved day 8 of 36 — the credulity delta and heat ceiling made evidence non-strategic.
+- Apprentice is the learning lane; Phase 2 amplifiers add complexity before core mechanics are understood.
+- Keeping Apprentice free of v2 bonuses provides a clean control group for future telemetry comparisons.
+
+**What Apprentice still gets from evidence:**
+- `believability_bonus` (+0.15–+0.25 depending on item type)
+- `mutability_modifier` (−0.15 for Witness Account)
+- Evidence use still marked via `bolstered_by_evidence`
+
+**What Apprentice does NOT get:**
+- `shelf_life_extension` (extended rumor lifespan per item)
+- `credulity_boost` (propagation advantage gated to seed target)
+- `target_cooldown` is already 0 on Apprentice via `intel_store.gd` — unchanged
+
+**Not gated:** Witness Account cooldown-bypass mechanic (SPA-1756) is a player-skill mechanic, not a bonus amplifier — remains active on all difficulties.
+
+**Implementation:** `world.gd` evidence application block — single `difficulty != "apprentice"` guard added alongside existing `evidence_economy_v2` flag check.
+
+---
+
 ## Appendix: Key File Locations
 
 | File | Contents |
