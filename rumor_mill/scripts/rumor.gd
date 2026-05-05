@@ -38,6 +38,8 @@ var shelf_life_ticks: int
 var current_believability: float
 var lineage_parent_id: String  # "" = original
 var bolstered_by_evidence: bool = false
+var evidence_credulity_boost: float = 0.0  ## SPA-1718: Phase 2 credulity bonus applied to seed-target NPC only.
+var seed_target_npc_id: String = ""        ## SPA-1718: NPC the rumor was whispered to (credulity boost guard).
 
 
 static func create(

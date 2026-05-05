@@ -288,6 +288,7 @@ class EvidenceItem:
 	var confidence: float = 1.0           ## SPA-1580: current evidence quality (0.0–1.0).
 	var _decay_emitted_on_day: int = -1   ## SPA-1580: anti-double-fire guard for save/load.
 	var shelf_life_extension: int = 0     ## SPA-1585: extra ticks added to rumor shelf_life_ticks on attachment.
+	var credulity_boost: float = 0.0      ## SPA-1718: Phase 2 per-seed-target credulity bonus (0.0 = no boost).
 
 	func _init(
 			ev_type: String,
@@ -400,7 +401,10 @@ func decay_evidence_cooldowns() -> void:
 
 ## Returns true when there is an active cooldown for a target other than target_npc_id.
 ## Returns false when no cooldown is active, or the cooldown is for this same target.
+## SPA-1718: Always returns false when evidence_economy_v2 flag is OFF.
 func is_evidence_locked_for_target(target_npc_id: String) -> bool:
+	if not GameState.evidence_economy_v2:
+		return false
 	for npc_id in _evidence_target_cooldown:
 		if _evidence_target_cooldown[npc_id] > 0 and npc_id != target_npc_id:
 			return true

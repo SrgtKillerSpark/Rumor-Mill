@@ -21,7 +21,7 @@
 
 class_name SaveManager
 
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SAVE_DIR     := "user://saves/"
 const SLOT_COUNT   := 3   ## Manual save slots (1–3)
 const AUTO_SLOT    := 0   ## Slot 0 = auto-save (written at start of each new day)
@@ -281,8 +281,35 @@ static func _migrate_step(data: Dictionary, from_ver: int) -> String:
 			# Stamp the version so later steps can rely on it being present.
 			push_warning("save_manager: migrating save from v0 to v1")
 			data["version"] = 1
+		1:
+			return _migrate_v1_to_v2(data)
 		_:
 			return "no migration path from v%d" % from_ver
+	return ""
+
+
+## Migration: v1 → v2.  Stamps default values for Phase 2 evidence-economy
+## fields that are absent in pre-Phase-2 saves.
+## Returns "" on success or a human-readable error string on failure.
+static func _migrate_v1_to_v2(data: Dictionary) -> String:
+	push_warning("save_manager: migrating save from v1 to v2")
+	# Per-rumor Phase 2 fields (evidence_credulity_boost, seed_target_npc_id).
+	var propagation: Variant = data.get("propagation", {})
+	if propagation is Dictionary:
+		var live_rumors: Variant = propagation.get("live_rumors", {})
+		if live_rumors is Dictionary:
+			for rid in live_rumors:
+				var rd: Variant = live_rumors[rid]
+				if rd is Dictionary:
+					if not rd.has("evidence_credulity_boost"):
+						rd["evidence_credulity_boost"] = 0.0
+					if not rd.has("seed_target_npc_id"):
+						rd["seed_target_npc_id"] = ""
+	# Intel store: ensure evidence_target_cooldown key exists.
+	var intel_store: Variant = data.get("intel_store", {})
+	if intel_store is Dictionary and not intel_store.has("evidence_target_cooldown"):
+		intel_store["evidence_target_cooldown"] = {}
+	data["version"] = 2
 	return ""
 
 
@@ -381,16 +408,18 @@ static func _serialize_propagation(pe: PropagationEngine) -> Dictionary:
 	for rid in pe.live_rumors:
 		var r: Rumor = pe.live_rumors[rid]
 		rumors[rid] = {
-			"id":                    r.id,
-			"subject_npc_id":        r.subject_npc_id,
-			"claim_type":            int(r.claim_type),
-			"intensity":             r.intensity,
-			"mutability":            r.mutability,
-			"created_tick":          r.created_tick,
-			"shelf_life_ticks":      r.shelf_life_ticks,
-			"current_believability": r.current_believability,
-			"lineage_parent_id":     r.lineage_parent_id,
-			"bolstered_by_evidence": r.bolstered_by_evidence,
+			"id":                       r.id,
+			"subject_npc_id":           r.subject_npc_id,
+			"claim_type":               int(r.claim_type),
+			"intensity":                r.intensity,
+			"mutability":               r.mutability,
+			"created_tick":             r.created_tick,
+			"shelf_life_ticks":         r.shelf_life_ticks,
+			"current_believability":    r.current_believability,
+			"lineage_parent_id":        r.lineage_parent_id,
+			"bolstered_by_evidence":    r.bolstered_by_evidence,
+			"evidence_credulity_boost": r.evidence_credulity_boost,
+			"seed_target_npc_id":       r.seed_target_npc_id,
 		}
 	return {
 		"live_rumors":               rumors,
@@ -619,8 +648,10 @@ static func _restore_propagation(pe: PropagationEngine, d: Dictionary) -> void:
 			int(rd["shelf_life_ticks"]),
 			rd.get("lineage_parent_id", "")
 		)
-		r.current_believability = float(rd.get("current_believability", r.current_believability))
-		r.bolstered_by_evidence = bool(rd.get("bolstered_by_evidence", false))
+		r.current_believability    = float(rd.get("current_believability", r.current_believability))
+		r.bolstered_by_evidence    = bool(rd.get("bolstered_by_evidence", false))
+		r.evidence_credulity_boost = float(rd.get("evidence_credulity_boost", 0.0))
+		r.seed_target_npc_id       = str(rd.get("seed_target_npc_id", ""))
 		pe.live_rumors[rid] = r
 	pe.lineage             = d.get("lineage", {}).duplicate(true)
 	pe.contradiction_count = int(d.get("contradiction_count", 0))
