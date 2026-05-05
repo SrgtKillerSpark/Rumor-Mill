@@ -310,6 +310,7 @@ const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evide
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
 const TestRumorPanelEvidenceCooldown   = preload("res://tests/test_rumor_panel_evidence_cooldown.gd")
+const TestPhase2SliceCShelfLife        = preload("res://tests/test_phase2_slice_c_shelf_life.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
 const TestStrategicOverview = preload("res://tests/test_strategic_overview.gd")
@@ -782,5 +783,8 @@ func _init() -> void:
 
 	print("\n── SettingsManager ──")
 	TestSettingsManager.new().run()
+
+	print("\n── Phase2SliceCShelfLife ──")
+	TestPhase2SliceCShelfLife.new().run()
 
 	print("\n=== All suites complete ===")
