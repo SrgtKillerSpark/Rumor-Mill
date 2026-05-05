@@ -191,22 +191,22 @@ func _build_ui() -> void:
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(_title_label)
 
-	# Description body.
+	# Description body — scroll-enabled so long text stays inside the panel (SPA-1803).
 	_body_label = RichTextLabel.new()
 	_body_label.bbcode_enabled = true
-	_body_label.fit_content = true
-	_body_label.scroll_active = false
+	_body_label.fit_content = false
+	_body_label.scroll_active = true
 	_body_label.custom_minimum_size = Vector2(0, 80)
 	_body_label.add_theme_color_override("default_color", C_BODY)
 	_body_label.add_theme_font_size_override("normal_font_size", 15)
 	_body_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(_body_label)
 
-	# Outcome label (hidden initially).
+	# Outcome label (hidden initially) — scroll-enabled (SPA-1803).
 	_outcome_label = RichTextLabel.new()
 	_outcome_label.bbcode_enabled = true
-	_outcome_label.fit_content = true
-	_outcome_label.scroll_active = false
+	_outcome_label.fit_content = false
+	_outcome_label.scroll_active = true
 	_outcome_label.custom_minimum_size = Vector2(0, 80)
 	_outcome_label.add_theme_color_override("default_color", C_BODY)
 	_outcome_label.add_theme_font_size_override("normal_font_size", 15)
