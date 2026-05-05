@@ -16,7 +16,6 @@ extends BaseScenarioHud
 ## Wire via setup(world, day_night) from main.gd.
 
 const BAR_WIDTH  := 160
-const BAR_HEIGHT := 10
 
 const CAMPAIGN_REP_BOOST := ScenarioConfig.S5_CAMPAIGN_REP_BOOST
 const CAMPAIGN_COOLDOWN  := ScenarioConfig.S5_CAMPAIGN_COOLDOWN
