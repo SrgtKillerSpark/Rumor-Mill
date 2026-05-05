@@ -20,6 +20,8 @@ const CALDER_FENN_ID := "calder_fenn"
 
 ## Number of extra cooldown days added while a disruption is active.
 const DISRUPTION_COOLDOWN_BONUS := 3
+## Maximum number of disruption charges the player can hold.
+const MAX_DISRUPT_CHARGES := 3
 
 var _active: bool = false
 var _last_seed_day: int = 0
@@ -27,6 +29,8 @@ var _alternate_flag: bool = false  # flips each seed during days 8–15
 
 ## Days remaining on the current disruption effect (0 = no disruption).
 var _disruption_days_remaining: int = 0
+## Charges remaining for the player to spend on disruptions.
+var disrupt_charges_remaining: int = MAX_DISRUPT_CHARGES
 
 ## Difficulty modifier applied to every cooldown tier (positive = slower rival).
 ## Set by World._apply_active_scenario() before activate() is called.
@@ -38,6 +42,7 @@ func activate() -> void:
 	_last_seed_day = 0
 	_alternate_flag = false
 	_disruption_days_remaining = 0
+	disrupt_charges_remaining = MAX_DISRUPT_CHARGES
 
 
 ## Called once per in-game day from World._on_day_changed().
@@ -80,6 +85,9 @@ func apply_disruption(current_day: int) -> bool:
 		return false  # Rival hasn't acted yet — nothing concrete to disrupt
 	if _disruption_days_remaining > 0:
 		return false  # Already disrupted; wait for it to expire
+	if disrupt_charges_remaining <= 0:
+		return false  # No charges left
+	disrupt_charges_remaining -= 1
 	_disruption_days_remaining = DISRUPTION_COOLDOWN_BONUS
 	rival_disrupted.emit(current_day)
 	return true
@@ -87,7 +95,7 @@ func apply_disruption(current_day: int) -> bool:
 
 ## Returns true when the rival can currently be disrupted by the player.
 func can_be_disrupted() -> bool:
-	return _active and _last_seed_day > 0 and _disruption_days_remaining <= 0
+	return _active and _last_seed_day > 0 and _disruption_days_remaining <= 0 and disrupt_charges_remaining > 0
 
 
 func _seed_counter_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) -> void:
