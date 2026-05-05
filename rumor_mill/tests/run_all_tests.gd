@@ -28,6 +28,10 @@ extends RefCounted
 ##                                          illness_hotspot_buildings declared (SPA-1691),
 ##                                          quarantine_ref declared (SPA-1693)
 ##   • TestRumorPanelEvidenceCooldown    — evidence item greyed out during cooldown: E1/E2/E3/E6 (SPA-1717)
+##   • TestPhase2SliceCShelfLife         — Slice C acceptance criteria C1–C4: shelf-life extension
+##                                          per evidence type + Phase-1 save compatibility (SPA-1736)
+##   • TestPhase2SliceECooldownGaps      — Slice E cooldown gaps E4 (Apprentice no-cooldown) and
+##                                          E5 (evidence-free seed does not arm cooldown) (SPA-1740)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
 ##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text,
@@ -310,6 +314,8 @@ const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evide
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
 const TestRumorPanelEvidenceCooldown   = preload("res://tests/test_rumor_panel_evidence_cooldown.gd")
+const TestPhase2SliceCShelfLife        = preload("res://tests/test_phase2_slice_c_shelf_life.gd")
+const TestPhase2SliceECooldownGaps     = preload("res://tests/test_phase2_slice_e_cooldown_gaps.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
 const TestStrategicOverview = preload("res://tests/test_strategic_overview.gd")
@@ -395,6 +401,12 @@ func _init() -> void:
 
 	print("\n── SPA-1717 RumorPanel evidence cooldown UI (E1/E2/E3/E6) ──")
 	TestRumorPanelEvidenceCooldown.new().run()
+
+	print("\n── SPA-1736 Phase 2 Slice C shelf-life extension (C1–C4) ──")
+	TestPhase2SliceCShelfLife.new().run()
+
+	print("\n── SPA-1740 Phase 2 Slice E cooldown gaps (E4 Apprentice, E5 no-evidence) ──")
+	TestPhase2SliceECooldownGaps.new().run()
 
 	print("\n── TutorialSystem ──")
 	TestTutorialSystem.new().run()
