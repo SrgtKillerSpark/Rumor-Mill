@@ -76,15 +76,15 @@
 
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
-| 28 | **Search panel width fixed at 215px; legend panel at 220px (with conflicting 210px min-size).** Neither adapts to viewport. Contradictory sizing is confusing. | social_graph_overlay.gd:379/710-711 | Medium |
+| 28 | ~~**Search panel width fixed at 215px; legend panel at 220px (with conflicting 210px min-size).** Neither adapts to viewport. Contradictory sizing is confusing.~~ **RESOLVED SPA-1676** — search panel uses viewport-relative width (`0.17vw`, 160–215px); legend panel uses (`0.17vw`, 180–220px). | social_graph_overlay.gd:379/710-711 | Medium |
 | 29 | ~~**NPC name labels drawn with no width constraint.**~~ **RESOLVED SPA-1675** — `NPC_LABEL_MAX_W=80.0` constant added; `text_w` clamped with `minf()`; `draw_string` width arg set to `NPC_LABEL_MAX_W`. | social_graph_overlay.gd:63/553/559 | Small |
 
 ### Tooltips & Toasts
 
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
-| 30 | **Achievement toasts can overlap.** No queue/stacking system. If multiple achievements fire in quick succession, they render on top of each other. | achievement_toast.gd (entire file) | Large |
-| 31 | **Suggestion toasts can overlap.** Same problem — PanelContainer siblings at the same screen position with no vertical offset management. | suggestion_toast.gd:11-12 | Large |
+| 30 | ~~**Achievement toasts can overlap.** No queue/stacking system. If multiple achievements fire in quick succession, they render on top of each other.~~ **RESOLVED SPA-1143** — `_queue: Array[String]` added; `show_achievement()` enqueues when a toast is visible; `_drain_queue()` fires after each dismiss so notifications appear sequentially. | achievement_toast.gd (entire file) | Large |
+| 31 | ~~**Suggestion toasts can overlap.** Same problem — PanelContainer siblings at the same screen position with no vertical offset management.~~ **RESOLVED SPA-1143** — same queue+drain pattern applied to `suggestion_toast.gd`; `show_hint()` enqueues when a toast is already visible. | suggestion_toast.gd:11-12 | Large |
 | 32 | ~~**Tooltip manager and HUD tooltip use different canvas layers (100 vs 25).** If both are active, tooltip_manager always wins. Inconsistent tooltip behavior.~~ **RESOLVED SPA-1179** — `hud_tooltip.gd` raised from layer 25 to layer 99. Documented precedence in both files: `hud_tooltip`(99) = auto-detected hover tooltips; `TooltipManager`(100) = explicit data-driven tooltips, always wins by design. Both scripts now have matching inline doc comments. | tooltip_manager.gd, hud_tooltip.gd | Medium |
 | 33 | ~~**Tooltip edge-clamping uses 4px buffer.** Too tight at 1366x768; tooltips can appear to hug screen edge.~~ **RESOLVED SPA-1660** — tooltip_manager.gd raised from 4px to 8px (matching hud_tooltip.gd which already used 8px). | tooltip_manager.gd:77, hud_tooltip.gd:205-212 | Small |
 | 34 | ~~**Building tooltip uses 4 different font sizes (16/13/12/12).** Visual hierarchy between description and NPC count is unclear.~~ **RESOLVED SPA-1666** — `_npc_count_lbl` and `_hint_lbl` raised from 12→13 giving a clean 2-tier hierarchy: 16 header, 13 body. | building_tooltip.gd:178/185 | Small |
@@ -94,16 +94,16 @@
 
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
-| 36 | **Mission briefing card uses hardcoded offsets (+-310px).** Not viewport-relative. On 1600x900, card appears slightly off-center. | mission_briefing.gd:146-148 | Small |
-| 37 | **Event choice modal panel is 700px wide with no viewport safety.** No max-width cap relative to viewport. | event_choice_modal.gd:164-166 | Small |
-| 38 | **Ready overlay card hardcoded to 580px wide (+-290).** Same issue as mission briefing. | ready_overlay.gd:89-92 | Small |
+| 36 | ~~**Mission briefing card uses hardcoded offsets (+-310px).** Not viewport-relative. On 1600x900, card appears slightly off-center.~~ **RESOLVED SPA-1676** — half-extents now computed via `UILayoutConstants.clamp_to_viewport()`. | mission_briefing.gd:146-148 | Small |
+| 37 | ~~**Event choice modal panel is 700px wide with no viewport safety.** No max-width cap relative to viewport.~~ **RESOLVED SPA-1676** — panel width/height viewport-clamped; `_panel_w` drives button and label min-sizes. | event_choice_modal.gd:164-166 | Small |
+| 38 | ~~**Ready overlay card hardcoded to 580px wide (+-290).** Same issue as mission briefing.~~ **RESOLVED SPA-1676** — half-extents now computed via `UILayoutConstants.clamp_to_viewport()`. | ready_overlay.gd:89-92 | Small |
 | 39 | ~~**Event card body RTL has `fit_content=true` with no size bounds.** Very long event descriptions expand panel unbounded.~~ **RESOLVED SPA-1517** — `fit_content` set to `false`; `custom_maximum_size = Vector2(0, 120)` and `scroll_active = true` already present, now fully effective. | event_card.gd:151 | Medium |
 
 ### Other UI Components
 
 | # | Issue | File : Line(s) | Severity |
 |---|-------|---------------|----------|
-| 40 | **Controls-reference panel offset_right hardcoded to 780px.** Extends off-screen at 1024px-wide viewports. | context_controls_panel.gd:107 | Medium |
+| 40 | ~~**Controls-reference panel offset_right hardcoded to 780px.** Extends off-screen at 1024px-wide viewports.~~ **RESOLVED SPA-1676** — `offset_right` now uses `clamp_to_viewport(0.75vw, 600–780px)`. | context_controls_panel.gd:107 | Medium |
 | 41 | ~~**NPC dialogue panel uses hardcoded screen offset `Vector2(12, -80)`.** Doesn't adapt to viewport aspect ratio. No vertical clamp for tall panels.~~ **RESOLVED SPA-1667** — Extracted `_compute_panel_pos` static helper; offset converted to `vp_size * (0.009, -0.111)` (≈12×-80 at 1280×720). Full viewport clamp retained. Unit tests added in `test_npc_dialogue_panel.gd`. | npc_dialogue_panel.gd:148-159 | Medium |
 | 42 | ~~**NPC dialogue panel `await process_frame` can hang if game is paused.** UI freeze risk.~~ **RESOLVED SPA-1685** — Set `_canvas.process_mode = Node.PROCESS_MODE_ALWAYS` in `_build_canvas()` so the whole dialogue subtree (including `_input()` and `await create_timer`) remains active during pause. Existing `create_timer(0.0)` already uses pause-safe default (`process_always = true`). | npc_dialogue_panel.gd:118 | Medium |
 | 43 | ~~**Tutorial banner accent stripe is 5px.** May be imperceptible at higher DPI/resolution.~~ **RESOLVED SPA-1683** — stripe width now `maxi(5, int(vp_h * 0.007))` computed in `_build_ui()` (≈5px at 720p, ≈8px at 1080p). | tutorial_banner.gd:307 | Small |
@@ -138,22 +138,36 @@ Items below were extracted from player feedback and are **net-new** — not dupl
 
 | # | Issue | Source Quote | Severity | Fix Suggestion |
 |---|-------|-------------|----------|----------------|
-| 48 | **Heat system not covered in tutorial.** Players discover the heat/suspicion mechanic mid-playthrough by getting caught — not through the onboarding sequence. Tutorial covers rumor seeding and the social graph but skips heat accumulation entirely. (4 independent reports) | "didn't realize my movements were being tracked"; "I had no idea why NPCs started avoiding me" | **P1** | Add a tutorial banner step (or tooltip-gated moment) that introduces heat accumulation before the player's first high-risk action. Low-effort, high-clarity win — reuse existing `tutorial_banner.gd` sequence. |
+| 48 | ~~**Heat system not covered in tutorial.** Players discover the heat/suspicion mechanic mid-playthrough by getting caught — not through the onboarding sequence. Tutorial covers rumor seeding and the social graph but skips heat accumulation entirely. (4 independent reports)~~ **RESOLVED SPA-1658** — `ctx_heat_intro` step inserted as first step in S2–S6 onboarding sequences via `tutorial_controller.gd` and `tutorial_system.gd`; S1 explicitly excluded; 7 regression tests added. | "didn't realize my movements were being tracked"; "I had no idea why NPCs started avoiding me" | **P1** | Add a tutorial banner step (or tooltip-gated moment) that introduces heat accumulation before the player's first high-risk action. Low-effort, high-clarity win — reuse existing `tutorial_banner.gd` sequence. |
 
 ### In-Game Feedback & Discoverability
 
 | # | Issue | Source Quote | Severity | Fix Suggestion |
 |---|-------|-------------|----------|----------------|
-| 49 | **No in-game UI feedback when a rumor target-shifts.** When propagation mutates a rumor's target, there is no toast, journal entry, or visual cue explaining that the shift happened or why. Group A players (9 reports, mostly Apprentice/Master) perceive target-shift as a bug rather than an intentional mechanic. Group B (Spymaster players) understand it but still want mitigation info. | "feels like a bug"; mechanic "reads as a design bug to [newer players] until explained" | **P1** | Surface a brief toast or rumor-panel annotation when target-shift fires (e.g. "Rumor about {old_target} has shifted to {new_target} — NPCs reinterpret whispers as they spread"). Optionally link to a journal glossary entry on propagation mechanics. |
-| 50 | **Scenario-select teaser text truncation hides useful context.** (Amplifies existing issue #13.) Multiple players across channels noted scenario descriptions feel incomplete. Community reports validate the 180-char truncation is actively noticed. | (Implicit from feedback patterns — players ask "what is this scenario about?" after reading the select screen) | **P2** | Raise #13 priority; enable `scroll_active = true` on the description label or increase `custom_maximum_size.y` to show the full teaser. |
+| 49 | ~~**No in-game UI feedback when a rumor target-shifts.** When propagation mutates a rumor's target, there is no toast, journal entry, or visual cue explaining that the shift happened or why. Group A players (9 reports, mostly Apprentice/Master) perceive target-shift as a bug rather than an intentional mechanic. Group B (Spymaster players) understand it but still want mitigation info.~~ **RESOLVED SPA-1664** — `world.rumor_target_shifted` wired in `rumor_event_wiring.gd`; shows a muted amber-purple parchment toast ("Rumor about X has shifted to Y — NPCs reinterpret whispers as they spread.") and pushes a feed entry. | "feels like a bug"; mechanic "reads as a design bug to [newer players] until explained" | **P1** | Surface a brief toast or rumor-panel annotation when target-shift fires (e.g. "Rumor about {old_target} has shifted to {new_target} — NPCs reinterpret whispers as they spread"). Optionally link to a journal glossary entry on propagation mechanics. |
+| 50 | ~~**Scenario-select teaser text truncation hides useful context.** (Amplifies existing issue #13.) Multiple players across channels noted scenario descriptions feel incomplete. Community reports validate the 180-char truncation is actively noticed.~~ **RESOLVED SPA-1651** — 180-char truncation removed; description `RichTextLabel` switched to scrollable 60px min-height (same fix as #13). | (Implicit from feedback patterns — players ask "what is this scenario about?" after reading the select screen) | **P2** | Raise #13 priority; enable `scroll_active = true` on the description label or increase `custom_maximum_size.y` to show the full teaser. |
 
 ---
 
 ## Top 3 P1s from Community Feedback Triage (SPA-1515)
 
-1. **#48 — Heat system tutorial gap.** 4 reports. Players are blindsided by the core heat mechanic. Fix: add a tutorial banner step covering heat before the first high-risk action.
-2. **#49 — Target-shift has no in-game UI feedback.** 9 reports (largest UX cluster). Players think target-shift is a bug. Fix: surface a toast/annotation when propagation mutates a rumor's target.
-3. **#3 (existing, text overflow) + #50 (amplified) — Event/toast/scenario text clipping.** The open issue #6/#7/#39/#23 cluster plus community validation of #13 truncation. Fix: the overflow pass in "Top 3 Fixes" §3 above, plus scroll-enabling #13.
+~~1. **#48 — Heat system tutorial gap.** 4 reports. Players are blindsided by the core heat mechanic. Fix: add a tutorial banner step covering heat before the first high-risk action.~~ **RESOLVED SPA-1658**
+
+~~2. **#49 — Target-shift has no in-game UI feedback.** 9 reports (largest UX cluster). Players think target-shift is a bug. Fix: surface a toast/annotation when propagation mutates a rumor's target.~~ **RESOLVED SPA-1664**
+
+~~3. **#3 (existing, text overflow) + #50 (amplified) — Event/toast/scenario text clipping.** The open issue #6/#7/#39/#23 cluster plus community validation of #13 truncation. Fix: the overflow pass in "Top 3 Fixes" §3 above, plus scroll-enabling #13.~~ **RESOLVED** — overflow cluster fixed in SPA-1517/SPA-1680; scenario-select scroll fixed in SPA-1651 (#50).
+
+---
+
+---
+
+## Outstanding (post-launch)
+
+All 50 numbered items are confirmed resolved as of the SPA-1690 audit (2026-05-05). No orphans remain.
+
+- Items #1–#50: fully crossed off. Every fix was verified against its commit diff (not just the commit message).
+- Community Feedback P1s (#48, #49, #50): resolved via SPA-1658, SPA-1664, SPA-1651 respectively.
+- No new child issues filed — no "claimed-fixed but verify failed" cases found during the audit.
 
 ---
 
