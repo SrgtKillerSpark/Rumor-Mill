@@ -65,21 +65,21 @@ func run() -> void:
 
 static func test_c_panel_bg_dark_semi() -> bool:
 	var tb := _make_tb()
-	var ok := tb.C_PANEL_BG.r < 0.10 and tb.C_PANEL_BG.a > 0.75
+	var ok: bool = tb.C_PANEL_BG.r < 0.10 and tb.C_PANEL_BG.a > 0.75
 	tb.free()
 	return ok
 
 
 static func test_c_accent_amber() -> bool:
 	var tb := _make_tb()
-	var ok := tb.C_ACCENT.r > 0.90 and tb.C_ACCENT.g > 0.55 and tb.C_ACCENT.b < 0.30
+	var ok: bool = tb.C_ACCENT.r > 0.90 and tb.C_ACCENT.g > 0.55 and tb.C_ACCENT.b < 0.30
 	tb.free()
 	return ok
 
 
 static func test_c_heading_warm_gold() -> bool:
 	var tb := _make_tb()
-	var ok := tb.C_HEADING.r > 0.90 and tb.C_HEADING.g > 0.75 and tb.C_HEADING.b < 0.50
+	var ok: bool = tb.C_HEADING.r > 0.90 and tb.C_HEADING.g > 0.75 and tb.C_HEADING.b < 0.50
 	tb.free()
 	return ok
 
@@ -88,21 +88,21 @@ static func test_c_heading_warm_gold() -> bool:
 
 static func test_banner_width() -> bool:
 	var tb := _make_tb()
-	var ok := tb.BANNER_WIDTH == 380
+	var ok: bool = tb.BANNER_WIDTH == 380
 	tb.free()
 	return ok
 
 
 static func test_margin() -> bool:
 	var tb := _make_tb()
-	var ok := tb.MARGIN == 24
+	var ok: bool = tb.MARGIN == 24
 	tb.free()
 	return ok
 
 
 static func test_accent_width() -> bool:
 	var tb := _make_tb()
-	var ok := tb.ACCENT_WIDTH == 5
+	var ok: bool = tb.ACCENT_WIDTH == 5
 	tb.free()
 	return ok
 
@@ -111,49 +111,49 @@ static func test_accent_width() -> bool:
 
 static func test_initial_container_null() -> bool:
 	var tb := _make_tb()
-	var ok := tb._container == null
+	var ok: bool = tb._container == null
 	tb.free()
 	return ok
 
 
 static func test_initial_panel_bg_null() -> bool:
 	var tb := _make_tb()
-	var ok := tb._panel_bg == null
+	var ok: bool = tb._panel_bg == null
 	tb.free()
 	return ok
 
 
 static func test_initial_accent_null() -> bool:
 	var tb := _make_tb()
-	var ok := tb._accent == null
+	var ok: bool = tb._accent == null
 	tb.free()
 	return ok
 
 
 static func test_initial_title_label_null() -> bool:
 	var tb := _make_tb()
-	var ok := tb._title_label == null
+	var ok: bool = tb._title_label == null
 	tb.free()
 	return ok
 
 
 static func test_initial_body_label_null() -> bool:
 	var tb := _make_tb()
-	var ok := tb._body_label == null
+	var ok: bool = tb._body_label == null
 	tb.free()
 	return ok
 
 
 static func test_initial_dismiss_btn_null() -> bool:
 	var tb := _make_tb()
-	var ok := tb._dismiss_btn == null
+	var ok: bool = tb._dismiss_btn == null
 	tb.free()
 	return ok
 
 
 static func test_initial_dismiss_tween_null() -> bool:
 	var tb := _make_tb()
-	var ok := tb._dismiss_tween == null
+	var ok: bool = tb._dismiss_tween == null
 	tb.free()
 	return ok
 
@@ -162,20 +162,20 @@ static func test_initial_dismiss_tween_null() -> bool:
 
 static func test_initial_tutorial_sys_null() -> bool:
 	var tb := _make_tb()
-	var ok := tb._tutorial_sys == null
+	var ok: bool = tb._tutorial_sys == null
 	tb.free()
 	return ok
 
 
 static func test_initial_queue_empty() -> bool:
 	var tb := _make_tb()
-	var ok := tb._queue.is_empty()
+	var ok: bool = tb._queue.is_empty()
 	tb.free()
 	return ok
 
 
 static func test_initial_active_id_empty() -> bool:
 	var tb := _make_tb()
-	var ok := tb._active_id == ""
+	var ok: bool = tb._active_id == ""
 	tb.free()
 	return ok

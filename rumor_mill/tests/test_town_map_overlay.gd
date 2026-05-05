@@ -64,14 +64,14 @@ func run() -> void:
 
 static func test_tile_w() -> bool:
 	var t := _make_tmo()
-	var ok := t.TILE_W == 64
+	var ok: bool = t.TILE_W == 64
 	t.free()
 	return ok
 
 
 static func test_tile_h() -> bool:
 	var t := _make_tmo()
-	var ok := t.TILE_H == 32
+	var ok: bool = t.TILE_H == 32
 	t.free()
 	return ok
 
@@ -80,21 +80,21 @@ static func test_tile_h() -> bool:
 
 static func test_refresh_interval() -> bool:
 	var t := _make_tmo()
-	var ok := t.REFRESH_INTERVAL == 2.5
+	var ok: bool = t.REFRESH_INTERVAL == 2.5
 	t.free()
 	return ok
 
 
 static func test_max_count_for_scale() -> bool:
 	var t := _make_tmo()
-	var ok := t.MAX_COUNT_FOR_SCALE == 8
+	var ok: bool = t.MAX_COUNT_FOR_SCALE == 8
 	t.free()
 	return ok
 
 
 static func test_gather_radius() -> bool:
 	var t := _make_tmo()
-	var ok := t.GATHER_RADIUS == 3
+	var ok: bool = t.GATHER_RADIUS == 3
 	t.free()
 	return ok
 
@@ -103,7 +103,7 @@ static func test_gather_radius() -> bool:
 
 static func test_faction_colors_count() -> bool:
 	var t := _make_tmo()
-	var ok := t.FACTION_COLORS.size() == 3
+	var ok: bool = t.FACTION_COLORS.size() == 3
 	t.free()
 	return ok
 
@@ -111,7 +111,7 @@ static func test_faction_colors_count() -> bool:
 static func test_faction_colors_merchant_blue() -> bool:
 	var t := _make_tmo()
 	var c: Color = t.FACTION_COLORS.get("merchant", Color.BLACK)
-	var ok := c.b > 0.70 and c.r < 0.30
+	var ok: bool = c.b > 0.70 and c.r < 0.30
 	t.free()
 	return ok
 
@@ -119,7 +119,7 @@ static func test_faction_colors_merchant_blue() -> bool:
 static func test_faction_colors_noble_red() -> bool:
 	var t := _make_tmo()
 	var c: Color = t.FACTION_COLORS.get("noble", Color.BLACK)
-	var ok := c.r > 0.65 and c.b < 0.25
+	var ok: bool = c.r > 0.65 and c.b < 0.25
 	t.free()
 	return ok
 
@@ -127,7 +127,7 @@ static func test_faction_colors_noble_red() -> bool:
 static func test_faction_colors_clergy_yellow() -> bool:
 	var t := _make_tmo()
 	var c: Color = t.FACTION_COLORS.get("clergy", Color.BLACK)
-	var ok := c.r > 0.70 and c.g > 0.60 and c.b < 0.15
+	var ok: bool = c.r > 0.70 and c.g > 0.60 and c.b < 0.15
 	t.free()
 	return ok
 
@@ -136,34 +136,34 @@ static func test_faction_colors_clergy_yellow() -> bool:
 
 static func test_initial_npcs_empty() -> bool:
 	var t := _make_tmo()
-	var ok := t._npcs.is_empty()
+	var ok: bool = t._npcs.is_empty()
 	t.free()
 	return ok
 
 
 static func test_initial_gathering_points_empty() -> bool:
 	var t := _make_tmo()
-	var ok := t._gathering_points.is_empty()
+	var ok: bool = t._gathering_points.is_empty()
 	t.free()
 	return ok
 
 
 static func test_initial_npc_counts_empty() -> bool:
 	var t := _make_tmo()
-	var ok := t._npc_counts.is_empty()
+	var ok: bool = t._npc_counts.is_empty()
 	t.free()
 	return ok
 
 
 static func test_initial_pulse_zero() -> bool:
 	var t := _make_tmo()
-	var ok := t._pulse == 0.0
+	var ok: bool = t._pulse == 0.0
 	t.free()
 	return ok
 
 
 static func test_initial_refresh_timer_zero() -> bool:
 	var t := _make_tmo()
-	var ok := t._refresh_timer == 0.0
+	var ok: bool = t._refresh_timer == 0.0
 	t.free()
 	return ok

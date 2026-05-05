@@ -92,35 +92,35 @@ func test_ring_stagger_is_018() -> bool:
 
 func test_initial_elapsed_zero() -> bool:
 	var vfx := _make_vfx()
-	var ok := absf(vfx._elapsed) < 0.0001
+	var ok: bool = absf(vfx._elapsed) < 0.0001
 	vfx.free()
 	return ok
 
 
 func test_accent_color_default_r() -> bool:
 	var vfx := _make_vfx()
-	var ok := absf(vfx.accent_color.r - 0.92) < 0.01
+	var ok: bool = absf(vfx.accent_color.r - 0.92) < 0.01
 	vfx.free()
 	return ok
 
 
 func test_accent_color_default_g() -> bool:
 	var vfx := _make_vfx()
-	var ok := absf(vfx.accent_color.g - 0.72) < 0.01
+	var ok: bool = absf(vfx.accent_color.g - 0.72) < 0.01
 	vfx.free()
 	return ok
 
 
 func test_accent_color_default_b() -> bool:
 	var vfx := _make_vfx()
-	var ok := absf(vfx.accent_color.b - 0.18) < 0.01
+	var ok: bool = absf(vfx.accent_color.b - 0.18) < 0.01
 	vfx.free()
 	return ok
 
 
 func test_accent_color_default_alpha() -> bool:
 	var vfx := _make_vfx()
-	var ok := absf(vfx.accent_color.a - 0.85) < 0.01
+	var ok: bool = absf(vfx.accent_color.a - 0.85) < 0.01
 	vfx.free()
 	return ok
 
@@ -133,6 +133,6 @@ func test_accent_color_can_be_set() -> bool:
 	var vfx := _make_vfx()
 	var new_col := Color(0.45, 0.80, 1.0, 0.75)
 	vfx.accent_color = new_col
-	var ok := vfx.accent_color == new_col
+	var ok: bool = vfx.accent_color == new_col
 	vfx.free()
 	return ok

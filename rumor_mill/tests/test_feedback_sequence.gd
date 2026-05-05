@@ -68,14 +68,14 @@ func run() -> void:
 
 static func test_c_gold_vignette_translucent() -> bool:
 	var fs := _make_fs()
-	var ok := fs.C_GOLD_VIGNETTE.a < 0.60 and fs.C_GOLD_VIGNETTE.r > 0.85
+	var ok: bool = fs.C_GOLD_VIGNETTE.a < 0.60 and fs.C_GOLD_VIGNETTE.r > 0.85
 	fs.free()
 	return ok
 
 
 static func test_c_banner_win_bg_dark() -> bool:
 	var fs := _make_fs()
-	var ok := fs.C_BANNER_WIN_BG.r < 0.25 and fs.C_BANNER_WIN_BG.a > 0.85
+	var ok: bool = fs.C_BANNER_WIN_BG.r < 0.25 and fs.C_BANNER_WIN_BG.a > 0.85
 	fs.free()
 	return ok
 
@@ -83,7 +83,7 @@ static func test_c_banner_win_bg_dark() -> bool:
 static func test_c_banner_fail_bg_dark_red() -> bool:
 	var fs := _make_fs()
 	# dark red: r > g and r > b, but all still dark
-	var ok := fs.C_BANNER_FAIL_BG.r > fs.C_BANNER_FAIL_BG.g and fs.C_BANNER_FAIL_BG.r < 0.30
+	var ok: bool = fs.C_BANNER_FAIL_BG.r > fs.C_BANNER_FAIL_BG.g and fs.C_BANNER_FAIL_BG.r < 0.30
 	fs.free()
 	return ok
 
@@ -91,21 +91,21 @@ static func test_c_banner_fail_bg_dark_red() -> bool:
 static func test_c_banner_win_tx_warm() -> bool:
 	var fs := _make_fs()
 	# warm parchment: high r, high g, moderate b
-	var ok := fs.C_BANNER_WIN_TX.r > 0.85 and fs.C_BANNER_WIN_TX.g > 0.80
+	var ok: bool = fs.C_BANNER_WIN_TX.r > 0.85 and fs.C_BANNER_WIN_TX.g > 0.80
 	fs.free()
 	return ok
 
 
 static func test_c_banner_fail_tx_red() -> bool:
 	var fs := _make_fs()
-	var ok := fs.C_BANNER_FAIL_TX.r > 0.85 and fs.C_BANNER_FAIL_TX.g < 0.50
+	var ok: bool = fs.C_BANNER_FAIL_TX.r > 0.85 and fs.C_BANNER_FAIL_TX.g < 0.50
 	fs.free()
 	return ok
 
 
 static func test_c_particle_gold_bright() -> bool:
 	var fs := _make_fs()
-	var ok := fs.C_PARTICLE_GOLD.r == 1.0 and fs.C_PARTICLE_GOLD.g > 0.75
+	var ok: bool = fs.C_PARTICLE_GOLD.r == 1.0 and fs.C_PARTICLE_GOLD.g > 0.75
 	fs.free()
 	return ok
 
@@ -114,21 +114,21 @@ static func test_c_particle_gold_bright() -> bool:
 
 static func test_vignette_shader_nonempty() -> bool:
 	var fs := _make_fs()
-	var ok := not (fs.VIGNETTE_SHADER as String).is_empty()
+	var ok: bool = not (fs.VIGNETTE_SHADER as String).is_empty()
 	fs.free()
 	return ok
 
 
 static func test_desaturation_shader_nonempty() -> bool:
 	var fs := _make_fs()
-	var ok := not (fs.DESATURATION_SHADER as String).is_empty()
+	var ok: bool = not (fs.DESATURATION_SHADER as String).is_empty()
 	fs.free()
 	return ok
 
 
 static func test_iris_shader_nonempty() -> bool:
 	var fs := _make_fs()
-	var ok := not (fs.IRIS_SHADER as String).is_empty()
+	var ok: bool = not (fs.IRIS_SHADER as String).is_empty()
 	fs.free()
 	return ok
 
@@ -137,69 +137,69 @@ static func test_iris_shader_nonempty() -> bool:
 
 static func test_initial_camera_ref_null() -> bool:
 	var fs := _make_fs()
-	var ok := fs._camera_ref == null
+	var ok: bool = fs._camera_ref == null
 	fs.free()
 	return ok
 
 
 static func test_initial_day_night_ref_null() -> bool:
 	var fs := _make_fs()
-	var ok := fs._day_night_ref == null
+	var ok: bool = fs._day_night_ref == null
 	fs.free()
 	return ok
 
 
 static func test_initial_world_ref_null() -> bool:
 	var fs := _make_fs()
-	var ok := fs._world_ref == null
+	var ok: bool = fs._world_ref == null
 	fs.free()
 	return ok
 
 
 static func test_initial_vignette_rect_null() -> bool:
 	var fs := _make_fs()
-	var ok := fs._vignette_rect == null
+	var ok: bool = fs._vignette_rect == null
 	fs.free()
 	return ok
 
 
 static func test_initial_desat_rect_null() -> bool:
 	var fs := _make_fs()
-	var ok := fs._desat_rect == null
+	var ok: bool = fs._desat_rect == null
 	fs.free()
 	return ok
 
 
 static func test_initial_iris_rect_null() -> bool:
 	var fs := _make_fs()
-	var ok := fs._iris_rect == null
+	var ok: bool = fs._iris_rect == null
 	fs.free()
 	return ok
 
 
 static func test_initial_banner_panel_null() -> bool:
 	var fs := _make_fs()
-	var ok := fs._banner_panel == null
+	var ok: bool = fs._banner_panel == null
 	fs.free()
 	return ok
 
 
 static func test_initial_banner_label_null() -> bool:
 	var fs := _make_fs()
-	var ok := fs._banner_label == null
+	var ok: bool = fs._banner_label == null
 	fs.free()
 	return ok
 
 
 static func test_initial_particle_layer_null() -> bool:
 	var fs := _make_fs()
-	var ok := fs._particle_layer == null
+	var ok: bool = fs._particle_layer == null
 	fs.free()
 	return ok
 
 
 static func test_initial_running_false() -> bool:
 	var fs := _make_fs()
-	var ok := fs._running == false
+	var ok: bool = fs._running == false
 	fs.free()
 	return ok

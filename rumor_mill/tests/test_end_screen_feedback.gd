@@ -168,7 +168,7 @@ static func test_setup_stores_parent() -> bool:
 	var esf := _make_esf()
 	var layer := CanvasLayer.new()
 	esf.setup(layer, null)
-	var ok := esf._parent == layer
+	var ok: bool = esf._parent == layer
 	layer.free()
 	return ok
 
@@ -177,6 +177,6 @@ static func test_setup_stores_btn_again() -> bool:
 	var esf := _make_esf()
 	var btn := Button.new()
 	esf.setup(null, btn)
-	var ok := esf._btn_again == btn
+	var ok: bool = esf._btn_again == btn
 	btn.free()
 	return ok

@@ -50,7 +50,7 @@ func run() -> void:
 
 static func test_c_panel_bg_dark_brown() -> bool:
 	var sp := _make_sp()
-	var ok := sp.C_PANEL_BG.r > sp.C_PANEL_BG.b and sp.C_PANEL_BG.r < 0.25
+	var ok: bool = sp.C_PANEL_BG.r > sp.C_PANEL_BG.b and sp.C_PANEL_BG.r < 0.25
 	sp.free()
 	return ok
 
@@ -58,7 +58,7 @@ static func test_c_panel_bg_dark_brown() -> bool:
 static func test_c_title_is_gold() -> bool:
 	var sp := _make_sp()
 	# gold: high r, high g, low b
-	var ok := sp.C_TITLE.r > 0.85 and sp.C_TITLE.g > 0.70 and sp.C_TITLE.b < 0.20
+	var ok: bool = sp.C_TITLE.r > 0.85 and sp.C_TITLE.g > 0.70 and sp.C_TITLE.b < 0.20
 	sp.free()
 	return ok
 
@@ -66,14 +66,14 @@ static func test_c_title_is_gold() -> bool:
 static func test_c_score_win_is_gold() -> bool:
 	var sp := _make_sp()
 	# same gold hue as C_TITLE
-	var ok := sp.C_SCORE_WIN.r > 0.85 and sp.C_SCORE_WIN.g > 0.70 and sp.C_SCORE_WIN.b < 0.20
+	var ok: bool = sp.C_SCORE_WIN.r > 0.85 and sp.C_SCORE_WIN.g > 0.70 and sp.C_SCORE_WIN.b < 0.20
 	sp.free()
 	return ok
 
 
 static func test_c_score_fail_is_red() -> bool:
 	var sp := _make_sp()
-	var ok := sp.C_SCORE_FAIL.r > 0.80 and sp.C_SCORE_FAIL.g < 0.25 and sp.C_SCORE_FAIL.b < 0.20
+	var ok: bool = sp.C_SCORE_FAIL.r > 0.80 and sp.C_SCORE_FAIL.g < 0.25 and sp.C_SCORE_FAIL.b < 0.20
 	sp.free()
 	return ok
 
@@ -81,7 +81,7 @@ static func test_c_score_fail_is_red() -> bool:
 static func test_c_muted_low_saturation() -> bool:
 	var sp := _make_sp()
 	# muted: all channels fairly close together, mid range
-	var ok := sp.C_MUTED.r > 0.50 and sp.C_MUTED.r < 0.80
+	var ok: bool = sp.C_MUTED.r > 0.50 and sp.C_MUTED.r < 0.80
 	sp.free()
 	return ok
 
@@ -90,6 +90,6 @@ static func test_c_muted_low_saturation() -> bool:
 
 static func test_initial_panel_null() -> bool:
 	var sp := _make_sp()
-	var ok := sp.panel == null
+	var ok: bool = sp.panel == null
 	sp.free()
 	return ok

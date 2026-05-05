@@ -1,0 +1,9 @@
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s1n_sca01","seed_target":"sybil_oats","subject":"Edric Fenn","day":3,"scenario_id":"S1","difficulty":"Normal","ts":"2026-05-05T09:38:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s1n_acc01","seed_target":"aldric_vane","subject":"Edric Fenn","day":5,"scenario_id":"S1","difficulty":"Normal","ts":"2026-05-05T10:20:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"s1n_acc02","seed_target":"greta_flint","subject":"Edric Fenn","day":7,"scenario_id":"S1","difficulty":"Normal","ts":"2026-05-05T11:06:00Z"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s2n_sca01","seed_target":"alys_herbwife","subject":"Sister Merewyn","day":3,"scenario_id":"S2","difficulty":"Normal","ts":"2026-05-05T12:40:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s2n_acc01","seed_target":"miller_wife","subject":"Sister Merewyn","day":5,"scenario_id":"S2","difficulty":"Normal","ts":"2026-05-05T13:22:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"s2n_acc02","seed_target":"fishwife","subject":"Sister Merewyn","day":7,"scenario_id":"S2","difficulty":"Normal","ts":"2026-05-05T14:08:00Z"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s4n_pra01","seed_target":"maren_nun","subject":"Aldous Prior","day":3,"scenario_id":"S4","difficulty":"Normal","ts":"2026-05-05T15:40:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s4n_pra02","seed_target":"constance_widow","subject":"Finn Monk","day":4,"scenario_id":"S4","difficulty":"Normal","ts":"2026-05-05T16:10:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"s4n_pra03","seed_target":"nell_picker","subject":"Vera Midwife","day":6,"scenario_id":"S4","difficulty":"Normal","ts":"2026-05-05T16:57:00Z"}

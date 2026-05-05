@@ -30,6 +30,19 @@ const DEFAULT_UI_SCALE           := 1.0    ## 1.0 = 100%, range 0.75–1.5
 ## Available UI scale presets.
 const UI_SCALE_PRESETS := [0.75, 0.85, 1.0, 1.15, 1.25, 1.5]
 
+## Text-size labels (maps to UI scale indices below).
+const TEXT_SIZE_LABELS: Array[String] = ["Small", "Medium", "Large"]
+## UI_SCALE_PRESETS indices for each TEXT_SIZE_LABELS entry.
+const TEXT_SIZE_SCALE_INDICES: Array[int] = [0, 2, 4]
+
+## Game-speed display labels.
+const GAME_SPEED_LABELS: Array[String] = ["½×", "1×", "2×"]
+## tick_duration_seconds values corresponding to each GAME_SPEED_LABELS entry.
+const GAME_SPEED_PRESETS: Array[float] = [2.0, 1.0, 0.5]
+
+## Window-scale presets (multiplier applied to base window size).
+const WINDOW_SCALE_PRESETS: Array[float] = [0.75, 1.0, 1.25, 1.5]
+
 ## Window mode constants.
 const WINDOW_WINDOWED   := 0   ## Regular window with title bar and decorations.
 const WINDOW_BORDERLESS := 1   ## Borderless fullscreen (windowed fullscreen).
@@ -46,6 +59,8 @@ const BASE_RESOLUTIONS := [
 ## Runtime resolution list (includes native if not already a preset).
 var RESOLUTIONS: Array[Vector2i] = []
 
+signal setting_changed(key: String, old_value: String, new_value: String)
+
 var master_volume:       float = DEFAULT_MASTER_VOL
 var music_volume:        float = DEFAULT_MUSIC_VOL
 var ambient_volume:      float = DEFAULT_AMBIENT_VOL
@@ -56,7 +71,11 @@ var resolution_index:    int   = DEFAULT_RESOLUTION_INDEX
 var window_mode:         int   = DEFAULT_WINDOW_MODE
 var ui_scale:            float = DEFAULT_UI_SCALE
 var ui_scale_index:      int   = 2   ## index into UI_SCALE_PRESETS (default 1.0)
+var text_size_index:     int   = 1   ## index into TEXT_SIZE_LABELS (default Medium)
+var game_speed_index:    int   = 1   ## index into GAME_SPEED_PRESETS (default 1×)
+var window_scale_index:  int   = 1   ## index into WINDOW_SCALE_PRESETS (default 100%)
 var dismissed_tooltips:  Dictionary = {}  ## Persistent tooltip dismissal tracking (tooltip_id → true).
+var _prev_snapshot:      Dictionary = {}  ## Snapshot used by _diff_and_emit_changes.
 
 
 func _ready() -> void:
@@ -100,6 +119,13 @@ func load_settings() -> void:
 	ui_scale_index = cfg.get_value(SECTION, "ui_scale_index", 2)
 	ui_scale_index = clampi(ui_scale_index, 0, UI_SCALE_PRESETS.size() - 1)
 	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
+	text_size_index = cfg.get_value(SECTION, "text_size_index", 1)
+	text_size_index = clampi(text_size_index, 0, TEXT_SIZE_LABELS.size() - 1)
+	game_speed_index = cfg.get_value(SECTION, "game_speed_index", 1)
+	game_speed_index = clampi(game_speed_index, 0, GAME_SPEED_PRESETS.size() - 1)
+	game_speed = GAME_SPEED_PRESETS[game_speed_index]
+	window_scale_index = cfg.get_value(SECTION, "window_scale_index", 1)
+	window_scale_index = clampi(window_scale_index, 0, WINDOW_SCALE_PRESETS.size() - 1)
 	dismissed_tooltips = cfg.get_value(SECTION, "dismissed_tooltips", {})
 
 
@@ -112,8 +138,11 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "game_speed",        game_speed)
 	cfg.set_value(SECTION, "analytics_enabled", analytics_enabled)
 	cfg.set_value(SECTION, "resolution_index",  resolution_index)
-	cfg.set_value(SECTION, "window_mode",       window_mode)
-	cfg.set_value(SECTION, "ui_scale_index",    ui_scale_index)
+	cfg.set_value(SECTION, "window_mode",        window_mode)
+	cfg.set_value(SECTION, "ui_scale_index",     ui_scale_index)
+	cfg.set_value(SECTION, "text_size_index",    text_size_index)
+	cfg.set_value(SECTION, "game_speed_index",   game_speed_index)
+	cfg.set_value(SECTION, "window_scale_index", window_scale_index)
 	cfg.set_value(SECTION, "dismissed_tooltips", dismissed_tooltips)
 	cfg.save(SAVE_PATH)
 
@@ -200,6 +229,55 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_F11:
 			toggle_fullscreen()
 			get_viewport().set_input_as_handled()
+
+
+## Get the label for the current text size preset.
+func get_text_size_label() -> String:
+	return TEXT_SIZE_LABELS[text_size_index]
+
+
+## Set text_size_index and sync ui_scale_index / ui_scale accordingly.
+func set_text_size_index(idx: int) -> void:
+	text_size_index = clampi(idx, 0, TEXT_SIZE_LABELS.size() - 1)
+	ui_scale_index = TEXT_SIZE_SCALE_INDICES[text_size_index]
+	ui_scale = UI_SCALE_PRESETS[ui_scale_index]
+
+
+## Get the label for the current game speed preset.
+func get_game_speed_label() -> String:
+	return GAME_SPEED_LABELS[game_speed_index]
+
+
+## Get the label for the current window scale preset.
+func get_window_scale_label() -> String:
+	return "%d%%" % int(WINDOW_SCALE_PRESETS[window_scale_index] * 100.0)
+
+
+## Snapshot current settings as a string-valued dictionary for change diffing.
+func _take_snapshot() -> Dictionary:
+	return {
+		"master_volume":    str(master_volume),
+		"music_volume":     str(music_volume),
+		"ambient_volume":   str(ambient_volume),
+		"sfx_volume":       str(sfx_volume),
+		"game_speed_index": str(game_speed_index),
+		"analytics_enabled": str(analytics_enabled),
+		"resolution_index": str(resolution_index),
+		"window_mode":      str(window_mode),
+		"ui_scale_index":   str(ui_scale_index),
+		"window_scale_index": str(window_scale_index),
+		"text_size_index":  str(text_size_index),
+	}
+
+
+## Emit setting_changed for each value that differs from _prev_snapshot,
+## then update _prev_snapshot to the current state.
+func _diff_and_emit_changes() -> void:
+	var current := _take_snapshot()
+	for key in current:
+		if key in _prev_snapshot and current[key] != _prev_snapshot[key]:
+			setting_changed.emit(key, _prev_snapshot[key], current[key])
+	_prev_snapshot = current
 
 
 ## Convert linear 0-100 to dB. Returns -80 for zero (silence).

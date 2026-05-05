@@ -64,21 +64,21 @@ func run() -> void:
 
 static func test_c_bg_dark() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl.C_BG.r < 0.15 and tbl.C_BG.a > 0.80
+	var ok: bool = tbl.C_BG.r < 0.15 and tbl.C_BG.a > 0.80
 	tbl.free()
 	return ok
 
 
 static func test_c_heading_gold() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl.C_HEADING.r > 0.85 and tbl.C_HEADING.g > 0.70 and tbl.C_HEADING.b < 0.20
+	var ok: bool = tbl.C_HEADING.r > 0.85 and tbl.C_HEADING.g > 0.70 and tbl.C_HEADING.b < 0.20
 	tbl.free()
 	return ok
 
 
 static func test_c_symbol_warm() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl.C_SYMBOL.r > 0.85 and tbl.C_SYMBOL.g > 0.80 and tbl.C_SYMBOL.b > 0.55
+	var ok: bool = tbl.C_SYMBOL.r > 0.85 and tbl.C_SYMBOL.g > 0.80 and tbl.C_SYMBOL.b > 0.55
 	tbl.free()
 	return ok
 
@@ -87,14 +87,14 @@ static func test_c_symbol_warm() -> bool:
 
 static func test_legend_entries_count() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl.LEGEND_ENTRIES.size() == 5
+	var ok: bool = tbl.LEGEND_ENTRIES.size() == 5
 	tbl.free()
 	return ok
 
 
 static func test_legend_entries_have_symbol() -> bool:
 	var tbl := _make_tbl()
-	var ok := true
+	var ok: bool = true
 	for entry in tbl.LEGEND_ENTRIES:
 		if not (entry as Dictionary).has("symbol"):
 			ok = false
@@ -105,7 +105,7 @@ static func test_legend_entries_have_symbol() -> bool:
 
 static func test_legend_entries_have_desc() -> bool:
 	var tbl := _make_tbl()
-	var ok := true
+	var ok: bool = true
 	for entry in tbl.LEGEND_ENTRIES:
 		if not (entry as Dictionary).has("desc"):
 			ok = false
@@ -116,7 +116,7 @@ static func test_legend_entries_have_desc() -> bool:
 
 static func test_legend_entry_first_evaluating() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl.LEGEND_ENTRIES[0].get("desc", "") == "Evaluating"
+	var ok: bool = tbl.LEGEND_ENTRIES[0].get("desc", "") == "Evaluating"
 	tbl.free()
 	return ok
 
@@ -125,14 +125,14 @@ static func test_legend_entry_first_evaluating() -> bool:
 
 static func test_collapse_after_day() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl.COLLAPSE_AFTER_DAY == 5
+	var ok: bool = tbl.COLLAPSE_AFTER_DAY == 5
 	tbl.free()
 	return ok
 
 
 static func test_margin() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl.MARGIN == 16
+	var ok: bool = tbl.MARGIN == 16
 	tbl.free()
 	return ok
 
@@ -141,34 +141,34 @@ static func test_margin() -> bool:
 
 static func test_initial_panel_null() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl._panel == null
+	var ok: bool = tbl._panel == null
 	tbl.free()
 	return ok
 
 
 static func test_initial_content_vbox_null() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl._content_vbox == null
+	var ok: bool = tbl._content_vbox == null
 	tbl.free()
 	return ok
 
 
 static func test_initial_tab_btn_null() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl._tab_btn == null
+	var ok: bool = tbl._tab_btn == null
 	tbl.free()
 	return ok
 
 
 static func test_initial_expanded_true() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl._expanded == true
+	var ok: bool = tbl._expanded == true
 	tbl.free()
 	return ok
 
 
 static func test_initial_day_night_null() -> bool:
 	var tbl := _make_tbl()
-	var ok := tbl._day_night == null
+	var ok: bool = tbl._day_night == null
 	tbl.free()
 	return ok

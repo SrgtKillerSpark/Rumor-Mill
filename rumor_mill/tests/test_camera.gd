@@ -64,63 +64,63 @@ func run() -> void:
 
 static func test_pan_speed() -> bool:
 	var cam := _make_cam()
-	var ok := cam.pan_speed == 400.0
+	var ok: bool = cam.pan_speed == 400.0
 	cam.free()
 	return ok
 
 
 static func test_zoom_speed() -> bool:
 	var cam := _make_cam()
-	var ok := abs(cam.zoom_speed - 0.15) < 0.001
+	var ok: bool = abs(cam.zoom_speed - 0.15) < 0.001
 	cam.free()
 	return ok
 
 
 static func test_zoom_min() -> bool:
 	var cam := _make_cam()
-	var ok := cam.zoom_min == 0.5
+	var ok: bool = cam.zoom_min == 0.5
 	cam.free()
 	return ok
 
 
 static func test_zoom_max() -> bool:
 	var cam := _make_cam()
-	var ok := cam.zoom_max == 2.0
+	var ok: bool = cam.zoom_max == 2.0
 	cam.free()
 	return ok
 
 
 static func test_zoom_lerp_speed() -> bool:
 	var cam := _make_cam()
-	var ok := cam.zoom_lerp_speed == 8.0
+	var ok: bool = cam.zoom_lerp_speed == 8.0
 	cam.free()
 	return ok
 
 
 static func test_edge_pan_enabled() -> bool:
 	var cam := _make_cam()
-	var ok := cam.edge_pan_enabled == true
+	var ok: bool = cam.edge_pan_enabled == true
 	cam.free()
 	return ok
 
 
 static func test_edge_pan_margin() -> bool:
 	var cam := _make_cam()
-	var ok := cam.edge_pan_margin == 40.0
+	var ok: bool = cam.edge_pan_margin == 40.0
 	cam.free()
 	return ok
 
 
 static func test_edge_pan_speed() -> bool:
 	var cam := _make_cam()
-	var ok := cam.edge_pan_speed == 350.0
+	var ok: bool = cam.edge_pan_speed == 350.0
 	cam.free()
 	return ok
 
 
 static func test_follow_lerp_speed() -> bool:
 	var cam := _make_cam()
-	var ok := cam.follow_lerp_speed == 5.0
+	var ok: bool = cam.follow_lerp_speed == 5.0
 	cam.free()
 	return ok
 
@@ -129,34 +129,34 @@ static func test_follow_lerp_speed() -> bool:
 
 static func test_initial_target_zoom() -> bool:
 	var cam := _make_cam()
-	var ok := cam._target_zoom == 1.5
+	var ok: bool = cam._target_zoom == 1.5
 	cam.free()
 	return ok
 
 
 static func test_initial_drag_origin() -> bool:
 	var cam := _make_cam()
-	var ok := cam._drag_origin.is_equal_approx(Vector2.ZERO)
+	var ok: bool = cam._drag_origin.is_equal_approx(Vector2.ZERO)
 	cam.free()
 	return ok
 
 
 static func test_initial_is_dragging_false() -> bool:
 	var cam := _make_cam()
-	var ok := cam._is_dragging == false
+	var ok: bool = cam._is_dragging == false
 	cam.free()
 	return ok
 
 
 static func test_initial_camera_moved_emitted_false() -> bool:
 	var cam := _make_cam()
-	var ok := cam._camera_moved_emitted == false
+	var ok: bool = cam._camera_moved_emitted == false
 	cam.free()
 	return ok
 
 
 static func test_initial_follow_target_null() -> bool:
 	var cam := _make_cam()
-	var ok := cam._follow_target == null
+	var ok: bool = cam._follow_target == null
 	cam.free()
 	return ok

@@ -180,7 +180,7 @@ static func test_setup_world_stores_ref() -> bool:
 	var ohwt := _make_ohwt()
 	var stub := Node2D.new()
 	ohwt.setup_world(stub)
-	var ok := ohwt._world_ref == stub
+	var ok: bool = ohwt._world_ref == stub
 	stub.free()
 	return ok
 

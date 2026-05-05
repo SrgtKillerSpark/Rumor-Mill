@@ -125,7 +125,7 @@ static func test_initial_actions_equal_max() -> bool:
 
 static func test_spend_action_decrements() -> bool:
 	var store := _fresh()
-	var ok := store.try_spend_action()
+	var ok: bool = store.try_spend_action()
 	return ok and store.recon_actions_remaining == PlayerIntelStore.MAX_DAILY_ACTIONS - 1
 
 
@@ -144,7 +144,7 @@ static func test_initial_whispers_equal_max() -> bool:
 
 static func test_spend_whisper_decrements() -> bool:
 	var store := _fresh()
-	var ok := store.try_spend_whisper()
+	var ok: bool = store.try_spend_whisper()
 	return ok and store.whisper_tokens_remaining == PlayerIntelStore.MAX_DAILY_WHISPERS - 1
 
 
@@ -267,7 +267,7 @@ static func test_bribe_zero_by_default() -> bool:
 static func test_spend_bribe_decrements() -> bool:
 	var store := _fresh()
 	store.bribe_charges = 2
-	var ok := store.try_spend_bribe()
+	var ok: bool = store.try_spend_bribe()
 	return ok and store.bribe_charges == 1
 
 

@@ -72,7 +72,7 @@ func run() -> void:
 
 static func test_c_backdrop_near_black() -> bool:
 	var m := _make_menu()
-	var ok := m.C_BACKDROP.r < 0.10 and m.C_BACKDROP.g < 0.05 and m.C_BACKDROP.a > 0.90
+	var ok: bool = m.C_BACKDROP.r < 0.10 and m.C_BACKDROP.g < 0.05 and m.C_BACKDROP.a > 0.90
 	m.free()
 	return ok
 
@@ -80,14 +80,14 @@ static func test_c_backdrop_near_black() -> bool:
 static func test_c_title_is_gold() -> bool:
 	var m := _make_menu()
 	# gold: high r, high g, low b
-	var ok := m.C_TITLE.r > 0.85 and m.C_TITLE.g > 0.70 and m.C_TITLE.b < 0.20
+	var ok: bool = m.C_TITLE.r > 0.85 and m.C_TITLE.g > 0.70 and m.C_TITLE.b < 0.20
 	m.free()
 	return ok
 
 
 static func test_c_btn_text_near_white() -> bool:
 	var m := _make_menu()
-	var ok := m.C_BTN_TEXT.r > 0.90 and m.C_BTN_TEXT.g > 0.85 and m.C_BTN_TEXT.b > 0.75
+	var ok: bool = m.C_BTN_TEXT.r > 0.90 and m.C_BTN_TEXT.g > 0.85 and m.C_BTN_TEXT.b > 0.75
 	m.free()
 	return ok
 
@@ -95,7 +95,7 @@ static func test_c_btn_text_near_white() -> bool:
 static func test_c_sky_top_is_dark_purple() -> bool:
 	var m := _make_menu()
 	# dark purple: low r, very low g, moderate b
-	var ok := m.C_SKY_TOP.b > m.C_SKY_TOP.g and m.C_SKY_TOP.r > m.C_SKY_TOP.g
+	var ok: bool = m.C_SKY_TOP.b > m.C_SKY_TOP.g and m.C_SKY_TOP.r > m.C_SKY_TOP.g
 	m.free()
 	return ok
 
@@ -103,37 +103,37 @@ static func test_c_sky_top_is_dark_purple() -> bool:
 # ── Phase enum ordinals ───────────────────────────────────────────────────────
 
 static func test_phase_main_is_zero() -> bool:
-	var ok := MainMenuScript.Phase.MAIN == 0
+	var ok: bool = MainMenuScript.Phase.MAIN == 0
 	return ok
 
 
 static func test_phase_select_is_one() -> bool:
-	var ok := MainMenuScript.Phase.SELECT == 1
+	var ok: bool = MainMenuScript.Phase.SELECT == 1
 	return ok
 
 
 static func test_phase_briefing_is_two() -> bool:
-	var ok := MainMenuScript.Phase.BRIEFING == 2
+	var ok: bool = MainMenuScript.Phase.BRIEFING == 2
 	return ok
 
 
 static func test_phase_intro_is_three() -> bool:
-	var ok := MainMenuScript.Phase.INTRO == 3
+	var ok: bool = MainMenuScript.Phase.INTRO == 3
 	return ok
 
 
 static func test_phase_settings_is_four() -> bool:
-	var ok := MainMenuScript.Phase.SETTINGS == 4
+	var ok: bool = MainMenuScript.Phase.SETTINGS == 4
 	return ok
 
 
 static func test_phase_credits_is_five() -> bool:
-	var ok := MainMenuScript.Phase.CREDITS == 5
+	var ok: bool = MainMenuScript.Phase.CREDITS == 5
 	return ok
 
 
 static func test_phase_stats_is_six() -> bool:
-	var ok := MainMenuScript.Phase.STATS == 6
+	var ok: bool = MainMenuScript.Phase.STATS == 6
 	return ok
 
 
@@ -141,14 +141,14 @@ static func test_phase_stats_is_six() -> bool:
 
 static func test_initial_phase_is_main() -> bool:
 	var m := _make_menu()
-	var ok := m._phase == MainMenuScript.Phase.MAIN
+	var ok: bool = m._phase == MainMenuScript.Phase.MAIN
 	m.free()
 	return ok
 
 
 static func test_initial_scenarios_empty() -> bool:
 	var m := _make_menu()
-	var ok := m._scenarios.is_empty()
+	var ok: bool = m._scenarios.is_empty()
 	m.free()
 	return ok
 
@@ -157,62 +157,62 @@ static func test_initial_scenarios_empty() -> bool:
 
 static func test_initial_backdrop_null() -> bool:
 	var m := _make_menu()
-	var ok := m._backdrop == null
+	var ok: bool = m._backdrop == null
 	m.free()
 	return ok
 
 
 static func test_initial_panel_main_null() -> bool:
 	var m := _make_menu()
-	var ok := m._panel_main == null
+	var ok: bool = m._panel_main == null
 	m.free()
 	return ok
 
 
 static func test_initial_panel_credits_null() -> bool:
 	var m := _make_menu()
-	var ok := m._panel_credits == null
+	var ok: bool = m._panel_credits == null
 	m.free()
 	return ok
 
 
 static func test_initial_version_label_null() -> bool:
 	var m := _make_menu()
-	var ok := m._version_label == null
+	var ok: bool = m._version_label == null
 	m.free()
 	return ok
 
 
 static func test_initial_settings_module_null() -> bool:
 	var m := _make_menu()
-	var ok := m._settings_module == null
+	var ok: bool = m._settings_module == null
 	m.free()
 	return ok
 
 
 static func test_initial_stats_module_null() -> bool:
 	var m := _make_menu()
-	var ok := m._stats_module == null
+	var ok: bool = m._stats_module == null
 	m.free()
 	return ok
 
 
 static func test_initial_select_module_null() -> bool:
 	var m := _make_menu()
-	var ok := m._select_module == null
+	var ok: bool = m._select_module == null
 	m.free()
 	return ok
 
 
 static func test_initial_briefing_module_null() -> bool:
 	var m := _make_menu()
-	var ok := m._briefing_module == null
+	var ok: bool = m._briefing_module == null
 	m.free()
 	return ok
 
 
 static func test_initial_phase_tween_null() -> bool:
 	var m := _make_menu()
-	var ok := m._phase_tween == null
+	var ok: bool = m._phase_tween == null
 	m.free()
 	return ok

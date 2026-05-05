@@ -17,6 +17,23 @@ signal rumor_reached_key_npc(npc_name: String, rumor_id: String)
 ## SPA-1518: Emitted when a rumor's target shifts during propagation.
 ## old_name / new_name are the NPC display names; rumor_id is the new mutated copy.
 signal rumor_target_shifted(old_name: String, new_name: String, rumor_id: String)
+## SPA-1773: Emitted when a Witness Account is used in cooldown-bypass mode
+## (half-effectiveness). Payload carries the actual halved bonus values so
+## AnalyticsManager can emit the witness_account_used telemetry event.
+signal witness_account_bypass_used(
+		evidence_type: String,
+		effective_bel_bonus: float,
+		effective_cred_boost: float,
+		target_npc_id: String
+)
+## SPA-1774: Emitted when evidence_economy_v2 is ON but difficulty is Apprentice,
+## causing shelf_life_extension and credulity_boost to be silently skipped.
+## Allows AnalyticsManager to emit the evidence_economy_v2_gated_off telemetry event.
+signal evidence_economy_v2_gated_off(
+		evidence_type: String,
+		gated_bonuses: Array,
+		difficulty: String
+)
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -1280,17 +1297,36 @@ func seed_rumor_from_player(
 
 	# Apply evidence bonuses at creation time (not recalculated on subsequent ticks).
 	if evidence_item != null:
-		rumor.current_believability = minf(1.0, rumor.current_believability + evidence_item.believability_bonus)
+		# SPA-1756: Witness Account may be used during an active target-shift cooldown
+		# at half effectiveness (+0.075 believability, +0.025 credulity boost).
+		# Shelf-life extension and mutability modifier are unaffected by bypass mode.
+		var bypass_active: bool = (intel_store != null
+				and intel_store.is_evidence_bypass_active(seed_target_npc_id, evidence_item))
+		var bel_bonus: float = evidence_item.believability_bonus * (0.5 if bypass_active else 1.0)
+		var cred_boost: float = evidence_item.credulity_boost * (0.5 if bypass_active else 1.0)
+		# SPA-1773: Emit telemetry signal for bypass-mode usage so AnalyticsManager
+		# can log the witness_account_used event with actual halved bonus values.
+		if bypass_active:
+			emit_signal("witness_account_bypass_used",
+					evidence_item.type.to_snake_case(), bel_bonus, cred_boost,
+					seed_target_npc_id)
+
+		rumor.current_believability = minf(1.0, rumor.current_believability + bel_bonus)
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
-		# SPA-1718: Phase 2 mechanics (shelf-life extension, credulity boost) only
-		# apply when the evidence_economy_v2 feature flag is ON.
-		if GameState.evidence_economy_v2:
+		# SPA-1757: Phase 2 mechanics (shelf-life extension, credulity boost) gate
+		# to Normal+ only — Apprentice gets base believability and mutability only.
+		if GameState.evidence_economy_v2 and GameState.selected_difficulty != "apprentice":
 			rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
-			rumor.evidence_credulity_boost = evidence_item.credulity_boost
+			rumor.evidence_credulity_boost = cred_boost
 			rumor.seed_target_npc_id = seed_target_npc_id
+		elif GameState.evidence_economy_v2:
+			# SPA-1774: Flag is ON but difficulty is Apprentice — v2 bonuses gated off.
+			# Emit telemetry so the analytics pipeline can measure how often this path fires.
+			emit_signal("evidence_economy_v2_gated_off",
+					evidence_item.type.to_snake_case(),
+					["shelf_life_extension", "credulity_boost"],
+					GameState.selected_difficulty)
 		rumor.bolstered_by_evidence = true
-		rumor.evidence_credulity_boost = evidence_item.credulity_boost  ## SPA-1711
-		rumor.seed_target_npc_id = seed_target_npc_id                   ## SPA-1711
 
 	# Chain detection: check if this subject already has an active rumor that
 	# creates a same-type, escalation, or contradiction chain.

@@ -213,6 +213,6 @@ func test_setup_assigns_refs() -> bool:
 	var s     := _make()
 	var world := Node2D.new()
 	s.setup(world, null)
-	var ok := s._world_ref == world and s._claim_icon_tex == null
+	var ok: bool = s._world_ref == world and s._claim_icon_tex == null
 	world.free()
 	return ok

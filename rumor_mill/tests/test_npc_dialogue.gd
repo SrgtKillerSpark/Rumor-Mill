@@ -78,7 +78,7 @@ func run() -> void:
 
 func test_max_bubbles_constant() -> bool:
 	var d := _make_dialogue()
-	var ok := d._MAX_BUBBLES == 2
+	var ok: bool = d._MAX_BUBBLES == 2
 	d.free()
 	return ok
 
@@ -89,35 +89,35 @@ func test_max_bubbles_constant() -> bool:
 
 func test_initial_idle_bubble_cooldown_zero() -> bool:
 	var d := _make_dialogue()
-	var ok := d._idle_bubble_cooldown == 0
+	var ok: bool = d._idle_bubble_cooldown == 0
 	d.free()
 	return ok
 
 
 func test_initial_has_bubble_false() -> bool:
 	var d := _make_dialogue()
-	var ok := d._has_bubble == false
+	var ok: bool = d._has_bubble == false
 	d.free()
 	return ok
 
 
 func test_initial_gossip_cooldown_zero() -> bool:
 	var d := _make_dialogue()
-	var ok := d._gossip_cooldown == 0
+	var ok: bool = d._gossip_cooldown == 0
 	d.free()
 	return ok
 
 
 func test_initial_chatter_cooldown_zero() -> bool:
 	var d := _make_dialogue()
-	var ok := d._chatter_cooldown == 0
+	var ok: bool = d._chatter_cooldown == 0
 	d.free()
 	return ok
 
 
 func test_initial_defending_icon_null() -> bool:
 	var d := _make_dialogue()
-	var ok := d._defending_icon == null
+	var ok: bool = d._defending_icon == null
 	d.free()
 	return ok
 
@@ -128,63 +128,63 @@ func test_initial_defending_icon_null() -> bool:
 
 func test_time_phase_morning_at_5() -> bool:
 	var d := _make_dialogue()
-	var ok := d._get_time_phase(5) == "morning"
+	var ok: bool = d._get_time_phase(5) == "morning"
 	d.free()
 	return ok
 
 
 func test_time_phase_morning_at_11() -> bool:
 	var d := _make_dialogue()
-	var ok := d._get_time_phase(11) == "morning"
+	var ok: bool = d._get_time_phase(11) == "morning"
 	d.free()
 	return ok
 
 
 func test_time_phase_day_at_12() -> bool:
 	var d := _make_dialogue()
-	var ok := d._get_time_phase(12) == "day"
+	var ok: bool = d._get_time_phase(12) == "day"
 	d.free()
 	return ok
 
 
 func test_time_phase_day_at_16() -> bool:
 	var d := _make_dialogue()
-	var ok := d._get_time_phase(16) == "day"
+	var ok: bool = d._get_time_phase(16) == "day"
 	d.free()
 	return ok
 
 
 func test_time_phase_evening_at_17() -> bool:
 	var d := _make_dialogue()
-	var ok := d._get_time_phase(17) == "evening"
+	var ok: bool = d._get_time_phase(17) == "evening"
 	d.free()
 	return ok
 
 
 func test_time_phase_evening_at_21() -> bool:
 	var d := _make_dialogue()
-	var ok := d._get_time_phase(21) == "evening"
+	var ok: bool = d._get_time_phase(21) == "evening"
 	d.free()
 	return ok
 
 
 func test_time_phase_night_at_22() -> bool:
 	var d := _make_dialogue()
-	var ok := d._get_time_phase(22) == "night"
+	var ok: bool = d._get_time_phase(22) == "night"
 	d.free()
 	return ok
 
 
 func test_time_phase_night_at_0() -> bool:
 	var d := _make_dialogue()
-	var ok := d._get_time_phase(0) == "night"
+	var ok: bool = d._get_time_phase(0) == "night"
 	d.free()
 	return ok
 
 
 func test_time_phase_night_at_4() -> bool:
 	var d := _make_dialogue()
-	var ok := d._get_time_phase(4) == "night"
+	var ok: bool = d._get_time_phase(4) == "night"
 	d.free()
 	return ok
 
@@ -198,7 +198,7 @@ func test_on_exit_tree_decrements_active_bubbles() -> bool:
 	d._has_bubble = true
 	NpcDialogueScript._active_bubbles = 2
 	d.on_exit_tree()
-	var ok := NpcDialogueScript._active_bubbles == 1
+	var ok: bool = NpcDialogueScript._active_bubbles == 1
 	NpcDialogueScript._active_bubbles = 0  # reset
 	d.free()
 	return ok
@@ -209,7 +209,7 @@ func test_on_exit_tree_clears_has_bubble() -> bool:
 	d._has_bubble = true
 	NpcDialogueScript._active_bubbles = 1
 	d.on_exit_tree()
-	var ok := d._has_bubble == false
+	var ok: bool = d._has_bubble == false
 	NpcDialogueScript._active_bubbles = 0
 	d.free()
 	return ok
@@ -220,7 +220,7 @@ func test_on_exit_tree_clamps_bubbles_at_zero() -> bool:
 	d._has_bubble = true
 	NpcDialogueScript._active_bubbles = 0  # already 0 — should not go negative
 	d.on_exit_tree()
-	var ok := NpcDialogueScript._active_bubbles == 0
+	var ok: bool = NpcDialogueScript._active_bubbles == 0
 	d.free()
 	return ok
 
@@ -231,7 +231,7 @@ func test_on_exit_tree_no_op_when_not_has_bubble() -> bool:
 	NpcDialogueScript._active_bubbles = 2
 	d.on_exit_tree()
 	# Should leave _active_bubbles untouched.
-	var ok := NpcDialogueScript._active_bubbles == 2
+	var ok: bool = NpcDialogueScript._active_bubbles == 2
 	NpcDialogueScript._active_bubbles = 0
 	d.free()
 	return ok

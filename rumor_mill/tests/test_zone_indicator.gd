@@ -69,7 +69,7 @@ func run() -> void:
 
 static func test_c_bg_dark_semi_transparent() -> bool:
 	var zi := _make_zi()
-	var ok := zi.C_BG.r < 0.15 and zi.C_BG.a < 0.90
+	var ok: bool = zi.C_BG.r < 0.15 and zi.C_BG.a < 0.90
 	zi.free()
 	return ok
 
@@ -77,7 +77,7 @@ static func test_c_bg_dark_semi_transparent() -> bool:
 static func test_c_text_warm() -> bool:
 	var zi := _make_zi()
 	# warm text: high r, moderate-high g, moderate b
-	var ok := zi.C_TEXT.r > 0.85 and zi.C_TEXT.g > 0.75 and zi.C_TEXT.b > 0.50
+	var ok: bool = zi.C_TEXT.r > 0.85 and zi.C_TEXT.g > 0.75 and zi.C_TEXT.b > 0.50
 	zi.free()
 	return ok
 
@@ -86,28 +86,28 @@ static func test_c_text_warm() -> bool:
 
 static func test_location_names_count() -> bool:
 	var zi := _make_zi()
-	var ok := zi.LOCATION_NAMES.size() == 15
+	var ok: bool = zi.LOCATION_NAMES.size() == 15
 	zi.free()
 	return ok
 
 
 static func test_location_names_tavern() -> bool:
 	var zi := _make_zi()
-	var ok := zi.LOCATION_NAMES.get("tavern", "") == "The Tavern"
+	var ok: bool = zi.LOCATION_NAMES.get("tavern", "") == "The Tavern"
 	zi.free()
 	return ok
 
 
 static func test_location_names_market() -> bool:
 	var zi := _make_zi()
-	var ok := zi.LOCATION_NAMES.get("market", "") == "Market Square"
+	var ok: bool = zi.LOCATION_NAMES.get("market", "") == "Market Square"
 	zi.free()
 	return ok
 
 
 static func test_location_names_town_hall() -> bool:
 	var zi := _make_zi()
-	var ok := zi.LOCATION_NAMES.get("town_hall", "") == "Town Hall"
+	var ok: bool = zi.LOCATION_NAMES.get("town_hall", "") == "Town Hall"
 	zi.free()
 	return ok
 
@@ -116,28 +116,28 @@ static func test_location_names_town_hall() -> bool:
 
 static func test_skip_locations_count() -> bool:
 	var zi := _make_zi()
-	var ok := zi.SKIP_LOCATIONS.size() == 3
+	var ok: bool = zi.SKIP_LOCATIONS.size() == 3
 	zi.free()
 	return ok
 
 
 static func test_skip_locations_contains_patrol() -> bool:
 	var zi := _make_zi()
-	var ok := zi.SKIP_LOCATIONS.has("patrol")
+	var ok: bool = zi.SKIP_LOCATIONS.has("patrol")
 	zi.free()
 	return ok
 
 
 static func test_skip_locations_contains_home() -> bool:
 	var zi := _make_zi()
-	var ok := zi.SKIP_LOCATIONS.has("home")
+	var ok: bool = zi.SKIP_LOCATIONS.has("home")
 	zi.free()
 	return ok
 
 
 static func test_skip_locations_contains_work() -> bool:
 	var zi := _make_zi()
-	var ok := zi.SKIP_LOCATIONS.has("work")
+	var ok: bool = zi.SKIP_LOCATIONS.has("work")
 	zi.free()
 	return ok
 
@@ -146,14 +146,14 @@ static func test_skip_locations_contains_work() -> bool:
 
 static func test_tile_w() -> bool:
 	var zi := _make_zi()
-	var ok := zi.TILE_W == 64
+	var ok: bool = zi.TILE_W == 64
 	zi.free()
 	return ok
 
 
 static func test_tile_h() -> bool:
 	var zi := _make_zi()
-	var ok := zi.TILE_H == 32
+	var ok: bool = zi.TILE_H == 32
 	zi.free()
 	return ok
 
@@ -162,41 +162,41 @@ static func test_tile_h() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var zi := _make_zi()
-	var ok := zi._world_ref == null
+	var ok: bool = zi._world_ref == null
 	zi.free()
 	return ok
 
 
 static func test_initial_camera_ref_null() -> bool:
 	var zi := _make_zi()
-	var ok := zi._camera_ref == null
+	var ok: bool = zi._camera_ref == null
 	zi.free()
 	return ok
 
 
 static func test_initial_current_zone_empty() -> bool:
 	var zi := _make_zi()
-	var ok := zi._current_zone == ""
+	var ok: bool = zi._current_zone == ""
 	zi.free()
 	return ok
 
 
 static func test_initial_label_null() -> bool:
 	var zi := _make_zi()
-	var ok := zi._label == null
+	var ok: bool = zi._label == null
 	zi.free()
 	return ok
 
 
 static func test_initial_panel_null() -> bool:
 	var zi := _make_zi()
-	var ok := zi._panel == null
+	var ok: bool = zi._panel == null
 	zi.free()
 	return ok
 
 
 static func test_initial_fade_tween_null() -> bool:
 	var zi := _make_zi()
-	var ok := zi._fade_tween == null
+	var ok: bool = zi._fade_tween == null
 	zi.free()
 	return ok

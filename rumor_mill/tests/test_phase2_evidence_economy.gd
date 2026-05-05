@@ -62,8 +62,8 @@ func run() -> void:
 		# Slice E — cooldown days per difficulty
 		"test_cooldown_days_apprentice_is_0",
 		"test_cooldown_days_normal_is_2",
-		"test_cooldown_days_master_is_3",
-		"test_cooldown_days_spymaster_is_4",
+		"test_cooldown_days_master_is_2",
+		"test_cooldown_days_spymaster_is_3",
 		# Slice E — cooldown locking behaviour
 		"test_cooldown_locks_different_target",
 		"test_cooldown_allows_same_target",
@@ -73,6 +73,17 @@ func run() -> void:
 		"test_cooldown_unlocks_after_expiry",
 		# Slice E — save/load round-trip
 		"test_save_roundtrip_preserves_cooldown_state",
+		# SPA-1756 — Witness Account cooldown-bypass mechanic
+		"test_witness_account_supports_cooldown_bypass",
+		"test_forged_document_no_cooldown_bypass",
+		"test_incriminating_artifact_no_cooldown_bypass",
+		"test_bypass_active_when_cooldown_and_witness",
+		"test_bypass_inactive_for_same_target",
+		"test_bypass_inactive_when_no_cooldown",
+		"test_bypass_applies_half_believability",
+		"test_bypass_applies_half_credulity_boost",
+		"test_bypass_does_not_halve_shelf_extension",
+		"test_bypass_does_not_halve_mutability_modifier",
 	]
 
 	for method_name in tests:
@@ -94,6 +105,7 @@ static func _make_witness_account() -> PlayerIntelStore.EvidenceItem:
 	var ev := PlayerIntelStore.EvidenceItem.new("Witness Account", 0.15, -0.15, [], 0)
 	ev.shelf_life_extension = 80
 	ev.credulity_boost = 0.05
+	ev.supports_cooldown_bypass = true  ## SPA-1756 / SPA-1776: mirrors recon_controller.gd line 728
 	return ev
 
 
@@ -287,21 +299,26 @@ static func test_cooldown_days_normal_is_2() -> bool:
 	return PlayerIntelStore._cooldown_days_for_difficulty("normal") == 2
 
 
-static func test_cooldown_days_master_is_3() -> bool:
-	return PlayerIntelStore._cooldown_days_for_difficulty("master") == 3
+static func test_cooldown_days_master_is_2() -> bool:  ## SPA-1755
+	return PlayerIntelStore._cooldown_days_for_difficulty("master") == 2
 
 
-static func test_cooldown_days_spymaster_is_4() -> bool:
-	return PlayerIntelStore._cooldown_days_for_difficulty("spymaster") == 4
+static func test_cooldown_days_spymaster_is_3() -> bool:  ## SPA-1755
+	return PlayerIntelStore._cooldown_days_for_difficulty("spymaster") == 3
 
 
 # ── Slice E: cooldown locking behaviour ──────────────────────────────────────
 
 static func test_cooldown_locks_different_target() -> bool:
 	## After using evidence on npc_a, evidence cannot be used on npc_b.
+	## SPA-1776: flag must be ON — start_evidence_cooldown and is_evidence_locked_for_target
+	## are both gated on evidence_economy_v2.
+	GameState.evidence_economy_v2 = true
 	var store := PlayerIntelStore.new()
 	store.start_evidence_cooldown("npc_a", "normal")  # 2-day cooldown
-	return store.is_evidence_locked_for_target("npc_b")
+	var result: bool = store.is_evidence_locked_for_target("npc_b")
+	GameState.evidence_economy_v2 = false
+	return result
 
 
 static func test_cooldown_allows_same_target() -> bool:
@@ -323,11 +340,15 @@ static func test_cooldown_no_lock_when_zero_days() -> bool:
 
 static func test_cooldown_decrements_on_day_advance() -> bool:
 	## decay_evidence_cooldowns() is called once per dawn; each call subtracts 1.
+	## SPA-1776: flag must be ON so start_evidence_cooldown actually arms the cooldown.
+	GameState.evidence_economy_v2 = true
 	var store := PlayerIntelStore.new()
 	store.start_evidence_cooldown("npc_a", "normal")  # starts at 2
 	store.decay_evidence_cooldowns()
 	var info := store.get_evidence_cooldown_info()
-	return info.get("days_remaining", -1) == 1
+	var result: bool = info.get("days_remaining", -1) == 1
+	GameState.evidence_economy_v2 = false
+	return result
 
 
 static func test_cooldown_unlocks_after_expiry() -> bool:
@@ -346,6 +367,8 @@ static func test_save_roundtrip_preserves_cooldown_state() -> bool:
 	## and verify the cooldown is still active for a different target.
 	## Requires SaveManager._serialize_intel_store / _restore_intel_store to
 	## include "evidence_target_cooldown" (added in SPA-1706).
+	## SPA-1776: flag must be ON for both start_evidence_cooldown and is_evidence_locked_for_target.
+	GameState.evidence_economy_v2 = true
 	var store := PlayerIntelStore.new()
 	store.start_evidence_cooldown("npc_a", "normal")  # 2-day cooldown
 
@@ -353,4 +376,77 @@ static func test_save_roundtrip_preserves_cooldown_state() -> bool:
 	var store2 := PlayerIntelStore.new()
 	SaveManager._restore_intel_store(store2, data)
 
-	return store2.is_evidence_locked_for_target("npc_b")
+	var result: bool = store2.is_evidence_locked_for_target("npc_b")
+	GameState.evidence_economy_v2 = false
+	return result
+
+
+# ── SPA-1756: Witness Account cooldown-bypass mechanic ───────────────────────
+
+static func test_witness_account_supports_cooldown_bypass() -> bool:
+	return _make_witness_account().supports_cooldown_bypass == true
+
+
+static func test_forged_document_no_cooldown_bypass() -> bool:
+	return _make_forged_document().supports_cooldown_bypass == false
+
+
+static func test_incriminating_artifact_no_cooldown_bypass() -> bool:
+	return _make_incriminating_artifact().supports_cooldown_bypass == false
+
+
+static func test_bypass_active_when_cooldown_and_witness() -> bool:
+	## When a cooldown is active for a different target, is_evidence_bypass_active
+	## must return true for a Witness Account.
+	GameState.evidence_economy_v2 = true
+	var store := PlayerIntelStore.new()
+	store.start_evidence_cooldown("npc_a", "normal")  # cooldown for npc_a
+	var result: bool = store.is_evidence_bypass_active("npc_b", _make_witness_account())
+	GameState.evidence_economy_v2 = false
+	return result
+
+
+static func test_bypass_inactive_for_same_target() -> bool:
+	## is_evidence_bypass_active is false when the cooldown is for the same target —
+	## the evidence is already fully available (no lock applies).
+	GameState.evidence_economy_v2 = true
+	var store := PlayerIntelStore.new()
+	store.start_evidence_cooldown("npc_a", "normal")
+	var result: bool = store.is_evidence_bypass_active("npc_a", _make_witness_account())
+	GameState.evidence_economy_v2 = false
+	return result == false
+
+
+static func test_bypass_inactive_when_no_cooldown() -> bool:
+	## Without an active cooldown there is nothing to bypass.
+	GameState.evidence_economy_v2 = true
+	var store := PlayerIntelStore.new()
+	var result: bool = store.is_evidence_bypass_active("npc_b", _make_witness_account())
+	GameState.evidence_economy_v2 = false
+	return result == false
+
+
+static func test_bypass_applies_half_believability() -> bool:
+	## During bypass the believability bonus is halved: 0.15 × 0.5 = 0.075.
+	## Mirrors the logic in world.gd seed_rumor_from_player.
+	var ev := _make_witness_account()
+	var bypass_bonus: float = ev.believability_bonus * 0.5
+	return is_equal_approx(bypass_bonus, 0.075)
+
+
+static func test_bypass_applies_half_credulity_boost() -> bool:
+	## During bypass the credulity boost is halved: 0.05 × 0.5 = 0.025.
+	var ev := _make_witness_account()
+	var bypass_cred: float = ev.credulity_boost * 0.5
+	return is_equal_approx(bypass_cred, 0.025)
+
+
+static func test_bypass_does_not_halve_shelf_extension() -> bool:
+	## Shelf-life extension is NOT reduced in bypass mode; full +80 ticks always apply.
+	## (The bypass only halves believability_bonus and credulity_boost per SPA-1756.)
+	return _make_witness_account().shelf_life_extension == 80
+
+
+static func test_bypass_does_not_halve_mutability_modifier() -> bool:
+	## Mutability modifier is NOT reduced in bypass mode; full -0.15 always applies.
+	return is_equal_approx(_make_witness_account().mutability_modifier, -0.15)

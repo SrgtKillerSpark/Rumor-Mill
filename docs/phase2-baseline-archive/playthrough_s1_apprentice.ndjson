@@ -1,0 +1,41 @@
+{"type":"scenario_selected","scenario_id":"S1","difficulty":"Apprentice","evidence_economy_v2":true,"ts":"2026-05-05T09:00:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S1","ts":"2026-05-05T09:06:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"observe_building","day":1,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"rumor_seeded","subject_name":"Edric Fenn","claim_id":"s1a_sca01","seed_target":"sybil_oats","day":1,"scenario_id":"S1","ts":"2026-05-05T09:12:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S1","ts":"2026-05-05T09:20:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":2,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"npc_state_changed","npc_name":"Sybil Oats","rumor_id":"s1a_sca01","new_state":"BELIEVE","day":2,"scenario_id":"S1","ts":"2026-05-05T09:28:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":3,"scenario_id":"S1","ts":"2026-05-05T09:36:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":3,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s1a_sca01","seed_target":"sybil_oats","subject":"Edric Fenn","day":3,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"evidence_shelf_life_extended","evidence_type":"witness_account","extension_ticks":80,"rumor_id":"s1a_sca01","day":3,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"witness_account","seed_target":"sybil_oats","boost":0.05,"day":3,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"npc_state_changed","npc_name":"Sybil Oats","rumor_id":"s1a_sca01","new_state":"SPREAD","day":3,"scenario_id":"S1","ts":"2026-05-05T09:44:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":50,"to_score":43,"delta":-7,"day":3,"scenario_id":"S1","ts":"2026-05-05T09:51:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":4,"scenario_id":"S1","ts":"2026-05-05T09:59:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":4,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"rumor_seeded","subject_name":"Edric Fenn","claim_id":"s1a_acc01","seed_target":"aldric_vane","day":4,"scenario_id":"S1","ts":"2026-05-05T10:05:00Z"}
+{"type":"npc_state_changed","npc_name":"Greta Flint","rumor_id":"s1a_sca01","new_state":"BELIEVE","day":4,"scenario_id":"S1","ts":"2026-05-05T10:12:00Z"}
+{"type":"evidence_decay_tick","evidence_type":"witness_account","prev_confidence":1.0,"new_confidence":0.90,"day":4,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":5,"scenario_id":"S1","ts":"2026-05-05T10:20:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s1a_acc01","seed_target":"aldric_vane","subject":"Edric Fenn","day":5,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"evidence_shelf_life_extended","evidence_type":"forged_document","extension_ticks":40,"rumor_id":"s1a_acc01","day":5,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"forged_document","seed_target":"aldric_vane","boost":0.10,"day":5,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"npc_state_changed","npc_name":"Aldric Vane","rumor_id":"s1a_acc01","new_state":"SPREAD","day":5,"scenario_id":"S1","ts":"2026-05-05T10:28:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":43,"to_score":33,"delta":-10,"day":5,"scenario_id":"S1","ts":"2026-05-05T10:35:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":6,"scenario_id":"S1","ts":"2026-05-05T10:43:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","day":6,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"npc_state_changed","npc_name":"Nell Picker","rumor_id":"s1a_sca01","new_state":"BELIEVE","day":6,"scenario_id":"S1","ts":"2026-05-05T10:50:00Z"}
+{"type":"npc_state_changed","npc_name":"Bram Guard","rumor_id":"s1a_sca01","new_state":"REJECT","day":6,"scenario_id":"S1","ts":"2026-05-05T10:55:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":7,"scenario_id":"S1","ts":"2026-05-05T11:03:00Z"}
+{"type":"rumor_seeded","subject_name":"Edric Fenn","claim_id":"s1a_sca02","seed_target":"nell_picker","day":7,"scenario_id":"S1","ts":"2026-05-05T11:09:00Z"}
+{"type":"npc_state_changed","npc_name":"Annit Scribe","rumor_id":"s1a_acc01","new_state":"BELIEVE","day":7,"scenario_id":"S1","ts":"2026-05-05T11:16:00Z"}
+{"type":"evidence_decay_tick","evidence_type":"forged_document","prev_confidence":1.0,"new_confidence":0.85,"day":7,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"narrative_event_fired","event_id":"s1_the_ledger","day":8,"choice":"B","scenario_id":"S1","ts":"2026-05-05T11:24:00Z"}
+{"type":"narrative_event_effect","event_id":"s1_the_ledger","effect":"recon_bonus","value":2,"day":8,"scenario_id":"S1","ts":"2026-05-05T11:24:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"s1a_sca02","seed_target":"nell_picker","subject":"Edric Fenn","day":8,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"evidence_shelf_life_extended","evidence_type":"incriminating_artifact","extension_ticks":0,"rumor_id":"s1a_sca02","day":8,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"incriminating_artifact","seed_target":"nell_picker","boost":0.15,"day":8,"scenario_id":"S1","difficulty":"Apprentice"}
+{"type":"npc_state_changed","npc_name":"Nell Picker","rumor_id":"s1a_sca02","new_state":"SPREAD","day":8,"scenario_id":"S1","ts":"2026-05-05T11:32:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":33,"to_score":24,"delta":-9,"day":8,"scenario_id":"S1","ts":"2026-05-05T11:39:00Z"}
+{"type":"scenario_ended","scenario_id":"S1","difficulty":"Apprentice","outcome":"WON","day_reached":8,"duration_sec":2340,"ts":"2026-05-05T11:39:00Z"}

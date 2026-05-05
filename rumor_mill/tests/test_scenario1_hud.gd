@@ -66,7 +66,7 @@ func run() -> void:
 static func test_c_safe_is_amber() -> bool:
 	var h := _make_hud()
 	# amber: high r, moderate g, low b
-	var ok := h.C_SAFE.r > 0.70 and h.C_SAFE.g > 0.40 and h.C_SAFE.b < 0.20
+	var ok: bool = h.C_SAFE.r > 0.70 and h.C_SAFE.g > 0.40 and h.C_SAFE.b < 0.20
 	h.free()
 	return ok
 
@@ -74,7 +74,7 @@ static func test_c_safe_is_amber() -> bool:
 static func test_c_danger_is_orange_red() -> bool:
 	var h := _make_hud()
 	# orange-red: high r, low-moderate g, very low b
-	var ok := h.C_DANGER.r > 0.80 and h.C_DANGER.g < 0.40 and h.C_DANGER.b < 0.20
+	var ok: bool = h.C_DANGER.r > 0.80 and h.C_DANGER.g < 0.40 and h.C_DANGER.b < 0.20
 	h.free()
 	return ok
 
@@ -82,7 +82,7 @@ static func test_c_danger_is_orange_red() -> bool:
 static func test_c_caution_is_yellow() -> bool:
 	var h := _make_hud()
 	# yellow: high r, high g, low b
-	var ok := h.C_CAUTION.r > 0.80 and h.C_CAUTION.g > 0.70 and h.C_CAUTION.b < 0.30
+	var ok: bool = h.C_CAUTION.r > 0.80 and h.C_CAUTION.g > 0.70 and h.C_CAUTION.b < 0.30
 	h.free()
 	return ok
 
@@ -91,14 +91,14 @@ static func test_c_caution_is_yellow() -> bool:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_WIDTH == 160
+	var ok: bool = h.BAR_WIDTH == 160
 	h.free()
 	return ok
 
 
 static func test_bar_height() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_HEIGHT == 12
+	var ok: bool = h.BAR_HEIGHT == 12
 	h.free()
 	return ok
 
@@ -107,7 +107,7 @@ static func test_bar_height() -> bool:
 
 static func test_scenario_number_is_one() -> bool:
 	var h := _make_hud()
-	var ok := h._scenario_number() == 1
+	var ok: bool = h._scenario_number() == 1
 	h.free()
 	return ok
 
@@ -116,28 +116,28 @@ static func test_scenario_number_is_one() -> bool:
 
 static func test_initial_score_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._score_lbl == null
+	var ok: bool = h._score_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_bar_null() -> bool:
 	var h := _make_hud()
-	var ok := h._bar == null
+	var ok: bool = h._bar == null
 	h.free()
 	return ok
 
 
 static func test_initial_bar_bg_null() -> bool:
 	var h := _make_hud()
-	var ok := h._bar_bg == null
+	var ok: bool = h._bar_bg == null
 	h.free()
 	return ok
 
 
 static func test_initial_caution_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._caution_lbl == null
+	var ok: bool = h._caution_lbl == null
 	h.free()
 	return ok
 
@@ -146,27 +146,27 @@ static func test_initial_caution_lbl_null() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._world_ref == null
+	var ok: bool = h._world_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_day_night_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._day_night_ref == null
+	var ok: bool = h._day_night_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_result_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._result_lbl == null
+	var ok: bool = h._result_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_days_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._days_lbl == null
+	var ok: bool = h._days_lbl == null
 	h.free()
 	return ok

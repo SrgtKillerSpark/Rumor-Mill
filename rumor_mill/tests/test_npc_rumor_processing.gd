@@ -77,7 +77,7 @@ func run() -> void:
 
 func test_min_eval_ticks_is_three() -> bool:
 	var p := _make_proc()
-	var ok := p._MIN_EVAL_TICKS == 3
+	var ok: bool = p._MIN_EVAL_TICKS == 3
 	p.free()
 	return ok
 
@@ -88,7 +88,7 @@ func test_min_eval_ticks_is_three() -> bool:
 
 func test_initial_npc_ref_null() -> bool:
 	var p := _make_proc()
-	var ok := p._npc == null
+	var ok: bool = p._npc == null
 	p.free()
 	return ok
 
@@ -101,7 +101,7 @@ func test_setup_assigns_npc_ref() -> bool:
 	var p   := _make_proc()
 	var npc := _make_mock_npc()
 	p.setup(npc)
-	var ok := p._npc == npc
+	var ok: bool = p._npc == npc
 	p.free()
 	npc.free()
 	return ok
@@ -118,7 +118,7 @@ func test_spread_preview_empty_when_no_social_graph() -> bool:
 	npc.all_npcs_ref = [npc]  # one entry so the all_npcs_ref.is_empty() guard does NOT fire
 	p.setup(npc)
 	var result: Array = p.get_spread_preview(3)
-	var ok := result.is_empty()
+	var ok: bool = result.is_empty()
 	p.free()
 	npc.free()
 	return ok
@@ -131,7 +131,7 @@ func test_spread_preview_empty_when_no_npcs() -> bool:
 	npc.all_npcs_ref     = []
 	p.setup(npc)
 	var result: Array = p.get_spread_preview(3)
-	var ok := result.is_empty()
+	var ok: bool = result.is_empty()
 	p.free()
 	npc.free()
 	return ok

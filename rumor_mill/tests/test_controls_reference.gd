@@ -58,21 +58,21 @@ func run() -> void:
 
 static func test_c_bg_dark() -> bool:
 	var cr := _make_cr()
-	var ok := cr.C_BG.r < 0.15 and cr.C_BG.a > 0.80
+	var ok: bool = cr.C_BG.r < 0.15 and cr.C_BG.a > 0.80
 	cr.free()
 	return ok
 
 
 static func test_c_heading_gold() -> bool:
 	var cr := _make_cr()
-	var ok := cr.C_HEADING.r > 0.85 and cr.C_HEADING.g > 0.70 and cr.C_HEADING.b < 0.20
+	var ok: bool = cr.C_HEADING.r > 0.85 and cr.C_HEADING.g > 0.70 and cr.C_HEADING.b < 0.20
 	cr.free()
 	return ok
 
 
 static func test_c_key_name_warm() -> bool:
 	var cr := _make_cr()
-	var ok := cr.C_KEY_NAME.r > 0.85 and cr.C_KEY_NAME.g > 0.78
+	var ok: bool = cr.C_KEY_NAME.r > 0.85 and cr.C_KEY_NAME.g > 0.78
 	cr.free()
 	return ok
 
@@ -81,14 +81,14 @@ static func test_c_key_name_warm() -> bool:
 
 static func test_bindings_count() -> bool:
 	var cr := _make_cr()
-	var ok := cr.BINDINGS.size() == 20
+	var ok: bool = cr.BINDINGS.size() == 20
 	cr.free()
 	return ok
 
 
 static func test_bindings_all_have_two_elements() -> bool:
 	var cr := _make_cr()
-	var ok := true
+	var ok: bool = true
 	for binding in cr.BINDINGS:
 		if (binding as Array).size() != 2:
 			ok = false
@@ -101,21 +101,21 @@ static func test_bindings_all_have_two_elements() -> bool:
 
 static func test_initial_panel_null() -> bool:
 	var cr := _make_cr()
-	var ok := cr._panel == null
+	var ok: bool = cr._panel == null
 	cr.free()
 	return ok
 
 
 static func test_initial_fade_tween_null() -> bool:
 	var cr := _make_cr()
-	var ok := cr._fade_tween == null
+	var ok: bool = cr._fade_tween == null
 	cr.free()
 	return ok
 
 
 static func test_initial_is_visible_false() -> bool:
 	var cr := _make_cr()
-	var ok := cr._is_visible == false
+	var ok: bool = cr._is_visible == false
 	cr.free()
 	return ok
 
@@ -130,6 +130,6 @@ static func test_toggle_flips_is_visible() -> bool:
 	var before: bool = cr._is_visible   # false
 	cr.toggle()
 	var after: bool = cr._is_visible    # true
-	var ok := before == false and after == true
+	var ok: bool = before == false and after == true
 	cr.free()
 	return ok

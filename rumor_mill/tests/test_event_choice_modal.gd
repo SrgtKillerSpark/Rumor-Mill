@@ -66,14 +66,14 @@ func run() -> void:
 
 static func test_c_backdrop_near_black() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm.C_BACKDROP.r < 0.10 and ecm.C_BACKDROP.a > 0.75
+	var ok: bool = ecm.C_BACKDROP.r < 0.10 and ecm.C_BACKDROP.a > 0.75
 	ecm.free()
 	return ok
 
 
 static func test_c_heading_gold() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm.C_HEADING.r > 0.85 and ecm.C_HEADING.g > 0.70 and ecm.C_HEADING.b < 0.20
+	var ok: bool = ecm.C_HEADING.r > 0.85 and ecm.C_HEADING.g > 0.70 and ecm.C_HEADING.b < 0.20
 	ecm.free()
 	return ok
 
@@ -81,7 +81,7 @@ static func test_c_heading_gold() -> bool:
 static func test_c_preview_muted_parchment() -> bool:
 	var ecm := _make_ecm()
 	# muted parchment: moderate r, moderate g, moderate b — all close
-	var ok := ecm.C_PREVIEW.r > 0.50 and ecm.C_PREVIEW.r < 0.75
+	var ok: bool = ecm.C_PREVIEW.r > 0.50 and ecm.C_PREVIEW.r < 0.75
 	ecm.free()
 	return ok
 
@@ -90,21 +90,21 @@ static func test_c_preview_muted_parchment() -> bool:
 
 static func test_panel_width() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm.PANEL_WIDTH == 700
+	var ok: bool = ecm.PANEL_WIDTH == 700
 	ecm.free()
 	return ok
 
 
 static func test_panel_height() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm.PANEL_HEIGHT == 420
+	var ok: bool = ecm.PANEL_HEIGHT == 420
 	ecm.free()
 	return ok
 
 
 static func test_dim_tween_secs() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm.DIM_TWEEN_SECS == 0.5
+	var ok: bool = ecm.DIM_TWEEN_SECS == 0.5
 	ecm.free()
 	return ok
 
@@ -113,70 +113,70 @@ static func test_dim_tween_secs() -> bool:
 
 static func test_initial_backdrop_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._backdrop == null
+	var ok: bool = ecm._backdrop == null
 	ecm.free()
 	return ok
 
 
 static func test_initial_panel_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._panel == null
+	var ok: bool = ecm._panel == null
 	ecm.free()
 	return ok
 
 
 static func test_initial_title_label_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._title_label == null
+	var ok: bool = ecm._title_label == null
 	ecm.free()
 	return ok
 
 
 static func test_initial_body_label_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._body_label == null
+	var ok: bool = ecm._body_label == null
 	ecm.free()
 	return ok
 
 
 static func test_initial_choice_a_btn_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._choice_a_btn == null
+	var ok: bool = ecm._choice_a_btn == null
 	ecm.free()
 	return ok
 
 
 static func test_initial_choice_b_btn_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._choice_b_btn == null
+	var ok: bool = ecm._choice_b_btn == null
 	ecm.free()
 	return ok
 
 
 static func test_initial_preview_a_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._preview_a == null
+	var ok: bool = ecm._preview_a == null
 	ecm.free()
 	return ok
 
 
 static func test_initial_preview_b_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._preview_b == null
+	var ok: bool = ecm._preview_b == null
 	ecm.free()
 	return ok
 
 
 static func test_initial_outcome_label_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._outcome_label == null
+	var ok: bool = ecm._outcome_label == null
 	ecm.free()
 	return ok
 
 
 static func test_initial_dismiss_btn_null() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._dismiss_btn == null
+	var ok: bool = ecm._dismiss_btn == null
 	ecm.free()
 	return ok
 
@@ -185,6 +185,6 @@ static func test_initial_dismiss_btn_null() -> bool:
 
 static func test_initial_current_event_id_empty() -> bool:
 	var ecm := _make_ecm()
-	var ok := ecm._current_event_id == ""
+	var ok: bool = ecm._current_event_id == ""
 	ecm.free()
 	return ok

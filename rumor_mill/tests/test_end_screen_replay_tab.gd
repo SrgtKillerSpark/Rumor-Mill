@@ -117,7 +117,7 @@ static func test_setup_stores_replay_container() -> bool:
 	var esrt := _make_esrt()
 	var vbox := VBoxContainer.new()
 	esrt.setup(vbox, null)
-	var ok := esrt._replay_container == vbox
+	var ok: bool = esrt._replay_container == vbox
 	vbox.free()
 	return ok
 
@@ -126,7 +126,7 @@ static func test_setup_stores_analytics_ref() -> bool:
 	var esrt := _make_esrt()
 	var vbox := VBoxContainer.new()
 	esrt.setup(vbox, null)
-	var ok := esrt._analytics_ref == null
+	var ok: bool = esrt._analytics_ref == null
 	vbox.free()
 	return ok
 

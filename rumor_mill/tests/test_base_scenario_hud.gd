@@ -77,42 +77,42 @@ func run() -> void:
 
 static func test_c_panel_bg_colour() -> bool:
 	var h := _make_hud()
-	var ok := h.C_PANEL_BG.is_equal_approx(Color(0.15, 0.10, 0.08, 0.92))
+	var ok: bool = h.C_PANEL_BG.is_equal_approx(Color(0.15, 0.10, 0.08, 0.92))
 	h.free()
 	return ok
 
 
 static func test_c_heading_colour() -> bool:
 	var h := _make_hud()
-	var ok := h.C_HEADING.is_equal_approx(Color(0.91, 0.85, 0.70, 1.0))
+	var ok: bool = h.C_HEADING.is_equal_approx(Color(0.91, 0.85, 0.70, 1.0))
 	h.free()
 	return ok
 
 
 static func test_c_body_colour() -> bool:
 	var h := _make_hud()
-	var ok := h.C_BODY.is_equal_approx(Color(0.75, 0.70, 0.60, 1.0))
+	var ok: bool = h.C_BODY.is_equal_approx(Color(0.75, 0.70, 0.60, 1.0))
 	h.free()
 	return ok
 
 
 static func test_c_win_colour() -> bool:
 	var h := _make_hud()
-	var ok := h.C_WIN.g > 0.60 and h.C_WIN.r < 0.20   # green dominant
+	var ok: bool = h.C_WIN.g > 0.60 and h.C_WIN.r < 0.20   # green dominant
 	h.free()
 	return ok
 
 
 static func test_c_fail_colour() -> bool:
 	var h := _make_hud()
-	var ok := h.C_FAIL.r > 0.70 and h.C_FAIL.g < 0.30   # red dominant
+	var ok: bool = h.C_FAIL.r > 0.70 and h.C_FAIL.g < 0.30   # red dominant
 	h.free()
 	return ok
 
 
 static func test_c_neutral_colour() -> bool:
 	var h := _make_hud()
-	var ok := h.C_NEUTRAL.r > 0.70 and h.C_NEUTRAL.g > 0.40 and h.C_NEUTRAL.b < 0.20   # amber
+	var ok: bool = h.C_NEUTRAL.r > 0.70 and h.C_NEUTRAL.g > 0.40 and h.C_NEUTRAL.b < 0.20   # amber
 	h.free()
 	return ok
 
@@ -121,42 +121,42 @@ static func test_c_neutral_colour() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._world_ref == null
+	var ok: bool = h._world_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_day_night_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._day_night_ref == null
+	var ok: bool = h._day_night_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_result_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._result_lbl == null
+	var ok: bool = h._result_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_days_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._days_lbl == null
+	var ok: bool = h._days_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_diff_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._diff_lbl == null
+	var ok: bool = h._diff_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_title_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._title_lbl == null
+	var ok: bool = h._title_lbl == null
 	h.free()
 	return ok
 
@@ -166,7 +166,7 @@ static func test_initial_title_lbl_null() -> bool:
 ## With _world_ref == null the guard must return false immediately.
 static func test_has_world_deps_false_when_world_null() -> bool:
 	var h := _make_hud()
-	var ok := h._has_world_deps() == false
+	var ok: bool = h._has_world_deps() == false
 	h.free()
 	return ok
 
@@ -176,7 +176,7 @@ static func test_has_world_deps_false_when_world_null() -> bool:
 ## Base class returns 0; subclasses override with 1–6.
 static func test_scenario_number_base_returns_zero() -> bool:
 	var h := _make_hud()
-	var ok := h._scenario_number() == 0
+	var ok: bool = h._scenario_number() == 0
 	h.free()
 	return ok
 
@@ -185,28 +185,28 @@ static func test_scenario_number_base_returns_zero() -> bool:
 
 static func test_display_name_single_word() -> bool:
 	var h := _make_hud()
-	var ok := h._display_name("aldric") == "Aldric"
+	var ok: bool = h._display_name("aldric") == "Aldric"
 	h.free()
 	return ok
 
 
 static func test_display_name_two_words() -> bool:
 	var h := _make_hud()
-	var ok := h._display_name("tomas_reeve") == "Tomas Reeve"
+	var ok: bool = h._display_name("tomas_reeve") == "Tomas Reeve"
 	h.free()
 	return ok
 
 
 static func test_display_name_three_words() -> bool:
 	var h := _make_hud()
-	var ok := h._display_name("aldous_the_prior") == "Aldous The Prior"
+	var ok: bool = h._display_name("aldous_the_prior") == "Aldous The Prior"
 	h.free()
 	return ok
 
 
 static func test_display_name_no_underscores() -> bool:
 	var h := _make_hud()
-	var ok := h._display_name("marta") == "Marta"
+	var ok: bool = h._display_name("marta") == "Marta"
 	h.free()
 	return ok
 
@@ -215,34 +215,34 @@ static func test_display_name_no_underscores() -> bool:
 
 static func test_phase_for_hour_night_pre_dawn() -> bool:
 	var h := _make_hud()
-	var ok := h._phase_for_hour(3) == "Night"
+	var ok: bool = h._phase_for_hour(3) == "Night"
 	h.free()
 	return ok
 
 
 static func test_phase_for_hour_morning() -> bool:
 	var h := _make_hud()
-	var ok := h._phase_for_hour(8) == "Morning"
+	var ok: bool = h._phase_for_hour(8) == "Morning"
 	h.free()
 	return ok
 
 
 static func test_phase_for_hour_afternoon() -> bool:
 	var h := _make_hud()
-	var ok := h._phase_for_hour(14) == "Afternoon"
+	var ok: bool = h._phase_for_hour(14) == "Afternoon"
 	h.free()
 	return ok
 
 
 static func test_phase_for_hour_evening() -> bool:
 	var h := _make_hud()
-	var ok := h._phase_for_hour(17) == "Evening"
+	var ok: bool = h._phase_for_hour(17) == "Evening"
 	h.free()
 	return ok
 
 
 static func test_phase_for_hour_night_late() -> bool:
 	var h := _make_hud()
-	var ok := h._phase_for_hour(22) == "Night"
+	var ok: bool = h._phase_for_hour(22) == "Night"
 	h.free()
 	return ok

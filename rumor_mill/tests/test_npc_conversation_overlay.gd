@@ -101,27 +101,27 @@ func test_col_bubble_alpha() -> bool:
 
 func test_initial_world_ref_null() -> bool:
 	var nco := _make_nco()
-	var ok := nco._world_ref == null
+	var ok: bool = nco._world_ref == null
 	nco.free()
 	return ok
 
 
 func test_initial_draw_node_null() -> bool:
 	var nco := _make_nco()
-	var ok := nco._draw_node == null
+	var ok: bool = nco._draw_node == null
 	nco.free()
 	return ok
 
 
 func test_initial_active_convos_empty() -> bool:
 	var nco := _make_nco()
-	var ok := nco._active_convos.is_empty()
+	var ok: bool = nco._active_convos.is_empty()
 	nco.free()
 	return ok
 
 
 func test_initial_whisper_lines_empty() -> bool:
 	var nco := _make_nco()
-	var ok := nco._whisper_lines.is_empty()
+	var ok: bool = nco._whisper_lines.is_empty()
 	nco.free()
 	return ok

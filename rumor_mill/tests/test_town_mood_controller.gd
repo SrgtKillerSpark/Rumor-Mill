@@ -146,7 +146,7 @@ func test_set_camera_stores_ref() -> bool:
 	var tmc := _make_tmc()
 	var cam := Camera2D.new()
 	tmc.set_camera(cam)
-	var ok := tmc._camera == cam
+	var ok: bool = tmc._camera == cam
 	cam.free()
 	return ok
 

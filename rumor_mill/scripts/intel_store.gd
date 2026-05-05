@@ -287,8 +287,9 @@ class EvidenceItem:
 	var acquired_tick: int
 	var confidence: float = 1.0           ## SPA-1580: current evidence quality (0.0–1.0).
 	var _decay_emitted_on_day: int = -1   ## SPA-1580: anti-double-fire guard for save/load.
-	var shelf_life_extension: int = 0     ## SPA-1585: extra ticks added to rumor shelf_life_ticks on attachment.
-	var credulity_boost: float = 0.0      ## SPA-1711: belief-chance boost applied to the seed target NPC.
+	var shelf_life_extension: int = 0          ## SPA-1585: extra ticks added to rumor shelf_life_ticks on attachment.
+	var credulity_boost: float = 0.0           ## SPA-1711: belief-chance boost applied to the seed target NPC.
+	var supports_cooldown_bypass: bool = false ## SPA-1756: when true, usable during active target-shift cooldown at half effectiveness.
 
 	func _init(
 			ev_type: String,
@@ -385,9 +386,13 @@ func decay_evidence_items(current_day: int) -> Array:
 # ---------------------------------------------------------------------------
 
 ## Start a cooldown preventing evidence use on a different target for N days.
-## N is determined by difficulty: Apprentice=0, Normal=2, Master=3, Spymaster=4.
+## N is determined by difficulty: Apprentice=0, Normal=2, Master=2, Spymaster=3.
 ## A cooldown of 0 (Apprentice) is a no-op.
+## SPA-1755: Master 3->2, Spymaster 4->3 to prevent cooldown-blocked displacement.
+## SPA-1776: Guard added — cooldown must not arm when evidence_economy_v2 is OFF.
 func start_evidence_cooldown(target_npc_id: String, difficulty: String) -> void:
+	if not GameState.evidence_economy_v2:
+		return
 	var days: int = _cooldown_days_for_difficulty(difficulty)
 	if days > 0:
 		_evidence_target_cooldown[target_npc_id] = days
@@ -419,9 +424,21 @@ func get_evidence_cooldown_info() -> Dictionary:
 	return {}
 
 
+## SPA-1756: Returns true when evidence_item supports cooldown bypass AND an active
+## target-shift cooldown for a *different* target is in effect for target_npc_id.
+## The caller (world.gd) uses this to apply half-effectiveness bonuses instead of
+## blocking the use entirely.
+func is_evidence_bypass_active(target_npc_id: String, evidence_item: EvidenceItem) -> bool:
+	if not GameState.evidence_economy_v2:
+		return false
+	if not evidence_item.supports_cooldown_bypass:
+		return false
+	return is_evidence_locked_for_target(target_npc_id)
+
+
 static func _cooldown_days_for_difficulty(difficulty: String) -> int:
 	match difficulty:
 		"normal":    return 2
-		"master":    return 3
-		"spymaster": return 4
-		_:           return 0  ## Apprentice and unknown: no cooldown
+		"master":    return 2   ## SPA-1755: was 3
+		"spymaster": return 3   ## SPA-1755: was 4
+		_:           return 0   ## Apprentice and unknown: no cooldown

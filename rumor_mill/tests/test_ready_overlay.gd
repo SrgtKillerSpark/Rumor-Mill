@@ -62,35 +62,35 @@ func run() -> void:
 
 static func test_c_backdrop_near_black() -> bool:
 	var ro := _make_ro()
-	var ok := ro.C_BACKDROP.r < 0.10 and ro.C_BACKDROP.a > 0.65
+	var ok: bool = ro.C_BACKDROP.r < 0.10 and ro.C_BACKDROP.a > 0.65
 	ro.free()
 	return ok
 
 
 static func test_c_title_warm_gold() -> bool:
 	var ro := _make_ro()
-	var ok := ro.C_TITLE.r > 0.90 and ro.C_TITLE.g > 0.75 and ro.C_TITLE.b < 0.50
+	var ok: bool = ro.C_TITLE.r > 0.90 and ro.C_TITLE.g > 0.75 and ro.C_TITLE.b < 0.50
 	ro.free()
 	return ok
 
 
 static func test_c_hint_soft_green() -> bool:
 	var ro := _make_ro()
-	var ok := ro.C_HINT.g > 0.75 and ro.C_HINT.r < 0.75
+	var ok: bool = ro.C_HINT.g > 0.75 and ro.C_HINT.r < 0.75
 	ro.free()
 	return ok
 
 
 static func test_c_action_blue() -> bool:
 	var ro := _make_ro()
-	var ok := ro.C_ACTION.b > 0.90 and ro.C_ACTION.r < 0.60
+	var ok: bool = ro.C_ACTION.b > 0.90 and ro.C_ACTION.r < 0.60
 	ro.free()
 	return ok
 
 
 static func test_c_danger_red() -> bool:
 	var ro := _make_ro()
-	var ok := ro.C_DANGER.r > 0.85 and ro.C_DANGER.g < 0.45
+	var ok: bool = ro.C_DANGER.r > 0.85 and ro.C_DANGER.g < 0.45
 	ro.free()
 	return ok
 
@@ -99,35 +99,35 @@ static func test_c_danger_red() -> bool:
 
 static func test_initial_backdrop_null() -> bool:
 	var ro := _make_ro()
-	var ok := ro._backdrop == null
+	var ok: bool = ro._backdrop == null
 	ro.free()
 	return ok
 
 
 static func test_initial_card_null() -> bool:
 	var ro := _make_ro()
-	var ok := ro._card == null
+	var ok: bool = ro._card == null
 	ro.free()
 	return ok
 
 
 static func test_initial_vbox_null() -> bool:
 	var ro := _make_ro()
-	var ok := ro._vbox == null
+	var ok: bool = ro._vbox == null
 	ro.free()
 	return ok
 
 
 static func test_initial_prompt_label_null() -> bool:
 	var ro := _make_ro()
-	var ok := ro._prompt_label == null
+	var ok: bool = ro._prompt_label == null
 	ro.free()
 	return ok
 
 
 static func test_initial_pulse_tween_null() -> bool:
 	var ro := _make_ro()
-	var ok := ro._pulse_tween == null
+	var ok: bool = ro._pulse_tween == null
 	ro.free()
 	return ok
 
@@ -136,27 +136,27 @@ static func test_initial_pulse_tween_null() -> bool:
 
 static func test_initial_objective_card_empty() -> bool:
 	var ro := _make_ro()
-	var ok := ro._objective_card.is_empty()
+	var ok: bool = ro._objective_card.is_empty()
 	ro.free()
 	return ok
 
 
 static func test_initial_scenario_title_empty() -> bool:
 	var ro := _make_ro()
-	var ok := ro._scenario_title == ""
+	var ok: bool = ro._scenario_title == ""
 	ro.free()
 	return ok
 
 
 static func test_initial_recall_mode_false() -> bool:
 	var ro := _make_ro()
-	var ok := ro._recall_mode == false
+	var ok: bool = ro._recall_mode == false
 	ro.free()
 	return ok
 
 
 static func test_initial_current_phase_zero() -> bool:
 	var ro := _make_ro()
-	var ok := ro._current_phase == 0
+	var ok: bool = ro._current_phase == 0
 	ro.free()
 	return ok

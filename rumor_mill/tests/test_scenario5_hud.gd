@@ -80,28 +80,28 @@ func run() -> void:
 
 static func test_npc_display_names_aldric() -> bool:
 	var h := _make_hud()
-	var ok := h.NPC_DISPLAY_NAMES.get("aldric_vane", "") == "Aldric Vane"
+	var ok: bool = h.NPC_DISPLAY_NAMES.get("aldric_vane", "") == "Aldric Vane"
 	h.free()
 	return ok
 
 
 static func test_npc_display_names_edric() -> bool:
 	var h := _make_hud()
-	var ok := h.NPC_DISPLAY_NAMES.get("edric_fenn", "") == "Edric Fenn"
+	var ok: bool = h.NPC_DISPLAY_NAMES.get("edric_fenn", "") == "Edric Fenn"
 	h.free()
 	return ok
 
 
 static func test_npc_display_names_tomas() -> bool:
 	var h := _make_hud()
-	var ok := h.NPC_DISPLAY_NAMES.get("tomas_reeve", "") == "Tomas Reeve"
+	var ok: bool = h.NPC_DISPLAY_NAMES.get("tomas_reeve", "") == "Tomas Reeve"
 	h.free()
 	return ok
 
 
 static func test_npc_display_names_count() -> bool:
 	var h := _make_hud()
-	var ok := h.NPC_DISPLAY_NAMES.size() == 3
+	var ok: bool = h.NPC_DISPLAY_NAMES.size() == 3
 	h.free()
 	return ok
 
@@ -110,14 +110,14 @@ static func test_npc_display_names_count() -> bool:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_WIDTH == 160
+	var ok: bool = h.BAR_WIDTH == 160
 	h.free()
 	return ok
 
 
 static func test_bar_height() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_HEIGHT == 10
+	var ok: bool = h.BAR_HEIGHT == 10
 	h.free()
 	return ok
 
@@ -126,14 +126,14 @@ static func test_bar_height() -> bool:
 
 static func test_campaign_rep_boost_positive() -> bool:
 	var h := _make_hud()
-	var ok := h.CAMPAIGN_REP_BOOST > 0
+	var ok: bool = h.CAMPAIGN_REP_BOOST > 0
 	h.free()
 	return ok
 
 
 static func test_campaign_cooldown_positive() -> bool:
 	var h := _make_hud()
-	var ok := h.CAMPAIGN_COOLDOWN > 0
+	var ok: bool = h.CAMPAIGN_COOLDOWN > 0
 	h.free()
 	return ok
 
@@ -142,7 +142,7 @@ static func test_campaign_cooldown_positive() -> bool:
 
 static func test_scenario_number_is_five() -> bool:
 	var h := _make_hud()
-	var ok := h._scenario_number() == 5
+	var ok: bool = h._scenario_number() == 5
 	h.free()
 	return ok
 
@@ -151,21 +151,21 @@ static func test_scenario_number_is_five() -> bool:
 
 static func test_initial_prev_aldric_score() -> bool:
 	var h := _make_hud()
-	var ok := h._prev_aldric_score == -1
+	var ok: bool = h._prev_aldric_score == -1
 	h.free()
 	return ok
 
 
 static func test_initial_prev_edric_score() -> bool:
 	var h := _make_hud()
-	var ok := h._prev_edric_score == -1
+	var ok: bool = h._prev_edric_score == -1
 	h.free()
 	return ok
 
 
 static func test_initial_prev_tomas_score() -> bool:
 	var h := _make_hud()
-	var ok := h._prev_tomas_score == -1
+	var ok: bool = h._prev_tomas_score == -1
 	h.free()
 	return ok
 
@@ -174,42 +174,42 @@ static func test_initial_prev_tomas_score() -> bool:
 
 static func test_initial_aldric_score_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._aldric_score_lbl == null
+	var ok: bool = h._aldric_score_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_edric_score_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._edric_score_lbl == null
+	var ok: bool = h._edric_score_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_tomas_score_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._tomas_score_lbl == null
+	var ok: bool = h._tomas_score_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_endorse_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._endorse_lbl == null
+	var ok: bool = h._endorse_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_campaign_btn_null() -> bool:
 	var h := _make_hud()
-	var ok := h._campaign_btn == null
+	var ok: bool = h._campaign_btn == null
 	h.free()
 	return ok
 
 
 static func test_initial_campaign_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._campaign_lbl == null
+	var ok: bool = h._campaign_lbl == null
 	h.free()
 	return ok
 
@@ -218,14 +218,14 @@ static func test_initial_campaign_lbl_null() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._world_ref == null
+	var ok: bool = h._world_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_result_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._result_lbl == null
+	var ok: bool = h._result_lbl == null
 	h.free()
 	return ok
 
@@ -240,7 +240,7 @@ static func test_initial_result_lbl_null() -> bool:
 ## prev=-1 (sentinel) → no data yet → empty string
 static func test_momentum_arrow_no_data() -> bool:
 	var h := _make_hud()
-	var ok := h._momentum_arrow(50, -1) == ""
+	var ok: bool = h._momentum_arrow(50, -1) == ""
 	h.free()
 	return ok
 
@@ -248,7 +248,7 @@ static func test_momentum_arrow_no_data() -> bool:
 ## current > prev → rising
 static func test_momentum_arrow_rising() -> bool:
 	var h := _make_hud()
-	var ok := h._momentum_arrow(60, 50) == " ↑"
+	var ok: bool = h._momentum_arrow(60, 50) == " ↑"
 	h.free()
 	return ok
 
@@ -256,7 +256,7 @@ static func test_momentum_arrow_rising() -> bool:
 ## current < prev → falling
 static func test_momentum_arrow_falling() -> bool:
 	var h := _make_hud()
-	var ok := h._momentum_arrow(40, 50) == " ↓"
+	var ok: bool = h._momentum_arrow(40, 50) == " ↓"
 	h.free()
 	return ok
 
@@ -264,6 +264,6 @@ static func test_momentum_arrow_falling() -> bool:
 ## current == prev → flat
 static func test_momentum_arrow_flat() -> bool:
 	var h := _make_hud()
-	var ok := h._momentum_arrow(50, 50) == " →"
+	var ok: bool = h._momentum_arrow(50, 50) == " →"
 	h.free()
 	return ok

@@ -13,7 +13,7 @@
 Phase 1 explicitly deferred evidence-item rebalancing (see phase1-balance-proposal.md § "Explicit Non-Goal"). Phase 2 adds the telemetry needed to answer whether Forged Document, Incriminating Artifact, and Witness Account are meaningfully differentiated, then introduces tuning levers to fix the problems the data reveals.
 
 This spec covers **three workstreams**:
-1. Two new telemetry events (`evidence_acquired`, `evidence_used`)
+1. Five telemetry events (`evidence_acquired`, `evidence_used`, `target_shift_cooldown_blocked`, `witness_account_used`, `evidence_economy_v2_gated_off`)
 2. Evidence-economy tuning curves (decay, confidence thresholds, target-shift cooldown)
 3. Differentiation mechanics for the three evidence types
 
@@ -143,6 +143,187 @@ These are the cross-tabs the aggregation scripts (`tools/analytics/kpi_aggregate
 
 ---
 
+### 2.5 `target_shift_cooldown_blocked` *(SPA-1772)*
+
+**Question answered:** How often do players attempt to attach cooldown-locked evidence, and which evidence types are most commonly blocked?
+
+| Field | Type | Example | Source |
+|---|---|---|---|
+| `evidence_type` | `String` | `"forged_document"` | `item.type.to_snake_case()` |
+| `target_npc_id` | `String` | `"finn_monk"` | `intel_store.get_evidence_cooldown_info()["target_npc_id"]` |
+| `cooldown_remaining_days` | `int` | `2` | `intel_store.get_evidence_cooldown_info()["days_remaining"]` |
+| `day` | `int` | `7` | `_world_ref.current_day` |
+| `scenario_id` | `String` | `"scenario_3"` | `_world_ref.scenario_id` |
+| `difficulty` | `String` | `"normal"` | `GameState.selected_difficulty` |
+
+**Fire site (1 total):**
+
+| File | Line | Context |
+|---|---|---|
+| `rumor_panel.gd` | `_build_evidence_entry()` | `gui_input` handler on the disabled Attach button when `cooldown_locked == true` |
+
+**Edge cases:**
+- **Cooldown-bypass items (Witness Account):** `cooldown_bypass` is set instead of `cooldown_locked`. Those buttons are not disabled, so this event does NOT fire for them. The player can still attach at half effectiveness.
+- **Multiple rapid clicks:** Each left-button press emits one event. No dedup guard; repeated clicks represent genuine player frustration and are analytically useful.
+- **Analytics disabled:** Standard `SettingsManager.analytics_enabled` guard in `log_event()` prevents writes when analytics is off.
+
+**Implementation (already landed — SPA-1772):**
+
+In `rumor_panel.gd` `_build_evidence_entry()`, after `btn.disabled = true`:
+```gdscript
+# SPA-1772: Emit telemetry when the player taps/clicks the locked button.
+var captured_item := item
+btn.gui_input.connect(func(ev: InputEvent) -> void:
+    if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+        if _analytics_ref != null:
+            var info := _intel_store_ref.get_evidence_cooldown_info()
+            _analytics_ref.log_target_shift_cooldown_blocked(
+                captured_item.type.to_snake_case(),
+                info.get("target_npc_id", ""),
+                info.get("days_remaining", 0),
+                _world_ref.current_day if _world_ref != null else 0,
+                _world_ref.scenario_id if _world_ref != null else "",
+                GameState.selected_difficulty
+            )
+)
+```
+
+In `analytics_logger.gd`:
+```gdscript
+func log_target_shift_cooldown_blocked(evidence_type: String, target_npc_id: String, cooldown_remaining_days: int, day: int, scenario_id: String, difficulty: String) -> void:
+    log_event("target_shift_cooldown_blocked", {
+        "evidence_type":           evidence_type,
+        "target_npc_id":           target_npc_id,
+        "cooldown_remaining_days": cooldown_remaining_days,
+        "day":                     day,
+        "scenario_id":             scenario_id,
+        "difficulty":              difficulty,
+    })
+```
+
+**GUT tests:** `test_rumor_panel_evidence_cooldown.gd` — T1 (event fires on click), T2 (correct `evidence_type`), T3 (no event when unlocked).
+
+---
+
+### 2.6 `witness_account_used` *(SPA-1773)*
+
+**Question answered:** How often is Witness Account used in cooldown-bypass mode, and what are the actual (halved) bonus values being applied?
+
+| Field | Type | Example | Source |
+|---|---|---|---|
+| `evidence_type` | `String` | `"witness_account"` | `evidence_item.type.to_snake_case()` |
+| `bypass_mode` | `bool` | `true` | Always `true` — event only fires in bypass path |
+| `effective_believability_bonus` | `float` | `0.075` | `evidence_item.believability_bonus × 0.5` |
+| `effective_credulity_boost` | `float` | `0.025` | `evidence_item.credulity_boost × 0.5` |
+| `target_npc_id` | `String` | `"npc_finn_monk"` | `seed_target_npc_id` |
+| `cooldown_target_npc_id` | `String` | `"npc_finn_monk"` | Same as `target_npc_id` — the NPC whose cooldown triggered bypass |
+| `day` | `int` | `8` | `_day_night.current_day` |
+| `scenario_id` | `String` | `"scenario_3"` | `_analytics_scenario_id` |
+| `difficulty` | `String` | `"normal"` | `GameState.selected_difficulty` |
+
+**Fire site (1 total):**
+
+| File | Context |
+|---|---|
+| `world.gd` `seed_rumor_from_player()` | After `bypass_active` is confirmed true and halved bonus values are computed |
+
+**Mechanism:** `world.gd` emits the `witness_account_bypass_used` signal; `AnalyticsManager.setup()` wires it to `_on_witness_account_bypass_used()`, which delegates to `log_witness_account_used()`.
+
+**Edge cases:**
+- **Normal Witness Account usage (no bypass):** `bypass_active == false` so the signal is never emitted and this event does NOT fire. The existing `evidence_used` event continues to cover normal usage.
+- **Non-bypass evidence types:** `is_evidence_bypass_active()` requires `supports_cooldown_bypass == true`, which only Witness Account has. Other evidence types can never trigger this event.
+- **Analytics disabled:** Standard `SettingsManager.analytics_enabled` guard in `AnalyticsLogger.log_event()` prevents writes when analytics is off.
+
+**Implementation (SPA-1773):**
+
+In `world.gd`, new signal and emission after bypass detection:
+```gdscript
+signal witness_account_bypass_used(
+    evidence_type: String, effective_bel_bonus: float,
+    effective_cred_boost: float, target_npc_id: String
+)
+
+# Inside seed_rumor_from_player(), after halved bonus calculation:
+if bypass_active:
+    emit_signal("witness_account_bypass_used",
+        evidence_item.type.to_snake_case(), bel_bonus, cred_boost, seed_target_npc_id)
+```
+
+In `analytics_manager.gd`, new method and signal wiring in `setup()`:
+```gdscript
+func log_witness_account_used(evidence_type, effective_bel_bonus, effective_cred_boost, target_npc_id):
+    _analytics_logger.log_event("witness_account_used", {
+        "evidence_type": evidence_type, "bypass_mode": true,
+        "effective_believability_bonus": effective_bel_bonus,
+        "effective_credulity_boost": effective_cred_boost,
+        "target_npc_id": target_npc_id, "cooldown_target_npc_id": target_npc_id,
+        "day": day, "scenario_id": ..., "difficulty": ...
+    })
+```
+
+**GUT tests:** `test_spa1773_witness_account_used_emission.gd` — emission (enabled/disabled), event type, 9 field-presence assertions, bypass_mode always true, halved bonus value checks (0.075 / 0.025), bypass-only gate.
+
+---
+
+### 2.7 `evidence_economy_v2_gated_off` *(SPA-1774)*
+
+**Question answered:** How often do Apprentice players attempt to use evidence bonuses that are silently gated off (shelf_life_extension and credulity_boost skipped)?
+
+| Field | Type | Example | Source |
+|---|---|---|---|
+| `evidence_type` | `String` | `"witness_account"` | `evidence_item.type.to_snake_case()` |
+| `gated_bonuses` | `Array[String]` | `["shelf_life_extension", "credulity_boost"]` | Hardcoded — always both bonuses |
+| `difficulty` | `String` | `"apprentice"` | `GameState.selected_difficulty` |
+| `day` | `int` | `4` | `_day_night.current_day` |
+| `scenario_id` | `String` | `"scenario_2"` | `_analytics_scenario_id` |
+
+**Fire site (1 total):**
+
+| File | Context |
+|---|---|
+| `world.gd` `seed_rumor_from_player()` | `elif GameState.evidence_economy_v2:` branch — reached only when flag is ON and difficulty is `"apprentice"` |
+
+**Mechanism:** `world.gd` emits the `evidence_economy_v2_gated_off` signal in the `elif` branch of the SPA-1757 difficulty gate; `AnalyticsManager.setup()` wires it to `_on_evidence_economy_v2_gated_off()`, which delegates to `log_evidence_economy_v2_gated_off()`.
+
+**Edge cases:**
+- **Flag OFF:** The `if/elif` condition is never entered when `evidence_economy_v2 == false`, so this event will not fire.
+- **Normal/Master/Spymaster:** The `if` branch fires (bonuses applied) — `elif` is skipped; event does NOT fire.
+- **Apprentice + flag OFF:** Neither branch taken; event does NOT fire.
+- **Analytics disabled:** Standard `SettingsManager.analytics_enabled` guard in `AnalyticsLogger.log_event()` prevents writes.
+
+**Implementation (SPA-1774):**
+
+In `world.gd`, new signal declaration and emission:
+```gdscript
+signal evidence_economy_v2_gated_off(
+    evidence_type: String, gated_bonuses: Array, difficulty: String
+)
+
+# Inside seed_rumor_from_player(), replacing the bare SPA-1757 if with if/elif:
+if GameState.evidence_economy_v2 and GameState.selected_difficulty != "apprentice":
+    rumor.shelf_life_ticks += evidence_item.shelf_life_extension
+    rumor.evidence_credulity_boost = cred_boost
+    rumor.seed_target_npc_id = seed_target_npc_id
+elif GameState.evidence_economy_v2:
+    emit_signal("evidence_economy_v2_gated_off",
+        evidence_item.type.to_snake_case(),
+        ["shelf_life_extension", "credulity_boost"],
+        GameState.selected_difficulty)
+```
+
+In `analytics_manager.gd`, new methods and signal wiring in `setup()`:
+```gdscript
+func log_evidence_economy_v2_gated_off(evidence_type, gated_bonuses, difficulty):
+    _analytics_logger.log_event("evidence_economy_v2_gated_off", {
+        "evidence_type": evidence_type, "gated_bonuses": gated_bonuses,
+        "difficulty": difficulty, "day": day, "scenario_id": ...
+    })
+```
+
+**GUT tests:** `test_phase2_evidence_economy_v2_gating.gd` — 3 new tests: signal fires on Apprentice, does NOT fire on Normal, does NOT fire on Master. Uses `_would_emit_gated_off()` helper mirroring the `elif` condition.
+
+---
+
 ## 3. Evidence-Economy Tuning Curves
 
 ### 3.1 Evidence Believability Decay
@@ -217,22 +398,35 @@ After using evidence on a seed targeting NPC X, the player cannot use evidence o
 
 ## 4. Evidence Differentiation Summary
 
-After Phase 2 tuning, the three evidence types have distinct strategic identities:
+After Phase 2 tuning (including M5 baseline fixes — SPA-1756), the three evidence types have distinct strategic identities:
 
 | | Forged Document | Incriminating Artifact | Witness Account |
 |---|---|---|---|
-| **Believability boost** | +0.20 | +0.25 | +0.15 |
+| **Believability boost** | +0.20 | +0.25 | +0.15 (½ during bypass) |
 | **Mutability modifier** | 0.0 | 0.0 | -0.15 |
 | **Shelf-life extension** | +40 ticks (~1.7 days) | +0 | +80 ticks (~3.3 days) |
-| **Credulity boost** | +0.10 | +0.15 | +0.05 |
+| **Credulity boost** | +0.10 | +0.15 | +0.05 (½ during bypass) |
+| **Cooldown bypass** | No | No | **Yes — usable at ½ effect during active cooldown** |
 | **Claim compatibility** | ACCUSATION, SCANDAL, HERESY | SCANDAL, HERESY | Any |
 | **Acquisition source** | Market/Guild observe (double-spend) | Manor/Chapel evening observe | Eavesdrop (prior intel ≥24 ticks) |
-| **Strategic identity** | All-rounder: moderate boost, moderate duration, wide claim pool | Spike: highest boost + credulity override, but no durability and narrow claims | Slow burn: low initial impact but longest duration, any claim, at cost of mutability |
+| **Strategic identity** | All-rounder: moderate boost, moderate duration, wide claim pool | Spike: highest boost + credulity override, but no durability and narrow claims | Slow burn: low initial impact but longest duration + temporal flexibility via cooldown bypass |
 
 **Player-facing heuristic:**
 - **Document** = safe default. Works on most claims, decent boost, decent duration.
 - **Artifact** = high-value play. Best for convincing resistant NPCs of scandals/heresies. Short-lived.
-- **Witness Account** = long game. Best for persistent pressure campaigns. The mutability cost means the target can't easily shake the rumor, but the low credulity boost means initial spread is slower.
+- **Witness Account** = long game *and* flexible timing. Best for persistent pressure campaigns. The mutability cost means the target can't easily shake the rumor. Uniquely, it can be used during a target-shift cooldown at half effectiveness — giving the "any claim" advantage a temporal dimension unavailable to other evidence types.
+
+### 4.1 Cooldown-Bypass Mechanic (SPA-1756)
+
+**Problem (M5 baseline):** Witness Account usage rate (57%) equalled Forged Document and trailed Artifact (75%) in S3 Normal and S5 Master. The 3-day Master cooldown blocked the intended evidence window in S5; the item was displaced unused. Its "any claim" breadth provided no differentiation in tight-cooldown scenarios.
+
+**Solution:** `EvidenceItem.supports_cooldown_bypass = true` on Witness Account only. When `is_evidence_bypass_active()` returns true (active cooldown + item supports bypass), `world.gd`'s `seed_rumor_from_player` applies `believability_bonus × 0.5` (+0.075) and `credulity_boost × 0.5` (+0.025). Shelf-life extension (+80) and mutability modifier (-0.15) are unaffected.
+
+**UI:** Bypass-capable items show amber tint (not grey) in `rumor_panel.gd` with button text "Attach (½ Effect)" and tooltip showing cooldown days remaining. Hard-locked items (Document, Artifact) remain greyed out as before.
+
+**Implementation files:** `intel_store.gd` (`EvidenceItem.supports_cooldown_bypass`, `is_evidence_bypass_active()`), `recon_controller.gd` (Witness Account creation), `world.gd` (`seed_rumor_from_player`), `rumor_panel.gd` (`_build_evidence_entry`).
+
+**Tests:** 10 new regression tests in `test_phase2_evidence_economy.gd` covering field values, bypass activation conditions, half-effectiveness math, and shelf/mutability invariants.
 
 ---
 

@@ -236,13 +236,15 @@ Minimum 3 ticks in EVALUATING before roll fires.
 
 ## 4. Evidence Item Impact
 
-| Item | Believability Bonus | Mutability Mod | Compatible Claims | Acquisition |
-|------|-------------------|----------------|-------------------|-------------|
-| Forged Document | **+0.20** | 0.0 | ACCUSATION, SCANDAL, HERESY | Observe Market/Guild with >= 2 recon actions |
-| Incriminating Artifact | **+0.25** | 0.0 | SCANDAL, HERESY | Observe Manor/Chapel after tick > 18 (post-6pm) |
-| Witness Account | **+0.15** | **-0.15** | Any | Re-eavesdrop same NPC pair >= 24 ticks after first |
+| Item | Believability Bonus | Mutability Mod | Shelf Extension | Credulity Boost | Cooldown Bypass | Compatible Claims | Acquisition |
+|------|-------------------|----------------|-----------------|-----------------|-----------------|-------------------|-------------|
+| Forged Document | **+0.20** | 0.0 | +40 ticks | +0.10 | No | ACCUSATION, SCANDAL, HERESY | Observe Market/Guild with >= 2 recon actions |
+| Incriminating Artifact | **+0.25** | 0.0 | +0 | +0.15 | No | SCANDAL, HERESY | Observe Manor/Chapel after tick > 18 (post-6pm) |
+| Witness Account | **+0.15** | **-0.15** | +80 ticks | +0.05 | **Yes (½ effect)** | Any | Re-eavesdrop same NPC pair >= 24 ticks after first |
 
 Evidence is applied at rumor creation time and not recalculated. The Witness Account's -0.15 mutability modifier is the only way to reduce mutation chance, making it strategically valuable for precision campaigns.
+
+**Witness Account cooldown-bypass (SPA-1756):** When a target-shift cooldown is active for a different NPC, the Witness Account may still be used at half effectiveness: +0.075 believability and +0.025 credulity boost (vs. the normal +0.15 / +0.05). Shelf-life extension (+80 ticks) and mutability modifier (-0.15) are unaffected by bypass mode. No other evidence type can bypass the cooldown. The UI shows "Attach (½ Effect)" with the remaining cooldown days as a tooltip.
 
 Inventory cap: 3 items, oldest silently discarded on overflow.
 
@@ -300,6 +302,8 @@ Forged Document (+0.20) and Incriminating Artifact (+0.25) have very similar eff
 
 **Consider:** Differentiating the items further — e.g., Artifact could also reduce mutability, or Document could be usable on a wider claim set.
 
+**M5 baseline update (SPA-1756):** Witness Account usage rate matched Forged Document (57%) and trailed Artifact (75%) in S3 Normal and S5 Master playthroughs. The 3-day Master cooldown blocked the intended Witness Account window entirely in S5, with the item displaced unused. The cooldown-bypass mechanic (SPA-1756) gives Witness Account a temporal advantage unavailable to other evidence types. Re-evaluate usage parity after the next Master baseline.
+
 ### LOW: Faction Event Timing
 
 Faction events fire between days 2-7 only (MAX_EVENTS=2). In longer scenarios (Scenario 1: 30 days, Scenario 3: 25 days), this means events are frontloaded and the mid/late game has no environmental variation. In Scenario 4 (20 days), events are better paced relative to total duration.
@@ -329,6 +333,33 @@ Based on the balance concerns above and the analytics infrastructure shipping at
 ### Priority 5 — Evidence Item Usage Distribution
 **Metric:** Which evidence items players craft with, and whether Witness Account's mutability reduction is valued.
 **Action threshold:** If one evidence type accounts for > 80% of usage, consider rebalancing acquisition conditions or bonus values.
+
+---
+
+## 7. Phase 2 Difficulty Gating Decisions
+
+### evidence_economy_v2 bonuses gated to Normal+ (SPA-1757)
+
+**Decision (2026-05-05):** `shelf_life_extension` and `credulity_boost` bonuses are restricted to Normal, Master, and Spymaster difficulties. Apprentice players receive base `believability_bonus` and `mutability_modifier` only.
+
+**Rationale:**
+- S1 Apprentice M5 baseline: 5 evidence acquired, 3 used (0.60 hoarding ratio). Run resolved day 8 of 36 — the credulity delta and heat ceiling made evidence non-strategic.
+- Apprentice is the learning lane; Phase 2 amplifiers add complexity before core mechanics are understood.
+- Keeping Apprentice free of v2 bonuses provides a clean control group for future telemetry comparisons.
+
+**What Apprentice still gets from evidence:**
+- `believability_bonus` (+0.15–+0.25 depending on item type)
+- `mutability_modifier` (−0.15 for Witness Account)
+- Evidence use still marked via `bolstered_by_evidence`
+
+**What Apprentice does NOT get:**
+- `shelf_life_extension` (extended rumor lifespan per item)
+- `credulity_boost` (propagation advantage gated to seed target)
+- `target_cooldown` is already 0 on Apprentice via `intel_store.gd` — unchanged
+
+**Not gated:** Witness Account cooldown-bypass mechanic (SPA-1756) is a player-skill mechanic, not a bonus amplifier — remains active on all difficulties.
+
+**Implementation:** `world.gd` evidence application block — single `difficulty != "apprentice"` guard added alongside existing `evidence_economy_v2` flag check.
 
 ---
 

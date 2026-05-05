@@ -98,77 +98,77 @@ func run() -> void:
 
 func test_sprite_w_constant() -> bool:
 	var v := _make_visuals()
-	var ok := v.SPRITE_W == 64
+	var ok: bool = v.SPRITE_W == 64
 	v.free()
 	return ok
 
 
 func test_sprite_h_constant() -> bool:
 	var v := _make_visuals()
-	var ok := v.SPRITE_H == 96
+	var ok: bool = v.SPRITE_H == 96
 	v.free()
 	return ok
 
 
 func test_faction_row_merchant() -> bool:
 	var v := _make_visuals()
-	var ok := v.FACTION_ROW.has("merchant") and v.FACTION_ROW["merchant"] == 0
+	var ok: bool = v.FACTION_ROW.has("merchant") and v.FACTION_ROW["merchant"] == 0
 	v.free()
 	return ok
 
 
 func test_faction_row_noble() -> bool:
 	var v := _make_visuals()
-	var ok := v.FACTION_ROW.has("noble") and v.FACTION_ROW["noble"] == 1
+	var ok: bool = v.FACTION_ROW.has("noble") and v.FACTION_ROW["noble"] == 1
 	v.free()
 	return ok
 
 
 func test_faction_row_clergy() -> bool:
 	var v := _make_visuals()
-	var ok := v.FACTION_ROW.has("clergy") and v.FACTION_ROW["clergy"] == 2
+	var ok: bool = v.FACTION_ROW.has("clergy") and v.FACTION_ROW["clergy"] == 2
 	v.free()
 	return ok
 
 
 func test_archetype_row_has_guard_civic() -> bool:
 	var v := _make_visuals()
-	var ok := v.ARCHETYPE_ROW.has("guard_civic")
+	var ok: bool = v.ARCHETYPE_ROW.has("guard_civic")
 	v.free()
 	return ok
 
 
 func test_archetype_row_has_spy() -> bool:
 	var v := _make_visuals()
-	var ok := v.ARCHETYPE_ROW.has("spy")
+	var ok: bool = v.ARCHETYPE_ROW.has("spy")
 	v.free()
 	return ok
 
 
 func test_commoner_roles_nonempty() -> bool:
 	var v := _make_visuals()
-	var ok := not (v.COMMONER_ROLES as Array).is_empty()
+	var ok: bool = not (v.COMMONER_ROLES as Array).is_empty()
 	v.free()
 	return ok
 
 
 func test_clothing_var_base_has_merchant() -> bool:
 	var v := _make_visuals()
-	var ok := v.CLOTHING_VAR_BASE.has("merchant")
+	var ok: bool = v.CLOTHING_VAR_BASE.has("merchant")
 	v.free()
 	return ok
 
 
 func test_clothing_var_base_has_noble() -> bool:
 	var v := _make_visuals()
-	var ok := v.CLOTHING_VAR_BASE.has("noble")
+	var ok: bool = v.CLOTHING_VAR_BASE.has("noble")
 	v.free()
 	return ok
 
 
 func test_clothing_var_base_has_clergy() -> bool:
 	var v := _make_visuals()
-	var ok := v.CLOTHING_VAR_BASE.has("clergy")
+	var ok: bool = v.CLOTHING_VAR_BASE.has("clergy")
 	v.free()
 	return ok
 
@@ -179,70 +179,70 @@ func test_clothing_var_base_has_clergy() -> bool:
 
 func test_state_tint_has_nine_entries() -> bool:
 	var v := _make_visuals()
-	var ok := (v.STATE_TINT as Dictionary).size() == 9
+	var ok: bool = (v.STATE_TINT as Dictionary).size() == 9
 	v.free()
 	return ok
 
 
 func test_state_tint_unaware_is_white() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_TINT[Rumor.RumorState.UNAWARE] == Color.WHITE
+	var ok: bool = v.STATE_TINT[Rumor.RumorState.UNAWARE] == Color.WHITE
 	v.free()
 	return ok
 
 
 func test_state_tint_evaluating_defined() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_TINT.has(Rumor.RumorState.EVALUATING)
+	var ok: bool = v.STATE_TINT.has(Rumor.RumorState.EVALUATING)
 	v.free()
 	return ok
 
 
 func test_state_tint_believe_defined() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_TINT.has(Rumor.RumorState.BELIEVE)
+	var ok: bool = v.STATE_TINT.has(Rumor.RumorState.BELIEVE)
 	v.free()
 	return ok
 
 
 func test_state_tint_spread_defined() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_TINT.has(Rumor.RumorState.SPREAD)
+	var ok: bool = v.STATE_TINT.has(Rumor.RumorState.SPREAD)
 	v.free()
 	return ok
 
 
 func test_state_tint_act_defined() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_TINT.has(Rumor.RumorState.ACT)
+	var ok: bool = v.STATE_TINT.has(Rumor.RumorState.ACT)
 	v.free()
 	return ok
 
 
 func test_state_tint_reject_defined() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_TINT.has(Rumor.RumorState.REJECT)
+	var ok: bool = v.STATE_TINT.has(Rumor.RumorState.REJECT)
 	v.free()
 	return ok
 
 
 func test_state_tint_contradicted_defined() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_TINT.has(Rumor.RumorState.CONTRADICTED)
+	var ok: bool = v.STATE_TINT.has(Rumor.RumorState.CONTRADICTED)
 	v.free()
 	return ok
 
 
 func test_state_tint_expired_defined() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_TINT.has(Rumor.RumorState.EXPIRED)
+	var ok: bool = v.STATE_TINT.has(Rumor.RumorState.EXPIRED)
 	v.free()
 	return ok
 
 
 func test_state_tint_defending_defined() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_TINT.has(Rumor.RumorState.DEFENDING)
+	var ok: bool = v.STATE_TINT.has(Rumor.RumorState.DEFENDING)
 	v.free()
 	return ok
 
@@ -253,49 +253,49 @@ func test_state_tint_defending_defined() -> bool:
 
 func test_state_emotes_has_six_entries() -> bool:
 	var v := _make_visuals()
-	var ok := (v.STATE_EMOTES as Dictionary).size() == 6
+	var ok: bool = (v.STATE_EMOTES as Dictionary).size() == 6
 	v.free()
 	return ok
 
 
 func test_state_emotes_evaluating_nonempty() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_EMOTES.has("EVALUATING") and not (v.STATE_EMOTES["EVALUATING"] as String).is_empty()
+	var ok: bool = v.STATE_EMOTES.has("EVALUATING") and not (v.STATE_EMOTES["EVALUATING"] as String).is_empty()
 	v.free()
 	return ok
 
 
 func test_state_emotes_believe_nonempty() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_EMOTES.has("BELIEVE") and not (v.STATE_EMOTES["BELIEVE"] as String).is_empty()
+	var ok: bool = v.STATE_EMOTES.has("BELIEVE") and not (v.STATE_EMOTES["BELIEVE"] as String).is_empty()
 	v.free()
 	return ok
 
 
 func test_state_emotes_spread_nonempty() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_EMOTES.has("SPREAD") and not (v.STATE_EMOTES["SPREAD"] as String).is_empty()
+	var ok: bool = v.STATE_EMOTES.has("SPREAD") and not (v.STATE_EMOTES["SPREAD"] as String).is_empty()
 	v.free()
 	return ok
 
 
 func test_state_emotes_act_nonempty() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_EMOTES.has("ACT") and not (v.STATE_EMOTES["ACT"] as String).is_empty()
+	var ok: bool = v.STATE_EMOTES.has("ACT") and not (v.STATE_EMOTES["ACT"] as String).is_empty()
 	v.free()
 	return ok
 
 
 func test_state_emotes_reject_nonempty() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_EMOTES.has("REJECT") and not (v.STATE_EMOTES["REJECT"] as String).is_empty()
+	var ok: bool = v.STATE_EMOTES.has("REJECT") and not (v.STATE_EMOTES["REJECT"] as String).is_empty()
 	v.free()
 	return ok
 
 
 func test_state_emotes_defending_nonempty() -> bool:
 	var v := _make_visuals()
-	var ok := v.STATE_EMOTES.has("DEFENDING") and not (v.STATE_EMOTES["DEFENDING"] as String).is_empty()
+	var ok: bool = v.STATE_EMOTES.has("DEFENDING") and not (v.STATE_EMOTES["DEFENDING"] as String).is_empty()
 	v.free()
 	return ok
 
@@ -308,7 +308,7 @@ func test_npc_hover_tint_defined() -> bool:
 	var v := _make_visuals()
 	# Hover tint should be a super-bright colour — all components > 1 in at least one channel.
 	var tint: Color = v.NPC_HOVER_TINT
-	var ok := tint.r > 1.0 or tint.g > 1.0 or tint.b > 1.0
+	var ok: bool = tint.r > 1.0 or tint.g > 1.0 or tint.b > 1.0
 	v.free()
 	return ok
 
@@ -319,34 +319,34 @@ func test_npc_hover_tint_defined() -> bool:
 
 func test_initial_npc_null() -> bool:
 	var v := _make_visuals()
-	var ok := v._npc == null
+	var ok: bool = v._npc == null
 	v.free()
 	return ok
 
 
 func test_initial_hovered_false() -> bool:
 	var v := _make_visuals()
-	var ok := v._hovered == false
+	var ok: bool = v._hovered == false
 	v.free()
 	return ok
 
 
 func test_initial_ripple_radius_zero() -> bool:
 	var v := _make_visuals()
-	var ok := is_equal_approx(v._ripple_radius, 0.0)
+	var ok: bool = is_equal_approx(v._ripple_radius, 0.0)
 	v.free()
 	return ok
 
 
 func test_initial_ripple_alpha_zero() -> bool:
 	var v := _make_visuals()
-	var ok := is_equal_approx(v._ripple_alpha, 0.0)
+	var ok: bool = is_equal_approx(v._ripple_alpha, 0.0)
 	v.free()
 	return ok
 
 
 func test_initial_cached_state_tint_white() -> bool:
 	var v := _make_visuals()
-	var ok := v._cached_state_tint == Color.WHITE
+	var ok: bool = v._cached_state_tint == Color.WHITE
 	v.free()
 	return ok

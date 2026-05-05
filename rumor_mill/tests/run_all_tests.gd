@@ -22,11 +22,29 @@ extends RefCounted
 ##   • TestSpa1613EvidenceAcquired       — evidence_acquired NDJSON field shape for all 3 fire sites,
 ##                                          no double-emission guard, pre-setup queuing (SPA-1613)
 ##   • TestSpa1614EvidenceUsedEmission   — evidence_used emission, field presence + values, disabled gate (SPA-1614)
+##   • TestSpa1773WitnessAccountUsedEmission — witness_account_used bypass-mode event: emission,
+##                                             field presence, halved bonus values, bypass-only gate (SPA-1773)
 ##   • SmokePhase2Evidence               — end-to-end Phase 2 smoke: 3 acquisitions + 1 usage vs SPA-1522 spec (SPA-1617)
 ##   • TestSpa1685_1691_1693FixCoverage  — process_mode ALWAYS on dialogue canvas (SPA-1685),
 ##                                          illness_hotspot_buildings declared (SPA-1691),
 ##                                          quarantine_ref declared (SPA-1693)
+##   • TestSpa1725EvidenceAttached       — evidence_attached NDJSON event shape: evidence_type
+##                                          snake_case normalisation, credulity_boost, target_npc_id,
+##                                          day, scenario_id (SPA-1725)
 ##   • TestRumorPanelEvidenceCooldown    — evidence item greyed out during cooldown: E1/E2/E3/E6 (SPA-1717)
+##   • TestPhase2SliceCShelfLife         — Slice C acceptance criteria C1–C4: shelf-life extension
+##                                          per evidence type + Phase-1 save compatibility (SPA-1736)
+##   • TestPhase2SliceDCredulityBoost    — Slice D acceptance criteria D1–D4: credulity boost
+##                                          magnitude, seed-target gating, multi-rumor isolation (SPA-1739)
+##   • TestPhase2SliceECooldownGaps      — Slice E cooldown gaps E4 (Apprentice no-cooldown) and
+##                                          E5 (evidence-free seed does not arm cooldown) (SPA-1740)
+##   • TestRumorPanelEvidenceCooldownUi  — RumorPanel evidence cooldown UI (SPA-1732)
+##   • TestPhase2SliceATelemetry         — Slice A telemetry acceptance criteria A1–A9 (SPA-1743)
+##   • TestPhase2SliceFFeatureFlag       — Slice F feature-flag acceptance criteria F1–F5 (SPA-1742)
+##   • TestPhase2EvidenceEconomy         — Phase 2 evidence-economy mechanics: Slice C shelf-life,
+##                                          Slice D credulity boost, Slice E target-shift cooldown
+##                                          (SPA-1706)
+##   • TestPhase2CrossCutting            — Phase 2 cross-cutting criteria X1–X3 (SPA-1743)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
 ##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text,
@@ -305,10 +323,20 @@ const TestSpa1544NewGameStateIsolation = preload("res://tests/test_spa1544_new_g
 const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_analytics_disabled_gating.gd")
 const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evidence_acquired.gd")
 const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
+const TestSpa1773WitnessAccountUsedEmission = preload("res://tests/test_spa1773_witness_account_used_emission.gd")
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
+const TestSpa1725EvidenceAttached      = preload("res://tests/test_spa1725_evidence_attached.gd")
 const TestRumorPanelEvidenceCooldown   = preload("res://tests/test_rumor_panel_evidence_cooldown.gd")
 const TestPhase2SliceCShelfLife        = preload("res://tests/test_phase2_slice_c_shelf_life.gd")
+const TestPhase2SliceDCredulityBoost   = preload("res://tests/test_phase2_slice_d_credulity_boost.gd")
+const TestPhase2SliceECooldownGaps     = preload("res://tests/test_phase2_slice_e_cooldown_gaps.gd")
+const TestRumorPanelEvidenceCooldownUi = preload("res://tests/test_rumor_panel_evidence_cooldown_ui.gd")
+const TestPhase2SliceATelemetry        = preload("res://tests/test_phase2_slice_a_telemetry.gd")
+const TestPhase2SliceFFeatureFlag      = preload("res://tests/test_phase2_slice_f_feature_flag.gd")
+const TestPhase2CrossCutting           = preload("res://tests/test_phase2_cross_cutting.gd")
+const TestPhase2EvidenceEconomy        = preload("res://tests/test_phase2_evidence_economy.gd")
+const TestPhase2EvidenceEconomyV2Gating = preload("res://tests/test_phase2_evidence_economy_v2_gating.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
 const TestStrategicOverview = preload("res://tests/test_strategic_overview.gd")
@@ -383,14 +411,47 @@ func _init() -> void:
 	print("\n── SPA-1614 evidence_used emission + shape ──")
 	TestSpa1614EvidenceUsedEmission.new().run()
 
+	print("\n── SPA-1773 witness_account_used bypass-mode emission + shape ──")
+	TestSpa1773WitnessAccountUsedEmission.new().run()
+
 	print("\n── SPA-1617 Phase 2 evidence telemetry smoke (end-to-end) ──")
 	SmokePhase2Evidence.new().run()
 
 	print("\n── SPA-1685/1691/1693 post-launch fix coverage ──")
 	TestSpa1685_1691_1693FixCoverage.new().run()
 
+	print("\n── SPA-1725 evidence_attached event shape + snake_case normalisation ──")
+	TestSpa1725EvidenceAttached.new().run()
+
 	print("\n── SPA-1717 RumorPanel evidence cooldown UI (E1/E2/E3/E6) ──")
 	TestRumorPanelEvidenceCooldown.new().run()
+
+	print("\n── SPA-1736 Phase 2 Slice C shelf-life extension (C1–C4) ──")
+	TestPhase2SliceCShelfLife.new().run()
+
+	print("\n── SPA-1739 Phase 2 Slice D credulity boost (D1–D4) ──")
+	TestPhase2SliceDCredulityBoost.new().run()
+
+	print("\n── SPA-1740 Phase 2 Slice E cooldown gaps (E4 Apprentice, E5 no-evidence) ──")
+	TestPhase2SliceECooldownGaps.new().run()
+
+	print("\n── SPA-1732 RumorPanel evidence cooldown UI ──")
+	TestRumorPanelEvidenceCooldownUi.new().run()
+
+	print("\n── SPA-1743 Phase 2 Slice A telemetry (A1–A9) ──")
+	TestPhase2SliceATelemetry.new().run()
+
+	print("\n── SPA-1742 Phase 2 Slice F feature flags (F1–F5) ──")
+	TestPhase2SliceFFeatureFlag.new().run()
+
+	print("\n── SPA-1743 Phase 2 cross-cutting (X1–X3) ──")
+	TestPhase2CrossCutting.new().run()
+
+	print("\n── SPA-1706 Phase 2 evidence-economy (Slice C/D/E) ──")
+	TestPhase2EvidenceEconomy.new().run()
+
+	print("\n── SPA-1757 Phase 2 evidence_economy_v2 Normal+ gating ──")
+	TestPhase2EvidenceEconomyV2Gating.new().run()
 
 	print("\n── TutorialSystem ──")
 	TestTutorialSystem.new().run()

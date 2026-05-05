@@ -101,7 +101,7 @@ func run() -> void:
 static func test_c_illness_is_sickly_green() -> bool:
 	var h := _make_hud()
 	# sickly green: moderate r, high g, low-moderate b
-	var ok := h.C_ILLNESS.r > 0.40 and h.C_ILLNESS.g > 0.70 and h.C_ILLNESS.b < 0.40
+	var ok: bool = h.C_ILLNESS.r > 0.40 and h.C_ILLNESS.g > 0.70 and h.C_ILLNESS.b < 0.40
 	h.free()
 	return ok
 
@@ -110,21 +110,21 @@ static func test_c_illness_is_sickly_green() -> bool:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_WIDTH == 160
+	var ok: bool = h.BAR_WIDTH == 160
 	h.free()
 	return ok
 
 
 static func test_bar_height() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_HEIGHT == 12
+	var ok: bool = h.BAR_HEIGHT == 12
 	h.free()
 	return ok
 
 
 static func test_max_names_shown() -> bool:
 	var h := _make_hud()
-	var ok := h.MAX_NAMES_SHOWN == 5
+	var ok: bool = h.MAX_NAMES_SHOWN == 5
 	h.free()
 	return ok
 
@@ -133,7 +133,7 @@ static func test_max_names_shown() -> bool:
 
 static func test_scenario_number_is_two() -> bool:
 	var h := _make_hud()
-	var ok := h._scenario_number() == 2
+	var ok: bool = h._scenario_number() == 2
 	h.free()
 	return ok
 
@@ -142,77 +142,77 @@ static func test_scenario_number_is_two() -> bool:
 
 static func test_initial_count_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._count_lbl == null
+	var ok: bool = h._count_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_bar_null() -> bool:
 	var h := _make_hud()
-	var ok := h._bar == null
+	var ok: bool = h._bar == null
 	h.free()
 	return ok
 
 
 static func test_initial_bar_bg_null() -> bool:
 	var h := _make_hud()
-	var ok := h._bar_bg == null
+	var ok: bool = h._bar_bg == null
 	h.free()
 	return ok
 
 
 static func test_initial_believers_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._believers_lbl == null
+	var ok: bool = h._believers_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_rejecters_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._rejecters_lbl == null
+	var ok: bool = h._rejecters_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_maren_warning_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._maren_warning_lbl == null
+	var ok: bool = h._maren_warning_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_escalation_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._escalation_lbl == null
+	var ok: bool = h._escalation_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_pip_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._pip_lbl == null
+	var ok: bool = h._pip_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_quarantine_btn_null() -> bool:
 	var h := _make_hud()
-	var ok := h._quarantine_btn == null
+	var ok: bool = h._quarantine_btn == null
 	h.free()
 	return ok
 
 
 static func test_initial_quarantine_dropdown_null() -> bool:
 	var h := _make_hud()
-	var ok := h._quarantine_dropdown == null
+	var ok: bool = h._quarantine_dropdown == null
 	h.free()
 	return ok
 
 
 static func test_initial_quarantine_status_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._quarantine_status_lbl == null
+	var ok: bool = h._quarantine_status_lbl == null
 	h.free()
 	return ok
 
@@ -221,7 +221,7 @@ static func test_initial_quarantine_status_lbl_null() -> bool:
 
 static func test_initial_maren_neighbours_empty() -> bool:
 	var h := _make_hud()
-	var ok := h._maren_neighbours.is_empty()
+	var ok: bool = h._maren_neighbours.is_empty()
 	h.free()
 	return ok
 
@@ -230,28 +230,28 @@ static func test_initial_maren_neighbours_empty() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._world_ref == null
+	var ok: bool = h._world_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_day_night_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._day_night_ref == null
+	var ok: bool = h._day_night_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_result_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._result_lbl == null
+	var ok: bool = h._result_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_days_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._days_lbl == null
+	var ok: bool = h._days_lbl == null
 	h.free()
 	return ok
 
@@ -260,21 +260,21 @@ static func test_initial_days_lbl_null() -> bool:
 
 static func test_initial_maren_is_defending_false() -> bool:
 	var h := _make_hud()
-	var ok := h._maren_is_defending == false
+	var ok: bool = h._maren_is_defending == false
 	h.free()
 	return ok
 
 
 static func test_initial_deconv_toast_panel_null() -> bool:
 	var h := _make_hud()
-	var ok := h._deconv_toast_panel == null
+	var ok: bool = h._deconv_toast_panel == null
 	h.free()
 	return ok
 
 
 static func test_initial_deconv_toast_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._deconv_toast_lbl == null
+	var ok: bool = h._deconv_toast_lbl == null
 	h.free()
 	return ok
 
@@ -283,7 +283,7 @@ static func test_initial_deconv_toast_lbl_null() -> bool:
 static func test_on_maren_state_changed_defending_sets_flag() -> bool:
 	var h := _make_hud()
 	h._on_maren_rumor_state_changed("Sister Maren", "DEFENDING", "rid_test", "")
-	var ok := h._maren_is_defending == true
+	var ok: bool = h._maren_is_defending == true
 	h.free()
 	return ok
 
@@ -292,7 +292,7 @@ static func test_on_maren_state_changed_defending_sets_flag() -> bool:
 static func test_on_maren_state_changed_non_defending_no_flag() -> bool:
 	var h := _make_hud()
 	h._on_maren_rumor_state_changed("Sister Maren", "reject", "rid_test", "")
-	var ok := h._maren_is_defending == false
+	var ok: bool = h._maren_is_defending == false
 	h.free()
 	return ok
 
@@ -303,7 +303,7 @@ static func test_neighbor_reject_no_toast_when_not_defending() -> bool:
 	var h := _make_hud()
 	h._on_neighbor_rumor_state_changed("Tomas", "reject", "rid_test", "")
 	# _deconv_toast_panel is still null (no _ready) and no crash occurred.
-	var ok := h._deconv_toast_panel == null
+	var ok: bool = h._deconv_toast_panel == null
 	h.free()
 	return ok
 
@@ -316,7 +316,7 @@ static func test_defending_watch_text_contains_countering() -> bool:
 	# Simulate the label existing so we can verify the text set by the signal handler.
 	h._maren_watch_lbl = Label.new()
 	h._on_maren_rumor_state_changed("Sister Maren", "DEFENDING", "", "")
-	var ok := "countering" in h._maren_watch_lbl.text
+	var ok: bool = "countering" in h._maren_watch_lbl.text
 	h._maren_watch_lbl.free()
 	h.free()
 	return ok
@@ -327,7 +327,7 @@ static func test_defending_watch_text_contains_countering() -> bool:
 ## _maren_watch_lbl must be null before _build_ui() runs (no scene tree).
 static func test_initial_maren_watch_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._maren_watch_lbl == null
+	var ok: bool = h._maren_watch_lbl == null
 	h.free()
 	return ok
 
@@ -336,7 +336,7 @@ static func test_initial_maren_watch_lbl_null() -> bool:
 static func test_c_defending_dormant_is_dimmed() -> bool:
 	var h := _make_hud()
 	# alpha ≤ 0.60 confirms the dormant color is visually suppressed.
-	var ok := h.C_DEFENDING_DORMANT.a <= 0.60
+	var ok: bool = h.C_DEFENDING_DORMANT.a <= 0.60
 	h.free()
 	return ok
 
@@ -348,7 +348,7 @@ static func test_on_maren_grace_started_makes_warning_visible() -> bool:
 	var h := _make_hud()
 	h._maren_warning_lbl = Label.new()
 	h._on_maren_grace_started(2)
-	var ok := h._maren_warning_lbl.visible == true
+	var ok: bool = h._maren_warning_lbl.visible == true
 	h._maren_warning_lbl.free()
 	h.free()
 	return ok
@@ -359,7 +359,7 @@ static func test_on_maren_grace_started_warning_includes_tip() -> bool:
 	var h := _make_hud()
 	h._maren_warning_lbl = Label.new()
 	h._on_maren_grace_started(2)
-	var ok := "Tip" in h._maren_warning_lbl.text
+	var ok: bool = "Tip" in h._maren_warning_lbl.text
 	h._maren_warning_lbl.free()
 	h.free()
 	return ok
@@ -371,7 +371,7 @@ static func test_on_maren_grace_started_warning_includes_tip() -> bool:
 static func test_scenario1_hud_has_no_maren_watch_lbl() -> bool:
 	var h := Scenario1HudScript.new()
 	# Use get() so a missing property returns null instead of crashing.
-	var ok := h.get("_maren_watch_lbl") == null
+	var ok: bool = h.get("_maren_watch_lbl") == null
 	h.free()
 	return ok
 
@@ -385,7 +385,7 @@ static func test_suppression_active_indicator_shown_when_defending() -> bool:
 	h._maren_watch_lbl = Label.new()
 	h._on_maren_rumor_state_changed("Sister Maren", "DEFENDING", "", "")
 	var text: String = h._maren_watch_lbl.text
-	var ok := "🛡" in text and "countering" in text
+	var ok: bool = "🛡" in text and "countering" in text
 	h._maren_watch_lbl.free()
 	h.free()
 	return ok
@@ -399,7 +399,7 @@ static func test_suppression_indicator_absent_when_not_defending() -> bool:
 	h._maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
 	# No DEFENDING signal — text must remain dormant, not active.
 	var text: String = h._maren_watch_lbl.text
-	var ok := "dormant" in text and not ("countering" in text)
+	var ok: bool = "dormant" in text and not ("countering" in text)
 	h._maren_watch_lbl.free()
 	h.free()
 	return ok
@@ -410,6 +410,6 @@ static func test_suppression_indicator_absent_when_not_defending() -> bool:
 static func test_suppression_indicator_absent_on_non_s2() -> bool:
 	var h := Scenario1HudScript.new()
 	# get() returns null when the property does not exist on the script.
-	var ok := h.get("_maren_neighbours") == null
+	var ok: bool = h.get("_maren_neighbours") == null
 	h.free()
 	return ok

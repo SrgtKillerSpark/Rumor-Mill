@@ -1069,22 +1069,32 @@ func _add_evidence_section(compatible: Array) -> void:
 	_seed_list.add_child(HSeparator.new())
 
 
-func _build_evidence_entry(item) -> Control:
+func _build_evidence_entry(item: PlayerIntelStore.EvidenceItem) -> Control:
 	var outer := PanelContainer.new()
 	if item == _selected_evidence_item:
 		var style := StyleBoxFlat.new()
 		style.bg_color = C_SELECTED_EVIDENCE_BG
 		outer.add_theme_stylebox_override("panel", style)
 
-	# SPA-1717: Check if evidence is locked by target-shift cooldown.
+	# SPA-1717/SPA-1756: Check if evidence is locked by target-shift cooldown.
+	# Witness Account (supports_cooldown_bypass) is never hard-locked; it shows a
+	# half-effectiveness warning instead so the player can still attach it.
 	var cooldown_locked: bool = false
+	var cooldown_bypass: bool = false
 	var cooldown_tooltip: String = ""
 	if _intel_store_ref != null and _intel_store_ref.is_evidence_locked_for_target(_selected_subject):
-		cooldown_locked = true
-		var cooldown_info: Dictionary = _intel_store_ref.get_evidence_cooldown_info()
-		var days_left: int = cooldown_info.get("days_remaining", 0)
-		cooldown_tooltip = "Evidence locked - target cooldown: %dd remaining" % days_left
-		outer.modulate = Color(1.0, 1.0, 1.0, 0.4)
+		if item.supports_cooldown_bypass:
+			cooldown_bypass = true
+			var cooldown_info: Dictionary = _intel_store_ref.get_evidence_cooldown_info()
+			var days_left: int = cooldown_info.get("days_remaining", 0)
+			cooldown_tooltip = "Cooldown bypass - half effectiveness (%dd remaining)" % days_left
+			outer.modulate = Color(1.0, 0.85, 0.5, 0.85)
+		else:
+			cooldown_locked = true
+			var cooldown_info: Dictionary = _intel_store_ref.get_evidence_cooldown_info()
+			var days_left: int = cooldown_info.get("days_remaining", 0)
+			cooldown_tooltip = "Evidence locked - target cooldown: %dd remaining" % days_left
+			outer.modulate = Color(1.0, 1.0, 1.0, 0.4)
 
 	var vbox := VBoxContainer.new()
 	outer.add_child(vbox)
@@ -1126,6 +1136,26 @@ func _build_evidence_entry(item) -> Control:
 		btn.text         = "Attach"
 		btn.disabled     = true
 		btn.tooltip_text = cooldown_tooltip
+		# SPA-1772: Emit telemetry when the player taps/clicks the locked button.
+		# Disabled buttons don't fire 'pressed', so we listen on gui_input instead.
+		var captured_item := item
+		btn.gui_input.connect(func(ev: InputEvent) -> void:
+			if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+				if _analytics_ref != null:
+					var info := _intel_store_ref.get_evidence_cooldown_info()
+					_analytics_ref.log_target_shift_cooldown_blocked(
+						captured_item.type.to_snake_case(),
+						info.get("target_npc_id", ""),
+						info.get("days_remaining", 0),
+						_world_ref.current_day if _world_ref != null else 0,
+						_world_ref.scenario_id if _world_ref != null else "",
+						GameState.selected_difficulty
+					)
+		)
+	elif cooldown_bypass:
+		# SPA-1756: Bypass-capable item shows half-effectiveness label + tooltip.
+		btn.text         = "Attach (½ Effect)" if item != _selected_evidence_item else "✓ Attached (½)"
+		btn.tooltip_text = cooldown_tooltip
 	elif item == _selected_evidence_item:
 		btn.text = "✓ Attached"
 	else:
@@ -1139,7 +1169,7 @@ func _build_evidence_entry(item) -> Control:
 			_rebuild_seed_list()
 			if _analytics_ref != null:
 				_analytics_ref.log_evidence_attached(
-						captured_item.type, captured_item.credulity_boost,
+						captured_item.type.to_snake_case(), captured_item.credulity_boost,
 						_selected_subject, _world_ref.current_day, _world_ref.scenario_id)
 		)
 	vbox.add_child(btn)

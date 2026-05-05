@@ -108,7 +108,7 @@ func test_setup_assigns_world_ref() -> bool:
 	var s    := _make()
 	var node := Node2D.new()
 	s.setup(node)
-	var ok := s._world_ref == node
+	var ok: bool = s._world_ref == node
 	node.free()
 	return ok
 

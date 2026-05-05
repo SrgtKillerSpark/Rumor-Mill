@@ -170,7 +170,7 @@ func test_e6_locked_button_has_tooltip() -> bool:
 					break
 		if btn != null:
 			break
-	var ok := btn != null and ("cooldown" in btn.tooltip_text.to_lower() or "locked" in btn.tooltip_text.to_lower())
+	var ok: bool = btn != null and ("cooldown" in btn.tooltip_text.to_lower() or "locked" in btn.tooltip_text.to_lower())
 	entry.free()
 	return ok
 
@@ -187,6 +187,6 @@ func test_e6_locked_button_is_disabled() -> bool:
 					break
 		if btn != null:
 			break
-	var ok := btn != null and btn.disabled
+	var ok: bool = btn != null and btn.disabled
 	entry.free()
 	return ok

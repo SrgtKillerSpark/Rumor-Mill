@@ -225,7 +225,7 @@ static func test_setup_stores_world_ref() -> bool:
 	var esc := _make_esc()
 	var stub := Node2D.new()
 	esc.setup(stub, null, null, null)
-	var ok := esc._world_ref == stub
+	var ok: bool = esc._world_ref == stub
 	stub.free()
 	return ok
 
@@ -234,6 +234,6 @@ static func test_setup_stores_day_night_ref() -> bool:
 	var esc := _make_esc()
 	var stub := Node.new()
 	esc.setup(null, stub, null, null)
-	var ok := esc._day_night_ref == stub
+	var ok: bool = esc._day_night_ref == stub
 	stub.free()
 	return ok

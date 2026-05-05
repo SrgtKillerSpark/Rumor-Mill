@@ -198,7 +198,7 @@ static func test_setup_stores_world_ref() -> bool:
 	var ess := _make_ess()
 	var stub := Node2D.new()
 	ess.setup(stub, null)
-	var ok := ess._world_ref == stub
+	var ok: bool = ess._world_ref == stub
 	stub.free()
 	return ok
 
@@ -207,7 +207,7 @@ static func test_setup_stores_day_night_ref() -> bool:
 	var ess := _make_ess()
 	var stub := Node.new()
 	ess.setup(null, stub)
-	var ok := ess._day_night_ref == stub
+	var ok: bool = ess._day_night_ref == stub
 	stub.free()
 	return ok
 

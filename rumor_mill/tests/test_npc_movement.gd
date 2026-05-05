@@ -69,14 +69,14 @@ func run() -> void:
 
 func test_move_speed_constant() -> bool:
 	var m := _make_movement()
-	var ok := is_equal_approx(m.MOVE_SPEED, 180.0)
+	var ok: bool = is_equal_approx(m.MOVE_SPEED, 180.0)
 	m.free()
 	return ok
 
 
 func test_micro_wander_chance_constant() -> bool:
 	var m := _make_movement()
-	var ok := is_equal_approx(m._MICRO_WANDER_CHANCE, 0.20)
+	var ok: bool = is_equal_approx(m._MICRO_WANDER_CHANCE, 0.20)
 	m.free()
 	return ok
 
@@ -87,42 +87,42 @@ func test_micro_wander_chance_constant() -> bool:
 
 func test_initial_facing_dir_south() -> bool:
 	var m := _make_movement()
-	var ok := m._facing_dir == "south"
+	var ok: bool = m._facing_dir == "south"
 	m.free()
 	return ok
 
 
 func test_initial_waypoint_index_minus_one() -> bool:
 	var m := _make_movement()
-	var ok := m._waypoint_index == -1
+	var ok: bool = m._waypoint_index == -1
 	m.free()
 	return ok
 
 
 func test_initial_is_moving_false() -> bool:
 	var m := _make_movement()
-	var ok := m._is_moving == false
+	var ok: bool = m._is_moving == false
 	m.free()
 	return ok
 
 
 func test_initial_micro_wander_cooldown_zero() -> bool:
 	var m := _make_movement()
-	var ok := m._micro_wander_cooldown == 0
+	var ok: bool = m._micro_wander_cooldown == 0
 	m.free()
 	return ok
 
 
 func test_initial_last_schedule_slot_minus_one() -> bool:
 	var m := _make_movement()
-	var ok := m._last_schedule_slot == -1
+	var ok: bool = m._last_schedule_slot == -1
 	m.free()
 	return ok
 
 
 func test_initial_path_empty() -> bool:
 	var m := _make_movement()
-	var ok := m._path.is_empty()
+	var ok: bool = m._path.is_empty()
 	m.free()
 	return ok
 
@@ -134,7 +134,7 @@ func test_initial_path_empty() -> bool:
 func test_cell_to_world_origin() -> bool:
 	var m := _make_movement()
 	var result := m.cell_to_world(Vector2i(0, 0))
-	var ok := result.is_equal_approx(Vector2(0.0, 0.0))
+	var ok: bool = result.is_equal_approx(Vector2(0.0, 0.0))
 	m.free()
 	return ok
 
@@ -143,7 +143,7 @@ func test_cell_to_world_one_zero() -> bool:
 	# x=(1-0)*32=32, y=(1+0)*16=16
 	var m := _make_movement()
 	var result := m.cell_to_world(Vector2i(1, 0))
-	var ok := result.is_equal_approx(Vector2(32.0, 16.0))
+	var ok: bool = result.is_equal_approx(Vector2(32.0, 16.0))
 	m.free()
 	return ok
 
@@ -152,7 +152,7 @@ func test_cell_to_world_zero_one() -> bool:
 	# x=(0-1)*32=-32, y=(0+1)*16=16
 	var m := _make_movement()
 	var result := m.cell_to_world(Vector2i(0, 1))
-	var ok := result.is_equal_approx(Vector2(-32.0, 16.0))
+	var ok: bool = result.is_equal_approx(Vector2(-32.0, 16.0))
 	m.free()
 	return ok
 
@@ -161,7 +161,7 @@ func test_cell_to_world_two_three() -> bool:
 	# x=(2-3)*32=-32, y=(2+3)*16=80
 	var m := _make_movement()
 	var result := m.cell_to_world(Vector2i(2, 3))
-	var ok := result.is_equal_approx(Vector2(-32.0, 80.0))
+	var ok: bool = result.is_equal_approx(Vector2(-32.0, 80.0))
 	m.free()
 	return ok
 
@@ -170,6 +170,6 @@ func test_cell_to_world_negative_x_component() -> bool:
 	# cell (0,2): x=(0-2)*32=-64, y=(0+2)*16=32
 	var m := _make_movement()
 	var result := m.cell_to_world(Vector2i(0, 2))
-	var ok := result.is_equal_approx(Vector2(-64.0, 32.0))
+	var ok: bool = result.is_equal_approx(Vector2(-64.0, 32.0))
 	m.free()
 	return ok

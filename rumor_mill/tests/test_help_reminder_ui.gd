@@ -44,6 +44,6 @@ func run() -> void:
 
 static func test_initial_controls_ref_null() -> bool:
 	var h := _make_hrui()
-	var ok := h.controls_ref == null
+	var ok: bool = h.controls_ref == null
 	h.free()
 	return ok

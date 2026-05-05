@@ -292,7 +292,7 @@ func test_set_text_size_index_large_syncs_scale() -> bool:
 	sm.set_text_size_index(2)  # Large → UI_SCALE_PRESETS[TEXT_SIZE_SCALE_INDICES[2]] = 1.25
 	var expected_idx: int = SettingsManagerScript.TEXT_SIZE_SCALE_INDICES[2]
 	var expected_scale: float = SettingsManagerScript.UI_SCALE_PRESETS[expected_idx]
-	var ok := sm.text_size_index == 2 and absf(sm.ui_scale - expected_scale) < 0.001
+	var ok: bool = sm.text_size_index == 2 and absf(sm.ui_scale - expected_scale) < 0.001
 	sm.free()
 	return ok
 

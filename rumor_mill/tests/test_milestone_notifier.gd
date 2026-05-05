@@ -74,21 +74,21 @@ func run() -> void:
 
 static func test_c_bg_dark() -> bool:
 	var mn := _make_mn()
-	var ok := mn.C_BG.r < 0.15 and mn.C_BG.a > 0.90
+	var ok: bool = mn.C_BG.r < 0.15 and mn.C_BG.a > 0.90
 	mn.free()
 	return ok
 
 
 static func test_c_border_gold() -> bool:
 	var mn := _make_mn()
-	var ok := mn.C_BORDER.r > 0.65 and mn.C_BORDER.g > 0.45 and mn.C_BORDER.b < 0.25
+	var ok: bool = mn.C_BORDER.r > 0.65 and mn.C_BORDER.g > 0.45 and mn.C_BORDER.b < 0.25
 	mn.free()
 	return ok
 
 
 static func test_c_reward_bright_green() -> bool:
 	var mn := _make_mn()
-	var ok := mn.C_REWARD.g > 0.85 and mn.C_REWARD.r < 0.80
+	var ok: bool = mn.C_REWARD.g > 0.85 and mn.C_REWARD.r < 0.80
 	mn.free()
 	return ok
 
@@ -96,7 +96,7 @@ static func test_c_reward_bright_green() -> bool:
 static func test_c_vignette_translucent_gold() -> bool:
 	var mn := _make_mn()
 	# translucent: a < 0.6; gold: high r, high g, low b
-	var ok := mn.C_VIGNETTE.a < 0.60 and mn.C_VIGNETTE.r > 0.85
+	var ok: bool = mn.C_VIGNETTE.a < 0.60 and mn.C_VIGNETTE.r > 0.85
 	mn.free()
 	return ok
 
@@ -105,49 +105,49 @@ static func test_c_vignette_translucent_gold() -> bool:
 
 static func test_popup_w() -> bool:
 	var mn := _make_mn()
-	var ok := mn.POPUP_W == 480
+	var ok: bool = mn.POPUP_W == 480
 	mn.free()
 	return ok
 
 
 static func test_popup_h_base() -> bool:
 	var mn := _make_mn()
-	var ok := mn.POPUP_H_BASE == 108
+	var ok: bool = mn.POPUP_H_BASE == 108
 	mn.free()
 	return ok
 
 
 static func test_popup_h_full() -> bool:
 	var mn := _make_mn()
-	var ok := mn.POPUP_H_FULL == 134
+	var ok: bool = mn.POPUP_H_FULL == 134
 	mn.free()
 	return ok
 
 
 static func test_popup_y() -> bool:
 	var mn := _make_mn()
-	var ok := mn.POPUP_Y == 76
+	var ok: bool = mn.POPUP_Y == 76
 	mn.free()
 	return ok
 
 
 static func test_vw() -> bool:
 	var mn := _make_mn()
-	var ok := mn.VW == 1280
+	var ok: bool = mn.VW == 1280
 	mn.free()
 	return ok
 
 
 static func test_particle_cnt() -> bool:
 	var mn := _make_mn()
-	var ok := mn.PARTICLE_CNT == 28
+	var ok: bool = mn.PARTICLE_CNT == 28
 	mn.free()
 	return ok
 
 
 static func test_auto_dismiss() -> bool:
 	var mn := _make_mn()
-	var ok := mn.AUTO_DISMISS == 4.0
+	var ok: bool = mn.AUTO_DISMISS == 4.0
 	mn.free()
 	return ok
 
@@ -156,28 +156,28 @@ static func test_auto_dismiss() -> bool:
 
 static func test_progress_particle_map_count() -> bool:
 	var mn := _make_mn()
-	var ok := mn.PROGRESS_PARTICLE_MAP.size() == 3
+	var ok: bool = mn.PROGRESS_PARTICLE_MAP.size() == 3
 	mn.free()
 	return ok
 
 
 static func test_progress_particle_map_25() -> bool:
 	var mn := _make_mn()
-	var ok := mn.PROGRESS_PARTICLE_MAP.get("progress_toast_25", 0) == 28
+	var ok: bool = mn.PROGRESS_PARTICLE_MAP.get("progress_toast_25", 0) == 28
 	mn.free()
 	return ok
 
 
 static func test_progress_particle_map_50() -> bool:
 	var mn := _make_mn()
-	var ok := mn.PROGRESS_PARTICLE_MAP.get("progress_toast_50", 0) == 40
+	var ok: bool = mn.PROGRESS_PARTICLE_MAP.get("progress_toast_50", 0) == 40
 	mn.free()
 	return ok
 
 
 static func test_progress_particle_map_75() -> bool:
 	var mn := _make_mn()
-	var ok := mn.PROGRESS_PARTICLE_MAP.get("progress_toast_75", 0) == 60
+	var ok: bool = mn.PROGRESS_PARTICLE_MAP.get("progress_toast_75", 0) == 60
 	mn.free()
 	return ok
 
@@ -186,41 +186,41 @@ static func test_progress_particle_map_75() -> bool:
 
 static func test_initial_journal_ref_null() -> bool:
 	var mn := _make_mn()
-	var ok := mn._journal_ref == null
+	var ok: bool = mn._journal_ref == null
 	mn.free()
 	return ok
 
 
 static func test_initial_intel_ref_null() -> bool:
 	var mn := _make_mn()
-	var ok := mn._intel_ref == null
+	var ok: bool = mn._intel_ref == null
 	mn.free()
 	return ok
 
 
 static func test_initial_milestones_empty() -> bool:
 	var mn := _make_mn()
-	var ok := mn._milestones.is_empty()
+	var ok: bool = mn._milestones.is_empty()
 	mn.free()
 	return ok
 
 
 static func test_initial_queue_empty() -> bool:
 	var mn := _make_mn()
-	var ok := mn._queue.is_empty()
+	var ok: bool = mn._queue.is_empty()
 	mn.free()
 	return ok
 
 
 static func test_initial_showing_false() -> bool:
 	var mn := _make_mn()
-	var ok := mn._showing == false
+	var ok: bool = mn._showing == false
 	mn.free()
 	return ok
 
 
 static func test_initial_popup_root_null() -> bool:
 	var mn := _make_mn()
-	var ok := mn._popup_root == null
+	var ok: bool = mn._popup_root == null
 	mn.free()
 	return ok

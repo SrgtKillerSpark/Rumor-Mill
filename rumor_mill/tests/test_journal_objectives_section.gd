@@ -134,7 +134,7 @@ func test_setup_assigns_refs() -> bool:
 	var world     := Node2D.new()
 	var day_night := Node.new()
 	s.setup(world, day_night)
-	var ok := s._world_ref == world and s._day_night_ref == day_night
+	var ok: bool = s._world_ref == world and s._day_night_ref == day_night
 	world.free()
 	day_night.free()
 	return ok
