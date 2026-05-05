@@ -40,6 +40,9 @@ func run() -> void:
 		# ── start_session() ──
 		"test_start_session_sets_positive_time",
 		"test_duration_non_negative_after_start",
+
+		# ── log_evidence_attached() ──
+		"test_log_evidence_attached_writes_event",
 	]
 
 	for method_name in tests:
@@ -90,3 +93,35 @@ func test_duration_non_negative_after_start() -> bool:
 	var al := _make_al()
 	al.start_session("scenario_1", "apprentice")
 	return al.get_session_duration_seconds() >= 0
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# log_evidence_attached() — SPA-1725
+# ══════════════════════════════════════════════════════════════════════════════
+
+## Spy subclass: overrides log_event to capture the last call without file I/O.
+class SpyLogger extends AnalyticsLogger:
+	var last_event_name: String     = ""
+	var last_event_data: Dictionary = {}
+
+	func log_event(event_type: String, data: Dictionary) -> void:
+		last_event_name = event_type
+		last_event_data = data
+
+
+func test_log_evidence_attached_writes_event() -> bool:
+	var spy := SpyLogger.new()
+	spy.log_evidence_attached("witness_account", 0.15, "npc_mayor", 3, "scenario_city")
+	if spy.last_event_name != "evidence_attached":
+		return false
+	if spy.last_event_data.get("evidence_type") != "witness_account":
+		return false
+	if not is_equal_approx(float(spy.last_event_data.get("credulity_boost", -1.0)), 0.15):
+		return false
+	if spy.last_event_data.get("target_npc_id") != "npc_mayor":
+		return false
+	if spy.last_event_data.get("day") != 3:
+		return false
+	if spy.last_event_data.get("scenario_id") != "scenario_city":
+		return false
+	return true

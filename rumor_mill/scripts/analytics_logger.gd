@@ -17,6 +17,7 @@
 ##   reputation_delta         — rep shift ≥ 3 pts; npc_id, from_score, to_score, delta, day, scenario_id
 ##   reputation_snapshot      — daily win-NPC snapshot (SPA-1417); npc_id, score, day, scenario_id
 ##   evidence_interaction     — observe/eavesdrop; action_type, success, day, scenario_id
+##   evidence_attached        — evidence attached to rumor; evidence_type, credulity_boost, target_npc_id, day, scenario_id
 ##   tutorial_step_completed  — tutorial progress (SPA-1241); step_id, scenario_id
 ##   settings_changed         — settings change (SPA-1241); setting_key, old_value, new_value
 ##   scenario_fail_trigger    — explicit fail cause (SPA-1454); scenario_id, day, fail_cause,
@@ -107,6 +108,19 @@ func log_reputation_snapshot(npc_id: String, score: int, day: int, scenario_id: 
 		"score":       score,
 		"day":         day,
 		"scenario_id": scenario_id,
+	})
+
+
+## Log evidence being attached to a rumor before seeding (SPA-1725).
+## Captures the evidence type, credulity boost applied, and seed target for
+## Phase 2 balance analysis per the SPA-1522 telemetry spec.
+func log_evidence_attached(evidence_type: String, credulity_boost: float, target_npc_id: String, day: int, scenario_id: String) -> void:
+	log_event("evidence_attached", {
+		"evidence_type":   evidence_type,
+		"credulity_boost": credulity_boost,
+		"target_npc_id":   target_npc_id,
+		"day":             day,
+		"scenario_id":     scenario_id,
 	})
 
 

@@ -127,6 +127,7 @@ var _status_label: Label           = null   # inline feedback for panel 3
 # References.
 var _world_ref:       Node2D           = null
 var _intel_store_ref: PlayerIntelStore = null
+var _analytics_ref:   AnalyticsLogger  = null  ## SPA-1725: set via set_analytics_manager()
 
 # Texture atlases for icons and portraits.
 var _portrait_tex:    Texture2D = null  # ui_npc_portraits.png — 320×240 (5×64 cols × 3×80 rows)
@@ -193,6 +194,11 @@ func _load_ui_textures() -> void:
 func setup(world: Node2D, intel_store: PlayerIntelStore) -> void:
 	_world_ref       = world
 	_intel_store_ref = intel_store
+
+
+## SPA-1725: Called by ui_layer_manager after the analytics session starts.
+func set_analytics_manager(am: AnalyticsManager) -> void:
+	_analytics_ref = am._analytics_logger
 
 
 func toggle() -> void:
@@ -1131,6 +1137,10 @@ func _build_evidence_entry(item) -> Control:
 			_confirm_pending = false
 			_btn_next.text   = "Confirm & Seed"
 			_rebuild_seed_list()
+			if _analytics_ref != null:
+				_analytics_ref.log_evidence_attached(
+						captured_item.type, captured_item.credulity_boost,
+						_selected_subject, _world_ref.current_day, _world_ref.scenario_id)
 		)
 	vbox.add_child(btn)
 
