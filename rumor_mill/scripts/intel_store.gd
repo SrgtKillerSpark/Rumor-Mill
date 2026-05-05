@@ -288,6 +288,7 @@ class EvidenceItem:
 	var confidence: float = 1.0           ## SPA-1580: current evidence quality (0.0–1.0).
 	var _decay_emitted_on_day: int = -1   ## SPA-1580: anti-double-fire guard for save/load.
 	var shelf_life_extension: int = 0     ## SPA-1585: extra ticks added to rumor shelf_life_ticks on attachment.
+	var credulity_boost: float = 0.0      ## SPA-1711: belief-chance boost applied to the seed target NPC.
 
 	func _init(
 			ev_type: String,

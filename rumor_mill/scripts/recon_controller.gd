@@ -600,6 +600,7 @@ func _try_observe(location_id: String) -> void:
 			"Forged Document", 0.20, 0.0,
 			["ACCUSATION", "SCANDAL", "HERESY"], tick)
 		ev.shelf_life_extension = 40  ## SPA-1585
+		ev.credulity_boost = 0.10     ## SPA-1711
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
 			_analytics_manager.log_evidence_acquired("forged_document", "observe_building")
@@ -611,6 +612,7 @@ func _try_observe(location_id: String) -> void:
 			"Incriminating Artifact", 0.25, 0.0,
 			["SCANDAL", "HERESY"], tick)
 		ev.shelf_life_extension = 0  ## SPA-1611: no shelf-life bonus for artifacts
+		ev.credulity_boost = 0.15    ## SPA-1711
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
 			_analytics_manager.log_evidence_acquired("incriminating_artifact", "observe_building")
@@ -722,6 +724,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Witness Account", 0.15, -0.15, [], tick)
 		ev.shelf_life_extension = 80  ## SPA-1585
+		ev.credulity_boost = 0.05     ## SPA-1711
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
 			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc")

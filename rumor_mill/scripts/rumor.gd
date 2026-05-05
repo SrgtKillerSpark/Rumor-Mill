@@ -38,6 +38,8 @@ var shelf_life_ticks: int
 var current_believability: float
 var lineage_parent_id: String  # "" = original
 var bolstered_by_evidence: bool = false
+var evidence_credulity_boost: float = 0.0  ## SPA-1711: credulity boost for seed target NPC
+var seed_target_npc_id: String = ""         ## SPA-1711: NPC id that received the evidence seed
 
 
 static func create(

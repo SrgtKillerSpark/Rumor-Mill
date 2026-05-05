@@ -1284,6 +1284,8 @@ func seed_rumor_from_player(
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
 		rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
 		rumor.bolstered_by_evidence = true
+		rumor.evidence_credulity_boost = evidence_item.credulity_boost  ## SPA-1711
+		rumor.seed_target_npc_id = seed_target_npc_id                   ## SPA-1711
 
 	# Chain detection: check if this subject already has an active rumor that
 	# creates a same-type, escalation, or contradiction chain.

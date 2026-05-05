@@ -762,6 +762,10 @@ func _tick_evaluating(
 	var extra: int = min(slot.heard_from_count - 1, 3)
 	believe_chance += extra * 0.10
 
+	# Evidence credulity boost (SPA-1711): only the seed target NPC benefits.
+	if rumor.evidence_credulity_boost > 0.0 and npc_data.get("id", "") == rumor.seed_target_npc_id:
+		believe_chance += rumor.evidence_credulity_boost
+
 	believe_chance = clamp(believe_chance, 0.0, 1.0)
 
 	if randf() < believe_chance:
