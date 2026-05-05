@@ -18,6 +18,31 @@ extends RefCounted
 const RumorPanelScript := preload("res://scripts/rumor_panel.gd")
 
 
+# ── Analytics spy ─────────────────────────────────────────────────────────────
+
+## Minimal AnalyticsLogger subclass that records log_target_shift_cooldown_blocked
+## calls without writing to disk or checking SettingsManager.
+class AnalyticsLoggerSpy extends AnalyticsLogger:
+	var events_logged: Array = []
+
+	func log_target_shift_cooldown_blocked(
+		evidence_type: String,
+		target_npc_id: String,
+		cooldown_remaining_days: int,
+		day: int,
+		scenario_id: String,
+		difficulty: String
+	) -> void:
+		events_logged.append({
+			"evidence_type":           evidence_type,
+			"target_npc_id":           target_npc_id,
+			"cooldown_remaining_days": cooldown_remaining_days,
+			"day":                     day,
+			"scenario_id":             scenario_id,
+			"difficulty":              difficulty,
+		})
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 ## Return a fresh PlayerIntelStore.
@@ -58,6 +83,12 @@ func run() -> void:
 		"test_e6_locked_button_has_tooltip",
 		# E6 — locked button is disabled (not selectable)
 		"test_e6_locked_button_is_disabled",
+		# T1 (SPA-1772) — clicking a locked button fires target_shift_cooldown_blocked
+		"test_t1_cooldown_blocked_event_fires_on_locked_click",
+		# T2 (SPA-1772) — the event carries the correct evidence_type (snake_case)
+		"test_t2_cooldown_blocked_event_has_correct_evidence_type",
+		# T3 (SPA-1772) — no event fires when the evidence is not locked
+		"test_t3_cooldown_blocked_event_not_fired_when_unlocked",
 	]
 
 	for method_name in tests:
@@ -170,7 +201,7 @@ func test_e6_locked_button_has_tooltip() -> bool:
 					break
 		if btn != null:
 			break
-	var ok: bool = btn != null and ("cooldown" in btn.tooltip_text.to_lower() or "locked" in btn.tooltip_text.to_lower())
+	var ok := btn != null and ("cooldown" in btn.tooltip_text.to_lower() or "locked" in btn.tooltip_text.to_lower())
 	entry.free()
 	return ok
 
@@ -187,6 +218,92 @@ func test_e6_locked_button_is_disabled() -> bool:
 					break
 		if btn != null:
 			break
-	var ok: bool = btn != null and btn.disabled
+	var ok := btn != null and btn.disabled
+	entry.free()
+	return ok
+
+
+# ── T1–T3: target_shift_cooldown_blocked telemetry (SPA-1772) ────────────────
+
+## Walk the entry's child tree and return the first Button found, or null.
+static func _find_button(entry: Control) -> Button:
+	for child in entry.get_children():
+		if child is VBoxContainer:
+			for grandchild in child.get_children():
+				if grandchild is Button:
+					return grandchild as Button
+	return null
+
+
+## Build a locked entry with an analytics spy wired up.
+func _make_locked_entry_with_spy() -> Dictionary:
+	var rp    := _make_panel()
+	var store := _make_store()
+	store.start_evidence_cooldown("npc_a", "normal")   # 2-day cooldown on npc_a
+	rp._intel_store_ref  = store
+	rp._selected_subject = "npc_b"                    # different NPC → locked
+	var spy := AnalyticsLoggerSpy.new()
+	rp._analytics_ref = spy
+	var item  := _make_evidence_item()
+	var entry := rp._build_evidence_entry(item)
+	return {"entry": entry, "spy": spy}
+
+
+## Simulate a left mouse-button press on a Control by emitting gui_input directly.
+static func _simulate_left_click(control: Control) -> void:
+	var ev := InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_LEFT
+	ev.pressed      = true
+	control.gui_input.emit(ev)
+
+
+## T1 (SPA-1772) — clicking a locked evidence button fires the telemetry event.
+func test_t1_cooldown_blocked_event_fires_on_locked_click() -> bool:
+	var d     := _make_locked_entry_with_spy()
+	var entry := d["entry"] as Control
+	var spy   := d["spy"]   as AnalyticsLoggerSpy
+	var btn   := _find_button(entry)
+	if btn == null or not btn.disabled:
+		entry.free()
+		return false
+	_simulate_left_click(btn)
+	var ok: bool = not spy.events_logged.is_empty()
+	entry.free()
+	return ok
+
+
+## T2 (SPA-1772) — the fired event carries the correct snake_case evidence_type.
+func test_t2_cooldown_blocked_event_has_correct_evidence_type() -> bool:
+	var d     := _make_locked_entry_with_spy()
+	var entry := d["entry"] as Control
+	var spy   := d["spy"]   as AnalyticsLoggerSpy
+	var btn   := _find_button(entry)
+	if btn == null:
+		entry.free()
+		return false
+	_simulate_left_click(btn)
+	var ok: bool = (
+		not spy.events_logged.is_empty()
+		and spy.events_logged[0].get("evidence_type") == "forged_document"
+	)
+	entry.free()
+	return ok
+
+
+## T3 (SPA-1772) — no telemetry fires when the evidence is not cooldown-locked.
+func test_t3_cooldown_blocked_event_not_fired_when_unlocked() -> bool:
+	var rp    := _make_panel()
+	var store := _make_store()
+	# No cooldown started → evidence not locked for any target.
+	rp._intel_store_ref  = store
+	rp._selected_subject = "npc_b"
+	var spy := AnalyticsLoggerSpy.new()
+	rp._analytics_ref = spy
+	var item  := _make_evidence_item()
+	var entry := rp._build_evidence_entry(item)
+	var btn   := _find_button(entry)
+	if btn != null:
+		_simulate_left_click(btn)
+	var ok: bool = spy.events_logged.is_empty()
 	entry.free()
 	return ok

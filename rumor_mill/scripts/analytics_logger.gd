@@ -16,9 +16,10 @@
 ##   npc_state_changed        — NPC slot transition; npc_name, rumor_id, new_state, day, scenario_id
 ##   reputation_delta         — rep shift ≥ 3 pts; npc_id, from_score, to_score, delta, day, scenario_id
 ##   reputation_snapshot      — daily win-NPC snapshot (SPA-1417); npc_id, score, day, scenario_id
-##   evidence_interaction     — observe/eavesdrop; action_type, success, day, scenario_id
-##   evidence_attached        — evidence attached to rumor; evidence_type, credulity_boost, target_npc_id, day, scenario_id
-##   tutorial_step_completed  — tutorial progress (SPA-1241); step_id, scenario_id
+##   evidence_interaction             — observe/eavesdrop; action_type, success, day, scenario_id
+##   evidence_attached                — evidence attached to rumor; evidence_type, credulity_boost, target_npc_id, day, scenario_id
+##   target_shift_cooldown_blocked    — player clicked locked evidence during cooldown (SPA-1772); evidence_type, target_npc_id, cooldown_remaining_days, day, scenario_id, difficulty
+##   tutorial_step_completed          — tutorial progress (SPA-1241); step_id, scenario_id
 ##   settings_changed         — settings change (SPA-1241); setting_key, old_value, new_value
 ##   scenario_fail_trigger    — explicit fail cause (SPA-1454); scenario_id, day, fail_cause,
 ##                              trigger_npc_id, trigger_rumor_id
@@ -121,6 +122,20 @@ func log_evidence_attached(evidence_type: String, credulity_boost: float, target
 		"target_npc_id":   target_npc_id,
 		"day":             day,
 		"scenario_id":     scenario_id,
+	})
+
+
+## Log a player attempt to attach evidence while target-shift cooldown is active (SPA-1772).
+## Fires when the player clicks/taps a greyed-out evidence button in rumor_panel.gd.
+## cooldown_remaining_days: days left on the active cooldown at the moment of the click.
+func log_target_shift_cooldown_blocked(evidence_type: String, target_npc_id: String, cooldown_remaining_days: int, day: int, scenario_id: String, difficulty: String) -> void:
+	log_event("target_shift_cooldown_blocked", {
+		"evidence_type":           evidence_type,
+		"target_npc_id":           target_npc_id,
+		"cooldown_remaining_days": cooldown_remaining_days,
+		"day":                     day,
+		"scenario_id":             scenario_id,
+		"difficulty":              difficulty,
 	})
 
 
