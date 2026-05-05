@@ -343,6 +343,8 @@ func _rebuild_panel(npc: Node2D) -> void:
 	name_lbl.add_theme_constant_override("outline_size", 1)
 	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_OFF
+	name_lbl.clip_text = true
+	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	id_col.add_child(name_lbl)
 
 	if not npc_role.is_empty():
@@ -374,6 +376,8 @@ func _rebuild_panel(npc: Node2D) -> void:
 	greeting_lbl.add_theme_color_override("font_color", C_GREETING)
 	greeting_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	greeting_lbl.custom_minimum_size = Vector2(PANEL_W - 20.0, 0.0)
+	greeting_lbl.max_lines = 3
+	greeting_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	vbox.add_child(greeting_lbl)
 
 	# ── Second divider ────────────────────────────────────────────────────────
@@ -414,9 +418,15 @@ func _rebuild_panel(npc: Node2D) -> void:
 	vbox.add_child(leave_btn)
 
 	# ── Resize panel to fit content ───────────────────────────────────────────
+	# Two-pass sizing: the first frame lets the VBox layout its children,
+	# the second catches text reflow (autowrap labels may change line count
+	# after the initial layout pass).
 	_panel.size = Vector2(PANEL_W, 0.0)
 	await get_tree().create_timer(0.0).timeout
-	_panel.size = Vector2(PANEL_W, vbox.get_minimum_size().y + 20.0)
+	await get_tree().process_frame
+	var vp_size := get_viewport().get_visible_rect().size
+	var max_h := vp_size.y - 16.0   # 8px margin top + bottom
+	_panel.size = Vector2(PANEL_W, minf(vbox.get_minimum_size().y + 20.0, max_h))
 
 
 # ── Button factory ────────────────────────────────────────────────────────────
