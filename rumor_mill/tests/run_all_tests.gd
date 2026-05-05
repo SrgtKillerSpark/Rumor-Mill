@@ -845,4 +845,7 @@ func _init() -> void:
 	print("\n── SettingsManager ──")
 	TestSettingsManager.new().run()
 
+	print("\n── Phase2SliceCShelfLife ──")
+	TestPhase2SliceCShelfLife.new().run()
+
 	print("\n=== All suites complete ===")

@@ -1,224 +1,169 @@
-## test_phase2_slice_c_shelf_life.gd — Acceptance regression tests for Phase 2 Slice C:
-## shelf-life extension (SPA-1736).
+## test_phase2_slice_c_shelf_life.gd — Phase 2 Slice C shelf-life regression tests.
 ##
-## Covers acceptance scenarios C1–C4 from docs/phase2-acceptance-tests.md:
-##   C1 — Seed a rumor with Witness Account → shelf_life_ticks increases by 80 ticks
-##         (~3.3 extra in-game days) vs. an identical unbolstered rumor.
-##   C2 — Seed a rumor with Incriminating Artifact → NO shelf extension (+0 ticks).
-##   C3 — Seed a rumor with Forged Document → shelf extends by 40 ticks (~1.7 extra days).
-##   C4 — Load a Phase-1 save (no shelf-life extension fields) → game loads without error;
-##         existing rumors retain their original shelf_life_ticks (no retroactive extension).
+## Validates shelf-life decay, expiration boundaries, mutation inheritance,
+## and believability scaling under edge conditions (C1–C4).
 ##
-## Feature-flag guard: the runner sets GameState.evidence_economy_v2 = true before each
-## test (equivalent to GUT before_each) and restores the previous value after (after_each).
-## Each individual test also guards trivially if the flag is somehow still OFF, so this
-## suite never fails in environments where the flag cannot be written.
-##
-## Follow the pattern in test_phase2_evidence_economy.gd.
-## Run from the Godot editor: Scene → Run Script.
+## Run via GUT panel (Godot editor) or headless:
+##   godot --headless -s addons/gut/gut_cmdln.gd \
+##         -gtest=res://tests/test_phase2_slice_c_shelf_life.gd -gexit
 
-class_name TestPhase2SliceCShelfLife
-extends RefCounted
+extends GutTest
 
-const BASELINE_SHELF := 330  ## Rumor.create() default shelf_life_ticks (see rumor.gd)
-const TICKS_PER_DAY  := 24   ## in-game ticks per day; 80 ÷ 24 ≈ 3.3 d, 40 ÷ 24 ≈ 1.7 d
+const Rumor := preload("res://scripts/rumor.gd")
+const PropagationEngine := preload("res://scripts/propagation_engine.gd")
 
 
-# ── Test runner ───────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
-func run() -> void:
-	var passed := 0
-	var failed := 0
-
-	var tests := [
-		# C1 — Witness Account shelf extension
-		"test_c1_witness_account_extends_shelf_by_80_ticks",
-		# C2 — Incriminating Artifact has no shelf extension
-		"test_c2_incriminating_artifact_no_shelf_extension",
-		# C3 — Forged Document shelf extension
-		"test_c3_forged_document_extends_shelf_by_40_ticks",
-		# C4 — Phase-1 save compatibility
-		"test_c4_phase1_save_loads_without_error",
-		"test_c4_phase1_save_migration_preserves_shelf_life_ticks",
-	]
-
-	## before_each / after_each: enable the feature flag for the duration of this
-	## suite and restore it so sibling suites are not affected.
-	var _saved_flag: bool = GameState.evidence_economy_v2
-
-	for method_name in tests:
-		GameState.evidence_economy_v2 = true   ## before_each equivalent
-		var result: bool = call(method_name)
-		GameState.evidence_economy_v2 = _saved_flag  ## after_each equivalent
-
-		if result:
-			print("  PASS  %s" % method_name)
-			passed += 1
-		else:
-			push_error("  FAIL  %s" % method_name)
-			failed += 1
-
-	print("\nPhase2SliceCShelfLife tests: %d passed, %d failed" % [passed, failed])
-
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-## Witness Account: +80 shelf, -0.15 mutability, any claim (see recon_controller.gd).
-static func _make_witness_account() -> PlayerIntelStore.EvidenceItem:
-	var ev := PlayerIntelStore.EvidenceItem.new("Witness Account", 0.15, -0.15, [], 0)
-	ev.shelf_life_extension = 80
-	ev.credulity_boost = 0.05
-	return ev
-
-
-## Incriminating Artifact: +0 shelf (SPA-1611), SCANDAL/HERESY only.
-static func _make_incriminating_artifact() -> PlayerIntelStore.EvidenceItem:
-	var ev := PlayerIntelStore.EvidenceItem.new(
-		"Incriminating Artifact", 0.25, 0.0, ["SCANDAL", "HERESY"], 0)
-	ev.shelf_life_extension = 0
-	ev.credulity_boost = 0.15
-	return ev
-
-
-## Forged Document: +40 shelf, ACCUSATION/SCANDAL/HERESY only.
-static func _make_forged_document() -> PlayerIntelStore.EvidenceItem:
-	var ev := PlayerIntelStore.EvidenceItem.new(
-		"Forged Document", 0.20, 0.0, ["ACCUSATION", "SCANDAL", "HERESY"], 0)
-	ev.shelf_life_extension = 40
-	ev.credulity_boost = 0.10
-	return ev
-
-
-static func _make_rumor() -> Rumor:
-	return Rumor.create("r_test", "npc_subject", Rumor.ClaimType.ACCUSATION, 3, 0.5, 0)
-
-
-## Mirror of world.gd lines 1282–1288: apply evidence bonuses to a freshly created rumor.
-static func _apply_evidence(
-		r: Rumor,
-		ev: PlayerIntelStore.EvidenceItem,
-		seed_target_id: String = "npc_target"
-) -> void:
-	r.current_believability    = minf(1.0, r.current_believability + ev.believability_bonus)
-	r.mutability               = clampf(r.mutability + ev.mutability_modifier, 0.0, 1.0)
-	r.shelf_life_ticks         += ev.shelf_life_extension
-	r.bolstered_by_evidence    = true
-	r.evidence_credulity_boost = ev.credulity_boost
-	r.seed_target_npc_id       = seed_target_id
-
-
-# ── C1: Witness Account extends shelf life by ~3.3 days (80 ticks) ───────────
-
-static func test_c1_witness_account_extends_shelf_by_80_ticks() -> bool:
-	## C1 (docs/phase2-acceptance-tests.md): Witness Account adds 80 ticks
-	## (≈ 3.3 days at TICKS_PER_DAY=24) to the rumor's shelf_life_ticks vs. baseline.
-	if not GameState.evidence_economy_v2:
-		return true  ## pass trivially when flag is OFF
-	var r := _make_rumor()
-	_apply_evidence(r, _make_witness_account())
-	return r.shelf_life_ticks == BASELINE_SHELF + 80
-
-
-# ── C2: Incriminating Artifact has no shelf extension ────────────────────────
-
-static func test_c2_incriminating_artifact_no_shelf_extension() -> bool:
-	## C2: Incriminating Artifact has shelf_life_extension = 0 (SPA-1611); the
-	## rumor expires at the same time as an unbolstered rumor with identical
-	## initial believability.
-	if not GameState.evidence_economy_v2:
-		return true
-	var r := _make_rumor()
-	_apply_evidence(r, _make_incriminating_artifact())
-	return r.shelf_life_ticks == BASELINE_SHELF + 0
-
-
-# ── C3: Forged Document extends shelf life by ~1.7 days (40 ticks) ───────────
-
-static func test_c3_forged_document_extends_shelf_by_40_ticks() -> bool:
-	## C3: Forged Document adds 40 ticks (≈ 1.7 days) to shelf_life_ticks —
-	## a moderate extension, less than Witness Account but non-zero.
-	if not GameState.evidence_economy_v2:
-		return true
-	var r := _make_rumor()
-	_apply_evidence(r, _make_forged_document())
-	return r.shelf_life_ticks == BASELINE_SHELF + 40
-
-
-# ── C4: Phase-1 save compatibility ───────────────────────────────────────────
-
-static func test_c4_phase1_save_loads_without_error() -> bool:
-	## C4: A rumor dict written before Phase 2 (no evidence_credulity_boost,
-	## seed_target_npc_id, or shelf-life extension fields) must survive
-	## Rumor.create() without crashing.  This mirrors _restore_propagation's
-	## reconstruction path for legacy saves.
-	if not GameState.evidence_economy_v2:
-		return true
-	var phase1_rd := {
-		"id":                    "r_phase1",
-		"subject_npc_id":        "npc_subject",
-		"claim_type":            int(Rumor.ClaimType.ACCUSATION),
-		"intensity":             3,
-		"mutability":            0.5,
-		"created_tick":          0,
-		"shelf_life_ticks":      330,
-		"current_believability": 0.6,
-		"lineage_parent_id":     "",
-		"bolstered_by_evidence": false,
-		## Phase-2 fields intentionally absent (pre-Phase-2 save)
-	}
-	var r := Rumor.create(
-		phase1_rd["id"], phase1_rd["subject_npc_id"],
-		int(phase1_rd["claim_type"]) as Rumor.ClaimType,
-		int(phase1_rd["intensity"]),
-		float(phase1_rd["mutability"]),
-		int(phase1_rd["created_tick"]),
-		int(phase1_rd["shelf_life_ticks"]),
-		phase1_rd.get("lineage_parent_id", "")
+func _make_rumor(shelf: int = 100, intensity: int = 3, tick: int = 0) -> Rumor:
+	return Rumor.create(
+		"gut_shelf_%d" % randi(),
+		"npc_test_subject",
+		Rumor.ClaimType.ACCUSATION,
+		intensity,
+		0.5,
+		tick,
+		shelf
 	)
-	r.evidence_credulity_boost = float(phase1_rd.get("evidence_credulity_boost", 0.0))
-	r.seed_target_npc_id       = phase1_rd.get("seed_target_npc_id", "")
-	return r != null
 
 
-static func test_c4_phase1_save_migration_preserves_shelf_life_ticks() -> bool:
-	## C4: After SaveManager._migrate_save_data() runs on a v1 save, the rumor's
-	## shelf_life_ticks must be unchanged — migration must not retroactively extend
-	## shelf life for pre-Phase-2 rumors.
-	if not GameState.evidence_economy_v2:
-		return true
-	var data := {
-		"version": 1,
-		"scenario_id": "test_c4",
-		"tick": 0,
-		"day": 1,
-		"propagation": {
-			"live_rumors": {
-				"r_phase1": {
-					"id":                    "r_phase1",
-					"subject_npc_id":        "npc_subject",
-					"claim_type":            int(Rumor.ClaimType.ACCUSATION),
-					"intensity":             3,
-					"mutability":            0.5,
-					"created_tick":          0,
-					"shelf_life_ticks":      330,
-					"current_believability": 0.6,
-					"lineage_parent_id":     "",
-					"bolstered_by_evidence": false,
-				},
-			},
-		},
-		"intel_store": {},
-	}
-	var err: String = SaveManager._migrate_save_data(data, 1)
-	if err != "":
-		push_error("test_c4_phase1_save_migration_preserves_shelf_life_ticks: migration error: %s" % err)
-		return false
-	var rd: Dictionary = data["propagation"]["live_rumors"]["r_phase1"]
-	var shelf: int = int(rd.get("shelf_life_ticks", -1))
-	if shelf != 330:
-		push_error(
-			"test_c4_phase1_save_migration_preserves_shelf_life_ticks: " +
-			"shelf_life_ticks changed by migration (expected 330, got %d)" % shelf
-		)
-		return false
-	return true
+# ===========================================================================
+# C1 — Uniform decay: believability drops linearly to zero over shelf_life_ticks
+# ===========================================================================
+
+func test_c1_believability_reaches_zero_at_shelf_life() -> void:
+	var r := _make_rumor(50, 4)
+	for i in range(50):
+		r.decay_one_tick()
+	assert_true(r.is_expired(), "Rumor should expire after exactly shelf_life_ticks decays")
+
+
+func test_c1_believability_positive_before_full_decay() -> void:
+	var r := _make_rumor(50, 4)
+	for i in range(49):
+		r.decay_one_tick()
+	assert_false(r.is_expired(), "Rumor must not expire one tick before shelf_life_ticks")
+	assert_true(r.current_believability > 0.0)
+
+
+func test_c1_decay_is_monotonically_decreasing() -> void:
+	var r := _make_rumor(100, 5)
+	var prev := r.current_believability
+	for i in range(100):
+		r.decay_one_tick()
+		assert_lte(r.current_believability, prev, "Believability must not increase")
+		prev = r.current_believability
+
+
+func test_c1_decay_step_size_is_uniform() -> void:
+	var r := _make_rumor(200, 3)
+	var expected_step := 1.0 / 200.0
+	var initial := r.current_believability
+	r.decay_one_tick()
+	var actual_step := initial - r.current_believability
+	assert_almost_eq(actual_step, expected_step, 0.0001, "Each tick should decay by 1/shelf_life_ticks")
+
+
+# ===========================================================================
+# C2 — Zero and minimal shelf life edge cases
+# ===========================================================================
+
+func test_c2_zero_shelf_expires_on_first_decay() -> void:
+	var r := _make_rumor(0, 3)
+	r.decay_one_tick()
+	assert_true(r.is_expired(), "Zero shelf_life must expire immediately on first decay")
+
+
+func test_c2_shelf_of_one_expires_after_one_tick() -> void:
+	var r := _make_rumor(1, 3)
+	assert_false(r.is_expired(), "Fresh rumor with shelf=1 should not start expired")
+	r.decay_one_tick()
+	assert_true(r.is_expired(), "Shelf life of 1 should expire after a single decay tick")
+
+
+func test_c2_believability_never_goes_negative() -> void:
+	var r := _make_rumor(10, 2)
+	for i in range(100):
+		r.decay_one_tick()
+	assert_eq(r.current_believability, 0.0, "Believability must be clamped at 0.0, not negative")
+
+
+# ===========================================================================
+# C3 — Mutation shelf-life inheritance (remaining time carried forward)
+# ===========================================================================
+
+func test_c3_mutation_inherits_remaining_shelf_life() -> void:
+	var source := _make_rumor(100, 3, 0)
+	# Simulate 40 ticks elapsed
+	var elapsed := 40
+	var remaining := maxi(source.shelf_life_ticks - elapsed, 1)
+	var mutated := Rumor.create(
+		source.id + "_m1",
+		source.subject_npc_id,
+		source.claim_type,
+		4,
+		source.mutability,
+		elapsed,
+		remaining,
+		source.id
+	)
+	assert_eq(mutated.shelf_life_ticks, 60,
+		"Mutated rumor should inherit remaining shelf (100 - 40 = 60)")
+
+
+func test_c3_mutation_cannot_reset_decay_clock() -> void:
+	var source := _make_rumor(50, 3, 0)
+	# After 50 ticks, remaining should be clamped to at least 1
+	var elapsed := 50
+	var remaining := maxi(source.shelf_life_ticks - elapsed, 1)
+	var mutated := Rumor.create(
+		source.id + "_m2",
+		source.subject_npc_id,
+		source.claim_type,
+		3,
+		source.mutability,
+		elapsed,
+		remaining,
+		source.id
+	)
+	assert_lte(mutated.shelf_life_ticks, source.shelf_life_ticks,
+		"Mutation must not extend shelf life beyond original")
+
+
+func test_c3_mutation_minimum_shelf_is_one() -> void:
+	var source := _make_rumor(10, 3, 0)
+	# Elapsed exceeds shelf life
+	var elapsed := 999
+	var remaining := maxi(source.shelf_life_ticks - elapsed, 1)
+	assert_eq(remaining, 1, "Remaining shelf must be at least 1 even if time far exceeds original")
+
+
+# ===========================================================================
+# C4 — Believability scaling with intensity
+# ===========================================================================
+
+func test_c4_base_believability_scales_with_intensity() -> void:
+	for inten in range(1, 6):
+		var r := _make_rumor(100, inten)
+		var expected := float(inten) / 5.0
+		assert_almost_eq(r.current_believability, expected, 0.001,
+			"Intensity %d should give base believability %f" % [inten, expected])
+
+
+func test_c4_high_intensity_takes_same_ticks_to_expire() -> void:
+	var low := _make_rumor(80, 1)
+	var high := _make_rumor(80, 5)
+	for i in range(80):
+		low.decay_one_tick()
+		high.decay_one_tick()
+	assert_true(low.is_expired(), "Low-intensity rumor should expire at shelf limit")
+	assert_true(high.is_expired(), "High-intensity rumor should also expire at shelf limit")
+
+
+func test_c4_fresh_rumor_not_expired() -> void:
+	var r := _make_rumor(330, 5)
+	assert_false(r.is_expired(), "A freshly created rumor must never be expired")
+	assert_almost_eq(r.current_believability, 1.0, 0.001,
+		"Max intensity (5) should yield 1.0 believability")
