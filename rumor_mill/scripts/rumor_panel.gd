@@ -1069,7 +1069,7 @@ func _add_evidence_section(compatible: Array) -> void:
 	_seed_list.add_child(HSeparator.new())
 
 
-func _build_evidence_entry(item) -> Control:
+func _build_evidence_entry(item: PlayerIntelStore.EvidenceItem) -> Control:
 	var outer := PanelContainer.new()
 	if item == _selected_evidence_item:
 		var style := StyleBoxFlat.new()
@@ -1136,6 +1136,22 @@ func _build_evidence_entry(item) -> Control:
 		btn.text         = "Attach"
 		btn.disabled     = true
 		btn.tooltip_text = cooldown_tooltip
+		# SPA-1772: Emit telemetry when the player taps/clicks the locked button.
+		# Disabled buttons don't fire 'pressed', so we listen on gui_input instead.
+		var captured_item := item
+		btn.gui_input.connect(func(ev: InputEvent) -> void:
+			if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+				if _analytics_ref != null:
+					var info := _intel_store_ref.get_evidence_cooldown_info()
+					_analytics_ref.log_target_shift_cooldown_blocked(
+						captured_item.type.to_snake_case(),
+						info.get("target_npc_id", ""),
+						info.get("days_remaining", 0),
+						_world_ref.current_day if _world_ref != null else 0,
+						_world_ref.scenario_id if _world_ref != null else "",
+						GameState.selected_difficulty
+					)
+		)
 	elif cooldown_bypass:
 		# SPA-1756: Bypass-capable item shows half-effectiveness label + tooltip.
 		btn.text         = "Attach (½ Effect)" if item != _selected_evidence_item else "✓ Attached (½)"
