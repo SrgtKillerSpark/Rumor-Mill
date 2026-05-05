@@ -64,6 +64,9 @@ var propagation_engine_ref: PropagationEngine = null
 ## Shallow copy of World's illness hotspot dict (building_name → true).
 ## Re-pushed by World._update_illness_hotspots() each day tick; NPCs must not mutate it.
 var illness_hotspot_buildings: Dictionary = {}
+## Reference to the active QuarantineSystem; injected by World during _setup_world_systems() for
+## Scenario 2 only. Null in all other scenarios — callers must null-check before use.
+var quarantine_ref: QuarantineSystem = null
 
 # ── Schedule archetype ───────────────────────────────────────────────────────
 var archetype: NpcSchedule.ScheduleArchetype = NpcSchedule.ScheduleArchetype.INDEPENDENT
