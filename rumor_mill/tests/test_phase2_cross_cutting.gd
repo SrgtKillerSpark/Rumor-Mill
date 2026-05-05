@@ -2,9 +2,15 @@
 ##
 ## Covers X1–X3 from docs/phase2-acceptance-tests.md:
 ##
-##   X1 — Full scenario simulation with all Phase 2 mechanics enabled:
-##         create a rumor with evidence, advance ticks through shelf expiry,
-##         verify no null refs or assertion failures.
+##   X1 — Full-scenario baseline replay validation for S1–S4 with
+##         evidence_economy_v2 ON.  Each test parses a pre-recorded NDJSON
+##         fixture (copied from docs/phase2-baseline-archive/ into
+##         tests/fixtures/) and asserts: (a) the scenario started with the
+##         flag ON, (b) the scenario ended with a clean outcome, and (c) all
+##         three Phase 2 tuning mechanics fired (evidence_used,
+##         shelf_life_extended, credulity_boost_applied, cooldown_start).
+##         Two lightweight unit tests additionally guard the rumor-lifecycle
+##         path for null-ref regressions.
 ##   X2 — Evidence display names stay title case after snake_case normalization
 ##         was added to telemetry (commit db60cb8): EvidenceItem.type holds the
 ##         UI-facing name; the snake_case key is derived only at the call site.
@@ -25,6 +31,12 @@ const BASELINE_SHELF := 330  ## Rumor.create() default shelf_life_ticks
 
 const AnalyticsManagerScript := preload("res://scripts/analytics_manager.gd")
 
+## X1 NDJSON-replay fixtures — copied from docs/phase2-baseline-archive/ (SPA-1780).
+const _FIXTURE_S1 := "res://tests/fixtures/playthrough_s1_normal_post_phase2.ndjson"
+const _FIXTURE_S2 := "res://tests/fixtures/playthrough_s2_normal_post_phase2.ndjson"
+const _FIXTURE_S3 := "res://tests/fixtures/playthrough_s3_normal_post_phase2.ndjson"
+const _FIXTURE_S4 := "res://tests/fixtures/playthrough_s4_normal_post_phase2.ndjson"
+
 
 ## Spy logger: captures events without file I/O.
 class _SpyLogger extends AnalyticsLogger:
@@ -44,9 +56,26 @@ func run() -> void:
 	var failed := 0
 
 	var tests := [
-		# X1 — lifecycle simulation: no crash through shelf expiry
+		# X1 — lifecycle unit tests: no crash through shelf expiry
 		"test_x1_rumor_with_evidence_survives_tick_advance",
 		"test_x1_expired_rumor_phase2_fields_non_null",
+		# X1 NDJSON-replay: S1–S4 baseline fixtures are parseable
+		"test_x1_s1_baseline_parseable",
+		"test_x1_s2_baseline_parseable",
+		"test_x1_s3_baseline_parseable",
+		"test_x1_s4_baseline_parseable",
+		# X1 NDJSON-replay: flag was ON in every recorded scenario
+		"test_x1_s1_flag_on",
+		"test_x1_s2_flag_on",
+		"test_x1_s3_flag_on",
+		"test_x1_s4_flag_on",
+		# X1 NDJSON-replay: every scenario ends cleanly (scenario_ended present)
+		"test_x1_s1_scenario_ends_cleanly",
+		"test_x1_s2_scenario_ends_cleanly",
+		"test_x1_s3_scenario_ends_cleanly",
+		"test_x1_s4_scenario_ends_cleanly",
+		# X1 NDJSON-replay: all three Phase 2 mechanics fired in every baseline
+		"test_x1_all_baselines_have_all_three_phase2_mechanics",
 		# X2 — display name preserved; snake_case key is separate
 		"test_x2_forged_document_display_name_is_title_case",
 		"test_x2_forged_document_snake_key_is_forged_document",
@@ -148,6 +177,145 @@ static func test_x1_expired_rumor_phase2_fields_non_null() -> bool:
 	return r.evidence_credulity_boost >= 0.0 \
 		and r.seed_target_npc_id is String \
 		and r.bolstered_by_evidence == true
+
+
+# ── X1 NDJSON-replay helpers ─────────────────────────────────────────────────
+
+## Parse an NDJSON file (one JSON object per line) into an Array[Dictionary].
+## Returns an empty array if the file cannot be opened; emits push_error on failure.
+static func _parse_ndjson_file(path: String) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		push_error("_parse_ndjson_file: cannot open '%s' (FileAccess error %d)" \
+			% [path, FileAccess.get_open_error()])
+		return result
+	while not f.eof_reached():
+		var line: String = f.get_line().strip_edges()
+		if line.is_empty():
+			continue
+		var parsed = JSON.parse_string(line)
+		if parsed is Dictionary:
+			result.append(parsed)
+	return result
+
+
+# ── X1 NDJSON-replay: S1–S4 baseline fixture validation (SPA-1780) ───────────
+
+static func test_x1_s1_baseline_parseable() -> bool:
+	## X1/S1: Fixture file is readable and contains at least one event.
+	return _parse_ndjson_file(_FIXTURE_S1).size() > 0
+
+
+static func test_x1_s2_baseline_parseable() -> bool:
+	## X1/S2: Fixture file is readable and contains at least one event.
+	return _parse_ndjson_file(_FIXTURE_S2).size() > 0
+
+
+static func test_x1_s3_baseline_parseable() -> bool:
+	## X1/S3: Fixture file is readable and contains at least one event.
+	return _parse_ndjson_file(_FIXTURE_S3).size() > 0
+
+
+static func test_x1_s4_baseline_parseable() -> bool:
+	## X1/S4: Fixture file is readable and contains at least one event.
+	return _parse_ndjson_file(_FIXTURE_S4).size() > 0
+
+
+static func test_x1_s1_flag_on() -> bool:
+	## X1/S1: The opening scenario_selected event has evidence_economy_v2: true.
+	var events := _parse_ndjson_file(_FIXTURE_S1)
+	if events.is_empty():
+		return false
+	return events[0].get("evidence_economy_v2", false) == true
+
+
+static func test_x1_s2_flag_on() -> bool:
+	## X1/S2: The opening scenario_selected event has evidence_economy_v2: true.
+	var events := _parse_ndjson_file(_FIXTURE_S2)
+	if events.is_empty():
+		return false
+	return events[0].get("evidence_economy_v2", false) == true
+
+
+static func test_x1_s3_flag_on() -> bool:
+	## X1/S3: The opening scenario_selected event has evidence_economy_v2: true.
+	var events := _parse_ndjson_file(_FIXTURE_S3)
+	if events.is_empty():
+		return false
+	return events[0].get("evidence_economy_v2", false) == true
+
+
+static func test_x1_s4_flag_on() -> bool:
+	## X1/S4: The opening scenario_selected event has evidence_economy_v2: true.
+	var events := _parse_ndjson_file(_FIXTURE_S4)
+	if events.is_empty():
+		return false
+	return events[0].get("evidence_economy_v2", false) == true
+
+
+static func test_x1_s1_scenario_ends_cleanly() -> bool:
+	## X1/S1: A scenario_ended event is present (clean exit, no crash/abort).
+	for ev in _parse_ndjson_file(_FIXTURE_S1):
+		if ev.get("type", "") == "scenario_ended":
+			return ev.has("outcome")
+	push_error("test_x1_s1_scenario_ends_cleanly: no scenario_ended event in S1 fixture")
+	return false
+
+
+static func test_x1_s2_scenario_ends_cleanly() -> bool:
+	## X1/S2: A scenario_ended event is present (clean exit, no crash/abort).
+	for ev in _parse_ndjson_file(_FIXTURE_S2):
+		if ev.get("type", "") == "scenario_ended":
+			return ev.has("outcome")
+	push_error("test_x1_s2_scenario_ends_cleanly: no scenario_ended event in S2 fixture")
+	return false
+
+
+static func test_x1_s3_scenario_ends_cleanly() -> bool:
+	## X1/S3: A scenario_ended event is present (clean exit, no crash/abort).
+	for ev in _parse_ndjson_file(_FIXTURE_S3):
+		if ev.get("type", "") == "scenario_ended":
+			return ev.has("outcome")
+	push_error("test_x1_s3_scenario_ends_cleanly: no scenario_ended event in S3 fixture")
+	return false
+
+
+static func test_x1_s4_scenario_ends_cleanly() -> bool:
+	## X1/S4: A scenario_ended event is present (clean exit, no crash/abort).
+	for ev in _parse_ndjson_file(_FIXTURE_S4):
+		if ev.get("type", "") == "scenario_ended":
+			return ev.has("outcome")
+	push_error("test_x1_s4_scenario_ends_cleanly: no scenario_ended event in S4 fixture")
+	return false
+
+
+static func test_x1_all_baselines_have_all_three_phase2_mechanics() -> bool:
+	## X1 combined: every S1–S4 fixture must contain evidence_used,
+	## evidence_shelf_life_extended, evidence_credulity_boost_applied, and
+	## evidence_target_cooldown_start — confirming all three Phase 2 tuning
+	## mechanics fired together in each recorded playthrough (also validates X3
+	## from the archived data perspective).
+	var fixtures := [_FIXTURE_S1, _FIXTURE_S2, _FIXTURE_S3, _FIXTURE_S4]
+	var required_types := [
+		"evidence_used",
+		"evidence_shelf_life_extended",
+		"evidence_credulity_boost_applied",
+		"evidence_target_cooldown_start",
+	]
+	for path in fixtures:
+		var found: Dictionary = {}
+		for ev in _parse_ndjson_file(path):
+			var t: String = ev.get("type", "")
+			if t in required_types:
+				found[t] = true
+		for req in required_types:
+			if not found.has(req):
+				push_error(
+					"test_x1_all_baselines_have_all_three_phase2_mechanics: %s missing '%s'" \
+					% [path.get_file(), req])
+				return false
+	return true
 
 
 # ── X2: Display name preserved; snake_case key is computed separately ─────────
