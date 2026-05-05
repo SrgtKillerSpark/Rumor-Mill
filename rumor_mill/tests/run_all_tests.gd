@@ -27,6 +27,7 @@ extends RefCounted
 ##   • TestSpa1685_1691_1693FixCoverage  — process_mode ALWAYS on dialogue canvas (SPA-1685),
 ##                                          illness_hotspot_buildings declared (SPA-1691),
 ##                                          quarantine_ref declared (SPA-1693)
+##   • TestRumorPanelEvidenceCooldown    — evidence item greyed out during cooldown: E1/E2/E3/E6 (SPA-1717)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
 ##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text,
@@ -307,6 +308,7 @@ const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evide
 const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
+const TestRumorPanelEvidenceCooldown   = preload("res://tests/test_rumor_panel_evidence_cooldown.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
 const TestStrategicOverview = preload("res://tests/test_strategic_overview.gd")
@@ -386,6 +388,9 @@ func _init() -> void:
 
 	print("\n── SPA-1685/1691/1693 post-launch fix coverage ──")
 	TestSpa1685_1691_1693FixCoverage.new().run()
+
+	print("\n── SPA-1717 RumorPanel evidence cooldown UI (E1/E2/E3/E6) ──")
+	TestRumorPanelEvidenceCooldown.new().run()
 
 	print("\n── TutorialSystem ──")
 	TestTutorialSystem.new().run()

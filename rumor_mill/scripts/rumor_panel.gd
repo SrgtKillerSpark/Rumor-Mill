@@ -1070,6 +1070,16 @@ func _build_evidence_entry(item) -> Control:
 		style.bg_color = C_SELECTED_EVIDENCE_BG
 		outer.add_theme_stylebox_override("panel", style)
 
+	# SPA-1717: Check if evidence is locked by target-shift cooldown.
+	var cooldown_locked: bool = false
+	var cooldown_tooltip: String = ""
+	if _intel_store_ref != null and _intel_store_ref.is_evidence_locked_for_target(_selected_subject):
+		cooldown_locked = true
+		var cooldown_info: Dictionary = _intel_store_ref.get_evidence_cooldown_info()
+		var days_left: int = cooldown_info.get("days_remaining", 0)
+		cooldown_tooltip = "Evidence locked - target cooldown: %dd remaining" % days_left
+		outer.modulate = Color(1.0, 1.0, 1.0, 0.4)
+
 	var vbox := VBoxContainer.new()
 	outer.add_child(vbox)
 
@@ -1105,17 +1115,23 @@ func _build_evidence_entry(item) -> Control:
 
 	var btn := Button.new()
 	btn.add_theme_font_size_override("font_size", 12)
-	if item == _selected_evidence_item:
+	if cooldown_locked:
+		# SPA-1717: Greyed-out, unselectable with cooldown tooltip.
+		btn.text         = "Attach"
+		btn.disabled     = true
+		btn.tooltip_text = cooldown_tooltip
+	elif item == _selected_evidence_item:
 		btn.text = "✓ Attached"
 	else:
 		btn.text = "Attach"
-	var captured_item = item
-	btn.pressed.connect(func() -> void:
-		_selected_evidence_item = captured_item
-		_confirm_pending = false
-		_btn_next.text   = "Confirm & Seed"
-		_rebuild_seed_list()
-	)
+	if not cooldown_locked:
+		var captured_item = item
+		btn.pressed.connect(func() -> void:
+			_selected_evidence_item = captured_item
+			_confirm_pending = false
+			_btn_next.text   = "Confirm & Seed"
+			_rebuild_seed_list()
+		)
 	vbox.add_child(btn)
 
 	return outer
