@@ -154,7 +154,8 @@ func test_tick_does_nothing_when_not_active() -> bool:
 # ══════════════════════════════════════════════════════════════════════════════
 
 ## Minimal stub: absorbs inject_rumor and exposes npcs array.
-class DummyWorld:
+## Extends Node to satisfy S4FactionShiftAgent.tick(world: Node) type constraint.
+class DummyWorld extends Node:
 	var npcs: Array = []
 	var reputation_system = null
 

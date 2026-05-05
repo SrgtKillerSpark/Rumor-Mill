@@ -48,8 +48,9 @@ class _SignalCapture:
 # ── Mock world ────────────────────────────────────────────────────────────────
 
 ## Minimal world stub: exposes npcs array and inject_rumor(); intel_store is null.
+## Extends Node to satisfy IllnessEscalationAgent._seed_illness_rumor(world: Node) type constraint.
 class _MockWorld:
-	extends RefCounted
+	extends Node
 	var npcs:        Array = []
 	var intel_store: Object = null
 

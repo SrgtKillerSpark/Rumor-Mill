@@ -22,6 +22,12 @@ const CALDER_FENN_ID := "calder_fenn"
 const DISRUPTION_COOLDOWN_BONUS := 3
 ## Maximum number of disruption charges the player can hold.
 const MAX_DISRUPT_CHARGES := 3
+## Maps each rumor state to the next-lower state for degradation logic.
+const _DEGRADE_MAP: Dictionary = {
+	Rumor.RumorState.ACT:    Rumor.RumorState.SPREAD,
+	Rumor.RumorState.SPREAD: Rumor.RumorState.BELIEVE,
+	Rumor.RumorState.BELIEVE: Rumor.RumorState.EVALUATING,
+}
 
 var _active: bool = false
 var _last_seed_day: int = 0
