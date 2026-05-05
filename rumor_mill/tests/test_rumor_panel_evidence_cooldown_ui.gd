@@ -20,6 +20,21 @@ const RumorPanelScript := preload("res://scripts/rumor_panel.gd")
 
 
 # ---------------------------------------------------------------------------
+# Setup / Teardown
+# ---------------------------------------------------------------------------
+
+func before_each() -> void:
+	## Enable the evidence economy v2 feature flag so cooldown methods are
+	## active during all tests in this suite.
+	GameState.evidence_economy_v2 = true
+
+
+func after_each() -> void:
+	## Restore the default so this suite does not pollute other test files.
+	GameState.evidence_economy_v2 = false
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
