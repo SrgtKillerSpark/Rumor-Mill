@@ -105,6 +105,7 @@ static func _make_witness_account() -> PlayerIntelStore.EvidenceItem:
 	var ev := PlayerIntelStore.EvidenceItem.new("Witness Account", 0.15, -0.15, [], 0)
 	ev.shelf_life_extension = 80
 	ev.credulity_boost = 0.05
+	ev.supports_cooldown_bypass = true  ## SPA-1756 / SPA-1776: mirrors recon_controller.gd line 728
 	return ev
 
 
@@ -310,9 +311,14 @@ static func test_cooldown_days_spymaster_is_3() -> bool:  ## SPA-1755
 
 static func test_cooldown_locks_different_target() -> bool:
 	## After using evidence on npc_a, evidence cannot be used on npc_b.
+	## SPA-1776: flag must be ON — start_evidence_cooldown and is_evidence_locked_for_target
+	## are both gated on evidence_economy_v2.
+	GameState.evidence_economy_v2 = true
 	var store := PlayerIntelStore.new()
 	store.start_evidence_cooldown("npc_a", "normal")  # 2-day cooldown
-	return store.is_evidence_locked_for_target("npc_b")
+	var result: bool = store.is_evidence_locked_for_target("npc_b")
+	GameState.evidence_economy_v2 = false
+	return result
 
 
 static func test_cooldown_allows_same_target() -> bool:
@@ -334,11 +340,15 @@ static func test_cooldown_no_lock_when_zero_days() -> bool:
 
 static func test_cooldown_decrements_on_day_advance() -> bool:
 	## decay_evidence_cooldowns() is called once per dawn; each call subtracts 1.
+	## SPA-1776: flag must be ON so start_evidence_cooldown actually arms the cooldown.
+	GameState.evidence_economy_v2 = true
 	var store := PlayerIntelStore.new()
 	store.start_evidence_cooldown("npc_a", "normal")  # starts at 2
 	store.decay_evidence_cooldowns()
 	var info := store.get_evidence_cooldown_info()
-	return info.get("days_remaining", -1) == 1
+	var result: bool = info.get("days_remaining", -1) == 1
+	GameState.evidence_economy_v2 = false
+	return result
 
 
 static func test_cooldown_unlocks_after_expiry() -> bool:
@@ -357,6 +367,8 @@ static func test_save_roundtrip_preserves_cooldown_state() -> bool:
 	## and verify the cooldown is still active for a different target.
 	## Requires SaveManager._serialize_intel_store / _restore_intel_store to
 	## include "evidence_target_cooldown" (added in SPA-1706).
+	## SPA-1776: flag must be ON for both start_evidence_cooldown and is_evidence_locked_for_target.
+	GameState.evidence_economy_v2 = true
 	var store := PlayerIntelStore.new()
 	store.start_evidence_cooldown("npc_a", "normal")  # 2-day cooldown
 
@@ -364,7 +376,9 @@ static func test_save_roundtrip_preserves_cooldown_state() -> bool:
 	var store2 := PlayerIntelStore.new()
 	SaveManager._restore_intel_store(store2, data)
 
-	return store2.is_evidence_locked_for_target("npc_b")
+	var result: bool = store2.is_evidence_locked_for_target("npc_b")
+	GameState.evidence_economy_v2 = false
+	return result
 
 
 # ── SPA-1756: Witness Account cooldown-bypass mechanic ───────────────────────

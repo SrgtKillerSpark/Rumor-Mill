@@ -389,7 +389,10 @@ func decay_evidence_items(current_day: int) -> Array:
 ## N is determined by difficulty: Apprentice=0, Normal=2, Master=2, Spymaster=3.
 ## A cooldown of 0 (Apprentice) is a no-op.
 ## SPA-1755: Master 3->2, Spymaster 4->3 to prevent cooldown-blocked displacement.
+## SPA-1776: Guard added — cooldown must not arm when evidence_economy_v2 is OFF.
 func start_evidence_cooldown(target_npc_id: String, difficulty: String) -> void:
+	if not GameState.evidence_economy_v2:
+		return
 	var days: int = _cooldown_days_for_difficulty(difficulty)
 	if days > 0:
 		_evidence_target_cooldown[target_npc_id] = days
