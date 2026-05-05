@@ -119,6 +119,10 @@ func _build_canvas() -> void:
 	_canvas       = CanvasLayer.new()
 	_canvas.layer = 11
 	_canvas.name  = "NpcDialogueCanvas"
+	# Keep the dialogue UI interactive even when the game tree is paused.
+	# This also ensures any await create_timer / process_frame usage in this
+	# subtree fires correctly during pause transitions.
+	_canvas.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_canvas)
 
 	_panel         = Panel.new()
