@@ -390,14 +390,27 @@ func _refresh() -> void:
 # ── Escalation activity ───────────────────────────────────────────────────────
 
 ## Called by illness_escalation_agent.illness_escalated signal.
-func notify_illness_escalated(day: int, _claim_type: String, _subject_id: String) -> void:
+## SPA-1708: seed_npc_name and seed_npc_location now carried in the signal so the
+## player can gauge which NPC the auto-spread reached and how close that is to Maren.
+func notify_illness_escalated(
+		day: int, _claim_type: String, _subject_id: String,
+		seed_npc_name: String, seed_npc_location: String
+) -> void:
 	if _escalation_lbl == null:
 		return
-	_escalation_lbl.text = "Rumours: Day %d — illness spreading on its own" % day
+	var npc_tag := ""
+	if not seed_npc_name.is_empty():
+		var loc_tag: String = " · %s" % seed_npc_location if not seed_npc_location.is_empty() else ""
+		npc_tag = " — reached %s%s" % [seed_npc_name, loc_tag]
+	_escalation_lbl.text = "Rumours: Day %d — illness spreading on its own%s" % [day, npc_tag]
 	_escalation_lbl.add_theme_color_override("font_color", C_ESCALATION_FLARE)
 	var tween := create_tween()
 	tween.tween_property(_escalation_lbl, "modulate:a", 0.25, 0.12)
 	tween.tween_property(_escalation_lbl, "modulate:a", 1.0,  0.30)
+	# SPA-1708: brief de-conv-style toast so the auto-spread NPC is unmissable.
+	if not seed_npc_name.is_empty():
+		var loc_str: String = " at the %s" % seed_npc_location if not seed_npc_location.is_empty() else ""
+		_show_deconv_toast("🤒 Illness rumour reached %s%s" % [seed_npc_name, loc_str])
 
 
 # ── SPA-592: Grace window warning ─────────────────────────────────────────────

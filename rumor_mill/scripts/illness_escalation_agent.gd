@@ -13,7 +13,8 @@
 class_name IllnessEscalationAgent
 
 ## Emitted each time the agent successfully seeds an escalation rumor.
-signal illness_escalated(day: int, claim_type: String, subject_id: String)
+## SPA-1708: seed_npc_name and seed_npc_location added so the HUD can name the NPC.
+signal illness_escalated(day: int, claim_type: String, subject_id: String, seed_npc_name: String, seed_npc_location: String)
 
 const ALYS_HERBWIFE_ID := "alys_herbwife"
 const MAREN_NUN_ID     := "maren_nun"
@@ -68,10 +69,19 @@ func _seed_illness_rumor(day: int, world: Node) -> void:
 	if seed_npc_id.is_empty():
 		return
 
+	# SPA-1708: look up display name and location so the HUD can name the NPC.
+	var seed_npc_name := ""
+	var seed_npc_location := ""
+	for npc in world.npcs:
+		if npc.npc_data.get("id", "") == seed_npc_id:
+			seed_npc_name = npc.npc_data.get("name", seed_npc_id.replace("_", " ").capitalize())
+			seed_npc_location = npc.current_location_code
+			break
+
 	var rumor_id: String = world.inject_rumor(
 		seed_npc_id, "illness", intensity, ALYS_HERBWIFE_ID, "escalation")
 	if not rumor_id.is_empty():
-		illness_escalated.emit(day, "illness", ALYS_HERBWIFE_ID)
+		illness_escalated.emit(day, "illness", ALYS_HERBWIFE_ID, seed_npc_name, seed_npc_location)
 
 
 ## Picks the most credulous NPC at market or tavern (where illness fears spread fastest).

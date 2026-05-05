@@ -24,6 +24,9 @@ extends RefCounted
 ##                                          no double-emission guard, pre-setup queuing (SPA-1613)
 ##   • TestSpa1614EvidenceUsedEmission   — evidence_used emission, field presence + values, disabled gate (SPA-1614)
 ##   • SmokePhase2Evidence               — end-to-end Phase 2 smoke: 3 acquisitions + 1 usage vs SPA-1522 spec (SPA-1617)
+##   • TestSpa1685_1691_1693FixCoverage  — process_mode ALWAYS on dialogue canvas (SPA-1685),
+##                                          illness_hotspot_buildings declared (SPA-1691),
+##                                          quarantine_ref declared (SPA-1693)
 ##   • TestTutorialSystem         — seen tracking, tooltip/hint lookup, replay, static data integrity (SPA-981)
 ##   • TestTutorialController     — step constants, scenario routing, initial state, skip() (SPA-981)
 ##   • TestSuggestionEngine       — constants, cooldown logic, day-reset, unspent-actions text,
@@ -94,6 +97,7 @@ extends RefCounted
 ##                                  _DEGRADE_MAP, scout (SPA-1041)
 ##   • TestGuildDefenseAgent      — initial state, config, activate, tick guards, effective cooldown (SPA-1041)
 ##   • TestIllnessEscalationAgent — constants, initial state, activate, _get_cooldown, tick guards (SPA-1041)
+##   • TestS2EscalationNpcName   — signal carries non-empty NPC name/location; HUD label text includes name (SPA-1708)
 ##   • TestInquisitorAgent        — constants, initial state, activate, tip/shield, _get_cooldown,
 ##                                  _pick_claim_type, tick guards (SPA-1041)
 ##   • TestS4FactionShiftAgent    — constants, initial state, activate, phase firing, bishop pressure,
@@ -275,6 +279,7 @@ const TestRumorPanelSubjectList = preload("res://tests/test_rumor_panel_subject_
 const TestRumorPanelTooltip = preload("res://tests/test_rumor_panel_tooltip.gd")
 const TestRumorRippleVfx = preload("res://tests/test_rumor_ripple_vfx.gd")
 const TestRumorTrackerHud = preload("res://tests/test_rumor_tracker_hud.gd")
+const TestS2EscalationNpcName = preload("res://tests/test_s2_escalation_npc_name.gd")
 const TestS4FactionShiftAgent = preload("res://tests/test_s4_faction_shift_agent.gd")
 const TestSaveCorruption = preload("res://tests/test_save_corruption.gd")
 const TestSaveManager = preload("res://tests/test_save_manager.gd")
@@ -301,6 +306,7 @@ const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_ana
 const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evidence_acquired.gd")
 const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
+const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
 const TestStrategicOverview = preload("res://tests/test_strategic_overview.gd")
@@ -377,6 +383,9 @@ func _init() -> void:
 
 	print("\n── SPA-1617 Phase 2 evidence telemetry smoke (end-to-end) ──")
 	SmokePhase2Evidence.new().run()
+
+	print("\n── SPA-1685/1691/1693 post-launch fix coverage ──")
+	TestSpa1685_1691_1693FixCoverage.new().run()
 
 	print("\n── TutorialSystem ──")
 	TestTutorialSystem.new().run()
@@ -572,6 +581,9 @@ func _init() -> void:
 
 	print("\n── IllnessEscalationAgent ──")
 	TestIllnessEscalationAgent.new().run()
+
+	print("\n── S2EscalationNpcName ──")
+	TestS2EscalationNpcName.new().run()
 
 	print("\n── InquisitorAgent ──")
 	TestInquisitorAgent.new().run()
