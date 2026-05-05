@@ -10,7 +10,9 @@
 
 ## Playthrough A — Win-Oriented (Goal: reach 7 believers without triggering Maren)
 
-### Entry A1 — Early game (Days 1–4): Mental model mismatch on propagation risk
+### ~~Entry A1 — Early game (Days 1–4): Mental model mismatch on propagation risk~~
+
+> **✅ SHIPPED** — `27e1bd6` ([SPA-1539](/SPA/issues/SPA-1539)) rumor panel flash on select; `66bdd15` ([SPA-1727](/SPA/issues/SPA-1727)) inline label in `rumor_panel_seed_list.gd`; [SPA-1689](/SPA/issues/SPA-1689) done
 
 | Field | Value |
 |-------|-------|
@@ -20,7 +22,9 @@
 | **Severity** | High — directly correlates with perceived "RNG coin flip" frustration identified in phase1-balance-proposal.md. Players cannot make an informed first move. |
 | **Current mitigation** | Social Graph Overlay exists (togglable) but is not scenario-contextual: it shows generic edge weights without highlighting the Maren→Alys propagation path. |
 
-### Entry A2 — Mid game (Days 5–10): Escalation label lacks causal chain
+### ~~Entry A2 — Mid game (Days 5–10): Escalation label lacks causal chain~~
+
+> **✅ SHIPPED** — `3fa43e2` ([SPA-1708](/SPA/issues/SPA-1708)) escalation now reads "...spreading on its own — reached NPC · loc"; [SPA-1708](/SPA/issues/SPA-1708) done
 
 | Field | Value |
 |-------|-------|
@@ -30,7 +34,9 @@
 | **Severity** | Medium — creates anxiety without actionable information. Player must open Social Graph Overlay and manually trace edges to assess risk. |
 | **Current mitigation** | Tooltip explains risk conceptually ("Each auto-spread increases the risk Sister Maren will notice") but provides no spatial/relational data. |
 
-### Entry A3 — Mid game (Days 8–12): Quarantine cost mismatch in tooltip vs. button
+### ~~Entry A3 — Mid game (Days 8–12): Quarantine cost mismatch in tooltip vs. button~~
+
+> **✅ SHIPPED** — `eae922d` ([SPA-1540](/SPA/issues/SPA-1540)) initial fix; `a99e38c` ([SPA-1564](/SPA/issues/SPA-1564)) confirmed; `scenario2_hud.gd` L255+L260 consistent
 
 | Field | Value |
 |-------|-------|
@@ -54,7 +60,9 @@
 
 ## Playthrough B — Intentional Maren Trigger (Goal: seed near Maren's orbit to provoke counter-intelligence fail)
 
-### Entry B1 — Pre-trigger: No preview of grace window mechanic
+### ~~Entry B1 — Pre-trigger: No preview of grace window mechanic~~
+
+> **✅ SHIPPED** — `eae922d` ([SPA-1540](/SPA/issues/SPA-1540)) + `f32551a` ([SPA-1728](/SPA/issues/SPA-1728)): `_maren_watch_lbl` shows "Maren's Watch: dormant" pre-trigger; regression tests `15069b3`; S2 `startingText` in `scenarios.json` explicitly states grace window
 
 | Field | Value |
 |-------|-------|
@@ -64,7 +72,9 @@
 | **Severity** | High — directly amplifies "binary, RNG-flavored" perception. If the player doesn't know 2 days of grace exist, the fail feels immediate and unrecoverable. This is the #1 UX contributor to perceived unfairness. |
 | **Current mitigation** | End-screen shows strategic defeat hint ("NEXT TIME: …") and names the carrier NPC. This is post-hoc — it does not help during the critical 2-day grace window. |
 
-### Entry B2 — Trigger moment: Grace window warning appears but lacks actionable guidance
+### ~~Entry B2 — Trigger moment: Grace window warning appears but lacks actionable guidance~~
+
+> **✅ SHIPPED** — `a99e38c` ([SPA-1564](/SPA/issues/SPA-1564)) + `f32551a` ([SPA-1728](/SPA/issues/SPA-1728)): `_on_maren_grace_started` now appends "Tip: quarantine near Maren to slow counter-spread, or seed isolated NPCs."
 
 | Field | Value |
 |-------|-------|
@@ -74,7 +84,9 @@
 | **Severity** | High — the grace window is the game's most important error-recovery mechanic for S2, but its UX treats it as a passive countdown rather than an actionable recovery state. |
 | **Current mitigation** | Double-flash animation draws attention to the warning. Tooltip text is accurate but buried. |
 
-### Entry B3 — During grace window: Counter-seeding invisible
+### ~~Entry B3 — During grace window: Counter-seeding invisible~~
+
+> **✅ SHIPPED** — `26fc41c` ([SPA-1565](/SPA/issues/SPA-1565)): DEFENDING state label "Maren is actively countering..."; shield tags on suppressed NPCs; de-conversion toast fires on Maren-caused drop
 
 | Field | Value |
 |-------|-------|
@@ -84,7 +96,9 @@
 | **Severity** | High — the system is actively working against the player with no visible feedback. Violates the most fundamental heuristic (visibility). This makes the grace period feel hopeless even when strategic counter-play exists. |
 | **Current mitigation** | None at the HUD level. Social Graph Overlay shows edge weights but does not highlight active debuffs or Maren's defense radius. |
 
-### Entry B4 — Fail moment: End screen carrier name is helpful but late
+### ~~Entry B4 — Fail moment: End screen carrier name is helpful but late~~
+
+> **✅ SHIPPED** — In-game layer closed by [SPA-1539](/SPA/issues/SPA-1539) + [SPA-1565](/SPA/issues/SPA-1565) + [SPA-1727](/SPA/issues/SPA-1727). End-screen carrier: `8c8c4a7` ([SPA-592](/SPA/issues/SPA-592)) `end_screen.gd:368`; strategic hint: `84d6735` ([SPA-948](/SPA/issues/SPA-948)). "Knew but didn't tell during play" gap resolved.
 
 | Field | Value |
 |-------|-------|
@@ -94,7 +108,9 @@
 | **Severity** | Medium — end-screen feedback is structurally sound (SPA-948 strategic hint is well-designed), but the absence of equivalent in-game signaling creates an asymmetric information feel. |
 | **Current mitigation** | End-screen carrier reveal + strategic defeat hint. Both are good; the gap is the in-game layer. |
 
-### Entry B5 — Retry: No scenario briefing reminds player of Maren threat
+### ~~Entry B5 — Retry: No scenario briefing reminds player of Maren threat~~
+
+> **✅ SHIPPED** — `cb746fb` ([SPA-836](/SPA/issues/SPA-836)) + `7c2c411` ([SPA-841](/SPA/issues/SPA-841)): Mission Briefing fires on Day 1 (including retry); S2 `startingText` explicitly names Maren + 2-day grace window; "O" key recall available mid-game
 
 | Field | Value |
 |-------|-------|
