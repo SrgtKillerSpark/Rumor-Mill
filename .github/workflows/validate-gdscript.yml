@@ -45,6 +45,10 @@ jobs:
           # First headless run builds the .godot/ import cache; errors here are expected
           "$GODOT_BIN" --headless --path rumor_mill --import --quit || true
 
+      - name: Run static analysis (checks 1-7)
+        run: |
+          node rumor_mill/tools/check_gdscript_static.js --project rumor_mill
+
       - name: Run GDScript validation
         run: |
           bash rumor_mill/tools/validate_gdscript.sh \
