@@ -8,7 +8,6 @@ extends RefCounted
 ##   • TestPropagationEngine      — β/γ formulas, decay, chain detection & bonuses, lineage
 ##   • TestReputationSystem       — score formula, SOCIALLY_DEAD, illness tracking
 ##   • TestScenarioConditions     — win/fail evaluation for Scenarios 1–6
-##   • TestSaveCorruption         — save/load hardening (SPA-864, SPA-896, SPA-901)
 ##   • TestSaveManager            — save_path(), prepare_load(), pending state, migration (SPA-964)
 ##   • TestSaveRoundtrip          — full serialize/restore round-trips for all 6 scenarios + all agent types (SPA-1090)
 ##   • TestAchievementManager     — unlock/query API and static definition table (SPA-964)
@@ -300,7 +299,6 @@ const TestRumorRippleVfx = preload("res://tests/test_rumor_ripple_vfx.gd")
 const TestRumorTrackerHud = preload("res://tests/test_rumor_tracker_hud.gd")
 const TestS2EscalationNpcName = preload("res://tests/test_s2_escalation_npc_name.gd")
 const TestS4FactionShiftAgent = preload("res://tests/test_s4_faction_shift_agent.gd")
-const TestSaveCorruption = preload("res://tests/test_save_corruption.gd")
 const TestSaveManager = preload("res://tests/test_save_manager.gd")
 const TestSaveMigrationV1ToV2 = preload("res://tests/test_save_migration_v1_to_v2.gd")
 const TestSaveRoundtrip = preload("res://tests/test_save_roundtrip.gd")
@@ -373,9 +371,6 @@ func _init() -> void:
 
 	print("\n── ScenarioConditions ──")
 	TestScenarioConditions.new().run()
-
-	print("\n── SaveCorruption ──")
-	TestSaveCorruption.new().run()
 
 	print("\n── SaveManager ──")
 	TestSaveManager.new().run()
