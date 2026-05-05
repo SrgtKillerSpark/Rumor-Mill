@@ -93,7 +93,9 @@ func setup_tutorial(sys: TutorialSystem) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
-			if _slot_container != null and _slot_container.visible:
+			if _confirm_container != null and _confirm_container.visible:
+				_on_confirm_no()
+			elif _slot_container != null and _slot_container.visible:
 				_hide_slot_picker()
 			else:
 				toggle()
