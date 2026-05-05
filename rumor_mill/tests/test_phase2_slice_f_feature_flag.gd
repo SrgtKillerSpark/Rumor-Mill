@@ -1,5 +1,5 @@
 ## test_phase2_slice_f_feature_flag.gd — Acceptance regression tests for Phase 2 Slice F:
-## feature-flag gating + save migration (SPA-1742).
+## feature-flag gating + save migration (SPA-1742 / SPA-1779).
 ##
 ## Covers acceptance scenarios F1–F5 from docs/phase2-acceptance-tests.md:
 ##   F1 — With evidence_economy_v2 OFF, shelf-life extension, credulity boost, and
@@ -11,6 +11,13 @@
 ##   F4 — Load a v1 save into a v2 session (flag ON): new mechanics apply only to new
 ##         rumors; existing migrated rumors retain Phase-1 state (no retroactive boost).
 ##   F5 — SaveManager.SAVE_VERSION equals 2 (bumped from 1 for Phase 2).
+##
+## SPA-1779 additions:
+##   _apply_evidence_gated() helper mirrors the real world.gd flag + difficulty gate so
+##   F1/F3 tests actually exercise the gate path rather than only checking defaults.
+##   Extra tests: test_f1_flag_off_gate_suppresses_shelf,
+##                test_f1_flag_off_gate_suppresses_boost,
+##                test_f3_toggle_on_then_off_new_seed_no_bonus.
 ##
 ## Each test manages its own flag state explicitly (F1 requires flag OFF; F2–F5 require
 ## flag ON).  The run() loop saves and restores the ambient flag around every call so
@@ -40,6 +47,9 @@ func run() -> void:
 		"test_f1_flag_off_no_shelf_extension",
 		"test_f1_flag_off_no_credulity_boost",
 		"test_f1_flag_off_no_cooldown_arming",
+		# F1 gate regression (SPA-1779): verify gate actually suppresses bonuses when called
+		"test_f1_flag_off_gate_suppresses_shelf",
+		"test_f1_flag_off_gate_suppresses_boost",
 		# F2 — Flag ON: all three mechanics active
 		"test_f2_flag_on_shelf_extension_active",
 		"test_f2_flag_on_credulity_boost_active",
@@ -47,6 +57,8 @@ func run() -> void:
 		# F3 — Toggle mid-test: new rumors get Phase 2, pre-toggle rumors do not
 		"test_f3_pre_toggle_rumor_unaffected",
 		"test_f3_post_toggle_rumor_gets_phase2_mechanics",
+		# F3 gate regression (SPA-1779): toggle ON then OFF → next seed gets no bonus
+		"test_f3_toggle_on_then_off_new_seed_no_bonus",
 		# F4 — Load v1 save: new mechanics apply only to new rumors
 		"test_f4_migrated_rumor_retains_phase1_shelf",
 		"test_f4_new_rumor_after_v1_load_gets_phase2",
@@ -108,6 +120,24 @@ static func _apply_evidence(
 	r.bolstered_by_evidence    = true
 	r.evidence_credulity_boost = ev.credulity_boost
 	r.seed_target_npc_id       = seed_target_id
+
+
+## Gated mirror of world.gd seed_rumor_from_player() lines 1313–1329 (SPA-1779).
+## Respects evidence_economy_v2 flag AND the difficulty gate (Apprentice excluded).
+## Use this helper for F1 / F3 tests that must actually exercise the gate path.
+static func _apply_evidence_gated(
+		r: Rumor,
+		ev: PlayerIntelStore.EvidenceItem,
+		seed_target_id: String,
+		difficulty: String
+) -> void:
+	r.current_believability = minf(1.0, r.current_believability + ev.believability_bonus)
+	r.mutability            = clampf(r.mutability + ev.mutability_modifier, 0.0, 1.0)
+	if GameState.evidence_economy_v2 and difficulty != "apprentice":
+		r.shelf_life_ticks        += ev.shelf_life_extension
+		r.evidence_credulity_boost = ev.credulity_boost
+		r.seed_target_npc_id       = seed_target_id
+	r.bolstered_by_evidence = true
 
 
 ## Deterministic believe_chance formula from npc.gd (seed-target path, SPA-1711/SPA-1718).
@@ -173,6 +203,45 @@ static func test_f1_flag_off_no_cooldown_arming() -> bool:
 		push_error(
 			"test_f1_flag_off_no_cooldown_arming: " +
 			"cooldown must not arm with flag OFF, got %s" % str(info)
+		)
+		return false
+	return true
+
+
+# ── F1 gate regression (SPA-1779) — gate must suppress bonuses at call time ───
+
+static func test_f1_flag_off_gate_suppresses_shelf() -> bool:
+	## SPA-1779 regression: F1 — call the gated evidence-application path with flag
+	## OFF and assert that shelf_life_ticks is NOT extended.  This test would fail if
+	## the flag guard were removed from world.gd, making it a true regression gate.
+	GameState.evidence_economy_v2 = false
+
+	var r := _make_rumor()
+	_apply_evidence_gated(r, _make_witness_account(), "npc_target", "normal")
+
+	## With flag OFF the gate suppresses shelf extension; baseline must be unchanged.
+	if r.shelf_life_ticks != BASELINE_SHELF:
+		push_error(
+			"test_f1_flag_off_gate_suppresses_shelf: " +
+			"expected %d (no extension), got %d" % [BASELINE_SHELF, r.shelf_life_ticks]
+		)
+		return false
+	return true
+
+
+static func test_f1_flag_off_gate_suppresses_boost() -> bool:
+	## SPA-1779 regression: F1 — call the gated path with flag OFF and assert that
+	## evidence_credulity_boost stays at 0.0.  This test would fail if the guard
+	## in world.gd were removed.
+	GameState.evidence_economy_v2 = false
+
+	var r := _make_rumor()
+	_apply_evidence_gated(r, _make_incriminating_artifact(), "npc_target", "normal")
+
+	if not is_zero_approx(r.evidence_credulity_boost):
+		push_error(
+			"test_f1_flag_off_gate_suppresses_boost: " +
+			"expected 0.0 with flag OFF, got %.4f" % r.evidence_credulity_boost
 		)
 		return false
 	return true
@@ -298,6 +367,47 @@ static func test_f3_post_toggle_rumor_gets_phase2_mechanics() -> bool:
 		return false
 	if not r_post.bolstered_by_evidence:
 		push_error("test_f3_post_toggle_rumor_gets_phase2_mechanics: bolstered_by_evidence not set")
+		return false
+	return true
+
+
+# ── F3 gate regression (SPA-1779) — toggle ON then OFF, next seed gets no bonus ──
+
+static func test_f3_toggle_on_then_off_new_seed_no_bonus() -> bool:
+	## SPA-1779 regression: F3 — toggle ON, seed a rumor (gets v2 bonuses), then
+	## toggle back OFF and seed another.  The second seed must receive NO bonuses,
+	## proving the gate re-evaluates the flag at seed time (prospective only).
+	GameState.evidence_economy_v2 = true
+
+	var r_before := _make_rumor()
+	_apply_evidence_gated(r_before, _make_witness_account(), "npc_target", "normal")
+	## Verify first seed DID get the bonus (flag was ON).
+	if r_before.shelf_life_ticks <= BASELINE_SHELF:
+		push_error(
+			"test_f3_toggle_on_then_off_new_seed_no_bonus: " +
+			"pre-toggle seed should have extended shelf (got %d)" % r_before.shelf_life_ticks
+		)
+		return false
+
+	## Toggle flag OFF — subsequent seeds must get no bonus.
+	GameState.evidence_economy_v2 = false
+
+	var r_after := _make_rumor()
+	_apply_evidence_gated(r_after, _make_witness_account(), "npc_target", "normal")
+
+	if r_after.shelf_life_ticks != BASELINE_SHELF:
+		push_error(
+			"test_f3_toggle_on_then_off_new_seed_no_bonus: " +
+			"post-toggle seed shelf should be %d (no extension), got %d" \
+			% [BASELINE_SHELF, r_after.shelf_life_ticks]
+		)
+		return false
+	if not is_zero_approx(r_after.evidence_credulity_boost):
+		push_error(
+			"test_f3_toggle_on_then_off_new_seed_no_bonus: " +
+			"post-toggle seed credulity_boost should be 0.0, got %.4f" \
+			% r_after.evidence_credulity_boost
+		)
 		return false
 	return true
 
