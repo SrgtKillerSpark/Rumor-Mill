@@ -62,8 +62,8 @@ func run() -> void:
 		# Slice E — cooldown days per difficulty
 		"test_cooldown_days_apprentice_is_0",
 		"test_cooldown_days_normal_is_2",
-		"test_cooldown_days_master_is_3",
-		"test_cooldown_days_spymaster_is_4",
+		"test_cooldown_days_master_is_2",
+		"test_cooldown_days_spymaster_is_3",
 		# Slice E — cooldown locking behaviour
 		"test_cooldown_locks_different_target",
 		"test_cooldown_allows_same_target",
@@ -287,12 +287,12 @@ static func test_cooldown_days_normal_is_2() -> bool:
 	return PlayerIntelStore._cooldown_days_for_difficulty("normal") == 2
 
 
-static func test_cooldown_days_master_is_3() -> bool:
-	return PlayerIntelStore._cooldown_days_for_difficulty("master") == 3
+static func test_cooldown_days_master_is_2() -> bool:  ## SPA-1755
+	return PlayerIntelStore._cooldown_days_for_difficulty("master") == 2
 
 
-static func test_cooldown_days_spymaster_is_4() -> bool:
-	return PlayerIntelStore._cooldown_days_for_difficulty("spymaster") == 4
+static func test_cooldown_days_spymaster_is_3() -> bool:  ## SPA-1755
+	return PlayerIntelStore._cooldown_days_for_difficulty("spymaster") == 3
 
 
 # ── Slice E: cooldown locking behaviour ──────────────────────────────────────

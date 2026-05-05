@@ -385,8 +385,9 @@ func decay_evidence_items(current_day: int) -> Array:
 # ---------------------------------------------------------------------------
 
 ## Start a cooldown preventing evidence use on a different target for N days.
-## N is determined by difficulty: Apprentice=0, Normal=2, Master=3, Spymaster=4.
+## N is determined by difficulty: Apprentice=0, Normal=2, Master=2, Spymaster=3.
 ## A cooldown of 0 (Apprentice) is a no-op.
+## SPA-1755: Master 3->2, Spymaster 4->3 to prevent cooldown-blocked displacement.
 func start_evidence_cooldown(target_npc_id: String, difficulty: String) -> void:
 	var days: int = _cooldown_days_for_difficulty(difficulty)
 	if days > 0:
@@ -422,6 +423,6 @@ func get_evidence_cooldown_info() -> Dictionary:
 static func _cooldown_days_for_difficulty(difficulty: String) -> int:
 	match difficulty:
 		"normal":    return 2
-		"master":    return 3
-		"spymaster": return 4
-		_:           return 0  ## Apprentice and unknown: no cooldown
+		"master":    return 2   ## SPA-1755: was 3
+		"spymaster": return 3   ## SPA-1755: was 4
+		_:           return 0   ## Apprentice and unknown: no cooldown
