@@ -23,6 +23,8 @@ extends RefCounted
 ##   • TestSpa1613EvidenceAcquired       — evidence_acquired NDJSON field shape for all 3 fire sites,
 ##                                          no double-emission guard, pre-setup queuing (SPA-1613)
 ##   • TestSpa1614EvidenceUsedEmission   — evidence_used emission, field presence + values, disabled gate (SPA-1614)
+##   • TestSpa1773WitnessAccountUsedEmission — witness_account_used bypass-mode event: emission,
+##                                             field presence, halved bonus values, bypass-only gate (SPA-1773)
 ##   • SmokePhase2Evidence               — end-to-end Phase 2 smoke: 3 acquisitions + 1 usage vs SPA-1522 spec (SPA-1617)
 ##   • TestSpa1685_1691_1693FixCoverage  — process_mode ALWAYS on dialogue canvas (SPA-1685),
 ##                                          illness_hotspot_buildings declared (SPA-1691),
@@ -323,6 +325,7 @@ const TestSpa1544NewGameStateIsolation = preload("res://tests/test_spa1544_new_g
 const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_analytics_disabled_gating.gd")
 const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evidence_acquired.gd")
 const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
+const TestSpa1773WitnessAccountUsedEmission = preload("res://tests/test_spa1773_witness_account_used_emission.gd")
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
 const TestSpa1725EvidenceAttached      = preload("res://tests/test_spa1725_evidence_attached.gd")
@@ -412,6 +415,9 @@ func _init() -> void:
 
 	print("\n── SPA-1614 evidence_used emission + shape ──")
 	TestSpa1614EvidenceUsedEmission.new().run()
+
+	print("\n── SPA-1773 witness_account_used bypass-mode emission + shape ──")
+	TestSpa1773WitnessAccountUsedEmission.new().run()
 
 	print("\n── SPA-1617 Phase 2 evidence telemetry smoke (end-to-end) ──")
 	SmokePhase2Evidence.new().run()

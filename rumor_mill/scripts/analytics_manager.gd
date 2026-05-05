@@ -97,6 +97,12 @@ func setup(
 	else:
 		push_warning("AnalyticsManager: SettingsManager missing setting_changed signal — settings_changed events will not be logged")
 
+	# SPA-1773: Log witness_account_used telemetry when bypass path fires in world.
+	if world.has_signal("witness_account_bypass_used"):
+		world.witness_account_bypass_used.connect(_on_witness_account_bypass_used)
+	else:
+		push_warning("AnalyticsManager: world missing witness_account_bypass_used signal — witness_account_used events will not be logged")
+
 
 func _on_analytics_rumor_seeded(
 		_rumor_id: String,
@@ -303,6 +309,42 @@ func log_evidence_target_shift(evidence_type: String, from_target: String, to_ta
 		"day":           day,
 		"scenario_id":   _analytics_scenario_id,
 		"difficulty":    GameState.selected_difficulty,
+	})
+
+
+## SPA-1773: Signal handler — wired in setup() to world.witness_account_bypass_used.
+## Delegates to log_witness_account_used() for testability.
+func _on_witness_account_bypass_used(
+		evidence_type: String,
+		effective_bel_bonus: float,
+		effective_cred_boost: float,
+		target_npc_id: String
+) -> void:
+	log_witness_account_used(evidence_type, effective_bel_bonus, effective_cred_boost, target_npc_id)
+
+
+## SPA-1773: Log witness_account_used event when a Witness Account bypasses the
+## target-shift cooldown at half effectiveness.  Event fires only in bypass mode.
+func log_witness_account_used(
+		evidence_type: String,
+		effective_bel_bonus: float,
+		effective_cred_boost: float,
+		target_npc_id: String
+) -> void:
+	if _analytics_logger == null:
+		_enqueue("log_witness_account_used", [evidence_type, effective_bel_bonus, effective_cred_boost, target_npc_id])
+		return
+	var day: int = _day_night.current_day if _day_night != null and "current_day" in _day_night else 0
+	_analytics_logger.log_event("witness_account_used", {
+		"evidence_type":                 evidence_type,
+		"bypass_mode":                   true,
+		"effective_believability_bonus": effective_bel_bonus,
+		"effective_credulity_boost":     effective_cred_boost,
+		"target_npc_id":                 target_npc_id,
+		"cooldown_target_npc_id":        target_npc_id,
+		"day":                           day,
+		"scenario_id":                   _analytics_scenario_id,
+		"difficulty":                    GameState.selected_difficulty,
 	})
 
 

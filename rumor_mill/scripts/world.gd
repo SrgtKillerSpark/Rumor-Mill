@@ -17,6 +17,15 @@ signal rumor_reached_key_npc(npc_name: String, rumor_id: String)
 ## SPA-1518: Emitted when a rumor's target shifts during propagation.
 ## old_name / new_name are the NPC display names; rumor_id is the new mutated copy.
 signal rumor_target_shifted(old_name: String, new_name: String, rumor_id: String)
+## SPA-1773: Emitted when a Witness Account is used in cooldown-bypass mode
+## (half-effectiveness). Payload carries the actual halved bonus values so
+## AnalyticsManager can emit the witness_account_used telemetry event.
+signal witness_account_bypass_used(
+		evidence_type: String,
+		effective_bel_bonus: float,
+		effective_cred_boost: float,
+		target_npc_id: String
+)
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -1287,6 +1296,12 @@ func seed_rumor_from_player(
 				and intel_store.is_evidence_bypass_active(seed_target_npc_id, evidence_item))
 		var bel_bonus: float = evidence_item.believability_bonus * (0.5 if bypass_active else 1.0)
 		var cred_boost: float = evidence_item.credulity_boost * (0.5 if bypass_active else 1.0)
+		# SPA-1773: Emit telemetry signal for bypass-mode usage so AnalyticsManager
+		# can log the witness_account_used event with actual halved bonus values.
+		if bypass_active:
+			emit_signal("witness_account_bypass_used",
+					evidence_item.type.to_snake_case(), bel_bonus, cred_boost,
+					seed_target_npc_id)
 
 		rumor.current_believability = minf(1.0, rumor.current_believability + bel_bonus)
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
