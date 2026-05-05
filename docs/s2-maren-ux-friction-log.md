@@ -158,6 +158,8 @@ These are ordered by impact-to-effort ratio. Each addresses the core "perceived 
 
 The S2 HUD is well-engineered for progress tracking (believers bar, pip row, day counter) and has strong post-mortem feedback (carrier reveal, strategic hint). The critical UX gap is the **pre-failure and during-failure information layer**: players cannot assess Maren risk before seeding, cannot discover the grace mechanic before triggering it, and cannot see counter-intelligence effects during the grace window. These three gaps compound to create the "binary RNG coin flip" perception flagged in the balance proposal — a perception that UX can significantly reduce without any balance constant changes.
 
+**Audit note (2026-05-05):** All entries except A4 confirmed SHIPPED by [SPA-1919](/SPA/issues/SPA-1919) audit (HEAD `8018cb2`). A4 (win probability indicator) remains genuine open debt.
+
 ---
 
 *Document key: `s2-maren-ux-friction-log`*
