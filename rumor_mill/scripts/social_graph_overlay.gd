@@ -66,6 +66,16 @@ const NPC_LABEL_MAX_W  := 80.0  # Max pill width for NPC name labels (SPA-1675 #
 # Search match: pulsing gold ring around the matched NPC.
 const SEARCH_MATCH_COLOR := Color(1.0, 0.85, 0.0, 1.0)
 
+# ── Risk Halos — Maren Orbit (SPA-1811) ──────────────────────────────────────
+const RISK_HALO_RADIUS_OFFSET  :=  6.0   # px beyond NODE_RADIUS for dashed ring
+const RISK_HALO_THICKNESS      :=  2.0   # dashed ring stroke width
+const RISK_HALO_MAREN_THICK    :=  3.0   # Maren's solid ring stroke width
+const RISK_HALO_DASH_LEN       := 10.0   # arc-length (px) per dash segment
+const RISK_HALO_GAP_LEN        :=  6.0   # arc-length (px) per gap segment
+const RISK_HALO_FADE_DUR       :=  0.4   # first-open fade-in duration (s)
+const RISK_HALO_PULSE_PERIOD   :=  1.5   # Maren glow pulse period (s)
+const RISK_HALO_LABEL_MIN_ZOOM :=  0.8   # hide weight labels below this zoom
+
 # ── State ─────────────────────────────────────────────────────────────────────
 
 var visible_overlay: bool = false
@@ -112,6 +122,14 @@ var _search_panel:     PanelContainer  = null
 var _factions_hidden: Dictionary = {}
 # int(RumorState) → true  when that state's nodes are highlighted (rest dimmed).
 var _states_highlighted: Dictionary = {}
+
+# ── Risk Halos — Maren Orbit (SPA-1811) ──────────────────────────────────────
+var _risk_halo_on: bool      = true   # legend toggle: true = visible
+var _maren_orbit: Dictionary = {}     # npc_id → float weight (from Maren's edge dict)
+var _risk_halo_alpha: float  = 0.0   # 0..1, driven by first-open fade tween
+var _risk_halo_opened: bool  = false  # true after first open this session
+var _risk_halo_pulse_t: float = -1.0  # -1 = inactive; 0..1 = radial pulse progress
+var _risk_halo_tween: Tween  = null
 
 
 func _ready() -> void:
@@ -202,6 +220,19 @@ func _toggle_overlay() -> void:
 		_fade_tween.tween_property(_draw_node, "modulate:a", 1.0, 0.2)
 		_fade_tween.parallel().tween_property(_legend_panel, "modulate:a", 1.0, 0.2)
 		_fade_tween.parallel().tween_property(_search_panel, "modulate:a", 1.0, 0.2)
+		_refresh_maren_orbit()
+		if not _maren_orbit.is_empty():
+			if not _risk_halo_opened:
+				_risk_halo_opened = true
+				_risk_halo_alpha   = 0.0
+				_risk_halo_pulse_t = 0.0
+				if _risk_halo_tween != null and _risk_halo_tween.is_valid():
+					_risk_halo_tween.kill()
+				_risk_halo_tween = create_tween()
+				_risk_halo_tween.tween_property(self, "_risk_halo_alpha", 1.0, RISK_HALO_FADE_DUR)
+			else:
+				_risk_halo_alpha   = 1.0
+				_risk_halo_pulse_t = -1.0
 	else:
 		_close_overlay()
 	_draw_node.queue_redraw()
@@ -329,6 +360,11 @@ func _process(delta: float) -> void:
 			for key in expired:
 				_active_spread_edges.erase(key)
 
+		if _risk_halo_pulse_t >= 0.0:
+			_risk_halo_pulse_t = minf(_risk_halo_pulse_t + delta / RISK_HALO_FADE_DUR, 1.0)
+			if _risk_halo_pulse_t >= 1.0:
+				_risk_halo_pulse_t = -1.0
+
 
 ## Called by main.gd _on_rumor_event.  Highlights the social-graph edge for a
 ## "Alice whispered to Bob [id]" transmission message.
@@ -354,6 +390,7 @@ func on_rumor_event(message: String) -> void:
 		return
 	var key := from_id + "|" + to_id if from_id < to_id else to_id + "|" + from_id
 	_active_spread_edges[key] = SPREAD_HIGHLIGHT_DURATION
+	_refresh_maren_orbit()
 
 
 func _on_draw() -> void:
@@ -369,6 +406,7 @@ func _on_draw() -> void:
 	if sg != null:
 		_draw_edges(npcs, sg)
 	_draw_nodes(npcs)
+	_draw_risk_halos(npcs)
 
 
 func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
@@ -434,6 +472,15 @@ func _draw_edges(npcs: Array, sg: SocialGraph) -> void:
 					base_color = EDGE_MUTATED_POS_COLOR
 				else:
 					base_color = _edge_strength_color(weight)
+				# Tint edges touching Maren when risk-halo mode is active (SPA-1811).
+				if _risk_halo_on and not _maren_orbit.is_empty():
+					var orbit_id: String = ""
+					if nid == ScenarioConfig.MAREN_NUN_ID and _maren_orbit.has(tid):
+						orbit_id = tid
+					elif tid == ScenarioConfig.MAREN_NUN_ID and _maren_orbit.has(nid):
+						orbit_id = nid
+					if not orbit_id.is_empty():
+						base_color = _maren_orbit_color(float(_maren_orbit[orbit_id]))
 				_draw_node.draw_line(from_screen, to_screen,
 									 Color(base_color.r, base_color.g, base_color.b, alpha), width)
 
@@ -762,6 +809,29 @@ func _build_legend() -> void:
 		"[color=#ffd700]72[/color] Rep score (zoom > 1.2×)\n"
 	)
 	_sg_legend_box.add_child(other_lbl)
+	_legend_sep(_sg_legend_box)
+
+	# ── Maren orbit toggle (SPA-1811) ────────────────────────────────────────
+	_legend_header(_sg_legend_box, "Risk Assessment")
+	var halo_btn := Button.new()
+	halo_btn.text         = "◎ Maren orbit"
+	halo_btn.toggle_mode  = true
+	halo_btn.flat         = true
+	halo_btn.alignment    = HORIZONTAL_ALIGNMENT_LEFT
+	halo_btn.custom_minimum_size.y = 36
+	halo_btn.add_theme_font_size_override("font_size", 14)
+	var _hc := ScenarioConfig.MAREN_ORBIT_COLOR_RED
+	halo_btn.add_theme_color_override("font_color",
+		_hc)
+	halo_btn.add_theme_color_override("font_hover_color",
+		_hc.lightened(0.2))
+	halo_btn.add_theme_color_override("font_pressed_color",
+		Color(_hc.r * 0.45, _hc.g * 0.45, _hc.b * 0.45, 1.0))
+	halo_btn.toggled.connect(func(pressed: bool) -> void:
+		_risk_halo_on = not pressed
+		_crossfade_redraw()
+	)
+	_sg_legend_box.add_child(halo_btn)
 
 	# ── Faction Heatmap legend section ───────────────────────────────────────
 	_hm_legend_box = VBoxContainer.new()
@@ -899,6 +969,120 @@ func _find_npc_by_id(npcs: Array, npc_id: String) -> Node2D:
 		if npc.npc_data.get("id", "") == npc_id:
 			return npc
 	return null
+
+
+# ── Risk Halos — Maren Orbit (SPA-1811) ──────────────────────────────────────
+
+## Populate _maren_orbit from the social graph.  Only active in Scenario 2.
+func _refresh_maren_orbit() -> void:
+	_maren_orbit.clear()
+	if _world_ref == null:
+		return
+	if not "active_scenario_id" in _world_ref:
+		return
+	if _world_ref.active_scenario_id != "scenario_2":
+		return
+	var sg: SocialGraph = _world_ref.social_graph
+	if sg == null:
+		return
+	var neighbors: Dictionary = sg.get_neighbours(ScenarioConfig.MAREN_NUN_ID)
+	for npc_id in neighbors:
+		_maren_orbit[npc_id] = float(neighbors[npc_id])
+
+
+## Returns true when the player has already seeded at least one rumor (post-seed).
+func _is_post_seed() -> bool:
+	if _world_ref == null:
+		return false
+	for npc in _world_ref.npcs:
+		if not npc.rumor_slots.is_empty():
+			return true
+	return false
+
+
+## Map an orbit edge weight to the appropriate risk-halo color.
+func _maren_orbit_color(weight: float) -> Color:
+	if weight >= ScenarioConfig.MAREN_ORBIT_RISK_THRESHOLDS["red"]:
+		return ScenarioConfig.MAREN_ORBIT_COLOR_RED
+	elif weight >= ScenarioConfig.MAREN_ORBIT_RISK_THRESHOLDS["orange"]:
+		return ScenarioConfig.MAREN_ORBIT_COLOR_ORANGE
+	return ScenarioConfig.MAREN_ORBIT_COLOR_AMBER
+
+
+## Draw dashed circle using alternating draw_arc() segments.
+func _draw_dashed_circle(center: Vector2, radius: float,
+		color: Color, width: float) -> void:
+	if radius <= 0.0:
+		return
+	var dash_angle: float = RISK_HALO_DASH_LEN / radius
+	var gap_angle:  float = RISK_HALO_GAP_LEN  / radius
+	var step: float = dash_angle + gap_angle
+	var segs: int = max(2, int(ceil(RISK_HALO_DASH_LEN / 3.0)))
+	var angle: float = 0.0
+	while angle < TAU:
+		var end_angle: float = minf(angle + dash_angle, TAU)
+		_draw_node.draw_arc(center, radius, angle, end_angle, segs, color, width)
+		angle += step
+
+
+## Draw risk halos for all Maren orbit NPCs plus Maren's own solid ring.
+func _draw_risk_halos(npcs: Array) -> void:
+	if not _risk_halo_on or _maren_orbit.is_empty():
+		return
+	var alpha: float = _risk_halo_alpha
+	if _is_post_seed():
+		alpha *= 0.5
+
+	var ring_r: float = NODE_RADIUS + RISK_HALO_RADIUS_OFFSET
+
+	# Radial pulse outward from Maren on first open.
+	if _risk_halo_pulse_t >= 0.0 and _risk_halo_pulse_t <= 1.0:
+		var maren_npc_pulse := _find_npc_by_id(npcs, ScenarioConfig.MAREN_NUN_ID)
+		if maren_npc_pulse != null:
+			var maren_screen_pulse := _world_to_screen(maren_npc_pulse.global_position)
+			var pulse_r := _risk_halo_pulse_t * 160.0
+			var pulse_a := (1.0 - _risk_halo_pulse_t) * 0.55 * alpha
+			_draw_node.draw_arc(maren_screen_pulse, pulse_r, 0.0, TAU, 48,
+				Color(ScenarioConfig.MAREN_ORBIT_COLOR_RED.r,
+					  ScenarioConfig.MAREN_ORBIT_COLOR_RED.g,
+					  ScenarioConfig.MAREN_ORBIT_COLOR_RED.b, pulse_a), 2.0)
+
+	# Dashed rings for orbit NPCs.
+	for npc_id in _maren_orbit:
+		var weight: float = float(_maren_orbit[npc_id])
+		var color: Color  = _maren_orbit_color(weight)
+		var npc           := _find_npc_by_id(npcs, npc_id)
+		if npc == null:
+			continue
+		var screen_pos := _world_to_screen(npc.global_position)
+		_draw_dashed_circle(screen_pos, ring_r,
+			Color(color.r, color.g, color.b, alpha), RISK_HALO_THICKNESS)
+		# Weight label: "Maren x0.72", hidden below RISK_HALO_LABEL_MIN_ZOOM.
+		if _zoom_level >= RISK_HALO_LABEL_MIN_ZOOM:
+			var label := "Maren x%.2f" % weight
+			var lpos  := screen_pos + Vector2(-NODE_RADIUS, ring_r + 13.0)
+			_draw_node.draw_string(ThemeDB.fallback_font, lpos, label,
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
+				Color(color.r, color.g, color.b, alpha))
+
+	# Maren's own node: solid ring + pulsing glow + bold label.
+	var maren_npc := _find_npc_by_id(npcs, ScenarioConfig.MAREN_NUN_ID)
+	if maren_npc != null:
+		var maren_screen := _world_to_screen(maren_npc.global_position)
+		var rc: Color = ScenarioConfig.MAREN_ORBIT_COLOR_RED
+		_draw_node.draw_arc(maren_screen, ring_r, 0.0, TAU, 48,
+			Color(rc.r, rc.g, rc.b, alpha), RISK_HALO_MAREN_THICK)
+		# Pulsing glow ring (~1.5 s period).
+		var pulse: float = 0.5 + 0.5 * sin(
+			Time.get_ticks_msec() * (TAU / (RISK_HALO_PULSE_PERIOD * 1000.0)))
+		_draw_node.draw_arc(maren_screen, ring_r + 2.0 + pulse * 4.0, 0.0, TAU, 48,
+			Color(rc.r, rc.g, rc.b, 0.28 * pulse * alpha), RISK_HALO_MAREN_THICK)
+		# Bold label.
+		if _zoom_level >= RISK_HALO_LABEL_MIN_ZOOM:
+			var lpos := maren_screen + Vector2(-NODE_RADIUS, ring_r + 13.0)
+			_draw_node.draw_string(ThemeDB.fallback_font, lpos, "Sister Maren",
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 11,
+				Color(rc.r, rc.g, rc.b, alpha))
 
 
 # ── Faction Influence Heatmap ─────────────────────────────────────────────────

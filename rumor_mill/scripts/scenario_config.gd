@@ -59,6 +59,14 @@ const S2_WIN_ILLNESS_MIN   := 7
 ## SPA-592: prevents silent propagation chains ending the run without player agency.
 const S2_MAREN_GRACE_DAYS  := 2
 
+## Risk-halo color thresholds for Maren's orbit nodes (SPA-1811).
+## Ring color is determined by the edge weight from Maren to each orbit neighbor.
+## weight >= 0.6 → red, 0.4–0.59 → orange, < 0.4 → amber.
+const MAREN_ORBIT_COLOR_RED    := Color(0.800, 0.200, 0.200, 1.0)  # #CC3333
+const MAREN_ORBIT_COLOR_ORANGE := Color(0.902, 0.541, 0.000, 1.0)  # #E68A00
+const MAREN_ORBIT_COLOR_AMBER  := Color(0.800, 0.667, 0.000, 1.0)  # #CCAA00
+const MAREN_ORBIT_RISK_THRESHOLDS: Dictionary = {"red": 0.6, "orange": 0.4}
+
 # ---------------------------------------------------------------------------
 # Scenario 3 — The Succession
 # ---------------------------------------------------------------------------
