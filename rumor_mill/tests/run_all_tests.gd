@@ -327,6 +327,7 @@ const TestRumorPanelEvidenceCooldownUi = preload("res://tests/test_rumor_panel_e
 const TestPhase2SliceATelemetry        = preload("res://tests/test_phase2_slice_a_telemetry.gd")
 const TestPhase2SliceFFeatureFlag      = preload("res://tests/test_phase2_slice_f_feature_flag.gd")
 const TestPhase2CrossCutting           = preload("res://tests/test_phase2_cross_cutting.gd")
+const TestPhase2EvidenceEconomyV2Gating = preload("res://tests/test_phase2_evidence_economy_v2_gating.gd")
 const TestSpeedHud = preload("res://tests/test_speed_hud.gd")
 const TestStoryRecap = preload("res://tests/test_story_recap.gd")
 const TestStrategicOverview = preload("res://tests/test_strategic_overview.gd")
@@ -433,6 +434,9 @@ func _init() -> void:
 
 	print("\n── SPA-1743 Phase 2 cross-cutting (X1–X3) ──")
 	TestPhase2CrossCutting.new().run()
+
+	print("\n── SPA-1757 Phase 2 evidence_economy_v2 Normal+ gating ──")
+	TestPhase2EvidenceEconomyV2Gating.new().run()
 
 	print("\n── TutorialSystem ──")
 	TestTutorialSystem.new().run()
