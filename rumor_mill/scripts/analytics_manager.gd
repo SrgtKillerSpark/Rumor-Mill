@@ -103,6 +103,12 @@ func setup(
 	else:
 		push_warning("AnalyticsManager: world missing witness_account_bypass_used signal — witness_account_used events will not be logged")
 
+	# SPA-1774: Log evidence_economy_v2_gated_off telemetry when Apprentice gating path fires.
+	if world.has_signal("evidence_economy_v2_gated_off"):
+		world.evidence_economy_v2_gated_off.connect(_on_evidence_economy_v2_gated_off)
+	else:
+		push_warning("AnalyticsManager: world missing evidence_economy_v2_gated_off signal — evidence_economy_v2_gated_off events will not be logged")
+
 
 func _on_analytics_rumor_seeded(
 		_rumor_id: String,
@@ -345,6 +351,36 @@ func log_witness_account_used(
 		"day":                           day,
 		"scenario_id":                   _analytics_scenario_id,
 		"difficulty":                    GameState.selected_difficulty,
+	})
+
+
+## SPA-1774: Signal handler — wired in setup() to world.evidence_economy_v2_gated_off.
+## Delegates to log_evidence_economy_v2_gated_off() for testability.
+func _on_evidence_economy_v2_gated_off(
+		evidence_type: String,
+		gated_bonuses: Array,
+		difficulty: String
+) -> void:
+	log_evidence_economy_v2_gated_off(evidence_type, gated_bonuses, difficulty)
+
+
+## SPA-1774: Log evidence_economy_v2_gated_off event when the Apprentice difficulty
+## gate skips shelf_life_extension and credulity_boost despite evidence_economy_v2 ON.
+func log_evidence_economy_v2_gated_off(
+		evidence_type: String,
+		gated_bonuses: Array,
+		difficulty: String
+) -> void:
+	if _analytics_logger == null:
+		_enqueue("log_evidence_economy_v2_gated_off", [evidence_type, gated_bonuses, difficulty])
+		return
+	var day: int = _day_night.current_day if _day_night != null and "current_day" in _day_night else 0
+	_analytics_logger.log_event("evidence_economy_v2_gated_off", {
+		"evidence_type": evidence_type,
+		"gated_bonuses": gated_bonuses,
+		"difficulty":    difficulty,
+		"day":           day,
+		"scenario_id":   _analytics_scenario_id,
 	})
 
 

@@ -26,6 +26,14 @@ signal witness_account_bypass_used(
 		effective_cred_boost: float,
 		target_npc_id: String
 )
+## SPA-1774: Emitted when evidence_economy_v2 is ON but difficulty is Apprentice,
+## causing shelf_life_extension and credulity_boost to be silently skipped.
+## Allows AnalyticsManager to emit the evidence_economy_v2_gated_off telemetry event.
+signal evidence_economy_v2_gated_off(
+		evidence_type: String,
+		gated_bonuses: Array,
+		difficulty: String
+)
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -1311,6 +1319,13 @@ func seed_rumor_from_player(
 			rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
 			rumor.evidence_credulity_boost = cred_boost
 			rumor.seed_target_npc_id = seed_target_npc_id
+		elif GameState.evidence_economy_v2:
+			# SPA-1774: Flag is ON but difficulty is Apprentice — v2 bonuses gated off.
+			# Emit telemetry so the analytics pipeline can measure how often this path fires.
+			emit_signal("evidence_economy_v2_gated_off",
+					evidence_item.type.to_snake_case(),
+					["shelf_life_extension", "credulity_boost"],
+					GameState.selected_difficulty)
 		rumor.bolstered_by_evidence = true
 
 	# Chain detection: check if this subject already has an active rumor that

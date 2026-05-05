@@ -13,7 +13,7 @@
 Phase 1 explicitly deferred evidence-item rebalancing (see phase1-balance-proposal.md § "Explicit Non-Goal"). Phase 2 adds the telemetry needed to answer whether Forged Document, Incriminating Artifact, and Witness Account are meaningfully differentiated, then introduces tuning levers to fix the problems the data reveals.
 
 This spec covers **three workstreams**:
-1. Four telemetry events (`evidence_acquired`, `evidence_used`, `target_shift_cooldown_blocked`, `witness_account_used`)
+1. Five telemetry events (`evidence_acquired`, `evidence_used`, `target_shift_cooldown_blocked`, `witness_account_used`, `evidence_economy_v2_gated_off`)
 2. Evidence-economy tuning curves (decay, confidence thresholds, target-shift cooldown)
 3. Differentiation mechanics for the three evidence types
 
@@ -262,6 +262,65 @@ func log_witness_account_used(evidence_type, effective_bel_bonus, effective_cred
 ```
 
 **GUT tests:** `test_spa1773_witness_account_used_emission.gd` — emission (enabled/disabled), event type, 9 field-presence assertions, bypass_mode always true, halved bonus value checks (0.075 / 0.025), bypass-only gate.
+
+---
+
+### 2.7 `evidence_economy_v2_gated_off` *(SPA-1774)*
+
+**Question answered:** How often do Apprentice players attempt to use evidence bonuses that are silently gated off (shelf_life_extension and credulity_boost skipped)?
+
+| Field | Type | Example | Source |
+|---|---|---|---|
+| `evidence_type` | `String` | `"witness_account"` | `evidence_item.type.to_snake_case()` |
+| `gated_bonuses` | `Array[String]` | `["shelf_life_extension", "credulity_boost"]` | Hardcoded — always both bonuses |
+| `difficulty` | `String` | `"apprentice"` | `GameState.selected_difficulty` |
+| `day` | `int` | `4` | `_day_night.current_day` |
+| `scenario_id` | `String` | `"scenario_2"` | `_analytics_scenario_id` |
+
+**Fire site (1 total):**
+
+| File | Context |
+|---|---|
+| `world.gd` `seed_rumor_from_player()` | `elif GameState.evidence_economy_v2:` branch — reached only when flag is ON and difficulty is `"apprentice"` |
+
+**Mechanism:** `world.gd` emits the `evidence_economy_v2_gated_off` signal in the `elif` branch of the SPA-1757 difficulty gate; `AnalyticsManager.setup()` wires it to `_on_evidence_economy_v2_gated_off()`, which delegates to `log_evidence_economy_v2_gated_off()`.
+
+**Edge cases:**
+- **Flag OFF:** The `if/elif` condition is never entered when `evidence_economy_v2 == false`, so this event will not fire.
+- **Normal/Master/Spymaster:** The `if` branch fires (bonuses applied) — `elif` is skipped; event does NOT fire.
+- **Apprentice + flag OFF:** Neither branch taken; event does NOT fire.
+- **Analytics disabled:** Standard `SettingsManager.analytics_enabled` guard in `AnalyticsLogger.log_event()` prevents writes.
+
+**Implementation (SPA-1774):**
+
+In `world.gd`, new signal declaration and emission:
+```gdscript
+signal evidence_economy_v2_gated_off(
+    evidence_type: String, gated_bonuses: Array, difficulty: String
+)
+
+# Inside seed_rumor_from_player(), replacing the bare SPA-1757 if with if/elif:
+if GameState.evidence_economy_v2 and GameState.selected_difficulty != "apprentice":
+    rumor.shelf_life_ticks += evidence_item.shelf_life_extension
+    rumor.evidence_credulity_boost = cred_boost
+    rumor.seed_target_npc_id = seed_target_npc_id
+elif GameState.evidence_economy_v2:
+    emit_signal("evidence_economy_v2_gated_off",
+        evidence_item.type.to_snake_case(),
+        ["shelf_life_extension", "credulity_boost"],
+        GameState.selected_difficulty)
+```
+
+In `analytics_manager.gd`, new methods and signal wiring in `setup()`:
+```gdscript
+func log_evidence_economy_v2_gated_off(evidence_type, gated_bonuses, difficulty):
+    _analytics_logger.log_event("evidence_economy_v2_gated_off", {
+        "evidence_type": evidence_type, "gated_bonuses": gated_bonuses,
+        "difficulty": difficulty, "day": day, "scenario_id": ...
+    })
+```
+
+**GUT tests:** `test_phase2_evidence_economy_v2_gating.gd` — 3 new tests: signal fires on Apprentice, does NOT fire on Normal, does NOT fire on Master. Uses `_would_emit_gated_off()` helper mirroring the `elif` condition.
 
 ---
 

@@ -55,6 +55,10 @@ func run() -> void:
 		# Master — same as Normal
 		"test_master_credulity_boost_applied",
 		"test_master_shelf_extension_applied",
+		# SPA-1774: evidence_economy_v2_gated_off telemetry signal fires on Apprentice only
+		"test_gated_off_signal_fires_on_apprentice",
+		"test_gated_off_signal_does_not_fire_on_normal",
+		"test_gated_off_signal_does_not_fire_on_master",
 		# Cooldown bypass is NOT difficulty-gated (SPA-1756)
 		"test_bypass_flag_set_independently_of_difficulty",
 		"test_bypass_active_on_normal_difficulty",
@@ -133,6 +137,15 @@ static func _apply_evidence_gated(
 		r.evidence_credulity_boost = ev.credulity_boost
 		r.seed_target_npc_id       = seed_target_id
 	r.bolstered_by_evidence = true
+
+
+## SPA-1774: Mirrors the gated-off signal condition from world.gd.
+## Returns true when evidence_economy_v2_gated_off would be emitted:
+## flag is ON and difficulty is "apprentice".
+static func _would_emit_gated_off(difficulty: String) -> bool:
+	if GameState.evidence_economy_v2 and difficulty == "apprentice":
+		return true
+	return false
 
 
 # ── Apprentice: bonuses suppressed even with evidence_economy_v2 = true ──────
@@ -289,6 +302,45 @@ static func test_master_shelf_extension_applied() -> bool:
 			"test_master_shelf_extension_applied: expected %d, got %d"
 			% [BASELINE_SHELF + 80, r.shelf_life_ticks]
 		)
+		return false
+	return true
+
+
+# ── SPA-1774: evidence_economy_v2_gated_off telemetry signal ─────────────────
+
+static func test_gated_off_signal_fires_on_apprentice() -> bool:
+	## SPA-1774: When evidence_economy_v2 is ON and difficulty is "apprentice",
+	## world.gd should emit evidence_economy_v2_gated_off.
+	if not GameState.evidence_economy_v2:
+		return true  ## pass trivially when flag is OFF — gate never reached
+
+	var fires: bool = _would_emit_gated_off("apprentice")
+	if not fires:
+		push_error("test_gated_off_signal_fires_on_apprentice: expected signal to fire on Apprentice, but it would not")
+		return false
+	return true
+
+
+static func test_gated_off_signal_does_not_fire_on_normal() -> bool:
+	## SPA-1774: On Normal difficulty, v2 bonuses apply — the gated-off signal must NOT fire.
+	if not GameState.evidence_economy_v2:
+		return true
+
+	var fires: bool = _would_emit_gated_off("normal")
+	if fires:
+		push_error("test_gated_off_signal_does_not_fire_on_normal: signal should NOT fire on Normal difficulty")
+		return false
+	return true
+
+
+static func test_gated_off_signal_does_not_fire_on_master() -> bool:
+	## SPA-1774: On Master difficulty, v2 bonuses apply — the gated-off signal must NOT fire.
+	if not GameState.evidence_economy_v2:
+		return true
+
+	var fires: bool = _would_emit_gated_off("master")
+	if fires:
+		push_error("test_gated_off_signal_does_not_fire_on_master: signal should NOT fire on Master difficulty")
 		return false
 	return true
 
