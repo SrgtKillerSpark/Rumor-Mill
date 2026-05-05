@@ -208,14 +208,14 @@ func test_state_hint_no_expired_entry() -> bool:
 
 func test_initial_is_showing_false() -> bool:
 	var b := _make_bubble()
-	var ok := b._is_showing == false
+	var ok: bool = b._is_showing == false
 	b.free()
 	return ok
 
 
 func test_initial_current_state_unaware() -> bool:
 	var b := _make_bubble()
-	var ok := b._current_state == Rumor.RumorState.UNAWARE
+	var ok: bool = b._current_state == Rumor.RumorState.UNAWARE
 	b.free()
 	return ok
 
@@ -223,14 +223,14 @@ func test_initial_current_state_unaware() -> bool:
 func test_initial_label_null() -> bool:
 	var b := _make_bubble()
 	# _label is set in _ready(), which hasn't fired
-	var ok := b._label == null
+	var ok: bool = b._label == null
 	b.free()
 	return ok
 
 
 func test_initial_badge_bg_null() -> bool:
 	var b := _make_bubble()
-	var ok := b._badge_bg == null
+	var ok: bool = b._badge_bg == null
 	b.free()
 	return ok
 

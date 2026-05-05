@@ -62,28 +62,28 @@ func run() -> void:
 
 static func test_c_bg_dark() -> bool:
 	var mc := _make_mc()
-	var ok := mc.C_BG.r < 0.15 and mc.C_BG.a > 0.90
+	var ok: bool = mc.C_BG.r < 0.15 and mc.C_BG.a > 0.90
 	mc.free()
 	return ok
 
 
 static func test_c_border_gold() -> bool:
 	var mc := _make_mc()
-	var ok := mc.C_BORDER.r > 0.65 and mc.C_BORDER.g > 0.45 and mc.C_BORDER.b < 0.25
+	var ok: bool = mc.C_BORDER.r > 0.65 and mc.C_BORDER.g > 0.45 and mc.C_BORDER.b < 0.25
 	mc.free()
 	return ok
 
 
 static func test_c_badge_gold() -> bool:
 	var mc := _make_mc()
-	var ok := mc.C_BADGE.r > 0.85 and mc.C_BADGE.g > 0.70 and mc.C_BADGE.b < 0.20
+	var ok: bool = mc.C_BADGE.r > 0.85 and mc.C_BADGE.g > 0.70 and mc.C_BADGE.b < 0.20
 	mc.free()
 	return ok
 
 
 static func test_c_action_green() -> bool:
 	var mc := _make_mc()
-	var ok := mc.C_ACTION.g > 0.80 and mc.C_ACTION.r < 0.70
+	var ok: bool = mc.C_ACTION.g > 0.80 and mc.C_ACTION.r < 0.70
 	mc.free()
 	return ok
 
@@ -92,42 +92,42 @@ static func test_c_action_green() -> bool:
 
 static func test_popup_w() -> bool:
 	var mc := _make_mc()
-	var ok := mc.POPUP_W == 540
+	var ok: bool = mc.POPUP_W == 540
 	mc.free()
 	return ok
 
 
 static func test_popup_h() -> bool:
 	var mc := _make_mc()
-	var ok := mc.POPUP_H == 168
+	var ok: bool = mc.POPUP_H == 168
 	mc.free()
 	return ok
 
 
 static func test_popup_y() -> bool:
 	var mc := _make_mc()
-	var ok := mc.POPUP_Y == 72.0
+	var ok: bool = mc.POPUP_Y == 72.0
 	mc.free()
 	return ok
 
 
 static func test_vw() -> bool:
 	var mc := _make_mc()
-	var ok := mc.VW == 1280
+	var ok: bool = mc.VW == 1280
 	mc.free()
 	return ok
 
 
 static func test_auto_dismiss() -> bool:
 	var mc := _make_mc()
-	var ok := mc.AUTO_DISMISS == 8.0
+	var ok: bool = mc.AUTO_DISMISS == 8.0
 	mc.free()
 	return ok
 
 
 static func test_particle_cnt() -> bool:
 	var mc := _make_mc()
-	var ok := mc.PARTICLE_CNT == 22
+	var ok: bool = mc.PARTICLE_CNT == 22
 	mc.free()
 	return ok
 
@@ -136,20 +136,20 @@ static func test_particle_cnt() -> bool:
 
 static func test_initial_popup_root_null() -> bool:
 	var mc := _make_mc()
-	var ok := mc._popup_root == null
+	var ok: bool = mc._popup_root == null
 	mc.free()
 	return ok
 
 
 static func test_initial_dismiss_tween_null() -> bool:
 	var mc := _make_mc()
-	var ok := mc._dismiss_tween == null
+	var ok: bool = mc._dismiss_tween == null
 	mc.free()
 	return ok
 
 
 static func test_initial_is_dismissed_false() -> bool:
 	var mc := _make_mc()
-	var ok := mc._is_dismissed == false
+	var ok: bool = mc._is_dismissed == false
 	mc.free()
 	return ok

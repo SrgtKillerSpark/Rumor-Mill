@@ -244,7 +244,7 @@ static func test_setup_save_load_stores_world_ref() -> bool:
 	var pm := _make_pm()
 	var stub := Node2D.new()
 	pm.setup_save_load(stub, null, null)
-	var ok := pm._world_ref == stub
+	var ok: bool = pm._world_ref == stub
 	stub.free()
 	return ok
 
@@ -253,7 +253,7 @@ static func test_setup_save_load_stores_day_night_ref() -> bool:
 	var pm := _make_pm()
 	var stub := Node.new()
 	pm.setup_save_load(null, stub, null)
-	var ok := pm._day_night_ref == stub
+	var ok: bool = pm._day_night_ref == stub
 	stub.free()
 	return ok
 
@@ -262,7 +262,7 @@ static func test_setup_save_load_stores_journal_ref() -> bool:
 	var pm := _make_pm()
 	var stub := CanvasLayer.new()
 	pm.setup_save_load(null, null, stub)
-	var ok := pm._journal_ref == stub
+	var ok: bool = pm._journal_ref == stub
 	stub.free()
 	return ok
 

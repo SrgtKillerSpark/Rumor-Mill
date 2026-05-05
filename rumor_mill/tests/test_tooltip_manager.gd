@@ -64,28 +64,28 @@ func run() -> void:
 
 static func test_c_bg_dark() -> bool:
 	var tm := _make_tm()
-	var ok := tm.C_BG.r < 0.15 and tm.C_BG.a > 0.88
+	var ok: bool = tm.C_BG.r < 0.15 and tm.C_BG.a > 0.88
 	tm.free()
 	return ok
 
 
 static func test_c_border_amber() -> bool:
 	var tm := _make_tm()
-	var ok := tm.C_BORDER.r > 0.45 and tm.C_BORDER.b < 0.25
+	var ok: bool = tm.C_BORDER.r > 0.45 and tm.C_BORDER.b < 0.25
 	tm.free()
 	return ok
 
 
 static func test_c_title_gold() -> bool:
 	var tm := _make_tm()
-	var ok := tm.C_TITLE.r > 0.85 and tm.C_TITLE.g > 0.70 and tm.C_TITLE.b < 0.20
+	var ok: bool = tm.C_TITLE.r > 0.85 and tm.C_TITLE.g > 0.70 and tm.C_TITLE.b < 0.20
 	tm.free()
 	return ok
 
 
 static func test_c_body_parchment() -> bool:
 	var tm := _make_tm()
-	var ok := tm.C_BODY.r > 0.75 and tm.C_BODY.g > 0.68
+	var ok: bool = tm.C_BODY.r > 0.75 and tm.C_BODY.g > 0.68
 	tm.free()
 	return ok
 
@@ -94,35 +94,35 @@ static func test_c_body_parchment() -> bool:
 
 static func test_fade_in_sec() -> bool:
 	var tm := _make_tm()
-	var ok := abs(tm.FADE_IN_SEC - 0.12) < 0.001
+	var ok: bool = abs(tm.FADE_IN_SEC - 0.12) < 0.001
 	tm.free()
 	return ok
 
 
 static func test_fade_out_sec() -> bool:
 	var tm := _make_tm()
-	var ok := abs(tm.FADE_OUT_SEC - 0.10) < 0.001
+	var ok: bool = abs(tm.FADE_OUT_SEC - 0.10) < 0.001
 	tm.free()
 	return ok
 
 
 static func test_panel_w() -> bool:
 	var tm := _make_tm()
-	var ok := tm.PANEL_W == 280
+	var ok: bool = tm.PANEL_W == 280
 	tm.free()
 	return ok
 
 
 static func test_offset_x_positive() -> bool:
 	var tm := _make_tm()
-	var ok := tm.OFFSET.x > 0
+	var ok: bool = tm.OFFSET.x > 0
 	tm.free()
 	return ok
 
 
 static func test_offset_y_negative() -> bool:
 	var tm := _make_tm()
-	var ok := tm.OFFSET.y < 0
+	var ok: bool = tm.OFFSET.y < 0
 	tm.free()
 	return ok
 
@@ -131,34 +131,34 @@ static func test_offset_y_negative() -> bool:
 
 static func test_initial_panel_null() -> bool:
 	var tm := _make_tm()
-	var ok := tm._panel == null
+	var ok: bool = tm._panel == null
 	tm.free()
 	return ok
 
 
 static func test_initial_title_lbl_null() -> bool:
 	var tm := _make_tm()
-	var ok := tm._title_lbl == null
+	var ok: bool = tm._title_lbl == null
 	tm.free()
 	return ok
 
 
 static func test_initial_body_lbl_null() -> bool:
 	var tm := _make_tm()
-	var ok := tm._body_lbl == null
+	var ok: bool = tm._body_lbl == null
 	tm.free()
 	return ok
 
 
 static func test_initial_visible_flag_false() -> bool:
 	var tm := _make_tm()
-	var ok := tm._visible_flag == false
+	var ok: bool = tm._visible_flag == false
 	tm.free()
 	return ok
 
 
 static func test_initial_data_empty() -> bool:
 	var tm := _make_tm()
-	var ok := tm._data.is_empty()
+	var ok: bool = tm._data.is_empty()
 	tm.free()
 	return ok

@@ -241,21 +241,21 @@ func test_all_actions_have_desc() -> bool:
 
 func test_initial_current_npc_null() -> bool:
 	var p := _make_panel()
-	var ok := p._current_npc == null
+	var ok: bool = p._current_npc == null
 	p.free()
 	return ok
 
 
 func test_initial_world_ref_null() -> bool:
 	var p := _make_panel()
-	var ok := p._world_ref == null
+	var ok: bool = p._world_ref == null
 	p.free()
 	return ok
 
 
 func test_initial_intel_store_null() -> bool:
 	var p := _make_panel()
-	var ok := p._intel_store == null
+	var ok: bool = p._intel_store == null
 	p.free()
 	return ok
 
@@ -263,13 +263,13 @@ func test_initial_intel_store_null() -> bool:
 func test_initial_panel_null() -> bool:
 	# _panel is built in _ready(), which hasn't fired without scene tree
 	var p := _make_panel()
-	var ok := p._panel == null
+	var ok: bool = p._panel == null
 	p.free()
 	return ok
 
 
 func test_initial_action_btns_empty() -> bool:
 	var p := _make_panel()
-	var ok := p._action_btns.is_empty()
+	var ok: bool = p._action_btns.is_empty()
 	p.free()
 	return ok

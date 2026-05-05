@@ -83,21 +83,21 @@ func run() -> void:
 static func test_c_defend_is_sky_blue() -> bool:
 	var h := _make_hud()
 	# sky blue: moderate r, high g, max b
-	var ok := h.C_DEFEND.b > 0.90 and h.C_DEFEND.g > 0.70 and h.C_DEFEND.r < 0.65
+	var ok: bool = h.C_DEFEND.b > 0.90 and h.C_DEFEND.g > 0.70 and h.C_DEFEND.r < 0.65
 	h.free()
 	return ok
 
 
 static func test_c_merchant_is_green() -> bool:
 	var h := _make_hud()
-	var ok := h.C_MERCHANT.g > 0.65 and h.C_MERCHANT.r < 0.50
+	var ok: bool = h.C_MERCHANT.g > 0.65 and h.C_MERCHANT.r < 0.50
 	h.free()
 	return ok
 
 
 static func test_c_bishop_is_red() -> bool:
 	var h := _make_hud()
-	var ok := h.C_BISHOP.r > 0.75 and h.C_BISHOP.g < 0.45 and h.C_BISHOP.b < 0.30
+	var ok: bool = h.C_BISHOP.r > 0.75 and h.C_BISHOP.g < 0.45 and h.C_BISHOP.b < 0.30
 	h.free()
 	return ok
 
@@ -105,7 +105,7 @@ static func test_c_bishop_is_red() -> bool:
 static func test_c_clergy_is_violet() -> bool:
 	var h := _make_hud()
 	# violet: moderate r, moderate g, high b
-	var ok := h.C_CLERGY.b > 0.75 and h.C_CLERGY.r > 0.50
+	var ok: bool = h.C_CLERGY.b > 0.75 and h.C_CLERGY.r > 0.50
 	h.free()
 	return ok
 
@@ -114,28 +114,28 @@ static func test_c_clergy_is_violet() -> bool:
 
 static func test_npc_display_names_aldous() -> bool:
 	var h := _make_hud()
-	var ok := h.NPC_DISPLAY_NAMES.get("aldous_prior", "") == "Aldous Prior"
+	var ok: bool = h.NPC_DISPLAY_NAMES.get("aldous_prior", "") == "Aldous Prior"
 	h.free()
 	return ok
 
 
 static func test_npc_display_names_vera() -> bool:
 	var h := _make_hud()
-	var ok := h.NPC_DISPLAY_NAMES.get("vera_midwife", "") == "Vera Midwife"
+	var ok: bool = h.NPC_DISPLAY_NAMES.get("vera_midwife", "") == "Vera Midwife"
 	h.free()
 	return ok
 
 
 static func test_npc_display_names_finn() -> bool:
 	var h := _make_hud()
-	var ok := h.NPC_DISPLAY_NAMES.get("finn_monk", "") == "Finn Monk"
+	var ok: bool = h.NPC_DISPLAY_NAMES.get("finn_monk", "") == "Finn Monk"
 	h.free()
 	return ok
 
 
 static func test_npc_display_names_count() -> bool:
 	var h := _make_hud()
-	var ok := h.NPC_DISPLAY_NAMES.size() == 3
+	var ok: bool = h.NPC_DISPLAY_NAMES.size() == 3
 	h.free()
 	return ok
 
@@ -144,28 +144,28 @@ static func test_npc_display_names_count() -> bool:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_WIDTH == 160
+	var ok: bool = h.BAR_WIDTH == 160
 	h.free()
 	return ok
 
 
 static func test_bar_height() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_HEIGHT == 10
+	var ok: bool = h.BAR_HEIGHT == 10
 	h.free()
 	return ok
 
 
 static func test_faction_bar_w() -> bool:
 	var h := _make_hud()
-	var ok := h.FACTION_BAR_W == 60
+	var ok: bool = h.FACTION_BAR_W == 60
 	h.free()
 	return ok
 
 
 static func test_faction_bar_h() -> bool:
 	var h := _make_hud()
-	var ok := h.FACTION_BAR_H == 7
+	var ok: bool = h.FACTION_BAR_H == 7
 	h.free()
 	return ok
 
@@ -174,7 +174,7 @@ static func test_faction_bar_h() -> bool:
 
 static func test_scenario_number_is_four() -> bool:
 	var h := _make_hud()
-	var ok := h._scenario_number() == 4
+	var ok: bool = h._scenario_number() == 4
 	h.free()
 	return ok
 
@@ -183,21 +183,21 @@ static func test_scenario_number_is_four() -> bool:
 
 static func test_initial_phase_merchant_fired_false() -> bool:
 	var h := _make_hud()
-	var ok := h._phase_merchant_fired == false
+	var ok: bool = h._phase_merchant_fired == false
 	h.free()
 	return ok
 
 
 static func test_initial_phase_bishop_fired_false() -> bool:
 	var h := _make_hud()
-	var ok := h._phase_bishop_fired == false
+	var ok: bool = h._phase_bishop_fired == false
 	h.free()
 	return ok
 
 
 static func test_initial_phase_clergy_fired_false() -> bool:
 	var h := _make_hud()
-	var ok := h._phase_clergy_fired == false
+	var ok: bool = h._phase_clergy_fired == false
 	h.free()
 	return ok
 
@@ -206,7 +206,7 @@ static func test_initial_phase_clergy_fired_false() -> bool:
 
 static func test_initial_danger_pulse_active_false() -> bool:
 	var h := _make_hud()
-	var ok := h._danger_pulse_active == false
+	var ok: bool = h._danger_pulse_active == false
 	h.free()
 	return ok
 
@@ -215,21 +215,21 @@ static func test_initial_danger_pulse_active_false() -> bool:
 
 static func test_initial_score_labels_empty() -> bool:
 	var h := _make_hud()
-	var ok := h._score_labels.is_empty()
+	var ok: bool = h._score_labels.is_empty()
 	h.free()
 	return ok
 
 
 static func test_initial_bars_empty() -> bool:
 	var h := _make_hud()
-	var ok := h._bars.is_empty()
+	var ok: bool = h._bars.is_empty()
 	h.free()
 	return ok
 
 
 static func test_initial_faction_bar_fills_empty() -> bool:
 	var h := _make_hud()
-	var ok := h._faction_bar_fills.is_empty()
+	var ok: bool = h._faction_bar_fills.is_empty()
 	h.free()
 	return ok
 
@@ -238,14 +238,14 @@ static func test_initial_faction_bar_fills_empty() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._world_ref == null
+	var ok: bool = h._world_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_result_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._result_lbl == null
+	var ok: bool = h._result_lbl == null
 	h.free()
 	return ok
 
@@ -254,13 +254,13 @@ static func test_initial_result_lbl_null() -> bool:
 
 static func test_initial_inquisitor_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._inquisitor_lbl == null
+	var ok: bool = h._inquisitor_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_faction_shift_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._faction_shift_lbl == null
+	var ok: bool = h._faction_shift_lbl == null
 	h.free()
 	return ok

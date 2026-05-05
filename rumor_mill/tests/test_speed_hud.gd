@@ -66,21 +66,21 @@ func run() -> void:
 static func test_c_active_amber() -> bool:
 	var h := _make_hud()
 	# amber: moderate-high r, moderate g, low b
-	var ok := h.C_ACTIVE.r > 0.60 and h.C_ACTIVE.g > 0.45 and h.C_ACTIVE.b < 0.25
+	var ok: bool = h.C_ACTIVE.r > 0.60 and h.C_ACTIVE.g > 0.45 and h.C_ACTIVE.b < 0.25
 	h.free()
 	return ok
 
 
 static func test_c_normal_very_dark() -> bool:
 	var h := _make_hud()
-	var ok := h.C_NORMAL.r < 0.25 and h.C_NORMAL.g < 0.20
+	var ok: bool = h.C_NORMAL.r < 0.25 and h.C_NORMAL.g < 0.20
 	h.free()
 	return ok
 
 
 static func test_c_text_near_white() -> bool:
 	var h := _make_hud()
-	var ok := h.C_TEXT.r > 0.90 and h.C_TEXT.g > 0.85 and h.C_TEXT.b > 0.75
+	var ok: bool = h.C_TEXT.r > 0.90 and h.C_TEXT.g > 0.85 and h.C_TEXT.b > 0.75
 	h.free()
 	return ok
 
@@ -88,17 +88,17 @@ static func test_c_text_near_white() -> bool:
 # ── Speed enum ordinals ───────────────────────────────────────────────────────
 
 static func test_speed_pause_is_zero() -> bool:
-	var ok := SpeedHudScript.Speed.PAUSE == 0
+	var ok: bool = SpeedHudScript.Speed.PAUSE == 0
 	return ok
 
 
 static func test_speed_normal_is_one() -> bool:
-	var ok := SpeedHudScript.Speed.NORMAL == 1
+	var ok: bool = SpeedHudScript.Speed.NORMAL == 1
 	return ok
 
 
 static func test_speed_fast_is_two() -> bool:
-	var ok := SpeedHudScript.Speed.FAST == 2
+	var ok: bool = SpeedHudScript.Speed.FAST == 2
 	return ok
 
 
@@ -106,14 +106,14 @@ static func test_speed_fast_is_two() -> bool:
 
 static func test_tick_duration_count() -> bool:
 	var h := _make_hud()
-	var ok := h.TICK_DURATION.size() == 2
+	var ok: bool = h.TICK_DURATION.size() == 2
 	h.free()
 	return ok
 
 
 static func test_tick_duration_normal() -> bool:
 	var h := _make_hud()
-	var ok := h.TICK_DURATION.get(SpeedHudScript.Speed.NORMAL, -1.0) == 1.0
+	var ok: bool = h.TICK_DURATION.get(SpeedHudScript.Speed.NORMAL, -1.0) == 1.0
 	h.free()
 	return ok
 
@@ -122,7 +122,7 @@ static func test_tick_duration_fast() -> bool:
 	var h := _make_hud()
 	# 0.333 with float tolerance
 	var val: float = h.TICK_DURATION.get(SpeedHudScript.Speed.FAST, -1.0)
-	var ok := abs(val - 0.333) < 0.001
+	var ok: bool = abs(val - 0.333) < 0.001
 	h.free()
 	return ok
 
@@ -131,48 +131,48 @@ static func test_tick_duration_fast() -> bool:
 
 static func test_initial_speed_is_normal() -> bool:
 	var h := _make_hud()
-	var ok := h._speed == SpeedHudScript.Speed.NORMAL
+	var ok: bool = h._speed == SpeedHudScript.Speed.NORMAL
 	h.free()
 	return ok
 
 
 static func test_initial_day_night_null() -> bool:
 	var h := _make_hud()
-	var ok := h._day_night == null
+	var ok: bool = h._day_night == null
 	h.free()
 	return ok
 
 
 static func test_initial_intel_store_null() -> bool:
 	var h := _make_hud()
-	var ok := h._intel_store == null
+	var ok: bool = h._intel_store == null
 	h.free()
 	return ok
 
 
 static func test_initial_btn_pause_null() -> bool:
 	var h := _make_hud()
-	var ok := h._btn_pause == null
+	var ok: bool = h._btn_pause == null
 	h.free()
 	return ok
 
 
 static func test_initial_btn_normal_null() -> bool:
 	var h := _make_hud()
-	var ok := h._btn_normal == null
+	var ok: bool = h._btn_normal == null
 	h.free()
 	return ok
 
 
 static func test_initial_btn_fast_null() -> bool:
 	var h := _make_hud()
-	var ok := h._btn_fast == null
+	var ok: bool = h._btn_fast == null
 	h.free()
 	return ok
 
 
 static func test_initial_btn_end_day_null() -> bool:
 	var h := _make_hud()
-	var ok := h._btn_end_day == null
+	var ok: bool = h._btn_end_day == null
 	h.free()
 	return ok

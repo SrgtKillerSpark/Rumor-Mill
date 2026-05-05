@@ -119,7 +119,7 @@ func test_spread_far_npc_no_contribution() -> bool:
 	e.setup(world, null)
 	var res: Dictionary = e.estimate_spread(seed)
 	# Manhattan dist = 20 > SPREAD_RADIUS 8 → contribution = 0
-	var ok := is_equal_approx(res["value"], 0.0)
+	var ok: bool = is_equal_approx(res["value"], 0.0)
 	seed.free()
 	far.free()
 	world.free()
@@ -134,7 +134,7 @@ func test_spread_nearby_npc_contributes() -> bool:
 	e.setup(world, null)
 	var res: Dictionary = e.estimate_spread(seed)
 	# dist = |3|+|2| = 5 ≤ 8 → count += 0.7
-	var ok := res["value"] > 0.0
+	var ok: bool = res["value"] > 0.0
 	seed.free()
 	near.free()
 	world.free()
@@ -168,7 +168,7 @@ func test_believability_same_faction_bonus() -> bool:
 	e.setup(world, null)
 	var res: Dictionary = e.estimate_believability("npc_b", "claim_1", "npc_a")
 	# base 0.60 + same-faction 0.15 = 0.75
-	var ok := is_equal_approx(res["value"], 0.75)
+	var ok: bool = is_equal_approx(res["value"], 0.75)
 	npc_a.free()
 	npc_b.free()
 	world.free()
@@ -181,7 +181,7 @@ func test_believability_intensity_five() -> bool:
 	e.setup(world, null)
 	var res: Dictionary = e.estimate_believability("seed", "claim_hi", "subject")
 	# base = 5/5 = 1.0, clamped at 1.0
-	var ok := is_equal_approx(res["value"], 1.0)
+	var ok: bool = is_equal_approx(res["value"], 1.0)
 	world.free()
 	return ok
 
@@ -216,7 +216,7 @@ func test_believability_value_clamped_to_one() -> bool:
 	e.setup(world, null)
 	var res: Dictionary = e.estimate_believability("npc_b", "top", "npc_a")
 	# base 1.0 + faction bonus 0.15 → clamped to 1.0
-	var ok := res["value"] <= 1.0 and res["value"] > 0.9
+	var ok: bool = res["value"] <= 1.0 and res["value"] > 0.9
 	npc_a.free()
 	npc_b.free()
 	world.free()

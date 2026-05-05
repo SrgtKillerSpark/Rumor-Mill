@@ -85,14 +85,14 @@ func run() -> void:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_WIDTH == 160
+	var ok: bool = h.BAR_WIDTH == 160
 	h.free()
 	return ok
 
 
 static func test_bar_height() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_HEIGHT == 12
+	var ok: bool = h.BAR_HEIGHT == 12
 	h.free()
 	return ok
 
@@ -101,7 +101,7 @@ static func test_bar_height() -> bool:
 
 static func test_scenario_number_is_three() -> bool:
 	var h := _make_hud()
-	var ok := h._scenario_number() == 3
+	var ok: bool = h._scenario_number() == 3
 	h.free()
 	return ok
 
@@ -110,63 +110,63 @@ static func test_scenario_number_is_three() -> bool:
 
 static func test_initial_calder_score_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._calder_score_lbl == null
+	var ok: bool = h._calder_score_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_tomas_score_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._tomas_score_lbl == null
+	var ok: bool = h._tomas_score_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_calder_bar_null() -> bool:
 	var h := _make_hud()
-	var ok := h._calder_bar == null
+	var ok: bool = h._calder_bar == null
 	h.free()
 	return ok
 
 
 static func test_initial_tomas_bar_null() -> bool:
 	var h := _make_hud()
-	var ok := h._tomas_bar == null
+	var ok: bool = h._tomas_bar == null
 	h.free()
 	return ok
 
 
 static func test_initial_rival_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._rival_lbl == null
+	var ok: bool = h._rival_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_disrupt_btn_null() -> bool:
 	var h := _make_hud()
-	var ok := h._disrupt_btn == null
+	var ok: bool = h._disrupt_btn == null
 	h.free()
 	return ok
 
 
 static func test_initial_scout_btn_null() -> bool:
 	var h := _make_hud()
-	var ok := h._scout_btn == null
+	var ok: bool = h._scout_btn == null
 	h.free()
 	return ok
 
 
 static func test_initial_scout_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._scout_lbl == null
+	var ok: bool = h._scout_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_degrade_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._degrade_lbl == null
+	var ok: bool = h._degrade_lbl == null
 	h.free()
 	return ok
 
@@ -175,14 +175,14 @@ static func test_initial_degrade_lbl_null() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._world_ref == null
+	var ok: bool = h._world_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_result_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._result_lbl == null
+	var ok: bool = h._result_lbl == null
 	h.free()
 	return ok
 
@@ -194,7 +194,7 @@ static func test_initial_result_lbl_null() -> bool:
 static func test_bar_color_hib_at_target_returns_win() -> bool:
 	var h := _make_hud()
 	var got := h._bar_color_for_score(75, true, 75)
-	var ok := got.is_equal_approx(C_WIN)
+	var ok: bool = got.is_equal_approx(C_WIN)
 	if not ok:
 		push_error("test_bar_color_hib_at_target: got %s, expected C_WIN %s" % [got, C_WIN])
 	h.free()
@@ -204,7 +204,7 @@ static func test_bar_color_hib_at_target_returns_win() -> bool:
 static func test_bar_color_hib_above_target_returns_win() -> bool:
 	var h := _make_hud()
 	var got := h._bar_color_for_score(90, true, 75)
-	var ok := got.is_equal_approx(C_WIN)
+	var ok: bool = got.is_equal_approx(C_WIN)
 	h.free()
 	return ok
 
@@ -213,7 +213,7 @@ static func test_bar_color_hib_above_target_returns_win() -> bool:
 static func test_bar_color_hib_halfway_returns_neutral() -> bool:
 	var h := _make_hud()
 	var got := h._bar_color_for_score(50, true, 75)
-	var ok := got.is_equal_approx(C_NEUTRAL)
+	var ok: bool = got.is_equal_approx(C_NEUTRAL)
 	if not ok:
 		push_error("test_bar_color_hib_halfway: got %s, expected C_NEUTRAL %s" % [got, C_NEUTRAL])
 	h.free()
@@ -224,7 +224,7 @@ static func test_bar_color_hib_halfway_returns_neutral() -> bool:
 static func test_bar_color_hib_below_half_returns_fail() -> bool:
 	var h := _make_hud()
 	var got := h._bar_color_for_score(30, true, 75)
-	var ok := got.is_equal_approx(C_FAIL)
+	var ok: bool = got.is_equal_approx(C_FAIL)
 	h.free()
 	return ok
 
@@ -237,7 +237,7 @@ static func test_bar_color_hib_below_half_returns_fail() -> bool:
 static func test_bar_color_lib_at_target_returns_win() -> bool:
 	var h := _make_hud()
 	var got := h._bar_color_for_score(30, false, 35)
-	var ok := got.is_equal_approx(C_WIN)
+	var ok: bool = got.is_equal_approx(C_WIN)
 	h.free()
 	return ok
 
@@ -246,7 +246,7 @@ static func test_bar_color_lib_at_target_returns_win() -> bool:
 static func test_bar_color_lib_halfway_returns_neutral() -> bool:
 	var h := _make_hud()
 	var got := h._bar_color_for_score(55, false, 35)
-	var ok := got.is_equal_approx(C_NEUTRAL)
+	var ok: bool = got.is_equal_approx(C_NEUTRAL)
 	if not ok:
 		push_error("test_bar_color_lib_halfway: got %s, expected C_NEUTRAL %s" % [got, C_NEUTRAL])
 	h.free()
@@ -257,6 +257,6 @@ static func test_bar_color_lib_halfway_returns_neutral() -> bool:
 static func test_bar_color_lib_above_target_returns_fail() -> bool:
 	var h := _make_hud()
 	var got := h._bar_color_for_score(80, false, 35)
-	var ok := got.is_equal_approx(C_FAIL)
+	var ok: bool = got.is_equal_approx(C_FAIL)
 	h.free()
 	return ok

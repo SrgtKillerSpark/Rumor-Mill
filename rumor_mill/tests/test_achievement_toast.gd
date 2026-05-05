@@ -52,14 +52,14 @@ func run() -> void:
 
 static func test_auto_dismiss_sec() -> bool:
 	var t := _make_toast()
-	var ok := t.AUTO_DISMISS_SEC == 5.0
+	var ok: bool = t.AUTO_DISMISS_SEC == 5.0
 	t.free()
 	return ok
 
 
 static func test_layer_value() -> bool:
 	var t := _make_toast()
-	var ok := t.layer == 120
+	var ok: bool = t.layer == 120
 	t.free()
 	return ok
 
@@ -68,14 +68,14 @@ static func test_layer_value() -> bool:
 
 static func test_initial_queue_empty() -> bool:
 	var t := _make_toast()
-	var ok := t._queue.is_empty()
+	var ok: bool = t._queue.is_empty()
 	t.free()
 	return ok
 
 
 static func test_initial_is_showing_false() -> bool:
 	var t := _make_toast()
-	var ok := not t._is_showing
+	var ok: bool = not t._is_showing
 	t.free()
 	return ok
 
@@ -88,7 +88,7 @@ static func test_show_achievement_enqueues_when_showing() -> bool:
 	var t := _make_toast()
 	t._is_showing = true
 	t.show_achievement("Test Achievement")
-	var ok := t._queue.size() == 1 and t._queue[0] == "Test Achievement"
+	var ok: bool = t._queue.size() == 1 and t._queue[0] == "Test Achievement"
 	t.free()
 	return ok
 
@@ -97,6 +97,6 @@ static func test_drain_queue_empty_is_noop() -> bool:
 	# _drain_queue() with an empty queue must not crash or change state.
 	var t := _make_toast()
 	t._drain_queue()   # should be a no-op
-	var ok := not t._is_showing and t._queue.is_empty()
+	var ok: bool = not t._is_showing and t._queue.is_empty()
 	t.free()
 	return ok

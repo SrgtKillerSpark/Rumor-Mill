@@ -53,7 +53,7 @@ func run() -> void:
 static func test_c_suggestion_soft_green() -> bool:
 	var t := _make_toast()
 	# soft green: moderate r, high g, moderate b
-	var ok := t.C_SUGGESTION.g > 0.80 and t.C_SUGGESTION.r > 0.70 and t.C_SUGGESTION.r < 0.90
+	var ok: bool = t.C_SUGGESTION.g > 0.80 and t.C_SUGGESTION.r > 0.70 and t.C_SUGGESTION.r < 0.90
 	t.free()
 	return ok
 
@@ -62,14 +62,14 @@ static func test_c_suggestion_soft_green() -> bool:
 
 static func test_auto_dismiss_sec() -> bool:
 	var t := _make_toast()
-	var ok := t.AUTO_DISMISS_SEC == 8.0
+	var ok: bool = t.AUTO_DISMISS_SEC == 8.0
 	t.free()
 	return ok
 
 
 static func test_fast_dismiss_threshold_sec() -> bool:
 	var t := _make_toast()
-	var ok := t.FAST_DISMISS_THRESHOLD_SEC == 1.0
+	var ok: bool = t.FAST_DISMISS_THRESHOLD_SEC == 1.0
 	t.free()
 	return ok
 
@@ -78,6 +78,6 @@ static func test_fast_dismiss_threshold_sec() -> bool:
 
 static func test_initial_shown_at_sec_zero() -> bool:
 	var t := _make_toast()
-	var ok := t._shown_at_sec == 0.0
+	var ok: bool = t._shown_at_sec == 0.0
 	t.free()
 	return ok

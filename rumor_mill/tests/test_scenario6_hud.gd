@@ -86,7 +86,7 @@ func run() -> void:
 static func test_c_heat_yellow_is_yellow() -> bool:
 	var h := _make_hud()
 	# yellow: high r, high g, low b
-	var ok := h.C_HEAT_YELLOW.r > 0.90 and h.C_HEAT_YELLOW.g > 0.80 and h.C_HEAT_YELLOW.b < 0.20
+	var ok: bool = h.C_HEAT_YELLOW.r > 0.90 and h.C_HEAT_YELLOW.g > 0.80 and h.C_HEAT_YELLOW.b < 0.20
 	h.free()
 	return ok
 
@@ -94,7 +94,7 @@ static func test_c_heat_yellow_is_yellow() -> bool:
 static func test_c_heat_orange_is_orange() -> bool:
 	var h := _make_hud()
 	# orange: high r, moderate g, near-zero b
-	var ok := h.C_HEAT_ORANGE.r > 0.85 and h.C_HEAT_ORANGE.g > 0.40 and h.C_HEAT_ORANGE.b < 0.15
+	var ok: bool = h.C_HEAT_ORANGE.r > 0.85 and h.C_HEAT_ORANGE.g > 0.40 and h.C_HEAT_ORANGE.b < 0.15
 	h.free()
 	return ok
 
@@ -103,14 +103,14 @@ static func test_c_heat_orange_is_orange() -> bool:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_WIDTH == 160
+	var ok: bool = h.BAR_WIDTH == 160
 	h.free()
 	return ok
 
 
 static func test_bar_height() -> bool:
 	var h := _make_hud()
-	var ok := h.BAR_HEIGHT == 10
+	var ok: bool = h.BAR_HEIGHT == 10
 	h.free()
 	return ok
 
@@ -119,7 +119,7 @@ static func test_bar_height() -> bool:
 
 static func test_blackmail_whisper_cost_positive() -> bool:
 	var h := _make_hud()
-	var ok := h.BLACKMAIL_WHISPER_COST > 0
+	var ok: bool = h.BLACKMAIL_WHISPER_COST > 0
 	h.free()
 	return ok
 
@@ -127,28 +127,28 @@ static func test_blackmail_whisper_cost_positive() -> bool:
 ## REP_HIT is a signed delta — just verify it is non-zero
 static func test_blackmail_rep_hit_nonzero() -> bool:
 	var h := _make_hud()
-	var ok := h.BLACKMAIL_REP_HIT != 0
+	var ok: bool = h.BLACKMAIL_REP_HIT != 0
 	h.free()
 	return ok
 
 
 static func test_blackmail_heat_add_positive() -> bool:
 	var h := _make_hud()
-	var ok := h.BLACKMAIL_HEAT_ADD > 0
+	var ok: bool = h.BLACKMAIL_HEAT_ADD > 0
 	h.free()
 	return ok
 
 
 static func test_blackmail_max_uses_positive() -> bool:
 	var h := _make_hud()
-	var ok := h.BLACKMAIL_MAX_USES > 0
+	var ok: bool = h.BLACKMAIL_MAX_USES > 0
 	h.free()
 	return ok
 
 
 static func test_blackmail_heat_npcs_nonempty() -> bool:
 	var h := _make_hud()
-	var ok := h.BLACKMAIL_HEAT_NPCS.size() > 0
+	var ok: bool = h.BLACKMAIL_HEAT_NPCS.size() > 0
 	h.free()
 	return ok
 
@@ -157,7 +157,7 @@ static func test_blackmail_heat_npcs_nonempty() -> bool:
 
 static func test_scenario_number_is_six() -> bool:
 	var h := _make_hud()
-	var ok := h._scenario_number() == 6
+	var ok: bool = h._scenario_number() == 6
 	h.free()
 	return ok
 
@@ -166,14 +166,14 @@ static func test_scenario_number_is_six() -> bool:
 
 static func test_initial_guild_last_defense_day() -> bool:
 	var h := _make_hud()
-	var ok := h._guild_last_defense_day == -1
+	var ok: bool = h._guild_last_defense_day == -1
 	h.free()
 	return ok
 
 
 static func test_initial_guild_defenses_this_run() -> bool:
 	var h := _make_hud()
-	var ok := h._guild_defenses_this_run == 0
+	var ok: bool = h._guild_defenses_this_run == 0
 	h.free()
 	return ok
 
@@ -182,112 +182,112 @@ static func test_initial_guild_defenses_this_run() -> bool:
 
 static func test_initial_aldric_score_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._aldric_score_lbl == null
+	var ok: bool = h._aldric_score_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_marta_score_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._marta_score_lbl == null
+	var ok: bool = h._marta_score_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_heat_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._heat_lbl == null
+	var ok: bool = h._heat_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_aldric_bar_null() -> bool:
 	var h := _make_hud()
-	var ok := h._aldric_bar == null
+	var ok: bool = h._aldric_bar == null
 	h.free()
 	return ok
 
 
 static func test_initial_aldric_bar_bg_null() -> bool:
 	var h := _make_hud()
-	var ok := h._aldric_bar_bg == null
+	var ok: bool = h._aldric_bar_bg == null
 	h.free()
 	return ok
 
 
 static func test_initial_marta_bar_null() -> bool:
 	var h := _make_hud()
-	var ok := h._marta_bar == null
+	var ok: bool = h._marta_bar == null
 	h.free()
 	return ok
 
 
 static func test_initial_marta_bar_bg_null() -> bool:
 	var h := _make_hud()
-	var ok := h._marta_bar_bg == null
+	var ok: bool = h._marta_bar_bg == null
 	h.free()
 	return ok
 
 
 static func test_initial_heat_bar_null() -> bool:
 	var h := _make_hud()
-	var ok := h._heat_bar == null
+	var ok: bool = h._heat_bar == null
 	h.free()
 	return ok
 
 
 static func test_initial_heat_bar_bg_null() -> bool:
 	var h := _make_hud()
-	var ok := h._heat_bar_bg == null
+	var ok: bool = h._heat_bar_bg == null
 	h.free()
 	return ok
 
 
 static func test_initial_guild_defense_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._guild_defense_lbl == null
+	var ok: bool = h._guild_defense_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_guild_threat_bar_null() -> bool:
 	var h := _make_hud()
-	var ok := h._guild_threat_bar == null
+	var ok: bool = h._guild_threat_bar == null
 	h.free()
 	return ok
 
 
 static func test_initial_guild_threat_bg_null() -> bool:
 	var h := _make_hud()
-	var ok := h._guild_threat_bg == null
+	var ok: bool = h._guild_threat_bg == null
 	h.free()
 	return ok
 
 
 static func test_initial_guild_defense_agent_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._guild_defense_agent_ref == null
+	var ok: bool = h._guild_defense_agent_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_event_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._event_lbl == null
+	var ok: bool = h._event_lbl == null
 	h.free()
 	return ok
 
 
 static func test_initial_blackmail_btn_null() -> bool:
 	var h := _make_hud()
-	var ok := h._blackmail_btn == null
+	var ok: bool = h._blackmail_btn == null
 	h.free()
 	return ok
 
 
 static func test_initial_blackmail_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._blackmail_lbl == null
+	var ok: bool = h._blackmail_lbl == null
 	h.free()
 	return ok
 
@@ -296,13 +296,13 @@ static func test_initial_blackmail_lbl_null() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var h := _make_hud()
-	var ok := h._world_ref == null
+	var ok: bool = h._world_ref == null
 	h.free()
 	return ok
 
 
 static func test_initial_result_lbl_null() -> bool:
 	var h := _make_hud()
-	var ok := h._result_lbl == null
+	var ok: bool = h._result_lbl == null
 	h.free()
 	return ok

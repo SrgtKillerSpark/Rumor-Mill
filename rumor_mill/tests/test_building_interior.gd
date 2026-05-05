@@ -232,7 +232,7 @@ func test_refresh_roster_no_op_when_world_null() -> bool:
 	bi._building_key = "tavern"
 	# _world_ref intentionally left null — guard must fire.
 	bi._refresh_npc_roster()
-	var ok := label.text.is_empty()
+	var ok: bool = label.text.is_empty()
 	label.free()
 	return ok
 
@@ -246,7 +246,7 @@ func test_refresh_roster_no_op_when_key_empty() -> bool:
 	bi._world_ref  = _WorldStub.new()
 	# _building_key intentionally left "" — guard must fire.
 	bi._refresh_npc_roster()
-	var ok := label.text.is_empty()
+	var ok: bool = label.text.is_empty()
 	label.free()
 	return ok
 
@@ -259,7 +259,7 @@ func test_refresh_roster_empty_nearby_shows_no_patrons() -> bool:
 	var bi: CanvasLayer = parts[0]
 	# world stub starts with empty npcs list — nothing to show.
 	bi._refresh_npc_roster()
-	var ok := bi._npc_roster.text.contains("No patrons visible")
+	var ok: bool = bi._npc_roster.text.contains("No patrons visible")
 	(parts[2] as RichTextLabel).free()
 	return ok
 
@@ -275,7 +275,7 @@ func test_refresh_roster_builds_header_line() -> bool:
 	world.npcs   = [npc]
 
 	bi._refresh_npc_roster()
-	var ok := bi._npc_roster.text.contains("Inside:")
+	var ok: bool = bi._npc_roster.text.contains("Inside:")
 	(parts[2] as RichTextLabel).free()
 	return ok
 
@@ -291,7 +291,7 @@ func test_refresh_roster_includes_npc_name() -> bool:
 	world.npcs   = [npc]
 
 	bi._refresh_npc_roster()
-	var ok := bi._npc_roster.text.contains("Sister Marta")
+	var ok: bool = bi._npc_roster.text.contains("Sister Marta")
 	(parts[2] as RichTextLabel).free()
 	return ok
 
@@ -308,7 +308,7 @@ func test_refresh_roster_includes_faction_label_colour() -> bool:
 
 	bi._refresh_npc_roster()
 	# FACTION_LABEL["merchant"] wraps "Merchant" in colour tags.
-	var ok := bi._npc_roster.text.contains("Merchant")
+	var ok: bool = bi._npc_roster.text.contains("Merchant")
 	(parts[2] as RichTextLabel).free()
 	return ok
 
@@ -325,6 +325,6 @@ func test_refresh_roster_unknown_faction_capitalised() -> bool:
 
 	bi._refresh_npc_roster()
 	# "pirate".capitalize() == "Pirate" must appear in roster text.
-	var ok := bi._npc_roster.text.contains("Pirate")
+	var ok: bool = bi._npc_roster.text.contains("Pirate")
 	(parts[2] as RichTextLabel).free()
 	return ok

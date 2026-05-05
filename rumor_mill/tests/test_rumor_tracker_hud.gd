@@ -118,14 +118,14 @@ func run() -> void:
 
 static func test_max_rows_constant() -> bool:
 	var hud := _make_hud()
-	var ok := hud.MAX_ROWS == 4
+	var ok: bool = hud.MAX_ROWS == 4
 	hud.free()
 	return ok
 
 
 static func test_flash_duration_constant() -> bool:
 	var hud := _make_hud()
-	var ok := hud._FLASH_DURATION == 8
+	var ok: bool = hud._FLASH_DURATION == 8
 	hud.free()
 	return ok
 
@@ -136,35 +136,35 @@ static func test_flash_duration_constant() -> bool:
 
 static func test_c_reach_low_alpha_one() -> bool:
 	var hud := _make_hud()
-	var ok := is_equal_approx(hud.C_REACH_LOW.a, 1.0)
+	var ok: bool = is_equal_approx(hud.C_REACH_LOW.a, 1.0)
 	hud.free()
 	return ok
 
 
 static func test_c_reach_med_alpha_one() -> bool:
 	var hud := _make_hud()
-	var ok := is_equal_approx(hud.C_REACH_MED.a, 1.0)
+	var ok: bool = is_equal_approx(hud.C_REACH_MED.a, 1.0)
 	hud.free()
 	return ok
 
 
 static func test_c_reach_hi_alpha_one() -> bool:
 	var hud := _make_hud()
-	var ok := is_equal_approx(hud.C_REACH_HI.a, 1.0)
+	var ok: bool = is_equal_approx(hud.C_REACH_HI.a, 1.0)
 	hud.free()
 	return ok
 
 
 static func test_c_mut_label_alpha_one() -> bool:
 	var hud := _make_hud()
-	var ok := is_equal_approx(hud.C_MUT_LABEL.a, 1.0)
+	var ok: bool = is_equal_approx(hud.C_MUT_LABEL.a, 1.0)
 	hud.free()
 	return ok
 
 
 static func test_c_key_npc_alpha_one() -> bool:
 	var hud := _make_hud()
-	var ok := is_equal_approx(hud.C_KEY_NPC.a, 1.0)
+	var ok: bool = is_equal_approx(hud.C_KEY_NPC.a, 1.0)
 	hud.free()
 	return ok
 
@@ -175,7 +175,7 @@ static func test_c_key_npc_alpha_one() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var hud := _make_hud()
-	var ok := hud._world_ref == null
+	var ok: bool = hud._world_ref == null
 	hud.free()
 	return ok
 
@@ -183,28 +183,28 @@ static func test_initial_world_ref_null() -> bool:
 static func test_initial_panel_null() -> bool:
 	var hud := _make_hud()
 	# _build_ui() is called from _ready() which is skipped outside the scene tree.
-	var ok := hud._panel == null
+	var ok: bool = hud._panel == null
 	hud.free()
 	return ok
 
 
 static func test_initial_vbox_null() -> bool:
 	var hud := _make_hud()
-	var ok := hud._vbox == null
+	var ok: bool = hud._vbox == null
 	hud.free()
 	return ok
 
 
 static func test_initial_title_lbl_null() -> bool:
 	var hud := _make_hud()
-	var ok := hud._title_lbl == null
+	var ok: bool = hud._title_lbl == null
 	hud.free()
 	return ok
 
 
 static func test_initial_key_npc_flashes_empty() -> bool:
 	var hud := _make_hud()
-	var ok := hud._key_npc_flashes.is_empty()
+	var ok: bool = hud._key_npc_flashes.is_empty()
 	hud.free()
 	return ok
 
@@ -217,7 +217,7 @@ static func test_initial_key_npc_flashes_empty() -> bool:
 static func test_key_npc_reached_adds_flash_entry() -> bool:
 	var hud := _make_hud()
 	hud._on_key_npc_reached("Aldric", "rp_test")
-	var ok := hud._key_npc_flashes.has("Aldric")
+	var ok: bool = hud._key_npc_flashes.has("Aldric")
 	hud.free()
 	return ok
 
@@ -226,7 +226,7 @@ static func test_key_npc_reached_adds_flash_entry() -> bool:
 static func test_key_npc_reached_sets_flash_duration() -> bool:
 	var hud := _make_hud()
 	hud._on_key_npc_reached("Mira", "rp_test")
-	var ok := hud._key_npc_flashes["Mira"] == hud._FLASH_DURATION
+	var ok: bool = hud._key_npc_flashes["Mira"] == hud._FLASH_DURATION
 	hud.free()
 	return ok
 
@@ -239,7 +239,7 @@ static func test_key_npc_reached_resets_existing_timer() -> bool:
 	hud._key_npc_flashes["Aldric"] = 2
 	# Second reach resets it.
 	hud._on_key_npc_reached("Aldric", "rp_b")
-	var ok := hud._key_npc_flashes["Aldric"] == hud._FLASH_DURATION
+	var ok: bool = hud._key_npc_flashes["Aldric"] == hud._FLASH_DURATION
 	hud.free()
 	return ok
 
@@ -253,7 +253,7 @@ static func test_game_tick_decrements_flash_timer() -> bool:
 	var hud := _make_hud()
 	hud._key_npc_flashes["Bjorn"] = 5
 	hud._on_game_tick(1)
-	var ok := hud._key_npc_flashes.get("Bjorn", -99) == 4
+	var ok: bool = hud._key_npc_flashes.get("Bjorn", -99) == 4
 	hud.free()
 	return ok
 
@@ -263,7 +263,7 @@ static func test_game_tick_erases_entry_at_zero() -> bool:
 	var hud := _make_hud()
 	hud._key_npc_flashes["Lena"] = 1
 	hud._on_game_tick(1)
-	var ok := not hud._key_npc_flashes.has("Lena")
+	var ok: bool = not hud._key_npc_flashes.has("Lena")
 	hud.free()
 	return ok
 
@@ -273,7 +273,7 @@ static func test_game_tick_does_not_erase_positive_timer() -> bool:
 	var hud := _make_hud()
 	hud._key_npc_flashes["Vance"] = 3
 	hud._on_game_tick(1)
-	var ok := hud._key_npc_flashes.has("Vance")
+	var ok: bool = hud._key_npc_flashes.has("Vance")
 	hud.free()
 	return ok
 

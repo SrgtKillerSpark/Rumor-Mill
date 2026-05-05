@@ -57,14 +57,14 @@ func run() -> void:
 
 static func test_tile_w() -> bool:
 	var d := _make_do()
-	var ok := d.TILE_W == 64
+	var ok: bool = d.TILE_W == 64
 	d.free()
 	return ok
 
 
 static func test_tile_h() -> bool:
 	var d := _make_do()
-	var ok := d.TILE_H == 32
+	var ok: bool = d.TILE_H == 32
 	d.free()
 	return ok
 
@@ -73,14 +73,14 @@ static func test_tile_h() -> bool:
 
 static func test_districts_count() -> bool:
 	var d := _make_do()
-	var ok := d.DISTRICTS.size() == 5
+	var ok: bool = d.DISTRICTS.size() == 5
 	d.free()
 	return ok
 
 
 static func test_districts_all_have_label() -> bool:
 	var d := _make_do()
-	var ok := true
+	var ok: bool = true
 	for dist in d.DISTRICTS:
 		if not dist.has("label") or (dist["label"] as String).is_empty():
 			ok = false
@@ -91,7 +91,7 @@ static func test_districts_all_have_label() -> bool:
 
 static func test_districts_all_have_bounds() -> bool:
 	var d := _make_do()
-	var ok := true
+	var ok: bool = true
 	for dist in d.DISTRICTS:
 		if not (dist.has("x1") and dist.has("y1") and dist.has("x2") and dist.has("y2")):
 			ok = false
@@ -109,7 +109,7 @@ static func test_districts_all_have_bounds() -> bool:
 static func test_iso_origin() -> bool:
 	var d := _make_do()
 	var got: Vector2 = d._iso(0, 0)
-	var ok := got.is_equal_approx(Vector2(0.0, 0.0))
+	var ok: bool = got.is_equal_approx(Vector2(0.0, 0.0))
 	d.free()
 	return ok
 
@@ -118,7 +118,7 @@ static func test_iso_origin() -> bool:
 static func test_iso_one_zero() -> bool:
 	var d := _make_do()
 	var got: Vector2 = d._iso(1, 0)
-	var ok := got.is_equal_approx(Vector2(32.0, 16.0))
+	var ok: bool = got.is_equal_approx(Vector2(32.0, 16.0))
 	d.free()
 	return ok
 
@@ -127,7 +127,7 @@ static func test_iso_one_zero() -> bool:
 static func test_iso_zero_one() -> bool:
 	var d := _make_do()
 	var got: Vector2 = d._iso(0, 1)
-	var ok := got.is_equal_approx(Vector2(-32.0, 16.0))
+	var ok: bool = got.is_equal_approx(Vector2(-32.0, 16.0))
 	d.free()
 	return ok
 
@@ -136,6 +136,6 @@ static func test_iso_zero_one() -> bool:
 static func test_iso_two_two() -> bool:
 	var d := _make_do()
 	var got: Vector2 = d._iso(2, 2)
-	var ok := got.is_equal_approx(Vector2(0.0, 64.0))
+	var ok: bool = got.is_equal_approx(Vector2(0.0, 64.0))
 	d.free()
 	return ok

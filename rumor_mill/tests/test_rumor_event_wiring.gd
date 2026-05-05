@@ -69,70 +69,70 @@ func run() -> void:
 
 func test_initial_world_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._world == null
+	var ok: bool = rew._world == null
 	rew.free()
 	return ok
 
 
 func test_initial_day_night_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._day_night == null
+	var ok: bool = rew._day_night == null
 	rew.free()
 	return ok
 
 
 func test_initial_camera_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._camera == null
+	var ok: bool = rew._camera == null
 	rew.free()
 	return ok
 
 
 func test_initial_journal_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._journal == null
+	var ok: bool = rew._journal == null
 	rew.free()
 	return ok
 
 
 func test_initial_recon_hud_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._recon_hud == null
+	var ok: bool = rew._recon_hud == null
 	rew.free()
 	return ok
 
 
 func test_initial_rumor_panel_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._rumor_panel == null
+	var ok: bool = rew._rumor_panel == null
 	rew.free()
 	return ok
 
 
 func test_initial_social_graph_overlay_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._social_graph_overlay == null
+	var ok: bool = rew._social_graph_overlay == null
 	rew.free()
 	return ok
 
 
 func test_initial_objective_hud_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._objective_hud == null
+	var ok: bool = rew._objective_hud == null
 	rew.free()
 	return ok
 
 
 func test_initial_milestone_notifier_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._milestone_notifier == null
+	var ok: bool = rew._milestone_notifier == null
 	rew.free()
 	return ok
 
 
 func test_initial_daily_planning_null() -> bool:
 	var rew := _make_rew()
-	var ok := rew._daily_planning == null
+	var ok: bool = rew._daily_planning == null
 	rew.free()
 	return ok
 
@@ -143,14 +143,14 @@ func test_initial_daily_planning_null() -> bool:
 
 func test_initial_reward_first_spread_false() -> bool:
 	var rew := _make_rew()
-	var ok := rew._reward_first_spread_fired == false
+	var ok: bool = rew._reward_first_spread_fired == false
 	rew.free()
 	return ok
 
 
 func test_initial_reward_first_belief_false() -> bool:
 	var rew := _make_rew()
-	var ok := rew._reward_first_belief_fired == false
+	var ok: bool = rew._reward_first_belief_fired == false
 	rew.free()
 	return ok
 

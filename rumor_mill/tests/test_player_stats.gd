@@ -109,7 +109,7 @@ func test_scenario_ids_first_is_scenario_1() -> bool:
 
 func test_initial_session_start_zero() -> bool:
 	var ps := _make_ps()
-	var ok := ps._session_start_time == 0
+	var ok: bool = ps._session_start_time == 0
 	ps.free()
 	return ok
 
@@ -117,14 +117,14 @@ func test_initial_session_start_zero() -> bool:
 func test_initial_data_empty() -> bool:
 	var ps := _make_ps()
 	# _data is {} until _ready() calls _load()
-	var ok := ps._data.is_empty()
+	var ok: bool = ps._data.is_empty()
 	ps.free()
 	return ok
 
 
 func test_get_session_duration_zero_before_start() -> bool:
 	var ps := _make_ps()
-	var ok := ps.get_session_duration_sec() == 0
+	var ok: bool = ps.get_session_duration_sec() == 0
 	ps.free()
 	return ok
 
@@ -136,7 +136,7 @@ func test_get_session_duration_zero_before_start() -> bool:
 func test_start_session_sets_positive_time() -> bool:
 	var ps := _make_ps()
 	ps.start_session()
-	var ok := ps._session_start_time > 0
+	var ok: bool = ps._session_start_time > 0
 	ps.free()
 	return ok
 
@@ -144,7 +144,7 @@ func test_start_session_sets_positive_time() -> bool:
 func test_duration_non_negative_after_start() -> bool:
 	var ps := _make_ps()
 	ps.start_session()
-	var ok := ps.get_session_duration_sec() >= 0
+	var ok: bool = ps.get_session_duration_sec() >= 0
 	ps.free()
 	return ok
 
@@ -157,7 +157,7 @@ func test_flush_noop_when_not_started() -> bool:
 	var ps := _make_ps()
 	# _session_start_time == 0 → guard returns immediately, no crash
 	ps.flush_session_time()
-	var ok := ps._session_start_time == 0
+	var ok: bool = ps._session_start_time == 0
 	ps.free()
 	return ok
 
@@ -169,7 +169,7 @@ func test_flush_noop_when_not_started() -> bool:
 func test_get_totals_returns_dict() -> bool:
 	var ps := _make_ps()
 	var totals := ps.get_totals()
-	var ok := totals is Dictionary
+	var ok: bool = totals is Dictionary
 	ps.free()
 	return ok
 
@@ -177,6 +177,6 @@ func test_get_totals_returns_dict() -> bool:
 func test_get_scenario_stats_returns_dict() -> bool:
 	var ps := _make_ps()
 	var stats := ps.get_scenario_stats("scenario_1", "apprentice")
-	var ok := stats is Dictionary
+	var ok: bool = stats is Dictionary
 	ps.free()
 	return ok

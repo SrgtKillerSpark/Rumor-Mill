@@ -64,21 +64,21 @@ func run() -> void:
 
 static func test_c_backdrop_near_black() -> bool:
 	var h := _make_hud()
-	var ok := h.C_BACKDROP.r < 0.10 and h.C_BACKDROP.a > 0.70
+	var ok: bool = h.C_BACKDROP.r < 0.10 and h.C_BACKDROP.a > 0.70
 	h.free()
 	return ok
 
 
 static func test_c_heading_gold() -> bool:
 	var h := _make_hud()
-	var ok := h.C_HEADING.r > 0.85 and h.C_HEADING.g > 0.70 and h.C_HEADING.b < 0.20
+	var ok: bool = h.C_HEADING.r > 0.85 and h.C_HEADING.g > 0.70 and h.C_HEADING.b < 0.20
 	h.free()
 	return ok
 
 
 static func test_c_btn_text_warm() -> bool:
 	var h := _make_hud()
-	var ok := h.C_BTN_TEXT.r > 0.85 and h.C_BTN_TEXT.g > 0.75
+	var ok: bool = h.C_BTN_TEXT.r > 0.85 and h.C_BTN_TEXT.g > 0.75
 	h.free()
 	return ok
 
@@ -87,14 +87,14 @@ static func test_c_btn_text_warm() -> bool:
 
 static func test_panel_width() -> bool:
 	var h := _make_hud()
-	var ok := h.PANEL_WIDTH == 650
+	var ok: bool = h.PANEL_WIDTH == 650
 	h.free()
 	return ok
 
 
 static func test_panel_height() -> bool:
 	var h := _make_hud()
-	var ok := h.PANEL_HEIGHT == 340
+	var ok: bool = h.PANEL_HEIGHT == 340
 	h.free()
 	return ok
 
@@ -103,42 +103,42 @@ static func test_panel_height() -> bool:
 
 static func test_initial_backdrop_null() -> bool:
 	var h := _make_hud()
-	var ok := h._backdrop == null
+	var ok: bool = h._backdrop == null
 	h.free()
 	return ok
 
 
 static func test_initial_panel_null() -> bool:
 	var h := _make_hud()
-	var ok := h._panel == null
+	var ok: bool = h._panel == null
 	h.free()
 	return ok
 
 
 static func test_initial_title_label_null() -> bool:
 	var h := _make_hud()
-	var ok := h._title_label == null
+	var ok: bool = h._title_label == null
 	h.free()
 	return ok
 
 
 static func test_initial_body_label_null() -> bool:
 	var h := _make_hud()
-	var ok := h._body_label == null
+	var ok: bool = h._body_label == null
 	h.free()
 	return ok
 
 
 static func test_initial_dismiss_btn_null() -> bool:
 	var h := _make_hud()
-	var ok := h._dismiss_btn == null
+	var ok: bool = h._dismiss_btn == null
 	h.free()
 	return ok
 
 
 static func test_initial_step_label_null() -> bool:
 	var h := _make_hud()
-	var ok := h._step_label == null
+	var ok: bool = h._step_label == null
 	h.free()
 	return ok
 
@@ -147,27 +147,27 @@ static func test_initial_step_label_null() -> bool:
 
 static func test_initial_tutorial_sys_null() -> bool:
 	var h := _make_hud()
-	var ok := h._tutorial_sys == null
+	var ok: bool = h._tutorial_sys == null
 	h.free()
 	return ok
 
 
 static func test_initial_queue_empty() -> bool:
 	var h := _make_hud()
-	var ok := h._queue.is_empty()
+	var ok: bool = h._queue.is_empty()
 	h.free()
 	return ok
 
 
 static func test_initial_active_id_empty() -> bool:
 	var h := _make_hud()
-	var ok := h._active_id == ""
+	var ok: bool = h._active_id == ""
 	h.free()
 	return ok
 
 
 static func test_initial_total_queued_zero() -> bool:
 	var h := _make_hud()
-	var ok := h._total_queued == 0
+	var ok: bool = h._total_queued == 0
 	h.free()
 	return ok

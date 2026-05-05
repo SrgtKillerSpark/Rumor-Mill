@@ -165,7 +165,7 @@ static func test_setup_stores_world_ref() -> bool:
 	var bt := _make_bt()
 	var stub := Node2D.new()
 	bt.setup(stub)
-	var ok := bt._world_ref == stub
+	var ok: bool = bt._world_ref == stub
 	stub.free()
 	return ok
 

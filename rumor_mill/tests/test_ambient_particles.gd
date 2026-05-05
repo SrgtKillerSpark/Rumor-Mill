@@ -104,35 +104,35 @@ func test_night_start_is_20() -> bool:
 
 func test_initial_ticks_per_day() -> bool:
 	var ap := _make_ap()
-	var ok := ap._ticks_per_day == 24
+	var ok: bool = ap._ticks_per_day == 24
 	ap.free()
 	return ok
 
 
 func test_initial_layer_null() -> bool:
 	var ap := _make_ap()
-	var ok := ap._layer == null
+	var ok: bool = ap._layer == null
 	ap.free()
 	return ok
 
 
 func test_initial_dust_null() -> bool:
 	var ap := _make_ap()
-	var ok := ap._dust == null
+	var ok: bool = ap._dust == null
 	ap.free()
 	return ok
 
 
 func test_initial_firefly_null() -> bool:
 	var ap := _make_ap()
-	var ok := ap._firefly == null
+	var ok: bool = ap._firefly == null
 	ap.free()
 	return ok
 
 
 func test_initial_night_null() -> bool:
 	var ap := _make_ap()
-	var ok := ap._night == null
+	var ok: bool = ap._night == null
 	ap.free()
 	return ok
 
@@ -156,7 +156,7 @@ func test_hour_noon_dust_on() -> bool:
 	var parts := _make_ap_with_emitters()
 	var ap: Node = parts[0]; var dust: CPUParticles2D = parts[1]
 	ap._apply_hour(12)
-	var ok := dust.emitting == true
+	var ok: bool = dust.emitting == true
 	for p in parts: p.free()
 	return ok
 
@@ -165,7 +165,7 @@ func test_hour_noon_firefly_off() -> bool:
 	var parts := _make_ap_with_emitters()
 	var ap: Node = parts[0]; var firefly: CPUParticles2D = parts[2]
 	ap._apply_hour(12)
-	var ok := firefly.emitting == false
+	var ok: bool = firefly.emitting == false
 	for p in parts: p.free()
 	return ok
 
@@ -174,7 +174,7 @@ func test_hour_noon_night_off() -> bool:
 	var parts := _make_ap_with_emitters()
 	var ap: Node = parts[0]; var night: CPUParticles2D = parts[3]
 	ap._apply_hour(12)
-	var ok := night.emitting == false
+	var ok: bool = night.emitting == false
 	for p in parts: p.free()
 	return ok
 
@@ -184,7 +184,7 @@ func test_hour_20_dust_off() -> bool:
 	var parts := _make_ap_with_emitters()
 	var ap: Node = parts[0]; var dust: CPUParticles2D = parts[1]
 	ap._apply_hour(20)
-	var ok := dust.emitting == false
+	var ok: bool = dust.emitting == false
 	for p in parts: p.free()
 	return ok
 
@@ -194,7 +194,7 @@ func test_hour_20_firefly_on() -> bool:
 	var parts := _make_ap_with_emitters()
 	var ap: Node = parts[0]; var firefly: CPUParticles2D = parts[2]
 	ap._apply_hour(20)
-	var ok := firefly.emitting == true
+	var ok: bool = firefly.emitting == true
 	for p in parts: p.free()
 	return ok
 
@@ -204,7 +204,7 @@ func test_hour_20_night_on() -> bool:
 	var parts := _make_ap_with_emitters()
 	var ap: Node = parts[0]; var night: CPUParticles2D = parts[3]
 	ap._apply_hour(20)
-	var ok := night.emitting == true
+	var ok: bool = night.emitting == true
 	for p in parts: p.free()
 	return ok
 
@@ -213,7 +213,7 @@ func test_hour_3_dust_off() -> bool:
 	var parts := _make_ap_with_emitters()
 	var ap: Node = parts[0]; var dust: CPUParticles2D = parts[1]
 	ap._apply_hour(3)
-	var ok := dust.emitting == false
+	var ok: bool = dust.emitting == false
 	for p in parts: p.free()
 	return ok
 
@@ -223,7 +223,7 @@ func test_hour_3_night_on() -> bool:
 	var parts := _make_ap_with_emitters()
 	var ap: Node = parts[0]; var night: CPUParticles2D = parts[3]
 	ap._apply_hour(3)
-	var ok := night.emitting == true
+	var ok: bool = night.emitting == true
 	for p in parts: p.free()
 	return ok
 
@@ -243,6 +243,6 @@ func test_on_game_tick_null_emitters_no_crash() -> bool:
 func test_on_game_tick_updates_ticks_per_day() -> bool:
 	var ap := _make_ap()
 	ap.on_game_tick(0, 48)
-	var ok := ap._ticks_per_day == 48
+	var ok: bool = ap._ticks_per_day == 48
 	ap.free()
 	return ok

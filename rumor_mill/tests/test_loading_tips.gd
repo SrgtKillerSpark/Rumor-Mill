@@ -62,21 +62,21 @@ func run() -> void:
 
 static func test_min_duration_sec() -> bool:
 	var lt := _make_lt()
-	var ok := lt.MIN_DURATION_SEC == 2.0
+	var ok: bool = lt.MIN_DURATION_SEC == 2.0
 	lt.free()
 	return ok
 
 
 static func test_tips_count() -> bool:
 	var lt := _make_lt()
-	var ok := lt.TIPS.size() == 16
+	var ok: bool = lt.TIPS.size() == 16
 	lt.free()
 	return ok
 
 
 static func test_tips_all_nonempty() -> bool:
 	var lt := _make_lt()
-	var ok := true
+	var ok: bool = true
 	for tip in lt.TIPS:
 		if (tip as String).is_empty():
 			ok = false
@@ -89,7 +89,7 @@ static func test_tips_all_nonempty() -> bool:
 
 static func test_c_backdrop_near_black() -> bool:
 	var lt := _make_lt()
-	var ok := lt.C_BACKDROP.r < 0.10 and lt.C_BACKDROP.g < 0.05 and lt.C_BACKDROP.a > 0.90
+	var ok: bool = lt.C_BACKDROP.r < 0.10 and lt.C_BACKDROP.g < 0.05 and lt.C_BACKDROP.a > 0.90
 	lt.free()
 	return ok
 
@@ -97,7 +97,7 @@ static func test_c_backdrop_near_black() -> bool:
 static func test_c_tip_near_parchment() -> bool:
 	var lt := _make_lt()
 	# parchment: high r, high g, moderate b
-	var ok := lt.C_TIP.r > 0.85 and lt.C_TIP.g > 0.80 and lt.C_TIP.b > 0.60
+	var ok: bool = lt.C_TIP.r > 0.85 and lt.C_TIP.g > 0.80 and lt.C_TIP.b > 0.60
 	lt.free()
 	return ok
 
@@ -106,42 +106,42 @@ static func test_c_tip_near_parchment() -> bool:
 
 static func test_initial_active_false() -> bool:
 	var lt := _make_lt()
-	var ok := lt._active == false
+	var ok: bool = lt._active == false
 	lt.free()
 	return ok
 
 
 static func test_initial_start_time_zero() -> bool:
 	var lt := _make_lt()
-	var ok := lt._start_time == 0.0
+	var ok: bool = lt._start_time == 0.0
 	lt.free()
 	return ok
 
 
 static func test_initial_tip_label_null() -> bool:
 	var lt := _make_lt()
-	var ok := lt._tip_label == null
+	var ok: bool = lt._tip_label == null
 	lt.free()
 	return ok
 
 
 static func test_initial_loading_label_null() -> bool:
 	var lt := _make_lt()
-	var ok := lt._loading_label == null
+	var ok: bool = lt._loading_label == null
 	lt.free()
 	return ok
 
 
 static func test_initial_fade_tween_null() -> bool:
 	var lt := _make_lt()
-	var ok := lt._fade_tween == null
+	var ok: bool = lt._fade_tween == null
 	lt.free()
 	return ok
 
 
 static func test_initial_wrapper_null() -> bool:
 	var lt := _make_lt()
-	var ok := lt._wrapper == null
+	var ok: bool = lt._wrapper == null
 	lt.free()
 	return ok
 
@@ -153,6 +153,6 @@ static func test_end_transition_before_start_is_safe() -> bool:
 	var lt := _make_lt()
 	# _active is false by default; end_transition() has an early-return guard.
 	lt.end_transition()
-	var ok := lt._active == false
+	var ok: bool = lt._active == false
 	lt.free()
 	return ok

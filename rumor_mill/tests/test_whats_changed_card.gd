@@ -53,28 +53,28 @@ func run() -> void:
 
 static func test_c_backdrop_near_black() -> bool:
 	var w := _make_wcc()
-	var ok := w.C_BACKDROP.r < 0.10 and w.C_BACKDROP.a > 0.70
+	var ok: bool = w.C_BACKDROP.r < 0.10 and w.C_BACKDROP.a > 0.70
 	w.free()
 	return ok
 
 
 static func test_c_title_warm_gold() -> bool:
 	var w := _make_wcc()
-	var ok := w.C_TITLE.r > 0.90 and w.C_TITLE.g > 0.75 and w.C_TITLE.b < 0.50
+	var ok: bool = w.C_TITLE.r > 0.90 and w.C_TITLE.g > 0.75 and w.C_TITLE.b < 0.50
 	w.free()
 	return ok
 
 
 static func test_c_btn_normal_dark_green() -> bool:
 	var w := _make_wcc()
-	var ok := w.C_BTN_NORMAL.g > 0.35 and w.C_BTN_NORMAL.r < 0.25
+	var ok: bool = w.C_BTN_NORMAL.g > 0.35 and w.C_BTN_NORMAL.r < 0.25
 	w.free()
 	return ok
 
 
 static func test_c_btn_text_near_white() -> bool:
 	var w := _make_wcc()
-	var ok := w.C_BTN_TEXT.r > 0.90 and w.C_BTN_TEXT.g > 0.90 and w.C_BTN_TEXT.b > 0.85
+	var ok: bool = w.C_BTN_TEXT.r > 0.90 and w.C_BTN_TEXT.g > 0.90 and w.C_BTN_TEXT.b > 0.85
 	w.free()
 	return ok
 
@@ -83,27 +83,27 @@ static func test_c_btn_text_near_white() -> bool:
 
 static func test_initial_backdrop_null() -> bool:
 	var w := _make_wcc()
-	var ok := w._backdrop == null
+	var ok: bool = w._backdrop == null
 	w.free()
 	return ok
 
 
 static func test_initial_card_null() -> bool:
 	var w := _make_wcc()
-	var ok := w._card == null
+	var ok: bool = w._card == null
 	w.free()
 	return ok
 
 
 static func test_initial_vbox_null() -> bool:
 	var w := _make_wcc()
-	var ok := w._vbox == null
+	var ok: bool = w._vbox == null
 	w.free()
 	return ok
 
 
 static func test_initial_btn_null() -> bool:
 	var w := _make_wcc()
-	var ok := w._btn == null
+	var ok: bool = w._btn == null
 	w.free()
 	return ok

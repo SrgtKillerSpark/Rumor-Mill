@@ -158,70 +158,70 @@ func test_credulity_reject_penalty() -> bool:
 
 func test_initial_npc_data_empty() -> bool:
 	var npc := _make_npc()
-	var ok := npc.npc_data.is_empty()
+	var ok: bool = npc.npc_data.is_empty()
 	npc.free()
 	return ok
 
 
 func test_initial_rumor_slots_empty() -> bool:
 	var npc := _make_npc()
-	var ok := npc.rumor_slots.is_empty()
+	var ok: bool = npc.rumor_slots.is_empty()
 	npc.free()
 	return ok
 
 
 func test_initial_rumor_history_empty() -> bool:
 	var npc := _make_npc()
-	var ok := npc.rumor_history.is_empty()
+	var ok: bool = npc.rumor_history.is_empty()
 	npc.free()
 	return ok
 
 
 func test_initial_avoided_subject_ids_empty() -> bool:
 	var npc := _make_npc()
-	var ok := npc._avoided_subject_ids.is_empty()
+	var ok: bool = npc._avoided_subject_ids.is_empty()
 	npc.free()
 	return ok
 
 
 func test_initial_defense_modifiers_empty() -> bool:
 	var npc := _make_npc()
-	var ok := npc._defense_modifiers.is_empty()
+	var ok: bool = npc._defense_modifiers.is_empty()
 	npc.free()
 	return ok
 
 
 func test_initial_defense_modifier_ticks_empty() -> bool:
 	var npc := _make_npc()
-	var ok := npc._defense_modifier_ticks.is_empty()
+	var ok: bool = npc._defense_modifier_ticks.is_empty()
 	npc.free()
 	return ok
 
 
 func test_initial_is_defending_false() -> bool:
 	var npc := _make_npc()
-	var ok := npc._is_defending == false
+	var ok: bool = npc._is_defending == false
 	npc.free()
 	return ok
 
 
 func test_initial_worst_state_dirty_true() -> bool:
 	var npc := _make_npc()
-	var ok := npc._worst_state_dirty == true
+	var ok: bool = npc._worst_state_dirty == true
 	npc.free()
 	return ok
 
 
 func test_initial_credulity_modifier_zero() -> bool:
 	var npc := _make_npc()
-	var ok := absf(npc._credulity_modifier) < 0.0001
+	var ok: bool = absf(npc._credulity_modifier) < 0.0001
 	npc.free()
 	return ok
 
 
 func test_initial_mood_speed_scale_one() -> bool:
 	var npc := _make_npc()
-	var ok := absf(npc.mood_speed_scale - 1.0) < 0.0001
+	var ok: bool = absf(npc.mood_speed_scale - 1.0) < 0.0001
 	npc.free()
 	return ok
 
@@ -232,28 +232,28 @@ func test_initial_mood_speed_scale_one() -> bool:
 
 func test_initial_credulity_half() -> bool:
 	var npc := _make_npc()
-	var ok := absf(npc._credulity - 0.5) < 0.0001
+	var ok: bool = absf(npc._credulity - 0.5) < 0.0001
 	npc.free()
 	return ok
 
 
 func test_initial_sociability_half() -> bool:
 	var npc := _make_npc()
-	var ok := absf(npc._sociability - 0.5) < 0.0001
+	var ok: bool = absf(npc._sociability - 0.5) < 0.0001
 	npc.free()
 	return ok
 
 
 func test_initial_loyalty_half() -> bool:
 	var npc := _make_npc()
-	var ok := absf(npc._loyalty - 0.5) < 0.0001
+	var ok: bool = absf(npc._loyalty - 0.5) < 0.0001
 	npc.free()
 	return ok
 
 
 func test_initial_temperament_half() -> bool:
 	var npc := _make_npc()
-	var ok := absf(npc._temperament - 0.5) < 0.0001
+	var ok: bool = absf(npc._temperament - 0.5) < 0.0001
 	npc.free()
 	return ok
 
@@ -264,28 +264,28 @@ func test_initial_temperament_half() -> bool:
 
 func test_initial_movement_null() -> bool:
 	var npc := _make_npc()
-	var ok := npc._movement == null
+	var ok: bool = npc._movement == null
 	npc.free()
 	return ok
 
 
 func test_initial_dialogue_null() -> bool:
 	var npc := _make_npc()
-	var ok := npc._dialogue == null
+	var ok: bool = npc._dialogue == null
 	npc.free()
 	return ok
 
 
 func test_initial_visuals_null() -> bool:
 	var npc := _make_npc()
-	var ok := npc._visuals == null
+	var ok: bool = npc._visuals == null
 	npc.free()
 	return ok
 
 
 func test_initial_rumor_processing_null() -> bool:
 	var npc := _make_npc()
-	var ok := npc._rumor_processing == null
+	var ok: bool = npc._rumor_processing == null
 	npc.free()
 	return ok
 
@@ -296,20 +296,20 @@ func test_initial_rumor_processing_null() -> bool:
 
 func test_has_rumor_state_changed_signal() -> bool:
 	var npc := _make_npc()
-	var ok := npc.has_signal("rumor_state_changed")
+	var ok: bool = npc.has_signal("rumor_state_changed")
 	npc.free()
 	return ok
 
 
 func test_has_rumor_transmitted_signal() -> bool:
 	var npc := _make_npc()
-	var ok := npc.has_signal("rumor_transmitted")
+	var ok: bool = npc.has_signal("rumor_transmitted")
 	npc.free()
 	return ok
 
 
 func test_has_npc_hovered_signal() -> bool:
 	var npc := _make_npc()
-	var ok := npc.has_signal("npc_hovered")
+	var ok: bool = npc.has_signal("npc_hovered")
 	npc.free()
 	return ok

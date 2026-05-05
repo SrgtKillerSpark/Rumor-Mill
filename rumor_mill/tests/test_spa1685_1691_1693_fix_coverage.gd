@@ -81,7 +81,7 @@ func test_spa1685_canvas_process_mode_is_always() -> bool:
 	## the dialogue UI stays interactive when the game tree is paused.
 	var p := _make_panel()
 	p._build_canvas()
-	var ok := p._canvas.process_mode == Node.PROCESS_MODE_ALWAYS
+	var ok: bool = p._canvas.process_mode == Node.PROCESS_MODE_ALWAYS
 	p.free()
 	return ok
 
@@ -103,7 +103,7 @@ func test_spa1691_illness_hotspot_buildings_is_writable() -> bool:
 	## field must accept writes without INVALID_SET / INVALID_GET errors.
 	var npc := _make_npc()
 	npc.illness_hotspot_buildings["tavern"] = true
-	var ok := npc.illness_hotspot_buildings.has("tavern")
+	var ok: bool = npc.illness_hotspot_buildings.has("tavern")
 	npc.free()
 	return ok
 
@@ -115,7 +115,7 @@ func test_spa1691_illness_hotspot_buildings_is_writable() -> bool:
 func test_spa1693_quarantine_ref_declared_null() -> bool:
 	## quarantine_ref must default to null (injected only for Scenario 2).
 	var npc := _make_npc()
-	var ok := npc.quarantine_ref == null
+	var ok: bool = npc.quarantine_ref == null
 	npc.free()
 	return ok
 
@@ -127,6 +127,6 @@ func test_spa1693_quarantine_ref_accepts_instance() -> bool:
 	var npc := _make_npc()
 	var qs  := _make_qs()
 	npc.quarantine_ref = qs
-	var ok := npc.quarantine_ref == qs
+	var ok: bool = npc.quarantine_ref == qs
 	npc.free()
 	return ok

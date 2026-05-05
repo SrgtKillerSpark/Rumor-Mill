@@ -134,35 +134,35 @@ func run() -> void:
 
 static func test_panel_w_constant() -> bool:
 	var p := _make_panel()
-	var ok := is_equal_approx(p.PANEL_W, 260.0)
+	var ok: bool = is_equal_approx(p.PANEL_W, 260.0)
 	p.free()
 	return ok
 
 
 static func test_portrait_w_constant() -> bool:
 	var p := _make_panel()
-	var ok := is_equal_approx(p.PORTRAIT_W, 56.0)
+	var ok: bool = is_equal_approx(p.PORTRAIT_W, 56.0)
 	p.free()
 	return ok
 
 
 static func test_portrait_h_constant() -> bool:
 	var p := _make_panel()
-	var ok := is_equal_approx(p.PORTRAIT_H, 70.0)
+	var ok: bool = is_equal_approx(p.PORTRAIT_H, 70.0)
 	p.free()
 	return ok
 
 
 static func test_portrait_cols_constant() -> bool:
 	var p := _make_panel()
-	var ok := p.PORTRAIT_COLS == 6
+	var ok: bool = p.PORTRAIT_COLS == 6
 	p.free()
 	return ok
 
 
 static func test_eavesdrop_range_constant() -> bool:
 	var p := _make_panel()
-	var ok := p._EAVESDROP_RANGE == 3
+	var ok: bool = p._EAVESDROP_RANGE == 3
 	p.free()
 	return ok
 
@@ -174,35 +174,35 @@ static func test_eavesdrop_range_constant() -> bool:
 static func test_c_bg_has_high_alpha() -> bool:
 	var p := _make_panel()
 	# C_BG alpha is 0.96 — high but not 1.0
-	var ok := p.C_BG.a > 0.9
+	var ok: bool = p.C_BG.a > 0.9
 	p.free()
 	return ok
 
 
 static func test_c_border_alpha_one() -> bool:
 	var p := _make_panel()
-	var ok := is_equal_approx(p.C_BORDER.a, 1.0)
+	var ok: bool = is_equal_approx(p.C_BORDER.a, 1.0)
 	p.free()
 	return ok
 
 
 static func test_c_faction_merchant_alpha_one() -> bool:
 	var p := _make_panel()
-	var ok := is_equal_approx(p.C_FACTION_MERCHANT.a, 1.0)
+	var ok: bool = is_equal_approx(p.C_FACTION_MERCHANT.a, 1.0)
 	p.free()
 	return ok
 
 
 static func test_c_faction_noble_alpha_one() -> bool:
 	var p := _make_panel()
-	var ok := is_equal_approx(p.C_FACTION_NOBLE.a, 1.0)
+	var ok: bool = is_equal_approx(p.C_FACTION_NOBLE.a, 1.0)
 	p.free()
 	return ok
 
 
 static func test_c_faction_clergy_alpha_one() -> bool:
 	var p := _make_panel()
-	var ok := is_equal_approx(p.C_FACTION_CLERGY.a, 1.0)
+	var ok: bool = is_equal_approx(p.C_FACTION_CLERGY.a, 1.0)
 	p.free()
 	return ok
 
@@ -213,56 +213,56 @@ static func test_c_faction_clergy_alpha_one() -> bool:
 
 static func test_initial_world_ref_null() -> bool:
 	var p := _make_panel()
-	var ok := p._world_ref == null
+	var ok: bool = p._world_ref == null
 	p.free()
 	return ok
 
 
 static func test_initial_intel_store_null() -> bool:
 	var p := _make_panel()
-	var ok := p._intel_store == null
+	var ok: bool = p._intel_store == null
 	p.free()
 	return ok
 
 
 static func test_initial_rumor_panel_ref_null() -> bool:
 	var p := _make_panel()
-	var ok := p._rumor_panel_ref == null
+	var ok: bool = p._rumor_panel_ref == null
 	p.free()
 	return ok
 
 
 static func test_initial_portrait_tex_null() -> bool:
 	var p := _make_panel()
-	var ok := p._portrait_tex == null
+	var ok: bool = p._portrait_tex == null
 	p.free()
 	return ok
 
 
 static func test_initial_canvas_null() -> bool:
 	var p := _make_panel()
-	var ok := p._canvas == null
+	var ok: bool = p._canvas == null
 	p.free()
 	return ok
 
 
 static func test_initial_panel_null() -> bool:
 	var p := _make_panel()
-	var ok := p._panel == null
+	var ok: bool = p._panel == null
 	p.free()
 	return ok
 
 
 static func test_initial_current_npc_null() -> bool:
 	var p := _make_panel()
-	var ok := p._current_npc == null
+	var ok: bool = p._current_npc == null
 	p.free()
 	return ok
 
 
 static func test_initial_dialogue_data_empty() -> bool:
 	var p := _make_panel()
-	var ok := p._dialogue_data.is_empty()
+	var ok: bool = p._dialogue_data.is_empty()
 	p.free()
 	return ok
 
@@ -273,21 +273,21 @@ static func test_initial_dialogue_data_empty() -> bool:
 
 static func test_faction_colour_merchant() -> bool:
 	var p := _make_panel()
-	var ok := p._faction_colour("merchant") == p.C_FACTION_MERCHANT
+	var ok: bool = p._faction_colour("merchant") == p.C_FACTION_MERCHANT
 	p.free()
 	return ok
 
 
 static func test_faction_colour_noble() -> bool:
 	var p := _make_panel()
-	var ok := p._faction_colour("noble") == p.C_FACTION_NOBLE
+	var ok: bool = p._faction_colour("noble") == p.C_FACTION_NOBLE
 	p.free()
 	return ok
 
 
 static func test_faction_colour_clergy() -> bool:
 	var p := _make_panel()
-	var ok := p._faction_colour("clergy") == p.C_FACTION_CLERGY
+	var ok: bool = p._faction_colour("clergy") == p.C_FACTION_CLERGY
 	p.free()
 	return ok
 
@@ -296,7 +296,7 @@ static func test_faction_colour_unknown_fallback_alpha_one() -> bool:
 	var p := _make_panel()
 	# Unknown faction → fallback Color(0.75, 0.70, 0.55, 1.0)
 	var c: Color = p._faction_colour("bandit")
-	var ok := is_equal_approx(c.a, 1.0) and is_equal_approx(c.r, 0.75)
+	var ok: bool = is_equal_approx(c.a, 1.0) and is_equal_approx(c.r, 0.75)
 	p.free()
 	return ok
 
@@ -307,28 +307,28 @@ static func test_faction_colour_unknown_fallback_alpha_one() -> bool:
 
 static func test_faction_drape_colour_merchant() -> bool:
 	var p := _make_panel()
-	var ok := p._faction_drape_colour("merchant") == p.C_DRAPE_MERCHANT
+	var ok: bool = p._faction_drape_colour("merchant") == p.C_DRAPE_MERCHANT
 	p.free()
 	return ok
 
 
 static func test_faction_drape_colour_noble() -> bool:
 	var p := _make_panel()
-	var ok := p._faction_drape_colour("noble") == p.C_DRAPE_NOBLE
+	var ok: bool = p._faction_drape_colour("noble") == p.C_DRAPE_NOBLE
 	p.free()
 	return ok
 
 
 static func test_faction_drape_colour_clergy() -> bool:
 	var p := _make_panel()
-	var ok := p._faction_drape_colour("clergy") == p.C_DRAPE_CLERGY
+	var ok: bool = p._faction_drape_colour("clergy") == p.C_DRAPE_CLERGY
 	p.free()
 	return ok
 
 
 static func test_faction_drape_colour_unknown_returns_drape_default() -> bool:
 	var p := _make_panel()
-	var ok := p._faction_drape_colour("bandit") == p.C_DRAPE_DEFAULT
+	var ok: bool = p._faction_drape_colour("bandit") == p.C_DRAPE_DEFAULT
 	p.free()
 	return ok
 
@@ -339,56 +339,56 @@ static func test_faction_drape_colour_unknown_returns_drape_default() -> bool:
 
 static func test_state_category_evaluating() -> bool:
 	var p := _make_panel()
-	var ok := p._state_to_dialogue_category(Rumor.RumorState.EVALUATING) == "hear"
+	var ok: bool = p._state_to_dialogue_category(Rumor.RumorState.EVALUATING) == "hear"
 	p.free()
 	return ok
 
 
 static func test_state_category_believe() -> bool:
 	var p := _make_panel()
-	var ok := p._state_to_dialogue_category(Rumor.RumorState.BELIEVE) == "believe"
+	var ok: bool = p._state_to_dialogue_category(Rumor.RumorState.BELIEVE) == "believe"
 	p.free()
 	return ok
 
 
 static func test_state_category_spread() -> bool:
 	var p := _make_panel()
-	var ok := p._state_to_dialogue_category(Rumor.RumorState.SPREAD) == "spread"
+	var ok: bool = p._state_to_dialogue_category(Rumor.RumorState.SPREAD) == "spread"
 	p.free()
 	return ok
 
 
 static func test_state_category_act() -> bool:
 	var p := _make_panel()
-	var ok := p._state_to_dialogue_category(Rumor.RumorState.ACT) == "act"
+	var ok: bool = p._state_to_dialogue_category(Rumor.RumorState.ACT) == "act"
 	p.free()
 	return ok
 
 
 static func test_state_category_reject() -> bool:
 	var p := _make_panel()
-	var ok := p._state_to_dialogue_category(Rumor.RumorState.REJECT) == "reject"
+	var ok: bool = p._state_to_dialogue_category(Rumor.RumorState.REJECT) == "reject"
 	p.free()
 	return ok
 
 
 static func test_state_category_defending() -> bool:
 	var p := _make_panel()
-	var ok := p._state_to_dialogue_category(Rumor.RumorState.DEFENDING) == "defending"
+	var ok: bool = p._state_to_dialogue_category(Rumor.RumorState.DEFENDING) == "defending"
 	p.free()
 	return ok
 
 
 static func test_state_category_unaware_empty() -> bool:
 	var p := _make_panel()
-	var ok := p._state_to_dialogue_category(Rumor.RumorState.UNAWARE) == ""
+	var ok: bool = p._state_to_dialogue_category(Rumor.RumorState.UNAWARE) == ""
 	p.free()
 	return ok
 
 
 static func test_state_category_expired_empty() -> bool:
 	var p := _make_panel()
-	var ok := p._state_to_dialogue_category(Rumor.RumorState.EXPIRED) == ""
+	var ok: bool = p._state_to_dialogue_category(Rumor.RumorState.EXPIRED) == ""
 	p.free()
 	return ok
 
@@ -399,56 +399,56 @@ static func test_state_category_expired_empty() -> bool:
 
 static func test_belief_hint_evaluating_nonempty() -> bool:
 	var p := _make_panel()
-	var ok := not p._belief_state_hint(Rumor.RumorState.EVALUATING).is_empty()
+	var ok: bool = not p._belief_state_hint(Rumor.RumorState.EVALUATING).is_empty()
 	p.free()
 	return ok
 
 
 static func test_belief_hint_believe_nonempty() -> bool:
 	var p := _make_panel()
-	var ok := not p._belief_state_hint(Rumor.RumorState.BELIEVE).is_empty()
+	var ok: bool = not p._belief_state_hint(Rumor.RumorState.BELIEVE).is_empty()
 	p.free()
 	return ok
 
 
 static func test_belief_hint_spread_nonempty() -> bool:
 	var p := _make_panel()
-	var ok := not p._belief_state_hint(Rumor.RumorState.SPREAD).is_empty()
+	var ok: bool = not p._belief_state_hint(Rumor.RumorState.SPREAD).is_empty()
 	p.free()
 	return ok
 
 
 static func test_belief_hint_act_nonempty() -> bool:
 	var p := _make_panel()
-	var ok := not p._belief_state_hint(Rumor.RumorState.ACT).is_empty()
+	var ok: bool = not p._belief_state_hint(Rumor.RumorState.ACT).is_empty()
 	p.free()
 	return ok
 
 
 static func test_belief_hint_reject_nonempty() -> bool:
 	var p := _make_panel()
-	var ok := not p._belief_state_hint(Rumor.RumorState.REJECT).is_empty()
+	var ok: bool = not p._belief_state_hint(Rumor.RumorState.REJECT).is_empty()
 	p.free()
 	return ok
 
 
 static func test_belief_hint_defending_nonempty() -> bool:
 	var p := _make_panel()
-	var ok := not p._belief_state_hint(Rumor.RumorState.DEFENDING).is_empty()
+	var ok: bool = not p._belief_state_hint(Rumor.RumorState.DEFENDING).is_empty()
 	p.free()
 	return ok
 
 
 static func test_belief_hint_contradicted_nonempty() -> bool:
 	var p := _make_panel()
-	var ok := not p._belief_state_hint(Rumor.RumorState.CONTRADICTED).is_empty()
+	var ok: bool = not p._belief_state_hint(Rumor.RumorState.CONTRADICTED).is_empty()
 	p.free()
 	return ok
 
 
 static func test_belief_hint_unaware_empty() -> bool:
 	var p := _make_panel()
-	var ok := p._belief_state_hint(Rumor.RumorState.UNAWARE).is_empty()
+	var ok: bool = p._belief_state_hint(Rumor.RumorState.UNAWARE).is_empty()
 	p.free()
 	return ok
 
@@ -495,28 +495,28 @@ static func test_pick_greeting_clergy_faction_nonempty() -> bool:
 
 static func test_fallback_greetings_has_merchant_key() -> bool:
 	var p := _make_panel()
-	var ok := p.FALLBACK_GREETINGS.has("merchant")
+	var ok: bool = p.FALLBACK_GREETINGS.has("merchant")
 	p.free()
 	return ok
 
 
 static func test_fallback_greetings_has_noble_key() -> bool:
 	var p := _make_panel()
-	var ok := p.FALLBACK_GREETINGS.has("noble")
+	var ok: bool = p.FALLBACK_GREETINGS.has("noble")
 	p.free()
 	return ok
 
 
 static func test_fallback_greetings_has_clergy_key() -> bool:
 	var p := _make_panel()
-	var ok := p.FALLBACK_GREETINGS.has("clergy")
+	var ok: bool = p.FALLBACK_GREETINGS.has("clergy")
 	p.free()
 	return ok
 
 
 static func test_fallback_default_is_ellipsis_array() -> bool:
 	var p := _make_panel()
-	var ok := p.FALLBACK_DEFAULT.size() == 1 and p.FALLBACK_DEFAULT[0] == "…"
+	var ok: bool = p.FALLBACK_DEFAULT.size() == 1 and p.FALLBACK_DEFAULT[0] == "…"
 	p.free()
 	return ok
 

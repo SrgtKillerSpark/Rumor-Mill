@@ -84,21 +84,21 @@ func run() -> void:
 
 static func test_c_title_warm_gold() -> bool:
 	var mb := _make_mb()
-	var ok := mb.C_TITLE.r > 0.90 and mb.C_TITLE.g > 0.75 and mb.C_TITLE.b < 0.50
+	var ok: bool = mb.C_TITLE.r > 0.90 and mb.C_TITLE.g > 0.75 and mb.C_TITLE.b < 0.50
 	mb.free()
 	return ok
 
 
 static func test_c_action_green() -> bool:
 	var mb := _make_mb()
-	var ok := mb.C_ACTION.g > 0.80 and mb.C_ACTION.r < 0.70
+	var ok: bool = mb.C_ACTION.g > 0.80 and mb.C_ACTION.r < 0.70
 	mb.free()
 	return ok
 
 
 static func test_c_danger_red() -> bool:
 	var mb := _make_mb()
-	var ok := mb.C_DANGER.r > 0.85 and mb.C_DANGER.g < 0.45
+	var ok: bool = mb.C_DANGER.r > 0.85 and mb.C_DANGER.g < 0.45
 	mb.free()
 	return ok
 
@@ -107,70 +107,70 @@ static func test_c_danger_red() -> bool:
 
 static func test_sprite_w() -> bool:
 	var mb := _make_mb()
-	var ok := mb.SPRITE_W == 64
+	var ok: bool = mb.SPRITE_W == 64
 	mb.free()
 	return ok
 
 
 static func test_sprite_h() -> bool:
 	var mb := _make_mb()
-	var ok := mb.SPRITE_H == 96
+	var ok: bool = mb.SPRITE_H == 96
 	mb.free()
 	return ok
 
 
 static func test_idle_s_col() -> bool:
 	var mb := _make_mb()
-	var ok := mb._IDLE_S_COL == 0
+	var ok: bool = mb._IDLE_S_COL == 0
 	mb.free()
 	return ok
 
 
 static func test_faction_row_merchant() -> bool:
 	var mb := _make_mb()
-	var ok := mb._FACTION_ROW.get("merchant", -1) == 0
+	var ok: bool = mb._FACTION_ROW.get("merchant", -1) == 0
 	mb.free()
 	return ok
 
 
 static func test_faction_row_noble() -> bool:
 	var mb := _make_mb()
-	var ok := mb._FACTION_ROW.get("noble", -1) == 1
+	var ok: bool = mb._FACTION_ROW.get("noble", -1) == 1
 	mb.free()
 	return ok
 
 
 static func test_faction_row_clergy() -> bool:
 	var mb := _make_mb()
-	var ok := mb._FACTION_ROW.get("clergy", -1) == 2
+	var ok: bool = mb._FACTION_ROW.get("clergy", -1) == 2
 	mb.free()
 	return ok
 
 
 static func test_body_type_row_offset() -> bool:
 	var mb := _make_mb()
-	var ok := mb._BODY_TYPE_ROW_OFFSET == 9
+	var ok: bool = mb._BODY_TYPE_ROW_OFFSET == 9
 	mb.free()
 	return ok
 
 
 static func test_clothing_var_base_merchant() -> bool:
 	var mb := _make_mb()
-	var ok := mb._CLOTHING_VAR_BASE.get("merchant", -1) == 27
+	var ok: bool = mb._CLOTHING_VAR_BASE.get("merchant", -1) == 27
 	mb.free()
 	return ok
 
 
 static func test_clothing_var_base_noble() -> bool:
 	var mb := _make_mb()
-	var ok := mb._CLOTHING_VAR_BASE.get("noble", -1) == 30
+	var ok: bool = mb._CLOTHING_VAR_BASE.get("noble", -1) == 30
 	mb.free()
 	return ok
 
 
 static func test_clothing_var_base_clergy() -> bool:
 	var mb := _make_mb()
-	var ok := mb._CLOTHING_VAR_BASE.get("clergy", -1) == 33
+	var ok: bool = mb._CLOTHING_VAR_BASE.get("clergy", -1) == 33
 	mb.free()
 	return ok
 
@@ -179,42 +179,42 @@ static func test_clothing_var_base_clergy() -> bool:
 
 static func test_initial_backdrop_null() -> bool:
 	var mb := _make_mb()
-	var ok := mb._backdrop == null
+	var ok: bool = mb._backdrop == null
 	mb.free()
 	return ok
 
 
 static func test_initial_card_null() -> bool:
 	var mb := _make_mb()
-	var ok := mb._card == null
+	var ok: bool = mb._card == null
 	mb.free()
 	return ok
 
 
 static func test_initial_vbox_null() -> bool:
 	var mb := _make_mb()
-	var ok := mb._vbox == null
+	var ok: bool = mb._vbox == null
 	mb.free()
 	return ok
 
 
 static func test_initial_prompt_label_null() -> bool:
 	var mb := _make_mb()
-	var ok := mb._prompt_label == null
+	var ok: bool = mb._prompt_label == null
 	mb.free()
 	return ok
 
 
 static func test_initial_begin_btn_null() -> bool:
 	var mb := _make_mb()
-	var ok := mb._begin_btn == null
+	var ok: bool = mb._begin_btn == null
 	mb.free()
 	return ok
 
 
 static func test_initial_pulse_tween_null() -> bool:
 	var mb := _make_mb()
-	var ok := mb._pulse_tween == null
+	var ok: bool = mb._pulse_tween == null
 	mb.free()
 	return ok
 
@@ -223,28 +223,28 @@ static func test_initial_pulse_tween_null() -> bool:
 
 static func test_initial_objective_one_liner_empty() -> bool:
 	var mb := _make_mb()
-	var ok := mb._objective_one_liner == ""
+	var ok: bool = mb._objective_one_liner == ""
 	mb.free()
 	return ok
 
 
 static func test_initial_win_condition_line_empty() -> bool:
 	var mb := _make_mb()
-	var ok := mb._win_condition_line == ""
+	var ok: bool = mb._win_condition_line == ""
 	mb.free()
 	return ok
 
 
 static func test_initial_recall_mode_false() -> bool:
 	var mb := _make_mb()
-	var ok := mb._recall_mode == false
+	var ok: bool = mb._recall_mode == false
 	mb.free()
 	return ok
 
 
 static func test_initial_brief_empty() -> bool:
 	var mb := _make_mb()
-	var ok := mb._brief.is_empty()
+	var ok: bool = mb._brief.is_empty()
 	mb.free()
 	return ok
 
@@ -256,7 +256,7 @@ static func test_initial_brief_empty() -> bool:
 static func test_setup_mission_from_objective_card() -> bool:
 	var mb := _make_mb()
 	mb.setup("fallback", "win", {"mission": "Spread the rumor"}, {}, {})
-	var ok := mb._objective_one_liner == "Spread the rumor"
+	var ok: bool = mb._objective_one_liner == "Spread the rumor"
 	mb.free()
 	return ok
 
@@ -265,7 +265,7 @@ static func test_setup_mission_from_objective_card() -> bool:
 static func test_setup_mission_fallback_when_card_absent() -> bool:
 	var mb := _make_mb()
 	mb.setup("Fallback text", "win", {}, {}, {})
-	var ok := mb._objective_one_liner == "Fallback text"
+	var ok: bool = mb._objective_one_liner == "Fallback text"
 	mb.free()
 	return ok
 
@@ -274,7 +274,7 @@ static func test_setup_mission_fallback_when_card_absent() -> bool:
 static func test_setup_win_condition_from_card() -> bool:
 	var mb := _make_mb()
 	mb.setup("obj", "fallback_win", {"winCondition": "7 believers needed"}, {}, {})
-	var ok := mb._win_condition_line == "7 believers needed"
+	var ok: bool = mb._win_condition_line == "7 believers needed"
 	mb.free()
 	return ok
 
@@ -283,7 +283,7 @@ static func test_setup_win_condition_from_card() -> bool:
 static func test_setup_strategy_hint_from_card() -> bool:
 	var mb := _make_mb()
 	mb.setup("obj", "win", {"strategyHint": "Seed through merchants"}, {}, {})
-	var ok := mb._strategy_hint == "Seed through merchants"
+	var ok: bool = mb._strategy_hint == "Seed through merchants"
 	mb.free()
 	return ok
 
@@ -292,7 +292,7 @@ static func test_setup_strategy_hint_from_card() -> bool:
 static func test_setup_danger_from_card() -> bool:
 	var mb := _make_mb()
 	mb.setup("obj", "win", {"danger": "Avoid Sister Maren"}, {}, {})
-	var ok := mb._danger == "Avoid Sister Maren"
+	var ok: bool = mb._danger == "Avoid Sister Maren"
 	mb.free()
 	return ok
 
@@ -301,7 +301,7 @@ static func test_setup_danger_from_card() -> bool:
 static func test_setup_first_action_from_card() -> bool:
 	var mb := _make_mb()
 	mb.setup("obj", "win", {"firstAction": "Observe the Market"}, {}, {})
-	var ok := mb._first_action == "Observe the Market"
+	var ok: bool = mb._first_action == "Observe the Market"
 	mb.free()
 	return ok
 
@@ -310,7 +310,7 @@ static func test_setup_first_action_from_card() -> bool:
 static func test_setup_recall_mode_is_false() -> bool:
 	var mb := _make_mb()
 	mb.setup("obj", "win", {}, {}, {})
-	var ok := mb._recall_mode == false
+	var ok: bool = mb._recall_mode == false
 	mb.free()
 	return ok
 
@@ -320,7 +320,7 @@ static func test_setup_stores_brief() -> bool:
 	var mb := _make_mb()
 	var brief := {"targetNpcId": "edric_fenn", "repStart": 70}
 	mb.setup("obj", "win", {}, brief, {})
-	var ok := mb._brief == brief
+	var ok: bool = mb._brief == brief
 	mb.free()
 	return ok
 
@@ -330,6 +330,6 @@ static func test_setup_stores_brief() -> bool:
 static func test_setup_stores_npc_data() -> bool:
 	var mb := _make_mb()
 	mb.setup("obj", "win", {}, {}, {})
-	var ok := mb._npc_data.is_empty()   # {} round-trips; portrait branch skipped
+	var ok: bool = mb._npc_data.is_empty()   # {} round-trips; portrait branch skipped
 	mb.free()
 	return ok

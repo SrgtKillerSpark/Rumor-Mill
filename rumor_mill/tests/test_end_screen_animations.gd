@@ -72,7 +72,7 @@ static func test_setup_stores_owner() -> bool:
 	var esa := _make_esa()
 	var stub := Node.new()
 	esa.setup(stub)
-	var ok := esa._owner == stub
+	var ok: bool = esa._owner == stub
 	stub.free()
 	return ok
 
@@ -83,7 +83,7 @@ static func test_setup_overwrites_previous_owner() -> bool:
 	var stub_b := Node.new()
 	esa.setup(stub_a)
 	esa.setup(stub_b)
-	var ok := esa._owner == stub_b
+	var ok: bool = esa._owner == stub_b
 	stub_a.free()
 	stub_b.free()
 	return ok
