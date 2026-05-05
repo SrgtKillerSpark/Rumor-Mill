@@ -285,6 +285,8 @@ func populate_npc_outcomes(current_scenario_id: String, last_outcome_won: bool) 
 		var name_lbl := Label.new()
 		name_lbl.text = npc_name
 		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# SPA-1809: truncate with ellipsis so long names don't overflow the row.
+		name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		name_lbl.add_theme_color_override("font_color", C_HEADING)
 		row.add_child(name_lbl)
 
@@ -328,6 +330,9 @@ func _add_stat_row(label_text: String, initial_value: String) -> Label:
 
 	var val := Label.new()
 	val.text = initial_value
+	# SPA-1809: expand to fill remaining row width so stat columns scale with
+	# the card instead of floating left with dead space at wide resolutions.
+	val.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	val.add_theme_color_override("font_color", C_STAT_VALUE)
 	row.add_child(val)
 
@@ -433,6 +438,7 @@ func _build_bonus_stat(scenario_id: int) -> void:
 
 	_bonus_lbl = Label.new()
 	_bonus_lbl.text = bonus_value_text
+	_bonus_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # SPA-1809
 	_bonus_lbl.add_theme_color_override("font_color", C_STAT_VALUE)
 	row.add_child(_bonus_lbl)
 
@@ -488,6 +494,7 @@ func _build_performance_summary(won: bool, days_taken: int, days_allowed: int,
 
 	var val := Label.new()
 	val.text = rating
+	val.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # SPA-1809
 	val.add_theme_color_override("font_color", rating_color)
 	val.add_theme_font_size_override("font_size", 15)
 	_rating_row.add_child(val)

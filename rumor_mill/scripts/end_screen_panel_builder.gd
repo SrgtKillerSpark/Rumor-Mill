@@ -114,9 +114,10 @@ func build(owner_layer: CanvasLayer) -> void:
 	vbox.add_child(_make_separator())
 
 	# ── Summary narrative ─────────────────────────────────────────────────────
+	# SPA-1809: use fit_content as the sole sizing strategy; the previous
+	# custom_maximum_size conflicted with fit_content (min could exceed max).
 	narrative_lbl = RichTextLabel.new()
 	narrative_lbl.fit_content          = true
-	narrative_lbl.custom_maximum_size  = Vector2(0, 120)
 	narrative_lbl.autowrap_mode        = TextServer.AUTOWRAP_WORD_SMART
 	narrative_lbl.bbcode_enabled       = true
 	narrative_lbl.add_theme_color_override("default_color", C_BODY)
@@ -124,9 +125,9 @@ func build(owner_layer: CanvasLayer) -> void:
 	vbox.add_child(narrative_lbl)
 
 	# ── SPA-948: Strategic defeat hint ───────────────────────────────────────
+	# SPA-1809: same fix — drop custom_maximum_size, keep fit_content.
 	strategic_hint_lbl = RichTextLabel.new()
 	strategic_hint_lbl.fit_content          = true
-	strategic_hint_lbl.custom_maximum_size  = Vector2(0, 60)
 	strategic_hint_lbl.autowrap_mode        = TextServer.AUTOWRAP_WORD_SMART
 	strategic_hint_lbl.bbcode_enabled       = true
 	strategic_hint_lbl.add_theme_color_override("default_color", Color(0.95, 0.75, 0.30, 1.0))
