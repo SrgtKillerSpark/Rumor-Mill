@@ -76,7 +76,7 @@ func setup(card_data: Dictionary) -> void:
 
 	# Animate in: fade + slide down.
 	_popup_root.modulate.a  = 0.0
-	_popup_root.position.y  = POPUP_Y - 18.0
+	_popup_root.position.y  = _popup_y - 18.0
 	var tw_in: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw_in.tween_property(_popup_root, "modulate:a", 1.0, 0.30)
 	tw_in.tween_property(_popup_root, "position:y", _popup_y, 0.30)
