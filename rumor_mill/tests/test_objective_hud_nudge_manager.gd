@@ -93,7 +93,7 @@ static func test_c_midgame_nudge_bg_colour() -> bool:
 # ── _NUDGE_TEXTS ──────────────────────────────────────────────────────────────
 
 static func test_nudge_texts_count() -> bool:
-	var count := _make_ohnm()._NUDGE_TEXTS.size()
+	var count = _make_ohnm()._NUDGE_TEXTS.size()
 	if count != 4:
 		push_error("test_nudge_texts_count: expected 4, got %d" % count)
 		return false

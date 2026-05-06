@@ -168,7 +168,7 @@ func test_flush_noop_when_not_started() -> bool:
 
 func test_get_totals_returns_dict() -> bool:
 	var ps := _make_ps()
-	var totals := ps.get_totals()
+	var totals = ps.get_totals()
 	var ok: bool = totals is Dictionary
 	ps.free()
 	return ok
@@ -176,7 +176,7 @@ func test_get_totals_returns_dict() -> bool:
 
 func test_get_scenario_stats_returns_dict() -> bool:
 	var ps := _make_ps()
-	var stats := ps.get_scenario_stats("scenario_1", "apprentice")
+	var stats = ps.get_scenario_stats("scenario_1", "apprentice")
 	var ok: bool = stats is Dictionary
 	ps.free()
 	return ok

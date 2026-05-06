@@ -95,7 +95,7 @@ func run() -> void:
 # ── FACTION_LABEL ─────────────────────────────────────────────────────────────
 
 static func test_faction_label_has_three_entries() -> bool:
-	var count := _make_nt().FACTION_LABEL.size()
+	var count = _make_nt().FACTION_LABEL.size()
 	if count != 3:
 		push_error("test_faction_label_has_three_entries: expected 3, got %d" % count)
 		return false
@@ -135,7 +135,7 @@ static func test_faction_color_has_clergy_key() -> bool:
 # ── STATE_LABEL ───────────────────────────────────────────────────────────────
 
 static func test_state_label_has_nine_entries() -> bool:
-	var count := _make_nt().STATE_LABEL.size()
+	var count = _make_nt().STATE_LABEL.size()
 	if count != 9:
 		push_error("test_state_label_has_nine_entries: expected 9, got %d" % count)
 		return false
@@ -165,7 +165,7 @@ static func test_state_label_8_is_defending() -> bool:
 # ── STATE_COLOR ───────────────────────────────────────────────────────────────
 
 static func test_state_color_has_nine_entries() -> bool:
-	var count := _make_nt().STATE_COLOR.size()
+	var count = _make_nt().STATE_COLOR.size()
 	if count != 9:
 		push_error("test_state_color_has_nine_entries: expected 9, got %d" % count)
 		return false
@@ -175,7 +175,7 @@ static func test_state_color_has_nine_entries() -> bool:
 # ── STATE_ICON ────────────────────────────────────────────────────────────────
 
 static func test_state_icon_has_nine_entries() -> bool:
-	var count := _make_nt().STATE_ICON.size()
+	var count = _make_nt().STATE_ICON.size()
 	if count != 9:
 		push_error("test_state_icon_has_nine_entries: expected 9, got %d" % count)
 		return false

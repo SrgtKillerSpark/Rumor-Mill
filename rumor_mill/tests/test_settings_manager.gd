@@ -226,7 +226,7 @@ func test_base_resolutions_first_is_720p() -> bool:
 
 func test_to_db_zero_returns_minus80() -> bool:
 	var sm := _make_sm()
-	var result := sm._to_db(0.0)
+	var result = sm._to_db(0.0)
 	sm.free()
 	return absf(result - (-80.0)) < 0.001
 
@@ -234,7 +234,7 @@ func test_to_db_zero_returns_minus80() -> bool:
 func test_to_db_100_returns_0db() -> bool:
 	var sm := _make_sm()
 	# 100/100 = 1.0 linear → linear_to_db(1.0) == 0
-	var result := sm._to_db(100.0)
+	var result = sm._to_db(100.0)
 	sm.free()
 	return absf(result) < 0.001
 
@@ -246,7 +246,7 @@ func test_to_db_100_returns_0db() -> bool:
 func test_get_ui_scale_label_default() -> bool:
 	var sm := _make_sm()
 	# ui_scale defaults to DEFAULT_UI_SCALE (1.0) → "100%"
-	var label := sm.get_ui_scale_label()
+	var label = sm.get_ui_scale_label()
 	sm.free()
 	return label == "100%"
 
@@ -254,7 +254,7 @@ func test_get_ui_scale_label_default() -> bool:
 func test_get_text_size_label_default() -> bool:
 	var sm := _make_sm()
 	# text_size_index defaults to 1 → TEXT_SIZE_LABELS[1] == "Medium"
-	var label := sm.get_text_size_label()
+	var label = sm.get_text_size_label()
 	sm.free()
 	return label == "Medium"
 
@@ -262,7 +262,7 @@ func test_get_text_size_label_default() -> bool:
 func test_get_game_speed_label_default() -> bool:
 	var sm := _make_sm()
 	# game_speed_index defaults to 1 → GAME_SPEED_LABELS[1] == "1×"
-	var label := sm.get_game_speed_label()
+	var label = sm.get_game_speed_label()
 	sm.free()
 	return label == "1×"
 
@@ -270,7 +270,7 @@ func test_get_game_speed_label_default() -> bool:
 func test_get_window_mode_label_windowed() -> bool:
 	var sm := _make_sm()
 	# window_mode defaults to 0 (WINDOW_WINDOWED) → "Windowed"
-	var label := sm.get_window_mode_label()
+	var label = sm.get_window_mode_label()
 	sm.free()
 	return label == "Windowed"
 

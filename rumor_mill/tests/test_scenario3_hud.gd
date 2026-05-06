@@ -193,7 +193,7 @@ static func test_initial_result_lbl_null() -> bool:
 
 static func test_bar_color_hib_at_target_returns_win() -> bool:
 	var h := _make_hud()
-	var got := h._bar_color_for_score(75, true, 75)
+	var got = h._bar_color_for_score(75, true, 75)
 	var ok: bool = got.is_equal_approx(C_WIN)
 	if not ok:
 		push_error("test_bar_color_hib_at_target: got %s, expected C_WIN %s" % [got, C_WIN])
@@ -203,7 +203,7 @@ static func test_bar_color_hib_at_target_returns_win() -> bool:
 
 static func test_bar_color_hib_above_target_returns_win() -> bool:
 	var h := _make_hud()
-	var got := h._bar_color_for_score(90, true, 75)
+	var got = h._bar_color_for_score(90, true, 75)
 	var ok: bool = got.is_equal_approx(C_WIN)
 	h.free()
 	return ok
@@ -212,7 +212,7 @@ static func test_bar_color_hib_above_target_returns_win() -> bool:
 ## score=50, target=75: effective=50, win_eff=75, half=37 → 50>=37 → NEUTRAL
 static func test_bar_color_hib_halfway_returns_neutral() -> bool:
 	var h := _make_hud()
-	var got := h._bar_color_for_score(50, true, 75)
+	var got = h._bar_color_for_score(50, true, 75)
 	var ok: bool = got.is_equal_approx(C_NEUTRAL)
 	if not ok:
 		push_error("test_bar_color_hib_halfway: got %s, expected C_NEUTRAL %s" % [got, C_NEUTRAL])
@@ -223,7 +223,7 @@ static func test_bar_color_hib_halfway_returns_neutral() -> bool:
 ## score=30, target=75: effective=30 < 37 → FAIL
 static func test_bar_color_hib_below_half_returns_fail() -> bool:
 	var h := _make_hud()
-	var got := h._bar_color_for_score(30, true, 75)
+	var got = h._bar_color_for_score(30, true, 75)
 	var ok: bool = got.is_equal_approx(C_FAIL)
 	h.free()
 	return ok
@@ -236,7 +236,7 @@ static func test_bar_color_hib_below_half_returns_fail() -> bool:
 ## score=30 → effective=(100-30)=70 >= 65 → WIN
 static func test_bar_color_lib_at_target_returns_win() -> bool:
 	var h := _make_hud()
-	var got := h._bar_color_for_score(30, false, 35)
+	var got = h._bar_color_for_score(30, false, 35)
 	var ok: bool = got.is_equal_approx(C_WIN)
 	h.free()
 	return ok
@@ -245,7 +245,7 @@ static func test_bar_color_lib_at_target_returns_win() -> bool:
 ## score=55 → effective=45, 45 >= 32 (65/2) → NEUTRAL
 static func test_bar_color_lib_halfway_returns_neutral() -> bool:
 	var h := _make_hud()
-	var got := h._bar_color_for_score(55, false, 35)
+	var got = h._bar_color_for_score(55, false, 35)
 	var ok: bool = got.is_equal_approx(C_NEUTRAL)
 	if not ok:
 		push_error("test_bar_color_lib_halfway: got %s, expected C_NEUTRAL %s" % [got, C_NEUTRAL])
@@ -256,7 +256,7 @@ static func test_bar_color_lib_halfway_returns_neutral() -> bool:
 ## score=80 → effective=20, 20 < 32 → FAIL
 static func test_bar_color_lib_above_target_returns_fail() -> bool:
 	var h := _make_hud()
-	var got := h._bar_color_for_score(80, false, 35)
+	var got = h._bar_color_for_score(80, false, 35)
 	var ok: bool = got.is_equal_approx(C_FAIL)
 	h.free()
 	return ok

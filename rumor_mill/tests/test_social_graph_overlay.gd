@@ -62,7 +62,8 @@ static func _make_npc_with_slots(npc_id: String, faction: String,
 	var npc := MockNpc.new()
 	npc.npc_data = {"id": npc_id, "faction": faction, "name": npc_id}
 	for i in slot_states.size():
-		var slot := Rumor.NpcRumorSlot.new()
+		var dummy_r := Rumor.create("rid_%d" % i, npc_id, Rumor.ClaimType.ACCUSATION, 1, 0.5, 0)
+		var slot := Rumor.NpcRumorSlot.new(dummy_r, faction)
 		slot.state = slot_states[i]
 		npc.rumor_slots["rid_%d" % i] = slot
 	return npc

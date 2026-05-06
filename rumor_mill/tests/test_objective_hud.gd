@@ -186,29 +186,29 @@ static func test_initial_world_ref_null() -> bool:
 
 static func test_urgency_color_frac_zero_is_safe() -> bool:
 	var oh  := _make_oh()
-	var got := oh._get_urgency_color(0.0)
+	var got = oh._get_urgency_color(0.0)
 	return got.is_equal_approx(oh.C_DAY_SAFE)
 
 
 static func test_urgency_color_frac_0_49_is_safe() -> bool:
 	var oh  := _make_oh()
-	var got := oh._get_urgency_color(0.49)
+	var got = oh._get_urgency_color(0.49)
 	return got.is_equal_approx(oh.C_DAY_SAFE)
 
 
 ## frac = 0.50 → t = 0.0 → SAFE.lerp(CAUTION, 0) = SAFE
 static func test_urgency_color_frac_0_50_equals_safe() -> bool:
 	var oh  := _make_oh()
-	var got := oh._get_urgency_color(0.50)
-	var exp := oh.C_DAY_SAFE.lerp(oh.C_DAY_CAUTION, 0.0)
+	var got = oh._get_urgency_color(0.50)
+	var exp = oh.C_DAY_SAFE.lerp(oh.C_DAY_CAUTION, 0.0)
 	return got.is_equal_approx(exp)
 
 
 ## frac = 0.60 → t = 0.5 → midpoint between SAFE and CAUTION
 static func test_urgency_color_frac_0_60_is_between_safe_and_caution() -> bool:
 	var oh  := _make_oh()
-	var got := oh._get_urgency_color(0.60)
-	var exp := oh.C_DAY_SAFE.lerp(oh.C_DAY_CAUTION, 0.5)
+	var got = oh._get_urgency_color(0.60)
+	var exp = oh.C_DAY_SAFE.lerp(oh.C_DAY_CAUTION, 0.5)
 	if not got.is_equal_approx(exp):
 		push_error("test_urgency_color_frac_0_60: got %s, expected %s" % [got, exp])
 		return false
@@ -218,24 +218,24 @@ static func test_urgency_color_frac_0_60_is_between_safe_and_caution() -> bool:
 ## frac = 0.70 → t = 1.0 → SAFE.lerp(CAUTION, 1) = CAUTION
 static func test_urgency_color_frac_0_70_approx_caution() -> bool:
 	var oh  := _make_oh()
-	var got := oh._get_urgency_color(0.70)
-	var exp := oh.C_DAY_SAFE.lerp(oh.C_DAY_CAUTION, 1.0)
+	var got = oh._get_urgency_color(0.70)
+	var exp = oh.C_DAY_SAFE.lerp(oh.C_DAY_CAUTION, 1.0)
 	return got.is_equal_approx(exp)
 
 
 ## frac = 0.85 → t = 1.0 → CAUTION.lerp(URGENT, 1) = URGENT
 static func test_urgency_color_frac_0_85_approx_urgent() -> bool:
 	var oh  := _make_oh()
-	var got := oh._get_urgency_color(0.85)
-	var exp := oh.C_DAY_CAUTION.lerp(oh.C_DAY_URGENT, 1.0)
+	var got = oh._get_urgency_color(0.85)
+	var exp = oh.C_DAY_CAUTION.lerp(oh.C_DAY_URGENT, 1.0)
 	return got.is_equal_approx(exp)
 
 
 ## frac = 1.0 → t = 1.0 → URGENT.lerp(CRITICAL, 1) = CRITICAL
 static func test_urgency_color_frac_1_0_is_critical() -> bool:
 	var oh  := _make_oh()
-	var got := oh._get_urgency_color(1.0)
-	var exp := oh.C_DAY_URGENT.lerp(oh.C_DAY_CRITICAL, 1.0)
+	var got = oh._get_urgency_color(1.0)
+	var exp = oh.C_DAY_URGENT.lerp(oh.C_DAY_CRITICAL, 1.0)
 	return got.is_equal_approx(exp)
 
 

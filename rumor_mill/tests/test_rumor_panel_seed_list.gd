@@ -146,7 +146,7 @@ func test_setup_assigns_refs() -> bool:
 	var s         := _make()
 	var world     := Node2D.new()
 	var store     := PlayerIntelStore.new()
-	var estimates := Estimates_Klass.new()
+	var estimates = EstimatesScript.new()
 	s.setup(world, store, estimates)
 	var ok: bool = s._world_ref == world and s._intel_store_ref == store and s._estimates == estimates
 	world.free()

@@ -133,7 +133,7 @@ func test_initial_path_empty() -> bool:
 
 func test_cell_to_world_origin() -> bool:
 	var m := _make_movement()
-	var result := m.cell_to_world(Vector2i(0, 0))
+	var result = m.cell_to_world(Vector2i(0, 0))
 	var ok: bool = result.is_equal_approx(Vector2(0.0, 0.0))
 	m.free()
 	return ok
@@ -142,7 +142,7 @@ func test_cell_to_world_origin() -> bool:
 func test_cell_to_world_one_zero() -> bool:
 	# x=(1-0)*32=32, y=(1+0)*16=16
 	var m := _make_movement()
-	var result := m.cell_to_world(Vector2i(1, 0))
+	var result = m.cell_to_world(Vector2i(1, 0))
 	var ok: bool = result.is_equal_approx(Vector2(32.0, 16.0))
 	m.free()
 	return ok
@@ -151,7 +151,7 @@ func test_cell_to_world_one_zero() -> bool:
 func test_cell_to_world_zero_one() -> bool:
 	# x=(0-1)*32=-32, y=(0+1)*16=16
 	var m := _make_movement()
-	var result := m.cell_to_world(Vector2i(0, 1))
+	var result = m.cell_to_world(Vector2i(0, 1))
 	var ok: bool = result.is_equal_approx(Vector2(-32.0, 16.0))
 	m.free()
 	return ok
@@ -160,7 +160,7 @@ func test_cell_to_world_zero_one() -> bool:
 func test_cell_to_world_two_three() -> bool:
 	# x=(2-3)*32=-32, y=(2+3)*16=80
 	var m := _make_movement()
-	var result := m.cell_to_world(Vector2i(2, 3))
+	var result = m.cell_to_world(Vector2i(2, 3))
 	var ok: bool = result.is_equal_approx(Vector2(-32.0, 80.0))
 	m.free()
 	return ok
@@ -169,7 +169,7 @@ func test_cell_to_world_two_three() -> bool:
 func test_cell_to_world_negative_x_component() -> bool:
 	# cell (0,2): x=(0-2)*32=-64, y=(0+2)*16=32
 	var m := _make_movement()
-	var result := m.cell_to_world(Vector2i(0, 2))
+	var result = m.cell_to_world(Vector2i(0, 2))
 	var ok: bool = result.is_equal_approx(Vector2(-64.0, 32.0))
 	m.free()
 	return ok

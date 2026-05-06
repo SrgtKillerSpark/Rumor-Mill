@@ -84,7 +84,7 @@ func run() -> void:
 # ── PEAK_BELIEF_TARGET ────────────────────────────────────────────────────────
 
 static func test_peak_belief_target_has_six_entries() -> bool:
-	var count := _make_esc().PEAK_BELIEF_TARGET.size()
+	var count = _make_esc().PEAK_BELIEF_TARGET.size()
 	if count != 6:
 		push_error("test_peak_belief_target_has_six_entries: expected 6, got %d" % count)
 		return false
@@ -109,7 +109,7 @@ static func test_peak_belief_target_scenario_6_is_marta() -> bool:
 # ── NPC_OUTCOMES ──────────────────────────────────────────────────────────────
 
 static func test_npc_outcomes_has_six_scenario_keys() -> bool:
-	var count := _make_esc().NPC_OUTCOMES.size()
+	var count = _make_esc().NPC_OUTCOMES.size()
 	if count != 6:
 		push_error("test_npc_outcomes_has_six_scenario_keys: expected 6, got %d" % count)
 		return false

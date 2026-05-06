@@ -175,7 +175,7 @@ static func test_time_colors_noon_is_white() -> bool:
 
 ## The constant must have exactly 10 entries (matching the documented keyframes).
 static func test_time_colors_has_ten_entries() -> bool:
-	var count := _make_dnc().TIME_COLORS.size()
+	var count = _make_dnc().TIME_COLORS.size()
 	if count != 10:
 		push_error("test_time_colors_has_ten_entries: expected 10, got %d" % count)
 		return false

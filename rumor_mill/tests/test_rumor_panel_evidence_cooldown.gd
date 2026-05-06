@@ -245,7 +245,7 @@ func _make_locked_entry_with_spy() -> Dictionary:
 	var spy := AnalyticsLoggerSpy.new()
 	rp._analytics_ref = spy
 	var item  := _make_evidence_item()
-	var entry := rp._build_evidence_entry(item)
+	var entry = rp._build_evidence_entry(item)
 	return {"entry": entry, "spy": spy}
 
 
@@ -300,7 +300,7 @@ func test_t3_cooldown_blocked_event_not_fired_when_unlocked() -> bool:
 	var spy := AnalyticsLoggerSpy.new()
 	rp._analytics_ref = spy
 	var item  := _make_evidence_item()
-	var entry := rp._build_evidence_entry(item)
+	var entry = rp._build_evidence_entry(item)
 	var btn   := _find_button(entry)
 	if btn != null:
 		_simulate_left_click(btn)

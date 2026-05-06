@@ -83,7 +83,7 @@ func test_rain_max_alpha_is_055() -> bool:
 
 func test_initial_is_raining_false() -> bool:
 	var ws := _make_ws()
-	var result := ws.is_raining == false
+	var result = ws.is_raining == false
 	ws.free()
 	return result
 
@@ -103,7 +103,7 @@ func test_initial_rain_time_zero() -> bool:
 func test_start_rain_sets_is_raining() -> bool:
 	var ws := _make_ws()
 	ws._start_rain()
-	var result := ws.is_raining == true
+	var result = ws.is_raining == true
 	ws.free()
 	return result
 
@@ -121,7 +121,7 @@ func test_stop_rain_clears_is_raining() -> bool:
 	var ws := _make_ws()
 	ws.is_raining = true
 	ws._stop_rain()
-	var result := ws.is_raining == false
+	var result = ws.is_raining == false
 	ws.free()
 	return result
 
@@ -142,6 +142,6 @@ func test_stop_rain_noop_when_not_raining() -> bool:
 	ws.is_raining = false
 	ws._stop_rain()
 	# Guard `if not is_raining: return` — still false
-	var result := ws.is_raining == false
+	var result = ws.is_raining == false
 	ws.free()
 	return result

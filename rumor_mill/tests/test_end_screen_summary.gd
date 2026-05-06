@@ -91,7 +91,7 @@ func run() -> void:
 # ── WHAT_WENT_WRONG table ─────────────────────────────────────────────────────
 
 static func test_what_went_wrong_has_seven_entries() -> bool:
-	var count := _make_ess().WHAT_WENT_WRONG.size()
+	var count = _make_ess().WHAT_WENT_WRONG.size()
 	if count != 7:
 		push_error("test_what_went_wrong_has_seven_entries: expected 7, got %d" % count)
 		return false
@@ -129,7 +129,7 @@ static func test_what_went_wrong_reputation_collapsed_key() -> bool:
 # ── SUMMARY_TEXT table structure ──────────────────────────────────────────────
 
 static func test_summary_text_has_six_scenario_keys() -> bool:
-	var count := _make_ess().SUMMARY_TEXT.size()
+	var count = _make_ess().SUMMARY_TEXT.size()
 	if count != 6:
 		push_error("test_summary_text_has_six_scenario_keys: expected 6, got %d" % count)
 		return false
@@ -257,5 +257,5 @@ static func test_get_summary_text_unknown_scenario_won_fallback() -> bool:
 ## Unknown scenario + timeout: no table entry, SUMMARY_FALLBACK["timeout"] exists.
 static func test_get_summary_text_unknown_scenario_timeout_uses_fallback_text() -> bool:
 	var ess := _make_ess()
-	var result := ess.get_summary_text(999, false, "timeout")
+	var result = ess.get_summary_text(999, false, "timeout")
 	return not result.is_empty() and result != "Your scheme unravelled."

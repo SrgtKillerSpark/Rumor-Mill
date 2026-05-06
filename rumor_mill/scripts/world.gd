@@ -1,3 +1,4 @@
+class_name World
 extends Node2D
 
 ## world.gd — Sprint 5 update (Art Pass 1: 10 building types, animated NPCs).

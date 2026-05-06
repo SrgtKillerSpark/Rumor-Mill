@@ -88,7 +88,7 @@ static func test_is_unlocked_false_for_never_unlocked() -> bool:
 ## get_all() returns exactly 14 entries (one per entry in ACHIEVEMENTS).
 static func test_get_all_count() -> bool:
 	var mgr := _make_mgr()
-	var all := mgr.get_all()
+	var all = mgr.get_all()
 	if all.size() != 14:
 		push_error("test_get_all_count: expected 14, got %d" % all.size())
 		return false
