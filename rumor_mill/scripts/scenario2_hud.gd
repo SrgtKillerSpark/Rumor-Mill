@@ -23,6 +23,10 @@ const C_ESCALATION_FLARE := Color(1.0,  0.75, 0.10, 1.0)  # escalation event fla
 const BAR_WIDTH      := 160
 const MAX_NAMES_SHOWN := 5
 
+## SPA-1984: Average propagation rate used by the Apprentice win-forecast heuristic.
+## Each whisper-seeded rumour converts roughly 70% of targeted NPCs on Apprentice.
+const AVG_PROPAGATION_RATE := 0.7
+
 # ── Toast-panel geometry ─────────────────────────────────────────────────────
 const HUD_PANEL_HEIGHT    := 78   # height of the HUD strip built by _make_panel (matches BASE_HUD_HEIGHT)
 const TOAST_GAP           := 4    # gap between HUD bottom and toast top
@@ -56,6 +60,9 @@ var _pip_lbl: Label = null
 ## SPA-592: Maren's direct social-graph neighbours (NPC id → edge weight).
 ## Populated in _on_setup_extra; used to flag seed-target risk in the believers list.
 var _maren_neighbours: Dictionary = {}
+
+## SPA-1984: Apprentice-only win feasibility forecast label.
+var _win_forecast_lbl: Label = null
 
 ## SPA-868: Quarantine mechanic UI elements.
 var _quarantine_btn:   Button       = null
@@ -144,6 +151,20 @@ func _build_ui() -> void:
 	_pip_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_pip_lbl.clip_text = true
 	count_vbox.add_child(_pip_lbl)
+
+	# SPA-1984: Win feasibility forecast — Apprentice difficulty only.
+	_win_forecast_lbl = Label.new()
+	_win_forecast_lbl.add_theme_font_size_override("font_size", 11)
+	_win_forecast_lbl.add_theme_color_override("font_color", C_WIN)
+	_win_forecast_lbl.text = ""
+	_win_forecast_lbl.visible = false
+	_win_forecast_lbl.clip_text = true
+	_win_forecast_lbl.tooltip_text = (
+		"Forecast: remaining days × avg propagation vs. believers still needed."
+		+ " Apprentice hint only."
+	)
+	_win_forecast_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	count_vbox.add_child(_win_forecast_lbl)
 
 	# NPC name columns.
 	var names_vbox := VBoxContainer.new()
@@ -383,6 +404,8 @@ func _refresh() -> void:
 		"VICTORY — The plague scare spreads",
 		"FAILED — The truth prevails")
 	_update_quarantine_button()
+	# SPA-1984: Apprentice win-forecast hint.
+	_update_win_forecast(count, threshold, sm, state)
 
 	# SPA-1540/SPA-1552/SPA-1565: Keep the persistent Maren watch indicator in sync each tick.
 	# SPA-1728: Hide the watch label (and hint) once the scenario resolves — AC#4.
@@ -403,6 +426,67 @@ func _refresh() -> void:
 			_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
 			_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_DORMANT)
 			_maren_watch_lbl.visible = true
+
+
+# ── SPA-1984: Win forecast (Apprentice) ──────────────────────────────────────
+
+## Lightweight win feasibility heuristic for S2 Apprentice difficulty.
+## Formula: effective_seeds × AVG_PROPAGATION_RATE ≥ remaining_targets
+## where effective_seeds = min(remaining_days, whisper_tokens).
+## Returns one of: "on_track", "tight", "unlikely".
+static func compute_win_forecast(
+		count: int,
+		threshold: int,
+		current_day: int,
+		days_allowed: int,
+		whisper_tokens: int
+) -> String:
+	var remaining_targets: int = maxi(threshold - count, 0)
+	if remaining_targets == 0:
+		return "on_track"
+	var remaining_days: int = maxi(days_allowed - current_day, 0)
+	# Seeds are gated by both time and whisper budget; take the binding constraint.
+	var effective_seeds: int = mini(remaining_days, whisper_tokens)
+	var projected: float = float(effective_seeds) * AVG_PROPAGATION_RATE
+	if projected >= float(remaining_targets):
+		return "on_track"
+	elif projected >= float(remaining_targets) * 0.6:
+		return "tight"
+	return "unlikely"
+
+
+## SPA-1984: Refresh the Apprentice win-forecast label each tick.
+## Hidden on non-Apprentice difficulty, game-over states, and when already winning.
+func _update_win_forecast(
+		count: int,
+		threshold: int,
+		sm: ScenarioManager,
+		state: ScenarioManager.ScenarioState
+) -> void:
+	if _win_forecast_lbl == null:
+		return
+	var game_over: bool = (state == ScenarioManager.ScenarioState.WON
+		or state == ScenarioManager.ScenarioState.FAILED)
+	if GameState.selected_difficulty != "apprentice" or game_over or count >= threshold:
+		_win_forecast_lbl.visible = false
+		return
+	var current_day: int = _day_night_ref.current_day if _day_night_ref != null else 1
+	var days_allowed: int = sm.get_days_allowed()
+	var whisper_tokens: int = 0
+	if _world_ref != null and "intel_store" in _world_ref and _world_ref.intel_store != null:
+		whisper_tokens = _world_ref.intel_store.whisper_tokens_remaining
+	var forecast: String = compute_win_forecast(count, threshold, current_day, days_allowed, whisper_tokens)
+	match forecast:
+		"on_track":
+			_win_forecast_lbl.text = "✓ Win likely"
+			_win_forecast_lbl.add_theme_color_override("font_color", C_WIN)
+		"tight":
+			_win_forecast_lbl.text = "⚠ Tight window"
+			_win_forecast_lbl.add_theme_color_override("font_color", C_NEUTRAL)
+		_:
+			_win_forecast_lbl.text = "✗ Unlikely — too few days"
+			_win_forecast_lbl.add_theme_color_override("font_color", C_FAIL)
+	_win_forecast_lbl.visible = true
 
 
 # ── Escalation activity ───────────────────────────────────────────────────────

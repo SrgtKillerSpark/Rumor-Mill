@@ -82,6 +82,14 @@ func run() -> void:
 		"test_suppression_active_indicator_shown_when_defending",
 		"test_suppression_indicator_absent_when_not_defending",
 		"test_suppression_indicator_absent_on_non_s2",
+		# SPA-1984: Win forecast heuristic
+		"test_initial_win_forecast_lbl_null",
+		"test_win_forecast_already_won",
+		"test_win_forecast_on_track_plenty_of_days",
+		"test_win_forecast_tight_few_days",
+		"test_win_forecast_unlikely_no_days",
+		"test_win_forecast_whisper_constrained",
+		"test_win_forecast_avg_propagation_rate_positive",
 	]
 
 	for method_name in tests:
@@ -411,5 +419,79 @@ static func test_suppression_indicator_absent_on_non_s2() -> bool:
 	var h := Scenario1HudScript.new()
 	# get() returns null when the property does not exist on the script.
 	var ok: bool = h.get("_maren_neighbours") == null
+	h.free()
+	return ok
+
+
+# ── SPA-1984: Win forecast heuristic ─────────────────────────────────────────
+
+## _win_forecast_lbl must be null before _build_ui() runs (no scene tree).
+static func test_initial_win_forecast_lbl_null() -> bool:
+	var h := _make_hud()
+	var ok: bool = h._win_forecast_lbl == null
+	h.free()
+	return ok
+
+
+## AVG_PROPAGATION_RATE must be a positive float so the heuristic is always meaningful.
+static func test_win_forecast_avg_propagation_rate_positive() -> bool:
+	var h := _make_hud()
+	var ok: bool = h.AVG_PROPAGATION_RATE > 0.0 and h.AVG_PROPAGATION_RATE <= 1.0
+	h.free()
+	return ok
+
+
+## When count >= threshold the player has already won — forecast is "on_track".
+static func test_win_forecast_already_won() -> bool:
+	var h := _make_hud()
+	# count=7, threshold=7: already at win condition.
+	var result: String = h.compute_win_forecast(7, 7, 10, 24, 5)
+	var ok: bool = result == "on_track"
+	h.free()
+	return ok
+
+
+## Plenty of days and whisper tokens relative to remaining targets → "on_track".
+## remaining_targets=2, remaining_days=10, whisper_tokens=10
+## effective_seeds=10, projected=7.0 ≥ 2 → on_track
+static func test_win_forecast_on_track_plenty_of_days() -> bool:
+	var h := _make_hud()
+	# Day 14 of 24, count=5, threshold=7, whispers=10: 10 days left, 2 needed.
+	var result: String = h.compute_win_forecast(5, 7, 14, 24, 10)
+	var ok: bool = result == "on_track"
+	h.free()
+	return ok
+
+
+## Barely enough capacity but within 60% threshold → "tight".
+## remaining_targets=3, effective_seeds=3, projected=2.1 ≥ 3*0.6=1.8 → tight
+static func test_win_forecast_tight_few_days() -> bool:
+	var h := _make_hud()
+	# Day 21 of 24, count=4, threshold=7, whispers=3: 3 days left, 3 needed.
+	# projected = 3 * 0.7 = 2.1; 2.1 >= 3*0.6=1.8 → tight
+	var result: String = h.compute_win_forecast(4, 7, 21, 24, 3)
+	var ok: bool = result == "tight"
+	h.free()
+	return ok
+
+
+## No days remaining → "unlikely".
+## remaining_days=0, effective_seeds=0, projected=0.0 < remaining_targets → unlikely
+static func test_win_forecast_unlikely_no_days() -> bool:
+	var h := _make_hud()
+	# Day 24 of 24, count=4, threshold=7, whispers=5: 0 days left, 3 needed.
+	var result: String = h.compute_win_forecast(4, 7, 24, 24, 5)
+	var ok: bool = result == "unlikely"
+	h.free()
+	return ok
+
+
+## Whisper budget is the binding constraint even with plenty of time → "unlikely".
+## remaining_days=10, whisper_tokens=0, effective_seeds=0 → projected=0 → unlikely
+static func test_win_forecast_whisper_constrained() -> bool:
+	var h := _make_hud()
+	# Day 14 of 24, count=5, threshold=7, whispers=0: lots of time but no whispers.
+	var result: String = h.compute_win_forecast(5, 7, 14, 24, 0)
+	var ok: bool = result == "unlikely"
 	h.free()
 	return ok
