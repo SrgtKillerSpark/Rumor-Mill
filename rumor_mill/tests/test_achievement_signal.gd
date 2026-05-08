@@ -41,14 +41,14 @@ func run() -> void:
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
-static func _make_mgr() -> Node:
+func _make_mgr() -> Node:
 	return AchievementManagerScript.new()
 
 
 # ── tests ────────────────────────────────────────────────────────────────────
 
 ## unlock() emits achievement_unlocked at least once.
-static func test_signal_emitted_on_unlock() -> bool:
+func test_signal_emitted_on_unlock() -> bool:
 	var mgr := _make_mgr()
 	var emitted := false
 	mgr.achievement_unlocked.connect(func(_id: String, _name: String) -> void:
@@ -59,7 +59,7 @@ static func test_signal_emitted_on_unlock() -> bool:
 
 
 ## The emitted signal carries the exact achievement id passed to unlock().
-static func test_signal_carries_correct_id() -> bool:
+func test_signal_carries_correct_id() -> bool:
 	var mgr := _make_mgr()
 	var captured_id := ""
 	mgr.achievement_unlocked.connect(func(id: String, _name: String) -> void:
@@ -73,7 +73,7 @@ static func test_signal_carries_correct_id() -> bool:
 
 
 ## The emitted signal carries the achievement's display name (the 'name' field).
-static func test_signal_carries_display_name() -> bool:
+func test_signal_carries_display_name() -> bool:
 	var mgr := _make_mgr()
 	var captured_name := ""
 	mgr.achievement_unlocked.connect(func(_id: String, dname: String) -> void:
@@ -88,7 +88,7 @@ static func test_signal_carries_display_name() -> bool:
 
 
 ## unlock() with an unknown id emits a warning but never emits achievement_unlocked.
-static func test_signal_not_emitted_for_unknown_id() -> bool:
+func test_signal_not_emitted_for_unknown_id() -> bool:
 	var mgr := _make_mgr()
 	var emitted := false
 	mgr.achievement_unlocked.connect(func(_id: String, _name: String) -> void:
@@ -102,7 +102,7 @@ static func test_signal_not_emitted_for_unknown_id() -> bool:
 
 
 ## Calling unlock() a second time for the same id does not re-emit the signal.
-static func test_signal_not_emitted_on_duplicate_unlock() -> bool:
+func test_signal_not_emitted_on_duplicate_unlock() -> bool:
 	var mgr := _make_mgr()
 	var emit_count := 0
 	mgr.achievement_unlocked.connect(func(_id: String, _name: String) -> void:
