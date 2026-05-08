@@ -1,7 +1,7 @@
 ## test_spa970_976_regressions.gd — Regression tests for SPA-970 through SPA-976 (SPA-985).
 ##
 ## Covers:
-##   • SPA-970 — event_sting remapped to reputation_shift.wav (not new_day.wav);
+##   • SPA-970 — event_sting remapped to event_sting.wav (not new_day.wav);
 ##               main.gd calls AudioManager.play_music("main_theme") on _ready()
 ##   • SPA-974 — settings_menu focus chain uses (i-1+size)%size, not (i-1)%size;
 ##               verifies the negative-modulo bug cannot recur
@@ -26,7 +26,7 @@ func run() -> void:
 
 	var tests := [
 		# SPA-970
-		"test_spa970_event_sting_maps_to_reputation_shift",
+		"test_spa970_event_sting_maps_to_event_sting_wav",
 		"test_spa970_event_sting_not_mapped_to_new_day",
 		"test_spa970_main_gd_plays_main_theme_on_ready",
 		# SPA-974
@@ -55,15 +55,15 @@ func run() -> void:
 
 # ── SPA-970: event_sting placeholder + main-theme restore ────────────────────
 
-## event_sting must map to reputation_shift.wav (not new_day.wav) in audio_manager.gd.
-static func test_spa970_event_sting_maps_to_reputation_shift() -> bool:
+## event_sting must map to event_sting.wav (sfx/event_sting.wav) in audio_manager.gd (SPA-1074).
+static func test_spa970_event_sting_maps_to_event_sting_wav() -> bool:
 	var source := _read_script("audio_manager.gd")
 	if source.is_empty():
 		return false
 	for line in source.split("\n"):
-		if "event_sting" in line and "reputation_shift.wav" in line:
+		if "event_sting" in line and "event_sting.wav" in line:
 			return true
-	push_error("test_spa970: event_sting→reputation_shift.wav mapping not found in audio_manager.gd")
+	push_error("test_spa970: event_sting→event_sting.wav mapping not found in audio_manager.gd")
 	return false
 
 
