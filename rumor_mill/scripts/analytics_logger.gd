@@ -17,7 +17,7 @@
 ##   reputation_delta         — rep shift ≥ 3 pts; npc_id, from_score, to_score, delta, day, scenario_id
 ##   reputation_snapshot      — daily win-NPC snapshot (SPA-1417); npc_id, score, day, scenario_id
 ##   evidence_interaction             — observe/eavesdrop; action_type, success, day, scenario_id
-##   evidence_attached                — evidence attached to rumor; evidence_type, credulity_boost, target_npc_id, day, scenario_id
+##   evidence_attached                — evidence attached to rumor; evidence_type, credulity_boost, target_npc_id, day, scenario_id, difficulty_modifier
 ##   target_shift_cooldown_blocked    — player clicked locked evidence during cooldown (SPA-1772); evidence_type, target_npc_id, cooldown_remaining_days, day, scenario_id, difficulty
 ##   evidence_used                    — evidence committed in verdict (SPA-2092); evidence_id, verdict_phase, scenario_id
 ##   tutorial_step_completed          — tutorial progress (SPA-1241); step_id, scenario_id
@@ -115,15 +115,17 @@ func log_reputation_snapshot(npc_id: String, score: int, day: int, scenario_id: 
 
 
 ## Log evidence being attached to a rumor before seeding (SPA-1725).
-## Captures the evidence type, credulity boost applied, and seed target for
-## Phase 2 balance analysis per the SPA-1522 telemetry spec.
-func log_evidence_attached(evidence_type: String, credulity_boost: float, target_npc_id: String, day: int, scenario_id: String) -> void:
+## Captures the evidence type, credulity boost applied, seed target, and the
+## difficulty-scaled multiplier (SPA-2105) for Phase 2 balance analysis per
+## the SPA-1522 telemetry spec.
+func log_evidence_attached(evidence_type: String, credulity_boost: float, target_npc_id: String, day: int, scenario_id: String, difficulty_modifier: float = 1.0) -> void:
 	log_event("evidence_attached", {
-		"evidence_type":   evidence_type,
-		"credulity_boost": credulity_boost,
-		"target_npc_id":   target_npc_id,
-		"day":             day,
-		"scenario_id":     scenario_id,
+		"evidence_type":      evidence_type,
+		"credulity_boost":    credulity_boost,
+		"target_npc_id":      target_npc_id,
+		"day":                day,
+		"scenario_id":        scenario_id,
+		"difficulty_modifier": difficulty_modifier,
 	})
 
 

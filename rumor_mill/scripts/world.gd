@@ -1314,19 +1314,20 @@ func seed_rumor_from_player(
 
 		rumor.current_believability = minf(1.0, rumor.current_believability + bel_bonus)
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
-		# SPA-1757: Phase 2 mechanics (shelf-life extension, credulity boost) gate
-		# to Normal+ only — Apprentice gets base believability and mutability only.
-		if GameState.evidence_economy_v2 and GameState.selected_difficulty != "apprentice":
-			rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
-			rumor.evidence_credulity_boost = cred_boost
+		# SPA-1757: Phase 2 mechanics gate — shelf-life extension remains Normal+ only.
+		# SPA-2105: Credulity boost now applies on all difficulties with a scaling factor
+		# (apprentice=0.8x, master=1.0x, spymaster=1.3x).
+		if GameState.evidence_economy_v2:
+			if GameState.selected_difficulty != "apprentice":
+				rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
+			else:
+				# SPA-1774: Flag is ON and difficulty is Apprentice — shelf-life extension gated off.
+				emit_signal("evidence_economy_v2_gated_off",
+						evidence_item.type.to_snake_case(),
+						["shelf_life_extension"],
+						GameState.selected_difficulty)
+			rumor.evidence_credulity_boost = cred_boost * GameState.evidence_credulity_multiplier(GameState.selected_difficulty)
 			rumor.seed_target_npc_id = seed_target_npc_id
-		elif GameState.evidence_economy_v2:
-			# SPA-1774: Flag is ON but difficulty is Apprentice — v2 bonuses gated off.
-			# Emit telemetry so the analytics pipeline can measure how often this path fires.
-			emit_signal("evidence_economy_v2_gated_off",
-					evidence_item.type.to_snake_case(),
-					["shelf_life_extension", "credulity_boost"],
-					GameState.selected_difficulty)
 		rumor.bolstered_by_evidence = true
 
 	# Chain detection: check if this subject already has an active rumor that

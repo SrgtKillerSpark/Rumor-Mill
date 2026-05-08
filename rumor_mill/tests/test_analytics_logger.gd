@@ -111,7 +111,7 @@ class SpyLogger extends AnalyticsLogger:
 
 func test_log_evidence_attached_writes_event() -> bool:
 	var spy := SpyLogger.new()
-	spy.log_evidence_attached("witness_account", 0.15, "npc_mayor", 3, "scenario_city")
+	spy.log_evidence_attached("witness_account", 0.15, "npc_mayor", 3, "scenario_city", 1.3)
 	if spy.last_event_name != "evidence_attached":
 		return false
 	if spy.last_event_data.get("evidence_type") != "witness_account":
@@ -123,5 +123,7 @@ func test_log_evidence_attached_writes_event() -> bool:
 	if spy.last_event_data.get("day") != 3:
 		return false
 	if spy.last_event_data.get("scenario_id") != "scenario_city":
+		return false
+	if not is_equal_approx(float(spy.last_event_data.get("difficulty_modifier", -1.0)), 1.3):
 		return false
 	return true

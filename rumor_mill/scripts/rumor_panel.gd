@@ -1177,7 +1177,8 @@ func _build_evidence_entry(item: PlayerIntelStore.EvidenceItem) -> Control:
 			if _analytics_ref != null:
 				_analytics_ref.log_evidence_attached(
 						captured_item.type.to_snake_case(), captured_item.credulity_boost,
-						_selected_subject, _world_ref.current_day, _world_ref.scenario_id)
+						_selected_subject, _world_ref.current_day, _world_ref.scenario_id,
+						GameState.evidence_credulity_multiplier(GameState.selected_difficulty))
 		)
 	vbox.add_child(btn)
 

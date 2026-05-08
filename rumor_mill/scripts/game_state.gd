@@ -57,3 +57,12 @@ static func get_difficulty_modifiers(preset: String) -> Dictionary:
 				"inquisitor_cooldown_offset":   0,
 				"illness_escalation_offset":    0,
 			}
+
+
+## SPA-2105: Returns the difficulty-scaled multiplier applied to the evidence
+## credulity boost.  apprentice (Easy)=0.8 / master (Normal)=1.0 / spymaster (Hard)=1.3.
+static func evidence_credulity_multiplier(preset: String) -> float:
+	match preset:
+		"apprentice": return 0.8
+		"spymaster":  return 1.3
+		_:            return 1.0

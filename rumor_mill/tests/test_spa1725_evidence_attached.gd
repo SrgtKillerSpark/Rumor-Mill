@@ -46,11 +46,11 @@ class _SpyLogger extends AnalyticsLogger:
 ## Helper: creates a spy and fires log_evidence_attached() once with analytics
 ## enabled. Restores analytics_enabled to its original value before returning.
 ## Returns [_SpyLogger, original_enabled].
-func _fire(evidence_type: String, credulity_boost: float, target_npc_id: String, day: int, scenario_id: String) -> _SpyLogger:
+func _fire(evidence_type: String, credulity_boost: float, target_npc_id: String, day: int, scenario_id: String, difficulty_modifier: float = 1.0) -> _SpyLogger:
 	var saved: bool = SettingsManager.analytics_enabled
 	SettingsManager.analytics_enabled = true
 	var spy := _SpyLogger.new()
-	spy.log_evidence_attached(evidence_type, credulity_boost, target_npc_id, day, scenario_id)
+	spy.log_evidence_attached(evidence_type, credulity_boost, target_npc_id, day, scenario_id, difficulty_modifier)
 	SettingsManager.analytics_enabled = saved
 	return spy
 
@@ -73,6 +73,7 @@ func run() -> void:
 		"test_payload_has_target_npc_id",
 		"test_payload_has_day",
 		"test_payload_has_scenario_id",
+		"test_payload_has_difficulty_modifier",
 
 		# ── field values ──
 		"test_evidence_type_value",
@@ -80,6 +81,9 @@ func run() -> void:
 		"test_target_npc_id_value",
 		"test_day_value",
 		"test_scenario_id_value",
+
+		# ── SPA-2105: difficulty_modifier field ──
+		"test_difficulty_modifier_value",
 
 		# ── SPA-1522 §2.3 normalization: evidence_type must be snake_case ──
 		"test_evidence_type_is_snake_case_forged_document",
@@ -112,7 +116,7 @@ func test_disabled_writes_zero_events() -> bool:
 	var saved: bool = SettingsManager.analytics_enabled
 	SettingsManager.analytics_enabled = false
 	var spy := _SpyLogger.new()
-	spy.log_evidence_attached("witness_account", 0.05, "npc_maren", 4, "scenario_2")
+	spy.log_evidence_attached("witness_account", 0.05, "npc_maren", 4, "scenario_2", 1.0)
 	SettingsManager.analytics_enabled = saved
 	return spy.call_count == 0
 
@@ -153,6 +157,16 @@ func test_payload_has_day() -> bool:
 func test_payload_has_scenario_id() -> bool:
 	var spy := _fire("forged_document", 0.10, "npc_aldric", 2, "scenario_1")
 	return "scenario_id" in spy.last_event
+
+
+func test_payload_has_difficulty_modifier() -> bool:
+	var spy := _fire("forged_document", 0.10, "npc_aldric", 2, "scenario_1", 1.3)
+	return "difficulty_modifier" in spy.last_event
+
+
+func test_difficulty_modifier_value() -> bool:
+	var spy := _fire("witness_account", 0.05, "npc_maren", 4, "scenario_2", 0.8)
+	return is_equal_approx(float(spy.last_event.get("difficulty_modifier", -1.0)), 0.8)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
