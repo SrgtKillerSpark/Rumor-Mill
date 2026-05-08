@@ -22,7 +22,7 @@ const BAR_WIDTH     := 160
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _score_lbl:   Label     = null
 var _bar:         ColorRect = null
-var _bar_bg:      ColorRect = null
+var _bar_bg:      Panel     = null
 var _caution_lbl: Label     = null
 
 

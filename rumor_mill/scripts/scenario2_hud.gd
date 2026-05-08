@@ -39,7 +39,7 @@ const TOAST_TEXT_INSET    := 6    # label SIDE_LEFT / SIDE_RIGHT pixel inset ins
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _count_lbl:         Label     = null
 var _bar:               ColorRect = null
-var _bar_bg:            ColorRect = null
+var _bar_bg:            Panel     = null
 var _believers_lbl:     Label     = null
 var _rejecters_lbl:     Label     = null
 var _maren_warning_lbl: Label     = null

@@ -18,9 +18,9 @@ const BAR_WIDTH  := 140
 var _calder_score_lbl: Label     = null
 var _tomas_score_lbl:  Label     = null
 var _calder_bar:       ColorRect = null
-var _calder_bar_bg:    ColorRect = null
+var _calder_bar_bg:    Panel     = null
 var _tomas_bar:        ColorRect = null
-var _tomas_bar_bg:     ColorRect = null
+var _tomas_bar_bg:     Panel     = null
 var _rival_lbl:        Label     = null
 var _disrupt_btn:      Button    = null
 

@@ -30,11 +30,11 @@ var _aldric_score_lbl: Label     = null
 var _marta_score_lbl:  Label     = null
 var _heat_lbl:         Label     = null
 var _aldric_bar:       ColorRect = null
-var _aldric_bar_bg:    ColorRect = null
+var _aldric_bar_bg:    Panel     = null
 var _marta_bar:        ColorRect = null
-var _marta_bar_bg:     ColorRect = null
+var _marta_bar_bg:     Panel     = null
 var _heat_bar:         ColorRect = null
-var _heat_bar_bg:      ColorRect = null
+var _heat_bar_bg:      Panel     = null
 
 # ── Guild defense tracking ────────────────────────────────────────────────────
 var _guild_defense_lbl:  Label     = null
