@@ -13,6 +13,9 @@ class_name InquisitorAgent
 ## Emitted each time the inquisitor successfully seeds a heresy rumor.
 signal inquisitor_acted(day: int, claim_type: String, subject_id: String)
 
+## Emitted when an Anonymous Tip deflects an inquisitor attack on a shielded NPC.
+signal tip_deflected(day: int, npc_id: String)
+
 const PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
 
 var _active: bool = false
@@ -23,11 +26,27 @@ var _target_index: int = 0  # cycles through protected NPCs
 ## Set by World._apply_active_scenario() before activate() is called.
 var cooldown_offset: int = 0
 
+## S4 Anonymous Tip — npc_id keys whose next inquisitor attack will be deflected.
+## Set by apply_anonymous_tip(); cleared on deflection.
+var _shielded_npc_ids: Dictionary = {}
+
 
 func activate() -> void:
 	_active = true
 	_last_seed_day = 0
 	_target_index = 0
+	_shielded_npc_ids.clear()
+
+
+## Shield npc_id from the next inquisitor accusation (Anonymous Tip mechanic).
+## Calling this when the NPC is already shielded refreshes the shield.
+func apply_anonymous_tip(npc_id: String) -> void:
+	_shielded_npc_ids[npc_id] = true
+
+
+## Returns true if the specified NPC currently has an active shield.
+func is_shielded(npc_id: String) -> bool:
+	return _shielded_npc_ids.has(npc_id)
 
 
 ## Called once per in-game day from World._on_day_changed().
@@ -66,6 +85,12 @@ func _seed_heresy_rumor(day: int, world: Node, scenario_mgr: ScenarioManager) ->
 	var rep: ReputationSystem = world.reputation_system
 	var subject_id: String = _pick_target(rep)
 	var claim_type_str: String = _pick_claim_type(day)
+
+	# Anonymous Tip deflection: if this NPC is shielded, block the attack and clear the shield.
+	if _shielded_npc_ids.has(subject_id):
+		_shielded_npc_ids.erase(subject_id)
+		tip_deflected.emit(day, subject_id)
+		return
 
 	var seed_npc_id := _pick_seed_npc(world)
 	if seed_npc_id.is_empty():

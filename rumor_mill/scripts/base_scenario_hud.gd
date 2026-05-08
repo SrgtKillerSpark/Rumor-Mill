@@ -23,22 +23,34 @@ const LAYER := 14
 const C_PANEL_BG := Color(0.15, 0.10, 0.08, 0.92)
 
 # ── Shared layout constants ───────────────────────────────────────────────────
+## Unified panel height for all scenario HUDs (pixels). Sized to accommodate
+## the most content-heavy scenarios (S5/S6) without overflow.
+const BASE_HUD_HEIGHT := 78
 ## Unified bar height for all scenario HUD progress bars (pixels).
 const BAR_HEIGHT := 12
 const C_HEADING  := Color(0.91, 0.85, 0.70, 1.0)
 const C_BODY     := Color(0.75, 0.70, 0.60, 1.0)
 const C_WIN      := Color(0.10, 0.75, 0.22, 1.0)
 const C_FAIL     := Color(0.85, 0.15, 0.15, 1.0)
-const C_NEUTRAL  := Color(0.85, 0.55, 0.10, 1.0)
-const C_DEFENDING_ACCENT := Color(0.95, 0.55, 0.10, 1.0)  # amber-gold for DEFENDING state indicators
-const C_TOAST_TEXT := Color(0.80, 0.70, 0.50, 1.0)         # softer parchment-gold for toast label text
+const C_NEUTRAL            := Color(0.85, 0.55, 0.10, 1.0)
+const C_DEFENDING_ACCENT   := Color(0.95, 0.55, 0.10, 1.0)  # Maren actively countering: alert amber
+const C_DEFENDING_DORMANT  := Color(0.55, 0.55, 0.50, 0.55) # Maren watch: dormant/dim state
+const C_TOAST_BG           := Color(0.10, 0.08, 0.06, 0.88) # toast panel background
+const C_TOAST_TEXT         := Color(0.80, 0.70, 0.50, 1.0)  # toast label text
 
 # ── Shared state ─────────────────────────────────────────────────────────────
-var _world_ref:     Node2D = null
-var _day_night_ref: Node   = null
-var _result_lbl:    Label  = null
-var _days_lbl:      Label  = null
-var _diff_lbl:      Label  = null
+var _world_ref:       Node2D       = null
+var _day_night_ref:   Node         = null
+var _result_lbl:      Label        = null
+var _days_lbl:        Label        = null
+var _diff_lbl:        Label        = null
+## Scenario title label — set by each subclass _build_ui(). Updated each tick
+## to show "Scenario N — Day X — Phase" via _update_title().
+var _title_lbl:       Label        = null
+## Shared toast area anchored just below the main HUD panel. Subclass HUDs add
+## toast Panels as children; VBoxContainer stacks them vertically. Populated by
+## _make_panel() so it is always ready before _build_ui() appends toasts.
+var _toast_container: VBoxContainer = null
 
 
 func _ready() -> void:
@@ -59,6 +71,7 @@ func setup(world: Node2D, day_night: Node) -> void:
 		world.scenario_manager.scenario_resolved.connect(_on_scenario_resolved)
 	_on_setup_extra(world)
 	_refresh()
+	_update_title()
 
 
 ## Override in subclasses that need extra signal wiring (S3: rival; S4: inquisitor).
@@ -120,6 +133,15 @@ func _make_panel(panel_name: String, height: int, hbox_separation: int = 16) -> 
 	panel.offset_left   = 8
 	panel.offset_right  = -8
 	add_child(panel)
+
+	_toast_container = VBoxContainer.new()
+	_toast_container.name = "ToastContainer"
+	_toast_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_toast_container.offset_top    = height + 4
+	_toast_container.offset_bottom = height + 4 + 100
+	_toast_container.offset_left   = 8
+	_toast_container.offset_right  = -8
+	add_child(_toast_container)
 
 	var hbox := HBoxContainer.new()
 	hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -226,6 +248,34 @@ func _display_name(npc_id: String) -> String:
 	return npc_id.replace("_", " ").capitalize()
 
 
+## Return the named phase for the given hour-of-day tick.
+## Mirrors day_night_cycle._get_phase_name() boundaries.
+static func _phase_for_hour(hour: int) -> String:
+	if hour >= 20:
+		return "Night"
+	elif hour >= 16:
+		return "Evening"
+	elif hour >= 12:
+		return "Afternoon"
+	elif hour >= 6:
+		return "Morning"
+	else:
+		return "Night"
+
+
+## Update _title_lbl to "Scenario N — Day X — Phase". No-op when label or
+## day_night ref is missing (e.g. during unit tests without a scene tree).
+func _update_title() -> void:
+	if _title_lbl == null or _day_night_ref == null:
+		return
+	var day: int  = _day_night_ref.current_day
+	var tick: int = _day_night_ref.current_tick
+	var tpd: int  = _day_night_ref.ticks_per_day if _day_night_ref.ticks_per_day > 0 else 24
+	var hour: int = tick % tpd
+	var phase: String = _phase_for_hour(hour)
+	_title_lbl.text = "Scenario %d — Day %d — %s" % [_scenario_number(), day, phase]
+
+
 ## Build a small difficulty badge anchored to the top-right corner.
 ## Displays the active difficulty preset so the player can see it during play.
 func _build_difficulty_badge() -> void:
@@ -259,6 +309,7 @@ func _build_difficulty_badge() -> void:
 # ── Signal handlers ──────────────────────────────────────────────────────────
 
 func _on_game_tick(_tick: int) -> void:
+	_update_title()
 	_refresh()
 
 

@@ -154,7 +154,7 @@ const TOOLTIP_DATA: Dictionary = {
 			+ "and [b]Tomas Reeve[/b]. Your patron backs Aldric.\n"
 			+ "• [b]Boost Aldric[/b] to 65+ reputation — he must be the highest.\n"
 			+ "• [b]Drop both rivals[/b] below 45.\n"
-			+ "• On [b]day 15[/b], the Prior endorses the leader ([b]+8 rep[/b]).\n"
+			+ "• On [b]day 13[/b], the Prior endorses the leader ([b]+8 rep[/b]).\n"
 			+ "• If Aldric drops below [b]30[/b], instant fail.\n"
 			+ "Track standings in the [b]Scenario 5 HUD[/b]."
 		),
@@ -164,8 +164,8 @@ const TOOLTIP_DATA: Dictionary = {
 		"body":  (
 			"Expose [b]Aldric Vane[/b]'s embezzlement while protecting [b]Marta Coin[/b].\n"
 			+ "• Get Aldric's reputation to [b]30 or below[/b].\n"
-			+ "• Keep Marta at [b]60+ reputation[/b] (below 30 = instant fail).\n"
-			+ "• Heat ceiling is [b]60[/b] — the guards are on Aldric's payroll.\n"
+			+ "• Keep Marta at [b]62+ reputation[/b] (below 30 = instant fail).\n"
+			+ "• Heat ceiling is [b]55[/b] — the guards are on Aldric's payroll.\n"
 			+ "• Aldric's merchant allies [b]actively defend[/b] him with praise rumours.\n"
 			+ "• Route accusations through the [b]clergy and commons[/b] to bypass the guild.\n"
 			+ "Track progress in the [b]Scenario 6 HUD[/b]."
@@ -317,6 +317,16 @@ const HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 7,
 	},
+	# SPA-944: One-shot banner fired ~12 s after briefing dismissal (non-guided S1 only).
+	# Guided-tutorial players already see the persistent ▼ TARGET label + gtut_explore hint.
+	"hint_s1_find_target": {
+		"title": "Find Your Target",
+		"body":  (
+			"[b]Lord Edric Fenn[/b] has a pulsing [b]amber ◆[/b] above his head.  "
+			+ "Hover over him to check his reputation before taking action."
+		),
+		"auto_dismiss_secs": 9,
+	},
 	"hint_observe": {
 		"title": "Observe a Location",
 		"body":  (
@@ -376,7 +386,7 @@ const HINT_DATA: Dictionary = {
 		"body":  (
 			"The [b]Objective HUD[/b] at the top tracks Edric's reputation.  "
 			+ "Press [b]J → Objectives[/b] for the full breakdown.  "
-			+ "Target: below [b]30[/b]. You have [b]30 days[/b]. Keep seeding rumours!"
+			+ "Target: Bring Edric Fenn's reputation below [b]30[/b]. You have [b]30 days[/b]. Keep seeding rumours!"
 		),
 		"auto_dismiss_secs": 7,
 	},
@@ -407,90 +417,48 @@ const HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 7,
 	},
-	# ── SPA-775: Guided 12-step tutorial hint entries (Scenario 1 first play) ──
+	# ── SPA-835: Guided 7-step tutorial hint entries (Scenario 1 first play) ───
 	"gtut_opening": {
 		"title": "The Alderman's Ruin",
 		"body":  (
 			"You've been hired to destroy [b]Edric Fenn's[/b] reputation.\n"
 			+ "Follow the steps to complete your first assignment."
 		),
-		"auto_dismiss_secs": 5,  # SPA-806: extended from 3 s for readability.
+		"auto_dismiss_secs": 5,
 	},
-	"gtut_camera": {
-		"title": "Move the Camera",
+	"gtut_explore": {
+		"title": "Explore the Town",
 		"body":  (
-			"Use [b]WASD[/b] or drag with middle mouse to look around the town.  "
-			+ "Move the camera now to continue."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "camera_moved",
-	},
-	"gtut_find_building": {
-		"title": "Find a Building",
-		"body":  (
-			"[b]Right-click a building[/b] to read the room and see who's inside.  "
-			+ "The nearest building has a gold outline."
+			"[b]Lord Edric Fenn[/b] is marked with a gold [b]▼ TARGET[/b] above his head.  "
+			+ "Pan with [b]WASD[/b], then [b]right-click a building[/b] to see who's inside."
 		),
 		"auto_dismiss_secs": 999,
 		"action_gate": "read_the_room",
 	},
-	"gtut_observe": {
-		"title": "Observe",
+	"gtut_observe_intel": {
+		"title": "Observe & Check Intel",
 		"body":  (
-			"Good! Now click [b]Observe (1 Recon)[/b] to gather intel on the people here."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "observe",
-	},
-	"gtut_check_intel": {
-		"title": "Check Your Intel",
-		"body":  (
-			"Intel gathered! Press [b]J[/b] to open your Journal and see what you learned."
+			"Click [b]Observe (1 Recon)[/b] to gather intel, then press "
+			+ "[b]J[/b] to open your Journal and review what you learned."
 		),
 		"auto_dismiss_secs": 999,
 		"action_gate": "journal_opened",
 	},
-	"gtut_find_target": {
-		"title": "Find a Target",
+	"gtut_eavesdrop": {
+		"title": "Eavesdrop on an NPC",
 		"body":  (
-			"You need a target for your rumour.  "
-			+ "Close the Journal and [b]right-click an NPC[/b] to eavesdrop.  "
-			+ "A highlighted NPC is nearby."
+			"Close the Journal and [b]right-click a nearby NPC[/b] to eavesdrop.  "
+			+ "A highlighted NPC is nearby — learn their relationship to Edric."
 		),
 		"auto_dismiss_secs": 999,
 		"action_gate": "eavesdrop",
 	},
-	"gtut_eavesdrop_result": {
-		"title": "Eavesdrop Result",
+	"gtut_craft_rumor": {
+		"title": "Craft & Seed a Rumour",
 		"body":  (
-			"You overheard a conversation! You now know their relationship to Edric.  "
-			+ "Press [b]R[/b] to open the Rumour Panel."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "rumor_panel_opened",
-	},
-	"gtut_craft_subject": {
-		"title": "Step 1 of 3: Pick a Subject",
-		"body":  (
-			"Choose [b]Edric Fenn[/b] as your target."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "rumor_subject_selected",
-	},
-	"gtut_craft_claim": {
-		"title": "Step 2 of 3: Pick a Claim",
-		"body":  (
-			"Try [b]Scandal[/b] to damage his reputation.  "
-			+ "Higher intensity claims spread faster."
-		),
-		"auto_dismiss_secs": 999,
-		"action_gate": "rumor_claim_selected",
-	},
-	"gtut_craft_seed": {
-		"title": "Step 3 of 3: Choose a Seed Target",
-		"body":  (
-			"Pick someone [b]credulous[/b] (gullible) — they'll believe it faster.  "
-			+ "Seed your rumour now."
+			"Press [b]R[/b] to open the Rumour Panel.  "
+			+ "Pick [b]Edric Fenn[/b] as subject, choose a claim like [b]Scandal[/b], "
+			+ "then seed it on someone [b]credulous[/b]."
 		),
 		"auto_dismiss_secs": 999,
 		"action_gate": "rumor_seeded",
@@ -507,7 +475,8 @@ const HINT_DATA: Dictionary = {
 	"gtut_complete": {
 		"title": "It's Working!",
 		"body":  (
-			"Your rumour is spreading. Keep gathering intel, crafting rumours, and watching Edric's reputation fall.  "
+			"Your rumour is spreading. Keep gathering intel, crafting rumours, "
+			+ "and watching Edric's reputation fall.  "
 			+ "You have [b]30 days[/b]. Press [b]H[/b] anytime for help."
 		),
 		"auto_dismiss_secs": 8,
@@ -660,6 +629,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"title": "Defend the Accused",
 		"body":  (
 			"Keep [b]Aldous Prior[/b], [b]Vera Midwife[/b], and [b]Finn Monk[/b] above [b]45 reputation[/b].  "
+			+ "If any of the three drops below [b]40[/b], the scenario fails instantly.  "
 			+ "This scenario is purely [b]defensive[/b] — counter slander with Praise rumours."
 		),
 		"auto_dismiss_secs": 10,
@@ -727,7 +697,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 	"ctx_s6_heat_ceiling": {
 		"title": "Guards on Aldric's Payroll",
 		"body":  (
-			"The heat ceiling is [b]60[/b] in this scenario, not 80.  "
+			"The heat ceiling is [b]55[/b] in this scenario, not 80.  "
 			+ "Bram Guard exposes you earlier — vary your targets and wait between actions."
 		),
 		"auto_dismiss_secs": 10,
@@ -735,7 +705,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 	"ctx_s6_protect_marta": {
 		"title": "Protect Marta Coin",
 		"body":  (
-			"Keep [b]Marta Coin[/b] at [b]60+ reputation[/b] — she is your patron.  "
+			"Keep [b]Marta Coin[/b] at [b]62+ reputation[/b] — she is your patron.  "
 			+ "If she drops below [b]30[/b], instant fail.  "
 			+ "Use [b]Praise[/b] rumors through her allies (Sim Carter, Nell Picker) to maintain her standing."
 		),
@@ -774,7 +744,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"body":  (
 			"This scenario is [b]purely defensive[/b] — you protect, not attack.  "
 			+ "An Inquisitor is targeting three people with slander.  "
-			+ "Counter every accusation with [b]Praise[/b] rumours to keep reputations above 45."
+			+ "Counter every accusation with [b]Praise[/b] rumours to keep reputations above 48."
 		),
 		"auto_dismiss_secs": 10,
 	},
@@ -782,16 +752,28 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"title": "What's New — The Election",
 		"body":  (
 			"A [b]three-way race[/b]: Aldric needs 65+ reputation AND must be the highest of the three.  "
-			+ "[b]Day 15[/b] brings a Prior endorsement (+8 rep) to whoever is leading — make sure it is Aldric."
+			+ "[b]Day 13[/b] brings a Prior endorsement (+8 rep) to whoever is leading — make sure it is Aldric."
 		),
 		"auto_dismiss_secs": 10,
 	},
 	"wtut_s6_whats_new": {
 		"title": "What's New — Merchant's Debt",
 		"body":  (
-			"The heat ceiling is [b]60[/b] — guards are on Aldric's payroll.  "
+			"The heat ceiling is [b]55[/b] — guards are on Aldric's payroll.  "
 			+ "Route accusations through [b]clergy and commons[/b] to bypass the merchant guild.  "
-			+ "Also keep [b]Marta Coin[/b] above 60 reputation — she is your patron."
+			+ "Also keep [b]Marta Coin[/b] above 62 reputation — she is your patron."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	# ── SPA-1658: Heat intro — shown before first high-risk action in S2-S6 ──
+	"ctx_heat_intro": {
+		"title": "Suspicion & Heat",
+		"body":  (
+			"Every [b]Observe[/b] and [b]Eavesdrop[/b] action raises [b]heat[/b] on nearby NPCs.  "
+			+ "If any NPC's suspicion reaches [b]80[/b], the Guard Captain identifies you "
+			+ "and the mission [b]fails instantly[/b].  "
+			+ "Vary your targets and wait a day between repeated actions on the same NPC "
+			+ "— suspicion fades overnight."
 		),
 		"auto_dismiss_secs": 10,
 	},
@@ -804,6 +786,12 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			+ "Vary your targets and [b]wait a day[/b] between actions on the same NPC — suspicion fades overnight."
 		),
 		"auto_dismiss_secs": 12,
+	},
+	# ── Faction event foreshadow (SPA-952) ──────────────────────────────────
+	"foreshadow_event": {
+		"title": "Rumours of Change",
+		"body":  "",   ## always overridden via body_override in main.gd
+		"auto_dismiss_secs": 9,
 	},
 	# ── General idle hints ───────────────────────────────────────────────────
 	"ctx_idle_no_action": {
@@ -824,6 +812,61 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"auto_dismiss_secs": 10,
 	},
 }
+
+
+## ── SPA-948: "What's Changed" modal data for Scenarios 2-6 ──────────────────
+##
+## Shown as a blocking "Got it" overlay immediately after Mission Briefing
+## dismiss for S2-S6.  Each entry: { "title": String, "bullets": Array[String] }
+## Bullets support BBCode ([b], [color=…], etc.).
+
+const WHATS_CHANGED_DATA: Dictionary = {
+	"scenario_2": {
+		"title": "What's New — Plague Scare",
+		"bullets": [
+			"[b]Win condition:[/b] 7 or more NPCs must [b]believe[/b] the illness rumour — there is no reputation bar.",
+			"[b]Avoid Sister Maren:[/b] If she rejects any illness claim about Alys, a 2-day grace window begins. Fail to recover in time and you lose.",
+			"Seed through the [b]merchant quarter[/b] — Sybil, Nell, and Greta believe fastest and spread widest.",
+		],
+	},
+	"scenario_3": {
+		"title": "What's New — Succession",
+		"bullets": [
+			"[b]Dual targets:[/b] Raise Calder Fenn to [b]75+[/b] reputation AND drop Tomas Reeve to [b]35 or below[/b].",
+			"[b]Rival agent:[/b] An unseen whisperer actively counters you — watch the Scenario HUD for their moves and use Disrupt to slow them.",
+			"Use [b]Praise[/b] rumours to build Calder's standing through his noble and merchant allies.",
+		],
+	},
+	"scenario_4": {
+		"title": "What's New — Holy Inquisition",
+		"bullets": [
+			"[b]Purely defensive:[/b] Protect Aldous, Vera, and Finn. If any NPC's reputation drops below [b]40[/b], the scenario fails.",
+			"[b]Counter-Rumour:[/b] Seed [b]Praise[/b] claims to push reputations back up after each Inquisitor attack.",
+			"The [b]Inquisitor[/b] accelerates over time — [b]Finn Monk[/b] is most vulnerable. Prioritize him.",
+		],
+	},
+	"scenario_5": {
+		"title": "What's New — The Election",
+		"bullets": [
+			"[b]Three-way race:[/b] Aldric needs [b]65+ reputation[/b] AND must lead both Edric Fenn and Tomas Reeve.",
+			"On [b]Day 15[/b], Prior Aldous endorses whoever is leading — a [b]+8 reputation[/b] boost. Make sure Aldric is ahead by then.",
+			"If Aldric drops below [b]30 reputation[/b], instant fail.",
+		],
+	},
+	"scenario_6": {
+		"title": "What's New — Merchant's Debt",
+		"bullets": [
+			"[b]Heat ceiling is 55[/b] — Aldric's guards are watching. Route rumours through clergy and commons, never the merchant quarter.",
+			"[b]Merchant guild danger:[/b] Aldric's allies actively defend him inside the guild network. Go around them.",
+			"Protect [b]Marta Coin[/b] — keep her above [b]62 reputation[/b]. If she falls below 30, instant fail.",
+		],
+	},
+}
+
+
+## Return the "What's Changed" data dict for a scenario, or empty if not found.
+func get_whats_changed(scenario_id: String) -> Dictionary:
+	return WHATS_CHANGED_DATA.get(scenario_id, {})
 
 
 ## Tracks which tooltip IDs have been seen this session.

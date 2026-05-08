@@ -5,10 +5,15 @@
 # and missing scene references without a GUI.
 #
 # Usage:
-#   ./rumor_mill/tools/validate_gdscript.sh [--godot <path>] [--project <path>]
+#   ./rumor_mill/tools/validate_gdscript.sh [--godot <path>] [--project <path>] [--strict]
+#
+# Options:
+#   --strict  Treat a missing Godot binary as a hard error (exit 2).
+#             Use this in CI to prevent silent skips when the install step fails.
+#             Without --strict the script warns and exits 0 (local-dev friendly).
 #
 # Exit codes:
-#   0 — no errors found
+#   0 — no errors found (or Godot missing without --strict)
 #   1 — GDScript errors detected
 #   2 — Godot binary not found or project path invalid
 
@@ -18,14 +23,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="${SCRIPT_DIR}/.."   # rumor_mill/
 GODOT_BIN=""
+STRICT=0
 
 # ── Argument parsing ───────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --godot)   GODOT_BIN="$2"; shift 2 ;;
     --project) PROJECT_DIR="$2"; shift 2 ;;
+    --strict)  STRICT=1; shift ;;
     -h|--help)
-      echo "Usage: $0 [--godot <path>] [--project <path>]"
+      echo "Usage: $0 [--godot <path>] [--project <path>] [--strict]"
       exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
@@ -50,6 +57,11 @@ if [[ -z "$GODOT_BIN" ]]; then
 fi
 
 if [[ -z "$GODOT_BIN" ]] || ! command -v "$GODOT_BIN" &>/dev/null 2>&1; then
+  if [[ $STRICT -eq 1 ]]; then
+    echo "ERROR: Godot binary not found — cannot run headless validation (--strict mode)." >&2
+    echo "  Set GODOT_BIN env var or pass --godot <path>." >&2
+    exit 2
+  fi
   echo "WARNING: Godot binary not found — skipping headless validation." >&2
   echo "  Set GODOT_BIN env var or pass --godot <path> to enable." >&2
   echo "  e.g.: GODOT_BIN=/path/to/godot4 $0" >&2

@@ -15,8 +15,10 @@ extends BaseScenarioHud
 ##
 ## Wire via setup(world, day_night) from main.gd.
 
-const BAR_WIDTH  := 120
-const BAR_HEIGHT := 10
+const BAR_WIDTH  := 160
+
+const CAMPAIGN_REP_BOOST := ScenarioConfig.S5_CAMPAIGN_REP_BOOST
+const CAMPAIGN_COOLDOWN  := ScenarioConfig.S5_CAMPAIGN_COOLDOWN
 
 const NPC_DISPLAY_NAMES := {
 	"aldric_vane": "Aldric Vane",
@@ -35,6 +37,13 @@ var _edric_bar_bg:     ColorRect = null
 var _tomas_bar:        ColorRect = null
 var _tomas_bar_bg:     ColorRect = null
 var _endorse_lbl:      Label     = null
+var _campaign_btn:     Button    = null
+var _campaign_lbl:     Label     = null
+
+# ── Momentum trackers ─────────────────────────────────────────────────────────
+var _prev_aldric_score: int = -1
+var _prev_edric_score:  int = -1
+var _prev_tomas_score:  int = -1
 
 
 func _scenario_number() -> int:
@@ -49,16 +58,17 @@ func _on_setup_extra(world: Node2D) -> void:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario5Panel", 78, 14)
+	var hbox := _make_panel("Scenario5Panel", BASE_HUD_HEIGHT)
 
-	# Title.
+	# Title — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 5:"
+	title_lbl.text = "Scenario 5 — Day 1 — Morning"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	title_lbl.tooltip_text = "The Election — get Aldric Vane elected alderman. He must reach 65+ and be highest; both rivals below 45."
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
+	_title_lbl = title_lbl
 
 	# Aldric track (patron's candidate — boost).
 	var aldric_vbox := VBoxContainer.new()
@@ -66,11 +76,12 @@ func _build_ui() -> void:
 	hbox.add_child(aldric_vbox)
 
 	_aldric_score_lbl = Label.new()
-	_aldric_score_lbl.add_theme_font_size_override("font_size", 11)
+	_aldric_score_lbl.add_theme_font_size_override("font_size", 14)
 	_aldric_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_aldric_score_lbl.text = "Aldric Vane  Rep: 48 / 100  Target: 65+"
 	_aldric_score_lbl.tooltip_text = "Aldric Vane's reputation. Win condition: raise to 65+ AND be the highest of all three candidates."
 	_aldric_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_aldric_score_lbl.clip_text = true
 	_apply_text_outline(_aldric_score_lbl)
 	aldric_vbox.add_child(_aldric_score_lbl)
 
@@ -86,11 +97,12 @@ func _build_ui() -> void:
 	hbox.add_child(edric_vbox)
 
 	_edric_score_lbl = Label.new()
-	_edric_score_lbl.add_theme_font_size_override("font_size", 11)
+	_edric_score_lbl.add_theme_font_size_override("font_size", 14)
 	_edric_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_edric_score_lbl.text = "Edric Fenn  Rep: 58 / 100  Target: <45"
 	_edric_score_lbl.tooltip_text = "Edric Fenn's reputation. Win condition: drag below 45."
 	_edric_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_edric_score_lbl.clip_text = true
 	_apply_text_outline(_edric_score_lbl)
 	edric_vbox.add_child(_edric_score_lbl)
 
@@ -106,11 +118,12 @@ func _build_ui() -> void:
 	hbox.add_child(tomas_vbox)
 
 	_tomas_score_lbl = Label.new()
-	_tomas_score_lbl.add_theme_font_size_override("font_size", 11)
+	_tomas_score_lbl.add_theme_font_size_override("font_size", 14)
 	_tomas_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_tomas_score_lbl.text = "Tomas Reeve  Rep: 45 / 100  Target: <45"
 	_tomas_score_lbl.tooltip_text = "Tomas Reeve's reputation. Win condition: drag below 45."
 	_tomas_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_tomas_score_lbl.clip_text = true
 	_apply_text_outline(_tomas_score_lbl)
 	tomas_vbox.add_child(_tomas_score_lbl)
 
@@ -126,11 +139,12 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 12)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 25"
 	_days_lbl.tooltip_text = "Days before the election. Aldric must meet all win conditions by the deadline."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_days_lbl.clip_text = true
 	right_vbox.add_child(_days_lbl)
 
 	_result_lbl = Label.new()
@@ -148,13 +162,11 @@ func _build_ui() -> void:
 	_endorse_lbl = Label.new()
 	_endorse_lbl.add_theme_font_size_override("font_size", 12)
 	_endorse_lbl.add_theme_color_override("font_color", Color(0.65, 0.55, 0.45, 0.80))
-	# S5_ENDORSEMENT_DAY/BONUS are instance vars on ScenarioManager (not const),
-	# so they cannot be accessed via the class name — use the default values here
-	# during setup; _refresh() uses the sm instance once _world_ref is available.
 	var _e_day: int = 13
 	_endorse_lbl.text = "Endorsement: day %d (pending)" % _e_day
 	_endorse_lbl.tooltip_text = "On day %d, Prior Aldous endorses the candidate with the highest reputation — granting a +%d bonus. Make sure Aldric leads by then." % [_e_day, 8]
 	_endorse_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_endorse_lbl.clip_text = true
 	right_vbox.add_child(_endorse_lbl)
 
 
@@ -229,3 +241,15 @@ func _on_endorsement(candidate_id: String, bonus: int) -> void:
 	var tween := create_tween()
 	tween.tween_property(_endorse_lbl, "modulate:a", 0.25, 0.12)
 	tween.tween_property(_endorse_lbl, "modulate:a", 1.0, 0.30)
+
+
+# ── Momentum helpers ──────────────────────────────────────────────────────────
+
+func _momentum_arrow(current: int, prev: int) -> String:
+	if prev < 0:
+		return ""
+	if current > prev:
+		return " ↑"
+	if current < prev:
+		return " ↓"
+	return " →"

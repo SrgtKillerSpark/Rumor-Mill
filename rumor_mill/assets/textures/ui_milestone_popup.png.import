@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://spa712_milestone_popup"
-path="res://.godot/imported/ui_milestone_popup.png-spa712.ctex"
+uid="uid://cr1w1yl70s1tq"
+path="res://.godot/imported/ui_milestone_popup.png-b7667beb53afbea9677cba6619625923.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/ui_milestone_popup.png"
-dest_files=["res://.godot/imported/ui_milestone_popup.png-spa712.ctex"]
+dest_files=["res://.godot/imported/ui_milestone_popup.png-b7667beb53afbea9677cba6619625923.ctex"]
 
 [params]
 

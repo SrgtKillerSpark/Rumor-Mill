@@ -24,10 +24,13 @@ const BAR_WIDTH      := 160
 const MAX_NAMES_SHOWN := 5
 
 # ── Toast-panel geometry ─────────────────────────────────────────────────────
-const HUD_PANEL_HEIGHT    := 72   # height of the HUD strip built by _make_panel
+const HUD_PANEL_HEIGHT    := 78   # height of the HUD strip built by _make_panel (matches BASE_HUD_HEIGHT)
 const TOAST_GAP           := 4    # gap between HUD bottom and toast top
 const TOAST_PANEL_HEIGHT  := 24   # visible toast strip height
 const TOAST_CORNER_RADIUS := 4    # corner radius for the toast StyleBoxFlat
+const TOAST_MARGIN_H      := 8    # StyleBoxFlat content_margin left/right
+const TOAST_MARGIN_V      := 4    # StyleBoxFlat content_margin top/bottom
+const TOAST_TEXT_INSET    := 6    # label SIDE_LEFT / SIDE_RIGHT pixel inset inside toast
 
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _count_lbl:         Label     = null
@@ -37,6 +40,7 @@ var _believers_lbl:     Label     = null
 var _rejecters_lbl:     Label     = null
 var _maren_warning_lbl: Label     = null
 var _maren_watch_lbl:   Label     = null
+var _maren_hint_lbl:    Label     = null
 var _escalation_lbl:    Label     = null
 
 ## SPA-1565: True while Maren is in DEFENDING state — gates neighbor rejection toasts.
@@ -97,12 +101,13 @@ func _on_setup_extra(world: Node2D) -> void:
 func _build_ui() -> void:
 	var hbox := _make_panel("Scenario2Panel", HUD_PANEL_HEIGHT)
 
-	# Scenario label.
+	# Scenario label — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 2:"
+	title_lbl.text = "Scenario 2 — Day 1 — Morning"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	hbox.add_child(title_lbl)
+	_title_lbl = title_lbl
 
 	# Believer count + progress bar.
 	var count_vbox := VBoxContainer.new()
@@ -178,16 +183,24 @@ func _build_ui() -> void:
 	# is discoverable. Dimmed when dormant; turns amber and expands when defending.
 	_maren_watch_lbl = Label.new()
 	_maren_watch_lbl.add_theme_font_size_override("font_size", 11)
-	_maren_watch_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.55))  # TODO(SPA-1590): replace with C_DEFENDING_ACCENT (dormant variant)
+	_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_DORMANT)
 	_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
 	_maren_watch_lbl.tooltip_text = (
-		"Sister Maren may counter the illness rumor if it reaches her circle."
-		+ " When active, she suppresses credulity among her neighbors."
-		+ " A 2-day grace window applies after she first rejects."
+		"Sister Maren is a counter-intelligence threat in this scenario."
+		+ " If the rumor reaches her, you'll have a limited grace period to still win."
 	)
 	_maren_watch_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	_maren_watch_lbl.clip_text = true
 	names_vbox.add_child(_maren_watch_lbl)
+
+	# SPA-1728: Actionable recovery hint — shown after grace window activates, softer color than C_FAIL.
+	_maren_hint_lbl = Label.new()
+	_maren_hint_lbl.add_theme_font_size_override("font_size", 11)
+	_maren_hint_lbl.add_theme_color_override("font_color", Color(0.75, 0.55, 0.35, 0.90))
+	_maren_hint_lbl.text = ""
+	_maren_hint_lbl.visible = false
+	_maren_hint_lbl.clip_text = true
+	names_vbox.add_child(_maren_hint_lbl)
 
 	# Days remaining + result.
 	var right_vbox := VBoxContainer.new()
@@ -266,25 +279,20 @@ func _build_ui() -> void:
 
 	# SPA-1565: de-conversion toast — appears just below the HUD strip when a Maren
 	# neighbor rejects the illness rumor while she is actively defending.
+	# SPA-1590: reparented into _toast_container; uses custom_minimum_size.y instead of
+	# hardcoded SIDE_TOP/SIDE_BOTTOM offsets so position adapts if HUD strip height changes.
 	var toast_style := StyleBoxFlat.new()
-	toast_style.bg_color = Color(0.10, 0.08, 0.06, 0.88)  # TODO(SPA-1590): replace with ToastContainer constant
+	toast_style.bg_color = C_TOAST_BG
 	toast_style.set_corner_radius_all(TOAST_CORNER_RADIUS)
-	toast_style.content_margin_left   = 8   # TODO(SPA-1590): replace with ToastContainer constant
-	toast_style.content_margin_right  = 8   # TODO(SPA-1590): replace with ToastContainer constant
-	toast_style.content_margin_top    = 4   # TODO(SPA-1590): replace with ToastContainer constant
-	toast_style.content_margin_bottom = 4   # TODO(SPA-1590): replace with ToastContainer constant
+	toast_style.content_margin_left   = TOAST_MARGIN_H
+	toast_style.content_margin_right  = TOAST_MARGIN_H
+	toast_style.content_margin_top    = TOAST_MARGIN_V
+	toast_style.content_margin_bottom = TOAST_MARGIN_V
 	_deconv_toast_panel = Panel.new()
 	_deconv_toast_panel.add_theme_stylebox_override("panel", toast_style)
-	_deconv_toast_panel.set_anchor(SIDE_LEFT,   0.0)
-	_deconv_toast_panel.set_anchor(SIDE_RIGHT,  1.0)
-	_deconv_toast_panel.set_anchor(SIDE_TOP,    0.0)
-	_deconv_toast_panel.set_anchor(SIDE_BOTTOM, 0.0)
-	_deconv_toast_panel.set_offset(SIDE_LEFT,   8)    # TODO(SPA-1590): replace with ToastContainer constant
-	_deconv_toast_panel.set_offset(SIDE_RIGHT, -8)    # TODO(SPA-1590): replace with ToastContainer constant
-	_deconv_toast_panel.set_offset(SIDE_TOP,    HUD_PANEL_HEIGHT + TOAST_GAP)                              # TODO(SPA-1590): replace with ToastContainer constant (HUD height + gap)
-	_deconv_toast_panel.set_offset(SIDE_BOTTOM, HUD_PANEL_HEIGHT + TOAST_GAP + TOAST_PANEL_HEIGHT)         # TODO(SPA-1590): replace with ToastContainer constant (toast height)
+	_deconv_toast_panel.custom_minimum_size.y = TOAST_PANEL_HEIGHT
 	_deconv_toast_panel.visible = false
-	add_child(_deconv_toast_panel)
+	_toast_container.add_child(_deconv_toast_panel)
 	_deconv_toast_lbl = Label.new()
 	_deconv_toast_lbl.add_theme_font_size_override("font_size", 11)
 	_deconv_toast_lbl.add_theme_color_override("font_color", C_TOAST_TEXT)
@@ -292,8 +300,8 @@ func _build_ui() -> void:
 	_deconv_toast_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	_deconv_toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_deconv_toast_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_deconv_toast_lbl.set_offset(SIDE_LEFT,  6)   # TODO(SPA-1590): replace with ToastContainer constant
-	_deconv_toast_lbl.set_offset(SIDE_RIGHT, -6)  # TODO(SPA-1590): replace with ToastContainer constant
+	_deconv_toast_lbl.set_offset(SIDE_LEFT,   TOAST_TEXT_INSET)
+	_deconv_toast_lbl.set_offset(SIDE_RIGHT, -TOAST_TEXT_INSET)
 	_deconv_toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_deconv_toast_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	_deconv_toast_panel.add_child(_deconv_toast_lbl)
@@ -377,28 +385,50 @@ func _refresh() -> void:
 	_update_quarantine_button()
 
 	# SPA-1540/SPA-1552/SPA-1565: Keep the persistent Maren watch indicator in sync each tick.
+	# SPA-1728: Hide the watch label (and hint) once the scenario resolves — AC#4.
 	# [🛡] tags on affected NPC names above provide per-NPC suppression visibility.
 	_maren_is_defending = maren_defending
 	if _maren_watch_lbl != null:
-		if maren_defending:
+		var game_over: bool = (state == ScenarioManager.ScenarioState.WON
+			or state == ScenarioManager.ScenarioState.FAILED)
+		if game_over:
+			_maren_watch_lbl.visible = false
+			if _maren_hint_lbl != null:
+				_maren_hint_lbl.visible = false
+		elif maren_defending:
 			_maren_watch_lbl.text = "🛡 Maren is actively countering rumors among her neighbors."
 			_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_ACCENT)
+			_maren_watch_lbl.visible = true
 		else:
 			_maren_watch_lbl.text = "🛡 Maren's Watch: dormant"
-			_maren_watch_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.55))  # TODO(SPA-1590): replace with C_DEFENDING_ACCENT (dormant variant)
+			_maren_watch_lbl.add_theme_color_override("font_color", C_DEFENDING_DORMANT)
+			_maren_watch_lbl.visible = true
 
 
 # ── Escalation activity ───────────────────────────────────────────────────────
 
 ## Called by illness_escalation_agent.illness_escalated signal.
-func notify_illness_escalated(day: int, _claim_type: String, _subject_id: String) -> void:
+## SPA-1708: seed_npc_name and seed_npc_location now carried in the signal so the
+## player can gauge which NPC the auto-spread reached and how close that is to Maren.
+func notify_illness_escalated(
+		day: int, _claim_type: String, _subject_id: String,
+		seed_npc_name: String, seed_npc_location: String
+) -> void:
 	if _escalation_lbl == null:
 		return
-	_escalation_lbl.text = "Rumours: Day %d — illness spreading on its own" % day
+	var npc_tag := ""
+	if not seed_npc_name.is_empty():
+		var loc_tag: String = " · %s" % seed_npc_location if not seed_npc_location.is_empty() else ""
+		npc_tag = " — reached %s%s" % [seed_npc_name, loc_tag]
+	_escalation_lbl.text = "Rumours: Day %d — illness spreading on its own%s" % [day, npc_tag]
 	_escalation_lbl.add_theme_color_override("font_color", C_ESCALATION_FLARE)
 	var tween := create_tween()
 	tween.tween_property(_escalation_lbl, "modulate:a", 0.25, 0.12)
 	tween.tween_property(_escalation_lbl, "modulate:a", 1.0,  0.30)
+	# SPA-1708: brief de-conv-style toast so the auto-spread NPC is unmissable.
+	if not seed_npc_name.is_empty():
+		var loc_str: String = " at the %s" % seed_npc_location if not seed_npc_location.is_empty() else ""
+		_show_deconv_toast("🤒 Illness rumour reached %s%s" % [seed_npc_name, loc_str])
 
 
 # ── SPA-592: Grace window warning ─────────────────────────────────────────────
@@ -525,15 +555,15 @@ func _show_deconv_toast(text: String) -> void:
 
 
 ## Called when Maren first rejects, starting the 2-day grace window.
-## SPA-1564: Extends warning text with a one-line recovery hint (UX win #2b).
+## SPA-1728: Warning (C_FAIL) and hint (softer color) are separate labels — AC#2.
 func _on_maren_grace_started(days_remaining: int) -> void:
 	if _maren_warning_lbl == null:
 		return
-	_maren_warning_lbl.text = (
-		"⚠ Maren rejected — %d days to reach 7 believers!" % days_remaining
-		+ "\nTip: quarantine near Maren to slow counter-spread, or seed isolated NPCs."
-	)
+	_maren_warning_lbl.text = "⚠ Maren rejected — %d days to reach 7 believers!" % days_remaining
 	_maren_warning_lbl.visible = true
+	if _maren_hint_lbl != null:
+		_maren_hint_lbl.text = "Tip: Quarantine buildings near Maren to slow counter-spread."
+		_maren_hint_lbl.visible = true
 	# Flash the warning to draw the player's eye.
 	var tween := create_tween()
 	tween.tween_property(_maren_warning_lbl, "modulate:a", 0.1, 0.15)

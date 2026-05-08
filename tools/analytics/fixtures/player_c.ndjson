@@ -1,0 +1,15 @@
+{"type":"scenario_selected","scenario_id":"S1","difficulty":"Normal","ts":"2026-04-03T10:00:00Z"}
+{"type":"tutorial_step_completed","scenario_id":"S1","step_id":"step_1","ts":"2026-04-03T10:01:00Z"}
+{"type":"tutorial_step_completed","scenario_id":"S1","step_id":"step_2","ts":"2026-04-03T10:02:00Z"}
+{"type":"tutorial_step_completed","scenario_id":"S1","step_id":"step_3","ts":"2026-04-03T10:03:00Z"}
+{"type":"tutorial_step_completed","scenario_id":"S1","step_id":"step_4","ts":"2026-04-03T10:04:00Z"}
+{"type":"settings_changed","setting_key":"volume","old_value":80,"new_value":60,"ts":"2026-04-03T10:05:00Z"}
+{"type":"settings_changed","setting_key":"subtitles","old_value":false,"new_value":true,"ts":"2026-04-03T10:06:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S1","ts":"2026-04-03T10:10:00Z"}
+{"type":"rumor_seeded","subject_name":"Lord Harwick","claim_id":"rumor_301","seed_target":"npc_herbalist","day":1,"scenario_id":"S1","ts":"2026-04-03T10:11:00Z"}
+{"type":"npc_state_changed","npc_name":"Herbalist","rumor_id":"rumor_301","new_state":"BELIEVE","day":2,"scenario_id":"S1","ts":"2026-04-03T10:20:00Z"}
+{"type":"npc_state_changed","npc_name":"Herbalist","rumor_id":"rumor_301","new_state":"SPREAD","day":3,"scenario_id":"S1","ts":"2026-04-03T10:30:00Z"}
+{"type":"reputation_delta","npc_id":"npc_lord_harwick","from_score":60,"to_score":54,"delta":-6,"day":2,"scenario_id":"S1","ts":"2026-04-03T10:21:00Z"}
+{"type":"settings_changed","setting_key":"volume","old_value":60,"new_value":50,"ts":"2026-04-03T10:25:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S1","ts":"2026-04-03T10:26:00Z"}
+{"type":"scenario_ended","scenario_id":"S1","difficulty":"Normal","outcome":"WON","day_reached":5,"duration_sec":520,"ts":"2026-04-03T10:45:00Z"}

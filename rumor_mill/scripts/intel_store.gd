@@ -4,6 +4,9 @@
 
 class_name PlayerIntelStore
 
+## Emitted on every successful whisper token spend.
+signal whisper_spent
+
 ## Emitted once per spend when whisper_tokens_remaining drops to 0.
 signal tokens_exhausted
 
@@ -15,6 +18,10 @@ signal heat_warning
 const MAX_DAILY_ACTIONS  := 3
 const MAX_DAILY_WHISPERS := 2
 const MAX_EVIDENCE       := 3
+
+## SPA-1580: Evidence-economy decay constants.
+const EVIDENCE_DECAY_RATE := 0.15   ## Confidence lost per game day.
+const EVIDENCE_THRESHOLD  := 0.75   ## Tier boundary: usable (≥0.75) → stale (<0.75).
 
 ## Per-run caps — may be raised/lowered by difficulty modifiers before play begins.
 ## Default to the class constants; World._apply_active_scenario() overrides these.
@@ -48,6 +55,44 @@ var evidence_inventory: Array = []
 
 ## Running total of evidence items consumed this run (for end-screen stats).
 var evidence_used_count: int = 0
+
+## SPA-1585: Per-target evidence cooldown. Maps target_npc_id → days_remaining.
+## When any entry has days > 0, evidence cannot be attached to a different target.
+var _evidence_target_cooldown: Dictionary = {}
+
+## SPA-1581: Evidence confidence decay thresholds and rate.
+## confidence ≥ CONFIDENCE_FRESH_MIN → "fresh"  (green HUD badge)
+## confidence ≥ CONFIDENCE_AGING_MIN → "aging"  (amber HUD badge)
+## confidence < CONFIDENCE_AGING_MIN → "stale"  (red HUD badge)
+const CONFIDENCE_FRESH_MIN     := 0.65
+const CONFIDENCE_AGING_MIN     := 0.30
+const CONFIDENCE_DECAY_PER_DAY := 0.12
+
+## SPA-1581: Emitted at dawn for each held evidence item that has decayed.
+## crossed_threshold is true when the item's tier changed this decay step.
+signal evidence_confidence_changed(
+		evidence_type:     String,
+		prev_confidence:   float,
+		new_confidence:    float,
+		tier:              String,
+		crossed_threshold: bool
+)
+
+## Mid-game event bonus charge pools — granted by decision events, consumed by
+## the relevant scenario-specific verb actions.
+
+## S2: free quarantine uses (no Recon Action or Whisper Token cost).
+var free_quarantine_charges: int = 0
+
+## S5: free Stage Appearance uses (no Recon Action cost, ignores cooldown).
+var free_campaign_charges: int = 0
+
+## S6: bonus Release Evidence uses added on top of BLACKMAIL_MAX_USES.
+var bonus_expose_uses: int = 0
+
+## S6: number of times Release Evidence has been used this run.
+## Persisted so save/load cannot bypass the per-run cap.
+var blackmail_uses_count: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -137,6 +182,7 @@ func try_spend_whisper() -> bool:
 	if whisper_tokens_remaining <= 0:
 		return false
 	whisper_tokens_remaining -= 1
+	whisper_spent.emit()
 	if whisper_tokens_remaining == 0:
 		tokens_exhausted.emit()
 	return true
@@ -239,6 +285,11 @@ class EvidenceItem:
 	var mutability_modifier: float
 	var compatible_claims: Array  # empty = any claim type
 	var acquired_tick: int
+	var confidence: float = 1.0           ## SPA-1580: current evidence quality (0.0–1.0).
+	var _decay_emitted_on_day: int = -1   ## SPA-1580: anti-double-fire guard for save/load.
+	var shelf_life_extension: int = 0          ## SPA-1585: extra ticks added to rumor shelf_life_ticks on attachment.
+	var credulity_boost: float = 0.0           ## SPA-1711: belief-chance boost applied to the seed target NPC.
+	var supports_cooldown_bypass: bool = false ## SPA-1756: when true, usable during active target-shift cooldown at half effectiveness.
 
 	func _init(
 			ev_type: String,
@@ -280,3 +331,114 @@ func get_compatible_evidence(claim_type_upper: String) -> Array:
 		if item.compatible_claims.is_empty() or claim_type_upper in item.compatible_claims:
 			result.append(item)
 	return result
+
+
+## SPA-1581: Return "fresh", "aging", or "stale" for a given confidence value.
+static func get_confidence_tier(confidence: float) -> String:
+	if confidence >= CONFIDENCE_FRESH_MIN:
+		return "fresh"
+	elif confidence >= CONFIDENCE_AGING_MIN:
+		return "aging"
+	return "stale"
+
+
+## SPA-1580: Decay confidence on each held evidence item for the given game day.
+## Returns an Array of Dicts describing events to emit; caller (AnalyticsManager)
+## is responsible for calling log_evidence_decay_tick / log_evidence_threshold_cross.
+## The _decay_emitted_on_day guard prevents double-fire on save/load within the same day.
+## SPA-1581: Also emits evidence_confidence_changed for each decayed item so the HUD
+## can subscribe directly without going through the AnalyticsManager event loop.
+func decay_evidence_items(current_day: int) -> Array:
+	var events: Array = []
+	for item in evidence_inventory:
+		if item._decay_emitted_on_day == current_day:
+			continue  # already processed this day
+		item._decay_emitted_on_day = current_day
+		var prev: float = item.confidence
+		var next: float = maxf(0.0, prev - EVIDENCE_DECAY_RATE)
+		if next == prev:
+			continue
+		item.confidence = next
+		events.append({
+			"kind":          "decay",
+			"evidence_type": item.type.to_lower().replace(" ", "_"),
+			"prev":          prev,
+			"new":           next,
+		})
+		# Emit threshold crossing only when confidence drops through the tier boundary.
+		if prev >= EVIDENCE_THRESHOLD and next < EVIDENCE_THRESHOLD:
+			events.append({
+				"kind":          "threshold",
+				"evidence_type": item.type.to_lower().replace(" ", "_"),
+				"direction":     "down",
+				"threshold":     EVIDENCE_THRESHOLD,
+				"confidence":    next,
+			})
+		# SPA-1581: Emit HUD signal using three-tier system (fresh/aging/stale).
+		var prev_tier: String = get_confidence_tier(prev)
+		var new_tier:  String = get_confidence_tier(next)
+		evidence_confidence_changed.emit(item.type, prev, next, new_tier, new_tier != prev_tier)
+	return events
+
+
+# ---------------------------------------------------------------------------
+# SPA-1585: Evidence target-shift cooldown
+# ---------------------------------------------------------------------------
+
+## Start a cooldown preventing evidence use on a different target for N days.
+## N is determined by difficulty: Apprentice=0, Normal=2, Master=2, Spymaster=3.
+## A cooldown of 0 (Apprentice) is a no-op.
+## SPA-1755: Master 3->2, Spymaster 4->3 to prevent cooldown-blocked displacement.
+## SPA-1776: Guard added — cooldown must not arm when evidence_economy_v2 is OFF.
+func start_evidence_cooldown(target_npc_id: String, difficulty: String) -> void:
+	if not GameState.evidence_economy_v2:
+		return
+	var days: int = _cooldown_days_for_difficulty(difficulty)
+	if days > 0:
+		_evidence_target_cooldown[target_npc_id] = days
+
+
+## Decrement all active cooldowns by 1 day. Called at dawn from World._on_day_changed().
+func decay_evidence_cooldowns() -> void:
+	for npc_id in _evidence_target_cooldown.keys():
+		_evidence_target_cooldown[npc_id] = maxi(0, _evidence_target_cooldown[npc_id] - 1)
+
+
+## Returns true when there is an active cooldown for a target other than target_npc_id.
+## Returns false when no cooldown is active, or the cooldown is for this same target.
+## SPA-1718: Always returns false when evidence_economy_v2 flag is OFF.
+func is_evidence_locked_for_target(target_npc_id: String) -> bool:
+	if not GameState.evidence_economy_v2:
+		return false
+	for npc_id in _evidence_target_cooldown:
+		if _evidence_target_cooldown[npc_id] > 0 and npc_id != target_npc_id:
+			return true
+	return false
+
+
+## Returns the active cooldown entry {target_npc_id, days_remaining}, or {} if none.
+func get_evidence_cooldown_info() -> Dictionary:
+	for npc_id in _evidence_target_cooldown:
+		if _evidence_target_cooldown[npc_id] > 0:
+			return {"target_npc_id": npc_id, "days_remaining": _evidence_target_cooldown[npc_id]}
+	return {}
+
+
+## SPA-1756: Returns true when evidence_item supports cooldown bypass AND an active
+## target-shift cooldown for a *different* target is in effect for target_npc_id.
+## The caller (world.gd) uses this to apply half-effectiveness bonuses instead of
+## blocking the use entirely.
+func is_evidence_bypass_active(target_npc_id: String, evidence_item: EvidenceItem) -> bool:
+	if not GameState.evidence_economy_v2:
+		return false
+	if not evidence_item.supports_cooldown_bypass:
+		return false
+	return is_evidence_locked_for_target(target_npc_id)
+
+
+static func _cooldown_days_for_difficulty(difficulty: String) -> int:
+	match difficulty:
+		"normal":    return 2
+		"master":    return 2   ## SPA-1755: was 3
+		"spymaster": return 3   ## SPA-1755: was 4
+		_:           return 0   ## Apprentice and unknown: no cooldown

@@ -28,11 +28,13 @@ You arrive in a town of thirty people. They gossip, protect their allies, and re
 
 **Watch It Spread.** The Social Graph Overlay shows your rumor moving in real time. Stories mutate. They cross faction lines. They reach targets you never intended — or stall in a dead end. Adapt or fail.
 
-**Four handcrafted scenarios** test your information warfare skills:
+**Six handcrafted scenarios** test your information warfare skills:
 - Discredit a nine-year alderman before the autumn tax rolls are signed
 - Drive out a rival herbalist before the town healer's clients return to her
 - Raise one reputation and ruin another — while an AI opponent works against you
 - Protect three innocents from an inquisitor's propaganda campaign for twenty days
+- Swing a three-way election before an endorsement deadline locks in the winner
+- Expose a merchant's embezzlement before his guards silence your informant
 
 There are no swords in Rumor Mill. Only the right word, in the right ear, at the right moment.
 
@@ -43,8 +45,11 @@ There are no swords in Rumor Mill. Only the right word, in the right ear, at the
 - **Living social network** — 30 NPCs with individual credulity, loyalty, and sociability stats that shape how every rumor travels
 - **Rumor propagation simulation** — stories mutate, stall, accelerate, and backfire based on real-time network state
 - **Intel system** — observe schedules, eavesdrop on relationships, collect evidence before committing
-- **Four handcrafted scenarios** — offense, counter-intel, dual-front campaigns, and pure defense against an AI opponent
+- **Six handcrafted scenarios** — offense, precision targeting, dual-front campaign against an AI opponent, pure defense, election management, and embezzlement exposure
 - **Social graph visualization** — watch your whisper move through the town in real time
+- **Tutorial system** — Scenario 1 includes a full in-game tutorial guiding new players through the core loop
+- **Save/load** — resume any scenario at any point
+- **Achievement system** — in-game achievements across all six scenarios
 
 ---
 
@@ -108,6 +113,7 @@ There are no swords in Rumor Mill. Only the right word, in the right ear, at the
 
 ---
 
-*Document version: 1.1 — 2026-04-04*
+*Document version: 1.2 — 2026-04-24*
 *v1.0 based on: SPA-154 (store copy draft), SPA-135 (launch checklist and asset specs)*
 *v1.1 (SPA-225): Added Scenario 4 "The Holy Inquisition"; rewrote long description to meet 2000-char Steamworks limit; consolidated to 5 key feature bullets; aligned tone with narrative-identity.md*
+*v1.2 ([SPA-1060](/SPA/issues/SPA-1060)): Updated scenario count to six; added Scenarios 5 (The Election) and 6 (The Merchant's Debt) to long description; added tutorial system, save/load, and achievement system to Key Features.*

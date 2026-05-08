@@ -1,0 +1,7 @@
+; Minimal Godot project config for static-checker regression fixtures.
+; DO NOT use as a real project — fixture only.
+config_version=5
+
+[application]
+config/name="Check5Fixture"
+config/features=PackedStringArray("4.6")

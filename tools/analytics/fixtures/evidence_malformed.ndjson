@@ -1,0 +1,5 @@
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"observe_building","day":4,"scenario_id":"scenario_1","difficulty":"Normal"}
+THIS IS NOT VALID JSON — should be silently skipped
+{"type":"evidence_acquired","source_action":"examine_item","day":6,"scenario_id":"scenario_1","difficulty":"Normal"}
+{"type":"evidence_used","day":8,"scenario_id":"scenario_1","difficulty":"Normal"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","scenario_id":"scenario_1","difficulty":"Normal"}

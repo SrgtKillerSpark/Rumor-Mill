@@ -20,17 +20,35 @@ import {
   findProjectRoot,
 } from "./lib/project-paths.js";
 
-// Resolve project root — env override, or walk up from cwd
-const PROJECT_ROOT = process.env["GODOT_PROJECT_ROOT"]
-  ? path.resolve(process.env["GODOT_PROJECT_ROOT"])
-  : (() => {
-      try {
-        return findProjectRoot();
-      } catch {
-        // Fallback: three levels up from this file (tools/mcp-server/src -> rumor_mill)
-        return path.resolve(import.meta.dirname, "..", "..", "..");
+// Resolve project root — env override, or walk up from cwd.
+// If the env-supplied root doesn't contain project.godot directly,
+// search its immediate children (handles repo-root vs Godot-root mismatch).
+const PROJECT_ROOT = (() => {
+  const envRoot = process.env["GODOT_PROJECT_ROOT"];
+  if (envRoot) {
+    const resolved = path.resolve(envRoot);
+    if (fs.existsSync(path.join(resolved, "project.godot"))) {
+      return resolved;
+    }
+    // Scan immediate subdirectories for project.godot
+    try {
+      for (const entry of fs.readdirSync(resolved, { withFileTypes: true })) {
+        if (entry.isDirectory()) {
+          const candidate = path.join(resolved, entry.name);
+          if (fs.existsSync(path.join(candidate, "project.godot"))) {
+            return candidate;
+          }
+        }
       }
-    })();
+    } catch { /* ignore read errors */ }
+  }
+  try {
+    return findProjectRoot();
+  } catch {
+    // Fallback: three levels up from this file (tools/mcp-server/src -> rumor_mill)
+    return path.resolve(import.meta.dirname, "..", "..", "..");
+  }
+})();
 
 const server = new McpServer({
   name: "godot-mcp",

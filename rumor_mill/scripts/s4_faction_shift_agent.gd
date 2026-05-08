@@ -25,12 +25,11 @@ class_name S4FactionShiftAgent
 ## event_type: "merchant_sympathy" | "bishop_pressure" | "clergy_solidarity"
 signal faction_shift_occurred(day: int, event_type: String, description: String)
 
-const PROTECTED_NPC_IDS: Array[String] = ["aldous_prior", "vera_midwife", "finn_monk"]
-
-## Day window [first_day, last_day] within which each phase fires (once only).
-const PHASE_1_WINDOW: Array = [5,  7]
-const PHASE_2_WINDOW: Array = [10, 13]
-const PHASE_3_WINDOW: Array = [14, 17]
+## Day windows and NPC list sourced from ScenarioConfig (single source of truth).
+const PROTECTED_NPC_IDS := ScenarioConfig.S4_PROTECTED_NPC_IDS
+const PHASE_1_WINDOW    := ScenarioConfig.S4_PHASE_1_WINDOW
+const PHASE_2_WINDOW    := ScenarioConfig.S4_PHASE_2_WINDOW
+const PHASE_3_WINDOW    := ScenarioConfig.S4_PHASE_3_WINDOW
 
 var _active: bool = false
 var _phase_1_fired: bool = false

@@ -17,7 +17,7 @@ extends Node
 
 const EAVESDROP_RANGE_TILES := 3      ## Max tile distance for "in conversation"
 const EAVESDROP_FAIL_CHANCE  := 0.20  ## Probability of detection when temperament > 0.7
-const NPC_HIT_RADIUS_PX      := 40.0  ## World-space hit radius around NPC centre (scaled for 2x sprites)
+const NPC_HIT_RADIUS_PX      := 52.0  ## World-space hit radius around NPC centre (scaled for 2x sprites)
 const BUILDING_HIT_TILES     := 2     ## Grid-cell radius for location hit-test
 
 ## Highlight colour applied to a hovered NPC's modulate.
@@ -65,8 +65,9 @@ signal valid_eavesdrop_hovered
 ## SPA-775: Emitted when the Read the Room popup opens for a building.
 signal read_the_room_shown(location_id: String)
 
-var _world_ref:       Node2D           = null
-var _intel_store:     PlayerIntelStore = null
+var _world_ref:          Node2D           = null
+var _intel_store:        PlayerIntelStore = null
+var _analytics_manager                   = null  ## SPA-1530: set via set_analytics_manager()
 
 # ── Hover state ───────────────────────────────────────────────────────────────
 var _hovered_npc:      Node2D = null
@@ -104,6 +105,11 @@ var _follow_ticks_remaining: int = 0
 # ── Overhear Snippet (SPA-761) ────────────────────────────────────────────────
 ## pair_key (sorted npc ids joined by "|") → last tick a snippet was shown.
 var _overhear_cooldowns: Dictionary = {}
+
+
+## SPA-1530: Receive analytics manager reference so evidence events can be logged directly.
+func set_analytics_manager(am) -> void:
+	_analytics_manager = am
 
 
 ## Register the NPC conversation dialogue panel (SPA-683).
@@ -461,6 +467,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if lc_npc != null:
 			lc_npc.call("flash_click")
 			lc_npc.call("show_name_popup")  # SPA-777: brief name + faction label on click
+			AudioManager.play_ui("click")
 			if _follow_npc == lc_npc:
 				# Re-click same NPC clears follow.
 				_follow_npc.call("set_selected", false)
@@ -488,6 +495,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	# NPC hit-test takes priority over location hit-test.
 	var clicked_npc := _hit_test_npc(world_pos)
 	if clicked_npc != null:
+		clicked_npc.call("flash_click")  # SPA-826: visual pop on right-click
+		AudioManager.play_ui("click")
 		# SPA-683: show the conversation dialogue panel instead of a direct action.
 		if _dialogue_panel != null:
 			_dialogue_panel.show_for_npc(clicked_npc, screen_pos)
@@ -535,8 +544,7 @@ func _hit_test_location(world_pos: Vector2) -> String:
 
 func _try_observe(location_id: String) -> void:
 	# Forged Document: double-spend at market/guild when ≥2 actions remain.
-	var forged_doc := _intel_store.recon_actions_remaining >= 2 \
-		and (location_id == "market" or location_id == "guild")
+	var forged_doc: bool = _intel_store.recon_actions_remaining >= 2 and (location_id == "market" or location_id == "guild")
 
 	if not _intel_store.try_spend_action():
 		emit_signal("action_performed", "No Recon Actions remaining today.", false)
@@ -569,12 +577,33 @@ func _try_observe(location_id: String) -> void:
 		_intel_store.recon_actions_remaining
 	]
 
+	# Annotate belief states of observed NPCs for actionable intel.
+	var bribe_targets: Array[String]   = []
+	var active_spreaders: Array[String] = []
+	var active_states := [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]
+	for npc in _world_ref.npcs:
+		if (npc.current_cell - entry_cell).length() <= 4:
+			var s: Rumor.RumorState = npc.get_worst_rumor_state()
+			var nname: String = npc.npc_data.get("name", "?")
+			if s == Rumor.RumorState.EVALUATING:
+				bribe_targets.append(nname)
+			elif s in active_states:
+				active_spreaders.append(nname)
+	if not bribe_targets.is_empty():
+		msg += "\n  ◆ Bribe opportunity: %s (evaluating)" % ", ".join(bribe_targets)
+	if not active_spreaders.is_empty():
+		msg += "\n  ◈ Already spreading: %s" % ", ".join(active_spreaders)
+
 	# Evidence acquisition.
 	if forged_doc:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Forged Document", 0.20, 0.0,
 			["ACCUSATION", "SCANDAL", "HERESY"], tick)
+		ev.shelf_life_extension = 40  ## SPA-1585
+		ev.credulity_boost = 0.10     ## SPA-1711
 		_intel_store.add_evidence(ev)
+		if _analytics_manager != null:
+			_analytics_manager.log_evidence_acquired("forged_document", "observe_building")
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Forged Document acquired."
 	elif tick % 24 > 18 \
@@ -582,7 +611,11 @@ func _try_observe(location_id: String) -> void:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Incriminating Artifact", 0.25, 0.0,
 			["SCANDAL", "HERESY"], tick)
+		ev.shelf_life_extension = 0  ## SPA-1611: no shelf-life bonus for artifacts
+		ev.credulity_boost = 0.15    ## SPA-1711
 		_intel_store.add_evidence(ev)
+		if _analytics_manager != null:
+			_analytics_manager.log_evidence_acquired("incriminating_artifact", "observe_building")
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Incriminating Artifact acquired."
 
@@ -690,7 +723,12 @@ func _try_eavesdrop(target: Node2D) -> void:
 	if witness_account:
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Witness Account", 0.15, -0.15, [], tick)
+		ev.shelf_life_extension = 80         ## SPA-1585
+		ev.credulity_boost = 0.05            ## SPA-1711
+		ev.supports_cooldown_bypass = true   ## SPA-1756: bypass target-shift cooldown at half effectiveness
 		_intel_store.add_evidence(ev)
+		if _analytics_manager != null:
+			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc")
 		_flash_npc_evidence_acquired(target)
 		msg += "\n[+] Witness Account acquired."
 

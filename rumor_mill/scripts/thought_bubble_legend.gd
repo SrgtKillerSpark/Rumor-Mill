@@ -65,14 +65,19 @@ func _build_ui() -> void:
 	anchor.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(anchor)
 
+	# Offsets are viewport-relative so the legend stays proportionally anchored
+	# to the bottom-right corner across 1280–1920 viewports (SPA-1667).
+	# ≈ (-180, -280, -MARGIN, -90) at 1280×720.
+	var vp := get_viewport().get_visible_rect().size
+
 	var container := VBoxContainer.new()
 	container.add_theme_constant_override("separation", 0)
 	container.anchor_right  = 1.0
 	container.anchor_bottom = 1.0
-	container.offset_left   = -180
-	container.offset_top    = -280
+	container.offset_left   = -(vp.x * 0.141)  # ≈ -180 at 1280
+	container.offset_top    = -(vp.y * 0.389)   # ≈ -280 at 720
 	container.offset_right  = -MARGIN
-	container.offset_bottom = -90  # above the help-reminder panel
+	container.offset_bottom = -(vp.y * 0.125)   # ≈ -90 at 720, above the help-reminder panel
 	container.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	container.grow_vertical   = Control.GROW_DIRECTION_BEGIN
 	anchor.add_child(container)

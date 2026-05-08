@@ -109,10 +109,10 @@ Tweet 3 (the hook):
 
 Tweet 4 (what's in it):
 > Early Access ships with:
-> - 4 handcrafted scenarios (offense, precision targeting, dual-front campaign, pure defense vs AI)
+> - 6 handcrafted scenarios (offense, precision targeting, dual-front vs AI, pure defense, election management, embezzlement exposure)
 > - 30-NPC living simulation
 > - Save/load, difficulty presets, post-scenario analytics
-> - Spread Prediction Overlay + enhanced eavesdrop intel
+> - Tutorial system, achievement system, Spread Prediction Overlay + enhanced eavesdrop intel
 
 Tweet 5 (CTA):
 > Built in Godot 4.6. Solo development. Been building it in public — devlogs 1 and 2 are up on itch.io if you want the systems breakdown first.
@@ -279,7 +279,7 @@ Body: Summarize the devlog #2 content with key formulas. Link to full devlog on 
 
 ### Day 6 — Feature Highlight: The Scenarios
 
-**Theme:** Four problems, four completely different strategies. Show the scenario design.
+**Theme:** Six problems, six completely different strategies. Show the scenario design.
 
 **Best posting time:** Friday 9am EST
 
@@ -287,28 +287,33 @@ Body: Summarize the devlog #2 content with key formulas. Link to full devlog on 
 
 ---
 
-#### Twitter/X — Thread (5 tweets)
+#### Twitter/X — Thread (6 tweets)
 
 Tweet 1:
-> Rumor Mill has four scenarios. Each one asks a completely different strategic question.
+> Rumor Mill has six scenarios. Each one asks a completely different strategic question.
 >
 > A thread. #indiedev #RumorMill 🧵
 
 Tweet 2:
 > **The Alderman's Ruin** — discredit a nine-year incumbent before the autumn tax rolls are signed. 30 days. One high-loyalty target. Finding a story that crosses faction lines without getting intercepted is the whole puzzle.
+>
+> **The Plague Scare** — drive out a rival before the town's most morally credible NPC publicly contradicts the illness rumor. 24 days. One overreach ends the campaign.
 
 Tweet 3:
-> **The Plague Scare** — drive out a rival before the town's most morally credible NPC publicly contradicts the illness rumor. 20 days. One overreach ends the campaign.
->
 > **The Succession** — raise one reputation and ruin another simultaneously. An AI opponent is running counter-rumors against you, escalating in three phases.
+>
+> **The Holy Inquisition** — purely defensive. An inquisitor has three names. You have 20 days to keep their reputations at or above 48 while he seeds scandal claims that prime for heresy escalation.
+>
+> You are not the aggressor here.
 
 Tweet 4:
-> **The Holy Inquisition** — purely defensive. An inquisitor has three names. You have 20 days to keep their reputations above 50 while he seeds scandal claims that prime for heresy escalation.
->
-> You are not the aggressor here. You are the one person standing between them and the writ.
+> **The Election** — three candidates, one endorsement deadline. Raise Aldric Vane's reputation to 65 while keeping both rivals below 45. Prior Aldous backs whoever leads on Day 13 — and that 8-point bonus changes who can win.
 
 Tweet 5:
-> Four different problems. One town. The same propagation engine under all of them.
+> **The Merchant's Debt** — expose Aldric Vane's embezzlement before he consolidates enough loyalty to suppress it. His guards are on the payroll. Your informant's reputation is the tripwire: let it fall below 30 and the whole operation collapses.
+
+Tweet 6:
+> Six different problems. One town. The same propagation engine under all of them.
 >
 > Rumor Mill — Early Access now.
 > [link] #indiedev #RumorMill #strategygame
@@ -317,9 +322,9 @@ Tweet 5:
 
 #### Reddit — r/indiegaming (scenario design post)
 
-Title: `My medieval gossip game has 4 scenarios — and one of them casts you as the defender protecting people from an inquisitor's propaganda campaign [Rumor Mill]`
+Title: `My medieval gossip game has 6 scenarios — and one of them casts you as the defender protecting people from an inquisitor's propaganda campaign [Rumor Mill]`
 
-Body: Short breakdown of each scenario's design intent. Emphasize the inversion in Scenario 4 — most people expect the game to be purely about causing harm; the defensive scenario recontextualizes the mechanics. CTA: Steam link in comments.
+Body: Short breakdown of each scenario's design intent. Emphasize the inversion in Scenario 4 — most people expect the game to be purely about causing harm; the defensive scenario recontextualizes the mechanics. Note S5 (Election) and S6 (Merchant's Debt) as the two newest — each adds a distinct constraint the earlier scenarios don't have. CTA: Steam link in comments.
 
 ---
 
@@ -402,6 +407,7 @@ Occasional: `#screenshotsaturday` (Day 6 or asset posts), `#gamedev` (r/gamedev 
 
 ---
 
-*Document version: 1.0 — 2026-04-04*
-*Task: [SPA-247](/SPA/issues/SPA-247)*
+*Document version: 1.1 — 2026-04-24*
+*v1.0 ([SPA-247](/SPA/issues/SPA-247)): Initial launch week campaign.*
+*v1.1 ([SPA-1060](/SPA/issues/SPA-1060)): Day 2 Tweet 4 updated from 4 to 6 scenarios; added tutorial system and achievement system to feature list.*
 *Reference: press-kit.md, steam-store-page-final.md, narrative-identity.md, devlog-series-plan.md*

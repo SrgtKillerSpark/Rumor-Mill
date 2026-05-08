@@ -17,9 +17,7 @@ const C_SAFE    := Color(0.85, 0.55, 0.10, 1.0)   # amber — rep still high
 const C_DANGER  := Color(0.90, 0.30, 0.10, 1.0)   # orange-red — nearing win
 const C_CAUTION := Color(0.95, 0.80, 0.15, 1.0)   # yellow — getting close
 
-const WIN_THRESHOLD := 30
 const BAR_WIDTH     := 160
-const BAR_HEIGHT    := 12
 
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _score_lbl:   Label     = null
@@ -35,16 +33,17 @@ func _scenario_number() -> int:
 # ── UI construction ──────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var hbox := _make_panel("Scenario1Panel", 62)
+	var hbox := _make_panel("Scenario1Panel", BASE_HUD_HEIGHT)
 
-	# Scenario label.
+	# Scenario label — text updated each tick by BaseScenarioHud._update_title().
 	var title_lbl := Label.new()
-	title_lbl.text = "Scenario 1:"
+	title_lbl.text = "Scenario 1 — Day 1 — Morning"
 	title_lbl.add_theme_font_size_override("font_size", 12)
 	title_lbl.add_theme_color_override("font_color", C_HEADING)
 	title_lbl.tooltip_text = "The Alderman's Ruin — ruin Lord Edric Fenn's reputation before the tax rolls are signed."
 	title_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(title_lbl)
+	_title_lbl = title_lbl
 
 	# Rep score + bar.
 	var score_vbox := VBoxContainer.new()
@@ -52,11 +51,12 @@ func _build_ui() -> void:
 	hbox.add_child(score_vbox)
 
 	_score_lbl = Label.new()
-	_score_lbl.add_theme_font_size_override("font_size", 13)
+	_score_lbl.add_theme_font_size_override("font_size", 14)
 	_score_lbl.add_theme_color_override("font_color", C_BODY)
 	_score_lbl.text = "Edric Fenn  Rep: — / 100  Target: <30"
 	_score_lbl.tooltip_text = "Lord Edric Fenn's current reputation (0–100). Win when it drops below 30."
 	_score_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_score_lbl.clip_text = true
 	_apply_text_outline(_score_lbl)
 	score_vbox.add_child(_score_lbl)
 
@@ -77,6 +77,7 @@ func _build_ui() -> void:
 	_caution_lbl.text = "⚠ Avoid detection"
 	_caution_lbl.tooltip_text = "Getting caught eavesdropping fails the scenario immediately."
 	_caution_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_caution_lbl.clip_text = true
 	hbox.add_child(_caution_lbl)
 
 	# Days remaining + result.
@@ -85,11 +86,12 @@ func _build_ui() -> void:
 	hbox.add_child(right_vbox)
 
 	_days_lbl = Label.new()
-	_days_lbl.add_theme_font_size_override("font_size", 13)
+	_days_lbl.add_theme_font_size_override("font_size", 14)
 	_days_lbl.add_theme_color_override("font_color", C_BODY)
 	_days_lbl.text = "Days remaining: 30"
 	_days_lbl.tooltip_text = "Days left before the tax rolls are signed. The scenario fails on timeout."
 	_days_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	_days_lbl.clip_text = true
 	_apply_text_outline(_days_lbl)
 	right_vbox.add_child(_days_lbl)
 
@@ -97,15 +99,8 @@ func _build_ui() -> void:
 	_result_lbl.add_theme_font_size_override("font_size", 16)
 	_result_lbl.add_theme_color_override("font_color", C_WIN)
 	_result_lbl.text = ""
+	_result_lbl.clip_text = true
 	right_vbox.add_child(_result_lbl)
-
-	var legend_lbl := Label.new()
-	legend_lbl.add_theme_font_size_override("font_size", 12)
-	legend_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.50, 0.85))
-	legend_lbl.text = "Target: Edric Fenn Rep < 30"
-	legend_lbl.tooltip_text = "Ruin Edric Fenn's reputation below 30 to win the scenario."
-	legend_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
-	right_vbox.add_child(legend_lbl)
 
 
 # ── Refresh ──────────────────────────────────────────────────────────────────
@@ -120,7 +115,7 @@ func _refresh() -> void:
 
 	var score: int     = progress["edric_score"]
 	var state          = progress["state"]
-	var threshold: int = progress.get("win_threshold", WIN_THRESHOLD)
+	var threshold: int = progress.get("win_threshold", ScenarioConfig.S1_WIN_EDRIC_BELOW)
 
 	_score_lbl.text = "Edric Fenn  Rep: %d / 100  Target: <%d" % [score, threshold]
 

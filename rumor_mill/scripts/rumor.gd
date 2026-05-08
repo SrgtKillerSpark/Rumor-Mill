@@ -36,8 +36,11 @@ var mutability: float       # 0.0–1.0
 var created_tick: int
 var shelf_life_ticks: int
 var current_believability: float
+var _ticks_decayed: int = 0  # counts decay calls; expiry triggered at shelf_life_ticks
 var lineage_parent_id: String  # "" = original
 var bolstered_by_evidence: bool = false
+var evidence_credulity_boost: float = 0.0  ## SPA-1711: credulity boost for seed target NPC
+var seed_target_npc_id: String = ""         ## SPA-1711: NPC id that received the evidence seed
 
 
 static func create(
@@ -89,11 +92,20 @@ func is_expired() -> bool:
 
 ## Reduce believability by one tick's worth of decay.
 ## Called once per game tick by PropagationEngine.tick_decay().
+##
+## The decay step is always 1/shelf_life_ticks. A floor of one step keeps
+## believability positive until the final tick, at which point it is set to
+## exactly 0.0 regardless of floating-point accumulation.
 func decay_one_tick() -> void:
 	if shelf_life_ticks <= 0:
 		current_believability = 0.0
 		return
-	current_believability = maxf(current_believability - (1.0 / float(shelf_life_ticks)), 0.0)
+	_ticks_decayed += 1
+	if _ticks_decayed >= shelf_life_ticks:
+		current_believability = 0.0
+	else:
+		var step := 1.0 / float(shelf_life_ticks)
+		current_believability = maxf(current_believability - step, step)
 
 
 static func claim_type_name(ct: ClaimType) -> String:

@@ -71,6 +71,12 @@ interior panel is open.  Restores to day/night ambient on panel close.
 | `reputation_up.wav`    | Player or faction reputation increases                     |
 | `reputation_down.wav`  | Player or faction reputation decreases                     |
 | `bribe_coin.wav`       | Bribe action used (coin drop clink)                        |
+| `heat_warning.wav`     | Heat threshold crossed — ominous tension cue (pitched ×0.85) |
+| `rumor_success.wav`    | NPC transitions to BELIEVE — rumor conviction chime        |
+| `reputation_shift.wav` | General reputation delta (faction or NPC)                  |
+| `victory_chime.wav`    | NPC transitions to ACT — short victory chime               |
+| `failure_bell.wav`     | NPC transitions to REJECT — short failure bell             |
+| `event_sting.wav`      | Mid-game event card / choice modal interrupt — dramatic attention cue |
 
 ---
 
@@ -80,6 +86,50 @@ Button hover uses `AudioManager.play_sfx_pitched("ui_click", 2.0)` — the same
 `ui_click.wav` played at 2× pitch scale, producing a lighter tick distinct from
 the full click.  No separate `ui_hover.wav` asset is required.  Wired in:
 `main_menu.gd`, `pause_menu.gd`, `speed_hud.gd`, `rumor_panel.gd`.
+
+Social Graph overlay uses `journal_open.wav` / `journal_close.wav` on toggle
+(wired in `social_graph_overlay.gd`).
+
+NPC Dialogue Panel ducks music and ambient by −10 dB while open, restoring on
+close (0.2 s duck / 0.5 s restore, via `AudioManager.duck_for_dialogue()` /
+`restore_from_dialogue()`).  Wired in `npc_dialogue_panel.gd`.
+
+---
+
+## Sound Design Specs — Unauthored Assets
+
+### `event_sting.wav` (SPA-977)
+
+**Purpose:** Fires when a mid-game event card or event choice modal interrupts normal play.
+The game pauses immediately after this sound starts, so the sting must command attention
+without feeling like a win or a loss — the event content determines valence.
+
+**Trigger sites:**
+- `event_card.gd` — card fades in with dim overlay (backdrop darkens over ~0.3 s)
+- `event_choice_modal.gd` — modal opens and game tree pauses
+
+**Duration:** 1.0–1.5 s (attack fires within the first 50 ms; tail may extend to 1.5 s)
+
+**Character:** Dramatic "moment-of-notice" stinger.  Signals consequence and urgency,
+not celebration.  Tonally neutral-to-minor — the player should feel "something important
+just happened", not yet knowing if it is good or bad.
+
+**Instrumentation (reference palette):**
+- **Attack:** Short harpsichord or lute stab — single struck chord, slightly detached.
+  Optionally double with a muted low string hit for body.
+- **Mid:** Optional breath of a small brass or horn chord — held for ~0.3 s, then decay.
+  Keep it sparse; one instrument layer is fine.
+- **Tail:** Natural room reverb, 0.4–0.6 s RT60.  No artificial long reverb — the player
+  needs to hear the modal dialogue immediately after.
+
+**Dynamics / mix guidance:**
+- Perceived loudness should sit between `rumor_spread.wav` (firm) and `win.wav` (loud).
+- Do **not** layer `new_day.wav` — that cue is a rising fanfare; this is an interrupt.
+- Do **not** use the same chord as `victory_chime.wav` — the two play close together in
+  late-game scenarios and must sound distinct.
+
+**Format:** 44.1 kHz, 16-bit stereo WAV.  Deliver normalised to −3 dBFS peak.
+Drop at `assets/audio/sfx/event_sting.wav`.  Godot will generate `.import` on next open.
 
 ---
 

@@ -525,11 +525,11 @@ This is the tutorial scenario. Bribery is **disabled**.
 
 | Parameter | Value |
 |-----------|-------|
-| Time limit | **27 days** |
+| Time limit | **25 days** |
 | Goal | Elevate Calder Fenn, tank Tomas Reeve |
 | **WIN** | `reputation(Calder Fenn) ≥ 75` AND `reputation(Tomas Reeve) ≤ 35` |
 | **FAIL — Calder collapses** | `reputation(Calder Fenn) < 40` (instant) |
-| **FAIL — timeout** | Day > 27 |
+| **FAIL — timeout** | Day > 25 |
 
 **Starting reputations:** Calder = 65, Tomas = 52.
 
@@ -543,11 +543,11 @@ This is the tutorial scenario. Bribery is **disabled**.
 |-----------|-------|
 | Time limit | **20 days** |
 | Goal | Protect three accused townsfolk from the Inquisitor's slander |
-| **WIN** | All three protected NPCs above reputation 45 when day 20 ends |
-| **FAIL — reputation collapsed** | Any protected NPC drops below reputation 45 (instant) |
-| **FAIL — timeout** | Day 20 ends with any NPC at or below 45 |
+| **WIN** | All three protected NPCs at or above reputation 48 when day 20 ends |
+| **FAIL — reputation collapsed** | Any protected NPC drops below reputation 40 (instant) |
+| **FAIL — timeout** | Day 20 ends with any NPC below 48 |
 
-**Starting reputations:** Aldous Prior = 65, Vera Midwife = 65, Finn Monk = 70.
+**Starting reputations:** Aldous Prior = 70, Vera Midwife = 68, Finn Monk = 68.
 
 **Protected NPCs:** `aldous_prior`, `vera_midwife`, `finn_monk`. These NPCs cannot be the subject of Target-Shift mutations.
 
@@ -558,7 +558,7 @@ This is the tutorial scenario. Bribery is **disabled**.
 
 The Inquisitor always targets the protected NPC with the highest current reputation (to maximise impact). Claim variety cycles: heresy by default, scandal on day multiples of 5, accusation on day multiples of 3.
 
-**Key info:** This is a purely defensive scenario — you cannot win through aggression, only through continuous counter-rumor coverage. Finn Monk (low loyalty, higher credulity) is the most vulnerable; Aldous Prior (very high loyalty) is the most naturally resistant. Bribery is **disabled**. The 20-point buffer above the fail floor (65 vs 45) gives room to absorb 1–2 missed days, but late-game daily inquisitor pressure requires consistent PRAISE routing. Use the S4 HUD to identify the most threatened NPC each day.
+**Key info:** This is a purely defensive scenario — you cannot win through aggression, only through continuous counter-rumor coverage. Finn Monk (low loyalty, higher credulity) is the most vulnerable; Aldous Prior (very high loyalty) is the most naturally resistant. Bribery is **disabled**. The 28–30-point buffer above the fail floor (68–70 vs 40) gives room to absorb a few missed days, but late-game daily inquisitor pressure requires consistent PRAISE routing. Use the S4 HUD to identify the most threatened NPC each day.
 
 ---
 
@@ -603,12 +603,12 @@ The Inquisitor always targets the protected NPC with the highest current reputat
 | Scenario 2 time limit | 22 days | |
 | Scenario 3 win threshold | Calder ≥75, Tomas ≤35 | |
 | Scenario 3 instant-fail floor | Calder < 40 | |
-| Scenario 3 time limit | 27 days | |
+| Scenario 3 time limit | 25 days | |
 | Scenario 3 starting rep — Calder | 65 | |
 | Scenario 3 starting rep — Tomas | 52 | |
-| Scenario 4 win threshold | All 3 protected NPCs above 45 at day 20 | |
-| Scenario 4 fail threshold | Any protected NPC drops below 45 | Instant fail |
+| Scenario 4 win threshold | All 3 protected NPCs ≥48 at day 20 | |
+| Scenario 4 fail threshold | Any protected NPC drops below 40 | Instant fail |
 | Scenario 4 time limit | 20 days | |
-| Scenario 4 starting rep — Aldous Prior | 65 | |
-| Scenario 4 starting rep — Vera Midwife | 65 | |
-| Scenario 4 starting rep — Finn Monk | 70 | |
+| Scenario 4 starting rep — Aldous Prior | 70 | |
+| Scenario 4 starting rep — Vera Midwife | 68 | |
+| Scenario 4 starting rep — Finn Monk | 68 | |

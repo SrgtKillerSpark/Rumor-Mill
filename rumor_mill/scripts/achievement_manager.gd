@@ -15,7 +15,6 @@ extends Node
 # Signal
 # ---------------------------------------------------------------------------
 
-## Emitted the first time an achievement is unlocked this session.
 signal achievement_unlocked(achievement_id: String, display_name: String)
 
 # ---------------------------------------------------------------------------
@@ -43,6 +42,16 @@ const ACHIEVEMENTS: Dictionary = {
 		"name":           "Faith Preserved",
 		"description":    "Complete Scenario 4: The Holy Inquisition.",
 		"steam_api_name": "ACH_SCENARIO_4_COMPLETE",
+	},
+	"scenario_5_complete": {
+		"name":           "The People's Choice",
+		"description":    "Complete Scenario 5: The Election.",
+		"steam_api_name": "ACH_SCENARIO_5_COMPLETE",
+	},
+	"scenario_6_complete": {
+		"name":           "Debts Collected",
+		"description":    "Complete Scenario 6: The Merchant's Debt.",
+		"steam_api_name": "ACH_SCENARIO_6_COMPLETE",
 	},
 	"master_victory": {
 		"name":           "Seasoned Schemer",
@@ -76,7 +85,7 @@ const ACHIEVEMENTS: Dictionary = {
 	},
 	"mastermind": {
 		"name":           "Grand Manipulator",
-		"description":    "Complete all four scenarios.",
+		"description":    "Complete all six scenarios.",
 		"steam_api_name": "ACH_MASTERMIND",
 	},
 	"a_rumor_begins": {
@@ -129,12 +138,16 @@ func unlock(achievement_id: String) -> void:
 	_save()
 
 	var display_name: String = ACHIEVEMENTS[achievement_id].get("name", achievement_id)
-
 	achievement_unlocked.emit(achievement_id, display_name)
 
 	if _steam_active:
-		_steam.setAchievement(ACHIEVEMENTS[achievement_id]["steam_api_name"])
-		_steam.storeStats()
+		var set_ok: bool = _steam.setAchievement(ACHIEVEMENTS[achievement_id]["steam_api_name"])
+		if not set_ok:
+			push_warning("[AchievementManager] setAchievement('%s') failed for id '%s'" % [
+				ACHIEVEMENTS[achievement_id]["steam_api_name"], achievement_id])
+		var store_ok: bool = _steam.storeStats()
+		if not store_ok:
+			push_warning("[AchievementManager] storeStats() failed after unlocking '%s'" % achievement_id)
 
 
 ## Returns true if the given achievement has been unlocked.
@@ -154,6 +167,27 @@ func get_all() -> Array:
 	return result
 
 
+## Debug-only: clear a single achievement from local state and from Steam.
+## No-ops in release builds.  Use during QA to reset achievements for re-testing.
+func debug_clear(achievement_id: String) -> void:
+	if not OS.is_debug_build():
+		return
+	if not ACHIEVEMENTS.has(achievement_id):
+		push_warning("[AchievementManager] debug_clear: unknown id '%s'" % achievement_id)
+		return
+	if _steam_active:
+		var clear_ok: bool = _steam.clearAchievement(ACHIEVEMENTS[achievement_id]["steam_api_name"])
+		if not clear_ok:
+			push_warning("[AchievementManager] clearAchievement('%s') failed for id '%s'" % [
+				ACHIEVEMENTS[achievement_id]["steam_api_name"], achievement_id])
+		else:
+			var store_ok: bool = _steam.storeStats()
+			if not store_ok:
+				push_warning("[AchievementManager] storeStats() failed after clearing '%s'" % achievement_id)
+	_unlocked.erase(achievement_id)
+	_save()
+
+
 # ---------------------------------------------------------------------------
 # Steam helpers
 # ---------------------------------------------------------------------------
@@ -167,8 +201,24 @@ func _init_steam() -> void:
 	var result: Dictionary = _steam.steamInitEx()
 	if result.get("status", -1) == 0:  # STEAM_API_INIT_RESULT_OK
 		_steam_active = true
+		_sync_from_steam()
 	else:
 		push_warning("[AchievementManager] Steam init failed: %s" % str(result.get("verbal", "unknown")))
+
+
+## Reconcile local unlock state with Steam server state.  Steam wins on conflict.
+## Called once after a successful steamInitEx().
+func _sync_from_steam() -> void:
+	var changed := false
+	for ach_id in ACHIEVEMENTS:
+		var steam_name: String = ACHIEVEMENTS[ach_id]["steam_api_name"]
+		var ach_result: Dictionary = _steam.getAchievement(steam_name)
+		if ach_result.get("ret", false) and ach_result.get("achieved", false):
+			if not _unlocked.has(ach_id):
+				_unlocked[ach_id] = true
+				changed = true
+	if changed:
+		_save()
 
 
 # ---------------------------------------------------------------------------
@@ -176,13 +226,23 @@ func _init_steam() -> void:
 # ---------------------------------------------------------------------------
 
 func _save() -> void:
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var tmp_path := SAVE_PATH + ".tmp"
+	var file := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if file == null:
 		push_warning("[AchievementManager] Could not open '%s' for writing (err %d)" % [
-			SAVE_PATH, FileAccess.get_open_error()])
+			tmp_path, FileAccess.get_open_error()])
 		return
 	file.store_string(JSON.stringify(_unlocked))
 	file.close()
+	# Atomically replace the achievements file so a crash mid-write cannot corrupt it.
+	var dir := DirAccess.open("user://")
+	if dir == null:
+		push_warning("[AchievementManager] Could not open user:// for atomic rename (err %d)" % DirAccess.get_open_error())
+		return
+	var rename_err := dir.rename(tmp_path, SAVE_PATH)
+	if rename_err != OK:
+		push_warning("[AchievementManager] Failed to rename '%s' to '%s' (err %d)" % [
+			tmp_path, SAVE_PATH, rename_err])
 
 
 func _load() -> void:

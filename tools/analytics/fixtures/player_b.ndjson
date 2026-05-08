@@ -1,0 +1,47 @@
+{"type":"scenario_selected","scenario_id":"S1","difficulty":"Easy","ts":"2026-04-02T09:00:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S1","ts":"2026-04-02T09:05:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S1","ts":"2026-04-02T09:06:00Z"}
+{"type":"rumor_seeded","subject_name":"Lord Harwick","claim_id":"rumor_101","seed_target":"npc_baker","day":1,"scenario_id":"S1","ts":"2026-04-02T09:07:00Z"}
+{"type":"npc_state_changed","npc_name":"Baker","rumor_id":"rumor_101","new_state":"BELIEVE","day":2,"scenario_id":"S1","ts":"2026-04-02T09:20:00Z"}
+{"type":"npc_state_changed","npc_name":"Baker","rumor_id":"rumor_101","new_state":"SPREAD","day":3,"scenario_id":"S1","ts":"2026-04-02T09:30:00Z"}
+{"type":"npc_state_changed","npc_name":"Tailor","rumor_id":"rumor_101","new_state":"BELIEVE","day":2,"scenario_id":"S1","ts":"2026-04-02T09:21:00Z"}
+{"type":"npc_state_changed","npc_name":"Tailor","rumor_id":"rumor_101","new_state":"ACT","day":4,"scenario_id":"S1","ts":"2026-04-02T09:40:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S1","ts":"2026-04-02T09:25:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":3,"scenario_id":"S1","ts":"2026-04-02T09:35:00Z"}
+{"type":"reputation_delta","npc_id":"npc_lord_harwick","from_score":60,"to_score":53,"delta":-7,"day":3,"scenario_id":"S1","ts":"2026-04-02T09:31:00Z"}
+{"type":"reputation_delta","npc_id":"npc_lord_harwick","from_score":53,"to_score":45,"delta":-8,"day":5,"scenario_id":"S1","ts":"2026-04-02T09:50:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":4,"scenario_id":"S1","ts":"2026-04-02T09:45:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":5,"scenario_id":"S1","ts":"2026-04-02T09:55:00Z"}
+{"type":"scenario_ended","scenario_id":"S1","difficulty":"Easy","outcome":"WON","day_reached":6,"duration_sec":600,"ts":"2026-04-02T10:00:00Z"}
+{"type":"scenario_selected","scenario_id":"S1","difficulty":"Normal","ts":"2026-04-02T10:05:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":1,"scenario_id":"S1","ts":"2026-04-02T10:10:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":false,"day":1,"scenario_id":"S1","ts":"2026-04-02T10:11:00Z"}
+{"type":"rumor_seeded","subject_name":"Lord Harwick","claim_id":"rumor_102","seed_target":"npc_guard_captain","day":1,"scenario_id":"S1","ts":"2026-04-02T10:12:00Z"}
+{"type":"npc_state_changed","npc_name":"Guard Captain","rumor_id":"rumor_102","new_state":"REJECT","day":1,"scenario_id":"S1","ts":"2026-04-02T10:13:00Z"}
+{"type":"npc_state_changed","npc_name":"Stable Hand","rumor_id":"rumor_102","new_state":"REJECT","day":2,"scenario_id":"S1","ts":"2026-04-02T10:22:00Z"}
+{"type":"npc_state_changed","npc_name":"Cook","rumor_id":"rumor_102","new_state":"BELIEVE","day":3,"scenario_id":"S1","ts":"2026-04-02T10:30:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":2,"scenario_id":"S1","ts":"2026-04-02T10:20:00Z"}
+{"type":"scenario_ended","scenario_id":"S1","difficulty":"Normal","outcome":"FAILED","day_reached":3,"duration_sec":240,"ts":"2026-04-02T10:35:00Z"}
+{"type":"scenario_selected","scenario_id":"S1","difficulty":"Normal","ts":"2026-04-02T10:40:00Z"}
+{"type":"rumor_seeded","subject_name":"Lord Harwick","claim_id":"rumor_103","seed_target":"npc_herald","day":1,"scenario_id":"S1","ts":"2026-04-02T10:45:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S1","ts":"2026-04-02T10:46:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S1","ts":"2026-04-02T10:47:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S1","ts":"2026-04-02T10:55:00Z"}
+{"type":"npc_state_changed","npc_name":"Herald","rumor_id":"rumor_103","new_state":"BELIEVE","day":2,"scenario_id":"S1","ts":"2026-04-02T10:56:00Z"}
+{"type":"npc_state_changed","npc_name":"Herald","rumor_id":"rumor_103","new_state":"SPREAD","day":4,"scenario_id":"S1","ts":"2026-04-02T11:10:00Z"}
+{"type":"npc_state_changed","npc_name":"Market Crier","rumor_id":"rumor_103","new_state":"BELIEVE","day":3,"scenario_id":"S1","ts":"2026-04-02T11:00:00Z"}
+{"type":"reputation_delta","npc_id":"npc_lord_harwick","from_score":60,"to_score":52,"delta":-8,"day":3,"scenario_id":"S1","ts":"2026-04-02T11:01:00Z"}
+{"type":"reputation_delta","npc_id":"npc_lord_harwick","from_score":52,"to_score":45,"delta":-7,"day":5,"scenario_id":"S1","ts":"2026-04-02T11:15:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":3,"scenario_id":"S1","ts":"2026-04-02T11:02:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":4,"scenario_id":"S1","ts":"2026-04-02T11:11:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":5,"scenario_id":"S1","ts":"2026-04-02T11:16:00Z"}
+{"type":"scenario_ended","scenario_id":"S1","difficulty":"Normal","outcome":"WON","day_reached":7,"duration_sec":720,"ts":"2026-04-02T11:30:00Z"}
+{"type":"scenario_selected","scenario_id":"S4","difficulty":"Hard","ts":"2026-04-02T12:00:00Z"}
+{"type":"rumor_seeded","subject_name":"Admiral Crane","claim_id":"rumor_201","seed_target":"npc_sailor","day":1,"scenario_id":"S4","ts":"2026-04-02T12:05:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":1,"scenario_id":"S4","ts":"2026-04-02T12:06:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":false,"day":1,"scenario_id":"S4","ts":"2026-04-02T12:07:00Z"}
+{"type":"npc_state_changed","npc_name":"Sailor","rumor_id":"rumor_201","new_state":"REJECT","day":1,"scenario_id":"S4","ts":"2026-04-02T12:10:00Z"}
+{"type":"npc_state_changed","npc_name":"Dockworker","rumor_id":"rumor_201","new_state":"REJECT","day":2,"scenario_id":"S4","ts":"2026-04-02T12:20:00Z"}
+{"type":"npc_state_changed","npc_name":"Navigator","rumor_id":"rumor_201","new_state":"REJECT","day":2,"scenario_id":"S4","ts":"2026-04-02T12:21:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":2,"scenario_id":"S4","ts":"2026-04-02T12:22:00Z"}
+{"type":"scenario_ended","scenario_id":"S4","difficulty":"Hard","outcome":"FAILED","day_reached":3,"duration_sec":180,"ts":"2026-04-02T12:30:00Z"}

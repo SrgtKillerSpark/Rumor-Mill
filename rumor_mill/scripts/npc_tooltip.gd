@@ -338,7 +338,8 @@ func _populate(npc: Node2D) -> void:
 	_state_lbl.text = "State: " + state_icon + " " + state_name
 	_state_lbl.add_theme_color_override("font_color", state_color)
 
-	# Show texture state icon from atlas.
+	# Show texture state icon from atlas; hide the rect when no atlas is loaded
+	# to avoid an empty 16x16 box artifact (SPA-1666 #35).
 	if _state_icon_tex != null and _state_icon_rect != null:
 		var icon_w: int = int(_state_icon_tex.get_width()) / STATE_ICON_COUNT
 		var icon_h: int = int(_state_icon_tex.get_height())
@@ -347,6 +348,9 @@ func _populate(npc: Node2D) -> void:
 		atlas.region = Rect2(worst_state_int * icon_w, 0, icon_w, icon_h)
 		_state_icon_rect.texture = atlas
 		_state_icon_rect.modulate = state_color
+		_state_icon_rect.visible = true
+	elif _state_icon_rect != null:
+		_state_icon_rect.visible = false
 
 	var rumor_count: int = npc.rumor_slots.size() if "rumor_slots" in npc else 0
 	_rumor_lbl.text = "%d active rumor%s" % [rumor_count, "s" if rumor_count != 1 else ""]

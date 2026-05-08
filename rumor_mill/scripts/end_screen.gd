@@ -415,8 +415,7 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_panel.scale = Vector2(0.92, 0.92)
 		_panel.pivot_offset = Vector2(PANEL_W / 2.0, PANEL_H / 2.0)
 	TransitionManager.fade_in(0.35)
-	var _enter_tw := create_tween().set_parallel(true) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	var _enter_tw: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	if _backdrop != null:
 		_enter_tw.tween_property(_backdrop, "modulate:a", 1.0, 0.35)
 	if _panel != null:
@@ -425,6 +424,8 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 
 	# SPA-784: Defeat makes Try Again prominent; victory focuses Play Again.
 	if not won and _btn_again != null:
+		# SPA-1804: Rename CTA to "Try Again" on defeat.
+		_btn_again.text = "Try Again"
 		# Enlarge Try Again button for defeat to draw attention.
 		_btn_again.add_theme_font_size_override("font_size", 18)
 		_btn_again.custom_minimum_size = Vector2(180, 48)
@@ -1041,6 +1042,7 @@ func _build_ui() -> void:
 	_btn_next.pressed.connect(_on_next_scenario)
 	_btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 	_btn_next.disabled = true
+	_btn_next.tooltip_text = "Win this scenario to unlock."
 	btn_row.add_child(_btn_next)
 
 	_btn_main_menu = _make_button("Main Menu", 150)
@@ -1650,6 +1652,7 @@ func _show_what_went_wrong(scenario_id: int, fail_reason: String) -> void:
 func _on_play_again() -> void:
 	var pause_menu_script = preload("res://scripts/pause_menu.gd")
 	pause_menu_script._pending_restart_id = _current_scenario_id
+	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()
 
 
@@ -1659,10 +1662,12 @@ func _on_next_scenario() -> void:
 		return
 	var pause_menu_script = preload("res://scripts/pause_menu.gd")
 	pause_menu_script._pending_restart_id = next_id
+	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()
 
 
 func _on_main_menu() -> void:
 	var pause_menu_script = preload("res://scripts/pause_menu.gd")
 	pause_menu_script._pending_restart_id = ""
+	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()

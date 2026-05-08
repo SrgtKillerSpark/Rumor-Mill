@@ -80,16 +80,22 @@ func _build_shell() -> void:
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_backdrop)
 
-	# Centered briefing card (580 px wide per spec, auto-height).
+	# Centered briefing card — viewport-relative sizing.
+	var vp_size := get_viewport().get_visible_rect().size
+	var half_w := roundf(vp_size.x * 0.227)   # ~45.3% width (was 580px at 1280)
+	var half_h := roundf(vp_size.y * 0.333)    # ~66.7% height (was 480px at 720)
 	_card = Panel.new()
 	_card.anchor_left   = 0.5
 	_card.anchor_right  = 0.5
 	_card.anchor_top    = 0.5
 	_card.anchor_bottom = 0.5
-	_card.offset_left   = -290.0
-	_card.offset_right  =  290.0
-	_card.offset_top    = -240.0
-	_card.offset_bottom =  240.0
+	var _ro_vp   := get_viewport().get_visible_rect().size
+	var _ro_hw   := float(UILayoutConstants.clamp_to_viewport(_ro_vp.x, 0.225, 220, 290))
+	var _ro_hh   := float(UILayoutConstants.clamp_to_viewport(_ro_vp.y, 0.267, 180, 240))
+	_card.offset_left   = -_ro_hw
+	_card.offset_right  =  _ro_hw
+	_card.offset_top    = -_ro_hh
+	_card.offset_bottom =  _ro_hh
 	var card_style := StyleBoxFlat.new()
 	card_style.bg_color = C_CARD_BG
 	card_style.border_color = C_CARD_BORDER

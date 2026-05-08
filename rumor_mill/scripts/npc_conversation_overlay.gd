@@ -67,7 +67,7 @@ func _process(delta: float) -> void:
 		_whisper_lines = keep
 
 
-func _on_rumor_transmitted(from_name: String, to_name: String, _rumor_id: String) -> void:
+func _on_rumor_transmitted(from_name: String, to_name: String, _rumor_id: String, _outcome: String) -> void:
 	if _world_ref == null:
 		return
 	var from_node = null

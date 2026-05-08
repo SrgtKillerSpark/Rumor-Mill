@@ -12,6 +12,12 @@ var selected_scenario_id: String = "scenario_1"
 ## The difficulty preset chosen by the player: "apprentice", "master", or "spymaster".
 var selected_difficulty: String = "master"
 
+## SPA-1718: Phase 2 evidence-economy mechanics gate.
+## When false (default), Phase 2 mechanics (shelf-life extension, credulity
+## boost, evidence cooldown) are disabled so they can be toggled without a
+## code deploy.
+var evidence_economy_v2: bool = false
+
 ## Returns the modifier dictionary for the given difficulty preset.
 ## Keys:
 ##   whisper_bonus          — added to PlayerIntelStore.MAX_DAILY_WHISPERS

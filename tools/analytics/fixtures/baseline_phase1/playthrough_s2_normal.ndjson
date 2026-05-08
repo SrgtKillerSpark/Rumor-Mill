@@ -1,0 +1,36 @@
+{"type":"scenario_selected","scenario_id":"S2","difficulty":"Normal","ts":"2026-05-05T12:00:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S2","ts":"2026-05-05T12:06:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"observe_building","day":1,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Sister Merewyn","claim_id":"s2n_sca01","seed_target":"alys_herbwife","day":1,"scenario_id":"S2","ts":"2026-05-05T12:12:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S2","ts":"2026-05-05T12:20:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":2,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"s2n_sca01","new_state":"BELIEVE","day":2,"scenario_id":"S2","ts":"2026-05-05T12:28:00Z"}
+{"type":"npc_state_changed","npc_name":"Sister Maren","rumor_id":"s2n_sca01","new_state":"REJECT","day":2,"scenario_id":"S2","ts":"2026-05-05T12:32:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":3,"scenario_id":"S2","ts":"2026-05-05T12:40:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":3,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s2n_sca01","seed_target":"alys_herbwife","subject":"Sister Merewyn","day":3,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Alys Herbwife","rumor_id":"s2n_sca01","new_state":"SPREAD","day":3,"scenario_id":"S2","ts":"2026-05-05T12:48:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_merewyn","from_score":80,"to_score":73,"delta":-7,"day":3,"scenario_id":"S2","ts":"2026-05-05T12:55:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":4,"scenario_id":"S2","ts":"2026-05-05T13:02:00Z"}
+{"type":"rumor_seeded","subject_name":"Sister Merewyn","claim_id":"s2n_acc01","seed_target":"miller_wife","day":4,"scenario_id":"S2","ts":"2026-05-05T13:08:00Z"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"s2n_acc01","new_state":"BELIEVE","day":4,"scenario_id":"S2","ts":"2026-05-05T13:15:00Z"}
+{"type":"evidence_decay_tick","evidence_type":"witness_account","prev_confidence":1.0,"new_confidence":0.85,"day":4,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":5,"scenario_id":"S2","ts":"2026-05-05T13:22:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s2n_acc01","seed_target":"miller_wife","subject":"Sister Merewyn","day":5,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Miller Wife","rumor_id":"s2n_acc01","new_state":"SPREAD","day":5,"scenario_id":"S2","ts":"2026-05-05T13:30:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_merewyn","from_score":73,"to_score":63,"delta":-10,"day":5,"scenario_id":"S2","ts":"2026-05-05T13:37:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":6,"scenario_id":"S2","ts":"2026-05-05T13:44:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":6,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Sister Merewyn","claim_id":"s2n_acc02","seed_target":"fishwife","day":6,"scenario_id":"S2","ts":"2026-05-05T13:50:00Z"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"s2n_acc02","new_state":"BELIEVE","day":6,"scenario_id":"S2","ts":"2026-05-05T13:57:00Z"}
+{"type":"npc_state_changed","npc_name":"Dockworker","rumor_id":"s2n_acc01","new_state":"BELIEVE","day":6,"scenario_id":"S2","ts":"2026-05-05T14:01:00Z"}
+{"type":"evidence_threshold_cross","evidence_type":"witness_account","direction":"down","threshold":0.75,"confidence":0.70,"day":6,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":7,"scenario_id":"S2","ts":"2026-05-05T14:08:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"s2n_acc02","seed_target":"fishwife","subject":"Sister Merewyn","day":7,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Fishwife","rumor_id":"s2n_acc02","new_state":"SPREAD","day":7,"scenario_id":"S2","ts":"2026-05-05T14:16:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_merewyn","from_score":63,"to_score":53,"delta":-10,"day":7,"scenario_id":"S2","ts":"2026-05-05T14:23:00Z"}
+{"type":"evidence_target_shift","evidence_type":"forged_document","from_target":"miller_wife","to_target":"fishwife","day":7,"scenario_id":"S2","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Tavern Regular","rumor_id":"s2n_acc02","new_state":"BELIEVE","day":8,"scenario_id":"S2","ts":"2026-05-05T14:30:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_merewyn","from_score":53,"to_score":42,"delta":-11,"day":8,"scenario_id":"S2","ts":"2026-05-05T14:37:00Z"}
+{"type":"reputation_delta","npc_id":"npc_sister_merewyn","from_score":42,"to_score":31,"delta":-11,"day":9,"scenario_id":"S2","ts":"2026-05-05T14:44:00Z"}
+{"type":"scenario_ended","scenario_id":"S2","difficulty":"Normal","outcome":"WON","day_reached":9,"duration_sec":930,"ts":"2026-05-05T14:51:00Z"}

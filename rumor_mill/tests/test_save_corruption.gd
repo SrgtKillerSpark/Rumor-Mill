@@ -17,7 +17,7 @@ extends GutTest
 # Constants mirrored from SaveManager for assertion clarity
 # ---------------------------------------------------------------------------
 
-const SAVE_VERSION := 1   # must match SaveManager.SAVE_VERSION
+const SAVE_VERSION := 2   # must match SaveManager.SAVE_VERSION
 const TMP_SCENARIO := "gut_tmp_scenario"
 
 # ---------------------------------------------------------------------------
@@ -216,10 +216,10 @@ func test_prepare_load_corrupted_leaves_no_pending_load() -> void:
 # prepare_load — version mismatch
 # ---------------------------------------------------------------------------
 
-func test_prepare_load_returns_error_for_version_zero() -> void:
+func test_prepare_load_allows_version_zero_migration() -> void:
 	_write_valid_save({"version": 0})
 	var err := SaveManager.prepare_load(TMP_SCENARIO, 1)
-	assert_ne(err, "", "version 0 should be rejected as mismatched")
+	assert_eq(err, "", "version 0 should be accepted for migration (SPA-1964)")
 	_delete_test_saves()
 
 

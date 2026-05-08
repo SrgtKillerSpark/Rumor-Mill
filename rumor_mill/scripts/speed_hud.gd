@@ -1,6 +1,9 @@
 extends CanvasLayer
 
 ## speed_hud.gd — Game speed controls: Pause / 1× Normal / 3× Fast.
+## SPA-1179 #10: layer raised to 16 (above ObjectiveHud.LAYER=15) so speed buttons
+## are never occluded by scenario or objective HUD panels.
+const LAYER := 16  ## Tested by test_spa1179_z_order_layers.gd.
 ## SPA-214: Tier 3, Item #10.
 ##
 ## Shown top-right during gameplay.
@@ -26,7 +29,9 @@ var _btn_end_day:  Button = null
 
 
 func _ready() -> void:
-	layer        = 5
+	# SPA-1179 #10: raised from 5 to 16 so speed controls render above scenario HUDs
+	# (BaseScenarioHud layer=14) and objective HUD (layer=15).
+	layer        = 16
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui()
 
@@ -65,6 +70,24 @@ func _set_speed(s: Speed) -> void:
 	_apply_speed()
 
 
+## Called by settings_menu when the game speed setting changes at runtime.
+## Maps SettingsManager.game_speed (tick_duration_seconds) to the closest Speed enum.
+func _apply_speed_from_settings() -> void:
+	var dur: float = SettingsManager.game_speed
+	if dur >= 1.5:
+		_set_speed(Speed.PAUSE if _speed == Speed.PAUSE else Speed.NORMAL)
+		# For 0.5× (slow), set custom tick duration without changing the button state.
+		if _day_night != null and _speed != Speed.PAUSE:
+			_day_night.set_paused(false)
+			_day_night.tick_duration_seconds = dur
+			_day_night.tick_timer.wait_time   = dur
+			_day_night.tick_timer.start()
+	elif dur <= 0.6:
+		_set_speed(Speed.FAST)
+	else:
+		_set_speed(Speed.NORMAL)
+
+
 func _apply_speed() -> void:
 	if _day_night == null:
 		return
@@ -88,7 +111,9 @@ func _refresh_buttons() -> void:
 func _build_ui() -> void:
 	var row := HBoxContainer.new()
 	row.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	row.offset_left   = -170.0
+	# SPA-1117: expand left margin to accommodate up to 4 buttons (3×48 + 72 + 3×4 sep ≈ 228px)
+	# so the row never clips off-screen left when End Day button is visible.
+	row.offset_left   = -248.0
 	row.offset_top    =  76.0
 	row.offset_right  =  -8.0
 	row.offset_bottom = 104.0
@@ -148,7 +173,7 @@ func _make_btn(label_text: String) -> Button:
 	btn.process_mode        = Node.PROCESS_MODE_ALWAYS
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.add_theme_color_override("font_color", C_TEXT)
-	btn.pressed.connect(func() -> void: AudioManager.play_sfx("ui_click"))
+	btn.pressed.connect(func() -> void: AudioManager.play_ui("click"))
 	btn.mouse_entered.connect(func() -> void: AudioManager.play_sfx_pitched("ui_click", 2.0))
 	return btn
 
@@ -163,8 +188,16 @@ func _style_btn(btn: Button, active: bool) -> void:
 	s.set_content_margin_all(4)
 	s.set_corner_radius_all(3)
 	btn.add_theme_stylebox_override("normal",  s)
-	btn.add_theme_stylebox_override("hover",   s)
 	btn.add_theme_stylebox_override("pressed", s)
+
+	# SPA-1117: distinct hover style so inactive buttons give visual feedback.
+	var h := StyleBoxFlat.new()
+	h.bg_color = C_ACTIVE if active else Color(0.32, 0.24, 0.11, 0.95)
+	h.set_border_width_all(2 if active else 1)
+	h.border_color = C_BORDER
+	h.set_content_margin_all(4)
+	h.set_corner_radius_all(3)
+	btn.add_theme_stylebox_override("hover", h)
 
 	var f := StyleBoxFlat.new()
 	f.bg_color = C_ACTIVE if active else C_NORMAL

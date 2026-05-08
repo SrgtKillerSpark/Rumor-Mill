@@ -1,6 +1,17 @@
-# Rumor Mill — Art Style Guide (Art Pass 17 / SPA-798)
+# Rumor Mill — Art Style Guide (Art Pass 19 / SPA-871)
 
 **Visual target:** Pentiment × Dwarf Fortress × illuminated manuscript.
+
+### Art Pass 19 changes (SPA-871)
+
+**Building distinctiveness:**
+- **Mill walls** changed from `PLASTER` to `WOOD_M`/`WOOD_D` — weathered oak plank construction, clearly distinct from the Tavern. Plank line texture updated to `WOOD_D` at alpha 110 for visible grain.
+- **Manor dual flags** — second `FLAG_R` banner added to left face at `ox0+4`, joining the existing right-face flag. Noble buildings now read immediately at zoom with bilateral crimson pennants.
+- **Blacksmith day-glow extended** — forge halo expanded from r²≤9 (radius 3) to r²≤16 (radius 4) in daytime, alpha ceiling raised to 70. Ambient forge warmth is now visible even without night-mode contrast.
+
+**NPC readability:**
+- **Idle animation bob deepened** — all archetypes (all 9 standard + 9 slim + 9 stocky + 9 clothing variants) now use dy=−2 on idle frame 2 (was −1). The breathing cycle is twice as pronounced and clearly legible at game zoom.
+- **Ground shadow contrast halo** — a `PARCH_L` rim ring (radius 8, alpha up to 20) is drawn under each NPC before the hard shadow. On dark terrain tiles (`GRASS_D`, `DIRT_D`, stone at night) this creates a pale separation halo that lifts NPCs visually from the ground. The dark OUTLINE shadow still composites on top at center.
 
 ### Art Pass 17 changes (SPA-798)
 
@@ -368,3 +379,70 @@ node tools/generate_assets.js
 ```
 
 Re-run after any palette or shape changes, then reimport in the Godot editor.
+
+---
+
+## Visual Hierarchy (Art Pass 19 / SPA-871)
+
+### Layer Z-Order Strategy
+
+The scene tree defines strict render order (later siblings draw on top):
+
+| Layer node       | Z depth | Content                                  |
+|------------------|---------|------------------------------------------|
+| `TerrainLayer`   | 0       | Ground tiles, grass, road, stone         |
+| `BuildingLayer`  | 1       | Building tiles (y_sort_enabled)          |
+| `PropsLayer`     | 2       | Environmental props (y_sort_enabled)     |
+| `NPCContainer`   | 3       | All NPCs and their labels (y_sort_enabled)|
+| HUD layers       | 4–15    | Affordance rings, VFX, UI                |
+
+**Design decision:** NPCs render above all buildings by design. NPC legibility takes priority over strict isometric depth accuracy. Within each layer, `y_sort_enabled = true` handles relative depth sorting by world Y position.
+
+### Interactive vs Non-Interactive Elements
+
+**Interactive elements (NPCs, buildings the player can observe/enter) should POP:**
+- Strong, saturated faction colors: `MERCH_BODY` blue, `NOBLE_BODY` burgundy, `CLERGY_BODY` cream, `FORGE` orange, `FLAG_R` crimson.
+- Unique silhouette at every building: spire (Chapel), wheel (Mill), battlements (Guardpost), wide hat (Merchant NPC), coronet (Noble NPC), hood (Clergy NPC).
+- Hanging signs with readable icons on interactive buildings (Tavern, Mill, Blacksmith, Market).
+- NPC ground halo (PARCH_L ring) creates contrast against dark terrain.
+- Runtime affordance glow (see `visual_affordances.gd`): gold pulse rings on NPCs, amber pulse diamond on recommended target buildings.
+
+**Non-interactive background elements should RECEDE:**
+- Ground tiles: desaturated naturals (`GRASS_M`, `DIRT_M`, `STONE_M`). No saturated hues.
+- Shadow grass under buildings (`ATLAS_GRASS_DARK`) deepens depth without competing with buildings.
+- Props use `WOOD_M` / `STONE_M` mid-tones; only light sources (`FORGE`, `CANVAS`) pop.
+
+### Building Faction Color Identity
+
+Each building carries a faction-readable color accent visible at game zoom:
+
+| Building     | Faction  | Primary identifier                             |
+|--------------|----------|------------------------------------------------|
+| Manor        | Noble    | Dual `FLAG_R` crimson banners (left + right)   |
+| Town Hall    | Noble    | Large `FLAG_R` roof flag, ornate columns       |
+| Guardpost    | Noble    | `STONE_M` battlements, torch bracket           |
+| Chapel       | Clergy   | Pale `CHAPEL_STONE` spire + stained glass panes|
+| Market       | Merchant | `CANVAS` gold-stripe awning, merchant pennant  |
+| Blacksmith   | Merchant | `FORGE` orange glow (day and night)            |
+| Mill         | Merchant | Warm `WOOD_M` oak plank walls + wheel          |
+| Storage      | Merchant | Dark `WOOD_D` warehouse with crane hook        |
+| Tavern       | Neutral  | `PLASTER` cream walls, hanging sign, chimney   |
+| Well         | Neutral  | `STONE_M` cylindrical rim, thatch cone         |
+
+### NPC Archetype Silhouette Rules
+
+At game zoom (default 1.5× upscale → 48×72px sprites), the hat/head silhouette is the primary readability cue:
+
+| Archetype     | Silhouette rule                                       |
+|---------------|-------------------------------------------------------|
+| Merchant      | Extra-wide felt brim (14 base → 21px upscaled)        |
+| Noble         | Tall 3-spike coronet, vertical                        |
+| Clergy        | Wide draped hood, bell-silhouette cassock             |
+| Guard         | Broad nasal helmet, wide armored shoulders            |
+| Commoner      | Small soft cap, narrow silhouette                     |
+| Tavern Staff  | Parchment head-kerchief, carrying props               |
+| Scholar       | Square mortarboard skullcap + scroll prop             |
+| Elder         | Open grey hood + walking staff (extra height)         |
+| Spy           | Deep dark cowl hiding face, hunched narrow silhouette |
+
+**Palette contrast rule:** NPC body colors must differ from the terrain tile behind them by at least 2 palette steps. `MERCH_BODY` (deep blue) reads well against all green/brown terrain. `CLERGY_BODY` (cream) reads well against dark stone and grass. `STONE_M` guards need the ground halo most — ensure it is never removed.

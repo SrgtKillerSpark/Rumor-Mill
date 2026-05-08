@@ -103,5 +103,24 @@ if [[ -n "$ERROR_LINES" ]]; then
   exit 1
 fi
 
+# ── Run static analysis (UID/constant/type checks) ──────────────────────────
+# This does NOT require Godot — only Node.js. It catches removed constants,
+# missing UIDs, unresolved types, and other patterns the headless parse misses.
+if command -v node &>/dev/null 2>&1; then
+  STATIC_CHECKER="$REPO_ROOT/rumor_mill/tools/check_gdscript_static.js"
+  if [[ -f "$STATIC_CHECKER" ]]; then
+    echo ""
+    echo "Running static analysis (checks 1-7)…"
+    if ! node "$STATIC_CHECKER" --project "$PROJECT_DIR"; then
+      echo ""
+      echo "✗ COMMIT BLOCKED — static analysis found issues (see above)."
+      echo "To bypass (emergency): git commit --no-verify"
+      exit 1
+    fi
+  fi
+else
+  echo "⚠ Node.js not found — skipping static analysis checks."
+fi
+
 echo "✓ GDScript validation passed."
 exit 0

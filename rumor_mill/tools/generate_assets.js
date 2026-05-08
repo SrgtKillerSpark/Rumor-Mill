@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * generate_assets.js — Art Pass 18 pixel-art generator for Rumor Mill (SPA-809)
+ * generate_assets.js — Art Pass 19 pixel-art generator for Rumor Mill (SPA-871)
  *
  * Produces all textures needed:
  *   assets/textures/tiles_ground.png      (768×32 — 12 ground variants: void, grass_base, grass_dark, grass_sparse, grass_dense, grass_floral, dirt_muddy, dirt_packed, grass_dirt_blend, stone_smooth, stone_cracked, stone_cobble)
@@ -274,6 +274,15 @@ function makeGroundTiles() {
           cv.sp(x, y, ...c.GRASS_L, 45);
         }
       }
+    }
+    // Art Pass 18 (SPA-858): prominent grass blade strokes — readable at game zoom
+    for (const [bx,by] of [
+      [cx-20,cy-2],[cx-12,cy+3],[cx-5,cy-5],[cx+3,cy+5],[cx+11,cy-1],
+      [cx+17,cy+4],[cx-16,cy+6],[cx+8,cy-4],[cx-8,cy+7],[cx+20,cy+1],
+    ]) {
+      if (Math.abs(bx-cx)/31 + Math.abs(by-cy)/15 > 0.80) continue;
+      cv.line(bx, by, bx+1, by-2, ...c.GRASS_L, 180);
+      cv.sp(bx+1, by-2, ...c.GRASS_L, 130);
     }
     isoTopRim(cv, ...c.GRASS_L, 130, cx, cy);
     isoBottomRim(cv, ...c.GRASS_D, 90, cx, cy);
@@ -584,12 +593,14 @@ function makeRoadDirt() {
   cv.isoNoise(32, 16, 31, 15, ...c.DIRT_D, 10, 0.14);
 
   // deep wheel-rut pair — shadow + highlight edge for 3D groove
-  cv.line(18, 10, 42, 22, ...c.DIRT_D, 200);
-  cv.line(19, 10, 43, 22, ...c.DIRT_D, 140);
-  cv.line(20, 10, 44, 22, ...c.DIRT_L, 80);  // highlight rim
-  cv.line(24, 13, 48, 25, ...c.DIRT_D, 180);
-  cv.line(25, 13, 49, 25, ...c.DIRT_D, 110);
-  cv.line(26, 13, 50, 25, ...c.DIRT_L, 60);  // highlight rim
+  cv.line(18, 10, 42, 22, ...c.DIRT_D, 220);  // Art Pass 18: deeper rut shadow
+  cv.line(19, 10, 43, 22, ...c.DIRT_D, 160);
+  cv.line(20, 10, 44, 22, ...c.DIRT_L, 100); // highlight rim — brighter catch-light
+  cv.sp(17, 10, ...c.DIRT_D, 130);           // rut start shadow pixel
+  cv.line(24, 13, 48, 25, ...c.DIRT_D, 200); // second rut deeper
+  cv.line(25, 13, 49, 25, ...c.DIRT_D, 130);
+  cv.line(26, 13, 50, 25, ...c.DIRT_L, 80);  // highlight rim
+  cv.sp(23, 13, ...c.DIRT_D, 120);           // rut start shadow pixel
 
   // dried mud crack network (thin DIRT_D lines radiating from rut centre)
   cv.line(28, 14, 24, 12, ...c.DIRT_D, 100);
@@ -806,6 +817,11 @@ function makeBuildingTiles(nightMode = false) {
     cv.fillRect(ox0+48, 32-wH-15, 10, 7, ...c.FLAG_R);
     cv.line(ox0+48, 32-wH-15, ox0+57, 32-wH-15, ...c.OUTLINE);
     cv.line(ox0+48, 32-wH-8, ox0+57, 32-wH-8, ...c.OUTLINE);  // flag bottom edge
+    // second flag on left face — reinforces noble identity (SPA-871)
+    cv.line(ox0+4, 32-wH-10, ox0+4, 32-wH, ...c.WOOD_M);       // short pole
+    cv.fillRect(ox0+5, 32-wH-10, 7, 5, ...c.FLAG_R);            // banner
+    cv.line(ox0+5, 32-wH-10, ox0+11, 32-wH-10, ...c.OUTLINE);  // banner top edge
+    cv.line(ox0+5, 32-wH-5,  ox0+11, 32-wH-5,  ...c.OUTLINE);  // banner bottom edge
     // night: lit windows — warm amber glow replacing cold blue (SPA-523)
     // SPA-602: widened halos (r²≤16), wall shadow pass for depth
     if (nightMode) {
@@ -1121,10 +1137,10 @@ function makeBuildingTiles(nightMode = false) {
     cv.fillRect(ox+5, 32-wH+7, 6, 6, ...c.FORGE);
     cv.fillRect(ox+6, 32-wH+8, 4, 3, 255, 200, 80);
     cv.fillRect(ox+7, 32-wH+9, 2, 1, 255, 240, 160);  // hottest core pixel
-    // glow halo — wider radius for more dramatic warmth
-    for (let _dy=-3; _dy<=3; _dy++) for (let _dx=-3; _dx<=3; _dx++)
-      if (_dx*_dx+_dy*_dy<=9)
-        cv.sp(ox+8+_dx, 32-wH+10+_dy, ...c.FORGE, Math.max(0, 65 - (_dx*_dx+_dy*_dy)*8));
+    // glow halo — extended day-mode warmth radius (SPA-871: more ambient heat in daylight)
+    for (let _dy=-4; _dy<=4; _dy++) for (let _dx=-4; _dx<=4; _dx++)
+      if (_dx*_dx+_dy*_dy<=16)
+        cv.sp(ox+8+_dx, 32-wH+10+_dy, ...c.FORGE, Math.max(0, 70 - (_dx*_dx+_dy*_dy)*5));
     // forge spark particles (static — 5 random-ish bright dots above mouth)
     cv.sp(ox+6,  32-wH+4, 255, 220, 80, 200);
     cv.sp(ox+9,  32-wH+3, 255, 180, 60, 160);
@@ -1191,13 +1207,13 @@ function makeBuildingTiles(nightMode = false) {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // 6: MILL — cream walls, large brown wheel visible (wallH=18)
+  // 6: MILL — weathered oak plank walls, large wheel (wallH=18) (SPA-871: distinct from Tavern)
   // ────────────────────────────────────────────────────────────────────────────
   {
     const col=6, wH=18;
     groundFace(col, ...c.DIRT_L);
-    leftFace (col, wH, ...c.PLASTER);
-    rightFace(col, wH, 194, 174, 132);
+    leftFace (col, wH, ...c.WOOD_M);
+    rightFace(col, wH, ...c.WOOD_D);
     roofFace (col, wH, ...c.THATCH_D);
     // thatch shingle coverage on mill roof top face
     {
@@ -1225,9 +1241,9 @@ function makeBuildingTiles(nightMode = false) {
       cv.line(wox, woy, wox+Math.round(8*Math.cos(a)), woy+Math.round(8*Math.sin(a)), ...c.WOOD_D, 180);
     // small door
     cv.fillRect(ox+4, 32-7, 6, 7, ...c.WOOD_D);
-    // horizontal plank lines on left face
+    // horizontal plank lines on left face (oak planks, visible on WOOD_M base)
     for (let py = 32-wH+2; py < 32; py += 3)
-      cv.line(ox+1, py, ox+30, py, ...c.PLASTER, 52);
+      cv.line(ox+1, py, ox+30, py, ...c.WOOD_D, 110);
     // small window with warm glow (miller's lantern inside)
     cv.fillRect(ox+14, 32-wH+3, 6, 5, 80, 100, 130);
     cv.sp(ox+17, 32-wH+5, ...c.FORGE, 60);
@@ -1997,12 +2013,15 @@ function makeNPCSprites() {
       cv.line(bx+8+rx, ly, bx+8+rx, ly+9, ...c.OUTLINE);
     }
 
-    // ground cast shadow (grounds the NPC visually)
+    // ground cast shadow with contrast halo — halo lifts NPC from dark terrain (SPA-871)
     {
       const _sy = (hatStyle === 'hood') ? oy+47 : oy+37+dy;
-      for (let _sx = -6; _sx <= 6; _sx++) {
+      // bright PARCH_L ring drawn first so dark shadow composites over center
+      for (let _sx = -8; _sx <= 8; _sx++)
+        cv.sp(ox+16+_sx, _sy, ...c.PARCH_L, Math.max(0, 20 - Math.abs(_sx)*3));
+      // hard OUTLINE shadow on top
+      for (let _sx = -6; _sx <= 6; _sx++)
         cv.sp(ox+16+_sx, _sy, ...c.OUTLINE, Math.max(0, 32-Math.abs(_sx)*4));
-      }
     }
     // faction badge (tiny 3×3 diamond on belt)
     const bdx=bx+4, bdy=by+5;
@@ -2182,23 +2201,23 @@ function makeNPCSprites() {
     const oy = fi*48;
     const fac = FACTIONS[fi];
 
-    // ── South idle (cols 0-1) ──
+    // ── South idle (cols 0-1) — dy=-2 for more expressive breathing (SPA-871) ──
     drawNPC(0*32, oy, fac, 0, 0, 0);
-    drawNPC(1*32, oy, fac, -1, 0, 0, 1, 1);
+    drawNPC(1*32, oy, fac, -2, 0, 0, 2, 2);
     // ── South walk (cols 2-4) ──
     drawNPC(2*32, oy, fac, 0, -2, 2, -2, 2);
     drawNPC(3*32, oy, fac, -1, 0, 0, 0, 0);
     drawNPC(4*32, oy, fac, 0, 2, -2, 2, -2);
     // ── North idle (cols 5-6) ──
     drawNPC_north(5*32, oy, fac, 0, 0, 0);
-    drawNPC_north(6*32, oy, fac, -1, 0, 0);
+    drawNPC_north(6*32, oy, fac, -2, 0, 0);
     // ── North walk (cols 7-9) ──
     drawNPC_north(7*32, oy, fac, 0, 2, -2);
     drawNPC_north(8*32, oy, fac, -1, 0, 0);
     drawNPC_north(9*32, oy, fac, 0, -2, 2);
     // ── East idle (cols 10-11) ──
     drawNPC_east(10*32, oy, fac, 0, 0);
-    drawNPC_east(11*32, oy, fac, -1, 0);
+    drawNPC_east(11*32, oy, fac, -2, 0);
     // ── East walk (cols 12-14) ──
     drawNPC_east(12*32, oy, fac, 0, -3);
     drawNPC_east(13*32, oy, fac, -1, 0);
@@ -2352,17 +2371,17 @@ function makeNPCSprites() {
   {
     const oy3 = 3*48;
     drawGuard(0*32, oy3, 0,  0,  0);
-    drawGuard(1*32, oy3, -1, 0,  0);
+    drawGuard(1*32, oy3, -2, 0,  0);
     drawGuard(2*32, oy3, 0,  -2, 2);
     drawGuard(3*32, oy3, -1, 0,  0);
     drawGuard(4*32, oy3, 0,  2,  -2);
     drawGuard_north(5*32, oy3, 0,  0,  0);
-    drawGuard_north(6*32, oy3, -1, 0,  0);
+    drawGuard_north(6*32, oy3, -2, 0,  0);
     drawGuard_north(7*32, oy3, 0,  2,  -2);
     drawGuard_north(8*32, oy3, -1, 0,  0);
     drawGuard_north(9*32, oy3, 0,  -2, 2);
     drawGuard_east(10*32, oy3, 0,  0);
-    drawGuard_east(11*32, oy3, -1, 0);
+    drawGuard_east(11*32, oy3, -2, 0);
     drawGuard_east(12*32, oy3, 0,  -3);
     drawGuard_east(13*32, oy3, -1, 0);
     drawGuard_east(14*32, oy3, 0,  3);
@@ -2501,17 +2520,17 @@ function makeNPCSprites() {
   {
     const oy4 = 4*48;
     drawCommoner(0*32, oy4, 0,  0,  0);
-    drawCommoner(1*32, oy4, -1, 0,  0);
+    drawCommoner(1*32, oy4, -2, 0,  0);
     drawCommoner(2*32, oy4, 0,  -2, 2);
     drawCommoner(3*32, oy4, -1, 0,  0);
     drawCommoner(4*32, oy4, 0,  2,  -2);
     drawCommoner_north(5*32, oy4, 0,  0,  0);
-    drawCommoner_north(6*32, oy4, -1, 0,  0);
+    drawCommoner_north(6*32, oy4, -2, 0,  0);
     drawCommoner_north(7*32, oy4, 0,  2,  -2);
     drawCommoner_north(8*32, oy4, -1, 0,  0);
     drawCommoner_north(9*32, oy4, 0,  -2, 2);
     drawCommoner_east(10*32, oy4, 0,  0);
-    drawCommoner_east(11*32, oy4, -1, 0);
+    drawCommoner_east(11*32, oy4, -2, 0);
     drawCommoner_east(12*32, oy4, 0,  -3);
     drawCommoner_east(13*32, oy4, -1, 0);
     drawCommoner_east(14*32, oy4, 0,  3);
@@ -2675,17 +2694,17 @@ function makeNPCSprites() {
   {
     const oy5 = 5*48;
     drawTavernStaff(0*32, oy5, 0,  0,  0,  0,  0);
-    drawTavernStaff(1*32, oy5, -1, 0,  0,  1,  1);
+    drawTavernStaff(1*32, oy5, -2, 0,  0,  2,  2);
     drawTavernStaff(2*32, oy5, 0,  -2, 2,  -2, 2);
     drawTavernStaff(3*32, oy5, -1, 0,  0,   0, 0);
     drawTavernStaff(4*32, oy5, 0,  2,  -2,  2, -2);
     drawTavernStaff_north(5*32, oy5, 0,  0,  0);
-    drawTavernStaff_north(6*32, oy5, -1, 0,  0);
+    drawTavernStaff_north(6*32, oy5, -2, 0,  0);
     drawTavernStaff_north(7*32, oy5, 0,  2,  -2);
     drawTavernStaff_north(8*32, oy5, -1, 0,  0);
     drawTavernStaff_north(9*32, oy5, 0,  -2, 2);
     drawTavernStaff_east(10*32, oy5, 0,  0);
-    drawTavernStaff_east(11*32, oy5, -1, 0);
+    drawTavernStaff_east(11*32, oy5, -2, 0);
     drawTavernStaff_east(12*32, oy5, 0,  -3);
     drawTavernStaff_east(13*32, oy5, -1, 0);
     drawTavernStaff_east(14*32, oy5, 0,  3);
@@ -2823,17 +2842,17 @@ function makeNPCSprites() {
   {
     const oy6 = 6*48;
     drawScholar(0*32, oy6, 0,  0,  0,  0,  0);
-    drawScholar(1*32, oy6, -1, 0,  0,  1,  1);
+    drawScholar(1*32, oy6, -2, 0,  0,  2,  2);
     drawScholar(2*32, oy6, 0,  -2, 2,  -2, 2);
     drawScholar(3*32, oy6, -1, 0,  0,   0, 0);
     drawScholar(4*32, oy6, 0,  2,  -2,  2, -2);
     drawScholar_north(5*32, oy6, 0,  0,  0);
-    drawScholar_north(6*32, oy6, -1, 0,  0);
+    drawScholar_north(6*32, oy6, -2, 0,  0);
     drawScholar_north(7*32, oy6, 0,  2,  -2);
     drawScholar_north(8*32, oy6, -1, 0,  0);
     drawScholar_north(9*32, oy6, 0,  -2, 2);
     drawScholar_east(10*32, oy6, 0,  0);
-    drawScholar_east(11*32, oy6, -1, 0);
+    drawScholar_east(11*32, oy6, -2, 0);
     drawScholar_east(12*32, oy6, 0,  -3);
     drawScholar_east(13*32, oy6, -1, 0);
     drawScholar_east(14*32, oy6, 0,  3);
@@ -2967,17 +2986,17 @@ function makeNPCSprites() {
   {
     const oy7 = 7*48;
     drawElder(0*32, oy7, 0,  0,  0);
-    drawElder(1*32, oy7, -1, 0,  0);
+    drawElder(1*32, oy7, -2, 0,  0);
     drawElder(2*32, oy7, 0,  -2, 2);
     drawElder(3*32, oy7, -1, 0,  0);
     drawElder(4*32, oy7, 0,  2,  -2);
     drawElder_north(5*32, oy7, 0,  0,  0);
-    drawElder_north(6*32, oy7, -1, 0,  0);
+    drawElder_north(6*32, oy7, -2, 0,  0);
     drawElder_north(7*32, oy7, 0,  2,  -2);
     drawElder_north(8*32, oy7, -1, 0,  0);
     drawElder_north(9*32, oy7, 0,  -2, 2);
     drawElder_east(10*32, oy7, 0,  0);
-    drawElder_east(11*32, oy7, -1, 0);
+    drawElder_east(11*32, oy7, -2, 0);
     drawElder_east(12*32, oy7, 0,  -3);
     drawElder_east(13*32, oy7, -1, 0);
     drawElder_east(14*32, oy7, 0,  3);
@@ -3098,17 +3117,17 @@ function makeNPCSprites() {
   {
     const oy8 = 8*48;
     drawSpy(0*32, oy8, 0,  0,  0);
-    drawSpy(1*32, oy8, -1, 0,  0);
+    drawSpy(1*32, oy8, -2, 0,  0);
     drawSpy(2*32, oy8, 0,  -2, 2);
     drawSpy(3*32, oy8, -1, 0,  0);
     drawSpy(4*32, oy8, 0,  2,  -2);
     drawSpy_north(5*32, oy8, 0,  0,  0);
-    drawSpy_north(6*32, oy8, -1, 0,  0);
+    drawSpy_north(6*32, oy8, -2, 0,  0);
     drawSpy_north(7*32, oy8, 0,  2,  -2);
     drawSpy_north(8*32, oy8, -1, 0,  0);
     drawSpy_north(9*32, oy8, 0,  -2, 2);
     drawSpy_east(10*32, oy8, 0,  0);
-    drawSpy_east(11*32, oy8, -1, 0);
+    drawSpy_east(11*32, oy8, -2, 0);
     drawSpy_east(12*32, oy8, 0,  -3);
     drawSpy_east(13*32, oy8, -1, 0);
     drawSpy_east(14*32, oy8, 0,  3);
@@ -3151,13 +3170,13 @@ function makeNPCSprites() {
     {
       const oy = (27 + vi) * 48;
       const fac = MERCH_VARS[vi];
-      drawNPC(0*32, oy, fac, 0, 0, 0); drawNPC(1*32, oy, fac, -1, 0, 0, 1, 1);
+      drawNPC(0*32, oy, fac, 0, 0, 0); drawNPC(1*32, oy, fac, -2, 0, 0, 2, 2);
       drawNPC(2*32, oy, fac, 0, -2, 2, -2, 2); drawNPC(3*32, oy, fac, -1, 0, 0);
       drawNPC(4*32, oy, fac, 0, 2, -2, 2, -2);
-      drawNPC_north(5*32, oy, fac, 0, 0, 0); drawNPC_north(6*32, oy, fac, -1, 0, 0);
+      drawNPC_north(5*32, oy, fac, 0, 0, 0); drawNPC_north(6*32, oy, fac, -2, 0, 0);
       drawNPC_north(7*32, oy, fac, 0, 2, -2); drawNPC_north(8*32, oy, fac, -1, 0, 0);
       drawNPC_north(9*32, oy, fac, 0, -2, 2);
-      drawNPC_east(10*32, oy, fac, 0, 0); drawNPC_east(11*32, oy, fac, -1, 0);
+      drawNPC_east(10*32, oy, fac, 0, 0); drawNPC_east(11*32, oy, fac, -2, 0);
       drawNPC_east(12*32, oy, fac, 0, -3); drawNPC_east(13*32, oy, fac, -1, 0);
       drawNPC_east(14*32, oy, fac, 0, 3);
     }
@@ -3165,13 +3184,13 @@ function makeNPCSprites() {
     {
       const oy = (30 + vi) * 48;
       const fac = NOBLE_VARS[vi];
-      drawNPC(0*32, oy, fac, 0, 0, 0); drawNPC(1*32, oy, fac, -1, 0, 0, 1, 1);
+      drawNPC(0*32, oy, fac, 0, 0, 0); drawNPC(1*32, oy, fac, -2, 0, 0, 2, 2);
       drawNPC(2*32, oy, fac, 0, -2, 2, -2, 2); drawNPC(3*32, oy, fac, -1, 0, 0);
       drawNPC(4*32, oy, fac, 0, 2, -2, 2, -2);
-      drawNPC_north(5*32, oy, fac, 0, 0, 0); drawNPC_north(6*32, oy, fac, -1, 0, 0);
+      drawNPC_north(5*32, oy, fac, 0, 0, 0); drawNPC_north(6*32, oy, fac, -2, 0, 0);
       drawNPC_north(7*32, oy, fac, 0, 2, -2); drawNPC_north(8*32, oy, fac, -1, 0, 0);
       drawNPC_north(9*32, oy, fac, 0, -2, 2);
-      drawNPC_east(10*32, oy, fac, 0, 0); drawNPC_east(11*32, oy, fac, -1, 0);
+      drawNPC_east(10*32, oy, fac, 0, 0); drawNPC_east(11*32, oy, fac, -2, 0);
       drawNPC_east(12*32, oy, fac, 0, -3); drawNPC_east(13*32, oy, fac, -1, 0);
       drawNPC_east(14*32, oy, fac, 0, 3);
     }
@@ -3179,13 +3198,13 @@ function makeNPCSprites() {
     {
       const oy = (33 + vi) * 48;
       const fac = CLERGY_VARS[vi];
-      drawNPC(0*32, oy, fac, 0, 0, 0); drawNPC(1*32, oy, fac, -1, 0, 0, 1, 1);
+      drawNPC(0*32, oy, fac, 0, 0, 0); drawNPC(1*32, oy, fac, -2, 0, 0, 2, 2);
       drawNPC(2*32, oy, fac, 0, -2, 2, -2, 2); drawNPC(3*32, oy, fac, -1, 0, 0);
       drawNPC(4*32, oy, fac, 0, 2, -2, 2, -2);
-      drawNPC_north(5*32, oy, fac, 0, 0, 0); drawNPC_north(6*32, oy, fac, -1, 0, 0);
+      drawNPC_north(5*32, oy, fac, 0, 0, 0); drawNPC_north(6*32, oy, fac, -2, 0, 0);
       drawNPC_north(7*32, oy, fac, 0, 2, -2); drawNPC_north(8*32, oy, fac, -1, 0, 0);
       drawNPC_north(9*32, oy, fac, 0, -2, 2);
-      drawNPC_east(10*32, oy, fac, 0, 0); drawNPC_east(11*32, oy, fac, -1, 0);
+      drawNPC_east(10*32, oy, fac, 0, 0); drawNPC_east(11*32, oy, fac, -2, 0);
       drawNPC_east(12*32, oy, fac, 0, -3); drawNPC_east(13*32, oy, fac, -1, 0);
       drawNPC_east(14*32, oy, fac, 0, 3);
     }
@@ -3960,6 +3979,13 @@ function makeNPCPortraits() {
     // Shoulder shaping — slight highlight on left shoulder
     cv.fillRect(tx+1, ty, 8, 4, ...body, 220);            // left shoulder
     cv.fillRect(tx, ty, 5, 3, ...body, 180);
+    // Art Pass 18 (SPA-858): 3-zone torso shading — key-light, seam lines, hem shadow
+    cv.fillRect(tx+2, ty+1, 38, 3, 255, 255, 255, 28);   // top chest key-light band
+    cv.fillRect(tx+3, ty+2, 36, 1, 255, 255, 255, 14);   // inner key-light soften
+    cv.line(tx+2, ty+11, tx+39, ty+11, ...c.OUTLINE, 18); // cloth seam at 1/3 body height
+    cv.line(tx+2, ty+22, tx+39, ty+22, ...c.OUTLINE, 18); // cloth seam at 2/3 body height
+    cv.fillRect(tx+2, ty+30, 38, 3, ...c.OUTLINE, 25);   // hem shadow at tunic base
+    cv.fillRect(tx+3, ty+31, 36, 1, ...c.OUTLINE, 12);   // inner hem soften
     // V-neck collar (deeper than before, shows shirt)
     cv.fillPoly([[tx+15, ty], [tx+27, ty], [tx+21, ty+12]], ...c.PARCH_L);
     cv.fillPoly([[tx+17, ty], [tx+25, ty], [tx+21, ty+7]], ...c.SKIN, 200);
@@ -4327,6 +4353,13 @@ function makePropsAtlas() {
     cv.sp(cx+1,  cy+5,  ...c.STONE_L);
     // central latch on front face
     cv.sp(cx, cy-2, ...c.STONE_L);
+    // Art Pass 18 (SPA-858): battle-worn crate — dent, scuff, and splintered plank edge
+    cv.sp(cx-8, cy-13, ...c.WOOD_D, 160);  // top-face dent/gouge
+    cv.sp(cx-9, cy-12, ...c.WOOD_D, 100);
+    cv.sp(cx+4, cy-9,  ...c.WOOD_M, 140);  // lighter scrape mark on top
+    cv.line(cx-6, cy-3, cx-3, cy-1, ...c.WOOD_D, 130); // scuff on left face
+    cv.sp(cx-5, cy+1, ...c.WOOD_D, 90);   // shadow under scuff
+    cv.sp(cx+6, cy-7, ...c.WOOD_L, 70);   // splinter catch-light right face
   }
 
   // ── 1: BARREL ─────────────────────────────────────────────────────────────
@@ -4349,6 +4382,11 @@ function makePropsAtlas() {
     // moisture/age stain on lower barrel
     cv.sp(cx-3, cy+2, ...c.WOOD_D, 80);
     cv.sp(cx+2, cy+3, ...c.WOOD_D, 60);
+    // Art Pass 18 (SPA-858): deep age staining and liquid seep marks
+    cv.sp(cx-4, cy+1, ...c.WOOD_D, 110);   // stain halo left
+    cv.sp(cx-2, cy+4, ...c.WOOD_D, 95);    // drip line
+    cv.sp(cx+3, cy+4, ...c.WOOD_D, 80);    // drip right
+    cv.line(cx-1, cy-1, cx+1, cy+3, ...c.WOOD_D, 50);  // seep crack on right face
     // bung hole dot
     cv.sp(cx-1, cy-4, ...c.STONE_M);
   }
@@ -4861,7 +4899,7 @@ function write(relPath, buf) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-console.log('\nRumor Mill — Art Pass 17 (SPA-798): NPC portrait individuality — per-NPC hair colour, beards, scars, eye colour override\n');
+console.log('\nRumor Mill — Art Pass 19 (SPA-871): NPC archetype readability, building distinctiveness, visual hierarchy — Mill oak planks, Manor dual flags, Blacksmith day-glow, idle bob +1px, NPC ground halo\n');
 
 write('assets/textures/tiles_ground.png',           makeGroundTiles());
 write('assets/textures/tiles_road_dirt.png',        makeRoadDirt());

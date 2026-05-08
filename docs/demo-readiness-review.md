@@ -124,7 +124,7 @@ The header comment reads:
 
 ```
 ## Scenario 1 — The Alderman's Ruin:
-##   WIN:  reputation(edric_fenn) < 25
+##   WIN:  reputation(edric_fenn) < 30
 ```
 
 The actual constant on line 76 is `S1_WIN_EDRIC_BELOW := 30`. This discrepancy is harmless at runtime but will confuse anyone reading the code, and is a misleading reference for QA testing.

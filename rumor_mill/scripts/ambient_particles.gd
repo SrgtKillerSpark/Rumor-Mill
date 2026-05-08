@@ -100,7 +100,7 @@ func _build_fireflies() -> void:
 	scale_curve.add_point(Vector2(0.60, 1.0))
 	scale_curve.add_point(Vector2(0.80, 0.1))
 	scale_curve.add_point(Vector2(1.0,  0.0))
-	_firefly.scale_curve = scale_curve
+	_firefly.scale_amount_curve = scale_curve
 
 	var ramp := Gradient.new()
 	ramp.set_color(0, Color(0.70, 1.00, 0.30, 0.0))

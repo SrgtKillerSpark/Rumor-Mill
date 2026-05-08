@@ -22,6 +22,15 @@ const TIPS: Array = [
 	"[b]Not every NPC needs to believe.[/b]  You only need enough voices spreading the story — three loud gossips can outweigh a dozen skeptical silences.",
 	"[b]In The Succession, Calder's reputation is as fragile as Tomas's.[/b]  If he falls below 40, the scenario ends immediately — and your rival knows exactly which thread to pull.",
 	"[b]Rumor intensity is not always better.[/b]  High-intensity claims spread fast but are also easier to reject. Match your claim strength to your target's credulity.",
+	# Scenario 4 — The Holy Inquisition
+	"[b]In The Holy Inquisition, all three innocents need your protection.[/b]  Any charge whose reputation drops below 40 is lost to the Inquisition instantly — keep all three above the threshold, not just the easiest one.",
+	"[b]Juggling three reputations demands efficiency.[/b]  Focus your tokens on whichever charge is closest to 48 — a collapse is permanent, and the Inquisition won't wait while you shore up the others.",
+	# Scenario 5 — The Election
+	"[b]Winning the election is about two numbers, not one.[/b]  Aldric must finish with the highest reputation among all three candidates AND clear 65 — a narrow lead below that threshold still means defeat.",
+	"[b]Watch the calendar around Day 13.[/b]  Prior Aldous endorses the leading candidate and grants an 8-point boost — make sure Aldric is ahead before that moment arrives or the bonus lifts a rival instead.",
+	# Scenario 6 — The Merchant's Debt
+	"[b]In The Merchant's Debt, the city guard answers to the guild.[/b]  Heat turns dangerous at 55 — well below the usual limit — so keep your methods quiet or the enforcers will move against you.",
+	"[b]You are not alone in The Merchant's Debt.[/b]  Guild allies automatically spread praise rumors for Aldric on a cooldown, giving you a steady reputation floor. Let them do their work while you handle the harder targets.",
 ]
 
 const C_BACKDROP := Color(0.04, 0.02, 0.02, 0.97)
@@ -70,8 +79,8 @@ func _build_ui() -> void:
 
 	_tip_label = RichTextLabel.new()
 	_tip_label.custom_minimum_size = Vector2(640, 60)
-	_tip_label.fit_content = true
-	_tip_label.scroll_active = false
+	_tip_label.fit_content = false      # SPA-1683 #44: allow scroll to handle tall tips
+	_tip_label.scroll_active = true
 	_tip_label.bbcode_enabled = true
 	_tip_label.add_theme_font_size_override("normal_font_size", 15)
 	_tip_label.add_theme_color_override("default_color", C_TIP)

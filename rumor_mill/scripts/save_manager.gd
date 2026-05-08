@@ -21,7 +21,7 @@
 
 class_name SaveManager
 
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SAVE_DIR     := "user://saves/"
 const SLOT_COUNT   := 3   ## Manual save slots (1–3)
 const AUTO_SLOT    := 0   ## Slot 0 = auto-save (written at start of each new day)
@@ -49,7 +49,11 @@ static func get_save_info(scenario_id: String, slot: int) -> Dictionary:
 		return {}
 	var text := f.get_as_text()
 	f.close()
-	var parsed: Variant = JSON.parse_string(text)
+	# Use JSON instance (not parse_string) to avoid engine-level error output on corrupt input.
+	var json := JSON.new()
+	if json.parse(text) != OK:
+		return {}
+	var parsed: Variant = json.get_data()
 	if not (parsed is Dictionary):
 		return {}
 	return {
@@ -168,6 +172,7 @@ static func save_game(
 
 	var path := save_path(world.active_scenario_id, slot)
 	var tmp_path := path + ".tmp"
+	var bak_path := path + ".bak"
 	var f := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if f == null:
 		return "Failed to open '%s' for writing (error %d)." % [
@@ -178,6 +183,12 @@ static func save_game(
 	dir = DirAccess.open("user://")
 	if dir == null:
 		return "Failed to open user:// for atomic rename (error %d)." % DirAccess.get_open_error()
+	# Keep a .bak of the previous save so it can be recovered if the new write is corrupt.
+	if FileAccess.file_exists(path):
+		# Best-effort: backup failure should not block saving.
+		var _bak_err := dir.rename(path, bak_path)
+		if _bak_err != OK:
+			push_warning("save_manager: could not create backup '%s' (error %d) — continuing" % [bak_path, _bak_err])
 	var rename_err := dir.rename(tmp_path, path)
 	if rename_err != OK:
 		return "Failed to rename temp save to '%s' (error %d)." % [path, rename_err]
@@ -189,10 +200,24 @@ static func save_game(
 ## Parsed save data waiting to be applied after scene reload.
 static var _pending_load_data: Dictionary = {}
 
+## Set to true once apply_pending_load() completes for this session.
+## Remains true for the lifetime of the scene so tutorial_controller can
+## detect that the current session was restored from a save.
+static var _session_was_loaded: bool = false
+
+
+## Returns true if the current game session was restored from a save file.
+static func session_was_loaded() -> bool:
+	return _session_was_loaded
+
 
 ## Parse and validate a save file; store data as pending for apply_pending_load().
 ## Returns "" on success, or a human-readable error string on failure.
 static func prepare_load(scenario_id: String, slot: int) -> String:
+	# Clear pending state upfront so any early-return failure leaves an empty state,
+	# ensuring has_pending_load() is false after any rejection.
+	_pending_load_data = {}
+
 	if not has_save(scenario_id, slot):
 		return "No save found for this scenario."
 
@@ -202,17 +227,109 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 	var text := f.get_as_text()
 	f.close()
 
-	var parsed: Variant = JSON.parse_string(text)
+	var json := JSON.new()
+	var parse_err := json.parse(text)
+	if parse_err != OK:
+		return "Save file is corrupted (JSON parse error at line %d: %s)." % [
+			json.get_error_line(), json.get_error_message()]
+	var parsed: Variant = json.get_data()
 	if not (parsed is Dictionary):
-		return "Save file is corrupted (invalid JSON)."
+		return "Save file is corrupted (expected JSON object)."
 
 	var ver: int = int(parsed.get("version", 0))
-	if ver != SAVE_VERSION:
-		return "Save version mismatch (file=%d, game=%d). Cannot load." % [
+	if ver > SAVE_VERSION:
+		return "Save version %d is newer than game version %d. Update the game to load this save." % [
 			ver, SAVE_VERSION]
+	if ver < 0:
+		return "Save version %d is invalid. Please start a new game." % ver
+	if ver < SAVE_VERSION:
+		# Back up the original file before applying migration steps so the
+		# pre-migration data is recoverable if migration fails or the game crashes.
+		var path := save_path(scenario_id, slot)
+		var bak_dir := DirAccess.open("user://")
+		if bak_dir != null:
+			var bak_err := bak_dir.copy(path, path + ".bak")
+			if bak_err != OK:
+				push_warning("save_manager: could not create migration backup '%s.bak' (error %d) — continuing" % [path, bak_err])
+		var migration_err := _migrate_save_data(parsed, ver)
+		if migration_err != "":
+			return "Save migration failed: " + migration_err
+
+	# Validate that essential top-level keys exist so apply_pending_load() won't crash.
+	var required_keys := ["scenario_id", "tick", "day"]
+	for key in required_keys:
+		if not parsed.has(key):
+			return "Save file is corrupted (missing required key '%s')." % key
+
+	# Warn if the scenario_id inside the file doesn't match what was requested.
+	var file_scenario: String = str(parsed.get("scenario_id", ""))
+	if file_scenario != "" and file_scenario != scenario_id:
+		push_warning("save_manager: save file contains scenario_id '%s' but was loaded for '%s'" % [file_scenario, scenario_id])
 
 	_pending_load_data = parsed
 	return ""
+
+
+## Migrates save data from an older version in-place, applying each step sequentially.
+## Returns "" on success or a human-readable error string if migration fails.
+static func _migrate_save_data(data: Dictionary, _from_version: int) -> String:
+	while data.get("version", 0) < SAVE_VERSION:
+		var from_ver: int = int(data.get("version", 0))
+		var step_err := _migrate_step(data, from_ver)
+		if step_err != "":
+			return "v%d: %s" % [from_ver, step_err]
+	return ""
+
+
+## Applies one migration step in-place, advancing data["version"] by one.
+## Add a new match arm here whenever SAVE_VERSION increments.
+## Returns "" on success or a human-readable error string on failure.
+static func _migrate_step(data: Dictionary, from_ver: int) -> String:
+	match from_ver:
+		0:
+			# v0 saves (missing version field) share the same structure as v1.
+			# Stamp the version so later steps can rely on it being present.
+			push_warning("save_manager: migrating save from v0 to v1")
+			data["version"] = 1
+		1:
+			return _migrate_v1_to_v2(data)
+		_:
+			return "no migration path from v%d" % from_ver
+	return ""
+
+
+## Migration: v1 → v2.  Stamps default values for Phase 2 evidence-economy
+## fields that are absent in pre-Phase-2 saves.
+## Returns "" on success or a human-readable error string on failure.
+static func _migrate_v1_to_v2(data: Dictionary) -> String:
+	push_warning("save_manager: migrating save from v1 to v2")
+	# Per-rumor Phase 2 fields (evidence_credulity_boost, seed_target_npc_id).
+	var propagation: Variant = data.get("propagation", {})
+	if propagation is Dictionary:
+		var live_rumors: Variant = propagation.get("live_rumors", {})
+		if live_rumors is Dictionary:
+			for rid in live_rumors:
+				var rd: Variant = live_rumors[rid]
+				if rd is Dictionary:
+					if not rd.has("evidence_credulity_boost"):
+						rd["evidence_credulity_boost"] = 0.0
+					if not rd.has("seed_target_npc_id"):
+						rd["seed_target_npc_id"] = ""
+	# Intel store: ensure evidence_target_cooldown key exists.
+	var intel_store: Variant = data.get("intel_store", {})
+	if intel_store is Dictionary and not intel_store.has("evidence_target_cooldown"):
+		intel_store["evidence_target_cooldown"] = {}
+	data["version"] = 2
+	return ""
+
+
+## SPA-1544: Reset per-session static state at the start of a fresh New Game.
+## Clears any leftover pending-load data and resets the session-was-loaded flag
+## so TutorialController and similar consumers see a clean new-game session.
+## Must be called from main.gd before scenario data loads.
+static func clear_new_game_statics() -> void:
+	_session_was_loaded = false
+	_pending_load_data  = {}
 
 
 ## Returns true if there is pending save data waiting to be applied.
@@ -256,7 +373,10 @@ static func apply_pending_load(
 	_restore_faction_event_system(world.faction_event_system, data.get("faction_event_system", {}))
 	world._socially_dead_ids.clear()
 	for npc_id in data.get("socially_dead_ids", []):
-		world._socially_dead_ids[npc_id] = true
+		if npc_id == null:
+			push_warning("save_manager: socially_dead_ids contains null — skipped")
+			continue
+		world._socially_dead_ids[str(npc_id)] = true
 	var _timeline_data: Variant = data.get("timeline", [])
 	if journal != null and journal.has_method("restore_timeline") and _timeline_data is Array:
 		journal.restore_timeline(_timeline_data)
@@ -265,11 +385,17 @@ static func apply_pending_load(
 		journal.restore_milestones(_milestone_data)
 	_restore_tutorial(tutorial_sys, data.get("tutorial_progress", {}))
 	if world.milestone_tracker != null:
-		world.milestone_tracker._fired = data.get("milestone_fired", {}).duplicate()
+		var _mf_raw: Variant = data.get("milestone_fired", {})
+		if _mf_raw is Dictionary:
+			world.milestone_tracker._fired = _mf_raw.duplicate()
+		else:
+			push_warning("save_manager: milestone_fired is not a Dictionary — using empty default")
+			world.milestone_tracker._fired = {}
 	_restore_daily_planning(world, data.get("daily_planning", {}))
 	# Rebuild reputation cache after all systems (including FactionEventSystem) are
 	# restored so that active event bonuses (e.g. religious_festival +10) are included.
 	world.reputation_system.recalculate_all(world.npcs, day_night.current_tick)
+	_session_was_loaded = true
 	_pending_load_data = {}
 
 
@@ -282,7 +408,6 @@ static func _serialize_social_graph(sg: SocialGraph) -> Dictionary:
 		"edges":          sg.edges.duplicate(true),
 		"mutation_log":   sg._mutation_log.duplicate(true),
 		"mutation_count": sg._mutation_count.duplicate(true),
-		"net_mutations":  sg._net_mutations.duplicate(true),
 	}
 
 
@@ -293,16 +418,19 @@ static func _serialize_propagation(pe: PropagationEngine) -> Dictionary:
 	for rid in pe.live_rumors:
 		var r: Rumor = pe.live_rumors[rid]
 		rumors[rid] = {
-			"id":                    r.id,
-			"subject_npc_id":        r.subject_npc_id,
-			"claim_type":            int(r.claim_type),
-			"intensity":             r.intensity,
-			"mutability":            r.mutability,
-			"created_tick":          r.created_tick,
-			"shelf_life_ticks":      r.shelf_life_ticks,
-			"current_believability": r.current_believability,
-			"lineage_parent_id":     r.lineage_parent_id,
-			"bolstered_by_evidence": r.bolstered_by_evidence,
+			"id":                       r.id,
+			"subject_npc_id":           r.subject_npc_id,
+			"claim_type":               int(r.claim_type),
+			"intensity":                r.intensity,
+			"mutability":               r.mutability,
+			"created_tick":             r.created_tick,
+			"shelf_life_ticks":         r.shelf_life_ticks,
+			"_ticks_decayed":           r._ticks_decayed,
+			"current_believability":    r.current_believability,
+			"lineage_parent_id":        r.lineage_parent_id,
+			"bolstered_by_evidence":    r.bolstered_by_evidence,
+			"evidence_credulity_boost": r.evidence_credulity_boost,
+			"seed_target_npc_id":       r.seed_target_npc_id,
 		}
 	return {
 		"live_rumors":               rumors,
@@ -393,6 +521,11 @@ static func _serialize_intel_store(store: PlayerIntelStore) -> Dictionary:
 		"bribe_charges":            store.bribe_charges,
 		"evidence_inventory":       evidence,
 		"evidence_used_count":      store.evidence_used_count,
+		"free_quarantine_charges":  store.free_quarantine_charges,
+		"free_campaign_charges":    store.free_campaign_charges,
+		"bonus_expose_uses":        store.bonus_expose_uses,
+		"blackmail_uses_count":     store.blackmail_uses_count,
+		"evidence_target_cooldown": store._evidence_target_cooldown.duplicate(),
 	}
 
 
@@ -420,8 +553,11 @@ static func _serialize_scenario_manager(sm: ScenarioManager) -> Dictionary:
 		"deadline_warnings_fired": sm._deadline_warnings_fired.duplicate(),
 		"s5_endorsement_fired":    sm._s5_endorsement_fired,
 		"s5_endorsed_candidate":   sm.s5_endorsed_candidate,
-		"s2_maren_first_reject_tick": sm._s2_maren_first_reject_tick,
-		"s2_maren_carrier_name":  sm.s2_maren_carrier_name,
+		"s2_maren_first_reject_tick":        sm._s2_maren_first_reject_tick,
+		"s2_maren_carrier_name":             sm.s2_maren_carrier_name,
+		"heat_ceiling_override":             sm._heat_ceiling_override,
+		"heat_ceiling_override_expires_day": sm._heat_ceiling_override_expires_day,
+		"s1_first_blood_fired":              sm._s1_first_blood_fired,
 	}
 
 
@@ -429,10 +565,12 @@ static func _serialize_rival_agent(ra: RivalAgent) -> Dictionary:
 	if ra == null:
 		return {}
 	return {
-		"active":          ra._active,
-		"last_seed_day":   ra._last_seed_day,
-		"alternate_flag":  ra._alternate_flag,
-		"cooldown_offset": ra.cooldown_offset,
+		"active":                       ra._active,
+		"last_seed_day":                ra._last_seed_day,
+		"alternate_flag":               ra._alternate_flag,
+		"cooldown_offset":              ra.cooldown_offset,
+		"disrupt_charges_remaining":    ra.disrupt_charges_remaining,
+		"disruption_days_remaining":    ra._disruption_days_remaining,
 	}
 
 
@@ -440,10 +578,11 @@ static func _serialize_inquisitor_agent(ia: InquisitorAgent) -> Dictionary:
 	if ia == null:
 		return {}
 	return {
-		"active":          ia._active,
-		"last_seed_day":   ia._last_seed_day,
-		"target_index":    ia._target_index,
-		"cooldown_offset": ia.cooldown_offset,
+		"active":            ia._active,
+		"last_seed_day":     ia._last_seed_day,
+		"target_index":      ia._target_index,
+		"cooldown_offset":   ia.cooldown_offset,
+		"shielded_npc_ids":  ia._shielded_npc_ids.keys(),
 	}
 
 
@@ -481,21 +620,25 @@ static func _serialize_guild_defense_agent(gda: GuildDefenseAgent) -> Dictionary
 # ── Restoration ───────────────────────────────────────────────────────────────
 
 static func _restore_day_night(dn: Node, data: Dictionary) -> void:
+	if dn == null:
+		return
 	dn.current_tick = int(data.get("tick", 0))
 	dn.current_day  = int(data.get("day",  1))
 
 
 static func _restore_social_graph(sg: SocialGraph, d: Dictionary) -> void:
-	if d.is_empty():
+	if sg == null or d.is_empty():
 		return
-	sg.edges           = d.get("edges",          {}).duplicate(true)
-	sg._mutation_log   = d.get("mutation_log",   []).duplicate(true)
-	sg._mutation_count = d.get("mutation_count", {}).duplicate(true)
-	sg._net_mutations  = d.get("net_mutations",  {}).duplicate(true)
+	var _edges: Variant = d.get("edges", {})
+	sg.edges           = (_edges if _edges is Dictionary else {}).duplicate(true)
+	var _mlog: Variant = d.get("mutation_log", [])
+	sg._mutation_log   = (_mlog if _mlog is Array else []).duplicate(true)
+	var _mcount: Variant = d.get("mutation_count", {})
+	sg._mutation_count = (_mcount if _mcount is Dictionary else {}).duplicate(true)
 
 
 static func _restore_propagation(pe: PropagationEngine, d: Dictionary) -> void:
-	if d.is_empty():
+	if pe == null or d.is_empty():
 		return
 	pe.live_rumors.clear()
 	for rid in d.get("live_rumors", {}):
@@ -516,8 +659,11 @@ static func _restore_propagation(pe: PropagationEngine, d: Dictionary) -> void:
 			int(rd["shelf_life_ticks"]),
 			rd.get("lineage_parent_id", "")
 		)
-		r.current_believability = float(rd.get("current_believability", r.current_believability))
-		r.bolstered_by_evidence = bool(rd.get("bolstered_by_evidence", false))
+		r._ticks_decayed           = int(rd.get("_ticks_decayed", 0))
+		r.current_believability    = float(rd.get("current_believability", r.current_believability))
+		r.bolstered_by_evidence    = bool(rd.get("bolstered_by_evidence", false))
+		r.evidence_credulity_boost = float(rd.get("evidence_credulity_boost", 0.0))
+		r.seed_target_npc_id       = str(rd.get("seed_target_npc_id", ""))
 		pe.live_rumors[rid] = r
 	pe.lineage             = d.get("lineage", {}).duplicate(true)
 	pe.contradiction_count = int(d.get("contradiction_count", 0))
@@ -537,7 +683,11 @@ static func _restore_npc_slots(
 		var npc_id: String = npc.npc_data.get("id", "")
 		if not d.has(npc_id):
 			continue
-		var npc_data: Dictionary = d[npc_id]
+		var _npc_raw: Variant = d[npc_id]
+		if not _npc_raw is Dictionary:
+			push_error("save_manager: npc_slots[%s] is not a Dictionary — skipped" % npc_id)
+			continue
+		var npc_data: Dictionary = _npc_raw
 		# Support new format (slots nested under "slots" key) and legacy flat format.
 		var slot_data: Dictionary = npc_data.get("slots", npc_data) as Dictionary
 		npc.rumor_slots.clear()
@@ -569,7 +719,7 @@ static func _restore_npc_slots(
 
 
 static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void:
-	if d.is_empty():
+	if store == null or d.is_empty():
 		return
 	store.recon_actions_remaining  = int(d.get("recon_actions_remaining",  PlayerIntelStore.MAX_DAILY_ACTIONS))
 	store.whisper_tokens_remaining = int(d.get("whisper_tokens_remaining", PlayerIntelStore.MAX_DAILY_WHISPERS))
@@ -577,6 +727,10 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 	store.heat_enabled             = bool(d.get("heat_enabled", false))
 	store.bribe_charges            = int(d.get("bribe_charges", 0))
 	store.evidence_used_count      = int(d.get("evidence_used_count", 0))
+	store.free_quarantine_charges  = int(d.get("free_quarantine_charges", 0))
+	store.free_campaign_charges    = int(d.get("free_campaign_charges", 0))
+	store.bonus_expose_uses        = int(d.get("bonus_expose_uses", 0))
+	store.blackmail_uses_count     = int(d.get("blackmail_uses_count", 0))
 
 	store.location_intel.clear()
 	for loc_id in d.get("location_intel", {}):
@@ -611,6 +765,9 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 
 	store.evidence_inventory.clear()
 	for ed in d.get("evidence_inventory", []):
+		if not ed is Dictionary:
+			push_error("save_manager: evidence_inventory entry is not a Dictionary — skipped")
+			continue
 		var item := PlayerIntelStore.EvidenceItem.new(
 			ed.get("type", ""),
 			float(ed.get("believability_bonus", 0.0)),
@@ -619,6 +776,8 @@ static func _restore_intel_store(store: PlayerIntelStore, d: Dictionary) -> void
 			int(ed.get("acquired_tick", 0))
 		)
 		store.evidence_inventory.append(item)
+
+	store._evidence_target_cooldown = d.get("evidence_target_cooldown", {}).duplicate()
 
 
 static func _restore_reputation(rs: ReputationSystem, d: Dictionary) -> void:
@@ -629,7 +788,7 @@ static func _restore_reputation(rs: ReputationSystem, d: Dictionary) -> void:
 
 
 static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> void:
-	if d.is_empty():
+	if sm == null or d.is_empty():
 		return
 	sm.scenario_1_state   = int(d.get("scenario_1_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
 	sm.scenario_2_state   = int(d.get("scenario_2_state", ScenarioManager.ScenarioState.ACTIVE)) as ScenarioManager.ScenarioState
@@ -646,26 +805,34 @@ static func _restore_scenario_manager(sm: ScenarioManager, d: Dictionary) -> voi
 	sm._deadline_warnings_fired = _fired
 	sm._s5_endorsement_fired       = bool(d.get("s5_endorsement_fired", false))
 	sm.s5_endorsed_candidate       = str(d.get("s5_endorsed_candidate", ""))
-	sm._s2_maren_first_reject_tick = int(d.get("s2_maren_first_reject_tick", -1))
-	sm.s2_maren_carrier_name       = str(d.get("s2_maren_carrier_name", ""))
+	sm._s2_maren_first_reject_tick          = int(d.get("s2_maren_first_reject_tick", -1))
+	sm.s2_maren_carrier_name               = str(d.get("s2_maren_carrier_name", ""))
+	sm._heat_ceiling_override              = float(d.get("heat_ceiling_override", -1.0))
+	sm._heat_ceiling_override_expires_day  = int(d.get("heat_ceiling_override_expires_day", -1))
+	sm._s1_first_blood_fired               = bool(d.get("s1_first_blood_fired", false))
 
 
 static func _restore_rival_agent(ra: RivalAgent, d: Dictionary) -> void:
 	if ra == null or d.is_empty():
 		return
-	ra._active         = bool(d.get("active", false))
-	ra._last_seed_day  = int(d.get("last_seed_day", 0))
-	ra._alternate_flag = bool(d.get("alternate_flag", false))
-	ra.cooldown_offset = int(d.get("cooldown_offset", 0))
+	ra._active                       = bool(d.get("active", false))
+	ra._last_seed_day                = int(d.get("last_seed_day", 0))
+	ra._alternate_flag               = bool(d.get("alternate_flag", false))
+	ra.cooldown_offset               = int(d.get("cooldown_offset", 0))
+	ra.disrupt_charges_remaining     = int(d.get("disrupt_charges_remaining", 3))
+	ra._disruption_days_remaining    = int(d.get("disruption_days_remaining", 0))
 
 
 static func _restore_inquisitor_agent(ia: InquisitorAgent, d: Dictionary) -> void:
 	if ia == null or d.is_empty():
 		return
-	ia._active        = bool(d.get("active", false))
-	ia._last_seed_day = int(d.get("last_seed_day", 0))
-	ia._target_index  = int(d.get("target_index", 0))
+	ia._active         = bool(d.get("active", false))
+	ia._last_seed_day  = int(d.get("last_seed_day", 0))
+	ia._target_index   = int(d.get("target_index", 0))
 	ia.cooldown_offset = int(d.get("cooldown_offset", 0))
+	ia._shielded_npc_ids.clear()
+	for npc_id in d.get("shielded_npc_ids", []):
+		ia._shielded_npc_ids[str(npc_id)] = true
 
 
 static func _restore_s4_faction_shift_agent(agent: S4FactionShiftAgent, d: Dictionary) -> void:

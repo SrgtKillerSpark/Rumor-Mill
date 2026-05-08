@@ -7,6 +7,7 @@
 ##   - Fade-out exit (auto 0.3s after 8 s; dismiss 0.15s on button click)
 ##   - Fast-dismiss detection: emits was_fast=true if dismissed < 1 second
 ##     after appearing (signals the engine to double the next cooldown)
+##   - Queue: simultaneous show_hint() calls shown sequentially (SPA-1143)
 
 class_name SuggestionToast
 extends PanelContainer
@@ -25,6 +26,10 @@ var _dismiss_btn: Button = null
 var _anim_tween:  Tween  = null
 ## Seconds (real time) when the current hint became visible.
 var _shown_at_sec: float = 0.0
+## Queue of hint text strings waiting to be shown (SPA-1143).
+var _queue:        Array[String] = []
+## True while a hint is animating/visible (guards queue drain).
+var _is_showing:   bool          = false
 
 
 func _init() -> void:
@@ -34,7 +39,7 @@ func _init() -> void:
 
 func _build_style() -> void:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.08, 0.10, 0.75)
+	style.bg_color = Color(0.08, 0.08, 0.10, 0.85)
 	style.set_corner_radius_all(4)
 	add_theme_stylebox_override("panel", style)
 	mouse_filter = MOUSE_FILTER_STOP
@@ -55,7 +60,7 @@ func _build_children() -> void:
 	_hint_label = Label.new()
 	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_hint_label.autowrap_mode        = TextServer.AUTOWRAP_WORD_SMART
-	_hint_label.add_theme_font_size_override("font_size",           12)
+	_hint_label.add_theme_font_size_override("font_size",           13)
 	_hint_label.add_theme_color_override("font_color",              C_SUGGESTION)
 	_hint_label.add_theme_constant_override("outline_size",         2)
 	_hint_label.add_theme_color_override("font_outline_color",      Color(0, 0, 0, 0.7))
@@ -66,16 +71,36 @@ func _build_children() -> void:
 	_dismiss_btn = Button.new()
 	_dismiss_btn.text = "×"
 	_dismiss_btn.flat = true
-	_dismiss_btn.custom_minimum_size = Vector2(16, 0)
-	_dismiss_btn.add_theme_font_size_override("font_size",  12)
+	_dismiss_btn.custom_minimum_size = Vector2(22, 0)
+	_dismiss_btn.add_theme_font_size_override("font_size",  13)
 	_dismiss_btn.add_theme_color_override("font_color",     Color(0.7, 0.7, 0.7, 0.8))
+	_dismiss_btn.add_theme_color_override("font_hover_color", Color(0.95, 0.85, 0.60, 1.0))
 	_dismiss_btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	_dismiss_btn.pressed.connect(_on_dismiss_pressed)
 	hbox.add_child(_dismiss_btn)
 
 
-## Display hint text with enter animation.  Replaces any active hint.
+## Queue a hint for display.  If none is currently showing the hint appears
+## immediately; otherwise it is added to the back of the queue and shown after
+## the current one dismisses.  Prevents overlapping toasts (SPA-1143).
 func show_hint(text: String) -> void:
+	if _is_showing:
+		_queue.append(text)
+		return
+	_play(text)
+
+
+## Immediately dismiss the active hint (no fast-dismiss penalty) and clear the
+## queue so no queued hints surface afterwards.
+func dismiss() -> void:
+	_queue.clear()
+	_fade_out(0.15, false)
+
+
+# ── Internal helpers ──────────────────────────────────────────────────────────
+
+func _play(text: String) -> void:
+	_is_showing      = true
 	_stop_anim()
 	_hint_label.text = "→  " + text
 	visible          = true
@@ -92,17 +117,18 @@ func show_hint(text: String) -> void:
 	_anim_tween.tween_property(self, "modulate:a", 0.0, 0.3) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
 	_anim_tween.tween_callback(func() -> void:
-		visible = false
+		visible     = false
+		_is_showing = false
 		hint_dismissed.emit(false)
+		_drain_queue()
 	)
 
 
-## Immediately dismiss the toast (no fast-dismiss penalty).
-func dismiss() -> void:
-	_fade_out(0.15, false)
+func _drain_queue() -> void:
+	if _queue.is_empty():
+		return
+	_play(_queue.pop_front())
 
-
-# ── Internal helpers ──────────────────────────────────────────────────────────
 
 func _stop_anim() -> void:
 	if _anim_tween != null and _anim_tween.is_valid():
@@ -113,11 +139,13 @@ func _stop_anim() -> void:
 func _on_dismiss_pressed() -> void:
 	var now_sec: float = Time.get_ticks_msec() / 1000.0
 	var fast: bool     = (now_sec - _shown_at_sec) < FAST_DISMISS_THRESHOLD_SEC
+	_queue.clear()
 	_fade_out(0.15, fast)
 
 
 func _fade_out(duration: float, was_fast: bool) -> void:
 	_stop_anim()
+	_is_showing = false
 	_anim_tween = create_tween()
 	_anim_tween.tween_property(self, "modulate:a", 0.0, duration) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)

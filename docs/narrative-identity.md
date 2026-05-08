@@ -75,7 +75,7 @@ Edric is nearly immune to direct persuasion (credulity: 0.05). He must be brough
 ---
 
 ### 2 — The Plague Scare
-*Duration: 20 days. Bribery enabled (2 charges).*
+*Duration: 24 days. Bribery enabled (2 charges).*
 
 A rival herbalist named Alys has arrived with the autumn rains, undercutting the midwife who employs you. Illness rumors travel fast. Your job is to plant one precisely enough to drive Alys out of town before Sister Maren — the most morally credible NPC in the network — publicly contradicts it.
 
@@ -92,7 +92,7 @@ If Maren rejects the illness rumor, the campaign collapses. Seven NPCs believing
 
 Lady Isolde Fenn wants to elevate her son Calder to power. Tomas Reeve, a tax collector with half the Merchant Quarter behind him, blocks the path. You must raise Calder's reputation to 75 and bring Tomas below 35 — while a rival agent actively plants counter-rumors every few days, escalating in intensity over three phases.
 
-If Calder's reputation drops below 40, he becomes the subject of the scandal rather than its beneficiary. This scenario demands simultaneous offense, defense, and anticipation of an intelligent opponent.
+If Calder's reputation drops below 35, he becomes the subject of the scandal rather than its beneficiary. This scenario demands simultaneous offense, defense, and anticipation of an intelligent opponent.
 
 **Victory:** Winter festival nominations are read. Calder's name draws a real cheer. Tomas's draws silence. Lady Isolde watches from her window without smiling — but exhales.
 
@@ -103,7 +103,7 @@ If Calder's reputation drops below 40, he becomes the subject of the scandal rat
 ### 4 — The Holy Inquisition
 *Duration: 20 days. No bribery. Purely defensive.*
 
-Brother Cornelius, an inquisitor, arrives with the Bishop's seal and three names: Aldous Prior, Vera Midwife, and Finn Monk — accused of heresy, improper doctrine, and unsanctioned healing. You owe each of them a debt that cannot be repaid in coin. Twenty days to keep their reputations above 50.
+Brother Cornelius, an inquisitor, arrives with the Bishop's seal and three names: Aldous Prior, Vera Midwife, and Finn Monk — accused of heresy, improper doctrine, and unsanctioned healing. You owe each of them a debt that cannot be repaid in coin. Twenty days to keep their reputations at or above 48.
 
 This scenario inverts the game's usual role. You are not the aggressor but the defender, countering the inquisitor's propaganda with positive rumors while managing the wildly different personality profiles of your three protectees (the Prior is nearly unshakable; the Monk is dangerously credulous and forgetful).
 

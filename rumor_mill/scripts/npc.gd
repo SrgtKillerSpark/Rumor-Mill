@@ -61,6 +61,12 @@ var _npc_id_dict: Dictionary = {}
 var _walkable_sample: Array[Vector2i] = []
 var social_graph_ref: SocialGraph = null
 var propagation_engine_ref: PropagationEngine = null
+## Shallow copy of World's illness hotspot dict (building_name → true).
+## Re-pushed by World._update_illness_hotspots() each day tick; NPCs must not mutate it.
+var illness_hotspot_buildings: Dictionary = {}
+## Reference to the active QuarantineSystem; injected by World during _setup_world_systems() for
+## Scenario 2 only. Null in all other scenarios — callers must null-check before use.
+var quarantine_ref: QuarantineSystem = null
 
 # ── Schedule archetype ───────────────────────────────────────────────────────
 var archetype: NpcSchedule.ScheduleArchetype = NpcSchedule.ScheduleArchetype.INDEPENDENT
@@ -756,7 +762,17 @@ func _tick_evaluating(
 	var extra: int = min(slot.heard_from_count - 1, 3)
 	believe_chance += extra * 0.10
 
+	# Evidence credulity boost (SPA-1711): only the seed target NPC benefits.
+	if rumor.evidence_credulity_boost > 0.0 and npc_data.get("id", "") == rumor.seed_target_npc_id:
+		believe_chance += rumor.evidence_credulity_boost
+
 	believe_chance = clamp(believe_chance, 0.0, 1.0)
+
+	# SPA-1718: Phase 2 credulity boost — only for the NPC the rumor was seeded to,
+	# and only when the evidence_economy_v2 flag is ON.
+	if GameState.evidence_economy_v2 and rumor.evidence_credulity_boost > 0.0 \
+			and npc_data.get("id", "") == rumor.seed_target_npc_id:
+		believe_chance = clampf(believe_chance + rumor.evidence_credulity_boost, 0.0, 1.0)
 
 	if randf() < believe_chance:
 		slot.state = Rumor.RumorState.BELIEVE

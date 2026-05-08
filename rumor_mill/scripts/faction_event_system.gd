@@ -18,10 +18,8 @@
 
 class_name FactionEventSystem
 
-## Emitted when an event activates. label: human-readable name.
-signal event_activated(label: String, day: int)
-## Emitted when a timed event expires.
-signal event_expired(label: String, day: int)
+## Emitted when an event activates so UI layers can present the card (SPA-953).
+signal event_activated(label: String, description: String, day: int)
 
 const ALL_EVENT_TYPES: Array = [
 	"market_dispute",
@@ -44,6 +42,22 @@ const TIMED_EVENT_DURATION := 2
 
 ## Heat decay rate during guard_crackdown (normal: 6/day — see intel_store.gd).
 const GUARD_CRACKDOWN_HEAT_DECAY := 3.0
+
+## Foreshadow hint text shown 2 days before each event type activates (SPA-952).
+const FORESHADOW_TEXT: Dictionary = {
+	"market_dispute":     "Merchants in the market square are growing restless — tensions between them may spill over soon.",
+	"religious_festival": "The clergy have begun preparations for a gathering — devotion will run high across town.",
+	"noble_feast":        "Nobles have started sending invitations around town — a feast at the manor appears imminent.",
+	"guard_crackdown":    "Guards have been seen conferring in hushed tones — expect a much tighter watch on the streets soon.",
+}
+
+## Full descriptions shown on the event card overlay when an event activates (SPA-953).
+const EVENT_DESCRIPTIONS: Dictionary = {
+	"market_dispute":     "A bitter rivalry erupts between merchants in the market square. Trust is fractured, prices spike, and whispered accusations fly freely — a fertile ground for rumour.",
+	"religious_festival": "The clergy unite at the chapel for days of prayer and celebration. Devotion runs high; citizens are moved by faith and reluctant to heed secular gossip.",
+	"noble_feast":        "The nobles retreat to the manor for an extravagant banquet. With their guards occupied and their tongues loosened by wine, secrets may be overheard.",
+	"guard_crackdown":    "The city watch tightens its grip, patrolling every alley and scrutinising every face. Suspicion lingers long after curfew — move carefully.",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -219,8 +233,9 @@ func _activate_event(ev: FactionEvent, day: int) -> void:
 		"religious_festival": _activate_religious_festival(ev, day)
 		"noble_feast":        _activate_noble_feast(ev, day)
 		"guard_crackdown":    _activate_guard_crackdown(ev)
-	var lbl: String = _label(ev.event_type)
-	event_activated.emit(lbl, day)
+	var lbl: String  = _label(ev.event_type)
+	var desc: String = EVENT_DESCRIPTIONS.get(ev.event_type, "")
+	event_activated.emit(lbl, desc, day)
 
 
 ## Market Dispute: mutate 2-3 edges between disputing merchants and open a
@@ -323,7 +338,7 @@ func _expire_event(ev: FactionEvent, day: int) -> void:
 		"guard_crackdown":
 			if _intel_store != null:
 				_intel_store.heat_decay_override = -1.0   ## restore default
-	event_expired.emit(_label(ev.event_type), day)
+	pass
 
 
 func _remove_injected_overrides(ev: FactionEvent) -> void:
@@ -356,6 +371,18 @@ func get_active_event_labels() -> Array:
 ## Returns true if a given location code is an active eavesdrop hotspot.
 func is_eavesdrop_hotspot(location_code: String) -> bool:
 	return eavesdrop_hotspots.has(location_code)
+
+
+## Returns foreshadow hint texts for events scheduled to trigger on day + 2 (SPA-952).
+## Called by main.gd from _on_ctx_day_changed to prime the player two days early.
+func get_foreshadow_for_day(day: int) -> Array:
+	var result: Array = []
+	for ev in _events:
+		if not ev.is_expired and not ev.is_active and ev.trigger_day == day + 2:
+			var text: String = FORESHADOW_TEXT.get(ev.event_type, "")
+			if not text.is_empty():
+				result.append(text)
+	return result
 
 
 # ---------------------------------------------------------------------------

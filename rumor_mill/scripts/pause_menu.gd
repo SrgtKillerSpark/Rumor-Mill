@@ -19,6 +19,11 @@ const C_BTN_PRESSED  := Color(0.22, 0.13, 0.05, 1.0)
 const C_BTN_BORDER   := Color(0.55, 0.38, 0.18, 1.0)
 const C_BTN_TEXT     := Color(0.95, 0.91, 0.80, 1.0)
 
+# SPA-1669 #20: Responsive pause panel sizing (was hardcoded 340×540).
+const PAUSE_PANEL_MIN_W := 260;  const PAUSE_PANEL_MAX_W := 380
+const PAUSE_PANEL_MIN_H := 420;  const PAUSE_PANEL_MAX_H := 540
+const PAUSE_PANEL_VP_W  := 0.28; const PAUSE_PANEL_VP_H  := 0.75
+
 var _is_open: bool = false
 var _scenario_id: String = ""
 var _how_to_play: CanvasLayer = null
@@ -32,9 +37,16 @@ var _tutorial_sys_ref: TutorialSystem = null
 
 var _status_label: Label = null
 
+# ── Context header refs ────────────────────────────────────────────────────────
+var _context_scenario_lbl: Label = null
+var _context_day_lbl:      Label = null
+var _context_objective_lbl: Label = null
+
 # ── Slot picker state ──────────────────────────────────────────────────────────
-var _main_container:  VBoxContainer = null   # main menu buttons
-var _slot_container:  VBoxContainer = null   # slot picker panel
+var _main_container:   VBoxContainer = null   # main menu buttons
+var _slot_container:   VBoxContainer = null   # slot picker panel
+var _confirm_container: VBoxContainer = null  # inline confirmation panel
+var _confirm_action:   String = ""            # "restart" or "quit"
 var _slot_mode_save:  bool = false           # true = saving, false = loading
 var _slot_label:      Label = null           # "Save to Slot" / "Load from Slot"
 var _slot_btn_auto:   Button = null
@@ -81,7 +93,9 @@ func setup_tutorial(sys: TutorialSystem) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
-			if _slot_container != null and _slot_container.visible:
+			if _confirm_container != null and _confirm_container.visible:
+				_on_confirm_no()
+			elif _slot_container != null and _slot_container.visible:
 				_hide_slot_picker()
 			else:
 				toggle()
@@ -101,7 +115,11 @@ func _open() -> void:
 	get_tree().paused = true
 	if _status_label != null:
 		_status_label.text = ""
+	if _confirm_container != null:
+		_confirm_container.visible = false
+	_confirm_action = ""
 	_hide_slot_picker()
+	_refresh_context_header()
 	# Animate open: fade bg + scale panel in.
 	if _open_tween != null and _open_tween.is_valid():
 		_open_tween.kill()
@@ -129,8 +147,7 @@ func _close() -> void:
 	_is_open = false
 	if _open_tween != null and _open_tween.is_valid():
 		_open_tween.kill()
-	var tw := create_tween().set_parallel(true) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	var tw: Tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	if _bg_rect != null:
 		tw.tween_property(_bg_rect, "modulate:a", 0.0, 0.12)
@@ -151,23 +168,21 @@ func _build_ui() -> void:
 	_bg_rect.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_bg_rect)
 
-	# Centred panel — tall enough for buttons + slot picker + status line.
+	# SPA-1669 #20: Responsive centred panel — viewport-clamped sizing.
+	var vp_size := get_viewport().get_visible_rect().size
+	var pw := UILayoutConstants.clamp_to_viewport(vp_size.x, PAUSE_PANEL_VP_W, PAUSE_PANEL_MIN_W, PAUSE_PANEL_MAX_W)
+	var ph := UILayoutConstants.clamp_to_viewport(vp_size.y, PAUSE_PANEL_VP_H, PAUSE_PANEL_MIN_H, PAUSE_PANEL_MAX_H)
 	_center_panel = Panel.new()
-	_center_panel.custom_minimum_size = Vector2(300, 460)
+	_center_panel.custom_minimum_size = Vector2(pw, ph)
 	_center_panel.set_anchors_preset(Control.PRESET_CENTER)
 	_center_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	_center_panel.pivot_offset = Vector2(150, 230)  # centre of 300x460
+	_center_panel.pivot_offset = Vector2(pw / 2.0, ph / 2.0)
 	var style := StyleBoxFlat.new()
 	style.bg_color            = Color(0.10, 0.08, 0.06, 0.96)
-	style.border_width_left   = 2
-	style.border_width_right  = 2
-	style.border_width_top    = 2
-	style.border_width_bottom = 2
+	style.set_border_width_all(2)
 	style.border_color        = Color(0.65, 0.55, 0.35, 1.0)
-	style.corner_radius_top_left     = 6
-	style.corner_radius_top_right    = 6
-	style.corner_radius_bottom_left  = 6
-	style.corner_radius_bottom_right = 6
+	style.set_corner_radius_all(6)
+	style.set_content_margin_all(UILayoutConstants.MARGIN_STANDARD)
 	_center_panel.add_theme_stylebox_override("panel", style)
 	add_child(_center_panel)
 
@@ -186,6 +201,30 @@ func _build_ui() -> void:
 	title.add_theme_color_override("font_color", Color(0.90, 0.82, 0.60, 1.0))
 	title.process_mode = Node.PROCESS_MODE_ALWAYS
 	outer_vbox.add_child(title)
+
+	# ── SPA-907: Context header — scenario name, day, objective ────────────
+	_context_scenario_lbl = Label.new()
+	_context_scenario_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_context_scenario_lbl.add_theme_font_size_override("font_size", 14)
+	_context_scenario_lbl.add_theme_color_override("font_color", Color(0.92, 0.78, 0.12, 1.0))
+	_context_scenario_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
+	outer_vbox.add_child(_context_scenario_lbl)
+
+	_context_day_lbl = Label.new()
+	_context_day_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_context_day_lbl.add_theme_font_size_override("font_size", 12)
+	_context_day_lbl.add_theme_color_override("font_color", Color(0.75, 0.65, 0.50, 1.0))
+	_context_day_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
+	outer_vbox.add_child(_context_day_lbl)
+
+	_context_objective_lbl = Label.new()
+	_context_objective_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_context_objective_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_context_objective_lbl.custom_minimum_size = Vector2(240, 0)
+	_context_objective_lbl.add_theme_font_size_override("font_size", 11)
+	_context_objective_lbl.add_theme_color_override("font_color", Color(0.70, 0.65, 0.55, 1.0))
+	_context_objective_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
+	outer_vbox.add_child(_context_objective_lbl)
 
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 4)
@@ -225,6 +264,18 @@ func _build_ui() -> void:
 	btn_quit.pressed.connect(_on_quit_to_menu)
 	_main_container.add_child(btn_quit)
 
+	# ── Focus neighbor chain for main buttons (Up/Down arrows cycle all buttons) ─
+	var _main_btns: Array = [
+		btn_resume, btn_howto, btn_settings, btn_save, btn_load, btn_restart, btn_quit,
+	]
+	for i in _main_btns.size():
+		var prev: Button = _main_btns[(i - 1 + _main_btns.size()) % _main_btns.size()]
+		var next: Button = _main_btns[(i + 1) % _main_btns.size()]
+		_main_btns[i].focus_neighbor_top    = prev.get_path()
+		_main_btns[i].focus_neighbor_bottom = next.get_path()
+		_main_btns[i].focus_next            = next.get_path()
+		_main_btns[i].focus_previous        = prev.get_path()
+
 	# ── Slot picker container (hidden initially) ───────────────────────────────
 	_slot_container = VBoxContainer.new()
 	_slot_container.add_theme_constant_override("separation", 10)
@@ -259,6 +310,41 @@ func _build_ui() -> void:
 	btn_cancel.pressed.connect(_hide_slot_picker)
 	_slot_container.add_child(btn_cancel)
 
+	# ── Focus neighbor chain for slot picker buttons (Up/Down arrows) ─────────
+	var _slot_btns: Array = [_slot_btn_auto, _slot_btn_1, _slot_btn_2, _slot_btn_3, btn_cancel]
+	for i in _slot_btns.size():
+		var prev: Button = _slot_btns[(i - 1 + _slot_btns.size()) % _slot_btns.size()]
+		var next: Button = _slot_btns[(i + 1) % _slot_btns.size()]
+		_slot_btns[i].focus_neighbor_top    = prev.get_path()
+		_slot_btns[i].focus_neighbor_bottom = next.get_path()
+		_slot_btns[i].focus_next            = next.get_path()
+		_slot_btns[i].focus_previous        = prev.get_path()
+
+	# ── Confirm container (hidden initially) ──────────────────────────────────
+	_confirm_container = VBoxContainer.new()
+	_confirm_container.add_theme_constant_override("separation", 10)
+	_confirm_container.process_mode = Node.PROCESS_MODE_ALWAYS
+	_confirm_container.visible = false
+	outer_vbox.add_child(_confirm_container)
+
+	var confirm_lbl := Label.new()
+	confirm_lbl.text = "Unsaved progress will be lost. Continue?"
+	confirm_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	confirm_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	confirm_lbl.custom_minimum_size = Vector2(240, 0)
+	confirm_lbl.add_theme_font_size_override("font_size", 13)
+	confirm_lbl.add_theme_color_override("font_color", Color(0.90, 0.82, 0.60, 1.0))
+	confirm_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
+	_confirm_container.add_child(confirm_lbl)
+
+	var confirm_yes := _make_pause_btn("Yes — Continue", Color(0.95, 0.80, 0.40, 1.0))
+	confirm_yes.pressed.connect(_on_confirm_yes)
+	_confirm_container.add_child(confirm_yes)
+
+	var confirm_no := _make_pause_btn("No — Go Back", C_BTN_TEXT)
+	confirm_no.pressed.connect(_on_confirm_no)
+	_confirm_container.add_child(confirm_no)
+
 	# ── Status label ──────────────────────────────────────────────────────────
 	_status_label = Label.new()
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -276,6 +362,45 @@ func _on_how_to_play() -> void:
 
 func _on_settings() -> void:
 	_settings_menu.open()
+
+
+## SPA-907: Populate scenario name, day counter, and objective in the header.
+func _refresh_context_header() -> void:
+	if _world_ref == null:
+		if _context_scenario_lbl != null:
+			_context_scenario_lbl.text = ""
+		if _context_day_lbl != null:
+			_context_day_lbl.text = ""
+		if _context_objective_lbl != null:
+			_context_objective_lbl.text = ""
+		return
+
+	# Scenario name
+	if _context_scenario_lbl != null:
+		if _world_ref.scenario_manager != null:
+			_context_scenario_lbl.text = _world_ref.scenario_manager.get_title()
+		else:
+			_context_scenario_lbl.text = ""
+
+	# Day X / Y
+	if _context_day_lbl != null:
+		var day: int = 1
+		if _day_night_ref != null and "current_day" in _day_night_ref:
+			day = _day_night_ref.current_day
+		var days_allowed: int = 0
+		if _world_ref.scenario_manager != null:
+			days_allowed = _world_ref.scenario_manager.get_days_allowed()
+		if days_allowed > 0:
+			_context_day_lbl.text = "Day %d / %d" % [day, days_allowed]
+		else:
+			_context_day_lbl.text = "Day %d" % day
+
+	# Objective one-liner
+	if _context_objective_lbl != null:
+		if _world_ref.scenario_manager != null:
+			_context_objective_lbl.text = _world_ref.scenario_manager.get_objective_one_liner()
+		else:
+			_context_objective_lbl.text = ""
 
 
 func _on_save_game() -> void:
@@ -375,15 +500,46 @@ func _set_status(msg: String, colour: Color) -> void:
 
 
 func _on_restart_scenario() -> void:
-	_pending_restart_id = _scenario_id
-	get_tree().paused = false
-	get_tree().reload_current_scene()
+	_confirm_action = "restart"
+	_main_container.visible = false
+	if _status_label != null:
+		_status_label.text = ""
+	_confirm_container.visible = true
+	# Focus Yes button (first action button in confirm container).
+	var yes_btn: Button = _confirm_container.get_child(1) as Button
+	if yes_btn != null:
+		yes_btn.call_deferred("grab_focus")
 
 
 func _on_quit_to_menu() -> void:
-	_pending_restart_id = ""
+	_confirm_action = "quit"
+	_main_container.visible = false
+	if _status_label != null:
+		_status_label.text = ""
+	_confirm_container.visible = true
+	var yes_btn: Button = _confirm_container.get_child(1) as Button
+	if yes_btn != null:
+		yes_btn.call_deferred("grab_focus")
+
+
+func _on_confirm_yes() -> void:
+	_confirm_container.visible = false
 	get_tree().paused = false
+	await TransitionManager.fade_out(0.3)
+	if _confirm_action == "restart":
+		_pending_restart_id = _scenario_id
+	else:
+		_pending_restart_id = ""
 	get_tree().reload_current_scene()
+
+
+func _on_confirm_no() -> void:
+	_confirm_container.visible = false
+	_main_container.visible = true
+	if _main_container.get_child_count() > 0:
+		var first := _main_container.get_child(0)
+		if first is Button:
+			first.call_deferred("grab_focus")
 
 
 func _make_pause_btn(label_text: String, font_color: Color) -> Button:
@@ -437,7 +593,7 @@ func _make_pause_btn(label_text: String, font_color: Color) -> Button:
 	btn.add_theme_color_override("font_disabled_color", Color(0.55, 0.50, 0.40, 0.5))
 	btn.pivot_offset = btn.custom_minimum_size * 0.5
 	btn.pressed.connect(func() -> void:
-		AudioManager.play_sfx("ui_click")
+		AudioManager.play_ui("click")
 		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		tw.tween_property(btn, "scale", Vector2(0.95, 0.95), 0.06)
 		tw.tween_property(btn, "scale", Vector2.ONE, 0.10)

@@ -48,6 +48,11 @@ var ESCALATION_PAIRS: Dictionary = {
 # rumor_id → Rumor  (all active, non-expired rumors)
 var live_rumors: Dictionary = {}
 
+# subject_npc_id → Array[String] of rumor_ids currently in live_rumors for that subject.
+# Maintained alongside live_rumors so detect_chain() and get_chain_type() can skip
+# the full O(n) scan and only iterate rumors on the relevant subject.
+var _subject_index: Dictionary = {}
+
 # ── Scenario-specific mutation filters ───────────────────────────────────────
 # NPC ids that must never be picked as a target_shift destination.
 # Set by the scenario loader (e.g. world._apply_active_scenario) before play.
@@ -58,12 +63,35 @@ var target_shift_excluded_ids: Array[String] = []
 var lineage: Dictionary = {}
 var _mutation_counter: int = 0
 
+## Emitted when a target-shift mutation fires during try_mutate().
+## old_target_id / new_target_id are subject_npc_ids; rumor_id is the new mutated copy.
+signal target_shifted(old_target_id: String, new_target_id: String, rumor_id: String)
+
 ## Reference to the player intel store for heat tracking. Set by World.
 var intel_store_ref: PlayerIntelStore = null
 
 ## Time pressure bonus added to spread probability in the final 25% of a scenario.
 ## Set each tick by World based on scenario progress. 0.0 = no bonus, 0.20 = +20%.
 var time_pressure_bonus: float = 0.0
+
+# ── Day-phase timing constants ────────────────────────────────────────────────
+## Spread probability modifier by schedule slot (0–5):
+##   0 = night (-0.15), 1 = 04:00 (-0.05), 2 = 08:00 (+0.05),
+##   3 = midday (+0.10), 4 = afternoon (+0.05), 5 = evening (+0.15)
+const DAY_PHASE_MODS: Array = [-0.15, -0.05, 0.05, 0.10, 0.05, 0.15]
+
+## Location susceptibility modifier — receiver's location code → spread bonus.
+## Tavern NPCs are more gossip-prone; home NPCs are less receptive.
+const LOCATION_SUSCEPTIBILITY: Dictionary = {
+	"tavern":     0.20,
+	"market":     0.10,
+	"chapel":     0.05,
+	"well":       0.08,
+	"town_hall":  0.05,
+	"home":      -0.10,
+	"guardhouse":-0.05,
+	"patrol":    -0.08,
+}
 
 ## Incremented each time an NPC transitions to CONTRADICTED/REJECT due to a
 ## credible public rebuttal (wired from NPC.gd where that state fires).
@@ -76,6 +104,10 @@ var contradiction_count: int = 0
 ## Register a newly created rumor (seeded or mutated).
 ## Idempotent — safe to call on already-registered ids.
 func register_rumor(rumor: Rumor) -> void:
+	if not live_rumors.has(rumor.id):
+		if not _subject_index.has(rumor.subject_npc_id):
+			_subject_index[rumor.subject_npc_id] = []
+		_subject_index[rumor.subject_npc_id].append(rumor.id)
 	live_rumors[rumor.id] = rumor
 	if not lineage.has(rumor.id):
 		lineage[rumor.id] = {
@@ -98,7 +130,12 @@ func tick_decay() -> void:
 		if r.is_expired():
 			expired_ids.append(rid)
 	for rid in expired_ids:
+		var subject: String = (live_rumors[rid] as Rumor).subject_npc_id
 		live_rumors.erase(rid)
+		if _subject_index.has(subject):
+			_subject_index[subject].erase(rid)
+			if _subject_index[subject].is_empty():
+				_subject_index.erase(subject)
 
 
 # ── β — spread probability ────────────────────────────────────────────────────
@@ -106,6 +143,8 @@ func tick_decay() -> void:
 ## β = sociability_spreader × credulity_target × edge_weight × faction_modifier × scale
 ##
 ## heat_modifier reduces effective credulity: 0.15 at heat ≥ 50, 0.30 at heat ≥ 75.
+## day_phase_mod: bonus/penalty from current schedule slot (see DAY_PHASE_MODS).
+## location_mod:  bonus from receiver's current location (see LOCATION_SUSCEPTIBILITY).
 ## Returns a clamped [0.0, 1.0] probability for one transmission attempt.
 func calc_beta(
 		sociability:    float,
@@ -113,7 +152,9 @@ func calc_beta(
 		edge_weight:    float,
 		from_faction:   String,
 		to_faction:     String,
-		heat_modifier:  float = 0.0
+		heat_modifier:  float = 0.0,
+		day_phase_mod:  float = 0.0,
+		location_mod:   float = 0.0
 ) -> float:
 	var faction_mod := _faction_modifier(from_faction, to_faction)
 	var effective_credulity := clamp(credulity - heat_modifier, 0.0, 1.0)
@@ -122,7 +163,24 @@ func calc_beta(
 	# but moderate NPCs no longer guarantee daily spread to every connected neighbor.
 	var base := clamp(sociability * effective_credulity * edge_weight * faction_mod * 1.8, 0.0, 1.0)
 	# Time pressure: in the final 25% of a scenario, spread probability increases.
-	return clamp(base + time_pressure_bonus, 0.0, 1.0)
+	# Day-phase and location mods add strategic timing depth.
+	return clamp(base + time_pressure_bonus + day_phase_mod + location_mod, 0.0, 1.0)
+
+
+# ── Day-phase / location helpers ─────────────────────────────────────────────
+
+## Returns the spread probability modifier for the given schedule slot (0–5).
+## Slot 5 (evening at tavern) is when gossip travels fastest.
+func calc_day_phase_mod(schedule_slot: int) -> float:
+	if schedule_slot < 0 or schedule_slot >= DAY_PHASE_MODS.size():
+		return 0.0
+	return float(DAY_PHASE_MODS[schedule_slot])
+
+
+## Returns the susceptibility modifier for the receiver's current location.
+## Tavern NPCs are the most gossip-prone; patrolling guards are the least.
+func calc_location_susceptibility(receiver_location: String) -> float:
+	return float(LOCATION_SUSCEPTIBILITY.get(receiver_location, 0.0))
 
 
 # ── γ — recovery probability ──────────────────────────────────────────────────
@@ -148,13 +206,32 @@ func calc_gamma(loyalty: float, temperament: float) -> float:
 ##   softening    — intensity − 1 (min 1); mutually exclusive with exaggeration
 ##   target_shift — subject_npc_id reassigned to a randomly connected NPC
 ##   detail_add   — no mechanical change; logged in lineage for narrative flavour
-func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
+##
+## Spreader personality biases (SPA-911):
+##   spreader_temperament — high temperament increases exaggeration, reduces softening
+##   spreader_loyalty     — low loyalty increases target-shifting (gossiping freely)
+##   spreader_sociability — high sociability increases detail embellishment
+func try_mutate(
+		source: Rumor,
+		tick: int,
+		all_npcs: Array,
+		spreader_temperament: float = 0.5,
+		spreader_loyalty:     float = 0.5,
+		spreader_sociability: float = 0.5
+) -> Rumor:
 	var base_p := source.mutability * 0.15
 
-	var do_exaggerate  := randf() < base_p and source.intensity < 5
-	var do_soften      := randf() < base_p and source.intensity > 1 and not do_exaggerate
-	var do_target_shift := randf() < base_p
-	var do_detail_add   := randf() < base_p
+	# Personality-weighted probabilities: each trait scales its associated mutation type.
+	# Clamp to [0, base_p * 2] so no trait makes a single mutation type dominate.
+	var exaggerate_p    := clampf(base_p * (0.5 + spreader_temperament),      0.0, base_p * 2.0)
+	var soften_p        := clampf(base_p * (1.5 - spreader_temperament),      0.0, base_p * 2.0)
+	var target_shift_p  := clampf(base_p * (0.5 + (1.0 - spreader_loyalty)),  0.0, base_p * 2.0)
+	var detail_add_p    := clampf(base_p * (0.5 + spreader_sociability),      0.0, base_p * 2.0)
+
+	var do_exaggerate  := randf() < exaggerate_p and source.intensity < 5
+	var do_soften      := randf() < soften_p and source.intensity > 1 and not do_exaggerate
+	var do_target_shift := randf() < target_shift_p
+	var do_detail_add   := randf() < detail_add_p
 
 	if not (do_exaggerate or do_soften or do_target_shift or do_detail_add):
 		return source   # No mutation — return original reference
@@ -212,11 +289,18 @@ func try_mutate(source: Rumor, tick: int, all_npcs: Array) -> Rumor:
 
 	# Register the new copy.
 	live_rumors[new_id] = mutated
+	if not _subject_index.has(new_subject):
+		_subject_index[new_subject] = []
+	_subject_index[new_subject].append(new_id)
 	lineage[new_id] = {
 		"parent_id":     source.id,
 		"mutation_type": ",".join(mut_tags),
 		"tick":          tick,
 	}
+
+	# SPA-1518: Notify listeners when a target-shift mutation fires.
+	if new_subject != source.subject_npc_id:
+		target_shifted.emit(source.subject_npc_id, new_subject, new_id)
 
 	return mutated
 
@@ -302,10 +386,8 @@ func apply_relay_heat(npc_id: String, rumor_id: String) -> void:
 func detect_chain(subject_npc_id: String, new_claim_type: Rumor.ClaimType) -> Dictionary:
 	var result := { "chain_type": ChainType.NONE, "existing_rumor": null }
 
-	for rid in live_rumors:
+	for rid in _subject_index.get(subject_npc_id, []):
 		var r: Rumor = live_rumors[rid]
-		if r.subject_npc_id != subject_npc_id:
-			continue
 
 		# Escalation: existing rumor is the "from" type and new claim is the "to" type.
 		if ESCALATION_PAIRS.has(r.claim_type) and ESCALATION_PAIRS[r.claim_type] == new_claim_type:
@@ -345,6 +427,31 @@ func apply_chain_bonus(rumor: Rumor, chain_info: Dictionary) -> ChainType:
 		ChainType.CONTRADICTION:
 			rumor.current_believability = maxf(0.0, rumor.current_believability - 0.10)
 	return ct
+
+
+## Returns the current ChainType for an existing live rumor by checking other
+## active rumors about the same subject. ESCALATION takes priority.
+## Returns NONE if the rumor is not live or has no chain partners.
+func get_chain_type(rumor_id: String) -> ChainType:
+	if not live_rumors.has(rumor_id):
+		return ChainType.NONE
+	var r: Rumor = live_rumors[rumor_id]
+	var best: ChainType = ChainType.NONE
+	for rid in _subject_index.get(r.subject_npc_id, []):
+		if rid == rumor_id:
+			continue
+		var other: Rumor = live_rumors[rid]
+		# Escalation: other is the precursor and this rumor is the escalation target.
+		if ESCALATION_PAIRS.has(other.claim_type) and ESCALATION_PAIRS[other.claim_type] == r.claim_type:
+			return ChainType.ESCALATION
+		# Contradiction: opposite sentiment active on same subject.
+		if Rumor.is_positive_claim(other.claim_type) != Rumor.is_positive_claim(r.claim_type):
+			if best != ChainType.ESCALATION:
+				best = ChainType.CONTRADICTION
+		# Same-type: identical claim active on same subject.
+		elif other.claim_type == r.claim_type and best == ChainType.NONE:
+			best = ChainType.SAME_TYPE
+	return best
 
 
 ## Human-readable chain type name for UI display.

@@ -6,8 +6,16 @@ extends CanvasLayer
 ## tooltip that matches the game's medieval aesthetic.  Reads tooltip_text
 ## from hovered Controls automatically.
 ##
-## Usage: Add as child of Main (layer 25, above all HUD layers).
+## Usage: Add as child of Main (layer 99, above all HUD and overlay layers).
 ##        No per-element wiring needed — uses _process polling on viewport focus.
+##
+## SPA-1179 #32 — Tooltip layer precedence:
+##   hud_tooltip (this file): layer 99 — auto-detected hover tooltips from tooltip_text.
+##   TooltipManager (tooltip_manager.gd): layer 100 — explicit data-driven tooltips
+##     shown via TooltipManager.show_at(key).  When both are active simultaneously,
+##     TooltipManager wins by one layer.  In practice only one fires at a time because
+##     TooltipManager is driven by explicit show_at() calls while hud_tooltip deactivates
+##     itself when no tooltip_text control is hovered.
 
 const C_BG       := Color(0.10, 0.07, 0.05, 0.95)
 const C_BORDER   := Color(0.55, 0.38, 0.18, 1.0)
@@ -38,7 +46,10 @@ var _hovered_control: Control = null
 
 
 func _ready() -> void:
-	layer = 25
+	# SPA-1179 #32: raised from 25 to 99 so this is always visible above all HUD
+	# layers (scenario HUD=14, objective=15, speed=16) and overlay layers (≤51).
+	# TooltipManager runs at 100 and takes precedence for explicit data-driven tips.
+	layer = 99
 	_build_panel()
 
 

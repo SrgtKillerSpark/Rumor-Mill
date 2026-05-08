@@ -55,11 +55,25 @@ var _heat_row:       HBoxContainer = null
 var _heat_bar_fill:  ColorRect     = null
 var _heat_count_lbl: Label         = null
 
+# ── SPA-870: Section headers for visual grouping ────────────────────────────
+var _resources_header: Label = null
+var _threat_header: Label    = null
+# Key hint label references for availability styling.
+var _key_hint_rumor: Label   = null
+var _key_hint_journal: Label = null
+var _key_hint_graph: Label   = null
+var _key_hint_help: Label    = null
+# First-time resource callout tracking.
+var _first_action_spent: bool  = false
+var _first_whisper_spent: bool = false
+
 # Toast animation tweens.
 var _toast_tween:       Tween = null
 var _toast_slide_tween: Tween = null
 var _flash_rect:        ColorRect = null
 var _flash_tween:       Tween = null
+
+var _tooltip_mgr: ReconTooltipManager = null
 
 # ── SPA-724: Goal reminder strip ────────────────────────────────────────────
 var _goal_strip: Panel = null
@@ -82,10 +96,34 @@ var _toast_normal_offset_top:    float = 0.0
 var _toast_normal_offset_bottom: float = 0.0
 
 # Track last pip counts to avoid rebuilding every frame.
-var _last_action_max:   int = -1
-var _last_whisper_max:  int = -1
-var _last_action_rem:   int = -1
-var _last_whisper_rem:  int = -1
+var _last_action_max:   int   = -1
+var _last_whisper_max:  int   = -1
+var _last_action_rem:   int   = -1
+var _last_whisper_rem:  int   = -1
+## SPA-869: Track previous heat value for floating delta labels.
+var _last_heat_val:     float = -1.0
+
+# SPA-894: Low-resource warning pulse state.
+var _low_action_warned:  bool = false
+var _low_whisper_warned: bool = false
+var _low_pulse_tween_action:  Tween = null
+var _low_pulse_tween_whisper: Tween = null
+
+# ── SPA-1581: Evidence confidence indicator ──────────────────────────────────
+## Placeholder icons for confidence tiers — replaced by Creative Director assets (SPA-1572).
+const CONF_ICON_FRESH  := "●"
+const CONF_ICON_AGING  := "◐"
+const CONF_ICON_STALE  := "○"
+const CONF_COLOR_FRESH := Color(0.20, 0.85, 0.40, 1.0)   # green
+const CONF_COLOR_AGING := Color(0.90, 0.65, 0.15, 1.0)   # amber
+const CONF_COLOR_STALE := Color(0.85, 0.25, 0.20, 1.0)   # red
+const CONF_PANEL_ROW_H := 16   # px per evidence item row
+
+var _evidence_panel:        Panel         = null
+var _evidence_vbox:         VBoxContainer = null
+var _evidence_item_rows:    Array         = []   # Array[Label], one per inventory slot
+var _evidence_last_count:   int           = -1   # track for rebuild-on-change
+var _evidence_flash_tween:  Tween         = null
 
 # ── Recent Actions feed ──────────────────────────────────────────────────────
 const FEED_MAX_ENTRIES := 5
@@ -105,6 +143,7 @@ func _ready() -> void:
 	toast_panel.visible = false
 	_toast_normal_offset_top    = toast_panel.offset_top
 	_toast_normal_offset_bottom = toast_panel.offset_bottom
+	_build_section_headers()
 	_build_pips(action_pips_row, 3, 3, PIP_FULL_ACTION, PIP_EMPTY_ACTION)
 	_build_pips(whisper_pips_row, 2, 2, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 	_build_count_labels()
@@ -114,13 +153,31 @@ func _ready() -> void:
 	_build_hint_button()
 	_build_flash_overlay()
 	_build_feed_panel()
-	_setup_recon_tooltips()
+	_build_evidence_panel()
+	_tooltip_mgr = ReconTooltipManager.new()
+	_tooltip_mgr.setup(
+		$CounterPanel,
+		_heat_row,
+		_feed_panel,
+		$CounterPanel/VBox/KeyHintRow,
+		action_pips_row.get_parent() as Control,
+		whisper_pips_row.get_parent() as Control,
+		favors_row,
+		_key_hint_rumor,
+		_key_hint_journal,
+		_key_hint_graph,
+		_key_hint_help
+	)
+	_tooltip_mgr.setup_initial_tooltips()
 
 
 func setup(intel_store: PlayerIntelStore, rumor_panel: CanvasLayer) -> void:
 	_intel_store_ref = intel_store
 	_rumor_panel_ref = rumor_panel
 	_refresh_pips()
+	# SPA-1581: Subscribe to confidence decay signal for threshold-cross flash.
+	if intel_store != null and intel_store.has_signal("evidence_confidence_changed"):
+		intel_store.evidence_confidence_changed.connect(_on_evidence_confidence_changed)
 
 
 ## Called by main.gd to provide world reference for contextual hint generation.
@@ -292,6 +349,40 @@ func _advance_milestone_queue() -> void:
 	gap_tw.tween_callback(_show_next_milestone)
 
 
+# ── SPA-870: Section headers for visual grouping ────────────────────────────
+
+## Build tiny section headers ("RESOURCES" / "THREAT") to visually separate
+## player resource pips from threat/suspicion meters in the counter panel.
+func _build_section_headers() -> void:
+	var vbox: VBoxContainer = $CounterPanel/VBox
+
+	# "RESOURCES" header — inserted before ActionsRow (index 0).
+	_resources_header = _make_section_header("RESOURCES")
+	vbox.add_child(_resources_header)
+	vbox.move_child(_resources_header, 0)
+
+	# "THREAT" header — inserted dynamically once heat meter is built
+	# (see _build_heat_meter); create it here and keep it hidden until then.
+	_threat_header = _make_section_header("THREAT")
+	_threat_header.visible = false
+	vbox.add_child(_threat_header)
+
+	# Expand counter panel slightly to accommodate the new headers.
+	var counter_panel: Panel = $CounterPanel
+	counter_panel.offset_bottom += 22
+
+
+func _make_section_header(text: String) -> Label:
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 9)
+	lbl.add_theme_color_override("font_color", Color(0.55, 0.48, 0.35, 0.70))
+	lbl.add_theme_constant_override("outline_size", 1)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return lbl
+
+
 # ── Count labels & extra key hints ───────────────────────────────────────────
 
 func _build_count_labels() -> void:
@@ -398,8 +489,6 @@ func _build_heat_meter() -> void:
 	_heat_count_lbl.add_theme_color_override("font_color", C_HEAT_LOW)
 	_heat_row.add_child(_heat_count_lbl)
 
-	_heat_row.tooltip_text = "Suspicion: highest NPC heat level (0-100). High heat makes NPCs reject your rumors."
-
 	# Insert before KeyHintRow (index 2 = after ActionsRow, WhispersRow)
 	var key_hint_idx: int = -1
 	for i in vbox.get_child_count():
@@ -407,8 +496,11 @@ func _build_heat_meter() -> void:
 			key_hint_idx = i
 			break
 	if key_hint_idx >= 0:
+		if _threat_header != null:
+			vbox.move_child(_threat_header, key_hint_idx)
+			_threat_header.visible = true
 		vbox.add_child(_heat_row)
-		vbox.move_child(_heat_row, key_hint_idx)
+		vbox.move_child(_heat_row, key_hint_idx + 1)
 	else:
 		vbox.add_child(_heat_row)
 
@@ -422,8 +514,12 @@ func _refresh_heat() -> void:
 		return
 	if not _intel_store_ref.heat_enabled:
 		_heat_row.visible = false
+		if _threat_header != null:
+			_threat_header.visible = false
 		return
 	_heat_row.visible = true
+	if _threat_header != null:
+		_threat_header.visible = true
 
 	# Find the maximum heat across all NPCs as the player's "heat level."
 	var max_heat: float = 0.0
@@ -431,6 +527,13 @@ func _refresh_heat() -> void:
 		var h: float = _intel_store_ref.heat[npc_id]
 		if h > max_heat:
 			max_heat = h
+
+	# SPA-869: Floating delta label when heat changes by at least 1 point.
+	if _last_heat_val >= 0.0:
+		var heat_delta: int = int(max_heat) - int(_last_heat_val)
+		if heat_delta != 0:
+			_spawn_heat_delta(heat_delta)
+	_last_heat_val = max_heat
 
 	# Resolve failure ceiling from the active scenario (if any).
 	var ceiling: float = -1.0
@@ -456,31 +559,21 @@ func _refresh_heat() -> void:
 			_heat_count_lbl.text = "%d" % int(max_heat)
 			_heat_count_lbl.add_theme_color_override("font_color", heat_color)
 
-	# Update tooltip to reflect the current failure ceiling.
-	if _heat_row != null:
-		if ceiling > 0.0:
-			_heat_row.tooltip_text = (
-				"Suspicion: highest NPC heat (0-100). Reaches %d → exposed, scenario fails!\n"
-				+ "High heat also makes NPCs reject your rumors (−15%% at 50, −30%% at 75)."
-			) % int(ceiling)
-		else:
-			_heat_row.tooltip_text = (
-				"Suspicion: highest NPC heat (0-100). "
-				+ "High heat makes NPCs reject your rumors (−15%% at 50, −30%% at 75)."
-			)
+	# Update tooltip to reflect the current heat value and failure ceiling.
+	_tooltip_mgr.refresh_heat_tooltip(int(max_heat), ceiling)
 
 
 func _build_extra_key_hints() -> void:
 	var key_hint_row: HBoxContainer = $CounterPanel/VBox/KeyHintRow
 	key_hint_row.add_theme_constant_override("separation", 6)
-	_add_key_hint(key_hint_row, "R", "Rumor", Color(0.92, 0.65, 0.12, 1.0))
-	_add_key_hint(key_hint_row, "J", "Journal", Color(0.894, 0.820, 0.659, 1.0))  # PARCH_L
-	_add_key_hint(key_hint_row, "G", "Graph", Color(0.55, 0.75, 1.00, 1.0))
-	_add_key_hint(key_hint_row, "F1", "Help", Color(0.70, 0.65, 0.50, 1.0))
+	_key_hint_rumor   = _add_key_hint(key_hint_row, "R", "Rumor", Color(0.92, 0.65, 0.12, 1.0))
+	_key_hint_journal = _add_key_hint(key_hint_row, "J", "Journal", Color(0.894, 0.820, 0.659, 1.0))  # PARCH_L
+	_key_hint_graph   = _add_key_hint(key_hint_row, "G", "Graph", Color(0.55, 0.75, 1.00, 1.0))
+	_key_hint_help    = _add_key_hint(key_hint_row, "F1", "Help", Color(0.70, 0.65, 0.50, 1.0))
 
 
 ## Create a styled key hint badge with a subtle pulse animation.
-func _add_key_hint(parent: HBoxContainer, key: String, label: String, accent: Color) -> void:
+func _add_key_hint(parent: HBoxContainer, key: String, label: String, accent: Color) -> Label:
 	var hint := Label.new()
 	hint.text = " %s: %s " % [key, label]
 	hint.add_theme_font_size_override("font_size", 12)
@@ -495,6 +588,38 @@ func _add_key_hint(parent: HBoxContainer, key: String, label: String, accent: Co
 	tw.finished.connect(func() -> void:
 		hint.modulate = Color.WHITE
 	)
+	return hint
+
+
+# ── SPA-870: Key hint availability styling ──────────────────────────────────
+
+## Update key hint labels to show greyed-out state when the related resource
+## is exhausted, with a tooltip explaining why.
+func _refresh_key_hint_availability() -> void:
+	if _intel_store_ref == null:
+		return
+	var whispers: int = _intel_store_ref.whisper_tokens_remaining
+
+	# R: Rumor — requires whisper tokens.
+	if _key_hint_rumor != null:
+		_key_hint_rumor.modulate = Color(1.0, 1.0, 1.0, 0.30) if whispers <= 0 else Color.WHITE
+
+	# Tooltip text and mouse-filter for all key hints.
+	_tooltip_mgr.refresh_key_hint_tooltips(whispers)
+
+
+# ── SPA-870: First-time resource change callouts ────────────────────────────
+
+## Show a brief toast explaining what happened when a resource changes for the
+## first time, helping new players understand the resource economy.
+func _check_first_time_callouts(old_actions: int, new_actions: int,
+		old_whispers: int, new_whispers: int) -> void:
+	if not _first_action_spent and old_actions > 0 and new_actions < old_actions:
+		_first_action_spent = true
+		show_toast("Action spent! You used a Recon Action. Right-click NPCs or buildings for more intel.", true)
+	if not _first_whisper_spent and old_whispers > 0 and new_whispers < old_whispers:
+		_first_whisper_spent = true
+		show_toast("Whisper spent! Your rumor is now seeded. Watch it spread through the town.", true)
 
 
 # ── Recent Actions feed ──────────────────────────────────────────────────────
@@ -691,6 +816,11 @@ func _rebuild_feed() -> void:
 		var filter_text: String = entry["message"]
 		btn.pressed.connect(_on_feed_entry_clicked.bind(filter_text))
 		_feed_vbox.add_child(btn)
+		# SPA-992: Fade in the newest entry so it pops without jarring the feed.
+		if i == 0:
+			btn.modulate.a = 0.0
+			var tw := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tw.tween_property(btn, "modulate:a", 1.0, 0.20)
 
 
 func _on_feed_entry_clicked(filter_text: String) -> void:
@@ -718,27 +848,35 @@ func _refresh_pips() -> void:
 		_last_action_max = max_val
 		_last_action_rem = remaining
 	elif remaining != _last_action_rem:
+		var _old_action := _last_action_rem
 		_update_pips(action_pips_row, remaining, PIP_FULL_ACTION, PIP_EMPTY_ACTION)
 		_last_action_rem = remaining
+		# SPA-861: Floating delta label near the action counter.
+		if _old_action >= 0:
+			_spawn_pip_delta(remaining - _old_action, true)
 
 	if max_w != _last_whisper_max:
 		_build_pips(whisper_pips_row, whispers, max_w, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 		_last_whisper_max = max_w
 		_last_whisper_rem = whispers
 	elif whispers != _last_whisper_rem:
+		var _old_whisper := _last_whisper_rem
 		_update_pips(whisper_pips_row, whispers, PIP_FULL_WHISPER, PIP_EMPTY_WHISPER)
 		_last_whisper_rem = whispers
+		# SPA-861: Floating delta label near the whisper counter.
+		if _old_whisper >= 0:
+			_spawn_pip_delta(whispers - _old_whisper, false)
 
-	# Update row tooltips so hovering the pip area explains the resource.
-	action_pips_row.get_parent().tooltip_text = "Recon Actions: %d / %d remaining\nRight-click buildings to Observe, NPCs to Eavesdrop.\nRefreshes at dawn each day." % [remaining, max_val]
-	whisper_pips_row.get_parent().tooltip_text = "Whisper Tokens: %d / %d remaining\nPress R to craft and seed a rumor.\nRefreshes at dawn each day." % [whispers, max_w]
-	action_pips_row.get_parent().mouse_filter = Control.MOUSE_FILTER_PASS
-	whisper_pips_row.get_parent().mouse_filter = Control.MOUSE_FILTER_PASS
+	# SPA-870: First-time resource change callouts for new players.
+	_check_first_time_callouts(_last_action_rem, remaining, _last_whisper_rem, whispers)
+
+	# Update row tooltips so hovering the pip area explains the resource (SPA-870 enhanced).
+	_tooltip_mgr.refresh_resource_tooltips(remaining, max_val, whispers, max_w)
 
 	# Show dawn refresh hint when all actions and whispers are spent.
 	if _dawn_label != null:
 		if remaining == 0 and whispers == 0:
-			_dawn_label.text = "☀ Actions refresh at dawn"
+			_dawn_label.text = "☀ Actions refresh at dawn — speed up time or plan your next move"
 			_dawn_label.visible = true
 		else:
 			_dawn_label.visible = false
@@ -752,13 +890,170 @@ func _refresh_pips() -> void:
 	# Heat meter.
 	_refresh_heat()
 
-	# Favors row.
+	# Favors row (SPA-870: enhanced tooltip with what/how/why).
 	var show_favors: bool = _intel_store_ref.heat_enabled or favors > 0
 	if favors_row != null:
 		favors_row.visible = show_favors
 		if show_favors:
 			favors_label.text = str(favors)
-			favors_row.tooltip_text = "Favors: %d available (bribe NPCs to reduce suspicion)" % favors
+			_tooltip_mgr.refresh_favors_tooltip(favors)
+
+	# SPA-894: Low-resource warning pulse when down to last token.
+	_check_low_resource_warning(remaining, whispers)
+
+	# SPA-870: Update key hint availability (grey out unavailable actions).
+	_refresh_key_hint_availability()
+
+	# SPA-1581: Update evidence confidence indicator.
+	_refresh_evidence()
+
+
+# ── SPA-1581: Evidence confidence indicator ───────────────────────────────────
+
+## Build a compact floating panel positioned below the counter panel.
+## Shown only when the player holds evidence items.
+func _build_evidence_panel() -> void:
+	_evidence_panel = Panel.new()
+	_evidence_panel.name = "EvidenceConfPanel"
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.05, 0.03, 0.90)
+	style.set_border_width_all(1)
+	style.border_color = Color(0.50, 0.35, 0.15, 0.60)
+	style.set_corner_radius_all(4)
+	_evidence_panel.add_theme_stylebox_override("panel", style)
+	# Align with counter panel, positioned just below it.
+	var cp: Panel = $CounterPanel
+	_evidence_panel.anchor_left   = 1.0
+	_evidence_panel.anchor_right  = 1.0
+	_evidence_panel.anchor_top    = 0.0
+	_evidence_panel.anchor_bottom = 0.0
+	_evidence_panel.offset_left   = cp.offset_left
+	_evidence_panel.offset_right  = cp.offset_right
+	var panel_top: float = cp.offset_bottom + 4.0
+	_evidence_panel.offset_top    = panel_top
+	_evidence_panel.offset_bottom = panel_top   # expanded in _refresh_evidence
+	_evidence_panel.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	_evidence_panel.visible       = false
+	add_child(_evidence_panel)
+
+	_evidence_vbox = VBoxContainer.new()
+	_evidence_vbox.add_theme_constant_override("separation", 1)
+	_evidence_vbox.anchor_left   = 0.0
+	_evidence_vbox.anchor_right  = 1.0
+	_evidence_vbox.anchor_top    = 0.0
+	_evidence_vbox.anchor_bottom = 0.0
+	_evidence_vbox.offset_left   = 4
+	_evidence_vbox.offset_top    = 3
+	_evidence_vbox.offset_right  = -4
+	_evidence_vbox.offset_bottom = 0   # not used (panel height drives sizing)
+	_evidence_panel.add_child(_evidence_vbox)
+
+	# Section header.
+	var hdr := Label.new()
+	hdr.text = "EVIDENCE"
+	hdr.add_theme_font_size_override("font_size", 9)
+	hdr.add_theme_color_override("font_color", Color(0.55, 0.48, 0.35, 0.70))
+	hdr.add_theme_constant_override("outline_size", 1)
+	hdr.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
+	hdr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_evidence_vbox.add_child(hdr)
+
+
+## Poll evidence inventory each frame; rebuild rows when count changes and
+## update tier labels in place otherwise.
+func _refresh_evidence() -> void:
+	if _evidence_panel == null or _intel_store_ref == null:
+		return
+	var items: Array = _intel_store_ref.evidence_inventory
+	if items.is_empty():
+		_evidence_panel.visible = false
+		_evidence_last_count    = 0
+		return
+	_evidence_panel.visible = true
+	var n: int = items.size()
+	if n != _evidence_last_count:
+		_evidence_last_count = n
+		_rebuild_evidence_rows(items)
+	else:
+		for i in _evidence_item_rows.size():
+			if i >= items.size():
+				break
+			_update_evidence_row(
+				_evidence_item_rows[i],
+				items[i].type,
+				PlayerIntelStore.get_confidence_tier(items[i].confidence),
+				items[i].confidence
+			)
+
+
+func _rebuild_evidence_rows(items: Array) -> void:
+	# Remove old item rows (keep header at index 0).
+	var children := _evidence_vbox.get_children()
+	for i in range(1, children.size()):
+		children[i].queue_free()
+	_evidence_item_rows.clear()
+
+	for item in items:
+		var lbl := Label.new()
+		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_constant_override("outline_size", 1)
+		lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_evidence_vbox.add_child(lbl)
+		_evidence_item_rows.append(lbl)
+		_update_evidence_row(
+			lbl, item.type,
+			PlayerIntelStore.get_confidence_tier(item.confidence),
+			item.confidence
+		)
+
+	# Resize panel: header row (~14px) + items (~16px each) + top/bottom padding (~6px).
+	var total_h := 14 + items.size() * CONF_PANEL_ROW_H + 6
+	_evidence_panel.offset_bottom = _evidence_panel.offset_top + total_h
+
+
+func _update_evidence_row(lbl: Label, ev_type: String, tier: String, confidence: float) -> void:
+	var icon:  String
+	var color: Color
+	match tier:
+		"fresh":
+			icon  = CONF_ICON_FRESH
+			color = CONF_COLOR_FRESH
+		"aging":
+			icon  = CONF_ICON_AGING
+			color = CONF_COLOR_AGING
+		_:
+			icon  = CONF_ICON_STALE
+			color = CONF_COLOR_STALE
+	lbl.text = "%s %s  %d%%" % [icon, ev_type, int(confidence * 100.0)]
+	lbl.add_theme_color_override("font_color", color)
+
+
+## Called when intel_store emits evidence_confidence_changed.
+## Flashes the matching row to signal the tier crossing.
+func _on_evidence_confidence_changed(
+		evidence_type: String, _prev: float, _new_conf: float,
+		_tier: String, crossed_threshold: bool
+) -> void:
+	if not crossed_threshold:
+		return
+	for i in _evidence_item_rows.size():
+		var inv := _intel_store_ref.evidence_inventory if _intel_store_ref != null else []
+		if i < inv.size() and inv[i].type == evidence_type:
+			_flash_evidence_row(_evidence_item_rows[i])
+			break
+
+
+func _flash_evidence_row(lbl: Label) -> void:
+	if lbl == null or not is_instance_valid(lbl):
+		return
+	if _evidence_flash_tween != null and _evidence_flash_tween.is_valid():
+		_evidence_flash_tween.kill()
+	_evidence_flash_tween = create_tween()
+	_evidence_flash_tween.tween_property(lbl, "modulate:a", 0.1, 0.12)
+	_evidence_flash_tween.tween_property(lbl, "modulate:a", 1.0, 0.22)
+	_evidence_flash_tween.tween_property(lbl, "modulate:a", 0.1, 0.12)
+	_evidence_flash_tween.tween_property(lbl, "modulate:a", 1.0, 0.22)
 
 
 # ── "What should I do?" hint button ──────────────────────────────────────────
@@ -815,7 +1110,7 @@ func _build_hint_button() -> void:
 
 
 func _on_hint_pressed() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	var hint := _generate_contextual_hint()
 	_hint_label.text = hint
 	_hint_label.visible = true
@@ -875,6 +1170,116 @@ func _generate_contextual_hint() -> String:
 	return "Check your Journal (J) for objectives and progress. Open the Social Graph (G) to find the strongest paths to your target."
 
 
+## SPA-861: Spawn a floating "+N" or "−N" label near the pip row for the given resource.
+## is_action=true → Recon Actions (amber), false → Whisper Tokens (blue).
+## Positive delta (dawn refresh) shows green; negative delta (spent) shows the resource colour.
+func _spawn_pip_delta(delta: int, is_action: bool) -> void:
+	if delta == 0:
+		return
+	var lbl := Label.new()
+	var sign := "+" if delta > 0 else ""
+	lbl.text = "%s%d" % [sign, delta]
+	lbl.add_theme_font_size_override("font_size", 17)
+	lbl.add_theme_constant_override("outline_size", 2)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
+	var color: Color
+	if delta > 0:
+		color = Color(0.45, 1.00, 0.55, 1.0)  # green for refreshed tokens
+	elif is_action:
+		color = Color(0.95, 0.60, 0.15, 1.0)  # amber for spent action
+	else:
+		color = Color(0.45, 0.65, 0.90, 1.0)  # steel blue for spent whisper
+	lbl.add_theme_color_override("font_color", color)
+
+	# Position near the relevant pip row using its screen position.
+	var source_row: HBoxContainer = action_pips_row if is_action else whisper_pips_row
+	var row_pos: Vector2 = source_row.global_position
+	var spawn_x: float = row_pos.x + source_row.size.x * 0.5 - 8.0
+	var spawn_y: float = row_pos.y - 2.0
+	lbl.position = Vector2(spawn_x, spawn_y)
+	add_child(lbl)
+
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(lbl, "position",
+		Vector2(spawn_x + randf_range(-6.0, 6.0), spawn_y - 38.0), 0.85) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.85).set_delay(0.30)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
+## SPA-869: Spawn a floating "+N" or "−N" label near the heat bar when heat changes.
+## Red for heat increases, green for decreases.
+func _spawn_heat_delta(delta: int) -> void:
+	if delta == 0 or _heat_row == null:
+		return
+	var lbl := Label.new()
+	var sign := "+" if delta > 0 else ""
+	lbl.text = "%s%d" % [sign, delta]
+	lbl.add_theme_font_size_override("font_size", 15)
+	lbl.add_theme_constant_override("outline_size", 2)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
+	var hcolor: Color = Color(0.95, 0.25, 0.20, 1.0) if delta > 0 else Color(0.45, 1.00, 0.55, 1.0)
+	lbl.add_theme_color_override("font_color", hcolor)
+
+	var hrow_pos: Vector2 = _heat_row.global_position
+	var hspawn_x: float = hrow_pos.x + _heat_row.size.x * 0.5 - 8.0
+	var hspawn_y: float = hrow_pos.y - 2.0
+	lbl.position = Vector2(hspawn_x, hspawn_y)
+	add_child(lbl)
+
+	var htw := create_tween().set_parallel(true)
+	htw.tween_property(lbl, "position",
+		Vector2(hspawn_x + randf_range(-6.0, 6.0), hspawn_y - 30.0), 0.80) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	htw.tween_property(lbl, "modulate:a", 0.0, 0.80).set_delay(0.25)
+	htw.chain().tween_callback(lbl.queue_free)
+
+
+## SPA-894: Pulse the last remaining pip when a resource drops to 1, warning
+## the player that their next action will exhaust the resource.
+func _check_low_resource_warning(actions: int, whispers: int) -> void:
+	# Action pips — trigger once when dropping to exactly 1.
+	if actions == 1 and not _low_action_warned:
+		_low_action_warned = true
+		_pulse_last_pip(action_pips_row, PIP_FULL_ACTION, true)
+	elif actions != 1:
+		_low_action_warned = false
+		if _low_pulse_tween_action != null and _low_pulse_tween_action.is_valid():
+			_low_pulse_tween_action.kill()
+
+	# Whisper pips — same logic.
+	if whispers == 1 and not _low_whisper_warned:
+		_low_whisper_warned = true
+		_pulse_last_pip(whisper_pips_row, PIP_FULL_WHISPER, false)
+	elif whispers != 1:
+		_low_whisper_warned = false
+		if _low_pulse_tween_whisper != null and _low_pulse_tween_whisper.is_valid():
+			_low_pulse_tween_whisper.kill()
+
+
+func _pulse_last_pip(container: HBoxContainer, accent: Color, is_action: bool) -> void:
+	# Find the last filled pip and pulse it.
+	var pips := container.get_children()
+	var target_pip: Panel = null
+	for i in pips.size():
+		var style := (pips[i] as Panel).get_theme_stylebox("panel") as StyleBoxFlat
+		if style != null and style.bg_color == accent:
+			target_pip = pips[i] as Panel
+	if target_pip == null:
+		return
+	target_pip.pivot_offset = PIP_SIZE * 0.5
+	var tw := create_tween().set_loops(3)
+	tw.tween_property(target_pip, "scale", Vector2(1.35, 1.35), 0.25) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(target_pip, "scale", Vector2(1.0, 1.0), 0.25) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.finished.connect(func() -> void: target_pip.scale = Vector2.ONE)
+	if is_action:
+		_low_pulse_tween_action = tw
+	else:
+		_low_pulse_tween_whisper = tw
+
+
 ## Rebuild pip children entirely (when max changes).
 func _build_pips(
 		container: HBoxContainer, remaining: int, total: int,
@@ -917,42 +1322,5 @@ func _update_pips(
 			tw.tween_property(pip, "scale", Vector2.ONE, 0.18)
 
 
-# ── SPA-767: Recon HUD tooltips & visual indicators ─────────────────────────
-
-func _setup_recon_tooltips() -> void:
-	# Counter panel overall tooltip.
-	var counter_panel: Panel = $CounterPanel
-	counter_panel.tooltip_text = "Recon Resources\nYour daily action and whisper token budget.\nResources refresh at the start of each new day."
-	counter_panel.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# Heat meter tooltip (set dynamically, but provide a default).
-	if _heat_row != null:
-		_heat_row.tooltip_text = "Town Suspicion\nHow suspicious the townsfolk are of your activities.\nHigh heat reduces rumor believability and can trigger exposure."
-		_heat_row.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	# Feed panel tooltip.
-	if _feed_panel != null:
-		_feed_panel.tooltip_text = "Recent Actions\nYour last few recon actions and their results.\nClick an entry to filter the Journal to that event."
-
-	# Key hints row.
-	var key_hint_row: HBoxContainer = $CounterPanel/VBox/KeyHintRow
-	key_hint_row.tooltip_text = "Quick Actions\nKeyboard shortcuts to open game panels.\nR: Rumor crafting | J: Journal | G: Social Graph | F1: Help"
-	key_hint_row.mouse_filter = Control.MOUSE_FILTER_PASS
-
-
-## SPA-767: Update heat meter tooltip with live values for richer context.
-func _update_heat_tooltip(heat_val: int) -> void:
-	if _heat_row == null:
-		return
-	var severity := "Safe"
-	var effect := "No effect on rumor believability."
-	if heat_val > 75:
-		severity = "CRITICAL"
-		effect = "Severe penalty to believability. Risk of exposure!"
-	elif heat_val > 50:
-		severity = "Danger"
-		effect = "-30% rumor believability."
-	elif heat_val > 25:
-		severity = "Caution"
-		effect = "-15% rumor believability."
-	_heat_row.tooltip_text = "Town Suspicion: %d/100 (%s)\n%s\nReduce heat by using Favors (bribes) or waiting." % [heat_val, severity, effect]
+# ── SPA-767 / SPA-999: Tooltip management delegated to ReconTooltipManager ───
+# See recon_tooltip_manager.gd — _tooltip_mgr is wired in _ready().

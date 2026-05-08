@@ -30,7 +30,8 @@ const MODE_BINDINGS := {
 		["R-Click", "Recon", true],
 		["R", "Rumor", true],
 		["J", "Journal", false],
-		["G", "Social", false],
+		["G/M", "Map", false],
+		["Tab", "Select NPC", false],
 		["Space", "Pause", false],
 		["?", "Help", false],
 	],
@@ -103,7 +104,7 @@ func _build_panel() -> void:
 	_panel.anchor_bottom = 1.0
 	_panel.offset_left = 6.0
 	_panel.offset_top = -36.0
-	_panel.offset_right = 780.0
+	_panel.offset_right = _panel.offset_left + float(UILayoutConstants.clamp_to_viewport(get_viewport().get_visible_rect().size.x, 0.75, 600, 780))
 	_panel.offset_bottom = -6.0
 
 	var style := StyleBoxFlat.new()
@@ -237,6 +238,6 @@ func _build_help_button() -> void:
 
 
 func _on_help_pressed() -> void:
-	AudioManager.play_sfx("ui_click")
+	AudioManager.play_ui("click")
 	if _controls_ref != null and _controls_ref.has_method("toggle"):
 		_controls_ref.toggle()

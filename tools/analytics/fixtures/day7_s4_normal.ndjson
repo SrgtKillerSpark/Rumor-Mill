@@ -1,0 +1,95 @@
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-04T21:20:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r01","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-04T21:22:00Z"}
+{"type":"rumor_seeded","subject_name":"Aldous Prior","claim_id":"d7_s4n_r01b","seed_target":"npc_aldous_prior","day":1,"scenario_id":"scenario_4","ts":"2026-05-04T21:23:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r01","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-04T21:33:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r01","new_state":"REJECT","day":3,"scenario_id":"scenario_4","ts":"2026-05-04T21:40:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":47,"delta":-15,"day":4,"scenario_id":"scenario_4","ts":"2026-05-04T21:48:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":47,"to_score":36,"delta":-11,"day":6,"scenario_id":"scenario_4","ts":"2026-05-04T22:00:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_4","trigger_npc_id":"npc_finn_monk","fail_cause":"npc_rep_below_threshold","day":6,"ts":"2026-05-04T22:01:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"FAILED","day_reached":6,"duration_sec":490,"ts":"2026-05-04T22:02:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-04T22:12:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r02","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-04T22:14:00Z"}
+{"type":"rumor_seeded","subject_name":"Vera Midwife","claim_id":"d7_s4n_r02b","seed_target":"npc_vera_midwife","day":1,"scenario_id":"scenario_4","ts":"2026-05-04T22:15:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r02","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-04T22:25:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r02","new_state":"REJECT","day":3,"scenario_id":"scenario_4","ts":"2026-05-04T22:32:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":45,"delta":-17,"day":4,"scenario_id":"scenario_4","ts":"2026-05-04T22:40:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":45,"to_score":33,"delta":-12,"day":6,"scenario_id":"scenario_4","ts":"2026-05-04T22:52:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_4","trigger_npc_id":"npc_finn_monk","fail_cause":"npc_rep_below_threshold","day":6,"ts":"2026-05-04T22:53:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"FAILED","day_reached":6,"duration_sec":495,"ts":"2026-05-04T22:54:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-04T23:05:00Z"}
+{"type":"rumor_seeded","subject_name":"Aldous Prior","claim_id":"d7_s4n_r03","seed_target":"npc_aldous_prior","day":1,"scenario_id":"scenario_4","ts":"2026-05-04T23:07:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r03b","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-04T23:08:00Z"}
+{"type":"npc_state_changed","npc_name":"Aldous Prior","rumor_id":"d7_s4n_r03","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-04T23:18:00Z"}
+{"type":"npc_state_changed","npc_name":"Aldous Prior","rumor_id":"d7_s4n_r03","new_state":"REJECT","day":3,"scenario_id":"scenario_4","ts":"2026-05-04T23:25:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldous_prior","from_score":58,"to_score":43,"delta":-15,"day":4,"scenario_id":"scenario_4","ts":"2026-05-04T23:33:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldous_prior","from_score":43,"to_score":32,"delta":-11,"day":6,"scenario_id":"scenario_4","ts":"2026-05-04T23:45:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_4","trigger_npc_id":"npc_aldous_prior","fail_cause":"npc_rep_below_threshold","day":6,"ts":"2026-05-04T23:46:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"FAILED","day_reached":6,"duration_sec":495,"ts":"2026-05-04T23:47:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-04T23:58:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r04","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T00:00:00Z"}
+{"type":"rumor_seeded","subject_name":"Vera Midwife","claim_id":"d7_s4n_r04b","seed_target":"npc_vera_midwife","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T00:01:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r04","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T00:11:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r04","new_state":"REJECT","day":4,"scenario_id":"scenario_4","ts":"2026-05-05T00:23:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":50,"delta":-12,"day":5,"scenario_id":"scenario_4","ts":"2026-05-05T00:31:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":50,"to_score":38,"delta":-12,"day":7,"scenario_id":"scenario_4","ts":"2026-05-05T00:45:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_4","trigger_npc_id":"npc_finn_monk","fail_cause":"npc_rep_below_threshold","day":7,"ts":"2026-05-05T00:46:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"FAILED","day_reached":7,"duration_sec":510,"ts":"2026-05-05T00:47:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-05T01:00:00Z"}
+{"type":"rumor_seeded","subject_name":"Vera Midwife","claim_id":"d7_s4n_r05","seed_target":"npc_vera_midwife","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T01:02:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r05b","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T01:03:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r05b","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T01:13:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r05b","new_state":"REJECT","day":3,"scenario_id":"scenario_4","ts":"2026-05-05T01:20:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":48,"delta":-14,"day":4,"scenario_id":"scenario_4","ts":"2026-05-05T01:28:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":48,"to_score":37,"delta":-11,"day":6,"scenario_id":"scenario_4","ts":"2026-05-05T01:40:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_4","trigger_npc_id":"npc_finn_monk","fail_cause":"npc_rep_below_threshold","day":6,"ts":"2026-05-05T01:41:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"FAILED","day_reached":6,"duration_sec":490,"ts":"2026-05-05T01:42:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-05T01:52:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r06","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T01:54:00Z"}
+{"type":"rumor_seeded","subject_name":"Aldous Prior","claim_id":"d7_s4n_r06b","seed_target":"npc_aldous_prior","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T01:55:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r06","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T02:05:00Z"}
+{"type":"npc_state_changed","npc_name":"Aldous Prior","rumor_id":"d7_s4n_r06b","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T02:06:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":3,"scenario_id":"scenario_4","difficulty":"Normal"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":56,"delta":-6,"day":4,"scenario_id":"scenario_4","ts":"2026-05-05T02:18:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldous_prior","from_score":58,"to_score":52,"delta":-6,"day":5,"scenario_id":"scenario_4","ts":"2026-05-05T02:28:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":6,"scenario_id":"scenario_4","difficulty":"Normal"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":56,"to_score":50,"delta":-6,"day":8,"scenario_id":"scenario_4","ts":"2026-05-05T02:44:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"d7_s4n_r06","seed_target":"npc_finn_monk","subject":"Finn Monk","day":9,"scenario_id":"scenario_4","difficulty":"Normal"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"d7_s4n_r06b","seed_target":"npc_aldous_prior","subject":"Aldous Prior","day":11,"scenario_id":"scenario_4","difficulty":"Normal"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"WON","day_reached":18,"duration_sec":1320,"ts":"2026-05-05T03:18:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-05T03:30:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r07","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T03:32:00Z"}
+{"type":"rumor_seeded","subject_name":"Vera Midwife","claim_id":"d7_s4n_r07b","seed_target":"npc_vera_midwife","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T03:33:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r07","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T03:43:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r07","new_state":"REJECT","day":3,"scenario_id":"scenario_4","ts":"2026-05-05T03:50:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":46,"delta":-16,"day":4,"scenario_id":"scenario_4","ts":"2026-05-05T03:58:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":46,"to_score":35,"delta":-11,"day":6,"scenario_id":"scenario_4","ts":"2026-05-05T04:10:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_4","trigger_npc_id":"npc_finn_monk","fail_cause":"npc_rep_below_threshold","day":6,"ts":"2026-05-05T04:11:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"FAILED","day_reached":6,"duration_sec":495,"ts":"2026-05-05T04:12:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-05T04:22:00Z"}
+{"type":"rumor_seeded","subject_name":"Aldous Prior","claim_id":"d7_s4n_r08","seed_target":"npc_aldous_prior","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T04:24:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r08b","seed_target":"npc_finn_monk","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T04:36:00Z"}
+{"type":"npc_state_changed","npc_name":"Aldous Prior","rumor_id":"d7_s4n_r08","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T04:34:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r08b","new_state":"BELIEVE","day":3,"scenario_id":"scenario_4","ts":"2026-05-05T04:46:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","day":4,"scenario_id":"scenario_4","difficulty":"Normal"}
+{"type":"reputation_delta","npc_id":"npc_aldous_prior","from_score":58,"to_score":52,"delta":-6,"day":5,"scenario_id":"scenario_4","ts":"2026-05-05T04:56:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":57,"delta":-5,"day":7,"scenario_id":"scenario_4","ts":"2026-05-05T05:10:00Z"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"d7_s4n_r08","seed_target":"npc_aldous_prior","subject":"Aldous Prior","day":8,"scenario_id":"scenario_4","difficulty":"Normal"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"WON","day_reached":19,"duration_sec":1350,"ts":"2026-05-05T05:46:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-05T06:00:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r09","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T06:02:00Z"}
+{"type":"rumor_seeded","subject_name":"Vera Midwife","claim_id":"d7_s4n_r09b","seed_target":"npc_vera_midwife","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T06:03:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r09","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T06:13:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r09","new_state":"REJECT","day":3,"scenario_id":"scenario_4","ts":"2026-05-05T06:20:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":50,"delta":-12,"day":4,"scenario_id":"scenario_4","ts":"2026-05-05T06:28:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":50,"to_score":38,"delta":-12,"day":6,"scenario_id":"scenario_4","ts":"2026-05-05T06:40:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_4","trigger_npc_id":"npc_finn_monk","fail_cause":"npc_rep_below_threshold","day":6,"ts":"2026-05-05T06:41:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"FAILED","day_reached":6,"duration_sec":490,"ts":"2026-05-05T06:42:00Z"}
+{"type":"scenario_selected","scenario_id":"scenario_4","difficulty":"Normal","ts":"2026-05-05T06:52:00Z"}
+{"type":"rumor_seeded","subject_name":"Finn Monk","claim_id":"d7_s4n_r10","seed_target":"npc_finn_monk","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T06:54:00Z"}
+{"type":"rumor_seeded","subject_name":"Aldous Prior","claim_id":"d7_s4n_r10b","seed_target":"npc_aldous_prior","day":1,"scenario_id":"scenario_4","ts":"2026-05-05T06:55:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r10","new_state":"BELIEVE","day":2,"scenario_id":"scenario_4","ts":"2026-05-05T07:05:00Z"}
+{"type":"npc_state_changed","npc_name":"Finn Monk","rumor_id":"d7_s4n_r10","new_state":"REJECT","day":3,"scenario_id":"scenario_4","ts":"2026-05-05T07:12:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":62,"to_score":48,"delta":-14,"day":4,"scenario_id":"scenario_4","ts":"2026-05-05T07:20:00Z"}
+{"type":"reputation_delta","npc_id":"npc_finn_monk","from_score":48,"to_score":36,"delta":-12,"day":6,"scenario_id":"scenario_4","ts":"2026-05-05T07:32:00Z"}
+{"type":"scenario_fail_trigger","scenario_id":"scenario_4","trigger_npc_id":"npc_finn_monk","fail_cause":"npc_rep_below_threshold","day":6,"ts":"2026-05-05T07:33:00Z"}
+{"type":"scenario_ended","scenario_id":"scenario_4","difficulty":"Normal","outcome":"FAILED","day_reached":6,"duration_sec":490,"ts":"2026-05-05T07:34:00Z"}

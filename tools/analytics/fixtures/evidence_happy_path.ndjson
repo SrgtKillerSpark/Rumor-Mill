@@ -1,0 +1,6 @@
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"observe_building","day":3,"scenario_id":"scenario_1","difficulty":"Normal"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"observe_building","day":5,"scenario_id":"scenario_1","difficulty":"Normal"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","day":7,"scenario_id":"scenario_1","difficulty":"Normal"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"claim_a","seed_target":"npc_x","day":9,"scenario_id":"scenario_1","difficulty":"Normal"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"claim_b","seed_target":"npc_y","day":10,"scenario_id":"scenario_1","difficulty":"Normal"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"claim_a","seed_target":"npc_x","day":11,"scenario_id":"scenario_1","difficulty":"Normal"}

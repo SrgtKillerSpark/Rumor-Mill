@@ -1,0 +1,50 @@
+{"type":"scenario_selected","scenario_id":"S1","difficulty":"Normal","evidence_economy_v2":true,"fix_ref":"SPA-1755,SPA-1756,SPA-1757","cooldown_days_normal":2,"ts":"2026-05-05T20:00:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S1","ts":"2026-05-05T20:07:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"observe_building","day":1,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Edric Fenn","claim_id":"s1n_sca01","seed_target":"sybil_oats","day":1,"scenario_id":"S1","ts":"2026-05-05T20:14:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S1","ts":"2026-05-05T20:22:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":2,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Sybil Oats","rumor_id":"s1n_sca01","new_state":"BELIEVE","day":2,"scenario_id":"S1","ts":"2026-05-05T20:30:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":3,"scenario_id":"S1","ts":"2026-05-05T20:38:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":3,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s1n_sca01","seed_target":"sybil_oats","subject":"Edric Fenn","day":3,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"witness_account","extension_ticks":80,"rumor_id":"s1n_sca01","day":3,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"witness_account","seed_target":"sybil_oats","boost":0.05,"day":3,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"sybil_oats","cooldown_days":2,"day":3,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Sybil Oats","rumor_id":"s1n_sca01","new_state":"SPREAD","day":3,"scenario_id":"S1","ts":"2026-05-05T20:46:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":70,"to_score":62,"delta":-8,"day":3,"scenario_id":"S1","ts":"2026-05-05T20:53:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":4,"scenario_id":"S1","ts":"2026-05-05T21:01:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","day":4,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_active","seed_target":"sybil_oats","days_remaining":1,"day":4,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Edric Fenn","claim_id":"s1n_acc01","seed_target":"aldric_vane","day":4,"scenario_id":"S1","ts":"2026-05-05T21:08:00Z"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s1n_acc01","seed_target":"aldric_vane","subject":"Edric Fenn","bypass_active":true,"day":4,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"witness_account","extension_ticks":80,"rumor_id":"s1n_acc01","day":4,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"witness_account","seed_target":"aldric_vane","boost":0.025,"bypass":true,"day":4,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"aldric_vane","cooldown_days":2,"day":4,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Aldric Vane","rumor_id":"s1n_acc01","new_state":"BELIEVE","day":4,"scenario_id":"S1","ts":"2026-05-05T21:16:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":false,"day":5,"scenario_id":"S1","ts":"2026-05-05T21:24:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":5,"scenario_id":"S1","ts":"2026-05-05T21:27:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":5,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_active","seed_target":"aldric_vane","days_remaining":1,"day":5,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Greta Flint","rumor_id":"s1n_sca01","new_state":"BELIEVE","day":5,"scenario_id":"S1","ts":"2026-05-05T21:35:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":6,"scenario_id":"S1","ts":"2026-05-05T21:43:00Z"}
+{"type":"rumor_seeded","subject_name":"Edric Fenn","claim_id":"s1n_acc02","seed_target":"greta_flint","day":6,"scenario_id":"S1","ts":"2026-05-05T21:49:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s1n_acc02","seed_target":"greta_flint","subject":"Edric Fenn","day":6,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"forged_document","extension_ticks":40,"rumor_id":"s1n_acc02","day":6,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"forged_document","seed_target":"greta_flint","boost":0.10,"day":6,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"greta_flint","cooldown_days":2,"day":6,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Aldric Vane","rumor_id":"s1n_acc01","new_state":"SPREAD","day":6,"scenario_id":"S1","ts":"2026-05-05T21:57:00Z"}
+{"type":"npc_state_changed","npc_name":"Greta Flint","rumor_id":"s1n_acc02","new_state":"BELIEVE","day":6,"scenario_id":"S1","ts":"2026-05-05T22:01:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":62,"to_score":51,"delta":-11,"day":6,"scenario_id":"S1","ts":"2026-05-05T22:08:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":7,"scenario_id":"S1","ts":"2026-05-05T22:16:00Z"}
+{"type":"evidence_target_cooldown_active","seed_target":"greta_flint","days_remaining":1,"day":7,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Nell Picker","rumor_id":"s1n_acc01","new_state":"BELIEVE","day":7,"scenario_id":"S1","ts":"2026-05-05T22:23:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"s1n_sca01","seed_target":"sybil_oats","subject":"Edric Fenn","day":7,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"incriminating_artifact","extension_ticks":0,"rumor_id":"s1n_sca01","day":7,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"incriminating_artifact","seed_target":"sybil_oats","boost":0.15,"day":7,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"sybil_oats","cooldown_days":2,"day":7,"scenario_id":"S1","difficulty":"Normal"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":51,"to_score":39,"delta":-12,"day":7,"scenario_id":"S1","ts":"2026-05-05T22:31:00Z"}
+{"type":"npc_state_changed","npc_name":"Greta Flint","rumor_id":"s1n_acc02","new_state":"SPREAD","day":8,"scenario_id":"S1","ts":"2026-05-05T22:39:00Z"}
+{"type":"npc_state_changed","npc_name":"Annit Scribe","rumor_id":"s1n_acc01","new_state":"BELIEVE","day":8,"scenario_id":"S1","ts":"2026-05-05T22:43:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":39,"to_score":27,"delta":-12,"day":9,"scenario_id":"S1","ts":"2026-05-05T22:51:00Z"}
+{"type":"scenario_ended","scenario_id":"S1","difficulty":"Normal","outcome":"WON","day_reached":9,"duration_sec":1320,"ts":"2026-05-05T22:51:00Z"}

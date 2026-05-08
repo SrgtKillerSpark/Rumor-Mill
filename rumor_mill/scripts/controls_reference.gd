@@ -13,6 +13,7 @@ const C_KEY_DESC := Color(0.80, 0.72, 0.56, 1.0)
 
 const BINDINGS := [
 	["WASD / Arrows", "Pan camera"],
+	["Mouse Edge", "Edge pan"],
 	["Mouse Wheel", "Zoom in / out"],
 	["Middle Drag", "Free pan"],
 	["Right-click building", "Observe location"],
@@ -26,7 +27,10 @@ const BINDINGS := [
 	["O", "Review mission briefing"],
 	["H", "Replay last hint"],
 	["F1", "Toggle this reference"],
-	["F11", "Toggle fullscreen"],
+	["F11 / Alt+Enter", "Toggle fullscreen"],
+	["Tab", "Cycle NPCs"],
+	["M", "Toggle Social Graph / Map"],
+	["1 / 2 / 3", "NPC action (panel open)"],
 	["Esc", "Close open panel"],
 ]
 
@@ -73,7 +77,7 @@ func _build_panel() -> void:
 	_panel.anchor_right = 0.0
 	_panel.anchor_bottom = 1.0
 	_panel.offset_left = 12.0
-	_panel.offset_top = -340.0
+	_panel.offset_top = -400.0
 	_panel.offset_right = 280.0
 	_panel.offset_bottom = -12.0
 

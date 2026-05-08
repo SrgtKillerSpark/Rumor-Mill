@@ -9,6 +9,31 @@ extends Node2D
 signal rumor_event(message: String, tick: int)
 ## Emitted once per NPC the first tick their SOCIALLY_DEAD flag becomes true.
 signal socially_dead_triggered(npc_id: String, npc_name: String, tick: int)
+## SPA-850: Emitted when 3+ NPCs transition to BELIEVE for the same rumor in one day.
+signal cascade_triggered(rumor_id: String, believer_count: int)
+## SPA-911: Emitted the first time a player-seeded rumor reaches a key/influential NPC.
+## npc_name: display name.  rumor_id: the player's original rumor (rp_ prefix).
+signal rumor_reached_key_npc(npc_name: String, rumor_id: String)
+## SPA-1518: Emitted when a rumor's target shifts during propagation.
+## old_name / new_name are the NPC display names; rumor_id is the new mutated copy.
+signal rumor_target_shifted(old_name: String, new_name: String, rumor_id: String)
+## SPA-1773: Emitted when a Witness Account is used in cooldown-bypass mode
+## (half-effectiveness). Payload carries the actual halved bonus values so
+## AnalyticsManager can emit the witness_account_used telemetry event.
+signal witness_account_bypass_used(
+		evidence_type: String,
+		effective_bel_bonus: float,
+		effective_cred_boost: float,
+		target_npc_id: String
+)
+## SPA-1774: Emitted when evidence_economy_v2 is ON but difficulty is Apprentice,
+## causing shelf_life_extension and credulity_boost to be silently skipped.
+## Allows AnalyticsManager to emit the evidence_economy_v2_gated_off telemetry event.
+signal evidence_economy_v2_gated_off(
+		evidence_type: String,
+		gated_bonuses: Array,
+		difficulty: String
+)
 ## Loads 30 NPCs from data/npcs.json, builds AstarPathfinder and SocialGraph,
 ## assigns faction-based schedules, and hosts inject_rumor for the debug console.
 
@@ -106,6 +131,24 @@ var scenario_manager:  ScenarioManager  = null
 ## NPC ids for which socially_dead_triggered has already been emitted this session.
 var _socially_dead_ids: Dictionary = {}
 
+## SPA-850: daily cascade tracker — rumor_id → Array of NPC names that believed today.
+## Reset each dawn in _on_day_changed(). Fires cascade_triggered at 3+ per rumor.
+var _daily_believe_counts: Dictionary = {}
+## Set of rumor_ids that already fired cascade this day (prevents re-fire).
+var _daily_cascade_fired: Dictionary = {}
+
+## SPA-911: NPC ids considered "key" for notification purposes.
+## Populated by _apply_active_scenario() based on scenario data.
+## Auto-includes any NPC with faction "noble" or archetype "elder"/"spy".
+var key_npc_ids: Array[String] = []
+## "npc_id:rumor_root_id" — prevents duplicate key-NPC notifications per rumor.
+var _key_npc_notified: Dictionary = {}
+
+## SPA-852: state snapshot taken at dusk (day→night transition) each day.
+## Keys: believer_count_by_rumor, target_reputation_score, active_rumor_states.
+## Read by daily_planning_overlay.gd to compute overnight deltas at dawn.
+var _dusk_snapshot: Dictionary = {}
+
 ## SPA-592: cached display name of the Sister Maren NPC for carrier tracking.
 var _maren_display_name: String = ""
 
@@ -126,6 +169,14 @@ var s4_faction_shift_agent: S4FactionShiftAgent = null
 
 ## Guild defense agent — only active in Scenario 6.
 var guild_defense_agent: GuildDefenseAgent = null
+
+## Quarantine system — only active in Scenario 2 (SPA-868).
+var quarantine_system: QuarantineSystem = null
+## Visual overlays for quarantined buildings (SPA-868).
+var _quarantine_overlays: Dictionary = {}  # building_name → Sprite2D/ColorRect node
+## SPA-874: Buildings where 3+ NPCs believe the illness rumor — non-believers avoid these.
+## Rebuilt at dawn each day and pushed to all NPCs.
+var _illness_hotspot_buildings: Dictionary = {}  # building_name → true
 
 ## Mid-game narrative event agent — data-driven branching events (all scenarios).
 var mid_game_event_agent: MidGameEventAgent = null
@@ -157,6 +208,11 @@ var _is_night: bool = false
 ## Visual polish systems (SPA-586).
 var _ambient_particles: Node = null
 var _weather_system:    Node = null
+
+## Art Pass 20: prop cell positions for ambient effect anchoring (SPA-882).
+## Populated in _place_props(); consumed by _init_torch_flicker().
+var _torch_cell_positions:  Array[Vector2i] = []
+var _candle_cell_positions: Array[Vector2i] = []
 
 ## Reputation change indicators (SPA-599): npc_id → last emitted score.
 ## Compared each tick against the new snapshot; shows floating +/- when delta ≥ threshold.
@@ -211,6 +267,10 @@ func _ready() -> void:
 	_init_ambient_particles()
 	_init_weather_system()
 	_init_chimney_smoke()
+	_init_torch_flicker()    # SPA-882: flame particles above torch/candle props
+	_init_ambient_signs()    # SPA-882: swaying sign animations at tavern and market
+	_init_district_overlay() # SPA-910: district zone polygons (behind terrain)
+	_init_town_map_overlay() # SPA-910: gathering spots + NPC destination dots
 
 
 func _exit_tree() -> void:
@@ -304,11 +364,22 @@ func _place_buildings() -> void:
 		building_layer.set_cell(anchor, SRC_BUILDING, atlas_coord)
 
 		# Floating building name label above the tile.
+		# SPA-882: faction-tinted color communicates building affiliation at a glance.
+		var _label_color: Color
+		match b["name"]:
+			"manor", "guardpost", "town_hall":
+				_label_color = Color(0.95, 0.42, 0.42)   # Noble — crimson
+			"market", "blacksmith", "mill", "storage":
+				_label_color = Color(0.55, 0.78, 1.00)   # Merchant — blue
+			"chapel":
+				_label_color = Color(0.98, 0.94, 0.72)   # Clergy — gold/cream
+			_:
+				_label_color = Color(1.00, 0.88, 0.60)   # Neutral (tavern, well) — amber
 		var label := Label.new()
 		label.text = b["name"].replace("_", " ").capitalize()
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.add_theme_font_size_override("font_size", 12)
-		label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+		label.add_theme_color_override("font_color", _label_color)
 		label.add_theme_constant_override("outline_size", 2)
 		label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
 		label.size = Vector2(80, 16)
@@ -322,7 +393,7 @@ func _place_buildings() -> void:
 # Prop placement rules per building type — which props appear nearby (SPA-434 / SPA-526).
 const BUILDING_PROPS := {
 	"tavern":     [ATLAS_BARREL, ATLAS_BARREL, ATLAS_CRATE, ATLAS_SIGN, ATLAS_LANTERN_POST, ATLAS_WOODPILE],
-	"market":     [ATLAS_CRATE, ATLAS_CRATE, ATLAS_BARREL, ATLAS_CART, ATLAS_NOTICE_BOARD],
+	"market":     [ATLAS_MARKET_STALL, ATLAS_MARKET_STALL, ATLAS_CRATE, ATLAS_BARREL, ATLAS_CART, ATLAS_NOTICE_BOARD],
 	"manor":      [ATLAS_FLOWER_POT, ATLAS_FLOWER_POT, ATLAS_FENCE, ATLAS_OAK_TREE, ATLAS_GARDEN_BED, ATLAS_IRON_TORCH],
 	"chapel":     [ATLAS_FLOWER_POT, ATLAS_CHAPEL_CANDLE, ATLAS_GARDEN_BED, ATLAS_NOTICE_BOARD],
 	"blacksmith": [ATLAS_BARREL, ATLAS_CRATE, ATLAS_CART, ATLAS_WOODPILE],
@@ -382,6 +453,11 @@ func _place_props() -> void:
 			occupied[cell] = true
 			candidates.remove_at(idx)
 			placed += 1
+			# SPA-882: track torch and candle positions for ambient flicker emitters.
+			if prop_atlas == ATLAS_IRON_TORCH:
+				_torch_cell_positions.append(cell)
+			elif prop_atlas == ATLAS_CHAPEL_CANDLE:
+				_candle_cell_positions.append(cell)
 
 
 func _collect_walkable_cells() -> void:
@@ -528,6 +604,8 @@ func _init_propagation_engine() -> void:
 	propagation_engine = PropagationEngine.new()
 	for npc in npcs:
 		npc.propagation_engine_ref = propagation_engine
+	# SPA-1518: Wire target-shift events to world signal for UI feedback.
+	propagation_engine.target_shifted.connect(_on_propagation_target_shifted)
 
 
 func _build_schedule(faction: String, start_cell: Vector2i) -> Array[Vector2i]:
@@ -566,6 +644,15 @@ func _init_social_graph() -> void:
 	for npc in npcs:
 		npc.social_graph_ref = social_graph
 
+	# SPA-911: Populate key_npc_ids from NPC data.
+	# Nobles and elder/spy archetypes are considered influential.
+	key_npc_ids.clear()
+	for npc in npcs:
+		var faction:    String = npc.npc_data.get("faction",   "")
+		var archetype:  String = npc.npc_data.get("archetype", "")
+		if faction == "noble" or archetype in ["elder", "spy"]:
+			key_npc_ids.append(npc.npc_data.get("id", ""))
+
 
 
 # ── Recon intel store ────────────────────────────────────────────────────────
@@ -600,9 +687,46 @@ func _init_town_mood_controller() -> void:
 	town_mood_controller.setup(self)
 
 
+# ── Town map overlays (SPA-910) ───────────────────────────────────────────────
+
+func _init_district_overlay() -> void:
+	var overlay: Node2D = preload("res://scripts/district_overlay.gd").new()
+	overlay.name = "DistrictOverlay"
+	add_child(overlay)
+	# Insert just before TerrainLayer so it renders beneath everything.
+	move_child(overlay, 0)
+
+
+func _init_town_map_overlay() -> void:
+	var overlay: Node2D = preload("res://scripts/town_map_overlay.gd").new()
+	overlay.name = "TownMapOverlay"
+	# Add as a child of NPCContainer so coordinates match NPC positions exactly.
+	npc_container.add_child(overlay)
+	overlay.setup(npcs, _gathering_points)
+
+
+## SPA-910: Return all NPCs within `radius` grid cells of the named location.
+## Used by building_interior.gd to populate the interior NPC roster.
+func get_npcs_near_location(location_key: String, radius: int = 4) -> Array:
+	if not _gathering_points.has(location_key):
+		return []
+	var center: Vector2i = _gathering_points[location_key]
+	var result: Array = []
+	for npc in npcs:
+		if (npc.current_cell - center).length() <= radius:
+			result.append(npc)
+	return result
+
+
 func _on_day_changed(_day: int) -> void:
+	# SPA-850: reset daily cascade tracker at dawn.
+	_daily_believe_counts.clear()
+	_daily_cascade_fired.clear()
 	if intel_store != null:
 		intel_store.replenish()
+		intel_store.decay_evidence_cooldowns()  ## SPA-1585
+	# SPA-874: Recompute illness hotspot buildings and push to NPCs.
+	_update_illness_hotspots()
 	if rival_agent != null and scenario_manager != null:
 		rival_agent.tick(_day, self, scenario_manager)
 	if inquisitor_agent != null and scenario_manager != null:
@@ -615,8 +739,56 @@ func _on_day_changed(_day: int) -> void:
 		guild_defense_agent.tick(_day, self)
 	if mid_game_event_agent != null:
 		mid_game_event_agent.tick(_day, self)
+	if scenario_manager != null:
+		scenario_manager.tick_heat_ceiling_override(_day)
 	if faction_event_system != null:
 		faction_event_system.on_day_changed(_day)
+
+
+## SPA-852: capture believer counts, target reputation, and rumor states at dusk.
+## Called once per day when the day→night transition fires in on_game_tick().
+func _take_dusk_snapshot() -> void:
+	# believer_count_by_rumor: rumor_id → count of NPCs in BELIEVE/SPREAD/ACT.
+	var believer_count_by_rumor: Dictionary = {}
+	for npc in npcs:
+		for slot in npc.rumor_slots.values():
+			if slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+				var rid: String = slot.rumor.id if slot.rumor != null else ""
+				if not rid.is_empty():
+					believer_count_by_rumor[rid] = believer_count_by_rumor.get(rid, 0) + 1
+
+	# target_reputation_score: primary scenario target NPC's current score.
+	var target_rep_score: int = -1
+	if scenario_manager != null and reputation_system != null:
+		var brief: Dictionary = scenario_manager.get_strategic_brief()
+		var target_id: String = brief.get("targetNpcId", "")
+		if not target_id.is_empty():
+			var snap: ReputationSystem.ReputationSnapshot = reputation_system.get_snapshot(target_id)
+			if snap != null:
+				target_rep_score = snap.score
+
+	# active_rumor_states: highest-priority state per unique rumor id.
+	# Priority: spreading > stalled > expired.
+	var active_rumor_states: Dictionary = {}
+	for npc in npcs:
+		for slot in npc.rumor_slots.values():
+			var rid: String = slot.rumor.id if slot.rumor != null else ""
+			if rid.is_empty():
+				continue
+			if slot.state in [Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+				active_rumor_states[rid] = "spreading"
+			elif slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.EVALUATING]:
+				if active_rumor_states.get(rid, "") != "spreading":
+					active_rumor_states[rid] = "stalled"
+			elif slot.state in [Rumor.RumorState.EXPIRED, Rumor.RumorState.CONTRADICTED]:
+				if not active_rumor_states.has(rid):
+					active_rumor_states[rid] = "expired"
+
+	_dusk_snapshot = {
+		"believer_count_by_rumor": believer_count_by_rumor,
+		"target_reputation_score": target_rep_score,
+		"active_rumor_states": active_rumor_states,
+	}
 
 
 # ── Scenario data loader ─────────────────────────────────────────────────────
@@ -640,6 +812,14 @@ func _apply_active_scenario() -> void:
 		push_error("World: failed to parse scenarios.json")
 		reputation_system.recalculate_all(npcs, 0)
 		return
+
+	# Startup assertion: validate all difficulty keys match PlayerStats.DIFFICULTIES.
+	for _entry in parsed:
+		var _dm: Dictionary = _entry.get("difficultyModifiers", {})
+		for _dk: String in _dm.keys():
+			assert(_dk in PlayerStats.DIFFICULTIES,
+				"scenarios.json: unknown difficulty key '%s' in scenario '%s' — expected one of %s" % [
+					_dk, _entry.get("scenarioId", "?"), str(PlayerStats.DIFFICULTIES)])
 
 	var scenario_data: Dictionary = {}
 	for entry in parsed:
@@ -735,9 +915,7 @@ func _apply_active_scenario() -> void:
 			scenario_manager.override_days_allowed(adjusted)
 
 	# 7b. Scenario-specific difficulty overrides from scenarios.json.
-	var _diff_key_map := {"apprentice": "easy", "master": "normal", "spymaster": "hard"}
-	var _scen_diff_key: String = _diff_key_map.get(GameState.selected_difficulty, "normal")
-	var _scen_diff_mods: Dictionary = scenario_data.get("difficultyModifiers", {}).get(_scen_diff_key, {})
+	var _scen_diff_mods: Dictionary = scenario_data.get("difficultyModifiers", {}).get(GameState.selected_difficulty, {})
 	if scenario_manager != null and active_scenario_id == "scenario_2" and _scen_diff_mods.has("winBelieversOverride"):
 		scenario_manager.s2_win_illness_min = int(_scen_diff_mods["winBelieversOverride"])
 
@@ -828,6 +1006,9 @@ func _apply_active_scenario() -> void:
 	rival_agent.cooldown_offset = int(diff_mods.get("rival_cooldown_offset", 0))
 	if active_scenario_id == "scenario_3":
 		rival_agent.activate()
+		# SPA-868: Wire rival signals to rumor_event for Journal timeline.
+		rival_agent.rival_acted.connect(_on_rival_acted_journal)
+		rival_agent.belief_degraded.connect(_on_rival_belief_degraded_journal)
 
 	# 9. Inquisitor agent — only active in Scenario 4.
 	inquisitor_agent = InquisitorAgent.new()
@@ -864,6 +1045,16 @@ func _apply_active_scenario() -> void:
 			guild_defense_agent.cooldown_days = int(_scen_diff_mods["guildDefenseCooldownOverride"])
 		guild_defense_agent.activate()
 
+	# 11c. Quarantine system — only active in Scenario 2 (SPA-868).
+	quarantine_system = QuarantineSystem.new()
+	if active_scenario_id == "scenario_2":
+		quarantine_system.activate()
+		quarantine_system.building_quarantined.connect(_on_building_quarantined)
+		quarantine_system.quarantine_expired.connect(_on_quarantine_expired)
+		# Give every NPC a reference so spread logic can check quarantine status.
+		for npc in npcs:
+			npc.quarantine_ref = quarantine_system
+
 	# 12. Milestone tracker — created here; callback wired from main.gd after recon_hud is ready.
 	milestone_tracker = MilestoneTracker.new()
 
@@ -874,6 +1065,17 @@ func _apply_active_scenario() -> void:
 	# 14. Mid-game event agent — data-driven branching events from scenarios.json.
 	mid_game_event_agent = MidGameEventAgent.new()
 	var mid_events: Array = scenario_data.get("midGameEvents", [])
+	# Apply per-difficulty event day-window overrides (SPA-1123).
+	if _scen_diff_mods.has("eventDayWindowOverrides"):
+		var _ew_overrides: Dictionary = _scen_diff_mods["eventDayWindowOverrides"]
+		for ev in mid_events:
+			var ev_id: String = ev.get("id", "")
+			if _ew_overrides.has(ev_id):
+				var ov: Dictionary = _ew_overrides[ev_id]
+				if ov.has("dayWindowStart"):
+					ev["dayWindowStart"] = int(ov["dayWindowStart"])
+				if ov.has("dayWindowEnd"):
+					ev["dayWindowEnd"] = int(ov["dayWindowEnd"])
 	mid_game_event_agent.load_events(mid_events)
 	mid_game_event_agent.rival_agent_ref = rival_agent
 	mid_game_event_agent.inquisitor_agent_ref = inquisitor_agent
@@ -930,6 +1132,8 @@ func on_game_tick(tick: int) -> void:
 	if night_now != _is_night:
 		_is_night = night_now
 		_update_building_night(_is_night)
+		if _is_night:  # SPA-852: snapshot state at dusk for overnight bulletin
+			_take_dusk_snapshot()
 
 	# ── Visual polish: particles + weather (SPA-586). ──
 	if _ambient_particles != null:
@@ -990,6 +1194,10 @@ func on_game_tick(tick: int) -> void:
 	for npc in npcs:
 		npc.update_tick_schedule(schedule_slot, current_day, _gathering_points)
 		npc.on_tick(tick)
+
+	# ── SPA-868: Quarantine system tick — expire quarantines. ──
+	if quarantine_system != null:
+		quarantine_system.tick(tick)
 
 	# ── SPA-695: Town mood environmental effects. ──
 	if town_mood_controller != null:
@@ -1052,6 +1260,16 @@ func seed_rumor_from_player(
 			intel_store.max_daily_whispers)
 		return ""
 
+	# SPA-868: block interaction with NPCs in quarantined buildings.
+	if quarantine_system != null and quarantine_system.is_active():
+		var target_loc: String = seed_target_npc.current_location_code if "current_location_code" in seed_target_npc else ""
+		if quarantine_system.is_quarantined(target_loc):
+			push_warning("World.seed_rumor_from_player: target NPC is in quarantined building '%s'" % target_loc)
+			intel_store.whisper_tokens_remaining = mini(
+				intel_store.whisper_tokens_remaining + 1,
+				intel_store.max_daily_whispers)
+			return ""
+
 	# Find the claim template.
 	var claim_template: Dictionary = {}
 	for c in get_claims():
@@ -1079,8 +1297,35 @@ func seed_rumor_from_player(
 
 	# Apply evidence bonuses at creation time (not recalculated on subsequent ticks).
 	if evidence_item != null:
-		rumor.current_believability = minf(1.0, rumor.current_believability + evidence_item.believability_bonus)
+		# SPA-1756: Witness Account may be used during an active target-shift cooldown
+		# at half effectiveness (+0.075 believability, +0.025 credulity boost).
+		# Shelf-life extension and mutability modifier are unaffected by bypass mode.
+		var bypass_active: bool = (intel_store != null
+				and intel_store.is_evidence_bypass_active(seed_target_npc_id, evidence_item))
+		var bel_bonus: float = evidence_item.believability_bonus * (0.5 if bypass_active else 1.0)
+		var cred_boost: float = evidence_item.credulity_boost * (0.5 if bypass_active else 1.0)
+		# SPA-1773: Emit telemetry signal for bypass-mode usage so AnalyticsManager
+		# can log the witness_account_used event with actual halved bonus values.
+		if bypass_active:
+			emit_signal("witness_account_bypass_used",
+					evidence_item.type.to_snake_case(), bel_bonus, cred_boost,
+					seed_target_npc_id)
+
+		rumor.current_believability = minf(1.0, rumor.current_believability + bel_bonus)
 		rumor.mutability = clampf(rumor.mutability + evidence_item.mutability_modifier, 0.0, 1.0)
+		# SPA-1757: Phase 2 mechanics (shelf-life extension, credulity boost) gate
+		# to Normal+ only — Apprentice gets base believability and mutability only.
+		if GameState.evidence_economy_v2 and GameState.selected_difficulty != "apprentice":
+			rumor.shelf_life_ticks += evidence_item.shelf_life_extension  ## SPA-1585: type-specific shelf-life bonus
+			rumor.evidence_credulity_boost = cred_boost
+			rumor.seed_target_npc_id = seed_target_npc_id
+		elif GameState.evidence_economy_v2:
+			# SPA-1774: Flag is ON but difficulty is Apprentice — v2 bonuses gated off.
+			# Emit telemetry so the analytics pipeline can measure how often this path fires.
+			emit_signal("evidence_economy_v2_gated_off",
+					evidence_item.type.to_snake_case(),
+					["shelf_life_extension", "credulity_boost"],
+					GameState.selected_difficulty)
 		rumor.bolstered_by_evidence = true
 
 	# Chain detection: check if this subject already has an active rumor that
@@ -1156,17 +1401,79 @@ func vouch_for_npc(voucher_npc_id: String, subject_npc_id: String) -> bool:
 	return true
 
 
+# ── SPA-1518: Propagation engine target-shift → UI feedback ──────────────────
+
+func _on_propagation_target_shifted(old_target_id: String, new_target_id: String, rumor_id: String) -> void:
+	# Resolve display names from the NPC roster.
+	var old_name := old_target_id
+	var new_name := new_target_id
+	for npc in npcs:
+		var nid: String = npc.npc_data.get("id", "")
+		if nid == old_target_id:
+			old_name = npc.npc_data.get("name", old_target_id)
+		elif nid == new_target_id:
+			new_name = npc.npc_data.get("name", new_target_id)
+	var tick: int = day_night.current_tick if day_night != null else 0
+	# Feed the journal timeline.
+	emit_signal("rumor_event",
+		"[TARGET SHIFT] Rumor about %s redirected to %s — whispers mutate as they spread. [%s]" % [old_name, new_name, rumor_id],
+		tick)
+	# Notify UI (objective HUD suggestion toast).
+	emit_signal("rumor_target_shifted", old_name, new_name, rumor_id)
+
+
 # ── NPC event → rumor_event aggregation ─────────────────────────────────────
 
-func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id: String) -> void:
+func _on_npc_rumor_state_changed(npc_name: String, state_name: String, rumor_id: String, diagnostic: String) -> void:
 	var tick: int = day_night.current_tick if day_night != null else 0
 	var msg := "%s → %s" % [npc_name, state_name]
 	if not rumor_id.is_empty():
 		msg += " (%s)" % rumor_id
+	if not diagnostic.is_empty():
+		msg += "\n" + diagnostic
 	emit_signal("rumor_event", msg, tick)
+	# SPA-850: track daily BELIEVE transitions for cascade detection.
+	if state_name == "BELIEVE" and not rumor_id.is_empty():
+		if not _daily_believe_counts.has(rumor_id):
+			_daily_believe_counts[rumor_id] = []
+		var believers: Array = _daily_believe_counts[rumor_id]
+		if npc_name not in believers:
+			believers.append(npc_name)
+		if believers.size() >= 3 and not _daily_cascade_fired.has(rumor_id):
+			_daily_cascade_fired[rumor_id] = true
+			emit_signal("cascade_triggered", rumor_id, believers.size())
+	# SPA-911: Notify when a player-seeded rumor reaches a key NPC.
+	if state_name in ["BELIEVE", "SPREAD", "ACT"] and not rumor_id.is_empty():
+		_check_key_npc_reached(npc_name, rumor_id)
 
 
-func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: String) -> void:
+## SPA-911: Emit rumor_reached_key_npc if the NPC named npc_name is in key_npc_ids
+## and the rumor traces back to a player-seeded root (rp_ prefix).
+func _check_key_npc_reached(npc_name: String, rumor_id: String) -> void:
+	# Find the NPC node by name.
+	var npc_id := ""
+	for npc in npcs:
+		if npc.npc_data.get("name", "") == npc_name:
+			npc_id = npc.npc_data.get("id", "")
+			break
+	if npc_id.is_empty() or not key_npc_ids.has(npc_id):
+		return
+	# Trace lineage back to player root.
+	var root_id := rumor_id
+	if propagation_engine != null:
+		var chain := propagation_engine.get_lineage_chain(rumor_id)
+		if not chain.is_empty():
+			root_id = str(chain[0])
+	if not root_id.begins_with("rp_"):
+		return
+	var notify_key := npc_id + ":" + root_id
+	if _key_npc_notified.has(notify_key):
+		return
+	_key_npc_notified[notify_key] = true
+	emit_signal("rumor_reached_key_npc", npc_name, root_id)
+
+
+func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: String, outcome: String) -> void:
 	AudioManager.play_sfx("whisper")
 	var cam := get_viewport().get_camera_2d()
 	if cam != null and cam.has_method("shake_screen"):
@@ -1182,6 +1489,39 @@ func _on_npc_rumor_transmitted(from_name: String, to_name: String, rumor_id: Str
 			and to_name == _maren_display_name \
 			and scenario_manager.s2_maren_carrier_name.is_empty():
 		scenario_manager.s2_maren_carrier_name = from_name
+	# SPA-854: draw a brief colored line between the two NPCs on the town map.
+	var from_pos := Vector2.ZERO
+	var to_pos   := Vector2.ZERO
+	for npc in npcs:
+		var nm: String = npc.npc_data.get("name", "")
+		if nm == from_name:
+			from_pos = npc.global_position
+		elif nm == to_name:
+			to_pos = npc.global_position
+	if from_pos != Vector2.ZERO and to_pos != Vector2.ZERO:
+		var line_color: Color
+		match outcome:
+			"believed":
+				line_color = Color(0.2, 0.9, 0.35, 0.9)
+			"rejected":
+				line_color = Color(1.0, 0.25, 0.2, 0.9)
+			_:
+				line_color = Color(0.92, 0.72, 0.18, 0.85)
+		_spawn_pulse_line(from_pos, to_pos, line_color)
+
+
+## SPA-854: spawns a Line2D between two world-space positions that fades out over ~1 second.
+func _spawn_pulse_line(from_pos: Vector2, to_pos: Vector2, line_color: Color) -> void:
+	var line := Line2D.new()
+	line.add_point(from_pos)
+	line.add_point(to_pos)
+	line.width = 3.0
+	line.default_color = line_color
+	line.z_index = 10
+	add_child(line)
+	var tw := create_tween()
+	tw.tween_property(line, "modulate:a", 0.0, 1.0)
+	tw.tween_callback(line.queue_free)
 
 
 func _on_npc_suspicion_danger(_npc_name: String) -> void:
@@ -1203,6 +1543,32 @@ func _on_npc_graph_edge_mutated(actor_name: String, subject_name: String, delta:
 	else:
 		msg = "%s holds %s in higher regard" % [actor_name, subject_name]
 	emit_signal("rumor_event", msg, tick)
+
+
+# ── SPA-868: Rival agent → Journal timeline events ──────────────────────────
+
+func _on_rival_acted_journal(day: int, claim_type: String, subject_id: String) -> void:
+	var tick: int = day_night.current_tick if day_night != null else 0
+	var subject_name: String = subject_id
+	for npc in npcs:
+		if npc.npc_data.get("id", "") == subject_id:
+			subject_name = npc.npc_data.get("name", subject_id)
+			break
+	emit_signal("rumor_event",
+		"[RIVAL] Day %d — seeded %s rumor about %s" % [day, claim_type.capitalize(), subject_name],
+		tick)
+
+
+func _on_rival_belief_degraded_journal(day: int, npc_id: String, _old_state: int, _new_state: int) -> void:
+	var tick: int = day_night.current_tick if day_night != null else 0
+	var npc_name: String = npc_id
+	for npc in npcs:
+		if npc.npc_data.get("id", "") == npc_id:
+			npc_name = npc.npc_data.get("name", npc_id)
+			break
+	emit_signal("rumor_event",
+		"[RIVAL] Day %d — undermined %s's belief" % [day, npc_name],
+		tick)
 
 
 # ── Public API: inject_rumor ─────────────────────────────────────────────────
@@ -1383,13 +1749,16 @@ func _on_weather_changed(type: String) -> void:
 # (tavern, blacksmith, manor).  The emitter uses soft grey modulate so it reads
 # clearly against the sky without breaking the desaturated palette.
 
-const _CHIMNEY_BUILDINGS := ["tavern", "blacksmith", "manor"]
+const _CHIMNEY_BUILDINGS := ["tavern", "blacksmith", "manor", "chapel", "town_hall", "mill"]
 # Pixel offsets (in world space) from the tile anchor to the chimney mouth.
 # Tuned to match the chimney positions drawn in generate_assets.js.
 const _CHIMNEY_OFFSET := {
 	"tavern":     Vector2(-38.0, -60.0),
 	"blacksmith": Vector2(-42.0, -52.0),
 	"manor":      Vector2(-34.0, -66.0),
+	"chapel":     Vector2(-28.0, -62.0),  # SPA-882: smaller clerical hearth
+	"town_hall":  Vector2(-38.0, -70.0),  # SPA-882: taller civic building
+	"mill":       Vector2(-32.0, -54.0),  # SPA-882: millhouse hearth
 }
 
 func _init_chimney_smoke() -> void:
@@ -1429,3 +1798,208 @@ func _init_chimney_smoke() -> void:
 		grad.set_color(1, Color(0.72, 0.69, 0.63, 0.0))
 		emitter.color_ramp = grad
 		add_child(emitter)
+
+
+# ── Visual polish: torch & candle flicker (SPA-882) ─────────────────────────
+# Spawns small CPUParticles2D flame emitters above every iron torch and chapel
+# candle prop placed by _place_props().  Positions come from _torch_cell_positions
+# and _candle_cell_positions which are populated during prop placement.
+
+func _init_torch_flicker() -> void:
+	for cell in _torch_cell_positions:
+		var wx := (cell.x - cell.y) * (TILE_SIZE.x / 2.0)
+		var wy := (cell.x + cell.y) * (TILE_SIZE.y / 2.0)
+		# Position emitter at flame tip — 24 px above tile centre.
+		_spawn_flame_emitter(Vector2(wx, wy - 24.0), Color(1.00, 0.65, 0.10), 4, 0.5, 22.0)
+	for cell in _candle_cell_positions:
+		var wx := (cell.x - cell.y) * (TILE_SIZE.x / 2.0)
+		var wy := (cell.x + cell.y) * (TILE_SIZE.y / 2.0)
+		# Candles are shorter; softer ivory glow.
+		_spawn_flame_emitter(Vector2(wx, wy - 20.0), Color(1.00, 0.90, 0.55), 3, 0.8, 10.0)
+
+
+## Shared helper: creates one CPUParticles2D flame emitter and adds it to the world.
+func _spawn_flame_emitter(pos: Vector2, base_color: Color, amount: int,
+		lifetime: float, gravity_strength: float) -> void:
+	var emitter := CPUParticles2D.new()
+	emitter.position    = pos
+	emitter.z_index     = 10
+	emitter.emitting    = true
+	emitter.amount      = amount
+	emitter.lifetime    = lifetime
+	emitter.one_shot    = false
+	emitter.explosiveness = 0.0
+	emitter.randomness  = 0.7
+	emitter.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	emitter.emission_sphere_radius = 1.0
+	emitter.direction   = Vector2(0.0, -1.0)
+	emitter.spread      = 15.0
+	emitter.gravity     = Vector2(0.0, -gravity_strength)
+	emitter.initial_velocity_min = 8.0
+	emitter.initial_velocity_max = 18.0
+	emitter.scale_amount_min = 0.8
+	emitter.scale_amount_max = 2.0
+	var grad := Gradient.new()
+	grad.set_color(0, Color(base_color.r, base_color.g, base_color.b, 0.90))
+	grad.add_point(0.45, Color(base_color.r * 0.9, base_color.g * 0.5, base_color.b * 0.1, 0.65))
+	grad.set_color(1, Color(base_color.r * 0.7, 0.15, 0.0, 0.0))
+	emitter.color_ramp = grad
+	add_child(emitter)
+
+
+# ── Visual polish: swaying signs (SPA-882) ───────────────────────────────────
+# Adds a small animated hanging-sign Polygon2D near the entrance of Tavern and
+# Market.  Each sign oscillates ±4° on a sine tween to suggest wind movement.
+
+const _SIGN_BUILDINGS := {
+	"tavern": { "offset": Vector2(-8.0, -82.0), "board_color": Color(0.45, 0.25, 0.10, 0.92), "period": 2.0 },
+	"market": { "offset": Vector2(-8.0, -78.0), "board_color": Color(0.18, 0.38, 0.70, 0.92), "period": 2.5 },
+}
+
+func _init_ambient_signs() -> void:
+	for b in buildings:
+		var bname: String = b["name"]
+		if not _SIGN_BUILDINGS.has(bname):
+			continue
+		var anchor := Vector2i(b["x"], b["y"])
+		var wx: float = (anchor.x - anchor.y) * (TILE_SIZE.x / 2.0)
+		var wy: float = (anchor.x + anchor.y) * (TILE_SIZE.y / 2.0)
+		var data: Dictionary = _SIGN_BUILDINGS[bname]
+
+		# Pivot placed at the top of the sign board (rope/chain attachment point).
+		# Children are offset downward so rotation looks like pendulum sway.
+		var pivot := Node2D.new()
+		pivot.name    = "SwaySign_" + bname
+		pivot.position = Vector2(wx, wy) + data["offset"]
+		pivot.z_index  = 8
+
+		# Parchment backing rectangle.
+		var backing := Polygon2D.new()
+		backing.polygon = PackedVector2Array([
+			Vector2(-11.0, 0.0), Vector2(11.0, 0.0),
+			Vector2(11.0, 14.0), Vector2(-11.0, 14.0)
+		])
+		backing.color = Color(0.92, 0.87, 0.70, 0.88)
+		pivot.add_child(backing)
+
+		# Faction-color accent strip across top of sign.
+		var accent := Polygon2D.new()
+		accent.polygon = PackedVector2Array([
+			Vector2(-11.0, 0.0), Vector2(11.0, 0.0),
+			Vector2(11.0, 2.5),  Vector2(-11.0, 2.5)
+		])
+		accent.color = data["board_color"]
+		pivot.add_child(accent)
+
+		add_child(pivot)
+
+		# Oscillate ±4° with TRANS_SINE for a natural pendulum feel.
+		var period: float = data["period"]
+		var tween := create_tween()
+		tween.set_loops()
+		tween.tween_property(pivot, "rotation_degrees",  4.0, period * 0.5) \
+			.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(pivot, "rotation_degrees", -4.0, period * 0.5) \
+			.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
+
+# ── SPA-874: Illness hotspot detection ──────────────────────────────────────
+
+## Rebuild the set of illness hotspot buildings (buildings where 3+ NPCs currently
+## believe the illness rumor) and push the updated set to all NPCs.
+## Called at dawn each day so NPC schedule routing can avoid hotspots.
+func _update_illness_hotspots() -> void:
+	# Count illness believers per building.
+	var counts: Dictionary = {}
+	for npc in npcs:
+		if npc.current_location_code.is_empty() or npc.current_location_code == "home":
+			continue
+		if _npc_believes_illness(npc):
+			var loc: String = npc.current_location_code
+			counts[loc] = counts.get(loc, 0) + 1
+
+	_illness_hotspot_buildings.clear()
+	for loc in counts:
+		if counts[loc] >= 3:
+			_illness_hotspot_buildings[loc] = true
+
+	# Push updated hotspot dict to all NPCs (shallow copy; NPCs must not mutate it).
+	for npc in npcs:
+		npc.illness_hotspot_buildings = _illness_hotspot_buildings
+
+
+## Returns true if the given NPC currently believes (or is spreading/acting on)
+## any illness claim — used to determine who contributes to a building's hotspot count.
+func _npc_believes_illness(npc: Node2D) -> bool:
+	for slot in npc.rumor_slots.values():
+		if slot.rumor == null:
+			continue
+		if slot.rumor.claim_type == Rumor.ClaimType.ILLNESS \
+				and slot.state in [Rumor.RumorState.BELIEVE,
+								   Rumor.RumorState.SPREAD,
+								   Rumor.RumorState.ACT]:
+			return true
+	return false
+
+
+# ── SPA-868: Quarantine zone visual overlays & helpers ──────────────────────
+
+## Returns true if the NPC's current location is inside a quarantined building.
+func is_npc_quarantined(npc: Node2D) -> bool:
+	if quarantine_system == null or not quarantine_system.is_active():
+		return false
+	var loc: String = npc.current_location_code if "current_location_code" in npc else ""
+	return quarantine_system.is_quarantined(loc)
+
+
+## Called when a building is quarantined — add a red X overlay.
+func _on_building_quarantined(building_name: String, expires_tick: int) -> void:
+	if not _building_entries.has(building_name):
+		return
+	var entry: Vector2i = _building_entries[building_name]
+	var wx: float = (entry.x - entry.y) * (TILE_SIZE.x / 2.0)
+	var wy: float = (entry.x + entry.y) * (TILE_SIZE.y / 2.0)
+
+	# Red X label overlay above the building.
+	var overlay := Label.new()
+	overlay.name = "QuarantineOverlay_" + building_name
+	overlay.text = "✕ QUARANTINED"
+	overlay.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	overlay.add_theme_font_size_override("font_size", 14)
+	overlay.add_theme_color_override("font_color", Color(0.95, 0.15, 0.10, 0.95))
+	overlay.add_theme_constant_override("outline_size", 3)
+	overlay.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+	overlay.size = Vector2(120, 20)
+	overlay.position = Vector2(wx - 60.0, wy - 88.0)
+	overlay.z_index = 15
+	add_child(overlay)
+	_quarantine_overlays[building_name] = overlay
+
+	# Tint the building tile red-ish (darken + hue shift).
+	# Find the building in the building layer and modulate.
+	for b in buildings:
+		if b["name"] == building_name:
+			var anchor := Vector2i(b["x"], b["y"])
+			building_layer.set_cell(anchor, SRC_BUILDING,
+				building_layer.get_cell_atlas_coords(anchor))
+			break
+
+	var tick: int = day_night.current_tick if day_night != null else 0
+	emit_signal("rumor_event",
+		"[QUARANTINE] %s is now quarantined for 2 days. Outside NPCs will avoid the area." % [
+			building_name.replace("_", " ").capitalize()],
+		tick)
+
+
+## Called when a quarantine expires — remove the overlay.
+func _on_quarantine_expired(building_name: String) -> void:
+	if _quarantine_overlays.has(building_name):
+		var overlay: Node = _quarantine_overlays[building_name]
+		if overlay != null and is_instance_valid(overlay):
+			overlay.queue_free()
+		_quarantine_overlays.erase(building_name)
+
+	var tick: int = day_night.current_tick if day_night != null else 0
+	emit_signal("rumor_event",
+		"[QUARANTINE LIFTED] %s is no longer quarantined." % building_name.replace("_", " ").capitalize(),
+		tick)
