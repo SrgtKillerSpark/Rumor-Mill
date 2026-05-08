@@ -1,6 +1,6 @@
 # UI Polish Punchlist (SPA-1136)
 
-**Date:** 2026-04-30 (updated after child fixes landed)
+**Date:** 2026-04-30 (updated after child fixes landed; re-audited 2026-05-08 SPA-2077)
 **Build:** post-SPA-1117 stable + SPA-1143/1144/1145 fixes (commits `8276a23`, `0de2c81`)
 **Base viewport:** 1280x720, `canvas_items` stretch mode, no aspect lock
 **Reviewed by:** UI/UX Designer agent
@@ -168,6 +168,60 @@ All 50 numbered items are confirmed resolved as of the SPA-1690 audit (2026-05-0
 - Items #1–#50: fully crossed off. Every fix was verified against its commit diff (not just the commit message).
 - Community Feedback P1s (#48, #49, #50): resolved via SPA-1658, SPA-1664, SPA-1651 respectively.
 - No new child issues filed — no "claimed-fixed but verify failed" cases found during the audit.
+
+### Re-audit (2026-05-08, SPA-2077)
+
+All 50 original items re-verified. Six sample fixes spot-checked against current code:
+- `BaseScenarioHud.BASE_HUD_HEIGHT = 78` / `BAR_HEIGHT = 12` — still present.
+- `achievement_toast.gd` queue/drain pattern — still present.
+- `UILayoutConstants.clamp_to_viewport()` / `MARGIN_STANDARD` / `MARGIN_TIGHT` — still present.
+- `end_screen_panel_builder.gd` PANEL_MIN_W/MAX_W viewport-relative sizing — still present.
+- `tooltip_manager.gd` edge buffer — confirmed 8 px.
+- `suggestion_toast.gd` queue pattern — still present.
+
+**No regressions found on items #1–#50.** All original fixes remain in place.
+
+Post-launch ship fixes (not in original punchlist) that landed since 2026-04-30:
+- SPA-1798: POPUP_Y undefined → computed `_popup_y`.
+- SPA-1802: NPC dialogue panel text overflow hiding action buttons (clip_text + max_lines=3).
+- SPA-1803: Event choice modal body/outcome scroll enabled.
+- SPA-1804: Defeat CTA renamed "Play Again" → "Try Again".
+- SPA-1805: Escape key dismissal of restart/quit confirmation dialog.
+- SPA-1806: Fade transitions before end screen scene reloads.
+- SPA-1809: End screen layout at non-1080p (OVERRUN_TRIM_ELLIPSIS + SIZE_EXPAND_FILL).
+- SPA-1811: Maren orbit risk halos on social graph overlay (new feature).
+- SPA-2022: Risk halo ring separation bumped 6→8 px for 720p legibility.
+
+---
+
+## Post-Launch Additions (2026-05-08)
+
+*Source: code audit of UI scripts not covered by items #1–#50. Conducted by UI/UX Designer agent (SPA-2077).*
+
+### Panels Missing Viewport Clamping
+
+| # | Issue | File : Line(s) | Severity |
+|---|-------|---------------|----------|
+| 51 | **How-To-Play panel hardcoded to 700×500 px.** Uses fixed ±350/±250 offsets. Does not use `UILayoutConstants.clamp_to_viewport()`. At sub-800 px viewport widths it would clip (mitigated by `canvas_items` stretch). | how_to_play.gd:80-88 | Small |
+| 52 | **Story recap panel hardcoded to 560×380 px.** Fixed offsets ±280/±190. No viewport clamping. | story_recap.gd:60-68 | Small |
+| 53 | **Settings menu panel hardcoded to 420×650 px.** 650 px is 90.3% of 720p viewport height. No viewport clamping. Could clip on viewports shorter than ~720 px. | settings_menu.gd:78-86 | Small–Medium |
+| 54 | **Feedback sequence banner hardcoded to 520×90 px.** Centring uses manual arithmetic `(vp_size.x - 520) * 0.5` instead of `clamp_to_viewport()`. | feedback_sequence.gd:237-242 | Small |
+
+### Inconsistencies & Residual Hardcoding
+
+| # | Issue | File : Line(s) | Severity |
+|---|-------|---------------|----------|
+| 55 | **journal.gd faction section font sizes not aligned with journal_factions_section.gd.** `journal.gd` uses 14→13→13 (header→mood→NPC name) at lines 1062/1068/1090, but `journal_factions_section.gd` was fixed to 14→12→12 in SPA-1660 (#25). Duplicate code path was missed. | journal.gd:1062/1068/1090 vs journal_factions_section.gd:91/97/118 | Small |
+| 56 | **rumor_panel.gd portrait helper still 48×60 px hardcoded.** Item #24 fixed `rumor_panel_subject_list.gd` to use viewport-relative sizing, but `rumor_panel.gd:_make_portrait_rect()` was not updated. | rumor_panel.gd:1184 | Small |
+| 57 | **Recon HUD pip size (20×20 px) and heat bar (96×14 px) hardcoded.** Not DPI-scaled. At 1080p these elements look proportionally small. Hit-test radius (52 px, noted in viewport verdicts) also not viewport-relative. | recon_hud.gd:33-34, 469 | Small |
+| 58 | **NPC conversation overlay bubble uses hardcoded offsets and size.** Bubble offset `Vector2(12, -34)` and pill size `Vector2(30, 18)` are not viewport-relative. Pill may appear undersized at 1080p. | npc_conversation_overlay.gd:179/184 | Small |
+
+### 720p / 1080p Visual Notes
+
+| # | Issue | File : Line(s) | Severity |
+|---|-------|---------------|----------|
+| 59 | **Ambient particle emission rects pinned to 1152×648 screen centre.** `ambient_particles.gd` uses `Vector2(576, 324)` position and `Vector2(700, 400)` / `Vector2(650, 360)` extents. Particles won't cover full viewport at 1080p (only ~67% coverage). | ambient_particles.gd:52-53/84-85/126-127 | Small |
+| 60 | **Loading tips label custom_minimum_size 640×60 px (item #44 scroll fix in place, but min-width is still fixed).** At viewport widths < 640 px the label would overflow. Mitigated by `canvas_items` stretch. | loading_tips.gd:81 | Small |
 
 ---
 
