@@ -32,6 +32,13 @@ extends RefCounted
 ##   • TestSpa1798_1802_1803UiFixes      — parse-error guard + geometry/scroll constants for the
 ##                                          2026-05-05 fix batch: _popup_y ref (SPA-1798),
 ##                                          NPC panel overflow (SPA-1802), modal scroll (SPA-1803)
+##   • TestSpa2021NdjsonReplayS5         — X1 NDJSON-replay regression for S5 baseline (multi-faction
+##                                          politics, Normal): fixture parseable, flag ON, clean exit,
+##                                          all Phase 2 mechanics, endorsement gate (SPA-2021)
+##   • TestSpa2021NdjsonReplayS6         — X1 NDJSON-replay regression for S6 baseline (endgame /
+##                                          Merchant's Debt, Normal): fixture parseable, flag ON, clean
+##                                          exit, all Phase 2 mechanics, blackmail events, both endgame
+##                                          conditions met (SPA-2021)
 ##   • SmokePhase2Evidence               — end-to-end Phase 2 smoke: 3 acquisitions + 1 usage vs SPA-1522 spec (SPA-1617)
 ##   • TestSpa1685_1691_1693FixCoverage  — process_mode ALWAYS on dialogue canvas (SPA-1685),
 ##                                          illness_hotspot_buildings declared (SPA-1691),
@@ -335,6 +342,8 @@ const TestSpa1773WitnessAccountUsedEmission = preload("res://tests/test_spa1773_
 const TestSpa1811MarenOrbitHalos       = preload("res://tests/test_spa1811_maren_orbit_halos.gd")
 const TestSpa1822EndScreenShipRegression = preload("res://tests/test_spa1822_end_screen_ship_regression.gd")
 const TestSpa1798_1802_1803UiFixes     = preload("res://tests/test_spa1798_1802_1803_ui_fixes.gd")
+const TestSpa2021NdjsonReplayS5        = preload("res://tests/test_spa2021_ndjson_replay_s5.gd")
+const TestSpa2021NdjsonReplayS6        = preload("res://tests/test_spa2021_ndjson_replay_s6.gd")
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
 const TestSpa1725EvidenceAttached      = preload("res://tests/test_spa1725_evidence_attached.gd")
@@ -433,6 +442,12 @@ func _init() -> void:
 
 	print("\n── SPA-1798/1802/1803 UI-fix regression (2026-05-05 batch) ──")
 	TestSpa1798_1802_1803UiFixes.new().run()
+
+	print("\n── SPA-2021 X1 NDJSON-replay S5 (multi-faction politics baseline) ──")
+	TestSpa2021NdjsonReplayS5.new().run()
+
+	print("\n── SPA-2021 X1 NDJSON-replay S6 (endgame / Merchant's Debt baseline) ──")
+	TestSpa2021NdjsonReplayS6.new().run()
 
 	print("\n── SPA-1617 Phase 2 evidence telemetry smoke (end-to-end) ──")
 	SmokePhase2Evidence.new().run()

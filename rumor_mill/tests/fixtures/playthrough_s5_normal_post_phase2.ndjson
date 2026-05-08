@@ -1,0 +1,68 @@
+{"type":"scenario_selected","scenario_id":"S5","difficulty":"Normal","evidence_economy_v2":true,"fix_ref":"SPA-1755,SPA-1756,SPA-1757","cooldown_days_normal":2,"ts":"2026-05-08T09:00:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S5","ts":"2026-05-08T09:07:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"observe_building","day":1,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Edric Fenn","claim_id":"s5n_sca01","seed_target":"greta_flint","day":1,"scenario_id":"S5","ts":"2026-05-08T09:14:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S5","ts":"2026-05-08T09:22:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"eavesdrop_npc","day":2,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Greta Flint","rumor_id":"s5n_sca01","new_state":"BELIEVE","day":2,"scenario_id":"S5","ts":"2026-05-08T09:30:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":3,"scenario_id":"S5","ts":"2026-05-08T09:38:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":3,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s5n_sca01","seed_target":"greta_flint","subject":"Edric Fenn","day":3,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"forged_document","extension_ticks":40,"rumor_id":"s5n_sca01","day":3,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"forged_document","seed_target":"greta_flint","boost":0.10,"day":3,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"greta_flint","cooldown_days":2,"day":3,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Greta Flint","rumor_id":"s5n_sca01","new_state":"SPREAD","day":3,"scenario_id":"S5","ts":"2026-05-08T09:46:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":58,"to_score":50,"delta":-8,"day":3,"scenario_id":"S5","ts":"2026-05-08T09:53:00Z"}
+{"type":"rumor_seeded","subject_name":"Aldric Vane","claim_id":"s5n_pra01","seed_target":"nell_picker","day":4,"scenario_id":"S5","ts":"2026-05-08T10:01:00Z"}
+{"type":"npc_state_changed","npc_name":"Nell Picker","rumor_id":"s5n_pra01","new_state":"BELIEVE","day":4,"scenario_id":"S5","ts":"2026-05-08T10:08:00Z"}
+{"type":"evidence_target_cooldown_active","seed_target":"greta_flint","days_remaining":1,"day":4,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":5,"scenario_id":"S5","ts":"2026-05-08T10:16:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":5,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_active","seed_target":"greta_flint","days_remaining":0,"day":5,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Tomas Reeve","claim_id":"s5n_acc01","seed_target":"aldric_vane","day":5,"scenario_id":"S5","ts":"2026-05-08T10:28:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":6,"scenario_id":"S5","ts":"2026-05-08T10:36:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"s5n_acc01","seed_target":"aldric_vane","subject":"Tomas Reeve","day":6,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"incriminating_artifact","extension_ticks":0,"rumor_id":"s5n_acc01","day":6,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"incriminating_artifact","seed_target":"aldric_vane","boost":0.15,"day":6,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"aldric_vane","cooldown_days":2,"day":6,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Aldric Vane","rumor_id":"s5n_acc01","new_state":"BELIEVE","day":6,"scenario_id":"S5","ts":"2026-05-08T10:51:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":50,"to_score":42,"delta":-8,"day":6,"scenario_id":"S5","ts":"2026-05-08T10:58:00Z"}
+{"type":"narrative_event_fired","event_id":"s5_smear_pamphlet","day":7,"choice":"A","scenario_id":"S5","ts":"2026-05-08T11:06:00Z"}
+{"type":"narrative_event_effect","event_id":"s5_smear_pamphlet","effect":"reputation_change","target":"edric_fenn","delta":-5,"day":7,"scenario_id":"S5","ts":"2026-05-08T11:06:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":42,"to_score":37,"delta":-5,"day":7,"scenario_id":"S5","ts":"2026-05-08T11:13:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":7,"scenario_id":"S5","ts":"2026-05-08T11:21:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"observe_building","day":7,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_decay_tick","evidence_type":"forged_document","prev_confidence":1.0,"new_confidence":0.90,"day":7,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Nell Picker","rumor_id":"s5n_pra01","new_state":"SPREAD","day":8,"scenario_id":"S5","ts":"2026-05-08T11:29:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":45,"to_score":49,"delta":4,"day":8,"scenario_id":"S5","ts":"2026-05-08T11:36:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":9,"scenario_id":"S5","ts":"2026-05-08T11:44:00Z"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s5n_pra01","seed_target":"sybil_oats","subject":"Aldric Vane","day":9,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"witness_account","extension_ticks":80,"rumor_id":"s5n_pra01","day":9,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"witness_account","seed_target":"sybil_oats","boost":0.05,"day":9,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"sybil_oats","cooldown_days":2,"day":9,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Aldric Vane","rumor_id":"s5n_acc01","new_state":"SPREAD","day":9,"scenario_id":"S5","ts":"2026-05-08T11:52:00Z"}
+{"type":"reputation_delta","npc_id":"npc_tomas_reeve","from_score":45,"to_score":38,"delta":-7,"day":9,"scenario_id":"S5","ts":"2026-05-08T11:59:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":49,"to_score":53,"delta":4,"day":10,"scenario_id":"S5","ts":"2026-05-08T12:07:00Z"}
+{"type":"narrative_event_fired","event_id":"s5_market_debate","day":11,"choice":"A","scenario_id":"S5","ts":"2026-05-08T12:15:00Z"}
+{"type":"narrative_event_effect","event_id":"s5_market_debate","effect":"reputation_change","target":"aldric_vane","delta":5,"day":11,"scenario_id":"S5","ts":"2026-05-08T12:15:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":53,"to_score":58,"delta":5,"day":11,"scenario_id":"S5","ts":"2026-05-08T12:22:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s5n_sca02","seed_target":"mill_wife","subject":"Edric Fenn","day":12,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"forged_document","extension_ticks":40,"rumor_id":"s5n_sca02","day":12,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"forged_document","seed_target":"mill_wife","boost":0.10,"day":12,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"mill_wife","cooldown_days":2,"day":12,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Mill Wife","rumor_id":"s5n_sca02","new_state":"SPREAD","day":12,"scenario_id":"S5","ts":"2026-05-08T12:30:00Z"}
+{"type":"reputation_delta","npc_id":"npc_edric_fenn","from_score":37,"to_score":29,"delta":-8,"day":12,"scenario_id":"S5","ts":"2026-05-08T12:37:00Z"}
+{"type":"endorsement_fired","endorser":"aldous_prior","recipient":"aldric_vane","bonus":8,"day":13,"scenario_id":"S5","ts":"2026-05-08T12:45:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":58,"to_score":66,"delta":8,"day":13,"scenario_id":"S5","ts":"2026-05-08T12:52:00Z"}
+{"type":"npc_state_changed","npc_name":"Sybil Oats","rumor_id":"s5n_sca01","new_state":"BELIEVE","day":14,"scenario_id":"S5","ts":"2026-05-08T13:00:00Z"}
+{"type":"evidence_decay_tick","evidence_type":"witness_account","prev_confidence":1.0,"new_confidence":0.90,"day":14,"scenario_id":"S5","difficulty":"Normal"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":66,"to_score":70,"delta":4,"day":15,"scenario_id":"S5","ts":"2026-05-08T13:08:00Z"}
+{"type":"narrative_event_fired","event_id":"s5_bribery_scandal","day":16,"choice":"B","scenario_id":"S5","ts":"2026-05-08T13:16:00Z"}
+{"type":"narrative_event_effect","event_id":"s5_bribery_scandal","effect":"reputation_change","target":"tomas_reeve","delta":-6,"day":16,"scenario_id":"S5","ts":"2026-05-08T13:16:00Z"}
+{"type":"reputation_delta","npc_id":"npc_tomas_reeve","from_score":38,"to_score":32,"delta":-6,"day":16,"scenario_id":"S5","ts":"2026-05-08T13:23:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":70,"to_score":72,"delta":2,"day":17,"scenario_id":"S5","ts":"2026-05-08T13:31:00Z"}
+{"type":"narrative_event_fired","event_id":"s5_final_rally","day":18,"choice":"A","scenario_id":"S5","ts":"2026-05-08T13:39:00Z"}
+{"type":"narrative_event_effect","event_id":"s5_final_rally","effect":"reputation_change","target":"aldric_vane","delta":4,"day":18,"scenario_id":"S5","ts":"2026-05-08T13:39:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":72,"to_score":76,"delta":4,"day":18,"scenario_id":"S5","ts":"2026-05-08T13:46:00Z"}
+{"type":"reputation_delta","npc_id":"npc_tomas_reeve","from_score":32,"to_score":25,"delta":-7,"day":19,"scenario_id":"S5","ts":"2026-05-08T13:54:00Z"}
+{"type":"scenario_ended","scenario_id":"S5","difficulty":"Normal","outcome":"WON","day_reached":19,"aldric_final_rep":76,"edric_final_rep":29,"tomas_final_rep":25,"duration_sec":3000,"ts":"2026-05-08T14:00:00Z"}

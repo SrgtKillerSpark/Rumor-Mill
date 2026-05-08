@@ -1,0 +1,50 @@
+{"type":"scenario_selected","scenario_id":"S6","difficulty":"Normal","evidence_economy_v2":true,"fix_ref":"SPA-1755,SPA-1756,SPA-1757","cooldown_days_normal":2,"ts":"2026-05-08T09:00:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":1,"scenario_id":"S6","ts":"2026-05-08T09:07:00Z"}
+{"type":"evidence_acquired","evidence_type":"witness_account","source_action":"observe_building","day":1,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"rumor_seeded","subject_name":"Aldric Vane","claim_id":"s6n_sca01","seed_target":"sybil_oats","day":1,"scenario_id":"S6","ts":"2026-05-08T09:14:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":2,"scenario_id":"S6","ts":"2026-05-08T09:22:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":2,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Sybil Oats","rumor_id":"s6n_sca01","new_state":"BELIEVE","day":2,"scenario_id":"S6","ts":"2026-05-08T09:30:00Z"}
+{"type":"evidence_used","evidence_type":"witness_account","claim_id":"s6n_sca01","seed_target":"sybil_oats","subject":"Aldric Vane","day":3,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"witness_account","extension_ticks":80,"rumor_id":"s6n_sca01","day":3,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"witness_account","seed_target":"sybil_oats","boost":0.05,"day":3,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"sybil_oats","cooldown_days":2,"day":3,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Sybil Oats","rumor_id":"s6n_sca01","new_state":"SPREAD","day":3,"scenario_id":"S6","ts":"2026-05-08T09:46:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":65,"to_score":57,"delta":-8,"day":3,"scenario_id":"S6","ts":"2026-05-08T09:53:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":4,"scenario_id":"S6","ts":"2026-05-08T10:01:00Z"}
+{"type":"evidence_acquired","evidence_type":"incriminating_artifact","source_action":"observe_building","day":4,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_active","seed_target":"sybil_oats","days_remaining":1,"day":4,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"reputation_delta","npc_id":"npc_marta_coin","from_score":55,"to_score":59,"delta":4,"day":4,"scenario_id":"S6","ts":"2026-05-08T10:08:00Z"}
+{"type":"rumor_seeded","subject_name":"Aldric Vane","claim_id":"s6n_sca02","seed_target":"rufus_bolt","day":5,"scenario_id":"S6","ts":"2026-05-08T10:16:00Z"}
+{"type":"evidence_used","evidence_type":"forged_document","claim_id":"s6n_sca02","seed_target":"rufus_bolt","subject":"Aldric Vane","day":5,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"forged_document","extension_ticks":40,"rumor_id":"s6n_sca02","day":5,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"forged_document","seed_target":"rufus_bolt","boost":0.10,"day":5,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"rufus_bolt","cooldown_days":2,"day":5,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Rufus Bolt","rumor_id":"s6n_sca02","new_state":"BELIEVE","day":5,"scenario_id":"S6","ts":"2026-05-08T10:30:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":57,"to_score":49,"delta":-8,"day":5,"scenario_id":"S6","ts":"2026-05-08T10:37:00Z"}
+{"type":"narrative_event_fired","event_id":"s6_debt_ledger_found","day":6,"choice":"A","scenario_id":"S6","ts":"2026-05-08T10:45:00Z"}
+{"type":"narrative_event_effect","event_id":"s6_debt_ledger_found","effect":"reputation_change","target":"marta_coin","delta":5,"day":6,"scenario_id":"S6","ts":"2026-05-08T10:45:00Z"}
+{"type":"reputation_delta","npc_id":"npc_marta_coin","from_score":59,"to_score":64,"delta":5,"day":6,"scenario_id":"S6","ts":"2026-05-08T10:52:00Z"}
+{"type":"evidence_interaction","action_type":"eavesdrop","success":true,"day":7,"scenario_id":"S6","ts":"2026-05-08T11:00:00Z"}
+{"type":"evidence_acquired","evidence_type":"forged_document","source_action":"eavesdrop_npc","day":7,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"blackmail_deployed","target_npc":"aldric_vane","whisper_cost":2,"rep_hit":-18,"heat_added":22.0,"use_index":1,"day":7,"scenario_id":"S6","ts":"2026-05-08T11:07:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":49,"to_score":31,"delta":-18,"day":7,"scenario_id":"S6","ts":"2026-05-08T11:14:00Z"}
+{"type":"npc_heat_changed","npc_id":"npc_sybil_oats","heat_delta":22.0,"day":7,"scenario_id":"S6","ts":"2026-05-08T11:14:00Z"}
+{"type":"npc_heat_changed","npc_id":"npc_rufus_bolt","heat_delta":22.0,"day":7,"scenario_id":"S6","ts":"2026-05-08T11:14:00Z"}
+{"type":"npc_state_changed","npc_name":"Rufus Bolt","rumor_id":"s6n_sca02","new_state":"SPREAD","day":7,"scenario_id":"S6","ts":"2026-05-08T11:21:00Z"}
+{"type":"evidence_interaction","action_type":"observe","success":true,"day":8,"scenario_id":"S6","ts":"2026-05-08T11:29:00Z"}
+{"type":"evidence_used","evidence_type":"incriminating_artifact","claim_id":"s6n_sca03","seed_target":"nell_picker","subject":"Aldric Vane","day":8,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_shelf_life_extended","evidence_type":"incriminating_artifact","extension_ticks":0,"rumor_id":"s6n_sca03","day":8,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_credulity_boost_applied","evidence_type":"incriminating_artifact","seed_target":"nell_picker","boost":0.15,"day":8,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"evidence_target_cooldown_start","seed_target":"nell_picker","cooldown_days":2,"day":8,"scenario_id":"S6","difficulty":"Normal"}
+{"type":"npc_state_changed","npc_name":"Nell Picker","rumor_id":"s6n_sca03","new_state":"BELIEVE","day":8,"scenario_id":"S6","ts":"2026-05-08T11:37:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":31,"to_score":27,"delta":-4,"day":9,"scenario_id":"S6","ts":"2026-05-08T11:45:00Z"}
+{"type":"reputation_delta","npc_id":"npc_marta_coin","from_score":64,"to_score":68,"delta":4,"day":9,"scenario_id":"S6","ts":"2026-05-08T11:52:00Z"}
+{"type":"narrative_event_fired","event_id":"s6_merchant_testimony","day":10,"choice":"A","scenario_id":"S6","ts":"2026-05-08T12:00:00Z"}
+{"type":"narrative_event_effect","event_id":"s6_merchant_testimony","effect":"reputation_change","target":"marta_coin","delta":4,"day":10,"scenario_id":"S6","ts":"2026-05-08T12:00:00Z"}
+{"type":"reputation_delta","npc_id":"npc_marta_coin","from_score":68,"to_score":72,"delta":4,"day":10,"scenario_id":"S6","ts":"2026-05-08T12:07:00Z"}
+{"type":"blackmail_deployed","target_npc":"aldric_vane","whisper_cost":2,"rep_hit":-18,"heat_added":22.0,"use_index":2,"day":11,"scenario_id":"S6","ts":"2026-05-08T12:15:00Z"}
+{"type":"reputation_delta","npc_id":"npc_aldric_vane","from_score":27,"to_score":9,"delta":-18,"day":11,"scenario_id":"S6","ts":"2026-05-08T12:22:00Z"}
+{"type":"endgame_condition_met","condition":"aldric_rep_below_threshold","aldric_rep":9,"threshold":30,"day":11,"scenario_id":"S6","ts":"2026-05-08T12:22:00Z"}
+{"type":"endgame_condition_met","condition":"marta_rep_above_threshold","marta_rep":72,"threshold":62,"day":11,"scenario_id":"S6","ts":"2026-05-08T12:22:00Z"}
+{"type":"scenario_ended","scenario_id":"S6","difficulty":"Normal","outcome":"WON","day_reached":11,"marta_final_rep":72,"aldric_final_rep":9,"duration_sec":1800,"ts":"2026-05-08T12:30:00Z"}
