@@ -76,11 +76,12 @@ func _eval_s1(_current_tick: int) -> void:
 	var score: int = snap.score
 
 	# Reputation crossing key thresholds (descending).
-	if score <= 60:
+	# Start score is S1_EDRIC_START_SCORE = 50, so milestones must fire below that.
+	if score < 50:
 		_fire("s1_rep_60", "Whispers take hold — Edric's standing is shaken", C_PROGRESS)
-	if score <= 55:
+	if score <= 44:
 		_fire("s1_rep_55", "The cracks deepen — Edric's allies grow uneasy", C_PROGRESS)
-	if score <= 50:
+	if score <= 38:
 		_fire("s1_rep_50", "The town doubts Lord Fenn", C_PROGRESS)
 	if score <= 40:
 		_fire("s1_rep_40", "Edric is losing allies — keep pushing", C_PROGRESS)
