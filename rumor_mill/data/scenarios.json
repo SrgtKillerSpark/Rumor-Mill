@@ -307,12 +307,16 @@
         "choices": [
           {
             "label": "Circulate the ledger through the market",
-            "outcomeText": "The ledger passes from hand to hand. By evening, half the market quarter is whispering about Edric's accounts. But the Guard Captain is asking questions about where the document came from.",
+            "outcomeText": "The ledger passes from hand to hand. By evening, half the market quarter is whispering about Edric's accounts. His scribe looks rattled, and the Reeve is fielding questions he cannot answer. But the Guard Captain is asking questions about where the document came from.",
             "effects": {
               "reputationChanges": [
                 {
                   "npcId": "edric_fenn",
-                  "delta": -5
+                  "delta": -6
+                },
+                {
+                  "npcId": "annit_scribe",
+                  "delta": -6
                 }
               ],
               "heatChanges": [
@@ -320,27 +324,35 @@
                   "npcId": "bram_guard",
                   "delta": 15
                 }
-              ]
+              ],
+              "bonusWhisperTokens": 1,
+              "suspicionFreezeDays": 1
             },
-            "choicePreview": "Bold — damages his reputation but draws guard attention",
-            "bulletinAftermath": "The market is buzzing — Edric's ledger is the talk of every stall. The Guard Captain has posted extra patrols."
+            "choicePreview": "Bold — heavy reputation damage across allies, plus a bonus whisper tomorrow",
+            "bulletinAftermath": "The market is buzzing — Edric's ledger is the talk of every stall. The Guard Captain has posted extra patrols. A strange calm follows the storm."
           },
           {
             "label": "Use it as leverage — keep it quiet for now",
-            "outcomeText": "You pocket the ledger. Knowledge is currency, and this particular coin buys you room to manoeuvre. Edric's allies sense something has shifted, but they cannot name what.",
+            "outcomeText": "You pocket the ledger. Knowledge is currency, and this particular coin buys you room to manoeuvre. Edric's standing slips just enough to notice, and a useful piece of evidence falls into your hands.",
             "effects": {
-              "bonusReconActions": 2,
-              "bonusReconDays": 3,
+              "reputationChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -3
+                }
+              ],
               "personalityChanges": [
                 {
                   "npcId": "edric_fenn",
                   "trait": "loyalty",
                   "delta": -0.15
                 }
-              ]
+              ],
+              "grantRandomEvidence": 1,
+              "suspicionFreezeDays": 1
             },
-            "choicePreview": "Cautious — gains recon advantage but weakens his loyalty slowly",
-            "bulletinAftermath": "A strange calm has settled. Edric's allies seem uneasy, though no one can say why."
+            "choicePreview": "Cautious — moderate reputation hit plus a free evidence item",
+            "bulletinAftermath": "A strange calm has settled. Edric's allies seem uneasy, and a document has surfaced that could prove useful."
           }
         ],
         "foreshadowText": "Whispers at the market stalls — someone has been digging through old tax records at the Guild Hall."
@@ -355,27 +367,45 @@
         "choices": [
           {
             "label": "Infiltrate the feast and gather intelligence",
-            "outcomeText": "You slip in among the servants. Over three courses you learn who truly supports Edric and who merely tolerates him. You leave with fresh intelligence and extra opportunities to act — but the Guard Captain noticed an unfamiliar face.",
+            "outcomeText": "You slip in among the servants. Over three courses you learn who truly supports Edric and who merely tolerates him. By the end of the night, Edric, his wife, and his son have all been tarnished in the eyes of the guests. The Guard Captain noticed an unfamiliar face.",
             "effects": {
-              "bonusReconActions": 3,
-              "bonusReconDays": 2,
+              "reputationChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -6
+                },
+                {
+                  "npcId": "isolde_fenn",
+                  "delta": -6
+                },
+                {
+                  "npcId": "calder_fenn",
+                  "delta": -6
+                }
+              ],
               "heatChanges": [
                 {
                   "npcId": "bram_guard",
                   "delta": 10
                 }
-              ]
+              ],
+              "bonusWhisperTokens": 1,
+              "suspicionFreezeDays": 1
             },
-            "choicePreview": "Risky — extra intelligence but increases guard suspicion",
-            "bulletinAftermath": "The feast's secrets are yours. Several guests were overheard expressing doubts about Edric's leadership."
+            "choicePreview": "Risky — heavy reputation damage on 3 Fenn family members, bonus whisper, but raises heat",
+            "bulletinAftermath": "The feast's secrets are yours. The Fenn family's reputation is in tatters. A calm day follows the chaos."
           },
           {
             "label": "Spread word the feast is a bribe",
-            "outcomeText": "By the time the first course is served, the story has already changed. 'A feast for the town,' they say, 'or a feast to buy silence?' The nobles shift uncomfortably in their seats.",
+            "outcomeText": "By the time the first course is served, the story has already changed. 'A feast for the town,' they say, 'or a feast to buy silence?' Edric and his scribe shift uncomfortably. A useful piece of evidence falls into your lap.",
             "effects": {
               "reputationChanges": [
                 {
                   "npcId": "edric_fenn",
+                  "delta": -3
+                },
+                {
+                  "npcId": "annit_scribe",
                   "delta": -3
                 }
               ],
@@ -392,10 +422,12 @@
                   "npcId": "annit_scribe",
                   "delta": 0.1
                 }
-              ]
+              ],
+              "grantRandomEvidence": 1,
+              "suspicionFreezeDays": 1
             },
-            "choicePreview": "Subtle — erodes reputation and makes allies more gullible",
-            "bulletinAftermath": "The townsfolk are calling it a bribe-feast. Edric's generosity has backfired."
+            "choicePreview": "Subtle — moderate reputation hit on 2 NPCs, free evidence item, allies become more gullible",
+            "bulletinAftermath": "The townsfolk are calling it a bribe-feast. Edric's generosity has backfired. A calm day follows."
           }
         ],
         "foreshadowText": "Servants are hauling wine barrels to the Manor. Lord Edric is planning something lavish."
@@ -410,12 +442,20 @@
         "choices": [
           {
             "label": "Eavesdrop and spread what you overhear",
-            "outcomeText": "You press your ear to the wall of the lesser hall. The numbers are damning — Edric owes more than the town's annual tithe. By morning, two of his closest allies are having second thoughts. But the guard patrols have tightened around the Manor.",
+            "outcomeText": "You press your ear to the wall of the lesser hall. The numbers are damning — Edric owes more than the town's annual tithe. By morning, his scribe and the Reeve are fielding questions they cannot answer. But the guard patrols have tightened around the Manor.",
             "effects": {
               "reputationChanges": [
                 {
                   "npcId": "edric_fenn",
-                  "delta": -4
+                  "delta": -6
+                },
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": -6
+                },
+                {
+                  "npcId": "annit_scribe",
+                  "delta": -6
                 }
               ],
               "personalityChanges": [
@@ -435,26 +475,38 @@
                   "npcId": "bram_guard",
                   "delta": 12
                 }
-              ]
+              ],
+              "bonusWhisperTokens": 1,
+              "suspicionFreezeDays": 1
             },
-            "choicePreview": "Aggressive — hurts reputation and loyalty but raises heat",
-            "bulletinAftermath": "Overnight, talk of Edric's debts has spread through the inns and alehouses."
+            "choicePreview": "Aggressive — heavy reputation damage on 3 NPCs, bonus whisper, but raises heat",
+            "bulletinAftermath": "Overnight, talk of Edric's debts has spread through the inns and alehouses. The town holds its breath."
           },
           {
             "label": "Bribe the servant for details instead",
-            "outcomeText": "The servant's account is secondhand but safe — no risk of being caught at the Manor. The details are enough to seed a credible rumor, and the servant's trust opens a new line of intelligence.",
+            "outcomeText": "The servant's account is secondhand but safe — no risk of being caught at the Manor. The details are enough to tarnish Edric's name, and a useful piece of evidence falls into your hands.",
             "effects": {
-              "bonusReconActions": 2,
-              "bonusReconDays": 2,
+              "reputationChanges": [
+                {
+                  "npcId": "edric_fenn",
+                  "delta": -3
+                },
+                {
+                  "npcId": "tomas_reeve",
+                  "delta": -3
+                }
+              ],
               "injectRumor": {
                 "claimType": "scandal",
                 "subjectNpcId": "edric_fenn",
                 "intensity": 2,
                 "targetFaction": "merchant"
-              }
+              },
+              "grantRandomEvidence": 1,
+              "suspicionFreezeDays": 1
             },
-            "choicePreview": "Quiet — gains intel and contacts without raising heat",
-            "bulletinAftermath": "A servant has been quietly passing details about the Manor's finances to curious merchants."
+            "choicePreview": "Quiet — moderate reputation hit on 2 NPCs plus a free evidence item",
+            "bulletinAftermath": "A servant has been quietly passing details about the Manor's finances. Evidence has surfaced."
           }
         ],
         "foreshadowText": "A Manor servant has been asking around the Tavern — nervous, watching over her shoulder."

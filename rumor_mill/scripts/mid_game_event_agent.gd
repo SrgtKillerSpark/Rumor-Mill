@@ -372,6 +372,26 @@ func _apply_effects(effects: Dictionary) -> void:
 	if effects.get("consumeAllBribeCharges", false) and _world != null and _world.intel_store != null:
 		_world.intel_store.bribe_charges = 0
 
+	# SPA-2104: Post-event suspicion freeze — freezes heat on all NPCs for N days.
+	var freeze_days: int = int(effects.get("suspicionFreezeDays", 0))
+	if freeze_days > 0 and _world != null and _world.intel_store != null:
+		_world.intel_store.apply_heat_freeze(freeze_days)
+
+	# SPA-2104: Bonus whisper tokens granted immediately (available next action).
+	var bonus_whispers: int = int(effects.get("bonusWhisperTokens", 0))
+	if bonus_whispers > 0 and _world != null and _world.intel_store != null:
+		_world.intel_store.whisper_tokens_remaining += bonus_whispers
+
+	# SPA-2104: Grant a random evidence item to the player's inventory.
+	var grant_evidence: int = int(effects.get("grantRandomEvidence", 0))
+	if grant_evidence > 0 and _world != null and _world.intel_store != null:
+		var evidence_types: Array = ["Witness Statement", "Forged Letter", "Stolen Ledger", "Overheard Confession", "Physical Token"]
+		for _i in range(grant_evidence):
+			var ev_type: String = evidence_types[randi() % evidence_types.size()]
+			var item := PlayerIntelStore.EvidenceItem.new(
+				ev_type, 0.15, 0.0, [], _get_current_day() * 24)
+			_world.intel_store.add_evidence(item)
+
 
 # ---------------------------------------------------------------------------
 # Effect helpers

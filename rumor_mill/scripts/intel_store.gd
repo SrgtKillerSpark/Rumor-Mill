@@ -46,6 +46,10 @@ var _heat_warning_fired: bool = false  # guard: emit heat_warning signal only on
 ## guard_crackdown event). Reset to -1.0 to restore the default.
 var heat_decay_override: float = -1.0
 
+## SPA-2104: Post-event suspicion freeze. When > 0, heat cannot increase and
+## does not decay.  Decremented each dawn in decay_heat().
+var heat_freeze_days: int = 0
+
 ## Bribe charges (2 per scenario, not dawn-refreshed). Active from Scenario 2+.
 ## 0 means bribery is disabled (Scenario 1 / tutorial).
 var bribe_charges: int = 0
@@ -206,6 +210,8 @@ func get_heat(npc_id: String) -> float:
 func add_heat(npc_id: String, amount: float) -> void:
 	if not heat_enabled:
 		return
+	if heat_freeze_days > 0:
+		return  # SPA-2104: suspicion freeze blocks heat gain
 	heat[npc_id] = clamp(heat.get(npc_id, 0.0) + amount, 0.0, 100.0)
 	if not _heat_warning_fired and heat[npc_id] >= 50.0:
 		_heat_warning_fired = true
@@ -215,9 +221,19 @@ func add_heat(npc_id: String, amount: float) -> void:
 func decay_heat() -> void:
 	if not heat_enabled:
 		return
+	# SPA-2104: suspicion freeze — skip decay and tick down the counter.
+	if heat_freeze_days > 0:
+		heat_freeze_days -= 1
+		return
 	var decay_amount: float = 6.0 if heat_decay_override < 0.0 else heat_decay_override
 	for npc_id in heat.keys():
 		heat[npc_id] = maxf(0.0, heat[npc_id] - decay_amount)  # SPA-98: default 6.0; overrideable by guard_crackdown event
+
+
+## SPA-2104: Apply a post-event suspicion freeze for the given number of days.
+## Stacks additively if called multiple times within the same freeze window.
+func apply_heat_freeze(days: int) -> void:
+	heat_freeze_days += days
 
 
 # ---------------------------------------------------------------------------
