@@ -34,10 +34,10 @@
 ## viewport (same pattern as TestSpa1822EndScreenShipRegression).
 ## GameState.selected_difficulty is a plain String var on the autoload and is
 ## restored after each test that mutates it.
-## Tests that call _update_win_forecast() pass the ScenarioManager autoload
-## directly (sm: ScenarioManager typed parameter — duck-typed stubs are rejected
-## at runtime). ScenarioManager._days_allowed defaults to 30, which is ample
-## for all gating tests.
+## Tests that call _update_win_forecast() create a local ScenarioManager.new()
+## instance (sm: ScenarioManager typed parameter — the class itself is rejected
+## at runtime in headless context). ScenarioManager._days_allowed defaults to
+## 30, which is ample for all gating tests.
 
 class_name TestSpa1984WinProbabilityHud
 extends RefCounted
@@ -129,7 +129,7 @@ static func test_a2_forecast_lbl_hidden_after_build() -> bool:
 
 ## On Apprentice difficulty with count < threshold and game still active,
 ## _update_win_forecast() must make _win_forecast_lbl visible.
-## Uses the real ScenarioManager autoload (sm: ScenarioManager typed param).
+## Uses a local ScenarioManager.new() instance (sm: ScenarioManager typed param).
 ## _days_allowed defaults to 30; _day_night_ref is null → day 1; _world_ref is
 ## null → whispers = 0. effective_seeds = min(29, 0) = 0 → projected = 0 →
 ## "unlikely" label text, but the label IS shown (Apprentice gate passed).
@@ -141,7 +141,9 @@ func test_a3_forecast_lbl_visible_on_apprentice() -> bool:
 		return false
 	var saved_diff: String = GameState.selected_difficulty
 	GameState.selected_difficulty = "apprentice"
-	h._update_win_forecast(2, 7, ScenarioManager, ScenarioManager.ScenarioState.ACTIVE)
+	var sm_a3 := ScenarioManager.new()
+	h._update_win_forecast(2, 7, sm_a3, ScenarioManager.ScenarioState.ACTIVE)
+	sm_a3.free()
 	var ok: bool = h._win_forecast_lbl.visible == true
 	GameState.selected_difficulty = saved_diff
 	h.free()
@@ -314,7 +316,7 @@ static func test_c6_forecast_just_below_60pct_returns_unlikely() -> bool:
 
 ## On "normal" difficulty, _update_win_forecast() must leave the label hidden
 ## regardless of game state or believer count.
-## Uses the real ScenarioManager autoload to satisfy sm: ScenarioManager typing.
+## Uses a local ScenarioManager.new() instance to satisfy sm: ScenarioManager typing.
 func test_d1_forecast_hidden_on_normal_difficulty() -> bool:
 	var h := _make_hud_with_ui()
 	if h._win_forecast_lbl == null:
@@ -325,7 +327,9 @@ func test_d1_forecast_hidden_on_normal_difficulty() -> bool:
 	h._win_forecast_lbl.visible = true
 	var saved_diff: String = GameState.selected_difficulty
 	GameState.selected_difficulty = "normal"
-	h._update_win_forecast(2, 7, ScenarioManager, ScenarioManager.ScenarioState.ACTIVE)
+	var sm_d1 := ScenarioManager.new()
+	h._update_win_forecast(2, 7, sm_d1, ScenarioManager.ScenarioState.ACTIVE)
+	sm_d1.free()
 	var ok: bool = h._win_forecast_lbl.visible == false
 	if not ok:
 		push_error("test_d1: _win_forecast_lbl still visible on 'normal' difficulty")
@@ -335,7 +339,7 @@ func test_d1_forecast_hidden_on_normal_difficulty() -> bool:
 
 
 ## On "master" difficulty (the default), the forecast must also stay hidden.
-## Uses the real ScenarioManager autoload to satisfy sm: ScenarioManager typing.
+## Uses a local ScenarioManager.new() instance to satisfy sm: ScenarioManager typing.
 func test_d2_forecast_hidden_on_master_difficulty() -> bool:
 	var h := _make_hud_with_ui()
 	if h._win_forecast_lbl == null:
@@ -345,7 +349,9 @@ func test_d2_forecast_hidden_on_master_difficulty() -> bool:
 	h._win_forecast_lbl.visible = true
 	var saved_diff: String = GameState.selected_difficulty
 	GameState.selected_difficulty = "master"
-	h._update_win_forecast(2, 7, ScenarioManager, ScenarioManager.ScenarioState.ACTIVE)
+	var sm_d2 := ScenarioManager.new()
+	h._update_win_forecast(2, 7, sm_d2, ScenarioManager.ScenarioState.ACTIVE)
+	sm_d2.free()
 	var ok: bool = h._win_forecast_lbl.visible == false
 	if not ok:
 		push_error("test_d2: _win_forecast_lbl still visible on 'master' difficulty")
