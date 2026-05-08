@@ -48,26 +48,28 @@ func _make_mgr() -> Node:
 # ── tests ────────────────────────────────────────────────────────────────────
 
 ## unlock() emits achievement_unlocked at least once.
+## NOTE: GDScript lambdas capture value-types (bool/int/String) by value,
+## so we use a Dictionary as a shared-state container for assertions.
 func test_signal_emitted_on_unlock() -> bool:
 	var mgr := _make_mgr()
-	var emitted := false
+	var state := {"emitted": false}
 	mgr.achievement_unlocked.connect(func(_id: String, _name: String) -> void:
-		emitted = true
+		state["emitted"] = true
 	)
 	mgr.unlock("ghost")
-	return emitted
+	return state["emitted"]
 
 
 ## The emitted signal carries the exact achievement id passed to unlock().
 func test_signal_carries_correct_id() -> bool:
 	var mgr := _make_mgr()
-	var captured_id := ""
+	var state := {"id": ""}
 	mgr.achievement_unlocked.connect(func(id: String, _name: String) -> void:
-		captured_id = id
+		state["id"] = id
 	)
 	mgr.unlock("ghost")
-	if captured_id != "ghost":
-		push_error("test_signal_carries_correct_id: expected 'ghost', got '%s'" % captured_id)
+	if state["id"] != "ghost":
+		push_error("test_signal_carries_correct_id: expected 'ghost', got '%s'" % state["id"])
 		return false
 	return true
 
@@ -75,14 +77,14 @@ func test_signal_carries_correct_id() -> bool:
 ## The emitted signal carries the achievement's display name (the 'name' field).
 func test_signal_carries_display_name() -> bool:
 	var mgr := _make_mgr()
-	var captured_name := ""
+	var state := {"name": ""}
 	mgr.achievement_unlocked.connect(func(_id: String, dname: String) -> void:
-		captured_name = dname
+		state["name"] = dname
 	)
 	mgr.unlock("ghost")
 	var expected: String = AchievementManagerScript.ACHIEVEMENTS["ghost"]["name"]
-	if captured_name != expected:
-		push_error("test_signal_carries_display_name: expected '%s', got '%s'" % [expected, captured_name])
+	if state["name"] != expected:
+		push_error("test_signal_carries_display_name: expected '%s', got '%s'" % [expected, state["name"]])
 		return false
 	return true
 
@@ -90,12 +92,12 @@ func test_signal_carries_display_name() -> bool:
 ## unlock() with an unknown id emits a warning but never emits achievement_unlocked.
 func test_signal_not_emitted_for_unknown_id() -> bool:
 	var mgr := _make_mgr()
-	var emitted := false
+	var state := {"emitted": false}
 	mgr.achievement_unlocked.connect(func(_id: String, _name: String) -> void:
-		emitted = true
+		state["emitted"] = true
 	)
 	mgr.unlock("totally_fake_achievement_xyz")
-	if emitted:
+	if state["emitted"]:
 		push_error("test_signal_not_emitted_for_unknown_id: signal fired for unknown id")
 		return false
 	return true
@@ -104,13 +106,13 @@ func test_signal_not_emitted_for_unknown_id() -> bool:
 ## Calling unlock() a second time for the same id does not re-emit the signal.
 func test_signal_not_emitted_on_duplicate_unlock() -> bool:
 	var mgr := _make_mgr()
-	var emit_count := 0
+	var state := {"count": 0}
 	mgr.achievement_unlocked.connect(func(_id: String, _name: String) -> void:
-		emit_count += 1
+		state["count"] += 1
 	)
 	mgr.unlock("ghost")
 	mgr.unlock("ghost")
-	if emit_count != 1:
-		push_error("test_signal_not_emitted_on_duplicate_unlock: expected 1 emission, got %d" % emit_count)
+	if state["count"] != 1:
+		push_error("test_signal_not_emitted_on_duplicate_unlock: expected 1 emission, got %d" % state["count"])
 		return false
 	return true
