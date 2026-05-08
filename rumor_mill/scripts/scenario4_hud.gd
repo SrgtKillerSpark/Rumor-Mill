@@ -39,7 +39,7 @@ const NPC_DISPLAY_NAMES := {
 # ── Node refs ────────────────────────────────────────────────────────────────
 var _score_labels:      Dictionary = {}  # npc_id -> Label
 var _bars:              Dictionary = {}  # npc_id -> ColorRect (fill)
-var _bar_bgs:           Dictionary = {}  # npc_id -> ColorRect (background)
+var _bar_bgs:           Dictionary = {}  # npc_id -> Panel (background)
 var _inquisitor_lbl:    Label      = null
 var _faction_shift_lbl: Label      = null
 var _inquisitor_tween:  Tween      = null
@@ -137,10 +137,12 @@ func _build_ui() -> void:
 
 		var bar_pair := _make_progress_bar(BAR_WIDTH, BAR_HEIGHT,
 			"Reputation bar — green means safe (>=48), red means failing (<%d)." % _fail_thresh)
-		var bar_bg: ColorRect = bar_pair[0]
+		var bar_bg: Panel     = bar_pair[0]
 		var bar:    ColorRect = bar_pair[1]
 		# Blue accent: tint background with C_DEFEND to mark this as a defense track.
-		bar_bg.color = Color(C_DEFEND.r, C_DEFEND.g, C_DEFEND.b, 0.18)
+		var bg_style: StyleBoxFlat = bar_bg.get_theme_stylebox("panel").duplicate()
+		bg_style.bg_color = Color(C_DEFEND.r, C_DEFEND.g, C_DEFEND.b, 0.18)
+		bar_bg.add_theme_stylebox_override("panel", bg_style)
 		vbox.add_child(bar_bg)
 		_bar_bgs[npc_id] = bar_bg
 		_bars[npc_id]    = bar
