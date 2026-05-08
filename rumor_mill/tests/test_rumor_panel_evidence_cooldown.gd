@@ -45,8 +45,9 @@ class AnalyticsLoggerSpy extends AnalyticsLogger:
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-## Return a fresh PlayerIntelStore.
+## Return a fresh PlayerIntelStore with evidence_economy_v2 enabled.
 static func _make_store() -> PlayerIntelStore:
+	GameState.evidence_economy_v2 = true
 	return PlayerIntelStore.new()
 
 
@@ -99,6 +100,9 @@ func run() -> void:
 		else:
 			push_error("  FAIL  %s" % method_name)
 			failed += 1
+
+	# Restore global flag so other test suites are not affected.
+	GameState.evidence_economy_v2 = false
 
 	print("\nRumorPanelEvidenceCooldown tests: %d passed, %d failed" % [passed, failed])
 
