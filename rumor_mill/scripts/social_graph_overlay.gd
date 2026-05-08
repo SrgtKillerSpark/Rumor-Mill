@@ -67,7 +67,7 @@ const NPC_LABEL_MAX_W  := 80.0  # Max pill width for NPC name labels (SPA-1675 #
 const SEARCH_MATCH_COLOR := Color(1.0, 0.85, 0.0, 1.0)
 
 # ── Risk Halos — Maren Orbit (SPA-1811) ──────────────────────────────────────
-const RISK_HALO_RADIUS_OFFSET  :=  6.0   # px beyond NODE_RADIUS for dashed ring
+const RISK_HALO_RADIUS_OFFSET  :=  8.0   # px beyond NODE_RADIUS for dashed ring
 const RISK_HALO_THICKNESS      :=  2.0   # dashed ring stroke width
 const RISK_HALO_MAREN_THICK    :=  3.0   # Maren's solid ring stroke width
 const RISK_HALO_DASH_LEN       := 10.0   # arc-length (px) per dash segment
