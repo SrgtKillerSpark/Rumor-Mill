@@ -39,6 +39,13 @@ extends RefCounted
 ##                                          Merchant's Debt, Normal): fixture parseable, flag ON, clean
 ##                                          exit, all Phase 2 mechanics, blackmail events, both endgame
 ##                                          conditions met (SPA-2021)
+##   • TestSpa2042RunAllTestsRunner       — parse-error guard for run_all_tests.tscn custom-runner:
+##                                          preloads all 16 SPA-1985-affected scripts, exercises fixed
+##                                          static-method paths, and asserts registration count (SPA-2042)
+##   • TestSpa1984WinProbabilityHud      — GUT regression for Apprentice win-probability forecast:
+##                                          widget gating (Apprentice-only), value updates on day-tick
+##                                          and score change, range validity across synthetic states,
+##                                          hidden on Normal/Master difficulty (SPA-2043)
 ##   • SmokePhase2Evidence               — end-to-end Phase 2 smoke: 3 acquisitions + 1 usage vs SPA-1522 spec (SPA-1617)
 ##   • TestSpa1685_1691_1693FixCoverage  — process_mode ALWAYS on dialogue canvas (SPA-1685),
 ##                                          illness_hotspot_buildings declared (SPA-1691),
@@ -344,6 +351,8 @@ const TestSpa1822EndScreenShipRegression = preload("res://tests/test_spa1822_end
 const TestSpa1798_1802_1803UiFixes     = preload("res://tests/test_spa1798_1802_1803_ui_fixes.gd")
 const TestSpa2021NdjsonReplayS5        = preload("res://tests/test_spa2021_ndjson_replay_s5.gd")
 const TestSpa2021NdjsonReplayS6        = preload("res://tests/test_spa2021_ndjson_replay_s6.gd")
+const TestSpa2042RunAllTestsRunner     = preload("res://tests/test_spa2042_run_all_tests_runner.gd")
+const TestSpa1984WinProbabilityHud     = preload("res://tests/test_spa1984_win_probability_hud.gd")
 const SmokePhase2Evidence              = preload("res://tests/smoke_phase2_evidence.gd")
 const TestSpa1685_1691_1693FixCoverage = preload("res://tests/test_spa1685_1691_1693_fix_coverage.gd")
 const TestSpa1725EvidenceAttached      = preload("res://tests/test_spa1725_evidence_attached.gd")
@@ -448,6 +457,12 @@ func _init() -> void:
 
 	print("\n── SPA-2021 X1 NDJSON-replay S6 (endgame / Merchant's Debt baseline) ──")
 	TestSpa2021NdjsonReplayS6.new().run()
+
+	print("\n── SPA-2042 run_all_tests.tscn custom-runner parse-error regression ──")
+	TestSpa2042RunAllTestsRunner.new().run()
+
+	print("\n── SPA-2043 SPA-1984 Apprentice win-probability forecast regression ──")
+	TestSpa1984WinProbabilityHud.new().run()
 
 	print("\n── SPA-1617 Phase 2 evidence telemetry smoke (end-to-end) ──")
 	SmokePhase2Evidence.new().run()
