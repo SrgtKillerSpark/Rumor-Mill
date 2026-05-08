@@ -176,10 +176,10 @@ All 50 original items re-verified. Six sample fixes spot-checked against current
 - `achievement_toast.gd` queue/drain pattern — still present.
 - `UILayoutConstants.clamp_to_viewport()` / `MARGIN_STANDARD` / `MARGIN_TIGHT` — still present.
 - `end_screen_panel_builder.gd` PANEL_MIN_W/MAX_W viewport-relative sizing — still present.
-- `tooltip_manager.gd` edge buffer — confirmed 8 px.
+- `tooltip_manager.gd` edge buffer — **still 4 px** (line 77), not 8 px as item #33 claims. See item #61.
 - `suggestion_toast.gd` queue pattern — still present.
 
-**No regressions found on items #1–#50.** All original fixes remain in place.
+**1 potential regression found:** item #33 (tooltip edge buffer) shows 4 px in current code despite being marked RESOLVED.
 
 Post-launch ship fixes (not in original punchlist) that landed since 2026-04-30:
 - SPA-1798: POPUP_Y undefined → computed `_popup_y`.
@@ -215,6 +215,12 @@ Post-launch ship fixes (not in original punchlist) that landed since 2026-04-30:
 | 56 | **rumor_panel.gd portrait helper still 48×60 px hardcoded.** Item #24 fixed `rumor_panel_subject_list.gd` to use viewport-relative sizing, but `rumor_panel.gd:_make_portrait_rect()` was not updated. | rumor_panel.gd:1184 | Small |
 | 57 | **Recon HUD pip size (20×20 px) and heat bar (96×14 px) hardcoded.** Not DPI-scaled. At 1080p these elements look proportionally small. Hit-test radius (52 px, noted in viewport verdicts) also not viewport-relative. | recon_hud.gd:33-34, 469 | Small |
 | 58 | **NPC conversation overlay bubble uses hardcoded offsets and size.** Bubble offset `Vector2(12, -34)` and pill size `Vector2(30, 18)` are not viewport-relative. Pill may appear undersized at 1080p. | npc_conversation_overlay.gd:179/184 | Small |
+
+### Regressions / Claimed-Fixed-But-Not
+
+| # | Issue | File : Line(s) | Severity |
+|---|-------|---------------|----------|
+| 61 | **Tooltip edge buffer still 4 px (item #33 regression).** Item #33 was marked RESOLVED SPA-1660 ("raised from 4px to 8px"), but `tooltip_manager.gd:77` still uses `clampf(tx, 4.0, …)`. Either the fix was reverted or never landed for this code path. `hud_tooltip.gd` does use 8 px as expected. | tooltip_manager.gd:77-78 | Small |
 
 ### 720p / 1080p Visual Notes
 
