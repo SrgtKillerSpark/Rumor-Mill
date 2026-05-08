@@ -892,6 +892,13 @@ func _try_confirm_seed() -> void:
 	# Consume evidence now that seeding succeeded.
 	if _selected_evidence_item != null and _intel_store_ref != null:
 		_intel_store_ref.consume_evidence(_selected_evidence_item)
+		# SPA-2092: Log evidence_used KPI event. verdict_phase="final" because evidence is
+		# committed only after the two-click confirm flow completes. Evidence item is already
+		# removed from inventory so save/load cannot trigger a duplicate emit.
+		if _analytics_ref != null:
+			_analytics_ref.log_evidence_verdict_used(
+				_selected_evidence_item.id, "final",
+				_world_ref.scenario_id if _world_ref != null else "")
 
 	# Resolve names for the signal.
 	var subj_name  := _get_npc_name(_selected_subject)

@@ -281,6 +281,7 @@ static func _pair_key(a: String, b: String) -> String:
 # ---------------------------------------------------------------------------
 class EvidenceItem:
 	var type: String
+	var id: String                             ## SPA-2092: unique instance id — "<snake_type>_<acquired_tick>".
 	var believability_bonus: float
 	var mutability_modifier: float
 	var compatible_claims: Array  # empty = any claim type
@@ -299,6 +300,7 @@ class EvidenceItem:
 			tick: int
 	) -> void:
 		type = ev_type
+		id   = "%s_%d" % [ev_type.to_lower().replace(" ", "_"), tick]
 		believability_bonus = bel_bonus
 		mutability_modifier = mut_mod
 		compatible_claims = compat

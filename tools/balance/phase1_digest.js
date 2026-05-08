@@ -252,6 +252,27 @@ function buildDigest(kpi, trig, inputFiles) {
   }
   out.push('');
 
+  // ── Evidence Used Per Run (SPA-2092) ─────────────────────────────────────────
+  out.push('---');
+  out.push('');
+  out.push('## Evidence Used Per Run');
+  out.push('');
+  out.push('_Phase 2 KPI: evidence items consumed per scenario run (mean / median / p90)._');
+  out.push('');
+
+  const eupr = kpi.evidence_used_per_run || {};
+  if (!Object.keys(eupr).length) {
+    out.push('_No evidence_used events in dataset._');
+  } else {
+    out.push('| Scenario | n | Mean | Median | p90 |');
+    out.push('|----------|---|------|--------|-----|');
+    for (const scen of Object.keys(eupr).sort()) {
+      const r = eupr[scen];
+      out.push(`| ${scen} | ${r.n} | ${r.mean != null ? r.mean.toFixed(2) : 'N/A'} | ${r.median != null ? r.median : 'N/A'} | ${r.p90 != null ? r.p90 : 'N/A'} |`);
+    }
+  }
+  out.push('');
+
   // ── Tutorial Funnel (SPA-2080) ──────────────────────────────────────────────
   out.push('---');
   out.push('');

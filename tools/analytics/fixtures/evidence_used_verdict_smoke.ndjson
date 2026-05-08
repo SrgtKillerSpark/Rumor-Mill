@@ -1,0 +1,9 @@
+{"ts":"2026-05-08T10:00:00.000Z","type":"scenario_selected","scenario_id":"scenario_2","difficulty":"normal"}
+{"ts":"2026-05-08T10:05:00.000Z","type":"evidence_used","evidence_id":"forged_document_120","verdict_phase":"final","scenario_id":"scenario_2"}
+{"ts":"2026-05-08T10:10:00.000Z","type":"evidence_used","evidence_id":"witness_account_210","verdict_phase":"final","scenario_id":"scenario_2"}
+{"ts":"2026-05-08T10:30:00.000Z","type":"scenario_ended","scenario_id":"scenario_2","difficulty":"normal","outcome":"WON","day_reached":14,"duration_sec":1800}
+{"ts":"2026-05-08T11:00:00.000Z","type":"scenario_selected","scenario_id":"scenario_2","difficulty":"normal"}
+{"ts":"2026-05-08T11:20:00.000Z","type":"evidence_used","evidence_id":"incriminating_artifact_88","verdict_phase":"final","scenario_id":"scenario_2"}
+{"ts":"2026-05-08T11:45:00.000Z","type":"scenario_ended","scenario_id":"scenario_2","difficulty":"normal","outcome":"FAILED","day_reached":7,"duration_sec":2700}
+{"ts":"2026-05-08T12:00:00.000Z","type":"scenario_selected","scenario_id":"scenario_3","difficulty":"normal"}
+{"ts":"2026-05-08T12:15:00.000Z","type":"scenario_ended","scenario_id":"scenario_3","difficulty":"normal","outcome":"FAILED","day_reached":5,"duration_sec":900}

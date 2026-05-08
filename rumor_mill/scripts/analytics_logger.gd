@@ -19,6 +19,7 @@
 ##   evidence_interaction             — observe/eavesdrop; action_type, success, day, scenario_id
 ##   evidence_attached                — evidence attached to rumor; evidence_type, credulity_boost, target_npc_id, day, scenario_id
 ##   target_shift_cooldown_blocked    — player clicked locked evidence during cooldown (SPA-1772); evidence_type, target_npc_id, cooldown_remaining_days, day, scenario_id, difficulty
+##   evidence_used                    — evidence committed in verdict (SPA-2092); evidence_id, verdict_phase, scenario_id
 ##   tutorial_step_completed          — tutorial progress (SPA-1241); step_id, scenario_id
 ##   tutorial_skipped                 — tutorial skipped by player (SPA-2080); scenario_id
 ##   settings_changed         — settings change (SPA-1241); setting_key, old_value, new_value
@@ -137,6 +138,19 @@ func log_target_shift_cooldown_blocked(evidence_type: String, target_npc_id: Str
 		"day":                     day,
 		"scenario_id":             scenario_id,
 		"difficulty":              difficulty,
+	})
+
+
+## SPA-2092: Log evidence spent/committed at a verdict stage.
+## verdict_phase: "interrogation" | "verdict-form" | "final"
+## evidence_id: unique item identifier from EvidenceItem.id.
+## Fires exactly once per consumed item — no save/load dedup needed (item is
+## already removed from inventory by the time this is called).
+func log_evidence_verdict_used(evidence_id: String, verdict_phase: String, scenario_id: String) -> void:
+	log_event("evidence_used", {
+		"evidence_id":   evidence_id,
+		"verdict_phase": verdict_phase,
+		"scenario_id":   scenario_id,
 	})
 
 

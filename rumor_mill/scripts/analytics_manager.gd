@@ -280,6 +280,18 @@ func log_evidence_used(
 	})
 
 
+## SPA-2092: Log evidence spent/committed at a verdict stage.
+## Delegates to AnalyticsLogger.log_evidence_verdict_used().
+## verdict_phase: "interrogation" | "verdict-form" | "final"
+## evidence_id: unique item identifier from EvidenceItem.id.
+func log_evidence_verdict_used(evidence_id: String, verdict_phase: String) -> void:
+	if _analytics_logger == null:
+		_enqueue("log_evidence_verdict_used", [evidence_id, verdict_phase])
+		return
+	_analytics_logger.log_evidence_verdict_used(
+		evidence_id, verdict_phase, _analytics_scenario_id)
+
+
 ## SPA-1574: Log evidence confidence decay tick (fires each day evidence ages).
 ## Called by the evidence-economy system at end-of-day processing.
 func log_evidence_decay_tick(evidence_type: String, prev_confidence: float, new_confidence: float) -> void:
