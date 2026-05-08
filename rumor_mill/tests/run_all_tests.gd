@@ -159,7 +159,8 @@ extends RefCounted
 ##   • TestScenario1Hud           — palette, bar constants, node refs null (SPA-1042)
 ##   • TestScenario2Hud           — palette, bar constants, node refs null (SPA-1042)
 ##   • TestScenario3Hud           — palette, bar constants, _bar_color_for_score() branches (SPA-1042)
-##   • TestScenario4Hud           — palette, bar constants, node refs null (SPA-1042)
+##   • TestScenario4Hud           — palette, bar constants, node refs null (SPA-1042);
+##                                  bar_bg Panel type + C_DEFEND StyleBoxFlat tint (SPA-2086)
 ##   • TestScenario5Hud           — palette, bar constants, _momentum_arrow() branches (SPA-1042)
 ##   • TestScenario6Hud           — palette, bar/blackmail constants, node refs null (SPA-1042)
 ##   • TestMainMenu               — Phase enum, palette, initial state, module refs null (SPA-1042)

@@ -9,6 +9,7 @@
 ##   • Initial danger-pulse state: _danger_pulse_active
 ##   • Initial dict state: _score_labels, _bars, _faction_bar_fills
 ##   • Inherited state: _world_ref, _result_lbl
+##   • SPA-2086 regression: bar_bg is Panel (not ColorRect); C_DEFEND tint via StyleBoxFlat
 ##
 ## Run from the Godot editor: Scene → Run Script.
 
@@ -64,6 +65,9 @@ func run() -> void:
 		# Initial tween refs
 		"test_initial_inquisitor_lbl_null",
 		"test_initial_faction_shift_lbl_null",
+		# SPA-2086 regression: bar_bg Panel type + C_DEFEND tint
+		"test_spa2086_bar_bg_is_panel_not_colorrect",
+		"test_spa2086_bar_bg_stylebox_has_c_defend_tint",
 	]
 
 	for method_name in tests:
@@ -262,5 +266,56 @@ static func test_initial_inquisitor_lbl_null() -> bool:
 static func test_initial_faction_shift_lbl_null() -> bool:
 	var h := _make_hud()
 	var ok: bool = h._faction_shift_lbl == null
+	h.free()
+	return ok
+
+
+# ── SPA-2086 regression guard ─────────────────────────────────────────────────
+
+## Regression for SPA-2086 (commit e956b5c):
+## _make_progress_bar() returns a Panel as bg (index 0), not a ColorRect.
+## If this reverts, the type annotation `var bar_bg: Panel` would break, or
+## the caller would get back a ColorRect and the StyleBoxFlat override would
+## silently do nothing visible.
+static func test_spa2086_bar_bg_is_panel_not_colorrect() -> bool:
+	var h := _make_hud()
+	var bar_pair: Array = h._make_progress_bar(h.BAR_WIDTH, h.BAR_HEIGHT)
+	var bar_bg: Node = bar_pair[0]
+	var ok: bool = bar_bg is Panel and not (bar_bg is ColorRect)
+	bar_bg.free()  # also frees the fill child added inside _make_progress_bar
+	h.free()
+	return ok
+
+
+## Regression for SPA-2086 (commit e956b5c):
+## After _build_ui(), every bar_bg in _bar_bgs must be a Panel whose "panel"
+## StyleBoxFlat override has bg_color == Color(C_DEFEND.r, C_DEFEND.g, C_DEFEND.b, 0.18).
+## Before the fix, _build_ui() assigned .color on a ColorRect, which is both
+## the wrong node type and the wrong API; the tint was never applied.
+static func test_spa2086_bar_bg_stylebox_has_c_defend_tint() -> bool:
+	var h := _make_hud()
+	h._build_ui()
+	# Must have at least one bar_bg entry (one per S4 NPC track).
+	if h._bar_bgs.is_empty():
+		h.free()
+		return false
+	var ok := true
+	for npc_id in h._bar_bgs:
+		var bg: Node = h._bar_bgs[npc_id]
+		if not bg is Panel:
+			ok = false
+			break
+		var sb: StyleBox = bg.get_theme_stylebox("panel")
+		if not sb is StyleBoxFlat:
+			ok = false
+			break
+		var col: Color = (sb as StyleBoxFlat).bg_color
+		# SPA-2086 spec: Color(C_DEFEND.r, C_DEFEND.g, C_DEFEND.b, 0.18)
+		# C_DEFEND = Color(0.50, 0.80, 1.00, 1.0)
+		var tol := 0.01
+		if not (absf(col.r - 0.50) < tol and absf(col.g - 0.80) < tol
+				and absf(col.b - 1.00) < tol and absf(col.a - 0.18) < tol):
+			ok = false
+			break
 	h.free()
 	return ok
