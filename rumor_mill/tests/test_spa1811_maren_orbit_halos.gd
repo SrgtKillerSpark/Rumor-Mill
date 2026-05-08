@@ -81,6 +81,9 @@ func run() -> void:
 		# _draw_risk_halos early-exit guards (null _draw_node safe)
 		"test_draw_halos_no_crash_when_halo_off",
 		"test_draw_halos_no_crash_when_orbit_empty",
+		# SPA-2022 ring-separation regression guard
+		"test_risk_halo_radius_offset_is_8px",
+		"test_risk_halo_no_overlap_with_state_ring",
 	]
 
 	for method_name in tests:
@@ -316,4 +319,42 @@ static func test_draw_halos_no_crash_when_orbit_empty() -> bool:
 	ov._risk_halo_on = true
 	# _maren_orbit is empty by default — no draw calls should be reached.
 	ov._draw_risk_halos([])
+	return true
+
+
+# ── SPA-2022 ring-separation regression guard ─────────────────────────────────
+
+## RISK_HALO_RADIUS_OFFSET must equal 8.0 (SPA-2022 fix; was 6.0).
+## Guards against accidental revert of commit 51ce80f.
+static func test_risk_halo_radius_offset_is_8px() -> bool:
+	var ov := _make_overlay()
+	if not is_equal_approx(ov.RISK_HALO_RADIUS_OFFSET, 8.0):
+		push_error("test_risk_halo_radius_offset_is_8px: expected 8.0, got %s (SPA-2022 revert?)" % str(ov.RISK_HALO_RADIUS_OFFSET))
+		return false
+	return true
+
+
+## The dashed risk-halo ring inner edge must sit strictly outside the NPC state
+## ring outer edge — i.e. the two rings must not overlap.
+##
+## Geometry (all values in canvas-space px at 1:1 zoom):
+##   state ring outer edge = NODE_RADIUS + RING_THICKNESS / 2
+##   halo ring inner edge  = NODE_RADIUS + RISK_HALO_RADIUS_OFFSET - RISK_HALO_THICKNESS / 2
+##
+## With the SPA-2022 fix (offset = 8):
+##   state outer = 12 + 2 = 14 px
+##   halo inner  = 12 + 8 - 1 = 19 px → 5 px separation (clearly legible at 720p)
+##
+## With the pre-fix value (offset = 6):
+##   halo inner  = 12 + 6 - 1 = 17 px → only 3 px separation (merged at 720p)
+static func test_risk_halo_no_overlap_with_state_ring() -> bool:
+	var ov := _make_overlay()
+	var state_ring_outer: float = ov.NODE_RADIUS + ov.RING_THICKNESS / 2.0
+	var halo_ring_inner: float  = ov.NODE_RADIUS + ov.RISK_HALO_RADIUS_OFFSET - ov.RISK_HALO_THICKNESS / 2.0
+	if halo_ring_inner <= state_ring_outer:
+		push_error(
+			"test_risk_halo_no_overlap_with_state_ring: rings overlap — " +
+			"halo inner (%.1f) <= state outer (%.1f)" % [halo_ring_inner, state_ring_outer]
+		)
+		return false
 	return true
