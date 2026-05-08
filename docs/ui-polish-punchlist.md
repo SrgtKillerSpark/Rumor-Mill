@@ -222,6 +222,15 @@ Post-launch ship fixes (not in original punchlist) that landed since 2026-04-30:
 |---|-------|---------------|----------|
 | 61 | **Tooltip edge buffer still 4 px (item #33 regression).** Item #33 was marked RESOLVED SPA-1660 ("raised from 4px to 8px"), but `tooltip_manager.gd:77` still uses `clampf(tx, 4.0, …)`. Either the fix was reverted or never landed for this code path. `hud_tooltip.gd` does use 8 px as expected. | tooltip_manager.gd:77-78 | Small |
 
+### Panels & HUDs Not Yet Viewport-Clamped
+
+| # | Issue | File : Line(s) | Severity |
+|---|-------|---------------|----------|
+| 62 | **Speed HUD row uses hardcoded pixel offsets (-248, 76, -8, 104).** Not viewport-relative. Misaligns at different resolutions, especially at 720p where horizontal space is tighter. | speed_hud.gd:116-119 | Medium |
+| 63 | **Tutorial HUD panel hardcoded to 650×340 px.** Constants `PANEL_WIDTH=650`/`PANEL_HEIGHT=340` used directly in offset calculations. At 720p the panel is 50% of screen width; at 1080p only 33%. Inconsistent visual weight. No `clamp_to_viewport()`. | tutorial_hud.gd:27-28, 141-144 | Medium |
+| 64 | **Building interior NPC roster RichTextLabel missing `scroll_active`.** `fit_content = true` with no scroll fallback. Long NPC lists at gathering points will clip silently. | building_interior.gd:84-91 | Medium |
+| 65 | **Daily planning overlay step label width hardcoded to 110 px.** Not viewport-relative. May be too wide if panel shrinks proportionally at 720p. | daily_planning_overlay.gd:318 | Small |
+
 ### 720p / 1080p Visual Notes
 
 | # | Issue | File : Line(s) | Severity |
