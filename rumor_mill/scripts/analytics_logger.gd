@@ -20,6 +20,7 @@
 ##   evidence_attached                — evidence attached to rumor; evidence_type, credulity_boost, target_npc_id, day, scenario_id
 ##   target_shift_cooldown_blocked    — player clicked locked evidence during cooldown (SPA-1772); evidence_type, target_npc_id, cooldown_remaining_days, day, scenario_id, difficulty
 ##   tutorial_step_completed          — tutorial progress (SPA-1241); step_id, scenario_id
+##   tutorial_skipped                 — tutorial skipped by player (SPA-2080); scenario_id
 ##   settings_changed         — settings change (SPA-1241); setting_key, old_value, new_value
 ##   scenario_fail_trigger    — explicit fail cause (SPA-1454); scenario_id, day, fail_cause,
 ##                              trigger_npc_id, trigger_rumor_id
@@ -155,6 +156,14 @@ func log_evidence_interaction(action_type: String, success: bool, day: int, scen
 func log_tutorial_step_completed(step_id: String, scenario_id: String) -> void:
 	log_event("tutorial_step_completed", {
 		"step_id":     step_id,
+		"scenario_id": scenario_id,
+	})
+
+
+## Log the player skipping the tutorial entirely (SPA-2080).
+## Fires once when the player clicks "Skip" on the tutorial prompt.
+func log_tutorial_skipped(scenario_id: String) -> void:
+	log_event("tutorial_skipped", {
 		"scenario_id": scenario_id,
 	})
 

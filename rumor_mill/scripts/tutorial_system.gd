@@ -811,6 +811,31 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 10,
 	},
+	# ── SPA-2081: Soft onboarding nudges for tutorial-skip players ───────────
+	"soft_nudge_observe": {
+		"title": "A Gentle Suggestion",
+		"body":  (
+			"Try [b]right-clicking a building[/b] to observe who's inside.  "
+			+ "Knowing who visits which location is the foundation of good intel."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	"soft_nudge_journal": {
+		"title": "Check Your Intel",
+		"body":  (
+			"Press [b]J[/b] to open your Journal and review what you've observed.  "
+			+ "Your intel log helps you choose the best seed target for a rumour."
+		),
+		"auto_dismiss_secs": 9,
+	},
+	"soft_nudge_rumor": {
+		"title": "Ready to Whisper?",
+		"body":  (
+			"Press [b]R[/b] to open the Rumour Panel and craft your first rumour.  "
+			+ "Pick a subject, choose a claim, then whisper it to a well-connected NPC."
+		),
+		"auto_dismiss_secs": 9,
+	},
 }
 
 

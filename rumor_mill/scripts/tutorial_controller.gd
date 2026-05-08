@@ -38,6 +38,10 @@ class_name TutorialController
 ## Used by AnalyticsManager to log tutorial_step_completed events (SPA-1241).
 signal step_completed(step_id: String, scenario_id: String)
 
+## Emitted when the player explicitly skips the tutorial.
+## Used by AnalyticsManager (SPA-2080) and SoftOnboardingNudgeManager (SPA-2081).
+signal tutorial_skipped(scenario_id: String)
+
 # ── Step definitions ─────────────────────────────────────────────────────────
 
 ## Scenario 1 — 7-step action-gated tutorial (SPA-835).
@@ -200,6 +204,7 @@ func start() -> void:
 ## Force-skip the tutorial.
 func skip() -> void:
 	_skipped = true
+	tutorial_skipped.emit(_scenario_id)
 	_active = false
 	guided_tutorial_active = false
 	_current_step = _steps.size()

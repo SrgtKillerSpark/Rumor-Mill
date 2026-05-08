@@ -187,7 +187,7 @@ func _on_analytics_new_day(day: int) -> void:
 					ev["evidence_type"], ev["direction"], ev["threshold"], ev["confidence"])
 
 
-## SPA-1241: Wire TutorialController step_completed signal.
+## SPA-1241/SPA-2080: Wire TutorialController tutorial signals.
 ## Called after the TutorialController is created (deferred from setup() because
 ## the controller is instantiated later in the game-start flow).
 func wire_tutorial_controller(tutorial_ctrl: Node) -> void:
@@ -196,12 +196,26 @@ func wire_tutorial_controller(tutorial_ctrl: Node) -> void:
 	else:
 		push_warning("AnalyticsManager: tutorial_ctrl is null or missing step_completed — tutorial_step_completed events will not be logged")
 
+	# SPA-2080: Wire the skip signal for tutorial_skipped events.
+	if tutorial_ctrl != null and tutorial_ctrl.has_signal("tutorial_skipped"):
+		tutorial_ctrl.tutorial_skipped.connect(_on_analytics_tutorial_skipped)
+	else:
+		push_warning("AnalyticsManager: tutorial_ctrl is null or missing tutorial_skipped — tutorial_skipped events will not be logged")
+
 
 func _on_analytics_tutorial_step_completed(step_id: String, scenario_id: String) -> void:
 	if _analytics_logger == null:
 		_enqueue("_on_analytics_tutorial_step_completed", [step_id, scenario_id])
 		return
 	_analytics_logger.log_tutorial_step_completed(step_id, scenario_id)
+
+
+## SPA-2080: Log tutorial_skipped when the player clicks "Skip" at the tutorial prompt.
+func _on_analytics_tutorial_skipped(scenario_id: String) -> void:
+	if _analytics_logger == null:
+		_enqueue("_on_analytics_tutorial_skipped", [scenario_id])
+		return
+	_analytics_logger.log_tutorial_skipped(scenario_id)
 
 
 func _on_analytics_settings_changed(setting_key: String, old_value: String, new_value: String) -> void:

@@ -109,7 +109,7 @@ try {
 
 // ── Build markdown digest ───────────────────────────────────────────────────
 
-function buildDigest(kpi, trig) {
+function buildDigest(kpi, trig, inputFiles) {
   const out = [];
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
 
@@ -252,6 +252,32 @@ function buildDigest(kpi, trig) {
   }
   out.push('');
 
+  // ── Tutorial Funnel (SPA-2080) ──────────────────────────────────────────────
+  out.push('---');
+  out.push('');
+  out.push('## Tutorial Funnel');
+  out.push('');
+
+  const { stepCounts, skips } = parseTutorialEvents(inputFiles);
+
+  if (stepCounts.size === 0 && skips.size === 0) {
+    out.push('_No tutorial events in dataset._');
+  } else {
+    // Per-scenario funnel tables
+    const allScenarios = new Set([...stepCounts.keys(), ...skips.keys()]);
+    for (const scen of [...allScenarios].sort()) {
+      const byStep = stepCounts.get(scen) || new Map();
+      const skipCount = skips.get(scen) || 0;
+
+      for (const line of renderTutorialFunnel(scen, byStep)) {
+        out.push(line);
+      }
+      out.push('');
+      out.push(`Skipped: **${skipCount}**`);
+      out.push('');
+    }
+  }
+
   // Volume
   out.push('---');
   out.push('');
@@ -269,6 +295,71 @@ function buildDigest(kpi, trig) {
   out.push('');
 
   return out.join('\n');
+}
+
+// ── Tutorial funnel helpers ──────────────────────────────────────────────────
+
+// Ordered step sequences per scenario — mirrors tutorial_controller.gd constants.
+const TUTORIAL_STEPS = {
+  scenario_1: ['gtut_opening','gtut_explore','gtut_observe_intel','gtut_eavesdrop','gtut_craft_rumor','gtut_watch_spread','gtut_complete'],
+  scenario_2: ['ctx_heat_intro','wtut_s2_mechanic_shift','wtut_s2_whats_new','ctx_s2_maren_warning'],
+  scenario_3: ['ctx_heat_intro','wtut_s3_whats_new','ctx_s3_dual_targets','ctx_s3_rival_intro'],
+  scenario_4: ['ctx_heat_intro','wtut_s4_whats_new','ctx_s4_defense_goal','ctx_s4_inquisitor_info'],
+  scenario_5: ['ctx_heat_intro','wtut_s5_whats_new','ctx_s5_three_way_race'],
+  scenario_6: ['ctx_heat_intro','wtut_s6_whats_new','ctx_s6_heat_ceiling'],
+};
+
+/**
+ * Parse tutorial_step_completed and tutorial_skipped events from NDJSON files.
+ * Returns { stepCounts: Map<scenarioId, Map<stepId, n>>, skips: Map<scenarioId, n> }.
+ */
+function parseTutorialEvents(inputFiles) {
+  const stepCounts = new Map(); // scenarioId → Map<stepId, count>
+  const skips = new Map();      // scenarioId → count
+
+  for (const f of inputFiles) {
+    const lines = fs.readFileSync(f, 'utf8').split('\n');
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      let ev;
+      try { ev = JSON.parse(line); } catch { continue; }
+
+      if (ev.type === 'tutorial_step_completed' && ev.step_id && ev.scenario_id) {
+        if (!stepCounts.has(ev.scenario_id)) stepCounts.set(ev.scenario_id, new Map());
+        const byStep = stepCounts.get(ev.scenario_id);
+        byStep.set(ev.step_id, (byStep.get(ev.step_id) || 0) + 1);
+      } else if (ev.type === 'tutorial_skipped' && ev.scenario_id) {
+        skips.set(ev.scenario_id, (skips.get(ev.scenario_id) || 0) + 1);
+      }
+    }
+  }
+  return { stepCounts, skips };
+}
+
+/**
+ * Render the tutorial funnel drop-off table for one scenario.
+ * Uses the ordered step list to show completion counts and drop-off %.
+ */
+function renderTutorialFunnel(scenarioId, byStep) {
+  const steps = TUTORIAL_STEPS[scenarioId] || [...byStep.keys()];
+  const out = [];
+  out.push(`**${scenarioId}**`);
+  out.push('');
+  out.push('| Step | Completions | Drop-off |');
+  out.push('|------|-------------|----------|');
+
+  let prevCount = null;
+  for (const stepId of steps) {
+    const count = byStep.get(stepId) || 0;
+    let dropStr = '—';
+    if (prevCount !== null && prevCount > 0) {
+      const dropPct = ((prevCount - count) / prevCount * 100).toFixed(0);
+      dropStr = `${dropPct}%`;
+    }
+    out.push(`| ${stepId} | ${count} | ${dropStr} |`);
+    prevCount = count;
+  }
+  return out;
 }
 
 function formatValue(v) {
@@ -290,7 +381,7 @@ function fmtSec(sec) {
 
 // ── Output ──────────────────────────────────────────────────────────────────
 
-const digest = buildDigest(kpiJson, triggerJson);
+const digest = buildDigest(kpiJson, triggerJson, files);
 
 if (outPath) {
   fs.writeFileSync(outPath, digest + '\n');

@@ -7,6 +7,7 @@
 ##   • Handler queuing: each signal handler enqueues when _analytics_logger is null
 ##   • Handler passthrough: _on_analytics_evidence_interaction skips non-observe/eavesdrop
 ##   • SPA-1530: log_evidence_acquired / log_evidence_used enqueue and field storage
+##   • SPA-2080: tutorial_skipped handler enqueues and stores scenario_id
 ##
 ## Strategy: AnalyticsManager extends RefCounted — no Node, no scene tree.
 ## Handlers are called directly as regular methods.
@@ -64,6 +65,11 @@ func run() -> void:
 		"test_tutorial_step_completed_stores_correct_args",
 		"test_settings_changed_enqueues_when_logger_null",
 		"test_settings_changed_stores_correct_args",
+
+		# ── SPA-2080: tutorial_skipped handler ──
+		"test_tutorial_skipped_enqueues_when_logger_null",
+		"test_tutorial_skipped_stores_method_name",
+		"test_tutorial_skipped_stores_scenario_id",
 
 		# ── SPA-1417: reputation_snapshot via new_day handler ──
 		"test_new_day_stores_day_arg_in_queue",
@@ -434,3 +440,26 @@ func test_log_evidence_used_stores_subject() -> bool:
 	var m := _make_mgr()
 	m.log_evidence_used("forged_document", "SCANDAL", "npc_aldric_merchant", "npc_calder_noble")
 	return m._event_queue[0]["args"][3] == "npc_calder_noble"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SPA-2080: tutorial_skipped handler
+# ══════════════════════════════════════════════════════════════════════════════
+
+func test_tutorial_skipped_enqueues_when_logger_null() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_tutorial_skipped("scenario_1")
+	return m._event_queue.size() == 1 \
+		and m._event_queue[0]["method"] == "_on_analytics_tutorial_skipped"
+
+
+func test_tutorial_skipped_stores_method_name() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_tutorial_skipped("scenario_1")
+	return m._event_queue[0]["method"] == "_on_analytics_tutorial_skipped"
+
+
+func test_tutorial_skipped_stores_scenario_id() -> bool:
+	var m := _make_mgr()
+	m._on_analytics_tutorial_skipped("scenario_3")
+	return m._event_queue[0]["args"][0] == "scenario_3"
