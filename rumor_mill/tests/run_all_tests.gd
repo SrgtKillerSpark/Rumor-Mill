@@ -22,6 +22,8 @@ extends RefCounted
 ##   • TestSpa1613EvidenceAcquired       — evidence_acquired NDJSON field shape for all 3 fire sites,
 ##                                          no double-emission guard, pre-setup queuing (SPA-1613)
 ##   • TestSpa2102DropMultiplierTelemetry — drop_multiplier_active field: true/false/default-param (SPA-2102)
+##   • TestSpa2104EventRewardsFreeze      — heat freeze (F1–F7): apply/block/tick/stack; effect keys (E1–E4):
+##                                          suspicionFreezeDays, bonusWhisperTokens, grantRandomEvidence (SPA-2104)
 ##   • TestSpa1614EvidenceUsedEmission   — evidence_used emission, field presence + values, disabled gate (SPA-1614)
 ##   • TestSpa1773WitnessAccountUsedEmission — witness_account_used bypass-mode event: emission,
 ##                                             field presence, halved bonus values, bypass-only gate (SPA-1773)
@@ -347,6 +349,7 @@ const TestSpa1544NewGameStateIsolation = preload("res://tests/test_spa1544_new_g
 const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_analytics_disabled_gating.gd")
 const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evidence_acquired.gd")
 const TestSpa2102DropMultiplierTelemetry = preload("res://tests/test_spa2102_drop_multiplier_telemetry.gd")
+const TestSpa2104EventRewardsFreeze      = preload("res://tests/test_spa2104_event_rewards_freeze.gd")
 const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
 const TestSpa1773WitnessAccountUsedEmission = preload("res://tests/test_spa1773_witness_account_used_emission.gd")
 const TestSpa1811MarenOrbitHalos       = preload("res://tests/test_spa1811_maren_orbit_halos.gd")
@@ -442,6 +445,9 @@ func _init() -> void:
 
 	print("\n── SPA-2102 drop_multiplier_active telemetry field (A1/A2/default) ──")
 	TestSpa2102DropMultiplierTelemetry.new().run()
+
+	print("\n── SPA-2104 mid-game event reward scaling + suspicion freeze (F1–F7/E1–E4) ──")
+	TestSpa2104EventRewardsFreeze.new().run()
 
 	print("\n── SPA-1614 evidence_used emission + shape ──")
 	TestSpa1614EvidenceUsedEmission.new().run()
