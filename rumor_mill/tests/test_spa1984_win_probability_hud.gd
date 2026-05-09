@@ -349,7 +349,6 @@ func test_d2_forecast_hidden_on_master_difficulty() -> bool:
 	GameState.selected_difficulty = "master"
 	var sm_d2 := ScenarioManager.new()
 	h._update_win_forecast(2, 7, sm_d2, ScenarioManager.ScenarioState.ACTIVE)
-	sm_d2.free()
 	var ok: bool = h._win_forecast_lbl.visible == false
 	if not ok:
 		push_error("test_d2: _win_forecast_lbl still visible on 'master' difficulty")
