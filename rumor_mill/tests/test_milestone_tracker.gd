@@ -58,21 +58,21 @@ func run() -> void:
 static func test_c_progress_is_green() -> bool:
 	var mt := _make_mt()
 	var ok: bool = mt.C_PROGRESS.g > 0.90 and mt.C_PROGRESS.r < 0.60
-	mt.free()
+
 	return ok
 
 
 static func test_c_warning_is_amber() -> bool:
 	var mt := _make_mt()
 	var ok: bool = mt.C_WARNING.r > 0.90 and mt.C_WARNING.g > 0.65 and mt.C_WARNING.b < 0.35
-	mt.free()
+
 	return ok
 
 
 static func test_c_danger_is_red() -> bool:
 	var mt := _make_mt()
 	var ok: bool = mt.C_DANGER.r > 0.85 and mt.C_DANGER.g < 0.40
-	mt.free()
+
 	return ok
 
 
@@ -80,7 +80,7 @@ static func test_c_neutral_is_parchment() -> bool:
 	var mt := _make_mt()
 	# parchment: high r, high g, moderate b — all fairly close
 	var ok: bool = mt.C_NEUTRAL.r > 0.75 and mt.C_NEUTRAL.g > 0.70 and mt.C_NEUTRAL.b > 0.45
-	mt.free()
+
 	return ok
 
 
@@ -89,42 +89,42 @@ static func test_c_neutral_is_parchment() -> bool:
 static func test_initial_fired_empty() -> bool:
 	var mt := _make_mt()
 	var ok: bool = mt._fired.is_empty()
-	mt.free()
+
 	return ok
 
 
 static func test_initial_scenario_id_zero() -> bool:
 	var mt := _make_mt()
 	var ok: bool = mt._scenario_id == 0
-	mt.free()
+
 	return ok
 
 
 static func test_initial_rep_system_null() -> bool:
 	var mt := _make_mt()
 	var ok: bool = mt._rep_system == null
-	mt.free()
+
 	return ok
 
 
 static func test_initial_scenario_mgr_null() -> bool:
 	var mt := _make_mt()
 	var ok: bool = mt._scenario_mgr == null
-	mt.free()
+
 	return ok
 
 
 static func test_initial_intel_store_null() -> bool:
 	var mt := _make_mt()
 	var ok: bool = mt._intel_store == null
-	mt.free()
+
 	return ok
 
 
 static func test_initial_show_milestone_invalid() -> bool:
 	var mt := _make_mt()
 	var ok: bool = not mt._show_milestone.is_valid()
-	mt.free()
+
 	return ok
 
 
@@ -141,5 +141,5 @@ static func test_fire_dedup_only_fires_once() -> bool:
 	mt._fire("test_id", "Test text again", Color.WHITE)
 	var after_second: int = mt._fired.size()
 	var ok: bool = after_first == 1 and after_second == 1 and mt._fired.has("test_id")
-	mt.free()
+
 	return ok
