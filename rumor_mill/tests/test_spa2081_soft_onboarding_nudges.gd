@@ -144,7 +144,7 @@ func test_a2_active_after_activate() -> bool:
 ## N1: nudge 1 fires after elapsed >= 90 s with no observe action performed.
 func test_n1_nudge1_fires_after_90s_without_observe() -> bool:
 	var parts: Array  = _make_primed(91.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var banner: MockBanner              = parts[2]
 	mgr._check_nudges()
 	return mgr._nudge1_fired \
@@ -154,7 +154,7 @@ func test_n1_nudge1_fires_after_90s_without_observe() -> bool:
 ## N2: nudge 1 is suppressed when the player has already observed (before 90 s).
 func test_n2_nudge1_suppressed_when_observed() -> bool:
 	var parts: Array  = _make_primed(91.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var banner: MockBanner              = parts[2]
 	mgr._observed        = true
 	mgr._observe_elapsed = 10.0    # observed well before the 90 s threshold
@@ -168,7 +168,7 @@ func test_n2_nudge1_suppressed_when_observed() -> bool:
 ## threshold (120 s) and _observed stays false, isolating nudge 1 exclusively.
 func test_n3_nudge1_does_not_refire() -> bool:
 	var parts: Array  = _make_primed(91.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var banner: MockBanner              = parts[2]
 	mgr._nudge1_fired = true
 	mgr._check_nudges()
@@ -185,7 +185,7 @@ func test_n3_nudge1_does_not_refire() -> bool:
 ## Nudge 1 is skipped because _observed = true; nudge 3 needs 120 s.
 func test_n4_nudge2_fires_60s_after_observe() -> bool:
 	var parts: Array  = _make_primed(80.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var banner: MockBanner              = parts[2]
 	mgr._observed        = true
 	mgr._observe_elapsed = 10.0
@@ -197,7 +197,7 @@ func test_n4_nudge2_fires_60s_after_observe() -> bool:
 ## N5: nudge 2 is suppressed when the journal was already opened.
 func test_n5_nudge2_suppressed_when_journal_opened() -> bool:
 	var parts: Array  = _make_primed(80.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var banner: MockBanner              = parts[2]
 	mgr._observed        = true
 	mgr._observe_elapsed = 10.0
@@ -212,7 +212,7 @@ func test_n5_nudge2_suppressed_when_journal_opened() -> bool:
 ## being guided toward Observe first; Journal nudge would be misleading).
 func test_n6_nudge2_skipped_when_nudge1_fired() -> bool:
 	var parts: Array  = _make_primed(130.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var banner: MockBanner              = parts[2]
 	# Nudge 1 already fired; player later observed but journal still not opened.
 	mgr._nudge1_fired    = true
@@ -232,7 +232,7 @@ func test_n6_nudge2_skipped_when_nudge1_fired() -> bool:
 ## Nudges 1 and 2 are pre-marked fired to isolate nudge 3.
 func test_n7_nudge3_fires_after_120s_without_rumor() -> bool:
 	var parts: Array  = _make_primed(121.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var banner: MockBanner              = parts[2]
 	mgr._nudge1_fired = true
 	mgr._nudge2_fired = true
@@ -245,7 +245,7 @@ func test_n7_nudge3_fires_after_120s_without_rumor() -> bool:
 ## N8: nudge 3 is suppressed when a rumor was already crafted.
 func test_n8_nudge3_suppressed_when_rumor_crafted() -> bool:
 	var parts: Array  = _make_primed(121.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var banner: MockBanner              = parts[2]
 	mgr._nudge1_fired  = true
 	mgr._nudge2_fired  = true
@@ -264,7 +264,7 @@ func test_n8_nudge3_suppressed_when_rumor_crafted() -> bool:
 ## the top of _check_nudges(), enforcing the 3-nudge session cap.
 func test_c1_active_becomes_false_at_cap() -> bool:
 	var parts: Array  = _make_primed(200.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	mgr._nudges_shown = _SoftNudgeMgr.MAX_NUDGES
 	mgr._check_nudges()
 	return mgr._active == false
@@ -273,7 +273,7 @@ func test_c1_active_becomes_false_at_cap() -> bool:
 ## C2: no hint is queued once _nudges_shown already equals MAX_NUDGES.
 func test_c2_nudge_skipped_when_cap_reached() -> bool:
 	var parts: Array  = _make_primed(200.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var banner: MockBanner              = parts[2]
 	mgr._nudges_shown = _SoftNudgeMgr.MAX_NUDGES
 	mgr._check_nudges()
@@ -288,7 +288,7 @@ func test_c2_nudge_skipped_when_cap_reached() -> bool:
 ## i.e. the player previously dismissed the hint (banner marks it seen on close).
 func test_d1_fire_nudge_skips_when_already_seen() -> bool:
 	var parts: Array  = _make_primed(91.0)
-	var mgr: RefCounted = parts[0]
+	var mgr: Node = parts[0]
 	var sys: MockTutorialSys            = parts[1]
 	var banner: MockBanner              = parts[2]
 	sys.force_seen = true   # every hint ID is already seen
