@@ -143,7 +143,6 @@ func test_a3_forecast_lbl_visible_on_apprentice() -> bool:
 	GameState.selected_difficulty = "apprentice"
 	var sm_a3 := ScenarioManager.new()
 	h._update_win_forecast(2, 7, sm_a3, ScenarioManager.ScenarioState.ACTIVE)
-	sm_a3.free()
 	var ok: bool = h._win_forecast_lbl.visible == true
 	GameState.selected_difficulty = saved_diff
 	h.free()
@@ -329,7 +328,6 @@ func test_d1_forecast_hidden_on_normal_difficulty() -> bool:
 	GameState.selected_difficulty = "normal"
 	var sm_d1 := ScenarioManager.new()
 	h._update_win_forecast(2, 7, sm_d1, ScenarioManager.ScenarioState.ACTIVE)
-	sm_d1.free()
 	var ok: bool = h._win_forecast_lbl.visible == false
 	if not ok:
 		push_error("test_d1: _win_forecast_lbl still visible on 'normal' difficulty")
