@@ -156,19 +156,19 @@ static func test_spend_whisper_returns_false_when_empty() -> bool:
 
 static func test_spend_whisper_emits_whisper_spent() -> bool:
 	var store := _fresh()
-	var fired := false
-	store.whisper_spent.connect(func(): fired = true)
+	var fired := [false]
+	store.whisper_spent.connect(func(): fired[0] = true)
 	store.try_spend_whisper()
-	return fired
+	return fired[0]
 
 
 static func test_spend_last_whisper_emits_tokens_exhausted() -> bool:
 	var store := _fresh()
 	store.whisper_tokens_remaining = 1
-	var exhausted := false
-	store.tokens_exhausted.connect(func(): exhausted = true)
+	var exhausted := [false]
+	store.tokens_exhausted.connect(func(): exhausted[0] = true)
 	store.try_spend_whisper()
-	return exhausted
+	return exhausted[0]
 
 
 # ── replenish ─────────────────────────────────────────────────────────────────
@@ -217,20 +217,20 @@ static func test_heat_clamped_at_100() -> bool:
 static func test_heat_warning_fired_at_50() -> bool:
 	var store := _fresh()
 	store.heat_enabled = true
-	var warned := false
-	store.heat_warning.connect(func(): warned = true)
+	var warned := [false]
+	store.heat_warning.connect(func(): warned[0] = true)
 	store.add_heat("npc_a", 50.0)
-	return warned
+	return warned[0]
 
 
 static func test_heat_warning_fired_only_once() -> bool:
 	var store := _fresh()
 	store.heat_enabled = true
-	var count := 0
-	store.heat_warning.connect(func(): count += 1)
+	var count := [0]
+	store.heat_warning.connect(func(): count[0] += 1)
 	store.add_heat("npc_a", 50.0)
 	store.add_heat("npc_a", 10.0)  # still above 50 — should NOT fire again
-	return count == 1
+	return count[0] == 1
 
 
 static func test_decay_heat_reduces_value() -> bool:

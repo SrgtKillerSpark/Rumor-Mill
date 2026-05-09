@@ -123,6 +123,9 @@ var _factions_hidden: Dictionary = {}
 # int(RumorState) → true  when that state's nodes are highlighted (rest dimmed).
 var _states_highlighted: Dictionary = {}
 
+# ── NPC lookup cache (populated during draw passes) ──────────────────────────
+var _npc_lookup: Dictionary = {}   # npc_id → Node2D, built by draw routines
+
 # ── Risk Halos — Maren Orbit (SPA-1811) ──────────────────────────────────────
 var _risk_halo_on: bool      = true   # legend toggle: true = visible
 var _maren_orbit: Dictionary = {}     # npc_id → float weight (from Maren's edge dict)
@@ -968,7 +971,7 @@ func _find_npc_by_id(npcs: Array, npc_id: String) -> Node2D:
 	for npc in npcs:
 		if npc.npc_data.get("id", "") == npc_id:
 			return npc
-	return null
+	return _npc_lookup.get(npc_id, null)
 
 
 # ── Risk Halos — Maren Orbit (SPA-1811) ──────────────────────────────────────

@@ -324,29 +324,29 @@ static func test_heat_ceiling_override_expires() -> bool:
 
 static func test_on_player_exposed_fails_s1() -> bool:
 	var sm := _make_sm(1)
-	var failed := false
+	var failed := [false]
 	sm.scenario_resolved.connect(func(sid, state):
-		failed = (sid == 1 and state == ScenarioManager.ScenarioState.FAILED))
+		failed[0] = (sid == 1 and state == ScenarioManager.ScenarioState.FAILED))
 	sm.on_player_exposed()
-	return failed and sm.scenario_1_state == ScenarioManager.ScenarioState.FAILED
+	return failed[0] and sm.scenario_1_state == ScenarioManager.ScenarioState.FAILED
 
 
 static func test_on_player_exposed_ignored_for_s2() -> bool:
 	var sm := _make_sm(2)
-	var resolved := false
-	sm.scenario_resolved.connect(func(_sid, _state): resolved = true)
+	var resolved := [false]
+	sm.scenario_resolved.connect(func(_sid, _state): resolved[0] = true)
 	sm.on_player_exposed()
-	return not resolved and sm.scenario_2_state == ScenarioManager.ScenarioState.ACTIVE
+	return not resolved[0] and sm.scenario_2_state == ScenarioManager.ScenarioState.ACTIVE
 
 
 ## on_player_exposed must not re-emit scenario_resolved if S1 is already FAILED.
 static func test_on_player_exposed_noop_when_already_failed() -> bool:
 	var sm := _make_sm(1)
 	sm.scenario_1_state = ScenarioManager.ScenarioState.FAILED
-	var count := 0
-	sm.scenario_resolved.connect(func(_sid, _state): count += 1)
+	var count := [0]
+	sm.scenario_resolved.connect(func(_sid, _state): count[0] += 1)
 	sm.on_player_exposed()
-	return count == 0
+	return count[0] == 0
 
 
 # ── Deadline warning signals ──────────────────────────────────────────────────
@@ -354,36 +354,36 @@ static func test_on_player_exposed_noop_when_already_failed() -> bool:
 ## At ≥75% of days_allowed, deadline_warning fires with threshold=0.75.
 static func test_deadline_warning_fires_at_75_pct() -> bool:
 	var sm := _make_sm(1, 20)
-	var fired_75 := false
+	var fired_75 := [false]
 	sm.deadline_warning.connect(func(threshold, _days_rem):
 		if absf(threshold - 0.75) < 0.001:
-			fired_75 = true)
+			fired_75[0] = true)
 	# Day 16 of 20: fraction = (16-1)/(20-1) ≈ 0.789 ≥ 0.75
 	sm._check_deadline_warnings(15 * 24)
-	return fired_75
+	return fired_75[0]
 
 
 ## At ≥90% of days_allowed, deadline_warning fires with threshold=0.90.
 static func test_deadline_warning_fires_at_90_pct() -> bool:
 	var sm := _make_sm(1, 20)
-	var fired_90 := false
+	var fired_90 := [false]
 	sm.deadline_warning.connect(func(threshold, _days_rem):
 		if absf(threshold - 0.90) < 0.001:
-			fired_90 = true)
+			fired_90[0] = true)
 	# Day 19 of 20: fraction = (19-1)/(20-1) ≈ 0.947 ≥ 0.90
 	sm._check_deadline_warnings(18 * 24)
-	return fired_90
+	return fired_90[0]
 
 
 ## deadline_warning should only fire once per threshold across multiple calls.
 static func test_deadline_warning_not_fired_twice() -> bool:
 	var sm := _make_sm(1, 20)
-	var count := 0
-	sm.deadline_warning.connect(func(_t, _d): count += 1)
+	var count := [0]
+	sm.deadline_warning.connect(func(_t, _d): count[0] += 1)
 	# Both calls are at the same tick — should fire 0.75 threshold exactly once.
 	sm._check_deadline_warnings(15 * 24)
 	sm._check_deadline_warnings(15 * 24)
-	return count == 1
+	return count[0] == 1
 
 
 # ── s1_first_blood signal ─────────────────────────────────────────────────────
@@ -392,22 +392,22 @@ static func test_deadline_warning_not_fired_twice() -> bool:
 static func test_s1_first_blood_fires_below_48() -> bool:
 	var sm  := _make_sm(1)
 	var rep := _rep_with([_snap("edric_fenn", 47)])
-	var fired := false
-	sm.s1_first_blood.connect(func(): fired = true)
+	var fired := [false]
+	sm.s1_first_blood.connect(func(): fired[0] = true)
 	sm.evaluate(rep, 0)
-	return fired and sm._s1_first_blood_fired
+	return fired[0] and sm._s1_first_blood_fired
 
 
 ## s1_first_blood must not fire a second time on subsequent evaluate() calls.
 static func test_s1_first_blood_not_fired_twice() -> bool:
 	var sm  := _make_sm(1)
 	var rep := _rep_with([_snap("edric_fenn", 47)])
-	var count := 0
-	sm.s1_first_blood.connect(func(): count += 1)
+	var count := [0]
+	sm.s1_first_blood.connect(func(): count[0] += 1)
 	sm.evaluate(rep, 0)
 	# Second evaluate at the same state — s1_first_blood must not fire again.
 	sm.evaluate(rep, 1)
-	return count == 1
+	return count[0] == 1
 
 
 # ── get_win_progress ──────────────────────────────────────────────────────────
@@ -643,9 +643,9 @@ static func test_load_scenario_data_does_not_reset_won_state() -> bool:
 static func test_evaluate_noop_after_s1_already_won() -> bool:
 	var sm  := _make_sm(1)
 	sm.scenario_1_state = ScenarioManager.ScenarioState.WON
-	var emit_count := 0
-	sm.scenario_resolved.connect(func(_sid, _state): emit_count += 1)
+	var emit_count := [0]
+	sm.scenario_resolved.connect(func(_sid, _state): emit_count[0] += 1)
 	# Edric at 5 — would normally trigger an instant win if state were ACTIVE.
 	var rep := _rep_with([_snap("edric_fenn", 5)])
 	sm.evaluate(rep, 0)
-	return emit_count == 0
+	return emit_count[0] == 0

@@ -62,8 +62,9 @@ class _MockWorld:
 
 
 ## Minimal NPC stub: npc_data dict + current_location_code.
+## Must extend Node2D to satisfy the Node2D type annotation in _pick_seed_npc.
 class _MockNpc:
-	extends RefCounted
+	extends Node2D
 	var npc_data:             Dictionary = {}
 	var current_location_code: String    = ""
 

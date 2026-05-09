@@ -215,7 +215,7 @@ static func test_close_sets_visible_false() -> bool:
 ## _close() must emit the closed signal so callers (pause_menu) can react.
 static func test_close_emits_closed_signal() -> bool:
 	var sm := _make_sm()
-	var fired := false
-	sm.closed.connect(func() -> void: fired = true)
+	var fired := [false]
+	sm.closed.connect(func() -> void: fired[0] = true)
 	sm._close()
-	return fired
+	return fired[0]

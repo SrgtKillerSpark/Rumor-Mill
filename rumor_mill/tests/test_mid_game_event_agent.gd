@@ -181,10 +181,10 @@ static func test_load_events_stores_events() -> bool:
 static func test_tick_noop_when_inactive() -> bool:
 	var agent := _make_agent()
 	agent.load_events([_make_event("ev1", 1, 10, 1.0)])
-	var presented := false
-	agent.event_presented.connect(func(_d): presented = true)
+	var presented := [false]
+	agent.event_presented.connect(func(_d): presented[0] = true)
 	agent.tick(5, MockWorld.new())
-	if presented:
+	if presented[0]:
 		push_error("test_tick_noop_when_inactive: event_presented emitted but agent not active")
 		return false
 	return true
@@ -197,10 +197,10 @@ static func test_tick_skips_event_before_window() -> bool:
 	var agent := _make_agent()
 	agent.activate()
 	agent.load_events([_make_event("ev_future", 10, 15, 1.0)])
-	var presented := false
-	agent.event_presented.connect(func(_d): presented = true)
+	var presented := [false]
+	agent.event_presented.connect(func(_d): presented[0] = true)
 	agent.tick(3, MockWorld.new())
-	return not presented
+	return not presented[0]
 
 
 ## Events whose window end has passed must be added to _resolved_ids.
@@ -222,13 +222,13 @@ static func test_tick_fires_event_with_probability_one() -> bool:
 	var agent := _make_agent()
 	agent.activate()
 	agent.load_events([_make_event("ev_fire", 1, 20, 1.0)])
-	var presented_id := ""
-	agent.event_presented.connect(func(d): presented_id = d.get("id", ""))
+	var presented_id := [""]
+	agent.event_presented.connect(func(d): presented_id[0] = d.get("id", ""))
 	agent.tick(5, MockWorld.new())
-	if presented_id.is_empty():
+	if presented_id[0].is_empty():
 		push_error("test_tick_fires_event_with_probability_one: event_presented not emitted")
 		return false
-	return presented_id == "ev_fire"
+	return presented_id[0] == "ev_fire"
 
 
 ## When a pending event exists, tick() must not fire any further events.
@@ -239,17 +239,17 @@ static func test_tick_does_not_fire_when_already_pending() -> bool:
 		_make_event("ev1", 1, 20, 1.0),
 		_make_event("ev2", 1, 20, 1.0),
 	])
-	var fire_count := 0
-	agent.event_presented.connect(func(_d): fire_count += 1)
+	var fire_count := [0]
+	agent.event_presented.connect(func(_d): fire_count[0] += 1)
 	# Day 5 — one event fires and becomes pending.
 	agent.tick(5, MockWorld.new())
-	if fire_count != 1:
-		push_error("test_tick_does_not_fire_when_already_pending: expected 1 fire after day 5, got %d" % fire_count)
+	if fire_count[0] != 1:
+		push_error("test_tick_does_not_fire_when_already_pending: expected 1 fire after day 5, got %d" % fire_count[0])
 		return false
 	# Day 6 — pending event blocks any new fire.
 	agent.tick(6, MockWorld.new())
-	if fire_count != 1:
-		push_error("test_tick_does_not_fire_when_already_pending: expected still 1 after day 6, got %d" % fire_count)
+	if fire_count[0] != 1:
+		push_error("test_tick_does_not_fire_when_already_pending: expected still 1 after day 6, got %d" % fire_count[0])
 		return false
 	return true
 
@@ -297,22 +297,22 @@ static func test_resolve_choice_emits_event_resolved() -> bool:
 	agent.activate()
 	agent.load_events([_make_event("ev_sig", 1, 20, 1.0)])
 	agent.tick(5, MockWorld.new())
-	var resolved_id    := ""
-	var resolved_index := -1
-	var resolved_text  := ""
+	var resolved_id    := [""]
+	var resolved_index := [-1]
+	var resolved_text  := [""]
 	agent.event_resolved.connect(func(eid, ci, ot):
-		resolved_id    = eid
-		resolved_index = ci
-		resolved_text  = ot
+		resolved_id[0]    = eid
+		resolved_index[0] = ci
+		resolved_text[0]  = ot
 	)
 	agent.resolve_choice("ev_sig", 1)   # choice index 1 → "Choice B outcome"
-	if resolved_id != "ev_sig":
-		push_error("test_resolve_choice_emits_event_resolved: wrong event id '%s'" % resolved_id)
+	if resolved_id[0] != "ev_sig":
+		push_error("test_resolve_choice_emits_event_resolved: wrong event id '%s'" % resolved_id[0])
 		return false
-	if resolved_index != 1:
-		push_error("test_resolve_choice_emits_event_resolved: wrong choice index %d" % resolved_index)
+	if resolved_index[0] != 1:
+		push_error("test_resolve_choice_emits_event_resolved: wrong choice index %d" % resolved_index[0])
 		return false
-	return resolved_text == "Choice B outcome"
+	return resolved_text[0] == "Choice B outcome"
 
 
 ## Passing the wrong event id must leave the pending event in place.
