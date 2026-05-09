@@ -95,11 +95,13 @@ static func test_feedback_presets_last_entry() -> bool:
 # ── Dimension constants ───────────────────────────────────────────────────────
 
 static func test_feedback_panel_w() -> bool:
-	return _make_esf().FEEDBACK_PANEL_W == 500
+	var esf := _make_esf()
+	return esf.FEEDBACK_PANEL_MIN_W == 420 and esf.FEEDBACK_PANEL_MAX_W == 560
 
 
 static func test_feedback_panel_h() -> bool:
-	return _make_esf().FEEDBACK_PANEL_H == 360
+	var esf := _make_esf()
+	return esf.FEEDBACK_PANEL_MIN_H == 300 and esf.FEEDBACK_PANEL_MAX_H == 420
 
 
 static func test_feedback_char_limit() -> bool:

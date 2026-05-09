@@ -366,9 +366,11 @@ static func test_on_maren_grace_started_makes_warning_visible() -> bool:
 static func test_on_maren_grace_started_warning_includes_tip() -> bool:
 	var h := _make_hud()
 	h._maren_warning_lbl = Label.new()
+	h._maren_hint_lbl = Label.new()
 	h._on_maren_grace_started(2)
-	var ok: bool = "Tip" in h._maren_warning_lbl.text
+	var ok: bool = "Tip" in h._maren_hint_lbl.text
 	h._maren_warning_lbl.free()
+	h._maren_hint_lbl.free()
 	h.free()
 	return ok
 

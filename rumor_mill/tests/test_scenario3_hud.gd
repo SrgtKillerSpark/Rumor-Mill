@@ -52,9 +52,6 @@ func run() -> void:
 		"test_initial_tomas_bar_null",
 		"test_initial_rival_lbl_null",
 		"test_initial_disrupt_btn_null",
-		"test_initial_scout_btn_null",
-		"test_initial_scout_lbl_null",
-		"test_initial_degrade_lbl_null",
 		# Inherited state
 		"test_initial_world_ref_null",
 		"test_initial_result_lbl_null",
@@ -85,7 +82,7 @@ func run() -> void:
 
 static func test_bar_width() -> bool:
 	var h := _make_hud()
-	var ok: bool = h.BAR_WIDTH == 160
+	var ok: bool = h.BAR_WIDTH == 140
 	h.free()
 	return ok
 
@@ -146,27 +143,6 @@ static func test_initial_rival_lbl_null() -> bool:
 static func test_initial_disrupt_btn_null() -> bool:
 	var h := _make_hud()
 	var ok: bool = h._disrupt_btn == null
-	h.free()
-	return ok
-
-
-static func test_initial_scout_btn_null() -> bool:
-	var h := _make_hud()
-	var ok: bool = h._scout_btn == null
-	h.free()
-	return ok
-
-
-static func test_initial_scout_lbl_null() -> bool:
-	var h := _make_hud()
-	var ok: bool = h._scout_lbl == null
-	h.free()
-	return ok
-
-
-static func test_initial_degrade_lbl_null() -> bool:
-	var h := _make_hud()
-	var ok: bool = h._degrade_lbl == null
 	h.free()
 	return ok
 

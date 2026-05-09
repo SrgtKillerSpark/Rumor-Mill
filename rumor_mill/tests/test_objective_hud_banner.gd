@@ -213,7 +213,7 @@ static func test_check_failure_proximity_all_null_no_crash() -> bool:
 ## setup_world() assigns _world_ref.
 static func test_setup_world_assigns_world_ref() -> bool:
 	var ohb := _make_ohb()
-	var fake_world: Object = Object.new()
+	var fake_world: Node2D = Node2D.new()
 	ohb.setup_world(fake_world)
 	var ok: bool = ohb._world_ref == fake_world
 	fake_world.free()
