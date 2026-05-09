@@ -1,23 +1,20 @@
-## test_npc_core.gd — GUT unit tests for the core NPC data model.
+## test_npc_core.gd — Unit tests for the core NPC data model.
 ##
 ## Covers Rumor creation/decay, NpcRumorSlot state, claim-type helpers,
 ## and get_worst_rumor_state() priority logic — the "brain" of the NPC
 ## system that does not require a scene-tree or sprite assets to exercise.
 ##
-## Run via GUT panel (Godot editor) or headless:
-##   godot --headless -s addons/gut/gut_cmdln.gd \
-##         -gtest=res://tests/test_npc_core.gd -gexit
-##
 ## Integration tests that spin up a full NPC node (sprite, label, pathfinder)
 ## belong in tests/integration/test_npc_integration.gd (future work).
 
-extends GutTest
+class_name TestNpcCore
+extends RefCounted
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-func _make_rumor(
+static func _make_rumor(
 		rid: String = "r1",
 		subject: String = "npc_edric",
 		ctype: Rumor.ClaimType = Rumor.ClaimType.ACCUSATION,
@@ -30,259 +27,339 @@ func _make_rumor(
 
 
 # ---------------------------------------------------------------------------
+# Runner
+# ---------------------------------------------------------------------------
+
+func run() -> void:
+	var passed := 0
+	var failed := 0
+
+	var tests := [
+		# Rumor.create — field initialisation
+		"test_create_sets_id",
+		"test_create_sets_subject",
+		"test_create_sets_claim_type",
+		"test_create_clamps_intensity_low",
+		"test_create_clamps_intensity_high",
+		"test_create_clamps_mutability_low",
+		"test_create_clamps_mutability_high",
+		"test_create_sets_created_tick",
+		"test_create_sets_shelf_life",
+		"test_create_no_lineage_parent_by_default",
+		"test_create_stores_lineage_parent",
+		# Rumor.base_believability
+		"test_base_believability_intensity_1",
+		"test_base_believability_intensity_5",
+		"test_create_sets_initial_believability_from_intensity",
+		# Rumor.decay_one_tick / is_expired
+		"test_fresh_rumor_not_expired",
+		"test_rumor_not_expired_after_partial_decay",
+		"test_rumor_expired_after_full_decay",
+		"test_decay_reduces_believability_monotonically",
+		"test_decay_does_not_go_below_zero",
+		"test_zero_shelf_life_expires_immediately_on_decay",
+		# Rumor.claim_type_from_string
+		"test_claim_type_from_string_accusation",
+		"test_claim_type_from_string_scandal",
+		"test_claim_type_from_string_illness",
+		"test_claim_type_from_string_prophecy",
+		"test_claim_type_from_string_praise",
+		"test_claim_type_from_string_death",
+		"test_claim_type_from_string_heresy",
+		"test_claim_type_from_string_blackmail",
+		"test_claim_type_from_string_secret_alliance",
+		"test_claim_type_from_string_forbidden_romance",
+		"test_claim_type_from_string_unknown_defaults_to_accusation",
+		"test_claim_type_from_string_is_case_insensitive",
+		# Rumor.is_positive_claim
+		"test_praise_is_positive",
+		"test_prophecy_is_positive",
+		"test_accusation_is_negative",
+		"test_scandal_is_negative",
+		"test_death_is_negative",
+		"test_heresy_is_negative",
+		# Rumor.state_name
+		"test_state_name_evaluating",
+		"test_state_name_believe",
+		"test_state_name_spread",
+		"test_state_name_expired",
+		# Rumor.NpcRumorSlot — initialisation
+		"test_npc_rumor_slot_init_state_is_evaluating",
+		"test_npc_rumor_slot_stores_rumor",
+		"test_npc_rumor_slot_stores_source_faction",
+		"test_npc_rumor_slot_ticks_in_state_starts_at_zero",
+		"test_npc_rumor_slot_heard_from_count_starts_at_one",
+	]
+
+	for method_name in tests:
+		var result: bool = call(method_name)
+		if result:
+			print("  PASS  %s" % method_name)
+			passed += 1
+		else:
+			push_error("  FAIL  %s" % method_name)
+			failed += 1
+
+	print("\n  NpcCore: %d passed, %d failed" % [passed, failed])
+
+
+# ===========================================================================
 # Rumor.create — field initialisation
-# ---------------------------------------------------------------------------
+# ===========================================================================
 
-func test_create_sets_id() -> void:
+static func test_create_sets_id() -> bool:
 	var r := _make_rumor("rumor_abc")
-	assert_eq(r.id, "rumor_abc")
+	return r.id == "rumor_abc"
 
 
-func test_create_sets_subject() -> void:
+static func test_create_sets_subject() -> bool:
 	var r := _make_rumor("r1", "npc_tomas")
-	assert_eq(r.subject_npc_id, "npc_tomas")
+	return r.subject_npc_id == "npc_tomas"
 
 
-func test_create_sets_claim_type() -> void:
+static func test_create_sets_claim_type() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.SCANDAL)
-	assert_eq(r.claim_type, Rumor.ClaimType.SCANDAL)
+	return r.claim_type == Rumor.ClaimType.SCANDAL
 
 
-func test_create_clamps_intensity_low() -> void:
+static func test_create_clamps_intensity_low() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 0)
-	assert_eq(r.intensity, 1, "intensity below 1 should be clamped to 1")
+	return r.intensity == 1
 
 
-func test_create_clamps_intensity_high() -> void:
+static func test_create_clamps_intensity_high() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 99)
-	assert_eq(r.intensity, 5, "intensity above 5 should be clamped to 5")
+	return r.intensity == 5
 
 
-func test_create_clamps_mutability_low() -> void:
+static func test_create_clamps_mutability_low() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 3, -0.5)
-	assert_eq(r.mutability, 0.0)
+	return r.mutability == 0.0
 
 
-func test_create_clamps_mutability_high() -> void:
+static func test_create_clamps_mutability_high() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 3, 9.9)
-	assert_eq(r.mutability, 1.0)
+	return r.mutability == 1.0
 
 
-func test_create_sets_created_tick() -> void:
+static func test_create_sets_created_tick() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 3, 0.5, 42)
-	assert_eq(r.created_tick, 42)
+	return r.created_tick == 42
 
 
-func test_create_sets_shelf_life() -> void:
+static func test_create_sets_shelf_life() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 3, 0.5, 0, 250)
-	assert_eq(r.shelf_life_ticks, 250)
+	return r.shelf_life_ticks == 250
 
 
-func test_create_no_lineage_parent_by_default() -> void:
+static func test_create_no_lineage_parent_by_default() -> bool:
 	var r := _make_rumor()
-	assert_eq(r.lineage_parent_id, "")
+	return r.lineage_parent_id == ""
 
 
-func test_create_stores_lineage_parent() -> void:
+static func test_create_stores_lineage_parent() -> bool:
 	var r := Rumor.create("child", "npc_x", Rumor.ClaimType.PRAISE, 2, 0.3, 0, 100, "parent_id")
-	assert_eq(r.lineage_parent_id, "parent_id")
+	return r.lineage_parent_id == "parent_id"
 
 
-# ---------------------------------------------------------------------------
+# ===========================================================================
 # Rumor.base_believability
-# ---------------------------------------------------------------------------
+# ===========================================================================
 
-func test_base_believability_intensity_1() -> void:
+static func test_base_believability_intensity_1() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 1)
-	assert_almost_eq(r.base_believability(), 0.2, 0.001)
+	return absf(r.base_believability() - 0.2) < 0.001
 
 
-func test_base_believability_intensity_5() -> void:
+static func test_base_believability_intensity_5() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 5)
-	assert_almost_eq(r.base_believability(), 1.0, 0.001)
+	return absf(r.base_believability() - 1.0) < 0.001
 
 
-func test_create_sets_initial_believability_from_intensity() -> void:
+static func test_create_sets_initial_believability_from_intensity() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 3)
-	assert_almost_eq(r.current_believability, 0.6, 0.001)
+	return absf(r.current_believability - 0.6) < 0.001
 
 
-# ---------------------------------------------------------------------------
+# ===========================================================================
 # Rumor.decay_one_tick / is_expired
-# ---------------------------------------------------------------------------
+# ===========================================================================
 
-func test_fresh_rumor_not_expired() -> void:
+static func test_fresh_rumor_not_expired() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 3, 0.5, 0, 10)
-	assert_false(r.is_expired())
+	return not r.is_expired()
 
 
-func test_rumor_not_expired_after_partial_decay() -> void:
+static func test_rumor_not_expired_after_partial_decay() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 3, 0.5, 0, 10)
 	for i in range(5):
 		r.decay_one_tick()
-	assert_false(r.is_expired(), "should not expire after half its shelf life")
+	return not r.is_expired()
 
 
-func test_rumor_expired_after_full_decay() -> void:
+static func test_rumor_expired_after_full_decay() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 3, 0.5, 0, 10)
 	for i in range(10):
 		r.decay_one_tick()
-	assert_true(r.is_expired(), "should expire after shelf_life_ticks decays")
+	return r.is_expired()
 
 
-func test_decay_reduces_believability_monotonically() -> void:
+static func test_decay_reduces_believability_monotonically() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 5, 0.5, 0, 20)
 	var prev := r.current_believability
 	for i in range(15):
 		r.decay_one_tick()
-		assert_lte(r.current_believability, prev,
-			"believability must never increase during decay (tick %d)" % i)
+		if r.current_believability > prev:
+			return false
 		prev = r.current_believability
+	return true
 
 
-func test_decay_does_not_go_below_zero() -> void:
+static func test_decay_does_not_go_below_zero() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 1, 0.5, 0, 5)
 	for i in range(20):
 		r.decay_one_tick()
-	assert_gte(r.current_believability, 0.0)
+	return r.current_believability >= 0.0
 
 
-func test_zero_shelf_life_expires_immediately_on_decay() -> void:
+static func test_zero_shelf_life_expires_immediately_on_decay() -> bool:
 	var r := _make_rumor("r1", "npc_x", Rumor.ClaimType.ACCUSATION, 5, 0.5, 0, 0)
 	r.decay_one_tick()
-	assert_true(r.is_expired())
+	return r.is_expired()
 
 
-# ---------------------------------------------------------------------------
+# ===========================================================================
 # Rumor.claim_type_from_string
-# ---------------------------------------------------------------------------
+# ===========================================================================
 
-func test_claim_type_from_string_accusation() -> void:
-	assert_eq(Rumor.claim_type_from_string("accusation"), Rumor.ClaimType.ACCUSATION)
-
-
-func test_claim_type_from_string_scandal() -> void:
-	assert_eq(Rumor.claim_type_from_string("scandal"), Rumor.ClaimType.SCANDAL)
+static func test_claim_type_from_string_accusation() -> bool:
+	return Rumor.claim_type_from_string("accusation") == Rumor.ClaimType.ACCUSATION
 
 
-func test_claim_type_from_string_illness() -> void:
-	assert_eq(Rumor.claim_type_from_string("illness"), Rumor.ClaimType.ILLNESS)
+static func test_claim_type_from_string_scandal() -> bool:
+	return Rumor.claim_type_from_string("scandal") == Rumor.ClaimType.SCANDAL
 
 
-func test_claim_type_from_string_prophecy() -> void:
-	assert_eq(Rumor.claim_type_from_string("prophecy"), Rumor.ClaimType.PROPHECY)
+static func test_claim_type_from_string_illness() -> bool:
+	return Rumor.claim_type_from_string("illness") == Rumor.ClaimType.ILLNESS
 
 
-func test_claim_type_from_string_praise() -> void:
-	assert_eq(Rumor.claim_type_from_string("praise"), Rumor.ClaimType.PRAISE)
+static func test_claim_type_from_string_prophecy() -> bool:
+	return Rumor.claim_type_from_string("prophecy") == Rumor.ClaimType.PROPHECY
 
 
-func test_claim_type_from_string_death() -> void:
-	assert_eq(Rumor.claim_type_from_string("death"), Rumor.ClaimType.DEATH)
+static func test_claim_type_from_string_praise() -> bool:
+	return Rumor.claim_type_from_string("praise") == Rumor.ClaimType.PRAISE
 
 
-func test_claim_type_from_string_heresy() -> void:
-	assert_eq(Rumor.claim_type_from_string("heresy"), Rumor.ClaimType.HERESY)
+static func test_claim_type_from_string_death() -> bool:
+	return Rumor.claim_type_from_string("death") == Rumor.ClaimType.DEATH
 
 
-func test_claim_type_from_string_blackmail() -> void:
-	assert_eq(Rumor.claim_type_from_string("blackmail"), Rumor.ClaimType.BLACKMAIL)
+static func test_claim_type_from_string_heresy() -> bool:
+	return Rumor.claim_type_from_string("heresy") == Rumor.ClaimType.HERESY
 
 
-func test_claim_type_from_string_secret_alliance() -> void:
-	assert_eq(Rumor.claim_type_from_string("secret_alliance"), Rumor.ClaimType.SECRET_ALLIANCE)
+static func test_claim_type_from_string_blackmail() -> bool:
+	return Rumor.claim_type_from_string("blackmail") == Rumor.ClaimType.BLACKMAIL
 
 
-func test_claim_type_from_string_forbidden_romance() -> void:
-	assert_eq(Rumor.claim_type_from_string("forbidden_romance"), Rumor.ClaimType.FORBIDDEN_ROMANCE)
+static func test_claim_type_from_string_secret_alliance() -> bool:
+	return Rumor.claim_type_from_string("secret_alliance") == Rumor.ClaimType.SECRET_ALLIANCE
 
 
-func test_claim_type_from_string_unknown_defaults_to_accusation() -> void:
-	assert_eq(Rumor.claim_type_from_string("nonsense_xyz"), Rumor.ClaimType.ACCUSATION)
+static func test_claim_type_from_string_forbidden_romance() -> bool:
+	return Rumor.claim_type_from_string("forbidden_romance") == Rumor.ClaimType.FORBIDDEN_ROMANCE
 
 
-func test_claim_type_from_string_is_case_insensitive() -> void:
-	assert_eq(Rumor.claim_type_from_string("PRAISE"), Rumor.ClaimType.PRAISE)
-	assert_eq(Rumor.claim_type_from_string("Heresy"), Rumor.ClaimType.HERESY)
+static func test_claim_type_from_string_unknown_defaults_to_accusation() -> bool:
+	return Rumor.claim_type_from_string("nonsense_xyz") == Rumor.ClaimType.ACCUSATION
 
 
-# ---------------------------------------------------------------------------
+static func test_claim_type_from_string_is_case_insensitive() -> bool:
+	return (
+		Rumor.claim_type_from_string("PRAISE") == Rumor.ClaimType.PRAISE
+		and Rumor.claim_type_from_string("Heresy") == Rumor.ClaimType.HERESY
+	)
+
+
+# ===========================================================================
 # Rumor.is_positive_claim
-# ---------------------------------------------------------------------------
+# ===========================================================================
 
-func test_praise_is_positive() -> void:
-	assert_true(Rumor.is_positive_claim(Rumor.ClaimType.PRAISE))
-
-
-func test_prophecy_is_positive() -> void:
-	assert_true(Rumor.is_positive_claim(Rumor.ClaimType.PROPHECY))
+static func test_praise_is_positive() -> bool:
+	return Rumor.is_positive_claim(Rumor.ClaimType.PRAISE)
 
 
-func test_accusation_is_negative() -> void:
-	assert_false(Rumor.is_positive_claim(Rumor.ClaimType.ACCUSATION))
+static func test_prophecy_is_positive() -> bool:
+	return Rumor.is_positive_claim(Rumor.ClaimType.PROPHECY)
 
 
-func test_scandal_is_negative() -> void:
-	assert_false(Rumor.is_positive_claim(Rumor.ClaimType.SCANDAL))
+static func test_accusation_is_negative() -> bool:
+	return not Rumor.is_positive_claim(Rumor.ClaimType.ACCUSATION)
 
 
-func test_death_is_negative() -> void:
-	assert_false(Rumor.is_positive_claim(Rumor.ClaimType.DEATH))
+static func test_scandal_is_negative() -> bool:
+	return not Rumor.is_positive_claim(Rumor.ClaimType.SCANDAL)
 
 
-func test_heresy_is_negative() -> void:
-	assert_false(Rumor.is_positive_claim(Rumor.ClaimType.HERESY))
+static func test_death_is_negative() -> bool:
+	return not Rumor.is_positive_claim(Rumor.ClaimType.DEATH)
 
 
-# ---------------------------------------------------------------------------
+static func test_heresy_is_negative() -> bool:
+	return not Rumor.is_positive_claim(Rumor.ClaimType.HERESY)
+
+
+# ===========================================================================
 # Rumor.state_name
-# ---------------------------------------------------------------------------
+# ===========================================================================
 
-func test_state_name_evaluating() -> void:
-	assert_eq(Rumor.state_name(Rumor.RumorState.EVALUATING), "EVALUATING")
-
-
-func test_state_name_believe() -> void:
-	assert_eq(Rumor.state_name(Rumor.RumorState.BELIEVE), "BELIEVE")
+static func test_state_name_evaluating() -> bool:
+	return Rumor.state_name(Rumor.RumorState.EVALUATING) == "EVALUATING"
 
 
-func test_state_name_spread() -> void:
-	assert_eq(Rumor.state_name(Rumor.RumorState.SPREAD), "SPREAD")
+static func test_state_name_believe() -> bool:
+	return Rumor.state_name(Rumor.RumorState.BELIEVE) == "BELIEVE"
 
 
-func test_state_name_expired() -> void:
-	assert_eq(Rumor.state_name(Rumor.RumorState.EXPIRED), "EXPIRED")
+static func test_state_name_spread() -> bool:
+	return Rumor.state_name(Rumor.RumorState.SPREAD) == "SPREAD"
 
 
-# ---------------------------------------------------------------------------
+static func test_state_name_expired() -> bool:
+	return Rumor.state_name(Rumor.RumorState.EXPIRED) == "EXPIRED"
+
+
+# ===========================================================================
 # Rumor.NpcRumorSlot — initialisation
-# ---------------------------------------------------------------------------
+# ===========================================================================
 
-func test_npc_rumor_slot_init_state_is_evaluating() -> void:
+static func test_npc_rumor_slot_init_state_is_evaluating() -> bool:
 	var r := _make_rumor()
 	var slot := Rumor.NpcRumorSlot.new(r, "merchant")
-	assert_eq(slot.state, Rumor.RumorState.EVALUATING)
+	return slot.state == Rumor.RumorState.EVALUATING
 
 
-func test_npc_rumor_slot_stores_rumor() -> void:
+static func test_npc_rumor_slot_stores_rumor() -> bool:
 	var r := _make_rumor("r_slot")
 	var slot := Rumor.NpcRumorSlot.new(r, "noble")
-	assert_eq(slot.rumor.id, "r_slot")
+	return slot.rumor.id == "r_slot"
 
 
-func test_npc_rumor_slot_stores_source_faction() -> void:
+static func test_npc_rumor_slot_stores_source_faction() -> bool:
 	var r := _make_rumor()
 	var slot := Rumor.NpcRumorSlot.new(r, "clergy")
-	assert_eq(slot.source_faction, "clergy")
+	return slot.source_faction == "clergy"
 
 
-func test_npc_rumor_slot_ticks_in_state_starts_at_zero() -> void:
+static func test_npc_rumor_slot_ticks_in_state_starts_at_zero() -> bool:
 	var r := _make_rumor()
 	var slot := Rumor.NpcRumorSlot.new(r, "merchant")
-	assert_eq(slot.ticks_in_state, 0)
+	return slot.ticks_in_state == 0
 
 
-func test_npc_rumor_slot_heard_from_count_starts_at_one() -> void:
+static func test_npc_rumor_slot_heard_from_count_starts_at_one() -> bool:
 	var r := _make_rumor()
 	var slot := Rumor.NpcRumorSlot.new(r, "merchant")
-	assert_eq(slot.heard_from_count, 1)
+	return slot.heard_from_count == 1
