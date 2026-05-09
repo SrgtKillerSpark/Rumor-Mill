@@ -9,6 +9,7 @@ extends RefCounted
 ##   • TestReputationSystem       — score formula, SOCIALLY_DEAD, illness tracking
 ##   • TestScenarioConditions     — win/fail evaluation for Scenarios 1–6
 ##   • TestSaveManager            — save_path(), prepare_load(), pending state, migration (SPA-964)
+##   • TestSaveCorruption         — has_save(), get_save_info(), prepare_load() corruption/mismatch cases (SPA-2124)
 ##   • TestSaveRoundtrip          — full serialize/restore round-trips for all 6 scenarios + all agent types (SPA-1090)
 ##   • TestAchievementManager     — unlock/query API and static definition table (SPA-964)
 ##   • TestAchievementSignal      — achievement_unlocked signal emission, payload, dedup (SPA-1093)
@@ -24,6 +25,10 @@ extends RefCounted
 ##   • TestSpa2102DropMultiplierTelemetry — drop_multiplier_active field: true/false/default-param (SPA-2102)
 ##   • TestSpa2104EventRewardsFreeze      — heat freeze (F1–F7): apply/block/tick/stack; effect keys (E1–E4):
 ##                                          suspicionFreezeDays, bonusWhisperTokens, grantRandomEvidence (SPA-2104)
+##   • TestSpa2105CredulityBoost          — difficulty-scaled credulity multiplier: pure function (M1–M4),
+##                                          world boost formula (W1–W4), analytics modifier field (P1–P3) (SPA-2105)
+##   • TestSpa2081SoftOnboardingNudges    — activation gating (A1–A2), nudge fire + suppression (N1–N8),
+##                                          session cap (C1–C2), dismissal/seen guard (D1) (SPA-2081)
 ##   • TestSpa1614EvidenceUsedEmission   — evidence_used emission, field presence + values, disabled gate (SPA-1614)
 ##   • TestSpa1773WitnessAccountUsedEmission — witness_account_used bypass-mode event: emission,
 ##                                             field presence, halved bonus values, bypass-only gate (SPA-1773)
@@ -325,6 +330,7 @@ const TestRumorRippleVfx = preload("res://tests/test_rumor_ripple_vfx.gd")
 const TestRumorTrackerHud = preload("res://tests/test_rumor_tracker_hud.gd")
 const TestS2EscalationNpcName = preload("res://tests/test_s2_escalation_npc_name.gd")
 const TestS4FactionShiftAgent = preload("res://tests/test_s4_faction_shift_agent.gd")
+const TestSaveCorruption = preload("res://tests/test_save_corruption.gd")
 const TestSaveManager = preload("res://tests/test_save_manager.gd")
 const TestSaveMigrationV1ToV2 = preload("res://tests/test_save_migration_v1_to_v2.gd")
 const TestSaveRoundtrip = preload("res://tests/test_save_roundtrip.gd")
@@ -350,6 +356,8 @@ const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_ana
 const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evidence_acquired.gd")
 const TestSpa2102DropMultiplierTelemetry = preload("res://tests/test_spa2102_drop_multiplier_telemetry.gd")
 const TestSpa2104EventRewardsFreeze      = preload("res://tests/test_spa2104_event_rewards_freeze.gd")
+const TestSpa2105CredulityBoost          = preload("res://tests/test_spa2105_credulity_boost.gd")
+const TestSpa2081SoftOnboardingNudges    = preload("res://tests/test_spa2081_soft_onboarding_nudges.gd")
 const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
 const TestSpa1773WitnessAccountUsedEmission = preload("res://tests/test_spa1773_witness_account_used_emission.gd")
 const TestSpa1811MarenOrbitHalos       = preload("res://tests/test_spa1811_maren_orbit_halos.gd")
@@ -410,6 +418,9 @@ func _init() -> void:
 	print("\n── SaveManager ──")
 	TestSaveManager.new().run()
 
+	print("\n── SaveCorruption ──")
+	TestSaveCorruption.new().run()
+
 	print("\n── SaveMigrationV1ToV2 ──")
 	TestSaveMigrationV1ToV2.new().run()
 
@@ -448,6 +459,12 @@ func _init() -> void:
 
 	print("\n── SPA-2104 mid-game event reward scaling + suspicion freeze (F1–F7/E1–E4) ──")
 	TestSpa2104EventRewardsFreeze.new().run()
+
+	print("\n── SPA-2105 difficulty-scaled credulity boost multiplier (M1–M4/W1–W4/P1–P3) ──")
+	TestSpa2105CredulityBoost.new().run()
+
+	print("\n── SPA-2081 soft onboarding nudge manager (A1–A2/N1–N8/C1–C2/D1) ──")
+	TestSpa2081SoftOnboardingNudges.new().run()
 
 	print("\n── SPA-1614 evidence_used emission + shape ──")
 	TestSpa1614EvidenceUsedEmission.new().run()
