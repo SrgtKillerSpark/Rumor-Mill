@@ -50,7 +50,6 @@ func run() -> void:
 		"test_initial_panel_credits_null",
 		"test_initial_version_label_null",
 		"test_initial_settings_module_null",
-		"test_initial_stats_module_null",
 		"test_initial_select_module_null",
 		"test_initial_briefing_module_null",
 		"test_initial_phase_tween_null",
@@ -185,28 +184,21 @@ static func test_initial_version_label_null() -> bool:
 
 static func test_initial_settings_module_null() -> bool:
 	var m := _make_menu()
-	var ok: bool = m._settings_module == null
-	m.free()
-	return ok
-
-
-static func test_initial_stats_module_null() -> bool:
-	var m := _make_menu()
-	var ok: bool = m._stats_module == null
+	var ok: bool = m._panel_settings == null
 	m.free()
 	return ok
 
 
 static func test_initial_select_module_null() -> bool:
 	var m := _make_menu()
-	var ok: bool = m._select_module == null
+	var ok: bool = m._panel_select == null
 	m.free()
 	return ok
 
 
 static func test_initial_briefing_module_null() -> bool:
 	var m := _make_menu()
-	var ok: bool = m._briefing_module == null
+	var ok: bool = m._panel_briefing == null
 	m.free()
 	return ok
 

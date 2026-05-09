@@ -44,12 +44,6 @@ func run() -> void:
 		"test_initial_current_scenario_id_empty",
 		# Subsystem modules null before _ready()
 		"test_initial_panel_null",
-		"test_initial_summary_null",
-		"test_initial_scoring_null",
-		"test_initial_animations_null",
-		"test_initial_replay_tab_null",
-		"test_initial_feedback_null",
-		"test_initial_navigation_null",
 		# setup() assignment
 		"test_setup_assigns_world_ref",
 		"test_setup_assigns_day_night_ref",
@@ -102,30 +96,6 @@ static func test_initial_current_scenario_id_empty() -> bool:
 
 static func test_initial_panel_null() -> bool:
 	return _make_es()._panel == null
-
-
-static func test_initial_summary_null() -> bool:
-	return _make_es()._summary == null
-
-
-static func test_initial_scoring_null() -> bool:
-	return _make_es()._scoring == null
-
-
-static func test_initial_animations_null() -> bool:
-	return _make_es()._animations == null
-
-
-static func test_initial_replay_tab_null() -> bool:
-	return _make_es()._replay_tab == null
-
-
-static func test_initial_feedback_null() -> bool:
-	return _make_es()._feedback == null
-
-
-static func test_initial_navigation_null() -> bool:
-	return _make_es()._navigation == null
 
 
 # ── setup() ───────────────────────────────────────────────────────────────────

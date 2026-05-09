@@ -36,9 +36,6 @@ func run() -> void:
 		"test_initial_last_seed_day_is_zero",
 		"test_initial_charges_at_max",
 		"test_initial_disruption_days_zero",
-		"test_initial_next_degrade_target_empty",
-		"test_initial_last_action_description_empty",
-
 		# ── constants ──
 		"test_max_disrupt_charges_is_3",
 		"test_disruption_cooldown_bonus_is_3",
@@ -52,7 +49,6 @@ func run() -> void:
 		"test_activate_resets_last_seed_day",
 		"test_activate_resets_charges_to_max",
 		"test_activate_clears_disruption_days",
-		"test_activate_clears_next_degrade_target",
 
 		# ── _get_cooldown ──
 		"test_cooldown_early_game_day1_is_4",
@@ -79,9 +75,6 @@ func run() -> void:
 		"test_apply_disruption_sets_remaining_days",
 		"test_apply_disruption_decrements_charges",
 
-		# ── scouting ──
-		"test_scout_next_target_returns_empty_when_inactive",
-		"test_get_scouted_target_reflects_degrade_target",
 	]
 
 	for method_name in tests:
@@ -118,16 +111,6 @@ func test_initial_charges_at_max() -> bool:
 func test_initial_disruption_days_zero() -> bool:
 	var agent := _make_agent()
 	return agent._disruption_days_remaining == 0
-
-
-func test_initial_next_degrade_target_empty() -> bool:
-	var agent := _make_agent()
-	return agent._next_degrade_target_id == ""
-
-
-func test_initial_last_action_description_empty() -> bool:
-	var agent := _make_agent()
-	return agent.last_action_description == ""
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -187,13 +170,6 @@ func test_activate_clears_disruption_days() -> bool:
 	agent._disruption_days_remaining = 5
 	agent.activate()
 	return agent._disruption_days_remaining == 0
-
-
-func test_activate_clears_next_degrade_target() -> bool:
-	var agent := _make_agent()
-	agent._next_degrade_target_id = "some_npc"
-	agent.activate()
-	return agent._next_degrade_target_id == ""
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -341,16 +317,3 @@ func test_apply_disruption_decrements_charges() -> bool:
 	return agent.disrupt_charges_remaining == before - 1
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Scouting
-# ══════════════════════════════════════════════════════════════════════════════
-
-func test_scout_next_target_returns_empty_when_inactive() -> bool:
-	var agent := _make_agent()
-	return agent.scout_next_target(1) == ""
-
-
-func test_get_scouted_target_reflects_degrade_target() -> bool:
-	var agent := _make_agent()
-	agent._next_degrade_target_id = "npc_target"
-	return agent.get_scouted_target() == "npc_target"

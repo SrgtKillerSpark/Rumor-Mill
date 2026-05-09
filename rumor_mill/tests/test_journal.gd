@@ -60,12 +60,6 @@ func run() -> void:
 		"test_initial_milestone_log_empty",
 		"test_initial_notification_pending_false",
 		"test_initial_last_opened_tick_minus_one",
-		# Section modules null
-		"test_initial_rumors_section_null",
-		"test_initial_intel_section_null",
-		"test_initial_factions_section_null",
-		"test_initial_timeline_section_null",
-		"test_initial_objectives_section_null",
 		# push_milestone_event()
 		"test_push_milestone_event_appends_entry",
 		"test_push_milestone_event_stores_text",
@@ -186,28 +180,6 @@ static func test_initial_notification_pending_false() -> bool:
 
 static func test_initial_last_opened_tick_minus_one() -> bool:
 	return _make_j()._last_opened_tick == -1
-
-
-# ── Section modules null ──────────────────────────────────────────────────────
-
-static func test_initial_rumors_section_null() -> bool:
-	return _make_j()._rumors_section == null
-
-
-static func test_initial_intel_section_null() -> bool:
-	return _make_j()._intel_section == null
-
-
-static func test_initial_factions_section_null() -> bool:
-	return _make_j()._factions_section == null
-
-
-static func test_initial_timeline_section_null() -> bool:
-	return _make_j()._timeline_section == null
-
-
-static func test_initial_objectives_section_null() -> bool:
-	return _make_j()._objectives_section == null
 
 
 # ── push_milestone_event() ────────────────────────────────────────────────────

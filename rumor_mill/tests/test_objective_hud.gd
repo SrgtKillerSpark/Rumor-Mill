@@ -45,8 +45,6 @@ func run() -> void:
 		"test_c_day_caution_is_yellow",
 		"test_c_day_urgent_is_orange",
 		"test_c_day_critical_is_red",
-		# Callout tooltip id
-		"test_callout_tooltip_id_value",
 		# Initial state
 		"test_initial_goal_verb_empty",
 		"test_initial_goal_target_empty",
@@ -56,10 +54,6 @@ func run() -> void:
 		"test_initial_day_counter_tween_null",
 		"test_initial_urgency_pulse_tween_null",
 		# Subsystem refs null
-		"test_initial_metrics_module_null",
-		"test_initial_nudge_module_null",
-		"test_initial_win_tracker_null",
-		"test_initial_banner_module_null",
 		"test_initial_scenario_manager_null",
 		"test_initial_day_night_null",
 		"test_initial_world_ref_null",
@@ -110,12 +104,6 @@ static func test_c_day_critical_is_red() -> bool:
 	return c.r > 0.80 and c.g < 0.35 and c.b < 0.20
 
 
-# ── CALLOUT_TOOLTIP_ID ────────────────────────────────────────────────────────
-
-static func test_callout_tooltip_id_value() -> bool:
-	return _make_oh().CALLOUT_TOOLTIP_ID == "objective_hud_first_time"
-
-
 # ── Initial state ─────────────────────────────────────────────────────────────
 
 static func test_initial_goal_verb_empty() -> bool:
@@ -147,22 +135,6 @@ static func test_initial_urgency_pulse_tween_null() -> bool:
 
 
 # ── Subsystem refs null ───────────────────────────────────────────────────────
-
-static func test_initial_metrics_module_null() -> bool:
-	return _make_oh()._metrics_module == null
-
-
-static func test_initial_nudge_module_null() -> bool:
-	return _make_oh()._nudge_module == null
-
-
-static func test_initial_win_tracker_null() -> bool:
-	return _make_oh()._win_tracker == null
-
-
-static func test_initial_banner_module_null() -> bool:
-	return _make_oh()._banner_module == null
-
 
 static func test_initial_scenario_manager_null() -> bool:
 	return _make_oh()._scenario_manager == null

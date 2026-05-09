@@ -72,12 +72,6 @@ func run() -> void:
 		"test_initial_loyalty_half",
 		"test_initial_temperament_half",
 
-		# ── subsystem module refs null ──
-		"test_initial_movement_null",
-		"test_initial_dialogue_null",
-		"test_initial_visuals_null",
-		"test_initial_rumor_processing_null",
-
 		# ── signal declarations ──
 		"test_has_rumor_state_changed_signal",
 		"test_has_rumor_transmitted_signal",
@@ -254,38 +248,6 @@ func test_initial_loyalty_half() -> bool:
 func test_initial_temperament_half() -> bool:
 	var npc := _make_npc()
 	var ok: bool = absf(npc._temperament - 0.5) < 0.0001
-	npc.free()
-	return ok
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# Subsystem module refs null before _ready()
-# ══════════════════════════════════════════════════════════════════════════════
-
-func test_initial_movement_null() -> bool:
-	var npc := _make_npc()
-	var ok: bool = npc._movement == null
-	npc.free()
-	return ok
-
-
-func test_initial_dialogue_null() -> bool:
-	var npc := _make_npc()
-	var ok: bool = npc._dialogue == null
-	npc.free()
-	return ok
-
-
-func test_initial_visuals_null() -> bool:
-	var npc := _make_npc()
-	var ok: bool = npc._visuals == null
-	npc.free()
-	return ok
-
-
-func test_initial_rumor_processing_null() -> bool:
-	var npc := _make_npc()
-	var ok: bool = npc._rumor_processing == null
 	npc.free()
 	return ok
 
