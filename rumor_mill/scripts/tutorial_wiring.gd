@@ -15,7 +15,9 @@ var tutorial_banner: CanvasLayer = null
 var _tutorial_hud: CanvasLayer = null
 var _tutorial_ctrl: TutorialController = null
 ## SPA-2081: Soft nudge manager activated when the player skips the S1 tutorial.
-var _soft_nudge_mgr: SoftOnboardingNudgeManager = null
+var _soft_nudge_mgr: Node = null  # SoftOnboardingNudgeManager — typed as Node to avoid parse-order dependency
+## SPA-2082: Guided Day 2 sequence for players who completed the S1 tutorial.
+var _guided_day2_mgr: Node = null  # GuidedDay2Manager — typed as Node to avoid parse-order dependency
 
 var _world: Node2D = null
 var _day_night: Node = null
@@ -692,6 +694,8 @@ func _init_s1_onboarding_flow() -> void:
 		_analytics_manager.wire_tutorial_controller(_tutorial_ctrl)
 	# SPA-2081: Activate soft nudges if the player skips the tutorial.
 	_tutorial_ctrl.tutorial_skipped.connect(_on_tutorial_skipped)
+	# SPA-2082: Activate guided Day 2 sequence when the tutorial completes naturally.
+	_tutorial_ctrl.step_completed.connect(_on_tutorial_step_completed_day2)
 	_tutorial_ctrl.start()
 
 
@@ -954,6 +958,21 @@ func _create_waypoint_marker(pos: Vector2, text: String) -> Node2D:
 		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 
 	return root
+
+
+# ── SPA-2082: Guided Day 2 sequence for tutorial-completers ─────────────────
+
+## Activated when step_completed("gtut_complete") fires (tutorial fully done,
+## not skipped — skip() marks seen but never emits step_completed).
+func _on_tutorial_step_completed_day2(step_id: String, _scenario_id: String) -> void:
+	if step_id != "gtut_complete":
+		return
+	if tutorial_sys == null or tutorial_banner == null:
+		return
+	_guided_day2_mgr = preload("res://scripts/guided_day2_manager.gd").new()
+	_guided_day2_mgr.name = "GuidedDay2Manager"
+	add_child(_guided_day2_mgr)
+	_guided_day2_mgr.activate(tutorial_sys, tutorial_banner, _day_night, _recon_ctrl_ref, _journal)
 
 
 # ── SPA-2081: Soft onboarding nudges for tutorial-skip players ───────────────
