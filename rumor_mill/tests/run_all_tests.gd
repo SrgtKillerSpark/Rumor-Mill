@@ -21,6 +21,7 @@ extends RefCounted
 ##                                          event when analytics disabled; positive control (SPA-1599)
 ##   • TestSpa1613EvidenceAcquired       — evidence_acquired NDJSON field shape for all 3 fire sites,
 ##                                          no double-emission guard, pre-setup queuing (SPA-1613)
+##   • TestSpa2102DropMultiplierTelemetry — drop_multiplier_active field: true/false/default-param (SPA-2102)
 ##   • TestSpa1614EvidenceUsedEmission   — evidence_used emission, field presence + values, disabled gate (SPA-1614)
 ##   • TestSpa1773WitnessAccountUsedEmission — witness_account_used bypass-mode event: emission,
 ##                                             field presence, halved bonus values, bypass-only gate (SPA-1773)
@@ -345,6 +346,7 @@ const TestSpa1106NewGameRegression = preload("res://tests/test_spa1106_new_game_
 const TestSpa1544NewGameStateIsolation = preload("res://tests/test_spa1544_new_game_state_isolation.gd")
 const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_analytics_disabled_gating.gd")
 const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evidence_acquired.gd")
+const TestSpa2102DropMultiplierTelemetry = preload("res://tests/test_spa2102_drop_multiplier_telemetry.gd")
 const TestSpa1614EvidenceUsedEmission  = preload("res://tests/test_spa1614_evidence_used_emission.gd")
 const TestSpa1773WitnessAccountUsedEmission = preload("res://tests/test_spa1773_witness_account_used_emission.gd")
 const TestSpa1811MarenOrbitHalos       = preload("res://tests/test_spa1811_maren_orbit_halos.gd")
@@ -437,6 +439,9 @@ func _init() -> void:
 
 	print("\n── SPA-1613 evidence_acquired field shape + fire sites ──")
 	TestSpa1613EvidenceAcquired.new().run()
+
+	print("\n── SPA-2102 drop_multiplier_active telemetry field (A1/A2/default) ──")
+	TestSpa2102DropMultiplierTelemetry.new().run()
 
 	print("\n── SPA-1614 evidence_used emission + shape ──")
 	TestSpa1614EvidenceUsedEmission.new().run()

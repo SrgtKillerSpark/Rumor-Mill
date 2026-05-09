@@ -243,9 +243,10 @@ func _on_analytics_scenario_fail_trigger(
 
 ## SPA-1530: Log evidence item acquisition from recon actions.
 ## Called directly by recon_controller after each _intel_store.add_evidence() call.
-func log_evidence_acquired(evidence_type: String, source_action: String) -> void:
+## SPA-2102: Added drop_multiplier_active for mid-game balance telemetry attribution.
+func log_evidence_acquired(evidence_type: String, source_action: String, drop_multiplier_active: bool = false) -> void:
 	if _analytics_logger == null:
-		_enqueue("log_evidence_acquired", [evidence_type, source_action])
+		_enqueue("log_evidence_acquired", [evidence_type, source_action, drop_multiplier_active])
 		return
 	var day: int = _day_night.current_day if _day_night != null and "current_day" in _day_night else 0
 	_analytics_logger.log_event("evidence_acquired", {
@@ -254,6 +255,7 @@ func log_evidence_acquired(evidence_type: String, source_action: String) -> void
 		"day":           day,
 		"scenario_id":   _analytics_scenario_id,
 		"difficulty":    GameState.selected_difficulty,
+		"drop_multiplier_active": drop_multiplier_active,
 	})
 
 
