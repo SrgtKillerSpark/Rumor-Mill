@@ -247,8 +247,9 @@ func test_exit_tree_decrements_count_when_showing() -> bool:
 	var count_before: int = NpcThoughtBubble._visible_count
 	b._exit_tree()
 	var count_after: int = NpcThoughtBubble._visible_count
+	var is_showing_after: bool = b._is_showing  # capture before free to avoid freed-object access
 	b.free()
-	return count_after == count_before - 1 and b._is_showing == false
+	return count_after == count_before - 1 and is_showing_after == false
 
 
 func test_exit_tree_noop_when_not_showing() -> bool:

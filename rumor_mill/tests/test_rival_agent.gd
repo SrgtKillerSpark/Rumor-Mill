@@ -8,8 +8,6 @@
 ##   • _get_cooldown(): cooldown_offset applied; disruption bonus applied; floor at 1
 ##   • can_be_disrupted(): all four blocking conditions
 ##   • apply_disruption(): refuses when cannot; sets days; consumes charge
-##   • scout_next_target(): returns "" when not active
-##   • get_scouted_target(): returns _next_degrade_target_id
 ##   • _DEGRADE_MAP entries
 ##
 ## Strategy: RivalAgent extends RefCounted (no Node). All methods tested without world.

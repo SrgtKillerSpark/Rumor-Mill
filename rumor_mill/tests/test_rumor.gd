@@ -85,9 +85,9 @@ func run() -> void:
 		"test_claim_type_name_forbidden_romance",
 
 		# ── NpcRumorSlot ──
-		"test_slot_initial_state_is_unaware",
+		"test_slot_initial_state_is_evaluating",
 		"test_slot_initial_ticks_in_state_is_zero",
-		"test_slot_initial_heard_from_count_is_zero",
+		"test_slot_initial_heard_from_count_is_one",
 		"test_slot_stores_rumor_ref",
 		"test_slot_stores_source_faction",
 	]
@@ -305,10 +305,10 @@ func test_claim_type_name_forbidden_romance() -> bool:
 # NpcRumorSlot
 # ══════════════════════════════════════════════════════════════════════════════
 
-func test_slot_initial_state_is_unaware() -> bool:
+func test_slot_initial_state_is_evaluating() -> bool:
 	var r := _make()
 	var slot := Rumor.NpcRumorSlot.new(r, "merchant")
-	return slot.state == Rumor.RumorState.UNAWARE
+	return slot.state == Rumor.RumorState.EVALUATING
 
 
 func test_slot_initial_ticks_in_state_is_zero() -> bool:
@@ -317,10 +317,10 @@ func test_slot_initial_ticks_in_state_is_zero() -> bool:
 	return slot.ticks_in_state == 0
 
 
-func test_slot_initial_heard_from_count_is_zero() -> bool:
+func test_slot_initial_heard_from_count_is_one() -> bool:
 	var r := _make()
 	var slot := Rumor.NpcRumorSlot.new(r, "merchant")
-	return slot.heard_from_count == 0
+	return slot.heard_from_count == 1
 
 
 func test_slot_stores_rumor_ref() -> bool:

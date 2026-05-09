@@ -70,7 +70,7 @@ func run() -> void:
 		"test_claim_type_day10_is_scandal",   # 10%5 == 0
 		"test_claim_type_day15_is_scandal",   # 15%5 == 0
 		"test_claim_type_day9_is_accusation", # 9%3 == 0, not %5
-		"test_claim_type_day6_is_heresy",     # 6%5!=0, 6%3!=0
+		"test_claim_type_day6_is_accusation", # 6%5!=0, 6%3==0
 
 		# ── tick guard clauses ──
 		"test_tick_does_nothing_when_not_active",
@@ -266,9 +266,9 @@ func test_claim_type_day9_is_accusation() -> bool:
 	return _make_agent()._pick_claim_type(9) == "accusation"
 
 
-func test_claim_type_day6_is_heresy() -> bool:
-	# day 6: 6%5!=0, 6%3!=0 → heresy (else branch)
-	return _make_agent()._pick_claim_type(6) == "heresy"
+func test_claim_type_day6_is_accusation() -> bool:
+	# day 6: 6%5!=0, 6%3==0 → accusation
+	return _make_agent()._pick_claim_type(6) == "accusation"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
