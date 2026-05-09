@@ -32,7 +32,7 @@ const BuildingInteriorScript := preload("res://scripts/building_interior.gd")
 # ── Stubs ─────────────────────────────────────────────────────────────────────
 
 ## Minimal world stub: get_npcs_near_location returns a configurable list.
-class _WorldStub extends RefCounted:
+class _WorldStub extends Node2D:
 	var npcs: Array = []
 	func get_npcs_near_location(_key: String, _radius: int) -> Array:
 		return npcs
@@ -192,32 +192,32 @@ static func test_is_open_false_on_new_instance() -> bool:
 
 static func test_setup_world_ref_stores_ref() -> bool:
 	var bi   := _make_bi()
-	var stub := RefCounted.new()
+	var stub := Node2D.new()
 	bi.setup_world_ref(stub, "tavern")
 	return bi._world_ref == stub
 
 
 static func test_setup_world_ref_tavern_key() -> bool:
 	var bi := _make_bi()
-	bi.setup_world_ref(RefCounted.new(), "tavern")
+	bi.setup_world_ref(Node2D.new(), "tavern")
 	return bi._building_key == "tavern"
 
 
 static func test_setup_world_ref_chapel_key() -> bool:
 	var bi := _make_bi()
-	bi.setup_world_ref(RefCounted.new(), "chapel")
+	bi.setup_world_ref(Node2D.new(), "chapel")
 	return bi._building_key == "chapel"
 
 
 static func test_setup_world_ref_manor_key() -> bool:
 	var bi := _make_bi()
-	bi.setup_world_ref(RefCounted.new(), "manor")
+	bi.setup_world_ref(Node2D.new(), "manor")
 	return bi._building_key == "manor"
 
 
 static func test_setup_world_ref_market_key() -> bool:
 	var bi := _make_bi()
-	bi.setup_world_ref(RefCounted.new(), "market")
+	bi.setup_world_ref(Node2D.new(), "market")
 	return bi._building_key == "market"
 
 

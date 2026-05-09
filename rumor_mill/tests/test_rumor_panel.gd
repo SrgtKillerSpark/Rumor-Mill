@@ -342,8 +342,8 @@ static func test_initial_evidence_tutorial_fired_false() -> bool:
 static func test_believability_null_world_default_intensity() -> bool:
 	var rp := _make_panel()
 	# Both _world_ref and _intel_store_ref are null.
-	var result: Dictionary = rp._estimate_believability("any_seed")
-	return is_equal_approx(result["value"], 0.60)
+	var result: float = rp._estimate_believability("any_seed")
+	return is_equal_approx(result, 0.60)
 
 
 ## Subject and seed share the same faction → base + 0.15 bonus.
@@ -359,8 +359,8 @@ static func test_believability_same_faction_bonus() -> bool:
 	rp._world_ref        = world
 	rp._selected_subject  = "npc_a"
 	rp._selected_claim_id = "claim_1"
-	var result: Dictionary = rp._estimate_believability("npc_b")
-	return is_equal_approx(result["value"], 0.75)
+	var result: float = rp._estimate_believability("npc_b")
+	return is_equal_approx(result, 0.75)
 
 
 ## Intensity 5 → base = 5/5 = 1.0, clamped at 1.0.
@@ -372,8 +372,8 @@ static func test_believability_high_intensity_claim() -> bool:
 	)
 	rp._world_ref        = world
 	rp._selected_claim_id = "claim_high"
-	var result: Dictionary = rp._estimate_believability("any_seed")
-	return is_equal_approx(result["value"], 1.0)
+	var result: float = rp._estimate_believability("any_seed")
+	return is_equal_approx(result, 1.0)
 
 
 ## Heat ≥ 75 on the seed NPC → 0.30 penalty applied → 0.60 - 0.30 = 0.30.
@@ -384,8 +384,8 @@ static func test_believability_heat_penalty_high() -> bool:
 	store.heat["seed_a"]  = 80.0
 	rp._intel_store_ref   = store
 	# _world_ref is null → claim intensity defaults to 3, no faction bonus.
-	var result: Dictionary = rp._estimate_believability("seed_a")
-	return is_equal_approx(result["value"], 0.30)
+	var result: float = rp._estimate_believability("seed_a")
+	return is_equal_approx(result, 0.30)
 
 
 ## Intensity 5 + same faction: raw = 1.0 + 0.15 = 1.15 → clamped to 1.0.
@@ -400,8 +400,8 @@ static func test_believability_value_clamped_to_one() -> bool:
 	rp._world_ref        = world
 	rp._selected_subject  = "npc_a"
 	rp._selected_claim_id = "claim_top"
-	var result: Dictionary = rp._estimate_believability("npc_b")
-	return result["value"] <= 1.0 and result["value"] > 0.9
+	var result: float = rp._estimate_believability("npc_b")
+	return result <= 1.0 and result > 0.9
 
 
 # ── _estimate_spread ──────────────────────────────────────────────────────────
@@ -411,8 +411,8 @@ static func test_spread_null_world_returns_zero() -> bool:
 	var rp := _make_panel()
 	var seed := _make_npc("seed", "merchant")
 	# _world_ref is null.
-	var result: Dictionary = rp._estimate_spread(seed)
-	return is_equal_approx(result["value"], 0.0)
+	var result: float = rp._estimate_spread(seed)
+	return is_equal_approx(result, 0.0)
 
 
 ## Seed at (0,0); only other NPC is at (10,10) — Manhattan distance 20 > radius 8.
@@ -422,9 +422,9 @@ static func test_spread_no_nearby_npcs_returns_zero() -> bool:
 	var far_npc := _make_npc("far",  "noble",    Vector2i(10, 10))
 	var world   := _make_world([seed, far_npc])
 	rp._world_ref = world
-	var result: Dictionary = rp._estimate_spread(seed)
+	var result: float = rp._estimate_spread(seed)
 	# seed is skipped (same object); far_npc distance = |10|+|10| = 20 > 8.
-	return is_equal_approx(result["value"], 0.0)
+	return is_equal_approx(result, 0.0)
 
 
 ## Seed at (0,0); NPC at (3,2) — Manhattan distance 5, within radius 8.
@@ -435,5 +435,5 @@ static func test_spread_nearby_npc_contributes() -> bool:
 	var near_npc := _make_npc("near", "noble",    Vector2i(3, 2), 0.7)
 	var world    := _make_world([seed, near_npc])
 	rp._world_ref = world
-	var result: Dictionary = rp._estimate_spread(seed)
-	return result["value"] > 0.0
+	var result: float = rp._estimate_spread(seed)
+	return result > 0.0
