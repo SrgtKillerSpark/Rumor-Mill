@@ -225,7 +225,7 @@ func _process(_delta: float) -> void:
 		# SPA-761: hint left-click to follow if not already following this NPC.
 		var follow_hint: String = " [Left-click to follow]" if _follow_npc != new_npc else " [Left-click to unfollow]"
 		_show_tooltip(screen_pos, _npc_tooltip_text(new_npc) + follow_hint)
-		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
+		CursorManager.request_cursor("recon", DisplayServer.CURSOR_POINTING_HAND, CursorManager.PRIORITY_RECON)
 		return
 
 	var new_loc := _hit_test_location(world_pos)
@@ -234,14 +234,14 @@ func _process(_delta: float) -> void:
 		_set_hovered_location(new_loc)
 		var display := new_loc.replace("_", " ").capitalize()
 		_show_tooltip(screen_pos, "Right-click to read the room — %s" % display)
-		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
+		CursorManager.request_cursor("recon", DisplayServer.CURSOR_POINTING_HAND, CursorManager.PRIORITY_RECON)
 		return
 
 	# Nothing hovered.
 	_set_hovered_npc(null)
 	_set_hovered_location("")
 	_hide_tooltip()
-	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
+	CursorManager.release_cursor("recon")
 
 
 # ── Hover visual helpers ──────────────────────────────────────────────────────
