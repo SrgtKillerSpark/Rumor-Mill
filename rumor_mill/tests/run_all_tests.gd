@@ -247,6 +247,7 @@ const TestDailyPlanningOverlay = preload("res://tests/test_daily_planning_overla
 const TestDayNightCycle = preload("res://tests/test_day_night_cycle.gd")
 const TestDistrictOverlay = preload("res://tests/test_district_overlay.gd")
 const TestDistrictPropsRegistry = preload("res://tests/test_district_props_registry.gd")
+const TestDistrictPropsSpawner = preload("res://tests/test_district_props_spawner.gd")
 const TestEndScreen = preload("res://tests/test_end_screen.gd")
 const TestEventCard = preload("res://tests/test_event_card.gd")
 const TestEventChoiceModal = preload("res://tests/test_event_choice_modal.gd")
@@ -865,6 +866,9 @@ func _init() -> void:
 
 	print("\n── DistrictPropsRegistry ──")
 	TestDistrictPropsRegistry.new().run()
+
+	print("\n── DistrictPropsSpawner ──")
+	TestDistrictPropsSpawner.new().run()
 
 	print("\n── FactionPalette ──")
 	TestFactionPalette.new().run()
