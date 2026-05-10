@@ -36,6 +36,15 @@ const NUDGE3_RUMOR_SECS    := 120.0
 ## Maximum number of nudges to show this session.
 const MAX_NUDGES           := 3
 
+## SPA-2454: Apprentice cadence — lower initial thresholds.
+const APPRENTICE_NUDGE1_OBSERVE_SECS := 50.0
+const APPRENTICE_NUDGE2_JOURNAL_SECS := 35.0
+const APPRENTICE_NUDGE3_RUMOR_SECS   := 70.0
+## Apprentice gets more nudges before cap.
+const APPRENTICE_MAX_NUDGES          := 5
+## SPA-2454: Back-off multiplier — each subsequent nudge waits this much longer.
+const BACKOFF_MULTIPLIER             := 1.5
+
 # ── Hint IDs (defined in TutorialSystem.CONTEXT_HINT_DATA) ───────────────────
 
 const HINT_OBSERVE := "soft_nudge_observe"
@@ -69,6 +78,14 @@ var _nudge3_fired:    bool  = false
 ## Value of _elapsed at the moment of the first Observe, used for nudge 2 timer.
 var _observe_elapsed: float = 0.0
 
+## SPA-2454: Effective thresholds (set in activate based on difficulty).
+var _eff_nudge1_secs: float = NUDGE1_OBSERVE_SECS
+var _eff_nudge2_secs: float = NUDGE2_JOURNAL_SECS
+var _eff_nudge3_secs: float = NUDGE3_RUMOR_SECS
+var _eff_max_nudges:  int   = MAX_NUDGES
+## Cumulative back-off factor (grows after each nudge fired).
+var _backoff_factor:  float = 1.0
+
 # ── Signal connection flags ───────────────────────────────────────────────────
 
 var _connected_recon:   bool = false
@@ -92,6 +109,18 @@ func activate(
 	_rumor_panel     = rumor_panel
 	_active          = true
 	_elapsed         = 0.0
+	# SPA-2454: Use faster cadence on Apprentice difficulty.
+	if GameState.selected_difficulty == "apprentice":
+		_eff_nudge1_secs = APPRENTICE_NUDGE1_OBSERVE_SECS
+		_eff_nudge2_secs = APPRENTICE_NUDGE2_JOURNAL_SECS
+		_eff_nudge3_secs = APPRENTICE_NUDGE3_RUMOR_SECS
+		_eff_max_nudges  = APPRENTICE_MAX_NUDGES
+	else:
+		_eff_nudge1_secs = NUDGE1_OBSERVE_SECS
+		_eff_nudge2_secs = NUDGE2_JOURNAL_SECS
+		_eff_nudge3_secs = NUDGE3_RUMOR_SECS
+		_eff_max_nudges  = MAX_NUDGES
+	_backoff_factor = 1.0
 	_connect_signals()
 
 
@@ -103,25 +132,27 @@ func _process(delta: float) -> void:
 
 
 func _check_nudges() -> void:
-	if _nudges_shown >= MAX_NUDGES:
+	if _nudges_shown >= _eff_max_nudges:
 		_active = false
 		return
 
-	# Nudge 1: no Observe performed within 90 s.
-	if not _nudge1_fired and not _observed and _elapsed >= NUDGE1_OBSERVE_SECS:
+	# Nudge 1: no Observe performed within threshold (adjusted by back-off).
+	if not _nudge1_fired and not _observed \
+			and _elapsed >= _eff_nudge1_secs * _backoff_factor:
 		_nudge1_fired = true
 		_fire_nudge(HINT_OBSERVE)
 
-	# Nudge 2: player has observed but has not opened the Journal within 60 s
+	# Nudge 2: player has observed but has not opened the Journal within threshold
 	# of their first Observe.  Skip if nudge 1 already fired (player was still
 	# guided toward observing first).
 	if not _nudge2_fired and _observed and not _journal_opened and not _nudge1_fired \
-			and (_elapsed - _observe_elapsed) >= NUDGE2_JOURNAL_SECS:
+			and (_elapsed - _observe_elapsed) >= _eff_nudge2_secs * _backoff_factor:
 		_nudge2_fired = true
 		_fire_nudge(HINT_JOURNAL)
 
-	# Nudge 3: no rumor crafted within 120 s.
-	if not _nudge3_fired and not _rumor_crafted and _elapsed >= NUDGE3_RUMOR_SECS:
+	# Nudge 3: no rumor crafted within threshold (adjusted by back-off).
+	if not _nudge3_fired and not _rumor_crafted \
+			and _elapsed >= _eff_nudge3_secs * _backoff_factor:
 		_nudge3_fired = true
 		_fire_nudge(HINT_RUMOR)
 
@@ -135,6 +166,8 @@ func _fire_nudge(hint_id: String) -> void:
 		return
 	_tutorial_banner.queue_hint(hint_id)
 	_nudges_shown += 1
+	# SPA-2454: Apply diminishing frequency — each nudge makes the next wait longer.
+	_backoff_factor *= BACKOFF_MULTIPLIER
 
 
 # ── Signal handlers ───────────────────────────────────────────────────────────

@@ -173,6 +173,10 @@ func _init_context_banner() -> void:
 	if _rumor_panel != null:
 		_rumor_panel.visibility_changed.connect(_on_rumor_panel_visibility_changed_banner)
 
+	# SPA-2454: Strategy hint — evidence timing (Apprentice only).
+	if _rumor_panel != null and _rumor_panel.has_signal("evidence_first_shown"):
+		_rumor_panel.evidence_first_shown.connect(_on_evidence_strategy_hint)
+
 	# SPA-937: S3 rival first-action hint.
 	if _world.active_scenario_id == "scenario_3" and _world.rival_agent != null \
 			and _world.rival_agent.has_signal("rival_acted"):
@@ -228,6 +232,10 @@ func _init_tutorial_banner_s1() -> void:
 	tutorial_banner.name = "TutorialBanner"
 	add_child(tutorial_banner)
 	tutorial_banner.setup(tutorial_sys)
+
+	# SPA-2454: Wire strategy hints for S1 (day_changed fires these on Apprentice).
+	if _day_night != null and _day_night.has_signal("day_changed"):
+		_day_night.day_changed.connect(_check_strategy_hints_for_day)
 
 	# HINT-01: immediate first action — fires 2 s after game start.
 	var _first_action_timer := get_tree().create_timer(2.0)
@@ -462,6 +470,8 @@ func _on_s1_evidence_first_shown() -> void:
 	if tutorial_banner != null and not _evidence_tooltip_fired:
 		_evidence_tooltip_fired = true
 		tutorial_banner.queue_hint("hint_evidence")
+	# SPA-2454: Also fire the strategy evidence-timing hint on Apprentice.
+	_on_evidence_strategy_hint()
 
 
 ## S1 banner suppression: pause when Journal opens/closes.
@@ -511,6 +521,8 @@ func _on_pause_menu_visibility_changed_banner(pause_menu: CanvasLayer) -> void:
 func _on_ctx_day_changed(day: int) -> void:
 	if tutorial_banner == null:
 		return
+	# SPA-2454: Difficulty-gated strategy hints.
+	_check_strategy_hints_for_day(day)
 	if day == 2:
 		tutorial_banner.queue_hint("ctx_actions_refresh")
 	elif day == 3:
@@ -581,6 +593,57 @@ func _on_inquisitor_first_acted_tutorial(_day: int, _claim: String, _subject: St
 		return
 	_ctx_inquisitor_first_act_fired = true
 	tutorial_banner.queue_hint("ctx_s4_prioritize_finn")
+
+
+# ── SPA-2454: Difficulty-gated strategy hints (Apprentice only) ──────────────
+
+## Fired-once flags for the five strategy hints.
+var _strategy_hub_fired:         bool = false
+var _strategy_sociability_fired: bool = false
+var _strategy_evidence_fired:    bool = false
+var _strategy_faction_fired:     bool = false
+var _strategy_multi_target_fired: bool = false
+
+
+## Queue a strategy hint only if the current difficulty allows it.
+func _try_strategy_hint(hint_id: String) -> void:
+	if tutorial_banner == null or tutorial_sys == null:
+		return
+	if not tutorial_sys.is_hint_allowed_for_difficulty(hint_id, GameState.selected_difficulty):
+		return
+	tutorial_banner.queue_hint(hint_id)
+
+
+## Wired into _on_ctx_day_changed — fires strategy hints at milestone days.
+func _check_strategy_hints_for_day(day: int) -> void:
+	# Day 1: hub scouting hint (8 s after first dawn)
+	if day == 1 and not _strategy_hub_fired:
+		_strategy_hub_fired = true
+		var t := get_tree().create_timer(8.0)
+		_scene_timers.append(t)
+		t.timeout.connect(func() -> void:
+			_try_strategy_hint("strategy_hub_scouting")
+		)
+	# Day 2: sociability targeting hint
+	elif day == 2 and not _strategy_sociability_fired:
+		_strategy_sociability_fired = true
+		_try_strategy_hint("strategy_sociability_targeting")
+	# Day 3: faction leverage hint
+	elif day == 3 and not _strategy_faction_fired:
+		_strategy_faction_fired = true
+		_try_strategy_hint("strategy_faction_leverage")
+	# Day 5: multi-target hint
+	elif day == 5 and not _strategy_multi_target_fired:
+		_strategy_multi_target_fired = true
+		_try_strategy_hint("strategy_multi_target")
+
+
+## Wired into evidence_first_shown — fires evidence timing hint on Apprentice.
+func _on_evidence_strategy_hint() -> void:
+	if _strategy_evidence_fired:
+		return
+	_strategy_evidence_fired = true
+	_try_strategy_hint("strategy_evidence_timing")
 
 
 # ── SPA-487: Idle-detection hint system ──────────────────────────────────────
