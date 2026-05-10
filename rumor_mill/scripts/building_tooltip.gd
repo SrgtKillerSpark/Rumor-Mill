@@ -79,10 +79,10 @@ func _process(_delta: float) -> void:
 	if loc != "":
 		_populate(loc)
 		_fade_to(1.0)
-		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+		CursorManager.request_cursor("building_tooltip", DisplayServer.CURSOR_POINTING_HAND, CursorManager.PRIORITY_WORLD)
 	else:
 		_fade_to(0.0)
-		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		CursorManager.release_cursor("building_tooltip")
 
 
 func _hit_test_location(world_pos: Vector2) -> String:
