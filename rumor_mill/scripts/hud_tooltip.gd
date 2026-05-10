@@ -27,7 +27,7 @@ const C_OUTLINE  := Color(0, 0, 0, 0.7)
 const TOOLTIP_MAX_WIDTH := 320.0
 const CURSOR_OFFSET := Vector2(16, -12)
 const FADE_IN_SEC := 0.10
-const HOVER_DELAY_SEC := 0.35
+const HOVER_DELAY_SEC := 0.12
 
 var _panel: PanelContainer = null
 var _title_label: Label = null
