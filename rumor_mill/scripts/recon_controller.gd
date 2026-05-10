@@ -58,6 +58,10 @@ signal bribe_executed(npc_name: String, tick: int)
 ## Used by the tutorial hint system to trigger HINT-03 (hint_observe).
 signal building_first_hovered
 
+## SPA-2452: Emitted the first time a Witness Account evidence item is acquired.
+## Used by tutorial_wiring to show the cooldown-bypass acquisition toast.
+signal witness_account_first_acquired
+
 ## Emitted when the player hovers an NPC that has a valid eavesdrop partner nearby.
 ## Used by the tutorial hint system to trigger HINT-04 (hint_eavesdrop).
 signal valid_eavesdrop_hovered
@@ -76,6 +80,8 @@ var _hovered_location: String = ""
 # ── Tutorial hint emission guards ─────────────────────────────────────────────
 var _building_hover_fired:      bool = false
 var _eavesdrop_hover_fired:     bool = false
+## SPA-2452: guard so witness_account_first_acquired emits only once per session.
+var _witness_account_first_fired: bool = false
 
 # ── Hover visual nodes (created in setup) ────────────────────────────────────
 var _tooltip_canvas: CanvasLayer = null
@@ -745,6 +751,10 @@ func _try_eavesdrop(target: Node2D) -> void:
 			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc", ea_drop_multiplier_active)
 		_flash_npc_evidence_acquired(target)
 		msg += "\n[+] Witness Account acquired."
+		# SPA-2452: notify tutorial system on first-ever acquisition.
+		if not _witness_account_first_fired:
+			_witness_account_first_fired = true
+			witness_account_first_acquired.emit()
 
 	emit_signal("action_performed", msg, true)
 	_show_eavesdrop_success(target)

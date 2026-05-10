@@ -826,6 +826,19 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"body":  "",   ## always overridden via body_override in main.gd
 		"auto_dismiss_secs": 9,
 	},
+	# ── SPA-2452: Witness Account discoverability — second-visit hint ────────────
+	# Shown once after the player's first successful Observe action (5 s delay)
+	# to explain the observe-wait-eavesdrop prerequisite for Witness Accounts.
+	"hint_second_visit": {
+		"title": "Some Leads Need a Second Visit",
+		"body":  (
+			"A single observation only scratches the surface.  "
+			+ "Return to the same location after a full night and eavesdrop the same pair again — "
+			+ "if enough time has passed you will collect a [b]Witness Account[/b], a rare evidence item.  "
+			+ "Witness Accounts let you [b]bypass the target-shift cooldown[/b] when attached to a rumour."
+		),
+		"auto_dismiss_secs": 12,
+	},
 	# ── General idle hints ───────────────────────────────────────────────────
 	"ctx_idle_no_action": {
 		"title": "Need a Nudge?",

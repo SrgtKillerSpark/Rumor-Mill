@@ -1007,10 +1007,15 @@ func _build_intel_section() -> void:
 		if locs_by_npc.has(npc_id):
 			_add_key_label("  Locations frequented:")
 			for obs_entry in locs_by_npc[npc_id]:
+				# SPA-2452: Show ⧗ when fewer than 24 ticks have elapsed since the
+				# last observation — the Witness Account window is not yet open.
+				var ticks_since: int = _get_current_tick() - obs_entry["tick"]
+				var follow_up_ready: String = "" if ticks_since >= 24 else "  ⧗ revisit after dawn"
 				_add_body_label(
-					"    - %s: observed %s" % [
+					"    - %s: observed %s%s" % [
 						obs_entry["location"].capitalize(),
-						_tick_to_day_str(obs_entry["tick"])
+						_tick_to_day_str(obs_entry["tick"]),
+						follow_up_ready
 					])
 
 		# Locked fields + live reputation (debug-visible per design doc Sprint 3 note).
