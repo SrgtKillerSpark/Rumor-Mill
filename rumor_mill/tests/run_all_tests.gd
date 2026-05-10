@@ -29,6 +29,10 @@ extends RefCounted
 ##                                          world boost formula (W1–W4), analytics modifier field (P1–P3) (SPA-2105)
 ##   • TestSpa2081SoftOnboardingNudges    — activation gating (A1–A2), nudge fire + suppression (N1–N8),
 ##                                          session cap (C1–C2), dismissal/seen guard (D1) (SPA-2081)
+##   • TestSoftOnboardingNudgeManager     — initial state, _process() integration, signal handler
+##                                          state mutations, _fire_nudge null-dep guard (SPA-2081)
+##   • TestGuidedDay2Manager              — initial state, activate(), day-changed sequence,
+##                                          journal visibility handler, recon handler (SPA-2082)
 ##   • TestSpa1614EvidenceUsedEmission   — evidence_used emission, field presence + values, disabled gate (SPA-1614)
 ##   • TestSpa1773WitnessAccountUsedEmission — witness_account_used bypass-mode event: emission,
 ##                                             field presence, halved bonus values, bypass-only gate (SPA-1773)
@@ -97,13 +101,6 @@ extends RefCounted
 ##   • TestSettingsMenu           — palette constants, initial state, _close() behaviour (SPA-1015)
 ##   • TestMidGameEventAgent      — activation, window guards, probability firing, resolve choice, serialization, effects (SPA-1017)
 ##   • TestDayNightCycle          — initial state, TIME_COLORS, phase detection, shadow guard, skip_to_next_day, color interpolation, signals (SPA-1017)
-##   • TestEndScreenAnimations    — initial state, setup wiring, start_count_up/start_btn_pulse null guards (SPA-1026)
-##   • TestEndScreenFeedback      — presets, dimension/char constants, palette, initial state, setup wiring (SPA-1026)
-##   • TestEndScreenNavigation    — initial state, set_scenario_id, next_scenario_id mapping table (SPA-1026)
-##   • TestEndScreenPanelBuilder  — palette, dimension constants, initial public/private node refs (SPA-1026)
-##   • TestEndScreenScoring       — PEAK_BELIEF_TARGET, NPC_OUTCOMES, palette, initial state, accessors, setup (SPA-1026)
-##   • TestEndScreenSummary       — WHAT_WENT_WRONG, SUMMARY_TEXT, SUMMARY_FALLBACK, infer/lookup logic (SPA-1026)
-##   • TestEndScreenReplayTab     — palette, initial state, setup wiring, populate null-analytics guard (SPA-1026)
 ##   • TestObjectiveHudMetrics    — initial state, _threat_word boundaries, _threat_color bands, refresh null guard (SPA-1026)
 ##   • TestObjectiveHudNudgeManager — palette, nudge texts, initial phase/budget/dep state (SPA-1026)
 ##   • TestObjectiveHudWinTracker — tempo colours, initial state, configure, setup_world, _get_progress_assessment, flash guard (SPA-1026)
@@ -251,13 +248,6 @@ const TestDayNightCycle = preload("res://tests/test_day_night_cycle.gd")
 const TestDistrictOverlay = preload("res://tests/test_district_overlay.gd")
 const TestDistrictPropsRegistry = preload("res://tests/test_district_props_registry.gd")
 const TestEndScreen = preload("res://tests/test_end_screen.gd")
-const TestEndScreenAnimations = preload("res://tests/test_end_screen_animations.gd")
-const TestEndScreenFeedback = preload("res://tests/test_end_screen_feedback.gd")
-const TestEndScreenNavigation = preload("res://tests/test_end_screen_navigation.gd")
-const TestEndScreenPanelBuilder = preload("res://tests/test_end_screen_panel_builder.gd")
-const TestEndScreenReplayTab = preload("res://tests/test_end_screen_replay_tab.gd")
-const TestEndScreenScoring = preload("res://tests/test_end_screen_scoring.gd")
-const TestEndScreenSummary = preload("res://tests/test_end_screen_summary.gd")
 const TestEventCard = preload("res://tests/test_event_card.gd")
 const TestEventChoiceModal = preload("res://tests/test_event_choice_modal.gd")
 const TestFactionEventSystem = preload("res://tests/test_faction_event_system.gd")
@@ -265,7 +255,8 @@ const TestFactionPalette = preload("res://tests/test_faction_palette.gd")
 const TestFeedbackSequence = preload("res://tests/test_feedback_sequence.gd")
 const TestGameInputHandler = preload("res://tests/test_game_input_handler.gd")
 const TestGameState = preload("res://tests/test_game_state.gd")
-const TestGuildDefenseAgent = preload("res://tests/test_guild_defense_agent.gd")
+const TestGuidedDay2Manager  = preload("res://tests/test_guided_day2_manager.gd")
+const TestGuildDefenseAgent  = preload("res://tests/test_guild_defense_agent.gd")
 const TestHelpReminderUI = preload("res://tests/test_help_reminder_ui.gd")
 const TestHowToPlay = preload("res://tests/test_how_to_play.gd")
 const TestHudTooltip = preload("res://tests/test_hud_tooltip.gd")
@@ -348,8 +339,9 @@ const TestScenarioManager = preload("res://tests/test_scenario_manager.gd")
 const TestSettingsManager = preload("res://tests/test_settings_manager.gd")
 const TestSettingsMenu = preload("res://tests/test_settings_menu.gd")
 const TestSocialGraph = preload("res://tests/test_social_graph.gd")
-const TestSocialGraphOverlay = preload("res://tests/test_social_graph_overlay.gd")
-const TestSpa970976Regressions = preload("res://tests/test_spa970_976_regressions.gd")
+const TestSocialGraphOverlay         = preload("res://tests/test_social_graph_overlay.gd")
+const TestSoftOnboardingNudgeManager = preload("res://tests/test_soft_onboarding_nudge_manager.gd")
+const TestSpa970976Regressions       = preload("res://tests/test_spa970_976_regressions.gd")
 const TestSpa1106NewGameRegression = preload("res://tests/test_spa1106_new_game_regression.gd")
 const TestSpa1544NewGameStateIsolation = preload("res://tests/test_spa1544_new_game_state_isolation.gd")
 const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_analytics_disabled_gating.gd")
@@ -465,6 +457,9 @@ func _init() -> void:
 
 	print("\n── SPA-2081 soft onboarding nudge manager (A1–A2/N1–N8/C1–C2/D1) ──")
 	TestSpa2081SoftOnboardingNudges.new().run()
+
+	print("\n── SoftOnboardingNudgeManager (initial state/process/handlers/null guard) ──")
+	TestSoftOnboardingNudgeManager.new().run()
 
 	print("\n── SPA-1614 evidence_used emission + shape ──")
 	TestSpa1614EvidenceUsedEmission.new().run()
@@ -595,27 +590,6 @@ func _init() -> void:
 	print("\n── DayNightCycle ──")
 	TestDayNightCycle.new().run()
 
-	print("\n── EndScreenAnimations ──")
-	TestEndScreenAnimations.new().run()
-
-	print("\n── EndScreenFeedback ──")
-	TestEndScreenFeedback.new().run()
-
-	print("\n── EndScreenNavigation ──")
-	TestEndScreenNavigation.new().run()
-
-	print("\n── EndScreenPanelBuilder ──")
-	TestEndScreenPanelBuilder.new().run()
-
-	print("\n── EndScreenScoring ──")
-	TestEndScreenScoring.new().run()
-
-	print("\n── EndScreenSummary ──")
-	TestEndScreenSummary.new().run()
-
-	print("\n── EndScreenReplayTab ──")
-	TestEndScreenReplayTab.new().run()
-
 	print("\n── ObjectiveHudMetrics ──")
 	TestObjectiveHudMetrics.new().run()
 
@@ -705,6 +679,9 @@ func _init() -> void:
 
 	print("\n── TutorialWiring ──")
 	TestTutorialWiring.new().run()
+
+	print("\n── GuidedDay2Manager (initial state/activate/day-changed/journal/recon) ──")
+	TestGuidedDay2Manager.new().run()
 
 	print("\n── ObjectiveHudBanner ──")
 	TestObjectiveHudBanner.new().run()

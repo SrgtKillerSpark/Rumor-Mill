@@ -35,14 +35,13 @@
 class_name TestSpa2042RunAllTestsRunner
 extends RefCounted
 
-# ── Preloads for all 16 scripts modified in SPA-1985 (fa8d99d) ───────────────
+# ── Preloads for all 14 scripts modified in SPA-1985 (fa8d99d) ───────────────
+# (end_screen_scoring and end_screen_summary removed in SPA-2465 deprecation)
 # These const lines ARE the parse-error regression guard.
 # A `var x :=` reintroduced in any of them causes a parse error here on load.
 
 const TestAchievementManagerScript        := preload("res://tests/test_achievement_manager.gd")
 const TestDayNightCycleScript             := preload("res://tests/test_day_night_cycle.gd")
-const TestEndScreenScoringScript          := preload("res://tests/test_end_screen_scoring.gd")
-const TestEndScreenSummaryScript          := preload("res://tests/test_end_screen_summary.gd")
 const TestNpcMovementScript               := preload("res://tests/test_npc_movement.gd")
 const TestNpcTooltipScript                := preload("res://tests/test_npc_tooltip.gd")
 const TestObjectiveHudScript              := preload("res://tests/test_objective_hud.gd")
@@ -76,8 +75,6 @@ func run() -> void:
 		# Fail if preload returned null or .new() raises a runtime error.
 		"test_achievement_manager_instantiates",
 		"test_day_night_cycle_instantiates",
-		"test_end_screen_scoring_instantiates",
-		"test_end_screen_summary_instantiates",
 		"test_npc_movement_instantiates",
 		"test_npc_tooltip_instantiates",
 		"test_objective_hud_instantiates",
@@ -125,16 +122,6 @@ func test_achievement_manager_instantiates() -> bool:
 func test_day_night_cycle_instantiates() -> bool:
 	## Regression: `var count := _make_dnc().TIME_COLORS.size()` (fa8d99d).
 	return TestDayNightCycleScript.new() != null
-
-
-func test_end_screen_scoring_instantiates() -> bool:
-	## Regression: two `var count :=` sites in test_end_screen_scoring.gd (fa8d99d).
-	return TestEndScreenScoringScript.new() != null
-
-
-func test_end_screen_summary_instantiates() -> bool:
-	## Regression: `var count :=` sites in test_end_screen_summary.gd (fa8d99d).
-	return TestEndScreenSummaryScript.new() != null
 
 
 func test_npc_movement_instantiates() -> bool:
