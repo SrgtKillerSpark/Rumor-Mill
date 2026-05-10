@@ -397,6 +397,11 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		_btn_next.disabled = true
 		_btn_next.focus_mode = Control.FOCUS_NONE
+		# SPA-2464: Distinguish final-scenario victory from defeat in the tooltip.
+		if won:
+			_btn_next.tooltip_text = "You\u2019ve completed all scenarios!"
+		else:
+			_btn_next.tooltip_text = "Win this scenario to unlock."
 
 	# ── SPA-784: "What went wrong" one-liner for defeat ──────────────────────
 	if not won:
@@ -433,6 +438,10 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_again.custom_minimum_size = Vector2(180, 48)
 		_btn_again.call_deferred("grab_focus")
 	elif _btn_again != null:
+		# SPA-2464: Reset any defeat-era styling so the button returns to default on victory.
+		_btn_again.text = "Play Again"
+		_btn_again.remove_theme_font_size_override("font_size")
+		_btn_again.custom_minimum_size = Vector2(150, 40)
 		_btn_again.call_deferred("grab_focus")
 
 	# ── Count-up tween (start after entrance completes) ───────────────────────
