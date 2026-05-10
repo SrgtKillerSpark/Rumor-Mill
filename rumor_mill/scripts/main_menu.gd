@@ -103,7 +103,7 @@ const STATS_PANEL_MIN_W   := 480;  const STATS_PANEL_MAX_W   := 680
 const STATS_PANEL_MIN_H   := 400;  const STATS_PANEL_MAX_H   := 520
 const STATS_PANEL_VP_W    := 0.53; const STATS_PANEL_VP_H    := 0.72
 
-enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS }
+enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS, LOAD_GAME }
 
 # ── State ─────────────────────────────────────────────────────────────────────
 var _phase:              Phase     = Phase.MAIN
@@ -125,6 +125,15 @@ var _how_to_play:        CanvasLayer = null
 
 # Continue button (disabled when no saves exist)
 var _btn_continue:       Button      = null
+
+# SPA-2450: Load Game button and slot-picker panel
+var _btn_load_game:      Button        = null
+var _panel_load_game:    Control       = null
+var _load_slots_vbox:    VBoxContainer = null
+var _load_status_label:  Label         = null
+
+# SPA-2450: Inline error label on the main panel for save-load errors
+var _main_error_label:   Label         = null
 
 # SPA-589: Atmospheric dusk background elements
 var _dusk_sky:           ColorRect   = null  # gradient sky background
@@ -177,6 +186,7 @@ func _ready() -> void:
 	_build_settings_panel()
 	_build_credits_panel()
 	_build_stats_panel()
+	_build_load_game_panel()
 	_build_version_label()
 	_how_to_play = preload("res://scripts/how_to_play.gd").new()
 	_how_to_play.name = "HowToPlay"
@@ -227,13 +237,14 @@ func _show_phase(p: Phase) -> void:
 
 	# Map phases to their panel nodes.
 	var panels: Dictionary = {
-		Phase.MAIN:     _panel_main,
-		Phase.SELECT:   _panel_select,
-		Phase.BRIEFING: _panel_briefing,
-		Phase.INTRO:    _panel_intro,
-		Phase.SETTINGS: _panel_settings,
-		Phase.CREDITS:  _panel_credits,
-		Phase.STATS:    _panel_stats,
+		Phase.MAIN:      _panel_main,
+		Phase.SELECT:    _panel_select,
+		Phase.BRIEFING:  _panel_briefing,
+		Phase.INTRO:     _panel_intro,
+		Phase.SETTINGS:  _panel_settings,
+		Phase.CREDITS:   _panel_credits,
+		Phase.STATS:     _panel_stats,
+		Phase.LOAD_GAME: _panel_load_game,
 	}
 
 	# Determine outgoing and incoming panels.
@@ -298,6 +309,8 @@ func _set_phase_focus(p: Phase) -> void:
 			_grab_first_button(_panel_credits)
 		Phase.STATS:
 			_grab_first_button(_panel_stats)
+		Phase.LOAD_GAME:
+			_grab_first_button(_panel_load_game)
 
 
 ## Finds and focuses the first Button descendant of the given node.
@@ -506,6 +519,11 @@ func _build_main_panel() -> void:
 	btn_row.add_child(_btn_continue)
 	_refresh_continue_button()
 
+	# SPA-2450: Load Game — opens slot picker showing all saves.
+	_btn_load_game = _make_button("Load Game", 200)
+	_btn_load_game.pressed.connect(_on_load_game_pressed)
+	btn_row.add_child(_btn_load_game)
+
 	var btn_howto := _make_button("How to Play", 200)
 	btn_howto.pressed.connect(_on_how_to_play_pressed)
 	btn_row.add_child(btn_howto)
@@ -526,6 +544,14 @@ func _build_main_panel() -> void:
 		var btn_quit := _make_button("Quit", 200)
 		btn_quit.pressed.connect(get_tree().quit)
 		btn_row.add_child(btn_quit)
+
+	# SPA-2450: Error label — visible only when Continue fails (corrupt/missing save).
+	_main_error_label = Label.new()
+	_main_error_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_main_error_label.add_theme_font_size_override("font_size", 12)
+	_main_error_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.3, 1.0))
+	_main_error_label.visible = false
+	vbox.add_child(_main_error_label)
 
 	# SPA-1099: Bottom expand-fill spacer — mirrors spacer_top to center
 	# all content vertically within the full-rect VBox.
@@ -1139,7 +1165,16 @@ func _refresh_continue_button() -> void:
 		_btn_continue.tooltip_text = "No saved games found."
 	else:
 		_btn_continue.disabled = false
-		var title_str: String = recent.get("scenario_title", recent.get("scenario_id", ""))
+		# SPA-2450 (Finding #3): resolve title from _scenarios list as primary source;
+		# fall back to scenario_title stored in the save, then bare scenario_id.
+		var sid: String = recent.get("scenario_id", "")
+		var title_str: String = ""
+		for sc in _scenarios:
+			if sc.get("scenarioId", "") == sid:
+				title_str = sc.get("title", sid)
+				break
+		if title_str.is_empty():
+			title_str = recent.get("scenario_title", sid)
 		_btn_continue.tooltip_text = "%s — Day %d" % [title_str, recent.get("day", 1)]
 
 
@@ -1156,6 +1191,10 @@ func _on_continue_pressed() -> void:
 	var err: String = SaveManager.prepare_load(scenario_id, slot)
 	if not err.is_empty():
 		push_warning("MainMenu: continue failed — " + err)
+		# SPA-2450: Show user-visible error rather than silently dropping the action.
+		if _main_error_label != null:
+			_main_error_label.text = "Save corrupted — " + err
+			_main_error_label.visible = true
 		return
 	begin_game.emit(scenario_id)
 
@@ -1841,6 +1880,118 @@ func _on_stats_back() -> void:
 func _on_stats_reset() -> void:
 	PlayerStats.reset_all()
 	_rebuild_stats_content()
+
+
+# ── Phase 8: Load Game panel (SPA-2450) ──────────────────────────────────────
+
+func _build_load_game_panel() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var pw := UILayoutConstants.clamp_to_viewport(vp.x, NARROW_PANEL_VP_W, NARROW_PANEL_MIN_W, NARROW_PANEL_MAX_W)
+	var ph := UILayoutConstants.clamp_to_viewport(vp.y, NARROW_PANEL_VP_H, NARROW_PANEL_MIN_H, NARROW_PANEL_MAX_H)
+	_panel_load_game = _make_panel(pw, ph)
+	add_child(_panel_load_game)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_panel_load_game.add_child(vbox)
+
+	var heading := Label.new()
+	heading.text = "Load Game"
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_theme_font_size_override("font_size", 28)
+	heading.add_theme_color_override("font_color", C_TITLE)
+	vbox.add_child(heading)
+
+	vbox.add_child(_separator())
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+
+	_load_slots_vbox = VBoxContainer.new()
+	_load_slots_vbox.add_theme_constant_override("separation", 8)
+	_load_slots_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_load_slots_vbox)
+
+	_load_status_label = Label.new()
+	_load_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_load_status_label.add_theme_font_size_override("font_size", 12)
+	_load_status_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.3, 1.0))
+	_load_status_label.visible = false
+	vbox.add_child(_load_status_label)
+
+	vbox.add_child(_separator())
+
+	var btn_back := _make_button("Back", 160)
+	btn_back.pressed.connect(_on_load_game_back)
+	var btn_row := HBoxContainer.new()
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_child(btn_back)
+	vbox.add_child(btn_row)
+
+
+## Repopulate the load-slot list from all scenarios × all slots.
+## Called each time the Load Game panel opens so it reflects fresh save state.
+func _refresh_load_slots() -> void:
+	if _load_slots_vbox == null:
+		return
+	for child in _load_slots_vbox.get_children():
+		child.queue_free()
+	if _load_status_label != null:
+		_load_status_label.visible = false
+
+	var slot_labels := {
+		SaveManager.AUTO_SLOT: "Auto",
+		1: "Slot 1",
+		2: "Slot 2",
+		3: "Slot 3",
+	}
+	var found_any := false
+	for sc in _scenarios:
+		var sid: String = sc.get("scenarioId", "")
+		var sc_title: String = sc.get("title", sid)
+		for slot in [SaveManager.AUTO_SLOT, 1, 2, 3]:
+			var info := SaveManager.get_save_info(sid, slot)
+			if info.is_empty():
+				continue
+			found_any = true
+			var slot_name: String = slot_labels.get(slot, "Slot %d" % slot)
+			var lbl_text := "%s  —  %s  —  Day %d" % [sc_title, slot_name, info.get("day", 1)]
+			var btn := _make_button(lbl_text, 0)
+			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var captured_sid := sid
+			var captured_slot := slot
+			btn.pressed.connect(func() -> void: _on_load_slot_selected(captured_sid, captured_slot))
+			_load_slots_vbox.add_child(btn)
+
+	if not found_any:
+		var empty_lbl := Label.new()
+		empty_lbl.text = "No saved games found."
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_lbl.add_theme_color_override("font_color", C_MUTED)
+		empty_lbl.add_theme_font_size_override("font_size", 14)
+		_load_slots_vbox.add_child(empty_lbl)
+
+
+func _on_load_game_pressed() -> void:
+	_refresh_load_slots()
+	_show_phase(Phase.LOAD_GAME)
+
+
+func _on_load_slot_selected(scenario_id: String, slot: int) -> void:
+	var err := SaveManager.prepare_load(scenario_id, slot)
+	if not err.is_empty():
+		if _load_status_label != null:
+			_load_status_label.text = "Load failed: " + err
+			_load_status_label.visible = true
+		return
+	begin_game.emit(scenario_id)
+
+
+func _on_load_game_back() -> void:
+	_show_phase(Phase.MAIN)
 
 
 # ── Version corner label ──────────────────────────────────────────────────────
