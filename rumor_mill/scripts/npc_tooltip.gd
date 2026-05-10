@@ -104,7 +104,7 @@ const PORTRAIT_COLS := 6
 
 
 func _ready() -> void:
-	layer = 9   # above social graph (8), below journal (12)
+	layer = 16  # above scenario HUDs (14) so world tooltips are never occluded by them
 	_state_icon_tex = load("res://assets/textures/ui_state_icons.png")
 	_portrait_tex = load("res://assets/textures/ui_npc_portraits.png")
 	_load_flavor_text()

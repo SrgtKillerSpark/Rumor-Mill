@@ -36,7 +36,7 @@ var _fade_tween:  Tween    = null
 
 
 func _ready() -> void:
-	layer = 9   # same level as npc_tooltip
+	layer = 16  # above scenario HUDs (14) so world tooltips are never occluded by them
 	_load_flavor_text()
 	_build_panel()
 
