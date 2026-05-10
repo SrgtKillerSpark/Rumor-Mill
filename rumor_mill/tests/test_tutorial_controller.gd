@@ -1,7 +1,7 @@
 ## test_tutorial_controller.gd — Unit tests for TutorialController (SPA-981).
 ##
 ## Covers:
-##   • Step constant sizes   — STEPS_S1 (7), S2/S3/S4 (3 each), S5/S6 (2 each)
+##   • Step constant sizes   — STEPS_S1 (7), S2 (2), S3/S4 (3 each), S5/S6 (2 each)
 ##   • STEPS alias           — STEPS points to the same content as STEPS_S1
 ##   • Step index constants  — STEP_OPENING..STEP_COMPLETE match expected indices
 ##   • Step data integrity   — every step dict has "id" and "hint" keys
@@ -28,11 +28,11 @@ func run() -> void:
 	var tests := [
 		# Step constant sizes
 		"test_steps_s1_has_7_steps",
-		"test_steps_s2_has_4_steps",
-		"test_steps_s3_has_4_steps",
-		"test_steps_s4_has_4_steps",
-		"test_steps_s5_has_3_steps",
-		"test_steps_s6_has_3_steps",
+		"test_steps_s2_has_2_steps",
+		"test_steps_s3_has_3_steps",
+		"test_steps_s4_has_3_steps",
+		"test_steps_s5_has_2_steps",
+		"test_steps_s6_has_2_steps",
 		# STEPS alias
 		"test_steps_alias_same_size_as_s1",
 		"test_steps_alias_same_ids_as_s1",
@@ -109,37 +109,37 @@ static func test_steps_s1_has_7_steps() -> bool:
 	return true
 
 
-static func test_steps_s2_has_4_steps() -> bool:
-	if TutorialController.STEPS_S2.size() != 4:
-		push_error("test_steps_s2_has_4_steps: expected 4, got %d" % TutorialController.STEPS_S2.size())
+static func test_steps_s2_has_2_steps() -> bool:
+	if TutorialController.STEPS_S2.size() != 2:
+		push_error("test_steps_s2_has_2_steps: expected 2, got %d" % TutorialController.STEPS_S2.size())
 		return false
 	return true
 
 
-static func test_steps_s3_has_4_steps() -> bool:
-	if TutorialController.STEPS_S3.size() != 4:
-		push_error("test_steps_s3_has_4_steps: expected 4, got %d" % TutorialController.STEPS_S3.size())
+static func test_steps_s3_has_3_steps() -> bool:
+	if TutorialController.STEPS_S3.size() != 3:
+		push_error("test_steps_s3_has_3_steps: expected 3, got %d" % TutorialController.STEPS_S3.size())
 		return false
 	return true
 
 
-static func test_steps_s4_has_4_steps() -> bool:
-	if TutorialController.STEPS_S4.size() != 4:
-		push_error("test_steps_s4_has_4_steps: expected 4, got %d" % TutorialController.STEPS_S4.size())
+static func test_steps_s4_has_3_steps() -> bool:
+	if TutorialController.STEPS_S4.size() != 3:
+		push_error("test_steps_s4_has_3_steps: expected 3, got %d" % TutorialController.STEPS_S4.size())
 		return false
 	return true
 
 
-static func test_steps_s5_has_3_steps() -> bool:
-	if TutorialController.STEPS_S5.size() != 3:
-		push_error("test_steps_s5_has_3_steps: expected 3, got %d" % TutorialController.STEPS_S5.size())
+static func test_steps_s5_has_2_steps() -> bool:
+	if TutorialController.STEPS_S5.size() != 2:
+		push_error("test_steps_s5_has_2_steps: expected 2, got %d" % TutorialController.STEPS_S5.size())
 		return false
 	return true
 
 
-static func test_steps_s6_has_3_steps() -> bool:
-	if TutorialController.STEPS_S6.size() != 3:
-		push_error("test_steps_s6_has_3_steps: expected 3, got %d" % TutorialController.STEPS_S6.size())
+static func test_steps_s6_has_2_steps() -> bool:
+	if TutorialController.STEPS_S6.size() != 2:
+		push_error("test_steps_s6_has_2_steps: expected 2, got %d" % TutorialController.STEPS_S6.size())
 		return false
 	return true
 
