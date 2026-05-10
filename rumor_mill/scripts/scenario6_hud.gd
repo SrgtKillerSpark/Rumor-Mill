@@ -215,6 +215,7 @@ func _build_ui() -> void:
 	_blackmail_btn.tooltip_text = "Spend %d whisper tokens to leak blackmail evidence against Aldric (%d rep, +%.0f heat on his allies). Big risk, big impact. %d uses max." % [BLACKMAIL_WHISPER_COST, BLACKMAIL_REP_HIT, BLACKMAIL_HEAT_ADD, BLACKMAIL_MAX_USES]
 	_blackmail_btn.add_theme_font_size_override("font_size", 12)
 	_blackmail_btn.disabled = true
+	_blackmail_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_blackmail_btn.pressed.connect(_on_blackmail_pressed)
 	right_vbox.add_child(_blackmail_btn)
 

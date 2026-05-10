@@ -177,6 +177,7 @@ func _apply_hud_button_style(btn: Button) -> void:
 	disabled.bg_color    = Color(0.15, 0.12, 0.09, 0.60)
 	disabled.border_color = Color(0.40, 0.35, 0.25, 0.40)
 	btn.add_theme_stylebox_override("disabled", disabled)
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 
 ## Build a progress bar (dark background + colored fill child) with rounded corners.

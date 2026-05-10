@@ -135,6 +135,7 @@ func _build_ui() -> void:
 	_disrupt_btn.tooltip_text = "Spend 1 recon action to slow the rival agent for 3 days. Requires the rival to have acted at least once."
 	_disrupt_btn.add_theme_font_size_override("font_size", 12)
 	_disrupt_btn.disabled = true
+	_disrupt_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_disrupt_btn.pressed.connect(_on_disrupt_pressed)
 	right_vbox.add_child(_disrupt_btn)
 
