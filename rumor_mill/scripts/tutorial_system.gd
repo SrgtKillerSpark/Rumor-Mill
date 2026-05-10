@@ -426,6 +426,16 @@ const HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 5,
 	},
+	# SPA-2434: Day 1 eavesdrop nudge — fires 1 s after gtut_opening dismissed;
+	# auto-dismissed on first Observe action or manually by the player.
+	"gtut_day1_eavesdrop_nudge": {
+		"title": "The Tavern is busy this morning",
+		"body":  (
+			"Observe the Tavern to see who is there, "
+			+ "then eavesdrop on a conversation to learn who trusts whom."
+		),
+		"auto_dismiss_secs": 999,
+	},
 	"gtut_explore": {
 		"title": "Explore the Town",
 		"body":  (
@@ -830,6 +840,31 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			"You have gathered intel but haven't crafted a rumour yet.  "
 			+ "Press [b]R[/b] to open the Rumour Panel.  Pick a subject, choose a claim, "
 			+ "then whisper it to a [b]well-connected NPC[/b] to start spreading."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	# ── SPA-2082: Guided Day 2 sequence for tutorial-completers ─────────────
+	"gtut_day2_dawn": {
+		"title": "A New Day Dawns",
+		"body":  (
+			"Yesterday you planted your first rumour.  "
+			+ "Press [b]J[/b] to check your Journal and see if it spread overnight."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"gtut_day2_journal_checked": {
+		"title": "Expand Your Network",
+		"body":  (
+			"Good. You have [b]3 Recon actions[/b] today.  "
+			+ "Try observing a different building to expand your intel network."
+		),
+		"auto_dismiss_secs": 10,
+	},
+	"gtut_day2_observe_done": {
+		"title": "You're on Your Own",
+		"body":  (
+			"The [b]objective tracker[/b] (top of screen) always shows your next best move.  "
+			+ "Press [b]H[/b] anytime for help."
 		),
 		"auto_dismiss_secs": 10,
 	},
