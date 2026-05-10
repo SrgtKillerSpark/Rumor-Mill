@@ -225,9 +225,9 @@ func decay_heat() -> void:
 	if heat_freeze_days > 0:
 		heat_freeze_days -= 1
 		return
-	var decay_amount: float = 6.0 if heat_decay_override < 0.0 else heat_decay_override
+	var decay_amount: float = 9.5 if heat_decay_override < 0.0 else heat_decay_override
 	for npc_id in heat.keys():
-		heat[npc_id] = maxf(0.0, heat[npc_id] - decay_amount)  # SPA-98: default 6.0; overrideable by guard_crackdown event
+		heat[npc_id] = maxf(0.0, heat[npc_id] - decay_amount)  # SPA-98: default 9.5 (was 6.0 per SPA-2428); overrideable by guard_crackdown event
 
 
 ## SPA-2104: Apply a post-event suspicion freeze for the given number of days.
