@@ -50,6 +50,8 @@ func run() -> void:
 		"test_setup_assigns_analytics_ref",
 		"test_setup_null_world_no_crash",
 		"test_setup_omit_analytics_ref_remains_null",
+		# SPA-2608: _unhandled_input guard
+		"test_unhandled_input_guard_not_visible",
 	]
 
 	for method_name in tests:
@@ -136,3 +138,17 @@ static func test_setup_omit_analytics_ref_remains_null() -> bool:
 	var es := _make_es()
 	es.setup(null, null)
 	return es._analytics_ref == null
+
+
+# ── SPA-2608: _unhandled_input ────────────────────────────────────────────────
+
+## When the end screen is not visible, _unhandled_input must return early without
+## crashing (the early-return guard fires before any get_viewport() call).
+static func test_unhandled_input_guard_not_visible() -> bool:
+	var es := _make_es()
+	es.visible = false
+	var ev := InputEventKey.new()
+	ev.keycode = KEY_ESCAPE
+	ev.pressed = true
+	es._unhandled_input(ev)   # must not crash
+	return true
