@@ -496,7 +496,7 @@ func on_rumor_seeded(_rumor_id: String, _subject: String, _claim: String, _targe
 
 
 ## Called by recon_ctrl.action_performed signal relay in main.gd.
-func on_recon_action(message: String, success: bool) -> void:
+func on_recon_action(message: String, success: bool, _is_witness_account: bool = false) -> void:
 	if not success:
 		return
 	if message.begins_with("Observed"):

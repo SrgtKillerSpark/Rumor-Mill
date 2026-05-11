@@ -218,7 +218,7 @@ func _on_bribe_executed(npc_name: String, tick: int) -> void:
 
 # ── SPA-708: Daily planning priority counter handlers ─────────────────────────
 
-func _on_recon_action_for_planning(message: String, success: bool) -> void:
+func _on_recon_action_for_planning(message: String, success: bool, _is_witness_account: bool = false) -> void:
 	if _daily_planning == null or not success:
 		return
 	var lower := message.to_lower()

@@ -209,20 +209,37 @@ func _process(_delta: float) -> void:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-func show_toast(message: String, success: bool) -> void:
-	var icon := "✓ " if success else "✗ "
+func show_toast(message: String, success: bool, is_witness_account: bool = false) -> void:
+	var icon: String
+	var color: Color
+	var border_color: Color
+	var dwell_time: float
+	if is_witness_account:
+		icon = "? "
+		color = Color(0.400, 0.902, 0.722, 1.0)  # #66E6B8 teal
+		border_color = Color(0.400, 0.902, 0.722, 1.0)
+		dwell_time = 4.5
+	elif success:
+		icon = "✓ "
+		color = Color(0.894, 0.820, 0.659, 1.0)  # PARCH_L
+		border_color = Color(0.30, 0.65, 0.25, 1.0)
+		dwell_time = TOAST_DURATION
+	else:
+		icon = "✗ "
+		color = Color(0.941, 0.510, 0.173, 1.0)  # FORGE
+		border_color = Color(0.75, 0.30, 0.12, 1.0)
+		dwell_time = TOAST_DURATION
 	toast_label.text = icon + message
-	var color := Color(0.894, 0.820, 0.659, 1.0) if success else Color(0.941, 0.510, 0.173, 1.0)  # PARCH_L / FORGE
 	toast_label.add_theme_color_override("font_color", color)
 	toast_label.add_theme_constant_override("outline_size", 2)
 	toast_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	# Tint the toast border to match success/fail for stronger visual cue.
 	var border_node: ColorRect = toast_panel.get_node_or_null("ToastBorder")
 	if border_node != null:
-		border_node.color = Color(0.30, 0.65, 0.25, 1.0) if success else Color(0.75, 0.30, 0.12, 1.0)
+		border_node.color = border_color
 	show_action_flash(success)
 
-	# Slide in from below, then fade out after TOAST_DURATION seconds.
+	# Slide in from below, then fade out after dwell_time seconds.
 	if _toast_tween != null:
 		_toast_tween.kill()
 	if _toast_slide_tween != null:
@@ -238,7 +255,7 @@ func show_toast(message: String, success: bool) -> void:
 	_toast_slide_tween.parallel().tween_property(toast_panel, "offset_bottom", _toast_normal_offset_bottom, 0.18)
 
 	_toast_tween = create_tween()
-	_toast_tween.tween_interval(TOAST_DURATION)
+	_toast_tween.tween_interval(dwell_time)
 	_toast_tween.tween_property(toast_panel, "modulate:a", 0.0, 0.35)
 	_toast_tween.tween_callback(func() -> void: toast_panel.visible = false)
 
@@ -760,7 +777,7 @@ func auto_show_initial_hint() -> void:
 
 
 ## Push an action result into the feed. Called alongside show_toast.
-func push_feed_entry(message: String, success: bool) -> void:
+func push_feed_entry(message: String, success: bool, _is_witness_account: bool = false) -> void:
 	var tick: int = 0
 	if _day_night_ref != null and "current_tick" in _day_night_ref:
 		tick = _day_night_ref.current_tick

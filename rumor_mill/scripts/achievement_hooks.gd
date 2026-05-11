@@ -45,7 +45,7 @@ func _on_achievement_player_exposed() -> void:
 
 
 ## Tracks Observe and Eavesdrop usage from action_performed messages.
-func _on_achievement_action_performed(message: String, success: bool) -> void:
+func _on_achievement_action_performed(message: String, success: bool, _is_witness_account: bool = false) -> void:
 	if not success:
 		return
 	if message.begins_with("Observed"):
