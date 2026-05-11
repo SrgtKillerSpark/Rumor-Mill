@@ -30,13 +30,16 @@ signal hint_dismissed(hint_id: String)
 
 # ── Palette ───────────────────────────────────────────────────────────────────
 
-const C_PANEL_BG     := Color(0.06, 0.04, 0.02, 0.82)   # dark semi-transparent
-const C_ACCENT       := Color(0.957, 0.651, 0.227, 1.0)  # amber #F4A63A
-const C_HEADING      := Color(0.96, 0.84, 0.40, 1.0)    # warm gold
-const C_BODY         := Color(0.80, 0.72, 0.55, 1.0)    # parchment
-const C_BTN_NORMAL   := Color(0.30, 0.18, 0.05, 0.90)
-const C_BTN_HOVER    := Color(0.50, 0.30, 0.08, 1.0)
-const C_BTN_TEXT     := Color(0.92, 0.82, 0.60, 1.0)
+const C_PANEL_BG          := Color(0.06, 0.04, 0.02, 0.82)   # dark semi-transparent
+const C_ACCENT            := Color(0.957, 0.651, 0.227, 1.0)  # amber #F4A63A
+const C_HEADING           := Color(0.96, 0.84, 0.40, 1.0)    # warm gold
+const C_BODY              := Color(0.80, 0.72, 0.55, 1.0)    # parchment
+const C_BTN_NORMAL        := Color(0.30, 0.18, 0.05, 0.90)
+const C_BTN_HOVER         := Color(0.50, 0.30, 0.08, 1.0)
+const C_BTN_TEXT          := Color(0.92, 0.82, 0.60, 1.0)
+# SPA-2509: Highlight variant — used for high-importance toasts (Witness Account).
+const C_ACCENT_HIGHLIGHT  := Color(0.25, 0.85, 0.80, 1.0)   # teal #40D9CC
+const C_HEADING_HIGHLIGHT := Color(0.55, 0.95, 0.90, 1.0)   # light cyan
 
 const BANNER_WIDTH   := 380
 const MARGIN         := 24       # px from screen edges
@@ -51,6 +54,7 @@ var _title_label: Label          = null
 var _body_label:  RichTextLabel  = null
 var _dismiss_btn: Button         = null
 var _dismiss_tween: Tween        = null
+var _border_style: StyleBoxFlat  = null  # SPA-2509: stored to allow per-hint colour swap
 
 # ── State ─────────────────────────────────────────────────────────────────────
 
@@ -209,6 +213,7 @@ func _show_next() -> void:
 			else str(data.get("body", ""))
 		_title_label.text = data.get("title", "")
 		_body_label.text  = body
+		_apply_hint_style(data)
 
 		# Position banner off-screen to the left for slide-in.
 		_container.offset_left  = -(BANNER_WIDTH + MARGIN + 20)
@@ -226,6 +231,19 @@ func _show_next() -> void:
 	# Queue exhausted or suppressed — nothing to show.
 	_active_id = ""
 	visible    = false
+
+
+## SPA-2509: Apply per-hint visual style.  "highlight" hints (e.g. Witness Account
+## acquisition) use a teal accent and heading so they are unmistakably distinct
+## from ordinary amber tutorial banners.
+func _apply_hint_style(data: Dictionary) -> void:
+	var highlight: bool = bool(data.get("highlight", false))
+	var accent_col:  Color = C_ACCENT_HIGHLIGHT  if highlight else C_ACCENT
+	var heading_col: Color = C_HEADING_HIGHLIGHT if highlight else C_HEADING
+	_accent.color = accent_col
+	if _border_style != null:
+		_border_style.border_color = accent_col
+	_title_label.add_theme_color_override("font_color", heading_col)
 
 
 func _auto_dismiss() -> void:
@@ -333,12 +351,12 @@ func _build_ui() -> void:
 	border_panel.anchor_right  = 1.0
 	border_panel.anchor_bottom = 1.0
 	border_panel.mouse_filter  = Control.MOUSE_FILTER_IGNORE
-	var border_style := StyleBoxFlat.new()
-	border_style.bg_color = Color(0, 0, 0, 0)
-	border_style.border_color = C_ACCENT
-	border_style.set_border_width_all(1)
-	border_style.set_corner_radius_all(8)
-	border_panel.add_theme_stylebox_override("panel", border_style)
+	_border_style = StyleBoxFlat.new()
+	_border_style.bg_color = Color(0, 0, 0, 0)
+	_border_style.border_color = C_ACCENT
+	_border_style.set_border_width_all(1)
+	_border_style.set_corner_radius_all(8)
+	border_panel.add_theme_stylebox_override("panel", _border_style)
 	_container.add_child(border_panel)
 
 	# Content VBox (inset from accent stripe).
