@@ -35,6 +35,9 @@ const C_STAT_VALUE   := Color(0.91, 0.85, 0.70, 1.0)
 const C_SCORE_WIN    := Color(0.92, 0.78, 0.12, 1.0)   # gold  — score > 60
 const C_SCORE_FAIL   := Color(0.85, 0.18, 0.12, 1.0)   # crimson — score < 40
 const C_SCORE_NEU    := Color(0.85, 0.65, 0.15, 1.0)   # amber — neutral
+# SPA-2579: Defeat-state arrow colours — directional but desaturated.
+const C_DEFEAT_UP    := Color(0.78, 0.58, 0.28, 1.0)   # muted amber — up-arrow on defeat
+const C_DEFEAT_NEU   := Color(0.55, 0.50, 0.45, 1.0)   # dim grey   — neutral on defeat
 
 const PANEL_W := 760
 const PANEL_H := 640
@@ -796,14 +799,17 @@ func _populate_npc_outcomes() -> void:
 		var arrow_text: String
 		var arrow_color: Color
 		if not _last_outcome_won:
-			# SPA-784: Defeat — all arrows are red to emphasize failure.
+			# SPA-2579: Defeat — keep directional semantics but desaturate.
+			# Down-arrows stay crimson; up-arrows use muted amber; neutral uses dim grey.
 			if score > 60:
 				arrow_text  = "▲"
+				arrow_color = C_DEFEAT_UP
 			elif score < 40:
 				arrow_text  = "▼"
+				arrow_color = C_SCORE_FAIL
 			else:
 				arrow_text  = "—"
-			arrow_color = C_SCORE_FAIL
+				arrow_color = C_DEFEAT_NEU
 		else:
 			if score > 60:
 				arrow_text  = "▲"
@@ -1706,3 +1712,12 @@ func _on_main_menu() -> void:
 	pause_menu_script._pending_restart_id = ""
 	await TransitionManager.fade_out(0.35)
 	get_tree().reload_current_scene()
+
+
+## SPA-2579: Escape focuses the Main Menu button so keyboard users can dismiss.
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel") and _btn_main_menu != null:
+		_btn_main_menu.grab_focus()
+		get_viewport().set_input_as_handled()

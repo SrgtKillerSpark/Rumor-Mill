@@ -96,6 +96,10 @@ var _particle_layer: CanvasLayer = null
 
 # ── State ────────────────────────────────────────────────────────────────────
 var _running: bool = false
+# SPA-2579: True while the sequence accepts a skip input (after banner appears).
+var _skip_active: bool = false
+# SPA-2579: Set by _do_skip() so in-flight coroutine steps know to bail out.
+var _skip_requested: bool = false
 
 
 func _ready() -> void:
@@ -114,6 +118,8 @@ func play_victory(scenario_id: int) -> void:
 	if _running:
 		return
 	_running = true
+	_skip_active = false
+	_skip_requested = false
 	visible = true
 	_build_overlays()
 
@@ -138,15 +144,23 @@ func play_victory(scenario_id: int) -> void:
 	# 5. Parchment banner with scenario-specific victory text (hold 2.5 s).
 	var victory_text := _get_victory_banner_text(scenario_id)
 	_show_banner(victory_text, true)
+	# SPA-2579: Accept skip input once the banner is visible.
+	_skip_active = true
 	await get_tree().create_timer(2.5).timeout
+	if _skip_requested:
+		return
 	_hide_banner(0.5)
 
 	# 6. Stinger fade, town ambient at 50 %.
 	AudioManager.set_ambient_volume_db(-24.0)
 	await get_tree().create_timer(0.5).timeout
+	if _skip_requested:
+		return
 
 	# 7. Gentle iris-out to end screen.
 	await _play_iris_out(1.5)
+	if _skip_requested:
+		return
 
 	_running = false
 	sequence_finished.emit()
@@ -415,6 +429,24 @@ func _hide_all_overlays() -> void:
 	if _banner_panel != null:
 		_banner_panel.modulate.a = 0.0
 	visible = false
+
+
+## SPA-2579: Accept any key/click after the banner appears to skip the rest.
+func _unhandled_input(event: InputEvent) -> void:
+	if not _skip_active:
+		return
+	if (event is InputEventKey or event is InputEventMouseButton) and event.is_pressed():
+		_do_skip()
+		get_viewport().set_input_as_handled()
+
+
+## SPA-2579: Immediately conclude the sequence, hiding overlays and firing the signal.
+func _do_skip() -> void:
+	_skip_active = false
+	_skip_requested = true
+	_running = false
+	_hide_all_overlays()
+	sequence_finished.emit()
 
 
 # ── Banner text helpers ──────────────────────────────────────────────────────
