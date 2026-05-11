@@ -1329,6 +1329,7 @@ func seed_rumor_from_player(
 			rumor.evidence_credulity_boost = cred_boost * GameState.evidence_credulity_multiplier(GameState.selected_difficulty)
 			rumor.seed_target_npc_id = seed_target_npc_id
 		rumor.bolstered_by_evidence = true
+		rumor.evidence_type = evidence_item.type  ## SPA-2606: store for journal [W] marker
 
 	# Chain detection: check if this subject already has an active rumor that
 	# creates a same-type, escalation, or contradiction chain.
