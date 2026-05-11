@@ -117,7 +117,8 @@ var _milestone_log: Array = []
 @onready var _main_layout:    HBoxContainer   = $ParchmentPanel/ParchmentLayout/MainLayout
 
 ## SPA-2454: Recommended Actions sidebar (Apprentice only).
-var _rec_actions_panel: JournalRecommendedActions = null
+const _JournalRecActions = preload("res://scripts/journal_recommended_actions.gd")
+var _rec_actions_panel: VBoxContainer = null
 var _rec_actions_sep:   VSeparator                = null
 
 
@@ -144,7 +145,7 @@ func setup(world: Node2D, intel_store: PlayerIntelStore, day_night: Node) -> voi
 		_rec_actions_sep = VSeparator.new()
 		_rec_actions_sep.add_theme_color_override("separator_color", Color(0.55, 0.38, 0.18, 0.5))
 		_main_layout.add_child(_rec_actions_sep)
-		_rec_actions_panel = JournalRecommendedActions.new()
+		_rec_actions_panel = _JournalRecActions.new()
 		_rec_actions_panel.name = "RecommendedActions"
 		_rec_actions_panel.setup(world, intel_store)
 		_main_layout.add_child(_rec_actions_panel)
