@@ -62,6 +62,9 @@ var _ctx_rival_first_act_fired:      bool = false
 var _ctx_inquisitor_first_act_fired: bool = false
 var _ctx_halfway_fired:  bool = false
 var _banner_eavesdrop_count:    int  = 0
+# SPA-2451: Witness Account discoverability hint gates.
+var _banner_second_visit_fired:       bool = false
+var _banner_witness_account_fired:    bool = false
 
 # ── SPA-487: Idle-detection hint system ───────────────────────────────────────
 var _idle_timer: Timer = null
@@ -116,6 +119,9 @@ func setup(
 	# Pipe action results to the tutorial system (observe / eavesdrop tooltips).
 	if _recon_ctrl_ref != null:
 		_recon_ctrl_ref.action_performed.connect(_on_recon_action_for_tutorial)
+		# SPA-2451: first Witness Account acquired → show cooldown-bypass notification.
+		if _recon_ctrl_ref.has_signal("witness_account_first_acquired"):
+			_recon_ctrl_ref.witness_account_first_acquired.connect(_on_witness_account_first_acquired)
 
 	tree_exiting.connect(_on_tree_exiting)
 
@@ -360,6 +366,10 @@ func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
 			if not _banner_journal_hint_fired:
 				_banner_journal_hint_fired = true
 				tutorial_banner.queue_hint("hint_journal")
+			# SPA-2451: first observe — explain the 24-tick wait / Witness Account loop.
+			if not _banner_second_visit_fired:
+				_banner_second_visit_fired = true
+				tutorial_banner.queue_hint("hint_second_visit")
 		if message.begins_with("Eavesdropped"):
 			if not _banner_eavesdrop_gate:
 				_banner_eavesdrop_gate = true
@@ -462,6 +472,14 @@ func _on_s1_evidence_first_shown() -> void:
 	if tutorial_banner != null and not _evidence_tooltip_fired:
 		_evidence_tooltip_fired = true
 		tutorial_banner.queue_hint("hint_evidence")
+
+
+## SPA-2451: First Witness Account acquired — show cooldown-bypass notification.
+func _on_witness_account_first_acquired() -> void:
+	if _banner_witness_account_fired or tutorial_banner == null:
+		return
+	_banner_witness_account_fired = true
+	tutorial_banner.queue_hint("hint_witness_account_acquired")
 
 
 ## S1 banner suppression: pause when Journal opens/closes.

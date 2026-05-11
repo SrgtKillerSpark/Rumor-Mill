@@ -65,6 +65,10 @@ signal valid_eavesdrop_hovered
 ## SPA-775: Emitted when the Read the Room popup opens for a building.
 signal read_the_room_shown(location_id: String)
 
+## SPA-2451: Emitted the very first time a Witness Account evidence item is acquired.
+## Used by tutorial_wiring to show the cooldown-bypass notification.
+signal witness_account_first_acquired
+
 var _world_ref:          Node2D           = null
 var _intel_store:        PlayerIntelStore = null
 var _analytics_manager                   = null  ## SPA-1530: set via set_analytics_manager()
@@ -76,6 +80,7 @@ var _hovered_location: String = ""
 # ── Tutorial hint emission guards ─────────────────────────────────────────────
 var _building_hover_fired:      bool = false
 var _eavesdrop_hover_fired:     bool = false
+var _witness_account_fired:     bool = false  ## SPA-2451: first-acquisition gate
 
 # ── Hover visual nodes (created in setup) ────────────────────────────────────
 var _tooltip_canvas: CanvasLayer = null
@@ -731,6 +736,10 @@ func _try_eavesdrop(target: Node2D) -> void:
 			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc")
 		_flash_npc_evidence_acquired(target)
 		msg += "\n[+] Witness Account acquired."
+		# SPA-2451: one-shot signal so tutorial_wiring can show cooldown-bypass notification.
+		if not _witness_account_fired:
+			_witness_account_fired = true
+			witness_account_first_acquired.emit()
 
 	emit_signal("action_performed", msg, true)
 	_show_eavesdrop_success(target)

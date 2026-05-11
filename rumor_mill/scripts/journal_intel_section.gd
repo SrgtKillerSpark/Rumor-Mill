@@ -155,9 +155,17 @@ func build(content_vbox: VBoxContainer, rebuild_cb: Callable) -> void:
 		# Locations frequented.
 		if locs_by_npc.has(npc_id):
 			_add_key_label(content_vbox, "  Locations frequented:")
+			var current_tick: int = 0
+			if _day_night_ref != null and "current_tick" in _day_night_ref:
+				current_tick = int(_day_night_ref.current_tick)
 			for obs_entry in locs_by_npc[npc_id]:
+				# SPA-2451: ⏰ when < 24 ticks have passed — signals follow-up eavesdrop
+				# on this location's NPCs could yield a Witness Account soon.
+				var ticks_since: int = current_tick - obs_entry["tick"]
+				var clock_prefix: String = "⏰ " if ticks_since < 24 else ""
 				_add_body_label(content_vbox,
-					"    - %s: observed %s" % [
+					"    - %s%s: observed %s" % [
+						clock_prefix,
 						obs_entry["location"].capitalize(),
 						_tick_to_day_str(obs_entry["tick"])
 					])
