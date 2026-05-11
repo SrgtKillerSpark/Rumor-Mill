@@ -796,14 +796,17 @@ func _populate_npc_outcomes() -> void:
 		var arrow_text: String
 		var arrow_color: Color
 		if not _last_outcome_won:
-			# SPA-784: Defeat — all arrows are red to emphasize failure.
+			# SPA-2607: Defeat uses the same tri-colour logic as victory so
+			# players can distinguish which NPCs scored high vs low.
 			if score > 60:
 				arrow_text  = "▲"
+				arrow_color = C_SCORE_WIN
 			elif score < 40:
 				arrow_text  = "▼"
+				arrow_color = C_SCORE_FAIL
 			else:
 				arrow_text  = "—"
-			arrow_color = C_SCORE_FAIL
+				arrow_color = C_SCORE_NEU
 		else:
 			if score > 60:
 				arrow_text  = "▲"
