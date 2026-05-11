@@ -14,9 +14,16 @@
 ##   • setup_save_load(): stores world, day_night, and journal refs
 ##   • setup_tutorial(): stores tutorial system ref
 ##
+## Phase 2.5 backfill (SPA-2456):
+##   • Overwrite confirmation flow — _on_restart_scenario() sets _confirm_action "restart";
+##     _on_quit_to_menu() sets "quit"; _on_confirm_no() restores main visibility
+##   • Load/Save null guards — both handlers return early without changing _slot_mode_save
+##     when _world_ref is null (unsaved-progress guard)
+##
 ## pause_menu.gd extends CanvasLayer. _ready() is NOT called (node is not
 ## added to the scene tree), so all nodes built by _build_ui() remain null.
-## Only data fields and wiring methods are exercised.
+## Confirmation-flow tests inject stub VBoxContainer nodes directly into the
+## relevant fields to exercise the state-machine logic without a scene tree.
 ##
 ## Run from the Godot editor: Scene → Run Script.
 
@@ -77,6 +84,13 @@ func run() -> void:
 		"test_setup_save_load_stores_journal_ref",
 		# setup_tutorial() wiring
 		"test_setup_tutorial_stores_ref",
+		# Phase 2.5: Overwrite confirmation flow (SPA-2453)
+		"test_restart_sets_confirm_action_restart",
+		"test_quit_sets_confirm_action_quit",
+		"test_confirm_no_hides_confirm_shows_main",
+		# Phase 2.5: Load/Save null guards (unsaved-progress protection)
+		"test_save_guard_null_world_preserves_slot_mode",
+		"test_load_guard_null_world_preserves_slot_mode",
 	]
 
 	for method_name in tests:
@@ -275,3 +289,70 @@ static func test_setup_tutorial_stores_ref() -> bool:
 	var sys := TutorialSystem.new()
 	pm.setup_tutorial(sys)
 	return pm._tutorial_sys_ref == sys
+
+
+# ── Phase 2.5: Overwrite confirmation flow (SPA-2453) ────────────────────────
+##
+## These tests inject stub VBoxContainer nodes into _main_container and
+## _confirm_container (normally created by _build_ui() inside _ready()).
+## The stubs are empty so get_child() returns null, safely bypassing the
+## grab_focus() calls that require real Button children.
+
+## _on_restart_scenario() must tag _confirm_action as "restart" so that
+## _on_confirm_yes() knows to reload the scene with the same scenario.
+static func test_restart_sets_confirm_action_restart() -> bool:
+	var pm := _make_pm()
+	pm._main_container    = VBoxContainer.new()
+	pm._confirm_container = VBoxContainer.new()
+	pm._on_restart_scenario()
+	var ok: bool = pm._confirm_action == "restart"
+	pm._main_container.free()
+	pm._confirm_container.free()
+	return ok
+
+
+## _on_quit_to_menu() must tag _confirm_action as "quit" so that
+## _on_confirm_yes() reloads without pre-selecting a scenario.
+static func test_quit_sets_confirm_action_quit() -> bool:
+	var pm := _make_pm()
+	pm._main_container    = VBoxContainer.new()
+	pm._confirm_container = VBoxContainer.new()
+	pm._on_quit_to_menu()
+	var ok: bool = pm._confirm_action == "quit"
+	pm._main_container.free()
+	pm._confirm_container.free()
+	return ok
+
+
+## _on_confirm_no() must hide the confirmation panel and restore the main
+## menu panel so the player can continue playing without losing progress.
+static func test_confirm_no_hides_confirm_shows_main() -> bool:
+	var pm := _make_pm()
+	pm._main_container    = VBoxContainer.new()
+	pm._confirm_container = VBoxContainer.new()
+	# Simulate state after a restart/quit button press.
+	pm._confirm_container.visible = true
+	pm._main_container.visible    = false
+	pm._on_confirm_no()
+	var ok: bool = not pm._confirm_container.visible and pm._main_container.visible
+	pm._main_container.free()
+	pm._confirm_container.free()
+	return ok
+
+
+# ── Phase 2.5: Load/Save null guards (unsaved-progress protection) ─────────────
+
+## When _world_ref is null (game not fully loaded), _on_save_game() must return
+## early without activating save mode — _slot_mode_save must stay false.
+static func test_save_guard_null_world_preserves_slot_mode() -> bool:
+	var pm := _make_pm()
+	pm._on_save_game()   # _world_ref == null → early return via _set_status (no-op)
+	return pm._slot_mode_save == false
+
+
+## When _world_ref is null (game not fully loaded), _on_load_game() must return
+## early — _slot_mode_save must stay false, preventing the slot picker from opening.
+static func test_load_guard_null_world_preserves_slot_mode() -> bool:
+	var pm := _make_pm()
+	pm._on_load_game()   # _world_ref == null → early return via _set_status (no-op)
+	return pm._slot_mode_save == false
