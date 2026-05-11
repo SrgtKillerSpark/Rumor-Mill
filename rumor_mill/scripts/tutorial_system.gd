@@ -845,7 +845,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			+ "Save your remaining actions for eavesdropping on the connections you find there."
 		),
 		"auto_dismiss_secs": 10,
-		"difficulty_gate": ["apprentice", "journeyman"],
+		"difficulty_gate": ["apprentice"],
 	},
 	"strategy_sociability_targeting": {
 		"title": "Target High-Sociability NPCs",
@@ -855,7 +855,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			+ "Always prefer a [b]well-connected seed target[/b] over a loner."
 		),
 		"auto_dismiss_secs": 10,
-		"difficulty_gate": ["apprentice", "journeyman"],
+		"difficulty_gate": ["apprentice"],
 	},
 	"strategy_evidence_timing": {
 		"title": "Save Evidence for Key Moments",
@@ -865,7 +865,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			+ "before attaching evidence for maximum impact."
 		),
 		"auto_dismiss_secs": 10,
-		"difficulty_gate": ["apprentice", "journeyman"],
+		"difficulty_gate": ["apprentice"],
 	},
 	"strategy_faction_leverage": {
 		"title": "Leverage Faction Bonds",
@@ -875,7 +875,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			+ "Check [b]J → Factions[/b] to see who belongs where."
 		),
 		"auto_dismiss_secs": 10,
-		"difficulty_gate": ["apprentice", "journeyman"],
+		"difficulty_gate": ["apprentice"],
 	},
 	"strategy_multi_target": {
 		"title": "Spread Multiple Rumours",
@@ -885,7 +885,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			+ "If one gets rejected, the others keep spreading — redundancy wins."
 		),
 		"auto_dismiss_secs": 10,
-		"difficulty_gate": ["apprentice", "journeyman"],
+		"difficulty_gate": ["apprentice"],
 	},
 }
 
