@@ -315,6 +315,7 @@ var _last_outcome_won: bool = false
 var _arrow_labels: Array = []   # Label refs for animated pulse
 var _btn_pulse_tween: Tween = null
 var _what_went_wrong_lbl: Label = null
+var _strategic_hint_lbl: RichTextLabel = null
 
 
 func _ready() -> void:
@@ -396,10 +397,16 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_next.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		_btn_next.disabled = true
 		_btn_next.focus_mode = Control.FOCUS_NONE
+		# SPA-2464: Distinguish final-scenario victory from defeat in the tooltip.
+		if won:
+			_btn_next.tooltip_text = "You\u2019ve completed all scenarios!"
+		else:
+			_btn_next.tooltip_text = "Win this scenario to unlock."
 
 	# ── SPA-784: "What went wrong" one-liner for defeat ──────────────────────
 	if not won:
 		_show_what_went_wrong(scenario_id, _infer_fail_reason(scenario_id))
+		_show_strategic_hint(fail_reason)
 
 	# Default to Results tab.
 	_show_tab_results()
@@ -431,6 +438,10 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		_btn_again.custom_minimum_size = Vector2(180, 48)
 		_btn_again.call_deferred("grab_focus")
 	elif _btn_again != null:
+		# SPA-2464: Reset any defeat-era styling so the button returns to default on victory.
+		_btn_again.text = "Play Again"
+		_btn_again.remove_theme_font_size_override("font_size")
+		_btn_again.custom_minimum_size = Vector2(150, 40)
 		_btn_again.call_deferred("grab_focus")
 
 	# ── Count-up tween (start after entrance completes) ───────────────────────
@@ -1645,6 +1656,30 @@ func _show_what_went_wrong(scenario_id: int, fail_reason: String) -> void:
 		var idx_after: int = _results_container.get_index() + 1
 		vbox.add_child(_what_went_wrong_lbl)
 		vbox.move_child(_what_went_wrong_lbl, idx_after)
+
+
+## Show "What could you have done differently?" strategic hint below the one-liner.
+func _show_strategic_hint(fail_reason: String) -> void:
+	if _strategic_hint_lbl != null:
+		_strategic_hint_lbl.queue_free()
+	if _world_ref == null or _world_ref.scenario_manager == null:
+		return
+	var hint: String = _world_ref.scenario_manager.get_strategic_defeat_hint(fail_reason)
+	if hint.is_empty():
+		return
+	_strategic_hint_lbl = RichTextLabel.new()
+	_strategic_hint_lbl.bbcode_enabled = true
+	_strategic_hint_lbl.fit_content = true
+	_strategic_hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_strategic_hint_lbl.add_theme_color_override("default_color", C_SUBHEADING)
+	_strategic_hint_lbl.add_theme_font_size_override("normal_font_size", 13)
+	_strategic_hint_lbl.text = "[center][b]What could you have done differently?[/b]\n" + hint + "[/center]"
+	# Insert directly below _what_went_wrong_lbl in the main vbox.
+	if _what_went_wrong_lbl != null and _what_went_wrong_lbl.get_parent() != null:
+		var vbox := _what_went_wrong_lbl.get_parent()
+		var idx_after: int = _what_went_wrong_lbl.get_index() + 1
+		vbox.add_child(_strategic_hint_lbl)
+		vbox.move_child(_strategic_hint_lbl, idx_after)
 
 
 # ── Button handlers ───────────────────────────────────────────────────────────

@@ -777,6 +777,8 @@ func _init_s1_onboarding_flow() -> void:
 	_tutorial_ctrl.tutorial_skipped.connect(_on_tutorial_skipped)
 	# SPA-2082: Activate guided Day 2 sequence when the tutorial completes naturally.
 	_tutorial_ctrl.step_completed.connect(_on_tutorial_step_completed_day2)
+	# SPA-2434: Fire the Day 1 eavesdrop nudge 1 s after gtut_opening dismisses.
+	_tutorial_ctrl.step_completed.connect(_on_gtut_opening_completed_nudge)
 	_tutorial_ctrl.start()
 
 
@@ -1039,6 +1041,72 @@ func _create_waypoint_marker(pos: Vector2, text: String) -> Node2D:
 		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 
 	return root
+
+
+# ── SPA-2434: Day 1 eavesdrop nudge ─────────────────────────────────────────
+
+## Set true once the nudge has been queued so it never fires twice.
+var _day1_eavesdrop_nudge_fired: bool = false
+
+
+## Called by tutorial_controller step_completed("gtut_opening") — wire the
+## recon signal for auto-dismiss then show the nudge after a 1-second delay.
+func _on_gtut_opening_completed_nudge(step_id: String, _scenario_id: String) -> void:
+	if step_id != "gtut_opening" or _day1_eavesdrop_nudge_fired:
+		return
+	_day1_eavesdrop_nudge_fired = true
+
+	# Wire auto-dismiss: first successful Observe action clears the nudge.
+	if _recon_ctrl_ref != null and _recon_ctrl_ref.has_signal("action_performed") \
+			and not _recon_ctrl_ref.action_performed.is_connected(_on_day1_eavesdrop_nudge_observe):
+		_recon_ctrl_ref.action_performed.connect(_on_day1_eavesdrop_nudge_observe)
+
+	# Wire telemetry: emit tutorial_step_completed when the banner is dismissed
+	# (covers both auto-dismiss via Observe and manual X dismiss).
+	if tutorial_banner != null and tutorial_banner.has_signal("hint_dismissed") \
+			and not tutorial_banner.hint_dismissed.is_connected(_on_day1_eavesdrop_nudge_dismissed):
+		tutorial_banner.hint_dismissed.connect(_on_day1_eavesdrop_nudge_dismissed)
+
+	# 1-second delay then show the hint (matches spec timing).
+	var t := get_tree().create_timer(1.0)
+	_scene_timers.append(t)
+	t.timeout.connect(func() -> void:
+		if not is_instance_valid(self):
+			return
+		if tutorial_banner != null and tutorial_sys != null \
+				and not tutorial_sys.has_seen("gtut_day1_eavesdrop_nudge"):
+			tutorial_banner.queue_hint("gtut_day1_eavesdrop_nudge")
+	)
+
+
+## Auto-dismiss handler: first successful Observe action clears the Day 1 nudge.
+func _on_day1_eavesdrop_nudge_observe(message: String, success: bool) -> void:
+	if not success or not message.begins_with("Observed"):
+		return
+	if tutorial_banner == null or tutorial_sys == null \
+			or tutorial_sys.has_seen("gtut_day1_eavesdrop_nudge"):
+		return
+	tutorial_banner.dismiss_hint("gtut_day1_eavesdrop_nudge")
+	# Disconnect — one-shot.
+	if _recon_ctrl_ref != null \
+			and _recon_ctrl_ref.action_performed.is_connected(_on_day1_eavesdrop_nudge_observe):
+		_recon_ctrl_ref.action_performed.disconnect(_on_day1_eavesdrop_nudge_observe)
+
+
+## Telemetry handler: emit tutorial_step_completed when the nudge banner is dismissed.
+func _on_day1_eavesdrop_nudge_dismissed(hint_id: String) -> void:
+	if hint_id != "gtut_day1_eavesdrop_nudge":
+		return
+	if _analytics_manager != null:
+		_analytics_manager.log_tutorial_step_completed("gtut_day1_eavesdrop_nudge", "scenario_1")
+	# One-shot — disconnect after first dismiss.
+	if tutorial_banner != null \
+			and tutorial_banner.hint_dismissed.is_connected(_on_day1_eavesdrop_nudge_dismissed):
+		tutorial_banner.hint_dismissed.disconnect(_on_day1_eavesdrop_nudge_dismissed)
+	# Also clean up the recon signal if still connected (manual X dismiss path).
+	if _recon_ctrl_ref != null and _recon_ctrl_ref.has_signal("action_performed") \
+			and _recon_ctrl_ref.action_performed.is_connected(_on_day1_eavesdrop_nudge_observe):
+		_recon_ctrl_ref.action_performed.disconnect(_on_day1_eavesdrop_nudge_observe)
 
 
 # ── SPA-2082: Guided Day 2 sequence for tutorial-completers ─────────────────

@@ -317,14 +317,14 @@ func _exit_tree() -> void:
 
 
 func _on_hover_enter() -> void:
-	Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+	CursorManager.request_cursor("npc_%d" % get_instance_id(), DisplayServer.CURSOR_POINTING_HAND, CursorManager.PRIORITY_NPC)
 	if sprite != null:
 		sprite.modulate = Color(1.25, 1.25, 1.25, 1.0)
 	npc_hovered.emit(self)
 
 
 func _on_hover_exit() -> void:
-	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+	CursorManager.release_cursor("npc_%d" % get_instance_id())
 	if sprite != null:
 		sprite.modulate = Color.WHITE
 	npc_unhovered.emit()

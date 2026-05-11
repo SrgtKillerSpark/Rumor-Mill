@@ -225,7 +225,7 @@ func _process(_delta: float) -> void:
 		# SPA-761: hint left-click to follow if not already following this NPC.
 		var follow_hint: String = " [Left-click to follow]" if _follow_npc != new_npc else " [Left-click to unfollow]"
 		_show_tooltip(screen_pos, _npc_tooltip_text(new_npc) + follow_hint)
-		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
+		CursorManager.request_cursor("recon", DisplayServer.CURSOR_POINTING_HAND, CursorManager.PRIORITY_RECON)
 		return
 
 	var new_loc := _hit_test_location(world_pos)
@@ -234,14 +234,14 @@ func _process(_delta: float) -> void:
 		_set_hovered_location(new_loc)
 		var display := new_loc.replace("_", " ").capitalize()
 		_show_tooltip(screen_pos, "Right-click to read the room — %s" % display)
-		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
+		CursorManager.request_cursor("recon", DisplayServer.CURSOR_POINTING_HAND, CursorManager.PRIORITY_RECON)
 		return
 
 	# Nothing hovered.
 	_set_hovered_npc(null)
 	_set_hovered_location("")
 	_hide_tooltip()
-	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
+	CursorManager.release_cursor("recon")
 
 
 # ── Hover visual helpers ──────────────────────────────────────────────────────
@@ -548,8 +548,15 @@ func _hit_test_location(world_pos: Vector2) -> String:
 # ── Observe action ────────────────────────────────────────────────────────────
 
 func _try_observe(location_id: String) -> void:
-	# Forged Document: double-spend at market/guild when ≥2 actions remain.
-	var forged_doc: bool = _intel_store.recon_actions_remaining >= 2 and (location_id == "market" or location_id == "guild")
+	# SPA-2432: mid-game evidence drop rate multiplier (1.5x for days 4-12).
+	var _dn = _world_ref.day_night if _world_ref != null else null
+	var _current_day: int = _dn.current_day if _dn != null and "current_day" in _dn else 1
+	var drop_multiplier: float = get_drop_rate_multiplier(_current_day)
+	var drop_multiplier_active: bool = drop_multiplier > 1.0
+
+	# Forged Document: probability gate at market/guild (was: double-spend ≥2 actions).
+	var forged_doc: bool = (location_id == "market" or location_id == "guild") \
+		and randf() < (0.6 * drop_multiplier)
 
 	if not _intel_store.try_spend_action():
 		emit_signal("action_performed", "No Recon Actions remaining today.", false, false)
@@ -608,11 +615,11 @@ func _try_observe(location_id: String) -> void:
 		ev.credulity_boost = 0.10     ## SPA-1711
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
-			_analytics_manager.log_evidence_acquired("forged_document", "observe_building")
+			_analytics_manager.log_evidence_acquired("forged_document", "observe_building", drop_multiplier_active)
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Forged Document acquired."
-	elif tick % 24 > 18 \
-			and (location_id == "manor" or location_id == "chapel"):
+	elif (location_id == "manor" or location_id == "chapel") \
+			and randf() < (0.5 * drop_multiplier):
 		var ev := PlayerIntelStore.EvidenceItem.new(
 			"Incriminating Artifact", 0.25, 0.0,
 			["SCANDAL", "HERESY"], tick)
@@ -620,7 +627,7 @@ func _try_observe(location_id: String) -> void:
 		ev.credulity_boost = 0.15    ## SPA-1711
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
-			_analytics_manager.log_evidence_acquired("incriminating_artifact", "observe_building")
+			_analytics_manager.log_evidence_acquired("incriminating_artifact", "observe_building", drop_multiplier_active)
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Incriminating Artifact acquired."
 
@@ -679,6 +686,12 @@ func _try_eavesdrop(target: Node2D) -> void:
 
 	# Record relationship intel.
 	var tick    := _current_tick()
+	# SPA-2432: mid-game evidence drop rate multiplier (1.5x for days 4-12).
+	var _dn2 = _world_ref.day_night if _world_ref != null else null
+	var _cur_day2: int = _dn2.current_day if _dn2 != null and "current_day" in _dn2 else 1
+	var ea_drop_multiplier: float = get_drop_rate_multiplier(_cur_day2)
+	var ea_drop_multiplier_active: bool = ea_drop_multiplier > 1.0
+
 	var id_a:   String = target.npc_data.get("id",      "")
 	var id_b:   String = partner.npc_data.get("id",     "")
 	var name_a: String = target.npc_data.get("name",    "")
@@ -688,8 +701,9 @@ func _try_eavesdrop(target: Node2D) -> void:
 		weight = _world_ref.social_graph.get_weight(id_a, id_b)
 
 	# Witness Account: check prior observation BEFORE overwriting with new intel.
+	# SPA-2432: reduce gap threshold mid-game (24 → 16 ticks for 1.5x multiplier).
 	var prior := _intel_store.get_relationship_intel(id_a, id_b)
-	var witness_account := prior != null and (tick - prior.observed_at) >= 24
+	var witness_account := prior != null and (tick - prior.observed_at) >= int(24.0 / ea_drop_multiplier)
 
 	var intel := PlayerIntelStore.RelationshipIntel.new(
 		id_a, id_b, name_a, name_b, weight, tick
@@ -733,7 +747,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 		ev.supports_cooldown_bypass = true   ## SPA-1756: bypass target-shift cooldown at half effectiveness
 		_intel_store.add_evidence(ev)
 		if _analytics_manager != null:
-			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc")
+			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc", ea_drop_multiplier_active)
 		_flash_npc_evidence_acquired(target)
 		msg += "\n[+] Witness Account acquired."
 		# SPA-2451: one-shot signal so tutorial_wiring can show cooldown-bypass notification.
@@ -1155,6 +1169,14 @@ func _try_bribe(target: Node2D) -> void:
 		"Bribed %s — they now believe the rumor.  (%d Favors left)" % [
 			npc_name, _intel_store.bribe_charges], true, false)
 	emit_signal("bribe_executed", npc_name, tick)
+
+
+## SPA-2432: Return the evidence drop rate multiplier for the given day.
+## Days 4-12 use 1.5x to compensate for mid-game evidence drought.
+func get_drop_rate_multiplier(current_day: int) -> float:
+	if current_day >= 4 and current_day <= 12:
+		return 1.5
+	return 1.0
 
 
 ## Return Calder Fenn's faction string, or "" if not found.

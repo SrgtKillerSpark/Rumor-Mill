@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# pre-commit: Run GDScript static checker on staged .gd files.
+# Catches UID omissions, unresolved class references, and scope mismatches
+# before they land in the tree.
+#
+# Only runs when .gd files are staged — exits immediately otherwise, so
+# non-.gd commits are not slowed down.
+#
+# Install via: bash tools/hooks/install.sh
+# Related: SPA-2443, SPA-2436
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Collect staged .gd files (added, copied, or modified — not deleted)
+STAGED_GD="$(git diff --cached --name-only --diff-filter=ACM | grep '\.gd$' || true)"
+
+if [[ -z "$STAGED_GD" ]]; then
+  exit 0
+fi
+
+COUNT="$(printf '%s\n' "$STAGED_GD" | wc -l | tr -d ' ')"
+echo "pre-commit: $COUNT staged .gd file(s) — running check_gdscript_static.js..."
+
+node "$REPO_ROOT/rumor_mill/tools/check_gdscript_static.js" --fix-hint
+STATUS=$?
+
+if [[ $STATUS -ne 0 ]]; then
+  echo ""
+  echo "ERROR: GDScript static check failed — commit blocked."
+  echo ""
+  echo "Staged .gd file(s) that triggered this check:"
+  printf '%s\n' "$STAGED_GD" | sed 's/^/  /'
+  echo ""
+  echo "Fix the errors listed above, re-stage your files, and commit again."
+  echo "Run 'node rumor_mill/tools/check_gdscript_static.js --fix-hint' for remediation hints."
+  exit 1
+fi
+
+exit 0

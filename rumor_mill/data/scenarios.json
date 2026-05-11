@@ -13,6 +13,10 @@
       "exposed": "The Guard Captain's eyes found you across the Market Square.\n\n\"I've been watching you,\" he said. \"The Tavern, the Chapel steps, the widow's door. You've been very busy for a traveler with no business here.\"\n\nHe didn't arrest you. He didn't need to. By evening, the whole town knew your face.",
       "timeout": "The autumn tax rolls were signed. Lord Edric Fenn's seal was already dry.\n\nSomewhere the story you planted still traveled — changed, embellished, half-forgotten. But the window had closed. Your patron's patience had not."
     },
+    "strategicDefeatHints": {
+      "exposed": "You drew too much heat in one district. Try varying your observation targets across multiple buildings.",
+      "timeout": "Edric's reputation didn't drop fast enough. Focus on high-credulity NPCs early -- they spread rumors faster."
+    },
     "edgeOverrides": [
       {
         "npcA": "edric_fenn",
@@ -559,6 +563,10 @@
     "failTexts": {
       "contradicted": "Sister Maren stood in the Market Square and named every NPC who had spread the rumor. She did not name you.\n\nShe didn't need to.",
       "timeout": "The autumn market closed without incident. Alys the Herb-Wife was still there on the last day, packing her unsold stock slowly, in no hurry at all.\n\nThe Midwife's customers had not come back. The twenty days were gone."
+    },
+    "strategicDefeatHints": {
+      "contradicted": "The illness rumor reached Sister Maren. Keep your seeding confined to the merchant quarter -- Sybil, Nell, and Greta are safe initial targets.",
+      "timeout": "You needed 7 believers but didn't reach them. Seed through well-connected NPCs who talk to multiple clusters."
     },
     "edgeOverrides": [
       {
@@ -1139,6 +1147,9 @@
     "failTexts": {
       "calder_implicated": "The rumor had started as praise. You knew that.\n\nSomewhere between the Tavern and the Chapel steps, it had changed.\n\nCalder Fenn was now the subject of a story that no one believed was an accident. Including Lady Isolde.",
       "timeout": "The winter festival nominations were read at dawn.\n\nCalder Fenn's name drew polite applause. Tomas Reeve's drew the same.\n\nLady Isolde's face, when you passed her in the corridor, told you everything about whether there would be further work."
+    },
+    "strategicDefeatHints": {
+      "calder_implicated": "Calder's reputation dropped below 35. Use Praise rumors carefully -- too many can draw scrutiny."
     },
     "edgeOverrides": [
       {
@@ -1769,6 +1780,9 @@
       "reputation_collapsed": "The crowd gathered at the chapel steps before Brother Cornelius had even finished his morning prayers.\n\nThey came with stories — some true, most not, all believed. By evening, the writ was signed.\n\nYou watched from the edge of the square as the accused were led away. You had tried. The town had chosen differently.",
       "timeout": "Twenty days passed. Brother Cornelius presented his findings to the Bishop's clerk with the quiet satisfaction of a man whose work was already done.\n\nThe stories had taken root. The names on the writ were already ruined in every way that mattered. The formal verdict was a formality."
     },
+    "strategicDefeatHints": {
+      "reputation_collapsed": "The Inquisitor's accusations overwhelmed your counter-rumors. Prioritize the most vulnerable target (Finn) and use Praise proactively, not reactively."
+    },
     "edgeOverrides": [
       {
         "npcA": "aldous_prior",
@@ -2362,6 +2376,10 @@
     "failTexts": {
       "aldric_destroyed": "The story had started as praise. Somewhere between the Tavern and the Market, it curdled.\n\nAldric Vane withdrew his candidacy at noon. His supporters scattered like starlings. Your patron's investment — and your reputation — went with them.",
       "timeout": "The votes were counted. Edric Fenn's name was called first, as always.\n\nAldric Vane came second — close enough to taste it, far enough to know it was over. Tomas Reeve's supporters consoled themselves with ale.\n\nYour patron did not send for you again."
+    },
+    "strategicDefeatHints": {
+      "aldric_destroyed": "Aldric's reputation crashed below 30. Balance attack on rivals with defense of your candidate.",
+      "timeout": "You needed Aldric leading by Day 15 for the endorsement. Plan your campaign timing around that deadline."
     },
     "edgeOverrides": [
       {
@@ -3007,6 +3025,10 @@
       "marta_silenced": "The story changed overnight. Suddenly it was Marta who was the thief — Marta who had falsified records, Marta who could not be trusted.\n\nAldric's allies moved fast. By the time you understood what had happened, Marta's stall was shuttered and her name was poison in the market quarter.\n\nYou had underestimated how quickly a guild can close ranks.",
       "exposed": "The Guard Captain found you at the well, just after dawn.\n\n'Aldric Vane sends his regards,' he said. Not a threat — a statement of fact. By noon, every merchant in the quarter knew your face and your purpose.\n\nMarta Coin denied ever meeting you. She had no choice.",
       "timeout": "Twenty days passed. The ledger sat in Marta's locked chest, still waiting for the right moment.\n\nThe right moment never came. Aldric Vane's reputation was bruised but intact. The guild closed its books for the season, and with them, the window for an audit.\n\nMarta Coin paid you the second half of your fee without a word. You both knew it had been wasted."
+    },
+    "strategicDefeatHints": {
+      "marta_silenced": "Marta's reputation collapsed. Dedicate some whisper tokens to praise-defending her while attacking Aldric.",
+      "exposed": "The heat ceiling is 55 -- lower than previous scenarios. Route through clergy and commons, not the merchant guild."
     },
     "edgeOverrides": [
       {

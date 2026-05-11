@@ -15,6 +15,7 @@ extends CanvasLayer
 # ── Palette ───────────────────────────────────────────────────────────────────
 
 const C_PARCHMENT     := Color(0.82, 0.74, 0.58, 1.0)
+const C_WITNESS       := Color(0.400, 0.902, 0.722, 1.0)  ## SPA-2606: teal #66E6B8 for Witness Account [W] marker
 const C_PANEL_BG      := Color(0.12, 0.08, 0.05, 1.0)   # dark background
 const C_HEADING       := Color(0.92, 0.78, 0.12, 1.0)   # gold
 const C_BODY          := Color(0.80, 0.72, 0.56, 1.0)   # warm parchment text
@@ -117,7 +118,8 @@ var _milestone_log: Array = []
 @onready var _main_layout:    HBoxContainer   = $ParchmentPanel/ParchmentLayout/MainLayout
 
 ## SPA-2454: Recommended Actions sidebar (Apprentice only).
-var _rec_actions_panel: JournalRecommendedActions = null
+const _JournalRecActions = preload("res://scripts/journal_recommended_actions.gd")
+var _rec_actions_panel: VBoxContainer = null
 var _rec_actions_sep:   VSeparator                = null
 
 
@@ -144,7 +146,7 @@ func setup(world: Node2D, intel_store: PlayerIntelStore, day_night: Node) -> voi
 		_rec_actions_sep = VSeparator.new()
 		_rec_actions_sep.add_theme_color_override("separator_color", Color(0.55, 0.38, 0.18, 0.5))
 		_main_layout.add_child(_rec_actions_sep)
-		_rec_actions_panel = JournalRecommendedActions.new()
+		_rec_actions_panel = _JournalRecActions.new()
 		_rec_actions_panel.name = "RecommendedActions"
 		_rec_actions_panel.setup(world, intel_store)
 		_main_layout.add_child(_rec_actions_panel)
@@ -647,7 +649,20 @@ func _add_rumor_card(rumor: Rumor, npc_names: Dictionary) -> void:
 	var card_vbox := VBoxContainer.new()
 	card_panel.add_child(card_vbox)
 
-	card_vbox.add_child(header_btn)
+	# ── Witness Account [W] marker ───────────────────────────────────────────
+	# Wrap header_btn in an HBox so the [W] Label can sit beside it with its
+	# own teal colour and tooltip, independent of the button's font colour.
+	var header_row := HBoxContainer.new()
+	header_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_row.add_child(header_btn)
+	if rumor.evidence_type == "Witness Account":
+		var w_lbl := Label.new()
+		w_lbl.text = " [W]"
+		w_lbl.add_theme_font_size_override("font_size", 12)
+		w_lbl.add_theme_color_override("font_color", C_WITNESS)
+		w_lbl.tooltip_text = "Witness Account"
+		header_row.add_child(w_lbl)
+	card_vbox.add_child(header_row)
 
 	# Believability gauge — thin bar showing current_believability (0–1).
 	var bel_bar := ProgressBar.new()

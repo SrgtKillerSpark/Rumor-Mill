@@ -103,7 +103,7 @@ const STATS_PANEL_MIN_W   := 480;  const STATS_PANEL_MAX_W   := 680
 const STATS_PANEL_MIN_H   := 400;  const STATS_PANEL_MAX_H   := 520
 const STATS_PANEL_VP_W    := 0.53; const STATS_PANEL_VP_H    := 0.72
 
-enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS }
+enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS, LOAD }
 
 # ── State ─────────────────────────────────────────────────────────────────────
 var _phase:              Phase     = Phase.MAIN
@@ -115,6 +115,9 @@ var _backdrop:           ColorRect  = null
 var _panel_main:         Control    = null
 var _panel_select:       Control    = null
 var _panel_briefing:     Control    = null
+# SPA-2578: Load Game panel (Phase.LOAD)
+var _panel_load:         Control    = null
+var _load_body:          VBoxContainer = null   # rebuilt each time Load phase is shown
 
 # Select-phase refs
 var _scenario_cards:     Array      = []  # Array[PanelContainer]
@@ -125,6 +128,8 @@ var _how_to_play:        CanvasLayer = null
 
 # Continue button (disabled when no saves exist)
 var _btn_continue:       Button      = null
+# SPA-2578: Status label for main-panel error messages (e.g. corrupt-save failure).
+var _status_label_main:  Label       = null
 
 # SPA-589: Atmospheric dusk background elements
 var _dusk_sky:           ColorRect   = null  # gradient sky background
@@ -177,6 +182,7 @@ func _ready() -> void:
 	_build_settings_panel()
 	_build_credits_panel()
 	_build_stats_panel()
+	_build_load_panel()
 	_build_version_label()
 	_how_to_play = preload("res://scripts/how_to_play.gd").new()
 	_how_to_play.name = "HowToPlay"
@@ -234,6 +240,7 @@ func _show_phase(p: Phase) -> void:
 		Phase.SETTINGS: _panel_settings,
 		Phase.CREDITS:  _panel_credits,
 		Phase.STATS:    _panel_stats,
+		Phase.LOAD:     _panel_load,
 	}
 
 	# Determine outgoing and incoming panels.
@@ -276,6 +283,9 @@ func _show_phase(p: Phase) -> void:
 	# Rebuild stats panel content each time it's shown so it reflects latest data.
 	if p == Phase.STATS:
 		_rebuild_stats_content()
+	# Rebuild load panel each time it's shown so save list is current.
+	if p == Phase.LOAD:
+		_rebuild_load_content()
 	# Set initial keyboard focus for the active phase.
 	call_deferred("_set_phase_focus", p)
 
@@ -298,6 +308,8 @@ func _set_phase_focus(p: Phase) -> void:
 			_grab_first_button(_panel_credits)
 		Phase.STATS:
 			_grab_first_button(_panel_stats)
+		Phase.LOAD:
+			_grab_first_button(_panel_load)
 
 
 ## Finds and focuses the first Button descendant of the given node.
@@ -332,6 +344,9 @@ func _unhandled_input(event: InputEvent) -> void:
 					get_viewport().set_input_as_handled()
 				Phase.STATS:
 					_on_stats_back()
+					get_viewport().set_input_as_handled()
+				Phase.LOAD:
+					_show_phase(Phase.MAIN)
 					get_viewport().set_input_as_handled()
 
 
@@ -506,6 +521,11 @@ func _build_main_panel() -> void:
 	btn_row.add_child(_btn_continue)
 	_refresh_continue_button()
 
+	# SPA-2578: Load Game — opens the slot picker for all scenarios.
+	var btn_load_game := _make_button("Load Game", 200)
+	btn_load_game.pressed.connect(_on_load_game_pressed)
+	btn_row.add_child(btn_load_game)
+
 	var btn_howto := _make_button("How to Play", 200)
 	btn_howto.pressed.connect(_on_how_to_play_pressed)
 	btn_row.add_child(btn_howto)
@@ -526,6 +546,16 @@ func _build_main_panel() -> void:
 		var btn_quit := _make_button("Quit", 200)
 		btn_quit.pressed.connect(get_tree().quit)
 		btn_row.add_child(btn_quit)
+
+	# SPA-2578: Status label — shown when Continue or Load fails (e.g. corrupt save).
+	_status_label_main = Label.new()
+	_status_label_main.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status_label_main.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status_label_main.custom_minimum_size = Vector2(180, 0)
+	_status_label_main.add_theme_font_size_override("font_size", 12)
+	_status_label_main.add_theme_color_override("font_color", Color(1.0, 0.45, 0.35, 1.0))
+	_status_label_main.visible = false
+	vbox.add_child(_status_label_main)
 
 	# SPA-1099: Bottom expand-fill spacer — mirrors spacer_top to center
 	# all content vertically within the full-rect VBox.
@@ -1139,7 +1169,14 @@ func _refresh_continue_button() -> void:
 		_btn_continue.tooltip_text = "No saved games found."
 	else:
 		_btn_continue.disabled = false
-		var title_str: String = recent.get("scenario_title", recent.get("scenario_id", ""))
+		var scenario_id_key: String = recent.get("scenario_id", "")
+		var title_str: String = ""
+		for sc in _scenarios:
+			if sc.get("scenarioId", "") == scenario_id_key:
+				title_str = sc.get("title", "")
+				break
+		if title_str.is_empty():
+			title_str = scenario_id_key
 		_btn_continue.tooltip_text = "%s — Day %d" % [title_str, recent.get("day", 1)]
 
 
@@ -1156,6 +1193,9 @@ func _on_continue_pressed() -> void:
 	var err: String = SaveManager.prepare_load(scenario_id, slot)
 	if not err.is_empty():
 		push_warning("MainMenu: continue failed — " + err)
+		if _status_label_main != null:
+			_status_label_main.text = "Cannot continue: " + err
+			_status_label_main.visible = true
 		return
 	begin_game.emit(scenario_id)
 
@@ -1841,6 +1881,124 @@ func _on_stats_back() -> void:
 func _on_stats_reset() -> void:
 	PlayerStats.reset_all()
 	_rebuild_stats_content()
+
+
+# ── Phase 8: Load Game panel (SPA-2578) ──────────────────────────────────────
+
+func _build_load_panel() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var pw := UILayoutConstants.clamp_to_viewport(vp.x, MED_PANEL_VP_W, MED_PANEL_MIN_W, MED_PANEL_MAX_W)
+	var ph := UILayoutConstants.clamp_to_viewport(vp.y, MED_PANEL_VP_H, MED_PANEL_MIN_H, MED_PANEL_MAX_H)
+	_panel_load = _make_parchment_panel(pw, ph)
+	add_child(_panel_load)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_panel_load.add_child(vbox)
+
+	var heading := Label.new()
+	heading.text = "Load Game"
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_theme_font_size_override("font_size", 22)
+	heading.add_theme_color_override("font_color", C_HEADING)
+	vbox.add_child(heading)
+
+	vbox.add_child(_separator())
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+
+	_load_body = VBoxContainer.new()
+	_load_body.add_theme_constant_override("separation", 8)
+	_load_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_load_body)
+
+	vbox.add_child(_separator())
+
+	var btn_row := HBoxContainer.new()
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(btn_row)
+
+	var btn_back := _make_button("Back", 160)
+	btn_back.pressed.connect(func() -> void: _show_phase(Phase.MAIN))
+	btn_row.add_child(btn_back)
+
+
+## Rebuild the load body with current save data.  Called each time Phase.LOAD is shown.
+func _rebuild_load_content() -> void:
+	if _load_body == null:
+		return
+	for child in _load_body.get_children():
+		child.queue_free()
+
+	var slot_names: Dictionary = {
+		SaveManager.AUTO_SLOT: "Auto",
+		1: "Slot 1",
+		2: "Slot 2",
+		3: "Slot 3",
+	}
+	var any_save := false
+	for sc in _scenarios:
+		var sc_id: String = sc.get("scenarioId", "")
+		var sc_title: String = sc.get("title", sc_id)
+		# Check whether this scenario has any saves before adding its group.
+		var has_saves := false
+		for slot in range(0, SaveManager.SLOT_COUNT + 1):
+			if SaveManager.has_save(sc_id, slot):
+				has_saves = true
+				break
+		if not has_saves:
+			continue
+		any_save = true
+
+		var sc_lbl := Label.new()
+		sc_lbl.text = sc_title
+		sc_lbl.add_theme_font_size_override("font_size", 14)
+		sc_lbl.add_theme_color_override("font_color", C_HEADING)
+		_load_body.add_child(sc_lbl)
+
+		for slot in range(0, SaveManager.SLOT_COUNT + 1):
+			var info: Dictionary = SaveManager.get_save_info(sc_id, slot)
+			if info.is_empty():
+				continue
+			var slot_name: String = slot_names.get(slot, "Slot %d" % slot)
+			var btn_text: String = "%s — Day %d" % [slot_name, info.get("day", 1)]
+			var btn := _make_button(btn_text, 240)
+			btn.pressed.connect(_on_load_slot_pressed.bind(sc_id, slot))
+			_load_body.add_child(btn)
+
+		var spacer := Control.new()
+		spacer.custom_minimum_size = Vector2(0, 4)
+		_load_body.add_child(spacer)
+
+	if not any_save:
+		var empty_lbl := Label.new()
+		empty_lbl.text = "No saved games found."
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_lbl.add_theme_color_override("font_color", C_MUTED)
+		empty_lbl.add_theme_font_size_override("font_size", 14)
+		_load_body.add_child(empty_lbl)
+
+
+func _on_load_game_pressed() -> void:
+	if _status_label_main != null:
+		_status_label_main.visible = false
+	_show_phase(Phase.LOAD)
+
+
+func _on_load_slot_pressed(scenario_id: String, slot: int) -> void:
+	var err: String = SaveManager.prepare_load(scenario_id, slot)
+	if not err.is_empty():
+		push_warning("MainMenu: load failed — " + err)
+		if _status_label_main != null:
+			_status_label_main.text = "Load failed: " + err
+			_status_label_main.visible = true
+		_show_phase(Phase.MAIN)
+		return
+	begin_game.emit(scenario_id)
 
 
 # ── Version corner label ──────────────────────────────────────────────────────

@@ -12,6 +12,7 @@
 ##   • _cell_to_world(): origin, known positive cell, asymmetric cell
 ##   • Round-trip inverses: cell→world→cell and world→cell→world
 ##   • _belief_trend(): rising (≤3), stable (4–8), fading (>8), boundary values
+##   • get_drop_rate_multiplier(): 1.0 outside days 4-12, 1.5 inside, boundary days (SPA-2432)
 ##
 ## ReconController extends Node. _ready() is never called (not added to a scene tree),
 ## so all UI node refs remain null. Only data-field and pure-logic methods are tested.
@@ -78,6 +79,13 @@ func run() -> void:
 		"test_belief_trend_eight_is_stable",
 		"test_belief_trend_nine_is_fading",
 		"test_belief_trend_large_value_is_fading",
+		# get_drop_rate_multiplier (SPA-2432)
+		"test_drop_multiplier_day1_is_1x",
+		"test_drop_multiplier_day3_is_1x",
+		"test_drop_multiplier_day4_is_15x",
+		"test_drop_multiplier_day12_is_15x",
+		"test_drop_multiplier_day13_is_1x",
+		"test_drop_multiplier_day0_is_1x",
 	]
 
 	for method_name in tests:
@@ -287,3 +295,41 @@ static func test_belief_trend_nine_is_fading() -> bool:
 static func test_belief_trend_large_value_is_fading() -> bool:
 	var rc := _make_rc()
 	return rc._belief_trend(999) == "↓ fading"
+
+
+# ── get_drop_rate_multiplier (SPA-2432) ──────────────────────────────────────
+
+## Days before the window return 1.0x.
+static func test_drop_multiplier_day1_is_1x() -> bool:
+	var rc := _make_rc()
+	return is_equal_approx(rc.get_drop_rate_multiplier(1), 1.0)
+
+
+## Day 3 is the last day outside the window.
+static func test_drop_multiplier_day3_is_1x() -> bool:
+	var rc := _make_rc()
+	return is_equal_approx(rc.get_drop_rate_multiplier(3), 1.0)
+
+
+## Day 4 is the first day in the window — must return 1.5x.
+static func test_drop_multiplier_day4_is_15x() -> bool:
+	var rc := _make_rc()
+	return is_equal_approx(rc.get_drop_rate_multiplier(4), 1.5)
+
+
+## Day 12 is the last day in the window — must return 1.5x.
+static func test_drop_multiplier_day12_is_15x() -> bool:
+	var rc := _make_rc()
+	return is_equal_approx(rc.get_drop_rate_multiplier(12), 1.5)
+
+
+## Day 13 falls outside the window — must return 1.0x.
+static func test_drop_multiplier_day13_is_1x() -> bool:
+	var rc := _make_rc()
+	return is_equal_approx(rc.get_drop_rate_multiplier(13), 1.0)
+
+
+## Day 0 (edge / pre-game) falls outside the window — must return 1.0x.
+static func test_drop_multiplier_day0_is_1x() -> bool:
+	var rc := _make_rc()
+	return is_equal_approx(rc.get_drop_rate_multiplier(0), 1.0)

@@ -187,6 +187,15 @@ func _on_analytics_new_day(day: int) -> void:
 					ev["evidence_type"], ev["direction"], ev["threshold"], ev["confidence"])
 
 
+## SPA-2434: Direct telemetry for tutorial steps fired outside TutorialController
+## (e.g. standalone nudges such as gtut_day1_eavesdrop_nudge).
+func log_tutorial_step_completed(step_id: String, scenario_id: String) -> void:
+	if _analytics_logger == null:
+		_enqueue("_on_analytics_tutorial_step_completed", [step_id, scenario_id])
+		return
+	_analytics_logger.log_tutorial_step_completed(step_id, scenario_id)
+
+
 ## SPA-1241/SPA-2080: Wire TutorialController tutorial signals.
 ## Called after the TutorialController is created (deferred from setup() because
 ## the controller is instantiated later in the game-start flow).
