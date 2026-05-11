@@ -1,9 +1,9 @@
-## test_main_menu.gd — Unit tests for main_menu.gd (SPA-1042).
+## test_main_menu.gd — Unit tests for main_menu.gd (SPA-1042, SPA-2578).
 ##
 ## Covers:
 ##   • Palette constants (characteristic colour assertions)
 ##   • Phase enum ordinals: MAIN=0, SELECT=1, BRIEFING=2, INTRO=3,
-##                          SETTINGS=4, CREDITS=5, STATS=6
+##                          SETTINGS=4, CREDITS=5, STATS=6, LOAD=7
 ##   • Initial state: _phase=Phase.MAIN, _scenarios empty
 ##   • Initial node refs null (no scene tree, _ready() not called)
 ##
@@ -41,6 +41,7 @@ func run() -> void:
 		"test_phase_settings_is_four",
 		"test_phase_credits_is_five",
 		"test_phase_stats_is_six",
+		"test_phase_load_is_seven",
 		# Initial state
 		"test_initial_phase_is_main",
 		"test_initial_scenarios_empty",
@@ -48,6 +49,8 @@ func run() -> void:
 		"test_initial_backdrop_null",
 		"test_initial_panel_main_null",
 		"test_initial_panel_credits_null",
+		"test_initial_panel_load_null",
+		"test_initial_status_label_main_null",
 		"test_initial_version_label_null",
 		"test_initial_settings_module_null",
 		"test_initial_select_module_null",
@@ -136,6 +139,11 @@ static func test_phase_stats_is_six() -> bool:
 	return ok
 
 
+static func test_phase_load_is_seven() -> bool:
+	var ok: bool = MainMenuScript.Phase.LOAD == 7
+	return ok
+
+
 # ── Initial state ─────────────────────────────────────────────────────────────
 
 static func test_initial_phase_is_main() -> bool:
@@ -206,5 +214,19 @@ static func test_initial_briefing_module_null() -> bool:
 static func test_initial_phase_tween_null() -> bool:
 	var m := _make_menu()
 	var ok: bool = m._phase_tween == null
+	m.free()
+	return ok
+
+
+static func test_initial_panel_load_null() -> bool:
+	var m := _make_menu()
+	var ok: bool = m._panel_load == null
+	m.free()
+	return ok
+
+
+static func test_initial_status_label_main_null() -> bool:
+	var m := _make_menu()
+	var ok: bool = m._status_label_main == null
 	m.free()
 	return ok
