@@ -734,7 +734,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		"auto_dismiss_secs": 10,
 	},
 	"hint_witness_account_acquired": {
-		"title": "Witness Account — Cooldown Bypass",
+		"title": "★ Witness Account — Cooldown Bypass",
 		"body":  (
 			"You've acquired a [b]Witness Account[/b].  "
 			+ "As well as boosting believability [b]+15%[/b], it can [b]bypass the target-shift cooldown[/b] "
@@ -742,6 +742,7 @@ const CONTEXT_HINT_DATA: Dictionary = {
 			+ "Attach it in the Rumour Panel when seeding against a well-defended NPC."
 		),
 		"auto_dismiss_secs": 10,
+		"highlight": true,  # SPA-2509: teal accent + heading to distinguish from standard hints
 	},
 	# ── SPA-804: What's New banners for S2-S6 (driven by TutorialController) ────
 	# Shown on first load of each scenario to highlight what is mechanically new.
