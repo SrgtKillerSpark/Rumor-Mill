@@ -114,6 +114,11 @@ var _milestone_log: Array = []
 @onready var _content_vbox:   VBoxContainer   = $ParchmentPanel/ParchmentLayout/MainLayout/ContentScroll/ContentVBox
 @onready var _hud_button:     Panel           = $JournalHUDButton
 @onready var _notif_dot:      ColorRect       = $JournalHUDButton/NotificationDot
+@onready var _main_layout:    HBoxContainer   = $ParchmentPanel/ParchmentLayout/MainLayout
+
+## SPA-2454: Recommended Actions sidebar (Apprentice only).
+var _rec_actions_panel: JournalRecommendedActions = null
+var _rec_actions_sep:   VSeparator                = null
 
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
@@ -134,6 +139,15 @@ func setup(world: Node2D, intel_store: PlayerIntelStore, day_night: Node) -> voi
 	_day_night_ref   = day_night
 	if day_night != null:
 		day_night.game_tick.connect(_on_game_tick)
+	# SPA-2454: Create Recommended Actions sidebar on Apprentice difficulty.
+	if GameState.selected_difficulty == "apprentice" and _main_layout != null:
+		_rec_actions_sep = VSeparator.new()
+		_rec_actions_sep.add_theme_color_override("separator_color", Color(0.55, 0.38, 0.18, 0.5))
+		_main_layout.add_child(_rec_actions_sep)
+		_rec_actions_panel = JournalRecommendedActions.new()
+		_rec_actions_panel.name = "RecommendedActions"
+		_rec_actions_panel.setup(world, intel_store)
+		_main_layout.add_child(_rec_actions_panel)
 
 
 # ── Input ─────────────────────────────────────────────────────────────────────
@@ -169,6 +183,9 @@ func _open() -> void:
 	_compute_status_diff()
 	_pause_game(true)
 	_rebuild_section(_current_section)
+	# SPA-2454: Refresh recommended actions on journal open.
+	if _rec_actions_panel != null:
+		_rec_actions_panel.refresh()
 	call_deferred("_restore_scroll")
 	# Animate open: fade bg + slide parchment from right.
 	_overlay_bg.modulate.a = 0.0

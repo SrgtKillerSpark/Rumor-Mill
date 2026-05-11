@@ -858,6 +858,57 @@ const CONTEXT_HINT_DATA: Dictionary = {
 		),
 		"auto_dismiss_secs": 9,
 	},
+	# ── SPA-2454: Difficulty-gated strategy hints (Apprentice/Journeyman only) ──
+	"strategy_hub_scouting": {
+		"title": "Scout the Busy Hubs",
+		"body":  (
+			"[b]Observe the Market and Tavern first[/b] — they attract the most NPCs.  "
+			+ "A single observation at a busy hub reveals 3–5 potential seed targets.  "
+			+ "Save your remaining actions for eavesdropping on the connections you find there."
+		),
+		"auto_dismiss_secs": 10,
+		"difficulty_gate": ["apprentice"],
+	},
+	"strategy_sociability_targeting": {
+		"title": "Target High-Sociability NPCs",
+		"body":  (
+			"Some NPCs talk to [b]many more people[/b] than others.  "
+			+ "Check the [b]Journal → Intelligence[/b] tab — NPCs with 3+ known relationships spread rumours fastest.  "
+			+ "Always prefer a [b]well-connected seed target[/b] over a loner."
+		),
+		"auto_dismiss_secs": 10,
+		"difficulty_gate": ["apprentice"],
+	},
+	"strategy_evidence_timing": {
+		"title": "Save Evidence for Key Moments",
+		"body":  (
+			"Evidence items are [b]consumed on use[/b] — don't waste them on your first rumour.  "
+			+ "Wait until you have identified a [b]high-value path[/b] (credulous NPC + strong claim) "
+			+ "before attaching evidence for maximum impact."
+		),
+		"auto_dismiss_secs": 10,
+		"difficulty_gate": ["apprentice"],
+	},
+	"strategy_faction_leverage": {
+		"title": "Leverage Faction Bonds",
+		"body":  (
+			"NPCs within the [b]same faction[/b] trust each other more — rumours spread faster inside a faction.  "
+			+ "Seed a rumour to someone in the [b]target's own circle[/b] for stronger uptake.  "
+			+ "Check [b]J → Factions[/b] to see who belongs where."
+		),
+		"auto_dismiss_secs": 10,
+		"difficulty_gate": ["apprentice"],
+	},
+	"strategy_multi_target": {
+		"title": "Spread Multiple Rumours",
+		"body":  (
+			"Don't put all your whispers into one rumour.  "
+			+ "Seed [b]2–3 different claims[/b] about the same subject through different NPCs.  "
+			+ "If one gets rejected, the others keep spreading — redundancy wins."
+		),
+		"auto_dismiss_secs": 10,
+		"difficulty_gate": ["apprentice"],
+	},
 }
 
 
@@ -951,6 +1002,19 @@ func get_hint(hint_id: String) -> Dictionary:
 	if result.is_empty():
 		result = CONTEXT_HINT_DATA.get(hint_id, {})
 	return result
+
+
+## SPA-2454: Returns true if the hint is allowed for the given difficulty preset.
+## Hints with no "difficulty_gate" key are always allowed.
+## Hints with a "difficulty_gate" array are only allowed when the preset is in that array.
+func is_hint_allowed_for_difficulty(hint_id: String, difficulty_preset: String) -> bool:
+	var data: Dictionary = get_hint(hint_id)
+	if data.is_empty():
+		return false
+	if not data.has("difficulty_gate"):
+		return true
+	var gate: Array = data.get("difficulty_gate", [])
+	return difficulty_preset in gate
 
 
 ## Record the most recently displayed hint so H can replay it.
