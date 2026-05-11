@@ -324,6 +324,17 @@ func _ready() -> void:
 	visible = false
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		if _feedback_panel != null and is_instance_valid(_feedback_panel) and _feedback_panel.visible:
+			_on_feedback_skip()
+		else:
+			_on_main_menu()
+		get_viewport().set_input_as_handled()
+
+
 ## Wire to world, day_night, and analytics; subscribe to scenario_resolved.
 func setup(world: Node2D, day_night: Node, analytics: ScenarioAnalytics = null) -> void:
 	_world_ref     = world
