@@ -53,9 +53,6 @@ func refresh() -> void:
 
 
 func _add_header() -> void:
-	var sep := VSeparator.new()
-	sep.add_theme_color_override("separator_color", C_ACCENT)
-	# The VSeparator is already in the HBoxContainer parent — add a visual label.
 	var lbl := Label.new()
 	lbl.text = "Recommended Actions"
 	lbl.add_theme_font_size_override("font_size", 13)
