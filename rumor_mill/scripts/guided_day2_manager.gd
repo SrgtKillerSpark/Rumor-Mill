@@ -82,7 +82,7 @@ func _on_journal_visibility_changed() -> void:
 		_tutorial_banner.queue_hint(HINT_JOURNAL)
 
 
-func _on_recon_action(message: String, success: bool) -> void:
+func _on_recon_action(message: String, success: bool, _is_witness_account: bool = false) -> void:
 	if not success or not _on_day2 or not _journal_fired or _observe_fired:
 		return
 	if not message.begins_with("Observed"):

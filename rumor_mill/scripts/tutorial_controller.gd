@@ -716,7 +716,7 @@ func _on_tc_journal_visibility() -> void:
 		_complete_current_step()
 
 
-func _on_tc_recon_action(message: String, success: bool) -> void:
+func _on_tc_recon_action(message: String, success: bool, _is_witness_account: bool = false) -> void:
 	if not success:
 		return
 	if _current_step == STEP_EAVESDROP and message.begins_with("Eavesdrop"):

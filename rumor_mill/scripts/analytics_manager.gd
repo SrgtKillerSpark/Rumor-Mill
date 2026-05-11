@@ -131,7 +131,7 @@ func _on_analytics_npc_state_changed(npc_name: String, new_state: String, rumor_
 	_analytics_logger.log_npc_state_changed(npc_name, rumor_id, new_state, day, _analytics_scenario_id)
 
 
-func _on_analytics_evidence_interaction(message: String, success: bool) -> void:
+func _on_analytics_evidence_interaction(message: String, success: bool, _is_witness_account: bool = false) -> void:
 	if _analytics_logger == null:
 		_enqueue("_on_analytics_evidence_interaction", [message, success])
 		return

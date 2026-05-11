@@ -46,7 +46,7 @@ const C_PANEL_BG     := Color(0.10, 0.07, 0.05, 0.92)   ## tooltip / popup backg
 const C_PANEL_BORDER := Color(0.55, 0.38, 0.18, 1.0)    ## border accent
 
 ## Emitted after every action attempt (success or failure).
-signal action_performed(message: String, success: bool)
+signal action_performed(message: String, success: bool, is_witness_account: bool)
 
 ## Emitted when a high-temperament NPC detects the player eavesdropping.
 signal player_exposed
@@ -552,7 +552,7 @@ func _try_observe(location_id: String) -> void:
 	var forged_doc: bool = _intel_store.recon_actions_remaining >= 2 and (location_id == "market" or location_id == "guild")
 
 	if not _intel_store.try_spend_action():
-		emit_signal("action_performed", "No Recon Actions remaining today.", false)
+		emit_signal("action_performed", "No Recon Actions remaining today.", false, false)
 		return
 
 	if forged_doc:
@@ -624,7 +624,7 @@ func _try_observe(location_id: String) -> void:
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Incriminating Artifact acquired."
 
-	emit_signal("action_performed", msg, true)
+	emit_signal("action_performed", msg, true, false)
 	_show_observe_sparkle()
 	# Cancel any pending outdoor-ambient clear timer from a previous observe.
 	_ambient_clear_seq += 1
@@ -654,11 +654,11 @@ func _try_eavesdrop(target: Node2D) -> void:
 		var name_a: String = target.npc_data.get("name", "?")
 		emit_signal("action_performed",
 			"%s is not in conversation (no one within %d tiles)." % [name_a, EAVESDROP_RANGE_TILES],
-			false)
+			false, false)
 		return
 
 	if not _intel_store.try_spend_action():
-		emit_signal("action_performed", "No Recon Actions remaining today.", false)
+		emit_signal("action_performed", "No Recon Actions remaining today.", false, false)
 		return
 
 	# Detection risk: temperament > 0.7 → 20% chance of being noticed.
@@ -672,7 +672,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 		emit_signal("action_performed",
 			"\"%s seemed to glance your way.\" [+4 suspicion] (%d Recon left)" % [
 				name_a, _intel_store.recon_actions_remaining],
-			false)
+			false, false)
 		if _world_ref != null and _world_ref.active_scenario_id == "scenario_1":
 				player_exposed.emit()
 		return
@@ -741,7 +741,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 			_witness_account_fired = true
 			witness_account_first_acquired.emit()
 
-	emit_signal("action_performed", msg, true)
+	emit_signal("action_performed", msg, true, witness_account)
 	_show_eavesdrop_success(target)
 	# Trigger an "eavesdrop" dialogue bubble on the target NPC.
 	target.show_eavesdropped()
@@ -1110,27 +1110,27 @@ func _try_bribe(target: Node2D) -> void:
 		var calder_faction := _get_calder_faction()
 		if not calder_faction.is_empty() and npc_faction == calder_faction:
 			emit_signal("action_performed",
-				"This NPC is too close to Calder — they would report the approach.", false)
+				"This NPC is too close to Calder — they would report the approach.", false, false)
 			return
 
 	# SPA-593: pre-check eligibility before spending any resources.
 	if not target.has_evaluating_rumor():
 		emit_signal("action_performed",
-			"No pending rumor to reinforce — %s is not currently evaluating." % npc_name, false)
+			"No pending rumor to reinforce — %s is not currently evaluating." % npc_name, false, false)
 		return
 	if _intel_store.bribe_charges <= 0:
-		emit_signal("action_performed", "No Favors remaining for bribe.", false)
+		emit_signal("action_performed", "No Favors remaining for bribe.", false, false)
 		return
 
 	# Cost: 1 Recon Action + 1 Whisper Token.
 	if not _intel_store.try_spend_action():
-		emit_signal("action_performed", "No Recon Actions remaining for bribe.", false)
+		emit_signal("action_performed", "No Recon Actions remaining for bribe.", false, false)
 		return
 	if not _intel_store.try_spend_whisper():
 		# Refund recon action.
 		_intel_store.recon_actions_remaining = mini(
 			_intel_store.recon_actions_remaining + 1, PlayerIntelStore.MAX_DAILY_ACTIONS)
-		emit_signal("action_performed", "No Whisper Tokens remaining for bribe.", false)
+		emit_signal("action_performed", "No Whisper Tokens remaining for bribe.", false, false)
 		return
 
 	# Execute: force EVALUATING → BELIEVE.
@@ -1141,7 +1141,7 @@ func _try_bribe(target: Node2D) -> void:
 			_intel_store.recon_actions_remaining + 1, PlayerIntelStore.MAX_DAILY_ACTIONS)
 		_intel_store.whisper_tokens_remaining = mini(
 			_intel_store.whisper_tokens_remaining + 1, PlayerIntelStore.MAX_DAILY_WHISPERS)
-		emit_signal("action_performed", "Bribe failed — %s is no longer evaluating." % npc_name, false)
+		emit_signal("action_performed", "Bribe failed — %s is no longer evaluating." % npc_name, false, false)
 		return
 
 	# Consume bribe charge.
@@ -1153,7 +1153,7 @@ func _try_bribe(target: Node2D) -> void:
 	var tick := _current_tick()
 	emit_signal("action_performed",
 		"Bribed %s — they now believe the rumor.  (%d Favors left)" % [
-			npc_name, _intel_store.bribe_charges], true)
+			npc_name, _intel_store.bribe_charges], true, false)
 	emit_signal("bribe_executed", npc_name, tick)
 
 

@@ -338,7 +338,7 @@ func wire_pause_menu(pause_menu: CanvasLayer) -> void:
 # ── Recon action handler ─────────────────────────────────────────────────────
 
 ## Connected to recon_ctrl.action_performed — drives S1 banner gates.
-func _on_recon_action_for_tutorial(message: String, success: bool) -> void:
+func _on_recon_action_for_tutorial(message: String, success: bool, _is_witness_account: bool = false) -> void:
 	if not success:
 		return
 	# SPA-589: Notify visual affordances so they fade after enough actions.
@@ -681,7 +681,7 @@ func _init_idle_hints() -> void:
 		_rumor_panel.rumor_seeded.connect(_on_rumor_seeded_idle)
 
 
-func _on_action_reset_idle(message: String, success: bool) -> void:
+func _on_action_reset_idle(message: String, success: bool, _is_witness_account: bool = false) -> void:
 	if success:
 		_has_performed_any_action = true
 	if _idle_timer != null:
