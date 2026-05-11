@@ -63,6 +63,18 @@ var _bg_rect:         ColorRect = null
 var _center_panel:    Panel     = null
 var _open_tween:      Tween     = null
 
+# ── Confirm-container extras ───────────────────────────────────────────────────
+var _confirm_lbl:       Label  = null  # dynamic label text for overwrite/load confirms
+var _confirm_source:    String = ""    # "main" or "slot" — where to restore on cancel
+var _pending_save_slot: int    = -1    # slot awaiting overwrite confirmation
+var _pending_load_slot: int    = -1    # slot awaiting load confirmation
+
+# ── Slot picker extras ─────────────────────────────────────────────────────────
+var _auto_save_note: Label = null      # "Auto-saves cannot be overwritten."
+
+# ── Toast tween (save confirmation fade — Finding #4) ─────────────────────────
+var _toast_tween: Tween = null
+
 
 func _ready() -> void:
 	layer        = 20
@@ -294,6 +306,16 @@ func _build_ui() -> void:
 	_slot_label.process_mode = Node.PROCESS_MODE_ALWAYS
 	_slot_container.add_child(_slot_label)
 
+	# Finding #5: note shown in save mode explaining auto-slot is read-only.
+	_auto_save_note = Label.new()
+	_auto_save_note.text = "Auto-saves cannot be overwritten."
+	_auto_save_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_auto_save_note.add_theme_font_size_override("font_size", 11)
+	_auto_save_note.add_theme_color_override("font_color", Color(0.72, 0.63, 0.48, 1.0))
+	_auto_save_note.process_mode = Node.PROCESS_MODE_ALWAYS
+	_auto_save_note.visible = false
+	_slot_container.add_child(_auto_save_note)
+
 	_slot_btn_auto = _make_pause_btn("Auto — Empty", Color(0.75, 0.75, 0.75, 1.0))
 	_slot_btn_auto.pressed.connect(func() -> void: _on_slot_action(SaveManager.AUTO_SLOT))
 	_slot_container.add_child(_slot_btn_auto)
@@ -331,15 +353,15 @@ func _build_ui() -> void:
 	_confirm_container.visible = false
 	outer_vbox.add_child(_confirm_container)
 
-	var confirm_lbl := Label.new()
-	confirm_lbl.text = "Unsaved progress will be lost. Continue?"
-	confirm_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	confirm_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	confirm_lbl.custom_minimum_size = Vector2(240, 0)
-	confirm_lbl.add_theme_font_size_override("font_size", 13)
-	confirm_lbl.add_theme_color_override("font_color", Color(0.90, 0.82, 0.60, 1.0))
-	confirm_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
-	_confirm_container.add_child(confirm_lbl)
+	_confirm_lbl = Label.new()
+	_confirm_lbl.text = "Unsaved progress will be lost. Continue?"
+	_confirm_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_confirm_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirm_lbl.custom_minimum_size = Vector2(240, 0)
+	_confirm_lbl.add_theme_font_size_override("font_size", 13)
+	_confirm_lbl.add_theme_color_override("font_color", Color(0.90, 0.82, 0.60, 1.0))
+	_confirm_lbl.process_mode = Node.PROCESS_MODE_ALWAYS
+	_confirm_container.add_child(_confirm_lbl)
 
 	var confirm_yes := _make_pause_btn("Yes — Continue", Color(0.95, 0.80, 0.40, 1.0))
 	confirm_yes.pressed.connect(_on_confirm_yes)
@@ -452,11 +474,15 @@ func _show_slot_picker() -> void:
 	if _slot_mode_save:
 		_slot_label.text = "— Save to Slot —"
 		_slot_btn_auto.visible = false   # auto-save is not a manual save target
+		if _auto_save_note != null:
+			_auto_save_note.visible = true  # Finding #5: explain why auto slot is absent
 		if _slot_btn_1 != null:
 			_slot_btn_1.call_deferred("grab_focus")
 	else:
 		_slot_label.text = "— Load from Slot —"
 		_slot_btn_auto.visible = true
+		if _auto_save_note != null:
+			_auto_save_note.visible = false
 		if _slot_btn_auto != null:
 			_slot_btn_auto.call_deferred("grab_focus")
 
@@ -497,33 +523,48 @@ func _on_slot_action(slot: int) -> void:
 			_set_status("Save unavailable.", Color(1.0, 0.5, 0.5, 1.0))
 			_hide_slot_picker()
 			return
+		# Finding #6: if the slot is occupied, ask for overwrite confirmation first.
+		var info: Dictionary = SaveManager.get_save_info(_scenario_id, slot)
+		if not info.is_empty():
+			_pending_save_slot = slot
+			_confirm_action    = "save_overwrite"
+			_confirm_source    = "slot"
+			if _confirm_lbl != null:
+				_confirm_lbl.text = "Slot already has a save. Overwrite?"
+			_slot_container.visible    = false
+			_confirm_container.visible = true
+			var yes_btn := _confirm_container.get_child(1) as Button
+			if yes_btn != null:
+				yes_btn.call_deferred("grab_focus")
+			return
+		# Empty slot — save immediately.
 		var err: String = SaveManager.save_game(_world_ref, _day_night_ref, _journal_ref, slot, _tutorial_sys_ref)
 		_hide_slot_picker()
 		if err.is_empty():
 			var slot_name := "Auto" if slot == SaveManager.AUTO_SLOT else ("Slot %d" % slot)
-			_set_status("Saved to %s." % slot_name, Color(0.60, 0.90, 0.65, 1.0))
+			_show_save_toast("Saved to %s." % slot_name, Color(0.60, 0.90, 0.65, 1.0))
 		else:
 			_set_status("Save failed: " + err, Color(1.0, 0.5, 0.5, 1.0))
 	else:
-		var err: String = SaveManager.prepare_load(_scenario_id, slot)
-		if not err.is_empty():
-			_hide_slot_picker()
-			_set_status(err, Color(1.0, 0.5, 0.5, 1.0))
-			# SPA-2467: Offer delete/ignore when the file exists but is corrupt.
-			if SaveManager.has_save(_scenario_id, slot):
-				_corrupt_slot_pending = slot
-				if _corrupt_action_row != null:
-					_corrupt_action_row.visible = true
-			return
-		# Reload the scene; main.gd will restore state via SaveManager.apply_pending_load().
-		_pending_restart_id = SaveManager.pending_scenario_id()
-		get_tree().paused   = false
-		get_tree().reload_current_scene()
+		# Finding #7: always confirm before loading to warn about unsaved progress.
+		_pending_load_slot = slot
+		_confirm_action    = "load"
+		_confirm_source    = "slot"
+		if _confirm_lbl != null:
+			_confirm_lbl.text = "Unsaved progress will be lost. Continue?"
+		_slot_container.visible    = false
+		_confirm_container.visible = true
+		var yes_btn := _confirm_container.get_child(1) as Button
+		if yes_btn != null:
+			yes_btn.call_deferred("grab_focus")
 
 
 func _set_status(msg: String, colour: Color) -> void:
 	if _status_label == null:
 		return
+	if _toast_tween != null and _toast_tween.is_valid():
+		_toast_tween.kill()
+	_status_label.modulate.a = 1.0
 	# SPA-2467: Reset corrupt-save row whenever a new status message replaces it.
 	if _corrupt_action_row != null and _corrupt_action_row.visible and msg.is_empty():
 		_corrupt_action_row.visible = false
@@ -532,8 +573,27 @@ func _set_status(msg: String, colour: Color) -> void:
 	_status_label.add_theme_color_override("font_color", colour)
 
 
+## Finding #4: fade-in → hold 2 s → fade-out toast for successful saves.
+func _show_save_toast(msg: String, colour: Color) -> void:
+	if _status_label == null:
+		return
+	if _toast_tween != null and _toast_tween.is_valid():
+		_toast_tween.kill()
+	_status_label.text = msg
+	_status_label.add_theme_color_override("font_color", colour)
+	_status_label.modulate.a = 0.0
+	_toast_tween = create_tween()
+	_toast_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_toast_tween.tween_property(_status_label, "modulate:a", 1.0, 0.15)
+	_toast_tween.tween_interval(2.0)
+	_toast_tween.tween_property(_status_label, "modulate:a", 0.0, 0.30)
+
+
 func _on_restart_scenario() -> void:
-	_confirm_action = "restart"
+	_confirm_action  = "restart"
+	_confirm_source  = "main"
+	if _confirm_lbl != null:
+		_confirm_lbl.text = "Unsaved progress will be lost. Continue?"
 	_main_container.visible = false
 	if _status_label != null:
 		_status_label.text = ""
@@ -546,6 +606,9 @@ func _on_restart_scenario() -> void:
 
 func _on_quit_to_menu() -> void:
 	_confirm_action = "quit"
+	_confirm_source = "main"
+	if _confirm_lbl != null:
+		_confirm_lbl.text = "Unsaved progress will be lost. Continue?"
 	_main_container.visible = false
 	if _status_label != null:
 		_status_label.text = ""
@@ -557,22 +620,71 @@ func _on_quit_to_menu() -> void:
 
 func _on_confirm_yes() -> void:
 	_confirm_container.visible = false
-	get_tree().paused = false
-	await TransitionManager.fade_out(0.3)
-	if _confirm_action == "restart":
-		_pending_restart_id = _scenario_id
+	_confirm_source = ""
+	if _confirm_action == "save_overwrite":
+		# Finding #6: user confirmed overwrite — proceed with save.
+		var slot := _pending_save_slot
+		_pending_save_slot = -1
+		if _world_ref != null and _day_night_ref != null and _journal_ref != null:
+			var err: String = SaveManager.save_game(_world_ref, _day_night_ref, _journal_ref, slot, _tutorial_sys_ref)
+			_hide_slot_picker()
+			if err.is_empty():
+				var slot_name := "Auto" if slot == SaveManager.AUTO_SLOT else ("Slot %d" % slot)
+				_show_save_toast("Saved to %s." % slot_name, Color(0.60, 0.90, 0.65, 1.0))
+			else:
+				_set_status("Save failed: " + err, Color(1.0, 0.5, 0.5, 1.0))
+		else:
+			_hide_slot_picker()
+			_set_status("Save unavailable.", Color(1.0, 0.5, 0.5, 1.0))
+	elif _confirm_action == "load":
+		# Finding #7: user confirmed load — execute the load.
+		var slot := _pending_load_slot
+		_pending_load_slot = -1
+		var err: String = SaveManager.prepare_load(_scenario_id, slot)
+		if not err.is_empty():
+			_hide_slot_picker()
+			_set_status(err, Color(1.0, 0.5, 0.5, 1.0))
+			# SPA-2467: Offer delete/ignore when the file exists but is corrupt.
+			if SaveManager.has_save(_scenario_id, slot):
+				_corrupt_slot_pending = slot
+				if _corrupt_action_row != null:
+					_corrupt_action_row.visible = true
+			return
+		_pending_restart_id = SaveManager.pending_scenario_id()
+		get_tree().paused   = false
+		get_tree().reload_current_scene()
 	else:
-		_pending_restart_id = ""
-	get_tree().reload_current_scene()
+		# restart / quit — existing fade-out flow.
+		get_tree().paused = false
+		await TransitionManager.fade_out(0.3)
+		if _confirm_action == "restart":
+			_pending_restart_id = _scenario_id
+		else:
+			_pending_restart_id = ""
+		get_tree().reload_current_scene()
 
 
 func _on_confirm_no() -> void:
 	_confirm_container.visible = false
-	_main_container.visible = true
-	if _main_container.get_child_count() > 0:
-		var first := _main_container.get_child(0)
-		if first is Button:
-			first.call_deferred("grab_focus")
+	var source := _confirm_source
+	_confirm_source = ""
+	_pending_save_slot = -1
+	_pending_load_slot = -1
+	if source == "slot":
+		# Return to slot picker.
+		_slot_container.visible = true
+		if _slot_mode_save:
+			if _slot_btn_1 != null:
+				_slot_btn_1.call_deferred("grab_focus")
+		else:
+			if _slot_btn_auto != null:
+				_slot_btn_auto.call_deferred("grab_focus")
+	else:
+		_main_container.visible = true
+		if _main_container.get_child_count() > 0:
+			var first := _main_container.get_child(0)
+			if first is Button:
+				first.call_deferred("grab_focus")
 
 
 ## SPA-2467: Delete the corrupt slot and clear the error UI.
@@ -659,7 +771,9 @@ func _make_pause_btn(label_text: String, font_color: Color) -> Button:
 		tw.tween_property(btn, "scale", Vector2.ONE, 0.10)
 	)
 	btn.mouse_entered.connect(func() -> void:
-		AudioManager.play_sfx_pitched("ui_click", 2.0)
+		# Finding #9: suppress hover SFX when the button is disabled.
+		if not btn.disabled:
+			AudioManager.play_sfx_pitched("ui_click", 2.0)
 		var tw := btn.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		tw.tween_property(btn, "scale", Vector2(1.04, 1.04), 0.12)
 	)
