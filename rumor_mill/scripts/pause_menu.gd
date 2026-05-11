@@ -37,6 +37,10 @@ var _tutorial_sys_ref: TutorialSystem = null
 
 var _status_label: Label = null
 
+# SPA-2467: Corrupt-save action row shown when load detects a corrupt file.
+var _corrupt_action_row: HBoxContainer = null
+var _corrupt_slot_pending: int = -1
+
 # ── Context header refs ────────────────────────────────────────────────────────
 var _context_scenario_lbl: Label = null
 var _context_day_lbl:      Label = null
@@ -355,6 +359,26 @@ func _build_ui() -> void:
 	_status_label.process_mode = Node.PROCESS_MODE_ALWAYS
 	outer_vbox.add_child(_status_label)
 
+	# SPA-2467: Corrupt-save action row — Delete / Ignore buttons.
+	_corrupt_action_row = HBoxContainer.new()
+	_corrupt_action_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_corrupt_action_row.add_theme_constant_override("separation", 8)
+	_corrupt_action_row.process_mode = Node.PROCESS_MODE_ALWAYS
+	_corrupt_action_row.visible = false
+	var pm_btn_delete := Button.new()
+	pm_btn_delete.text = "Delete Save"
+	pm_btn_delete.add_theme_font_size_override("font_size", 12)
+	pm_btn_delete.process_mode = Node.PROCESS_MODE_ALWAYS
+	pm_btn_delete.pressed.connect(_on_corrupt_delete)
+	_corrupt_action_row.add_child(pm_btn_delete)
+	var pm_btn_ignore := Button.new()
+	pm_btn_ignore.text = "Ignore"
+	pm_btn_ignore.add_theme_font_size_override("font_size", 12)
+	pm_btn_ignore.process_mode = Node.PROCESS_MODE_ALWAYS
+	pm_btn_ignore.pressed.connect(_on_corrupt_ignore)
+	_corrupt_action_row.add_child(pm_btn_ignore)
+	outer_vbox.add_child(_corrupt_action_row)
+
 
 func _on_how_to_play() -> void:
 	_how_to_play.open()
@@ -485,6 +509,11 @@ func _on_slot_action(slot: int) -> void:
 		if not err.is_empty():
 			_hide_slot_picker()
 			_set_status(err, Color(1.0, 0.5, 0.5, 1.0))
+			# SPA-2467: Offer delete/ignore when the file exists but is corrupt.
+			if SaveManager.has_save(_scenario_id, slot):
+				_corrupt_slot_pending = slot
+				if _corrupt_action_row != null:
+					_corrupt_action_row.visible = true
 			return
 		# Reload the scene; main.gd will restore state via SaveManager.apply_pending_load().
 		_pending_restart_id = SaveManager.pending_scenario_id()
@@ -495,6 +524,10 @@ func _on_slot_action(slot: int) -> void:
 func _set_status(msg: String, colour: Color) -> void:
 	if _status_label == null:
 		return
+	# SPA-2467: Reset corrupt-save row whenever a new status message replaces it.
+	if _corrupt_action_row != null and _corrupt_action_row.visible and msg.is_empty():
+		_corrupt_action_row.visible = false
+		_corrupt_slot_pending = -1
 	_status_label.text = msg
 	_status_label.add_theme_color_override("font_color", colour)
 
@@ -540,6 +573,33 @@ func _on_confirm_no() -> void:
 		var first := _main_container.get_child(0)
 		if first is Button:
 			first.call_deferred("grab_focus")
+
+
+## SPA-2467: Delete the corrupt slot and clear the error UI.
+func _on_corrupt_delete() -> void:
+	if _corrupt_slot_pending < 0:
+		return
+	var path := SaveManager.save_path(_scenario_id, _corrupt_slot_pending)
+	var dir := DirAccess.open("user://saves")
+	if dir != null:
+		var del_err := dir.remove(path.trim_prefix("user://saves/"))
+		if del_err != OK:
+			_set_status("Could not delete save (error %d)." % del_err, Color(1.0, 0.5, 0.5, 1.0))
+			return
+	_set_status("Save deleted.", Color(0.72, 0.63, 0.48, 1.0))
+	if _corrupt_action_row != null:
+		_corrupt_action_row.visible = false
+	_corrupt_slot_pending = -1
+	_refresh_slot_buttons()
+
+
+## SPA-2467: Dismiss the corrupt-save error without taking action.
+func _on_corrupt_ignore() -> void:
+	if _status_label != null:
+		_status_label.text = ""
+	if _corrupt_action_row != null:
+		_corrupt_action_row.visible = false
+	_corrupt_slot_pending = -1
 
 
 func _make_pause_btn(label_text: String, font_color: Color) -> Button:

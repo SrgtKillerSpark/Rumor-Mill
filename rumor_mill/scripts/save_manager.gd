@@ -26,6 +26,10 @@ const SAVE_DIR     := "user://saves/"
 const SLOT_COUNT   := 3   ## Manual save slots (1–3)
 const AUTO_SLOT    := 0   ## Slot 0 = auto-save (written at start of each new day)
 
+## SPA-2467: Periodic auto-save fires every this many ticks in addition to the
+## daily auto-save.  Set to 0 to disable periodic saves (daily-only).
+const PERIODIC_AUTO_SAVE_INTERVAL := 5
+
 
 ## Returns the save file path for a given scenario id and slot.
 static func save_path(scenario_id: String, slot: int) -> String:
@@ -192,7 +196,31 @@ static func save_game(
 	var rename_err := dir.rename(tmp_path, path)
 	if rename_err != OK:
 		return "Failed to rename temp save to '%s' (error %d)." % [path, rename_err]
+	# SPA-2467: On web/HTML5 builds the Emscripten virtual FS is not automatically
+	# flushed to the browser's IndexedDB after writes.  Request an async sync so
+	# the save persists across page reloads.
+	_flush_web_fs()
 	return ""
+
+
+## SPA-2467: Requests a non-blocking FS→IndexedDB sync on web builds.
+## No-op on native platforms.
+static func _flush_web_fs() -> void:
+	if not OS.has_feature("web"):
+		return
+	# FS.syncfs(false, cb) pushes in-memory Emscripten FS changes to IndexedDB.
+	# The callback is intentionally empty; failures are surfaced via push_warning.
+	JavaScriptBridge.eval("""
+(function() {
+  try {
+    if (typeof FS !== 'undefined' && typeof FS.syncfs === 'function') {
+      FS.syncfs(false, function(err) {
+        if (err) { console.warn('[SaveManager] FS.syncfs error:', err); }
+      });
+    }
+  } catch(e) { console.warn('[SaveManager] flush error:', e); }
+})();
+""", true)
 
 
 # ── Pending load state (persists across scene reload) ────────────────────────

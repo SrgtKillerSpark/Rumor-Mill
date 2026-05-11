@@ -169,6 +169,9 @@ func _on_begin_game(scenario_id: String) -> void:
 		sm.scenario_resolved.connect(_on_scenario_resolved_audio)
 
 	day_night.day_changed.connect(_on_new_day_auto_save)
+	# SPA-2467: Periodic auto-save every N ticks (in addition to daily saves).
+	if SaveManager.PERIODIC_AUTO_SAVE_INTERVAL > 0:
+		day_night.game_tick.connect(_on_tick_periodic_auto_save)
 	PlayerStats.start_session()  # SPA-273: begin timing this play session
 
 	# SPA-335: feed retry count into ScenarioManager so it knows how many times
@@ -396,6 +399,23 @@ func _on_new_day_auto_save(day: int) -> void:
 	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT, _ui.tutorial_wiring.tutorial_sys if _ui != null and _ui.tutorial_wiring != null else null)
 	if not err.is_empty():
 		push_warning("[Main] Auto-save failed on day %d: %s" % [day, err])
+
+
+## SPA-2467: Periodic auto-save — fires every PERIODIC_AUTO_SAVE_INTERVAL ticks.
+## Skips tick 0 (start of game) and any tick that coincides with a day boundary
+## (the day_changed auto-save already covers those).
+func _on_tick_periodic_auto_save(tick: int) -> void:
+	if tick == 0:
+		return
+	if tick % SaveManager.PERIODIC_AUTO_SAVE_INTERVAL != 0:
+		return
+	# Skip if this tick is also a day boundary — _on_new_day_auto_save handles it.
+	if day_night != null and tick % day_night.ticks_per_day == 0:
+		return
+	var tutorial_sys: TutorialSystem = _ui.tutorial_wiring.tutorial_sys if _ui != null and _ui.tutorial_wiring != null else null
+	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT, tutorial_sys)
+	if not err.is_empty():
+		push_warning("[Main] Periodic auto-save failed at tick %d: %s" % [tick, err])
 
 
 ## Relay scenario_resolved to feedback sequence (SPA-784) + AudioManager stings.
