@@ -396,7 +396,7 @@ func _on_story_recap_dismissed() -> void:
 
 ## Auto-save to slot 0 at the start of each new day (SPA-220).
 func _on_new_day_auto_save(day: int) -> void:
-	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT, _ui.tutorial_wiring.tutorial_sys if _ui != null and _ui.tutorial_wiring != null else null)
+	var err: String = SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT, _ui.tutorial_wiring.tutorial_sys if _ui != null and _ui.tutorial_wiring != null else null)
 	if not err.is_empty():
 		push_warning("[Main] Auto-save failed on day %d: %s" % [day, err])
 

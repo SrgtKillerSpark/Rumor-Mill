@@ -318,7 +318,7 @@ func _make_preview_label() -> Label:
 func _get_audio_manager() -> Node:
 	if Engine.has_singleton("AudioManager"):
 		return Engine.get_singleton("AudioManager")
-	var root := get_tree().root if get_tree() != null else null
+	var root: Window = get_tree().root if get_tree() != null else null
 	if root != null and root.has_node("AudioManager"):
 		return root.get_node("AudioManager")
 	return null
