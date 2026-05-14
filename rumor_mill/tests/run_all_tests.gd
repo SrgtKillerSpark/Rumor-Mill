@@ -200,6 +200,7 @@ extends RefCounted
 ##   • TestTutorialHud            — layout constants, initial state (SPA-1042)
 ##   • TestContextControlsPanel   — Mode enum, MODE_BINDINGS, palette, initial state (SPA-1042)
 ##   • TestControlsReference      — BINDINGS, initial state, toggle() visibility flip (SPA-1042)
+##   • TestCursorManager          — priority constants, request/release/cascade, initial state (SPA-2619)
 ##   • TestHelpReminderUI         — controls_ref null (SPA-1042)
 ##   • TestThoughtBubbleLegend    — palette, LEGEND_ENTRIES, constants, initial state (SPA-1042)
 ##   • TestReadyOverlay           — palette, initial node refs null, initial state (SPA-1042)
@@ -245,6 +246,7 @@ const TestBuildingTooltip = preload("res://tests/test_building_tooltip.gd")
 const TestCamera = preload("res://tests/test_camera.gd")
 const TestContextControlsPanel = preload("res://tests/test_context_controls_panel.gd")
 const TestControlsReference = preload("res://tests/test_controls_reference.gd")
+const TestCursorManager = preload("res://tests/test_cursor_manager.gd")
 const TestDailyPlanningOverlay = preload("res://tests/test_daily_planning_overlay.gd")
 const TestDayNightCycle = preload("res://tests/test_day_night_cycle.gd")
 const TestDistrictOverlay = preload("res://tests/test_district_overlay.gd")
@@ -851,6 +853,9 @@ func _init() -> void:
 
 	print("\n── ControlsReference ──")
 	TestControlsReference.new().run()
+
+	print("\n── CursorManager ──")
+	TestCursorManager.new().run()
 
 	print("\n── HelpReminderUI ──")
 	TestHelpReminderUI.new().run()
