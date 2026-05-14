@@ -781,7 +781,8 @@
       },
       {
         "npcId": "maren_nun",
-        "credulity": 0.2
+        "credulity": 0.2,
+        "role": "investigator"
       }
     ],
     "startingReputations": {},
