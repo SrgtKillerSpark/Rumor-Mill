@@ -28,6 +28,9 @@ func run() -> void:
 		"test_restore_scenario_manager_sets_won_state_silently",
 		"test_restore_scenario_manager_noop_on_empty_dict",
 		"test_pending_load_cleared_after_apply_noop",
+		# SPA-2467: Periodic auto-save constant / web flush
+		"test_periodic_auto_save_interval_positive",
+		"test_flush_web_fs_noop_on_native",
 		# Existing tests
 		"test_save_path_auto_slot",
 		"test_save_path_manual_slots",
@@ -323,3 +326,26 @@ static func test_pending_load_cleared_after_apply_noop() -> bool:
 	# Restore.
 	SaveManager._pending_load_data = previous
 	return still_empty
+
+
+# ── SPA-2467 tests ───────────────────────────────────────────────────────────
+
+## PERIODIC_AUTO_SAVE_INTERVAL must be a positive integer so main.gd
+## connects the game_tick signal for periodic saves.
+static func test_periodic_auto_save_interval_positive() -> bool:
+	if SaveManager.PERIODIC_AUTO_SAVE_INTERVAL <= 0:
+		push_error("test_periodic_auto_save_interval_positive: expected > 0, got %d" % SaveManager.PERIODIC_AUTO_SAVE_INTERVAL)
+		return false
+	return true
+
+
+## _flush_web_fs() must be a no-op on native platforms (no error, no crash).
+## On native, OS.has_feature("web") is false so the function returns early
+## without touching JavaScriptBridge.
+static func test_flush_web_fs_noop_on_native() -> bool:
+	if OS.has_feature("web"):
+		# Skip this variant on actual web builds; covered by manual QA.
+		return true
+	# Should not raise any errors on native.
+	SaveManager._flush_web_fs()
+	return true

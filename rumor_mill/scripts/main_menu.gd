@@ -130,6 +130,10 @@ var _how_to_play:        CanvasLayer = null
 var _btn_continue:       Button      = null
 # SPA-2578: Status label for main-panel error messages (e.g. corrupt-save failure).
 var _status_label_main:  Label       = null
+# SPA-2467: Corrupt-save action row — shown alongside error when delete is possible.
+var _corrupt_action_row: HBoxContainer = null
+var _corrupt_scenario_id: String = ""
+var _corrupt_slot: int = -1
 
 # SPA-589: Atmospheric dusk background elements
 var _dusk_sky:           ColorRect   = null  # gradient sky background
@@ -556,6 +560,24 @@ func _build_main_panel() -> void:
 	_status_label_main.add_theme_color_override("font_color", Color(1.0, 0.45, 0.35, 1.0))
 	_status_label_main.visible = false
 	vbox.add_child(_status_label_main)
+
+	# SPA-2467: Corrupt-save action row — Delete / Ignore buttons shown when a
+	# save file is detected as corrupt so the player has a clear recovery path.
+	_corrupt_action_row = HBoxContainer.new()
+	_corrupt_action_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_corrupt_action_row.add_theme_constant_override("separation", 8)
+	_corrupt_action_row.visible = false
+	var btn_delete_save := Button.new()
+	btn_delete_save.text = "Delete Corrupt Save"
+	btn_delete_save.add_theme_font_size_override("font_size", 12)
+	btn_delete_save.pressed.connect(_on_corrupt_save_delete)
+	_corrupt_action_row.add_child(btn_delete_save)
+	var btn_ignore_corrupt := Button.new()
+	btn_ignore_corrupt.text = "Ignore"
+	btn_ignore_corrupt.add_theme_font_size_override("font_size", 12)
+	btn_ignore_corrupt.pressed.connect(_on_corrupt_save_ignore)
+	_corrupt_action_row.add_child(btn_ignore_corrupt)
+	vbox.add_child(_corrupt_action_row)
 
 	# SPA-1099: Bottom expand-fill spacer — mirrors spacer_top to center
 	# all content vertically within the full-rect VBox.
@@ -1193,9 +1215,7 @@ func _on_continue_pressed() -> void:
 	var err: String = SaveManager.prepare_load(scenario_id, slot)
 	if not err.is_empty():
 		push_warning("MainMenu: continue failed — " + err)
-		if _status_label_main != null:
-			_status_label_main.text = "Cannot continue: " + err
-			_status_label_main.visible = true
+		_show_corrupt_save_error("Cannot continue: " + err, scenario_id, slot)
 		return
 	begin_game.emit(scenario_id)
 
@@ -1986,6 +2006,8 @@ func _rebuild_load_content() -> void:
 func _on_load_game_pressed() -> void:
 	if _status_label_main != null:
 		_status_label_main.visible = false
+	if _corrupt_action_row != null:
+		_corrupt_action_row.visible = false
 	_show_phase(Phase.LOAD)
 
 
@@ -1993,12 +2015,56 @@ func _on_load_slot_pressed(scenario_id: String, slot: int) -> void:
 	var err: String = SaveManager.prepare_load(scenario_id, slot)
 	if not err.is_empty():
 		push_warning("MainMenu: load failed — " + err)
-		if _status_label_main != null:
-			_status_label_main.text = "Load failed: " + err
-			_status_label_main.visible = true
 		_show_phase(Phase.MAIN)
+		_show_corrupt_save_error("Load failed: " + err, scenario_id, slot)
 		return
 	begin_game.emit(scenario_id)
+
+
+# ── SPA-2467: Corrupt-save recovery helpers ───────────────────────────────────
+
+## Show the corrupt-save error with Delete/Ignore actions.
+## Only shows the action row when the slot is known (so the file can be deleted).
+func _show_corrupt_save_error(message: String, scenario_id: String, slot: int) -> void:
+	if _status_label_main != null:
+		_status_label_main.text = message
+		_status_label_main.visible = true
+	_corrupt_scenario_id = scenario_id
+	_corrupt_slot = slot
+	# Show the Delete/Ignore row only when the file exists (skip missing-file errors).
+	var show_delete := SaveManager.has_save(scenario_id, slot)
+	if _corrupt_action_row != null:
+		_corrupt_action_row.visible = show_delete
+
+
+func _on_corrupt_save_delete() -> void:
+	if _corrupt_scenario_id.is_empty() or _corrupt_slot < 0:
+		return
+	var path := SaveManager.save_path(_corrupt_scenario_id, _corrupt_slot)
+	var dir := DirAccess.open("user://saves")
+	if dir != null:
+		var del_err := dir.remove(path.trim_prefix("user://saves/"))
+		if del_err != OK:
+			if _status_label_main != null:
+				_status_label_main.text = "Could not delete save (error %d)." % del_err
+			return
+	if _status_label_main != null:
+		_status_label_main.text = "Save deleted."
+	if _corrupt_action_row != null:
+		_corrupt_action_row.visible = false
+	_corrupt_scenario_id = ""
+	_corrupt_slot = -1
+	# Refresh Continue button state.
+	_refresh_continue_button()
+
+
+func _on_corrupt_save_ignore() -> void:
+	if _status_label_main != null:
+		_status_label_main.visible = false
+	if _corrupt_action_row != null:
+		_corrupt_action_row.visible = false
+	_corrupt_scenario_id = ""
+	_corrupt_slot = -1
 
 
 # ── Version corner label ──────────────────────────────────────────────────────
