@@ -125,6 +125,8 @@ extends RefCounted
 ##   • TestEndScreen              — initial state, subsystem refs null, setup() assignment (SPA-1024)
 ##   • TestJournal                — palette, Section enum, MAX_MILESTONE_ENTRIES, initial state,
 ##                                  push/get/restore milestone log, cap enforcement (SPA-1024)
+##   • TestJournalWitnessMarker   — Rumor.evidence_type default/type/set, [W] render condition (true/false/case),
+##                                  C_WITNESS teal channels + alpha, distinct from C_KEY (SPA-2606/2627)
 ##   • TestObjectiveHud           — urgency colour constants, CALLOUT_TOOLTIP_ID, initial state,
 ##                                  _get_urgency_color() all four bands, entrance animation guard (SPA-1024)
 ##   • TestMain                   — initial state, @onready scene refs null, _camera_shake null guard (SPA-1024)
@@ -265,6 +267,7 @@ const TestIllnessEscalationAgent = preload("res://tests/test_illness_escalation_
 const TestInquisitorAgent = preload("res://tests/test_inquisitor_agent.gd")
 const TestIntelStore = preload("res://tests/test_intel_store.gd")
 const TestJournal = preload("res://tests/test_journal.gd")
+const TestJournalWitnessMarker = preload("res://tests/test_journal_witness_marker.gd")
 const TestJournalFactionsSection = preload("res://tests/test_journal_factions_section.gd")
 const TestJournalIntelSection = preload("res://tests/test_journal_intel_section.gd")
 const TestJournalObjectivesSection = preload("res://tests/test_journal_objectives_section.gd")
@@ -665,6 +668,9 @@ func _init() -> void:
 
 	print("\n── Journal ──")
 	TestJournal.new().run()
+
+	print("\n── SPA-2606 journal witness marker [W] ──")
+	TestJournalWitnessMarker.new().run()
 
 	print("\n── ObjectiveHud ──")
 	TestObjectiveHud.new().run()
