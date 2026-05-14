@@ -144,6 +144,11 @@ var _highlight_tween: Tween          = null
 var _target_marker_label: Label      = null
 var _target_marker_tween: Tween      = null
 
+# ── Step counter label (SPA-2658) ────────────────────────────────────────────
+
+## "Step N of 7" label injected into the banner for S1 guided flow only.
+var _step_counter_label: Label = null
+
 # ── Top-centre toast ──────────────────────────────────────────────────────────
 
 var _toast_canvas:    CanvasLayer    = null
@@ -215,6 +220,7 @@ func skip() -> void:
 			_tutorial_sys.mark_seen(step_def["id"])
 	_clear_highlight()
 	_remove_target_marker()
+	_remove_step_counter()
 	_disconnect_all()
 	if _skip_overlay != null:
 		_skip_overlay.queue_free()
@@ -382,6 +388,33 @@ func _show_step(step_idx: int) -> void:
 	if _tutorial_banner != null and _tutorial_banner.has_method("queue_hint"):
 		_tutorial_banner.queue_hint(step_def["hint"])
 
+	# Scenario 1 guided flow only (7 steps; _steps.size() > 4). SPA-2658.
+	if _steps.size() > 4:
+		_update_step_counter(step_idx)
+
+
+func _update_step_counter(step_idx: int) -> void:
+	if _tutorial_banner == null:
+		return
+	if _step_counter_label == null:
+		_step_counter_label = Label.new()
+		_step_counter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_step_counter_label.add_theme_font_size_override("font_size", 11)
+		_step_counter_label.add_theme_color_override("font_color", Color(0.60, 0.53, 0.42, 1.0))
+		_step_counter_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# Append inside the banner's VBoxContainer so it sits below the hint text.
+		# Falls back to the banner root if no VBox is found.
+		var vbox: VBoxContainer = null
+		for child in _tutorial_banner.get_children():
+			if child is VBoxContainer:
+				vbox = child
+				break
+		if vbox != null:
+			vbox.add_child(_step_counter_label)
+		else:
+			_tutorial_banner.add_child(_step_counter_label)
+	_step_counter_label.text = "Step %d of %d" % [step_idx + 1, _steps.size()]
+
 
 func _apply_step_highlights(step_idx: int) -> void:
 	_clear_highlight()
@@ -408,6 +441,7 @@ func _finish_tutorial() -> void:
 	_disconnect_all()
 	_clear_highlight()
 	_remove_target_marker()
+	_remove_step_counter()
 
 
 func _complete_current_step() -> void:
@@ -522,6 +556,13 @@ func _show_target_marker() -> void:
 	_target_marker_tween.tween_property(
 		_target_marker_label, "modulate:a", 1.0, 0.8
 	).set_ease(Tween.EASE_IN_OUT)
+
+
+## Remove the step counter label injected into the banner. SPA-2658.
+func _remove_step_counter() -> void:
+	if _step_counter_label != null and is_instance_valid(_step_counter_label):
+		_step_counter_label.queue_free()
+	_step_counter_label = null
 
 
 ## Remove the persistent target marker.
