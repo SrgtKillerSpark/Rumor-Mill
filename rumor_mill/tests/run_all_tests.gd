@@ -204,6 +204,7 @@ extends RefCounted
 ##   • TestTutorialHud            — layout constants, initial state (SPA-1042)
 ##   • TestContextControlsPanel   — Mode enum, MODE_BINDINGS, palette, initial state (SPA-1042)
 ##   • TestControlsReference      — BINDINGS, initial state, toggle() visibility flip (SPA-1042)
+##   • TestCursorManager          — priority constants, request/release/cascade, initial state (SPA-2619)
 ##   • TestHelpReminderUI         — controls_ref null (SPA-1042)
 ##   • TestThoughtBubbleLegend    — palette, LEGEND_ENTRIES, constants, initial state (SPA-1042)
 ##   • TestReadyOverlay           — palette, initial node refs null, initial state (SPA-1042)
