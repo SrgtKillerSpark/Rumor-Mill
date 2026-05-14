@@ -31,6 +31,14 @@ func run() -> void:
 		# SPA-2467: Periodic auto-save constant / web flush
 		"test_periodic_auto_save_interval_positive",
 		"test_flush_web_fs_noop_on_native",
+		# SPA-2467: Auto-save trigger + corrupt-save paths (SPA-2655 backfill)
+		"test_auto_slot_constant_is_zero",
+		"test_save_game_slot_below_auto_returns_error",
+		"test_save_game_slot_above_slot_count_returns_error",
+		"test_prepare_load_missing_required_key_tick",
+		"test_prepare_load_missing_required_key_day",
+		"test_prepare_load_missing_required_key_scenario_id",
+		"test_prepare_load_failed_leaves_no_pending_load",
 		# Existing tests
 		"test_save_path_auto_slot",
 		"test_save_path_manual_slots",
@@ -348,4 +356,95 @@ static func test_flush_web_fs_noop_on_native() -> bool:
 		return true
 	# Should not raise any errors on native.
 	SaveManager._flush_web_fs()
+	return true
+
+
+# ── SPA-2655: Auto-save trigger + corrupt-save path backfill ─────────────────
+
+## AUTO_SLOT must equal 0: save_path() emits "<scenario>_auto.json" for slot 0,
+## and save_game() uses "slot < AUTO_SLOT" to reject negative slots.
+static func test_auto_slot_constant_is_zero() -> bool:
+	if SaveManager.AUTO_SLOT != 0:
+		push_error("test_auto_slot_constant_is_zero: expected 0, got %d" % SaveManager.AUTO_SLOT)
+		return false
+	return true
+
+
+## save_game() returns a non-empty error when slot is below AUTO_SLOT (e.g. -1).
+## The slot guard fires before any node dereference so null world/journal args are safe.
+static func test_save_game_slot_below_auto_returns_error() -> bool:
+	var err: String = SaveManager.save_game(null, null, null, SaveManager.AUTO_SLOT - 1)
+	if err == "":
+		push_error("test_save_game_slot_below_auto_returns_error: expected error for slot %d, got empty string" % (SaveManager.AUTO_SLOT - 1))
+		return false
+	return true
+
+
+## save_game() returns a non-empty error when slot exceeds SLOT_COUNT (e.g. 4).
+## The slot guard fires before any node dereference so null world/journal args are safe.
+static func test_save_game_slot_above_slot_count_returns_error() -> bool:
+	var err: String = SaveManager.save_game(null, null, null, SaveManager.SLOT_COUNT + 1)
+	if err == "":
+		push_error("test_save_game_slot_above_slot_count_returns_error: expected error for slot %d, got empty string" % (SaveManager.SLOT_COUNT + 1))
+		return false
+	return true
+
+
+## prepare_load() returns a non-empty error when the save file is missing the
+## required "tick" key — even though JSON and version checks pass.
+static func test_prepare_load_missing_required_key_tick() -> bool:
+	var data := _valid_save()
+	data.erase("tick")
+	if not _write_test_save(data, 1):
+		push_error("test_prepare_load_missing_required_key_tick: could not write test file")
+		return false
+	var err := SaveManager.prepare_load(_TEST_SCENARIO_ID, 1)
+	if err == "":
+		push_error("test_prepare_load_missing_required_key_tick: expected error for missing 'tick' key")
+		return false
+	return true
+
+
+## prepare_load() returns a non-empty error when the save file is missing the
+## required "day" key.
+static func test_prepare_load_missing_required_key_day() -> bool:
+	var data := _valid_save()
+	data.erase("day")
+	if not _write_test_save(data, 1):
+		push_error("test_prepare_load_missing_required_key_day: could not write test file")
+		return false
+	var err := SaveManager.prepare_load(_TEST_SCENARIO_ID, 1)
+	if err == "":
+		push_error("test_prepare_load_missing_required_key_day: expected error for missing 'day' key")
+		return false
+	return true
+
+
+## prepare_load() returns a non-empty error when the save file is missing the
+## required "scenario_id" key.
+static func test_prepare_load_missing_required_key_scenario_id() -> bool:
+	var data := _valid_save()
+	data.erase("scenario_id")
+	if not _write_test_save(data, 1):
+		push_error("test_prepare_load_missing_required_key_scenario_id: could not write test file")
+		return false
+	var err := SaveManager.prepare_load(_TEST_SCENARIO_ID, 1)
+	if err == "":
+		push_error("test_prepare_load_missing_required_key_scenario_id: expected error for missing 'scenario_id' key")
+		return false
+	return true
+
+
+## prepare_load() must leave has_pending_load() false after any validation failure.
+## Verifies the guard that apply_pending_load() and clear_new_game_statics() rely on.
+static func test_prepare_load_failed_leaves_no_pending_load() -> bool:
+	var data := _valid_save()
+	data.erase("day")
+	if not _write_test_save(data, 1):
+		push_error("test_prepare_load_failed_leaves_no_pending_load: could not write test file")
+		return false
+	SaveManager.prepare_load(_TEST_SCENARIO_ID, 1)
+	if SaveManager.has_pending_load():
+		push_error("test_prepare_load_failed_leaves_no_pending_load: has_pending_load() must be false after a failed load")
+		return false
 	return true
