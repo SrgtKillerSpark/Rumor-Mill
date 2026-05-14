@@ -113,6 +113,10 @@ extends RefCounted
 ##   • TestNpcRumorProcessing     — _MIN_EVAL_TICKS, initial state, setup, get_spread_preview guard clauses (SPA-1027)
 ##   • TestNpcVisuals             — sprite constants, STATE_TINT/EMOTES tables, hover tint, initial state (SPA-1027)
 ##   • TestJournalFactionsSection — palette, initial state, setup, _get_rumor_by_id null guard (SPA-1027)
+##   • TestCursorManager      — priority constants, initial state, request/release priority logic,
+##                              equal priorities, releasing non-existent owners (SPA-2619)
+##   • TestJournalRecommendedActions — null-ref guard, all 4 priority tiers, day-based,
+##                                     token-exhausted suggestion, cap at 3 (SPA-2618)
 ##   • TestJournalIntelSection    — palette, initial state, setup, _tick_to_day_str (SPA-1027)
 ##   • TestJournalObjectivesSection — scenario day constants, palette, initial state, setup (SPA-1027)
 ##   • TestJournalRumorsSection   — initial state, setup, has_status_transitions, _rumor_journal_status, colours, transitions (SPA-1027)
@@ -245,6 +249,7 @@ const TestBuildingTooltip = preload("res://tests/test_building_tooltip.gd")
 const TestCamera = preload("res://tests/test_camera.gd")
 const TestContextControlsPanel = preload("res://tests/test_context_controls_panel.gd")
 const TestControlsReference = preload("res://tests/test_controls_reference.gd")
+const TestCursorManager = preload("res://tests/test_cursor_manager.gd")
 const TestDailyPlanningOverlay = preload("res://tests/test_daily_planning_overlay.gd")
 const TestDayNightCycle = preload("res://tests/test_day_night_cycle.gd")
 const TestDistrictOverlay = preload("res://tests/test_district_overlay.gd")
@@ -269,6 +274,7 @@ const TestIntelStore = preload("res://tests/test_intel_store.gd")
 const TestJournal = preload("res://tests/test_journal.gd")
 const TestJournalWitnessMarker = preload("res://tests/test_journal_witness_marker.gd")
 const TestJournalFactionsSection = preload("res://tests/test_journal_factions_section.gd")
+const TestJournalRecommendedActions = preload("res://tests/test_journal_recommended_actions.gd")
 const TestJournalIntelSection = preload("res://tests/test_journal_intel_section.gd")
 const TestJournalObjectivesSection = preload("res://tests/test_journal_objectives_section.gd")
 const TestJournalRumorsSection = preload("res://tests/test_journal_rumors_section.gd")
@@ -633,6 +639,9 @@ func _init() -> void:
 	print("\n── JournalFactionsSection ──")
 	TestJournalFactionsSection.new().run()
 
+	print("\n── JournalRecommendedActions ──")
+	TestJournalRecommendedActions.new().run()
+
 	print("\n── JournalIntelSection ──")
 	TestJournalIntelSection.new().run()
 
@@ -851,6 +860,9 @@ func _init() -> void:
 
 	print("\n── ControlsReference ──")
 	TestControlsReference.new().run()
+
+	print("\n── CursorManager ──")
+	TestCursorManager.new().run()
 
 	print("\n── HelpReminderUI ──")
 	TestHelpReminderUI.new().run()
