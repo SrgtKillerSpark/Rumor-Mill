@@ -13,6 +13,8 @@
 ##   • Round-trip inverses: cell→world→cell and world→cell→world
 ##   • _belief_trend(): rising (≤3), stable (4–8), fading (>8), boundary values
 ##   • get_drop_rate_multiplier(): 1.0 outside days 4-12, 1.5 inside, boundary days (SPA-2432)
+##   • Witness Account first-acquisition guard: _witness_account_first_fired initial false,
+##                                              signal exists, tick threshold per day (SPA-2452)
 ##
 ## ReconController extends Node. _ready() is never called (not added to a scene tree),
 ## so all UI node refs remain null. Only data-field and pure-logic methods are tested.
@@ -86,6 +88,13 @@ func run() -> void:
 		"test_drop_multiplier_day12_is_15x",
 		"test_drop_multiplier_day13_is_1x",
 		"test_drop_multiplier_day0_is_1x",
+		# Witness Account first-acquisition guard (SPA-2452)
+		"test_witness_account_guard_initial_false",
+		"test_witness_account_signal_exists",
+		"test_witness_account_tick_threshold_normal_day",
+		"test_witness_account_tick_threshold_day4_midgame",
+		"test_witness_account_tick_threshold_day12_midgame",
+		"test_witness_account_tick_threshold_day13_resets",
 	]
 
 	for method_name in tests:
@@ -333,3 +342,41 @@ static func test_drop_multiplier_day13_is_1x() -> bool:
 static func test_drop_multiplier_day0_is_1x() -> bool:
 	var rc := _make_rc()
 	return is_equal_approx(rc.get_drop_rate_multiplier(0), 1.0)
+
+
+# ── Witness Account first-acquisition guard (SPA-2452) ───────────────────────
+
+## Guard flag starts false — signal has not fired yet.
+static func test_witness_account_guard_initial_false() -> bool:
+	var rc := _make_rc()
+	return rc._witness_account_first_fired == false
+
+
+## Signal is declared on the class — can be connected to.
+static func test_witness_account_signal_exists() -> bool:
+	var rc := _make_rc()
+	return rc.has_signal("witness_account_first_acquired")
+
+
+## Normal pre-mid-game day (day 1): threshold = int(24 / 1.0) = 24 ticks.
+static func test_witness_account_tick_threshold_normal_day() -> bool:
+	var rc := _make_rc()
+	return int(24.0 / rc.get_drop_rate_multiplier(1)) == 24
+
+
+## Mid-game starts at day 4: multiplier = 1.5 → threshold = int(24 / 1.5) = 16 ticks.
+static func test_witness_account_tick_threshold_day4_midgame() -> bool:
+	var rc := _make_rc()
+	return int(24.0 / rc.get_drop_rate_multiplier(4)) == 16
+
+
+## Day 12 is last mid-game day: still 1.5x → threshold = 16 ticks.
+static func test_witness_account_tick_threshold_day12_midgame() -> bool:
+	var rc := _make_rc()
+	return int(24.0 / rc.get_drop_rate_multiplier(12)) == 16
+
+
+## Day 13 exits mid-game window: multiplier resets to 1.0 → threshold = 24 ticks.
+static func test_witness_account_tick_threshold_day13_resets() -> bool:
+	var rc := _make_rc()
+	return int(24.0 / rc.get_drop_rate_multiplier(13)) == 24

@@ -10,6 +10,10 @@
 ##   • get_whats_changed()      — returns dict for known scenario; empty for unknown
 ##   • Static data integrity    — TOOLTIP_DATA, HINT_DATA, CONTEXT_HINT_DATA, WHATS_CHANGED_DATA
 ##                                all entries have required fields
+##   • Phase 2.5 (SPA-2452):   — hint_second_visit in CONTEXT_HINT_DATA (12s, Witness Account body)
+##                              — action-gate conditions: observe, eavesdrop, craft_rumor, read_the_room
+##                              — soft-nudge sequence: observe/journal/rumor exist with 9s dismiss
+##                              — gtut_day1_eavesdrop_nudge exists, 999s, no action_gate (SPA-2434)
 ##
 ## TutorialSystem is a plain class (no Node); instantiated with .new() — _ready()
 ## is never called so there is no scene-tree or file I/O dependency.
@@ -54,6 +58,26 @@ func run() -> void:
 		"test_hint_data_all_have_title_body_dismiss",
 		"test_context_hint_data_all_have_title_body_dismiss",
 		"test_whats_changed_data_all_have_title_and_bullets",
+		# Phase 2.5: hint_second_visit in CONTEXT_HINT_DATA (SPA-2452)
+		"test_hint_second_visit_in_context_hint_data",
+		"test_hint_second_visit_dismiss_is_12s",
+		"test_hint_second_visit_body_mentions_witness_account",
+		# Phase 2.5: action-gate trigger conditions (SPA-2452)
+		"test_hint_first_action_gate_is_observe",
+		"test_hint_target_npc_gate_is_eavesdrop",
+		"test_hint_rumour_panel_gate_is_craft_rumor",
+		"test_gtut_explore_gate_is_read_the_room",
+		# Phase 2.5: soft-nudge sequence (SPA-2081)
+		"test_soft_nudge_observe_in_context_hint_data",
+		"test_soft_nudge_journal_in_context_hint_data",
+		"test_soft_nudge_rumor_in_context_hint_data",
+		"test_soft_nudge_observe_dismiss_is_9s",
+		"test_soft_nudge_journal_dismiss_is_9s",
+		"test_soft_nudge_rumor_dismiss_is_9s",
+		# Phase 2.5: Day-1 eavesdrop nudge (SPA-2434)
+		"test_gtut_day1_eavesdrop_nudge_in_hint_data",
+		"test_gtut_day1_eavesdrop_nudge_dismiss_is_999s",
+		"test_gtut_day1_eavesdrop_nudge_has_no_action_gate",
 	]
 
 	for method_name in tests:
@@ -281,3 +305,113 @@ static func test_whats_changed_data_all_have_title_and_bullets() -> bool:
 			push_error("test_whats_changed_data_all_have_title_and_bullets: '%s' has no bullets" % sid)
 			return false
 	return true
+
+
+# ── Phase 2.5: hint_second_visit (SPA-2452) ──────────────────────────────────
+
+static func test_hint_second_visit_in_context_hint_data() -> bool:
+	return TutorialSystem.CONTEXT_HINT_DATA.has("hint_second_visit")
+
+
+## Auto-dismiss must be 12 s as per SPA-2452 spec.
+static func test_hint_second_visit_dismiss_is_12s() -> bool:
+	if not TutorialSystem.CONTEXT_HINT_DATA.has("hint_second_visit"):
+		push_error("test_hint_second_visit_dismiss_is_12s: key missing")
+		return false
+	return TutorialSystem.CONTEXT_HINT_DATA["hint_second_visit"]["auto_dismiss_secs"] == 12
+
+
+## Body must reference "Witness Account" so the player knows what they are unlocking.
+static func test_hint_second_visit_body_mentions_witness_account() -> bool:
+	if not TutorialSystem.CONTEXT_HINT_DATA.has("hint_second_visit"):
+		push_error("test_hint_second_visit_body_mentions_witness_account: key missing")
+		return false
+	var body: String = TutorialSystem.CONTEXT_HINT_DATA["hint_second_visit"]["body"]
+	return "Witness Account" in body
+
+
+# ── Phase 2.5: action-gate trigger conditions ────────────────────────────────
+
+static func test_hint_first_action_gate_is_observe() -> bool:
+	if not TutorialSystem.HINT_DATA.has("hint_first_action"):
+		push_error("test_hint_first_action_gate_is_observe: key missing")
+		return false
+	return TutorialSystem.HINT_DATA["hint_first_action"].get("action_gate", "") == "observe"
+
+
+static func test_hint_target_npc_gate_is_eavesdrop() -> bool:
+	if not TutorialSystem.HINT_DATA.has("hint_target_npc"):
+		push_error("test_hint_target_npc_gate_is_eavesdrop: key missing")
+		return false
+	return TutorialSystem.HINT_DATA["hint_target_npc"].get("action_gate", "") == "eavesdrop"
+
+
+static func test_hint_rumour_panel_gate_is_craft_rumor() -> bool:
+	if not TutorialSystem.HINT_DATA.has("hint_rumour_panel"):
+		push_error("test_hint_rumour_panel_gate_is_craft_rumor: key missing")
+		return false
+	return TutorialSystem.HINT_DATA["hint_rumour_panel"].get("action_gate", "") == "craft_rumor"
+
+
+static func test_gtut_explore_gate_is_read_the_room() -> bool:
+	if not TutorialSystem.HINT_DATA.has("gtut_explore"):
+		push_error("test_gtut_explore_gate_is_read_the_room: key missing")
+		return false
+	return TutorialSystem.HINT_DATA["gtut_explore"].get("action_gate", "") == "read_the_room"
+
+
+# ── Phase 2.5: soft-nudge sequence (SPA-2081) ────────────────────────────────
+
+static func test_soft_nudge_observe_in_context_hint_data() -> bool:
+	return TutorialSystem.CONTEXT_HINT_DATA.has("soft_nudge_observe")
+
+
+static func test_soft_nudge_journal_in_context_hint_data() -> bool:
+	return TutorialSystem.CONTEXT_HINT_DATA.has("soft_nudge_journal")
+
+
+static func test_soft_nudge_rumor_in_context_hint_data() -> bool:
+	return TutorialSystem.CONTEXT_HINT_DATA.has("soft_nudge_rumor")
+
+
+static func test_soft_nudge_observe_dismiss_is_9s() -> bool:
+	if not TutorialSystem.CONTEXT_HINT_DATA.has("soft_nudge_observe"):
+		push_error("test_soft_nudge_observe_dismiss_is_9s: key missing")
+		return false
+	return TutorialSystem.CONTEXT_HINT_DATA["soft_nudge_observe"]["auto_dismiss_secs"] == 9
+
+
+static func test_soft_nudge_journal_dismiss_is_9s() -> bool:
+	if not TutorialSystem.CONTEXT_HINT_DATA.has("soft_nudge_journal"):
+		push_error("test_soft_nudge_journal_dismiss_is_9s: key missing")
+		return false
+	return TutorialSystem.CONTEXT_HINT_DATA["soft_nudge_journal"]["auto_dismiss_secs"] == 9
+
+
+static func test_soft_nudge_rumor_dismiss_is_9s() -> bool:
+	if not TutorialSystem.CONTEXT_HINT_DATA.has("soft_nudge_rumor"):
+		push_error("test_soft_nudge_rumor_dismiss_is_9s: key missing")
+		return false
+	return TutorialSystem.CONTEXT_HINT_DATA["soft_nudge_rumor"]["auto_dismiss_secs"] == 9
+
+
+# ── Phase 2.5: Day-1 eavesdrop nudge (SPA-2434) ──────────────────────────────
+
+static func test_gtut_day1_eavesdrop_nudge_in_hint_data() -> bool:
+	return TutorialSystem.HINT_DATA.has("gtut_day1_eavesdrop_nudge")
+
+
+## Persistent nudge: stays on screen until the player acts (999 s timeout).
+static func test_gtut_day1_eavesdrop_nudge_dismiss_is_999s() -> bool:
+	if not TutorialSystem.HINT_DATA.has("gtut_day1_eavesdrop_nudge"):
+		push_error("test_gtut_day1_eavesdrop_nudge_dismiss_is_999s: key missing")
+		return false
+	return TutorialSystem.HINT_DATA["gtut_day1_eavesdrop_nudge"]["auto_dismiss_secs"] == 999
+
+
+## No action_gate: nudge is dismissed by player action, not by a gate event.
+static func test_gtut_day1_eavesdrop_nudge_has_no_action_gate() -> bool:
+	if not TutorialSystem.HINT_DATA.has("gtut_day1_eavesdrop_nudge"):
+		push_error("test_gtut_day1_eavesdrop_nudge_has_no_action_gate: key missing")
+		return false
+	return not TutorialSystem.HINT_DATA["gtut_day1_eavesdrop_nudge"].has("action_gate")
