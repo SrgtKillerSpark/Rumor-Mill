@@ -307,6 +307,37 @@ func _build_difficulty_badge() -> void:
 	add_child(_diff_lbl)
 
 
+# ── Save toast ───────────────────────────────────────────────────────────────
+
+## Show a transient "Game saved" / "Save failed" toast in _toast_container.
+## Visible for 1.5 s then fades out over 0.3 s (SPA-2776).
+func show_save_toast(success: bool) -> void:
+	if _toast_container == null:
+		return
+	var panel := Panel.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = C_TOAST_BG
+	style.set_corner_radius_all(4)
+	style.content_margin_left   = 8
+	style.content_margin_right  = 8
+	style.content_margin_top    = 4
+	style.content_margin_bottom = 4
+	panel.add_theme_stylebox_override("panel", style)
+
+	var lbl := Label.new()
+	lbl.text = "Game saved" if success else "Save failed"
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_color_override("font_color", C_TOAST_TEXT if success else C_FAIL)
+	lbl.add_theme_font_size_override("font_size", 13)
+	panel.add_child(lbl)
+	_toast_container.add_child(panel)
+
+	var tween := create_tween()
+	tween.tween_interval(1.5)
+	tween.tween_property(panel, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(panel.queue_free)
+
+
 # ── Signal handlers ──────────────────────────────────────────────────────────
 
 func _on_game_tick(_tick: int) -> void:

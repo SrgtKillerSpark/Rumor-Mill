@@ -399,6 +399,7 @@ func _on_new_day_auto_save(day: int) -> void:
 	var err: String = SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT, _ui.tutorial_wiring.tutorial_sys if _ui != null and _ui.tutorial_wiring != null else null)
 	if not err.is_empty():
 		push_warning("[Main] Auto-save failed on day %d: %s" % [day, err])
+	_show_hud_save_toast(err.is_empty())
 
 
 ## SPA-2467: Periodic auto-save — fires every PERIODIC_AUTO_SAVE_INTERVAL ticks.
@@ -416,6 +417,15 @@ func _on_tick_periodic_auto_save(tick: int) -> void:
 	var err := SaveManager.save_game(world, day_night, journal, SaveManager.AUTO_SLOT, tutorial_sys)
 	if not err.is_empty():
 		push_warning("[Main] Periodic auto-save failed at tick %d: %s" % [tick, err])
+	_show_hud_save_toast(err.is_empty())
+
+
+## SPA-2776: Find the active scenario HUD and call show_save_toast on it.
+func _show_hud_save_toast(success: bool) -> void:
+	for child in get_children():
+		if child is BaseScenarioHud and child.has_method("show_save_toast"):
+			child.show_save_toast(success)
+			return
 
 
 ## Relay scenario_resolved to feedback sequence (SPA-784) + AudioManager stings.

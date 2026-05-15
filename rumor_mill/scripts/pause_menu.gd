@@ -652,10 +652,13 @@ func _on_confirm_yes() -> void:
 			return
 		_pending_restart_id = SaveManager.pending_scenario_id()
 		get_tree().paused   = false
+		_show_loading_label()
+		await get_tree().process_frame
 		get_tree().reload_current_scene()
 	else:
 		# restart / quit — existing fade-out flow.
 		get_tree().paused = false
+		_show_loading_label()
 		await TransitionManager.fade_out(0.3)
 		if _confirm_action == "restart":
 			_pending_restart_id = _scenario_id
@@ -685,6 +688,18 @@ func _on_confirm_no() -> void:
 			var first := _main_container.get_child(0)
 			if first is Button:
 				first.call_deferred("grab_focus")
+
+
+## SPA-2776: Show a centered "Loading..." label before a scene reload.
+func _show_loading_label() -> void:
+	var lbl := Label.new()
+	lbl.text = "Loading..."
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 20)
+	lbl.add_theme_color_override("font_color", Color(0.91, 0.85, 0.70, 1.0))
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(lbl)
 
 
 ## SPA-2467: Delete the corrupt slot and clear the error UI.
