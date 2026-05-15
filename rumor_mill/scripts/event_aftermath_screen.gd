@@ -1,13 +1,19 @@
 extends CanvasLayer
 
-## event_aftermath_screen.gd — SPA-2691: Post-event resolution summary screen.
+## event_aftermath_screen.gd — SPA-2699: Spec-aligned post-event resolution summary.
 ##
-## Displayed immediately after the player resolves a mid-game narrative event
-## (after dismissing the choice modal).  Shows:
+## Displayed immediately after the player resolves a mid-game narrative event.
+## Shows:
+##   - "IT IS DONE" header (per spec)
 ##   - Event name
 ##   - Outcome narrative text
-##   - Formatted list of stat deltas (reputation, heat, etc.)
-##   - "Continue" button to resume the game
+##   - Consequence lines with spec-defined icons and colours:
+##       ^ stat increase (forest green)
+##       v stat decrease (rust red)
+##       > NPC state change (dark brown)
+##       + item gained (gold)
+##       - item spent (muted)
+##   - "Continue" button (Space/Enter) to resume the game
 ##
 ## Usage from UILayerManager:
 ##   var aftermath := preload("res://scripts/event_aftermath_screen.gd").new()
@@ -16,19 +22,23 @@ extends CanvasLayer
 ##   # After event_choice_modal.dismissed fires:
 ##   aftermath.present(event_name, outcome_text, effects_dict, world)
 
-# ── Palette (matches parchment card theme) ────────────────────────────────────
+# ── Palette (spec-aligned: parchment + sepia tones) ──────────────────────────
 
 const C_BACKDROP  := Color(0.02, 0.01, 0.00, 0.78)
 const C_PANEL_BG  := Color(0.08, 0.05, 0.02, 0.97)
 const C_BORDER    := Color(0.60, 0.40, 0.12, 1.0)
-const C_BADGE     := Color(0.85, 0.60, 0.20, 0.75)
-const C_HEADING   := Color(0.96, 0.84, 0.40, 1.0)   # warm gold
-const C_BODY      := Color(0.80, 0.72, 0.55, 1.0)   # parchment
-const C_GOOD      := Color(0.50, 0.85, 0.45, 1.0)   # green delta
-const C_BAD       := Color(0.92, 0.35, 0.28, 1.0)   # red delta
-const C_NEUTRAL   := Color(0.65, 0.60, 0.45, 1.0)
+# Spec consequence icon colours:
+const C_HEADER    := Color(0.231, 0.153, 0.071, 1.0) # #3B2712 dark-brown "IT IS DONE"
+const C_HEADING   := Color(0.231, 0.153, 0.071, 1.0) # dark-brown event title
+const C_BODY      := Color(0.231, 0.153, 0.071, 0.90) # body text
+const C_STAT_UP   := Color(0.176, 0.416, 0.310, 1.0) # #2D6A4F forest green (^ stat increase)
+const C_STAT_DOWN := Color(0.545, 0.227, 0.180, 1.0) # #8B3A2E rust red     (v stat decrease)
+const C_NPC_CHG   := Color(0.231, 0.153, 0.071, 1.0) # #3B2712 dark-brown  (> NPC state)
+const C_ITEM_GAIN := Color(0.722, 0.525, 0.043, 1.0) # #B8860B gold         (+ item gained)
+const C_ITEM_COST := Color(0.478, 0.420, 0.365, 1.0) # #7A6B5D muted        (- item spent)
+const C_NEUTRAL   := Color(0.478, 0.420, 0.365, 1.0) # muted fallback
 const C_BTN_BG    := Color(0.30, 0.18, 0.05, 0.90)
-const C_BTN_HOVER := Color(0.50, 0.30, 0.08, 1.0)
+const C_BTN_HOVER := Color(0.722, 0.525, 0.043, 1.0) # gold accent on hover (spec)
 const C_BTN_TEXT  := Color(0.92, 0.82, 0.60, 1.0)
 
 const PANEL_W     := 560.0
@@ -100,13 +110,23 @@ func present(
 
 # ── Effects Formatter ─────────────────────────────────────────────────────────
 
+## Format effects dict into spec-aligned consequence lines.
+## Spec consequence format per type:
+##   ^ Stat increase  — forest green #2D6A4F
+##   v Stat decrease  — rust red     #8B3A2E
+##   > NPC state change — dark brown #3B2712
+##   + Item gained    — gold         #B8860B
+##   - Item spent     — muted        #7A6B5D
+## Max 4 lines: NPC changes > faction stats > resource costs.
 func _format_effects(effects: Dictionary) -> String:
 	if effects.is_empty():
 		return ""
 
-	var lines: PackedStringArray = PackedStringArray()
+	# Build a list of consequence entries sorted by priority so we can cap at 4.
+	# Priority: NPC state changes (2) > faction/stat changes (1) > resource costs (0)
+	var entries: Array[Dictionary] = []
 
-	# Reputation changes.
+	# Reputation changes → stat delta (^ or v).
 	var rep_changes: Array = effects.get("reputationChanges", [])
 	for rc in rep_changes:
 		var npc_id: String  = str(rc.get("npcId", ""))
@@ -114,13 +134,18 @@ func _format_effects(effects: Dictionary) -> String:
 		if delta == 0:
 			continue
 		var npc_name: String = _resolve_npc_name(npc_id)
-		var sign: String     = "+" if delta > 0 else ""
-		var col: String      = "green" if delta > 0 else "red"
-		lines.append(
-			"[color=%s]%s%d[/color] Reputation — %s" % [col, sign, delta, npc_name]
-		)
+		if delta > 0:
+			entries.append({
+				"priority": 1,
+				"bbcode": "[color=#2D6A4F]^[/color] %s +%d" % [npc_name, delta]
+			})
+		else:
+			entries.append({
+				"priority": 1,
+				"bbcode": "[color=#8B3A2E]v[/color] %s %d" % [npc_name, delta]
+			})
 
-	# Heat changes.
+	# Heat changes → stat delta (more heat is bad for the player).
 	var heat_changes: Array = effects.get("heatChanges", [])
 	for hc in heat_changes:
 		var npc_id: String = str(hc.get("npcId", ""))
@@ -128,53 +153,80 @@ func _format_effects(effects: Dictionary) -> String:
 		if delta == 0:
 			continue
 		var npc_name: String = _resolve_npc_name(npc_id)
-		var sign: String     = "+" if delta > 0 else ""
-		# More heat is bad for the player.
-		var col: String      = "red" if delta > 0 else "green"
-		lines.append(
-			"[color=%s]%s%d[/color] Suspicion — %s" % [col, sign, delta, npc_name]
-		)
+		if delta > 0:
+			# More heat = bad
+			entries.append({
+				"priority": 1,
+				"bbcode": "[color=#8B3A2E]v[/color] Suspicion +%d — %s" % [delta, npc_name]
+			})
+		else:
+			entries.append({
+				"priority": 1,
+				"bbcode": "[color=#2D6A4F]^[/color] Suspicion %d — %s" % [delta, npc_name]
+			})
 
-	# Heat ceiling override.
+	# Heat ceiling override → stat note.
 	var hco: Dictionary = effects.get("heatCeilingOverride", {})
 	if not hco.is_empty():
 		var new_ceil: float = float(hco.get("newCeiling", 70))
 		var dur: int        = int(hco.get("durationDays", 0))
-		lines.append(
-			"[color=orange]Heat ceiling set to %.0f for %d day%s[/color]" % [
+		entries.append({
+			"priority": 1,
+			"bbcode": "[color=#2D6A4F]^[/color] Heat ceiling %.0f for %d day%s" % [
 				new_ceil, dur, "s" if dur != 1 else ""
 			]
-		)
+		})
 
-	# Instant believers.
+	# Instant believers → NPC state change (> priority).
 	var ib: Dictionary = effects.get("instantBelievers", {})
 	if not ib.is_empty():
-		var count: int       = int(ib.get("count", 0))
-		var subject: String  = _resolve_npc_name(str(ib.get("subjectNpcId", "")))
-		lines.append(
-			"[color=green]+%d[/color] believe the rumour about %s" % [count, subject]
-		)
+		var count: int      = int(ib.get("count", 0))
+		var subject: String = _resolve_npc_name(str(ib.get("subjectNpcId", "")))
+		entries.append({
+			"priority": 2,
+			"bbcode": "[color=#3B2712]>[/color] %d now believe the rumour about %s" % [count, subject]
+		})
 
-	# Suspicion freeze.
+	# Suspicion freeze → stat improvement.
 	var freeze: int = int(effects.get("suspicionFreezeDays", 0))
 	if freeze > 0:
-		lines.append(
-			"[color=green]Suspicion frozen for %d day%s[/color]" % [
+		entries.append({
+			"priority": 1,
+			"bbcode": "[color=#2D6A4F]^[/color] Suspicion frozen for %d day%s" % [
 				freeze, "s" if freeze != 1 else ""
 			]
-		)
+		})
 
-	# Ability bonuses.
+	# Ability bonuses → stat delta.
 	var ability_bonuses: Array = effects.get("abilityBonuses", [])
 	for ab in ability_bonuses:
 		var ability: String = str(ab.get("ability", ""))
 		var bonus: int      = int(ab.get("bonus", 0))
 		if ability.is_empty() or bonus == 0:
 			continue
-		var sign: String = "+" if bonus > 0 else ""
-		lines.append(
-			"[color=green]%s%d[/color] %s" % [sign, bonus, ability.capitalize()]
-		)
+		if bonus > 0:
+			entries.append({
+				"priority": 1,
+				"bbcode": "[color=#2D6A4F]^[/color] %s +%d" % [ability.capitalize(), bonus]
+			})
+		else:
+			entries.append({
+				"priority": 1,
+				"bbcode": "[color=#8B3A2E]v[/color] %s %d" % [ability.capitalize(), bonus]
+			})
+
+	# Spec: show top 4 by magnitude; NPC state > faction stats > resource costs.
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("priority", 0)) > int(b.get("priority", 0))
+	)
+
+	var MAX_LINES := 4
+	var lines: PackedStringArray = PackedStringArray()
+	for i in range(min(entries.size(), MAX_LINES)):
+		lines.append(str(entries[i].get("bbcode", "")))
+
+	if entries.size() > MAX_LINES:
+		lines.append("[color=#7A6B5D]...and other minor effects[/color]")
 
 	return "\n".join(lines)
 
@@ -223,14 +275,16 @@ func _build_ui() -> void:
 		else null
 
 	if parchment_tex != null:
+		# Light modulate so the parchment texture shows in its natural tan tone.
 		var sb_tex := StyleBoxTexture.new()
 		sb_tex.texture = parchment_tex
-		sb_tex.modulate_color = Color(0.22, 0.14, 0.06, 0.97)
+		sb_tex.modulate_color = Color(1.0, 1.0, 1.0, 0.97)
 		sb_tex.set_content_margin_all(24)
 		_panel.add_theme_stylebox_override("panel", sb_tex)
 	else:
+		# Fallback: parchment-tan flat style.
 		var sb_flat := StyleBoxFlat.new()
-		sb_flat.bg_color = C_PANEL_BG
+		sb_flat.bg_color = Color(0.961, 0.902, 0.784, 0.97)  # #F5E6C8
 		sb_flat.border_color = C_BORDER
 		sb_flat.set_border_width_all(2)
 		sb_flat.set_corner_radius_all(8)
@@ -248,12 +302,12 @@ func _build_ui() -> void:
 	vbox.add_theme_constant_override("separation", 12)
 	_panel.add_child(vbox)
 
-	# "AFTERMATH" badge.
+	# Spec: "IT IS DONE" header (seal/confirmation framing).
 	var badge := Label.new()
-	badge.text = "AFTERMATH"
+	badge.text = "IT IS DONE"
 	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	badge.add_theme_font_size_override("font_size", 11)
-	badge.add_theme_color_override("font_color", C_BADGE)
+	badge.add_theme_font_size_override("font_size", 13)
+	badge.add_theme_color_override("font_color", C_HEADER)
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(badge)
 
@@ -288,7 +342,7 @@ func _build_ui() -> void:
 	deltas_header.text = "EFFECTS"
 	deltas_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	deltas_header.add_theme_font_size_override("font_size", 11)
-	deltas_header.add_theme_color_override("font_color", C_BADGE)
+	deltas_header.add_theme_color_override("font_color", C_NEUTRAL)
 	deltas_header.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(deltas_header)
 
