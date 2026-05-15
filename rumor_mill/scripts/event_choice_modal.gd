@@ -78,10 +78,20 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
+			# Block Escape — player must pick a choice (spec: no dismiss without selection).
 			get_viewport().set_input_as_handled()
-		elif event.keycode == KEY_ENTER and _showing_outcome:
-			_on_dismiss_pressed()
-			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ENTER or event.keycode == KEY_SPACE:
+			if _showing_outcome:
+				_on_dismiss_pressed()
+				get_viewport().set_input_as_handled()
+		elif not _showing_outcome:
+			# Spec: 1/2/3 keys select choices directly.
+			if event.keycode == KEY_1 and _choice_a_btn != null and _choice_a_btn.visible:
+				get_viewport().set_input_as_handled()
+				_on_choice_a_pressed()
+			elif event.keycode == KEY_2 and _choice_b_btn != null and _choice_b_btn.visible:
+				get_viewport().set_input_as_handled()
+				_on_choice_b_pressed()
 
 
 ## Show the event and its two choices.
@@ -174,14 +184,14 @@ func _build_ui() -> void:
 	_panel.position = Vector2(-float(_panel_w) / 2.0, -float(_ecm_ph) / 2.0)
 	_panel.size = Vector2(float(_panel_w), float(_ecm_ph))
 
-	# SPA-2691: Use parchment texture when available, else dark flat fallback.
+	# SPA-2699: Use parchment texture (light tone) when available, else parchment-tan fallback.
 	var parchment_tex: Texture2D = load("res://assets/textures/ui_parchment.png") \
 		if ResourceLoader.exists("res://assets/textures/ui_parchment.png") \
 		else null
 	if parchment_tex != null:
 		var sb_tex := StyleBoxTexture.new()
 		sb_tex.texture = parchment_tex
-		sb_tex.modulate_color = Color(0.20, 0.12, 0.04, 0.97)
+		sb_tex.modulate_color = Color(1.0, 1.0, 1.0, 0.97)  # natural parchment tone
 		sb_tex.set_content_margin_all(24)
 		_panel.add_theme_stylebox_override("panel", sb_tex)
 	else:

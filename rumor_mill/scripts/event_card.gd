@@ -93,20 +93,20 @@ func _build_ui(label: String, description: String, day: int) -> void:
 	_card.offset_bottom =  CARD_H * 0.5
 	_card.mouse_filter  = Control.MOUSE_FILTER_STOP
 
-	# SPA-2691: Use parchment texture when available, else dark flat fallback.
+	# SPA-2699: Use parchment texture (light tone) when available, else parchment-tan fallback.
 	var parchment_tex: Texture2D = load("res://assets/textures/ui_parchment.png") \
 		if ResourceLoader.exists("res://assets/textures/ui_parchment.png") \
 		else null
 	if parchment_tex != null:
 		var card_style := StyleBoxTexture.new()
 		card_style.texture = parchment_tex
-		card_style.modulate_color = Color(0.20, 0.12, 0.04, 0.97)
+		card_style.modulate_color = Color(1.0, 1.0, 1.0, 0.97)  # natural parchment tone
 		card_style.set_content_margin_all(20)
 		_card.add_theme_stylebox_override("panel", card_style)
 	else:
 		var card_style := StyleBoxFlat.new()
-		card_style.bg_color = C_PANEL_BG
-		card_style.border_color = C_ACCENT
+		card_style.bg_color = Color(0.961, 0.902, 0.784, 0.97)  # #F5E6C8 parchment-tan
+		card_style.border_color = Color(0.361, 0.239, 0.102, 1.0)  # #5C3D1A dark-sepia
 		card_style.set_border_width_all(2)
 		card_style.set_corner_radius_all(8)
 		card_style.set_content_margin_all(20)
