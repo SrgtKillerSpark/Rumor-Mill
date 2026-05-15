@@ -48,6 +48,15 @@ const TILE_H := 32
 const MOVE_SPEED := 180.0  # pixels/second
 const SPREAD_RADIUS := 8   # tiles (manhattan distance)
 
+## Time-of-day phase boundaries (hour ranges, inclusive).
+## Each entry maps a phase name to [start_hour, end_hour].
+## Night wraps midnight so is handled as the else branch in _get_time_phase().
+const TIME_PHASE_BOUNDARIES := {
+	"morning": [5,  11],
+	"day":     [12, 16],
+	"evening": [17, 21],
+}
+
 # ── Data set by World ────────────────────────────────────────────────────────
 var npc_data: Dictionary = {}
 var schedule_waypoints: Array[Vector2i] = []
@@ -130,11 +139,6 @@ const ARCHETYPE_ROW := {
 	"elder":        7,
 	"spy":          8,
 }
-# Roles that map to the commoner archetype row (row 4)
-const COMMONER_ROLES := [
-	"Craftsman", "Mill Operator", "Storage Keeper", "Transport Worker",
-	"Merchant's Wife", "Traveling Merchant",
-]
 # Body-type row offset: rows 9-17 = slim, rows 18-26 = stocky (SPA-686)
 const BODY_TYPE_ROW_OFFSET := 9
 # Clothing variant base rows for faction archetypes (rows 27-35, standard body proportions)
@@ -347,7 +351,7 @@ func _setup_sprite(faction: String) -> void:
 	if ARCHETYPE_ROW.has(npc_archetype):
 		# Specialty archetypes (guard/tavern/scholar/elder/spy) support body_type only.
 		row = ARCHETYPE_ROW[npc_archetype] + body_type * BODY_TYPE_ROW_OFFSET
-	elif npc_role in COMMONER_ROLES:
+	elif npc_role in NpcVisuals.COMMONER_ROLES:
 		# Commoner row supports body_type only.
 		row = 4 + body_type * BODY_TYPE_ROW_OFFSET
 	elif clothing_var > 0 and CLOTHING_VAR_BASE.has(faction):
@@ -1543,16 +1547,13 @@ func _state_to_dialogue_category(state: Rumor.RumorState) -> String:
 
 
 ## Returns the broad time-of-day phase for ambient dialogue selection.
-## morning: 05-11, day: 12-16, evening: 17-21, night: 22-04.
+## Boundaries are defined in TIME_PHASE_BOUNDARIES; night (22–04) is the fallback.
 func _get_time_phase() -> String:
-	if _current_hour >= 5 and _current_hour <= 11:
-		return "morning"
-	elif _current_hour >= 12 and _current_hour <= 16:
-		return "day"
-	elif _current_hour >= 17 and _current_hour <= 21:
-		return "evening"
-	else:
-		return "night"
+	for phase: String in TIME_PHASE_BOUNDARIES:
+		var bounds: Array = TIME_PHASE_BOUNDARIES[phase]
+		if _current_hour >= bounds[0] and _current_hour <= bounds[1]:
+			return phase
+	return "night"
 
 
 ## Shows a chatter bubble when at least one other NPC is within 3 tiles.
@@ -1565,6 +1566,20 @@ func _try_chatter_bubble() -> void:
 		if dist <= 3:
 			_show_dialogue_bubble("chatter")
 			return
+
+
+## Returns a parchment-style StyleBoxFlat for NPC dialogue bubbles.
+func _create_dialogue_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.88, 0.78, 0.58, 0.93)
+	style.set_corner_radius_all(6)
+	style.set_border_width_all(1)
+	style.border_color = Color(0.55, 0.42, 0.25, 0.85)
+	style.content_margin_left   = 6.0
+	style.content_margin_right  = 6.0
+	style.content_margin_top    = 4.0
+	style.content_margin_bottom = 4.0
+	return style
 
 
 ## Spawns a parchment-style speech bubble above this NPC with a random line
@@ -1588,22 +1603,7 @@ func _show_dialogue_bubble(category: String, prominent: bool = false) -> void:
 
 	# ── Build parchment panel ─────────────────────────────────────────────────
 	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color                   = Color(0.88, 0.78, 0.58, 0.93)
-	style.corner_radius_top_left     = 6
-	style.corner_radius_top_right    = 6
-	style.corner_radius_bottom_left  = 6
-	style.corner_radius_bottom_right = 6
-	style.border_width_left          = 1
-	style.border_width_right         = 1
-	style.border_width_top           = 1
-	style.border_width_bottom        = 1
-	style.border_color               = Color(0.55, 0.42, 0.25, 0.85)
-	style.content_margin_left        = 6.0
-	style.content_margin_right       = 6.0
-	style.content_margin_top         = 4.0
-	style.content_margin_bottom      = 4.0
-	panel.add_theme_stylebox_override("panel", style)
+	panel.add_theme_stylebox_override("panel", _create_dialogue_style())
 
 	var lbl := Label.new()
 	lbl.text                    = text

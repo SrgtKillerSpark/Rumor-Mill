@@ -49,10 +49,6 @@ const _ARCHETYPE_ROW := {
 	"elder":        7,
 	"spy":          8,
 }
-const _COMMONER_ROLES := [
-	"Craftsman", "Mill Operator", "Storage Keeper", "Transport Worker",
-	"Merchant's Wife", "Traveling Merchant",
-]
 const _BODY_TYPE_ROW_OFFSET := 9
 const _CLOTHING_VAR_BASE := {
 	"merchant": 27,
@@ -370,7 +366,7 @@ func _build_portrait(parent: HBoxContainer) -> void:
 
 	if _ARCHETYPE_ROW.has(archetype):
 		row = _ARCHETYPE_ROW[archetype] + body_type * _BODY_TYPE_ROW_OFFSET
-	elif role in _COMMONER_ROLES:
+	elif role in NpcVisuals.COMMONER_ROLES:
 		row = 4 + body_type * _BODY_TYPE_ROW_OFFSET
 	elif clothing_var > 0 and _CLOTHING_VAR_BASE.has(faction):
 		row = _CLOTHING_VAR_BASE[faction] + (clothing_var - 1)

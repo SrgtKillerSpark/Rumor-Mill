@@ -1018,10 +1018,6 @@ const _PORTRAIT_FACTION_ROW := {"merchant": 0, "noble": 1, "clergy": 2}
 const _PORTRAIT_ARCHETYPE_ROW := {
 	"guard_civic": 3, "tavern_staff": 5, "scholar": 6, "elder": 7, "spy": 8,
 }
-const _PORTRAIT_COMMONER_ROLES := [
-	"Craftsman", "Mill Operator", "Storage Keeper", "Transport Worker",
-	"Merchant's Wife", "Traveling Merchant",
-]
 const _PORTRAIT_BODY_ROW_OFFSET := 9
 const _PORTRAIT_CLOTHING_BASE := {"merchant": 27, "noble": 30, "clergy": 33}
 
@@ -1059,7 +1055,7 @@ func _populate_briefing_portrait() -> void:
 
 	if _PORTRAIT_ARCHETYPE_ROW.has(archetype):
 		row = _PORTRAIT_ARCHETYPE_ROW[archetype] + body_type * _PORTRAIT_BODY_ROW_OFFSET
-	elif role in _PORTRAIT_COMMONER_ROLES:
+	elif role in NpcVisuals.COMMONER_ROLES:
 		row = 4 + body_type * _PORTRAIT_BODY_ROW_OFFSET
 	elif clothing_var > 0 and _PORTRAIT_CLOTHING_BASE.has(faction):
 		row = _PORTRAIT_CLOTHING_BASE[faction] + (clothing_var - 1)
