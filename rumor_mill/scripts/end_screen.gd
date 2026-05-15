@@ -1074,6 +1074,23 @@ func _build_ui() -> void:
 	_btn_main_menu.pressed.connect(_on_main_menu)
 	btn_row.add_child(_btn_main_menu)
 
+	# SPA-2725: Wire focus neighbors for keyboard navigation (left/right wrap-around).
+	# Order: Play Again / Try Again → Next Scenario → Main Menu
+	_btn_again.focus_neighbor_left      = _btn_main_menu.get_path()
+	_btn_again.focus_neighbor_right     = _btn_next.get_path()
+	_btn_again.focus_next               = _btn_next.get_path()
+	_btn_again.focus_previous           = _btn_main_menu.get_path()
+
+	_btn_next.focus_neighbor_left       = _btn_again.get_path()
+	_btn_next.focus_neighbor_right      = _btn_main_menu.get_path()
+	_btn_next.focus_next                = _btn_main_menu.get_path()
+	_btn_next.focus_previous            = _btn_again.get_path()
+
+	_btn_main_menu.focus_neighbor_left  = _btn_next.get_path()
+	_btn_main_menu.focus_neighbor_right = _btn_again.get_path()
+	_btn_main_menu.focus_next           = _btn_again.get_path()
+	_btn_main_menu.focus_previous       = _btn_next.get_path()
+
 
 func _make_card() -> PanelContainer:
 	var card := PanelContainer.new()

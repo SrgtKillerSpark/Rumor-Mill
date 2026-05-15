@@ -88,6 +88,23 @@ func _ready() -> void:
 			_checkboxes.append(cb)
 			cb.toggled.connect(_on_checkbox_toggled.bind(i))
 
+	# SPA-2725: Wire focus neighbors on checkboxes for keyboard navigation.
+	for i in _checkboxes.size():
+		var prev: CheckBox = _checkboxes[(i - 1 + _checkboxes.size()) % _checkboxes.size()]
+		var next: CheckBox = _checkboxes[(i + 1) % _checkboxes.size()]
+		_checkboxes[i].focus_neighbor_top    = prev.get_path()
+		_checkboxes[i].focus_neighbor_bottom = next.get_path()
+		_checkboxes[i].focus_next            = next.get_path()
+		_checkboxes[i].focus_previous        = prev.get_path()
+		# Add amber focus ring if not already styled.
+		if not _checkboxes[i].has_theme_stylebox_override("focus"):
+			var focus_ring := StyleBoxFlat.new()
+			focus_ring.bg_color = Color(0, 0, 0, 0)
+			focus_ring.set_border_width_all(2)
+			focus_ring.border_color = Color(0.92, 0.78, 0.12, 0.8)
+			focus_ring.set_content_margin_all(4)
+			_checkboxes[i].add_theme_stylebox_override("focus", focus_ring)
+
 	# Wire BEGIN DAY button.
 	if _begin_day_btn != null:
 		_begin_day_btn.pressed.connect(_on_begin_day_pressed)
@@ -213,6 +230,10 @@ func _show_overlay(day: int) -> void:
 	# Dim backdrop fades in.
 	_fade_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_fade_tween.tween_property(self, "modulate:a", 1.0, 0.3)
+
+	# SPA-2725: Grab focus on first checkbox for keyboard navigation.
+	if not _checkboxes.is_empty():
+		_checkboxes[0].call_deferred("grab_focus")
 
 	# Planning panel slides up from below.
 	if _planning_panel != null:
@@ -505,7 +526,7 @@ func _evaluate_priorities() -> void:
 						child.add_theme_color_override("font_color", Color(0.30, 0.85, 0.35, 0.9))
 						child.text = "✓ " + label_pdef.label
 					else:
-						child.add_theme_color_override("font_color", Color(0.55, 0.40, 0.30, 0.7))
+						child.add_theme_color_override("font_color", Color(0.75, 0.60, 0.40, 1.0))
 						child.text = "✗ " + label_pdef.label
 					idx += 1
 
@@ -572,7 +593,7 @@ func _build_skip_button() -> void:
 		_skip_btn.text = "Skip Planning"
 		_skip_btn.flat = true
 		_skip_btn.add_theme_font_size_override("font_size", 12)
-		_skip_btn.add_theme_color_override("font_color", Color(0.50, 0.44, 0.32, 0.7))
+		_skip_btn.add_theme_color_override("font_color", Color(0.75, 0.65, 0.50, 1.0))
 		_skip_btn.add_theme_color_override("font_hover_color", Color(0.70, 0.60, 0.42, 1.0))
 		_skip_btn.pressed.connect(func() -> void:
 			_selected_ids.clear()
