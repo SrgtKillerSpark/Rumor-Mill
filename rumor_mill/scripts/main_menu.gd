@@ -1202,6 +1202,10 @@ func _on_continue_pressed() -> void:
 			_main_error_label.text = "Save corrupted — " + err
 			_main_error_label.visible = true
 		return
+	if _main_error_label != null:
+		_main_error_label.text = "Loading..."
+		_main_error_label.add_theme_color_override("font_color", Color(0.91, 0.85, 0.70, 1.0))
+		_main_error_label.visible = true
 	begin_game.emit(scenario_id)
 
 
@@ -1993,6 +1997,9 @@ func _on_load_slot_selected(scenario_id: String, slot: int) -> void:
 			_load_status_label.text = "Load failed: " + err
 			_load_status_label.visible = true
 		return
+	if _load_status_label != null:
+		_load_status_label.text = "Loading..."
+		_load_status_label.visible = true
 	begin_game.emit(scenario_id)
 
 

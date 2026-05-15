@@ -258,18 +258,18 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 	var json := JSON.new()
 	var parse_err := json.parse(text)
 	if parse_err != OK:
-		return "Save file is corrupted (JSON parse error at line %d: %s)." % [
-			json.get_error_line(), json.get_error_message()]
+		push_warning("save_manager: JSON parse error at line %d: %s" % [
+			json.get_error_line(), json.get_error_message()])
+		return "This save file is corrupted and cannot be loaded."
 	var parsed: Variant = json.get_data()
 	if not (parsed is Dictionary):
-		return "Save file is corrupted (expected JSON object)."
+		return "This save file is corrupted and cannot be loaded."
 
 	var ver: int = int(parsed.get("version", 0))
 	if ver > SAVE_VERSION:
-		return "Save version %d is newer than game version %d. Update the game to load this save." % [
-			ver, SAVE_VERSION]
+		return "This save was created with a newer version of the game. Please update to load it."
 	if ver < 0:
-		return "Save version %d is invalid. Please start a new game." % ver
+		return "This save file is invalid. Please start a new game."
 	if ver < SAVE_VERSION:
 		# Back up the original file before applying migration steps so the
 		# pre-migration data is recoverable if migration fails or the game crashes.
@@ -281,13 +281,14 @@ static func prepare_load(scenario_id: String, slot: int) -> String:
 				push_warning("save_manager: could not create migration backup '%s.bak' (error %d) — continuing" % [path, bak_err])
 		var migration_err := _migrate_save_data(parsed, ver)
 		if migration_err != "":
-			return "Save migration failed: " + migration_err
+			push_warning("save_manager: migration error: " + migration_err)
+			return "This save is from an older version and could not be upgraded."
 
 	# Validate that essential top-level keys exist so apply_pending_load() won't crash.
 	var required_keys := ["scenario_id", "tick", "day"]
 	for key in required_keys:
 		if not parsed.has(key):
-			return "Save file is corrupted (missing required key '%s')." % key
+			return "This save file is corrupted and cannot be loaded."
 
 	# Warn if the scenario_id inside the file doesn't match what was requested.
 	var file_scenario: String = str(parsed.get("scenario_id", ""))
