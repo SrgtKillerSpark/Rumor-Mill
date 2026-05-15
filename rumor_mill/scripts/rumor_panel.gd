@@ -35,7 +35,7 @@ const PANEL_SEED      := 2
 # ── Colour palette ────────────────────────────────────────────────────────────
 # Parchment / UI base colours.
 const C_NPC_NAME       := Color(0.88, 0.80, 0.60, 1.0)   # NPC name label
-const C_LOCKED         := Color(0.42, 0.38, 0.30, 1.0)   # locked / unknown
+const C_LOCKED         := Color(0.54, 0.50, 0.40, 1.0)   # locked / unknown
 const C_TEMPLATE_TEXT  := Color(0.88, 0.88, 0.80, 1.0)   # claim template wording
 const C_COMPAT_HINT    := Color(0.60, 0.60, 0.58, 0.90)  # evidence compatible-claims hint
 
