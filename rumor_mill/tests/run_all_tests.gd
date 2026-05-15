@@ -100,6 +100,7 @@ extends RefCounted
 ##   • TestSocialGraphOverlay     — constants, initial state, pure-logic helpers, rumor event parsing (SPA-1000)
 ##   • TestReconController        — constants, coordinate conversion, belief_trend, initial state (SPA-1012)
 ##   • TestReconHud               — constants, pip/heat colours, initial state, contextual hint logic (SPA-1012)
+##   • TestForeshadowHud          — palette, layout/timing constants, initial state, setup(), _on_day_changed null-world guard (SPA-2745)
 ##   • TestRumorPanel             — constants, colour helpers, initial state, believability/spread estimates (SPA-1012)
 ##   • TestPauseMenu              — palette constants, static var, initial state, setup wiring (SPA-1015)
 ##   • TestSettingsMenu           — palette constants, initial state, _close() behaviour (SPA-1015)
@@ -278,6 +279,7 @@ const TestEventChoiceModal = preload("res://tests/test_event_choice_modal.gd")
 const TestFactionEventSystem = preload("res://tests/test_faction_event_system.gd")
 const TestFactionPalette = preload("res://tests/test_faction_palette.gd")
 const TestFeedbackSequence = preload("res://tests/test_feedback_sequence.gd")
+const TestForeshadowHud = preload("res://tests/test_foreshadow_hud.gd")
 const TestGameInputHandler = preload("res://tests/test_game_input_handler.gd")
 const TestGameState = preload("res://tests/test_game_state.gd")
 const TestGuidedDay2Manager  = preload("res://tests/test_guided_day2_manager.gd")
@@ -610,6 +612,9 @@ func _init() -> void:
 
 	print("\n── ReconHud ──")
 	TestReconHud.new().run()
+
+	print("\n── ForeshadowHud ──")
+	TestForeshadowHud.new().run()
 
 	print("\n── RumorPanel ──")
 	TestRumorPanel.new().run()
