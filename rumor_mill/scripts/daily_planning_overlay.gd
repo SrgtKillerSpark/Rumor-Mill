@@ -24,6 +24,7 @@ const PRIORITIES: Array[Dictionary] = [
 ]
 
 const MAX_SELECTIONS := 3
+const MAX_VISIBLE_PRIORITIES := 6
 
 # ── External references (set via setup()) ────────────────────────────────────
 var _world: Node2D = null
@@ -33,6 +34,8 @@ var _objective_hud: CanvasLayer = null
 # ── State ────────────────────────────────────────────────────────────────────
 var _selected_ids: Array[String] = []
 var _is_showing: bool = false
+## Merged priority list for the current scenario (scenario-specific first, then generic fill).
+var _merged_priorities: Array[Dictionary] = []
 ## Counters tracked during the day for priority evaluation.
 var _day_counters: Dictionary = {}
 ## Priorities selected for the current day (persists until next dawn).
@@ -143,6 +146,42 @@ func _on_dawn(day: int) -> void:
 	_show_overlay(day)
 
 
+## Build the merged priority list: scenario-specific first, then generic fill to MAX_VISIBLE_PRIORITIES.
+func _build_merged_priorities() -> void:
+	_merged_priorities.clear()
+	# Try to load scenario-specific priorities from scenarios.json.
+	var scenario_priorities: Array = _load_scenario_planning_priorities()
+	for sp in scenario_priorities:
+		_merged_priorities.append(sp)
+	# Fill remaining slots from the generic PRIORITIES pool (skip duplicates by id).
+	var used_ids: Array[String] = []
+	for mp in _merged_priorities:
+		used_ids.append(mp.id)
+	for gp in PRIORITIES:
+		if _merged_priorities.size() >= MAX_VISIBLE_PRIORITIES:
+			break
+		if gp.id not in used_ids:
+			_merged_priorities.append(gp)
+
+
+## Load planningPriorities from scenarios.json for the active scenario.
+func _load_scenario_planning_priorities() -> Array:
+	if _world == null or not ("active_scenario_id" in _world):
+		return []
+	var sid: String = _world.active_scenario_id
+	var file := FileAccess.open("res://data/scenarios.json", FileAccess.READ)
+	if file == null:
+		return []
+	var parsed = JSON.parse_string(file.get_as_text())
+	file.close()
+	if parsed == null or not (parsed is Array):
+		return []
+	for entry in parsed:
+		if entry is Dictionary and entry.get("scenarioId", "") == sid:
+			return entry.get("planningPriorities", [])
+	return []
+
+
 func _show_overlay(day: int) -> void:
 	if _is_showing:
 		return
@@ -155,6 +194,7 @@ func _show_overlay(day: int) -> void:
 	if speed_node != null and speed_node.has_method("_set_speed"):
 		speed_node._set_speed(speed_node.Speed.PAUSE)
 
+	_build_merged_priorities()
 	_populate_bulletin(day)
 	_populate_action_counts()
 	_reset_checkboxes()
@@ -214,11 +254,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_checkbox_toggled(_pressed: bool, index: int) -> void:
+	var plist: Array[Dictionary] = _merged_priorities if not _merged_priorities.is_empty() else PRIORITIES as Array[Dictionary]
 	_selected_ids.clear()
 	for i in range(_checkboxes.size()):
 		if _checkboxes[i].button_pressed:
-			if _selected_ids.size() < MAX_SELECTIONS:
-				_selected_ids.append(PRIORITIES[i].id)
+			if _selected_ids.size() < MAX_SELECTIONS and i < plist.size():
+				_selected_ids.append(plist[i].id)
 			else:
 				# Exceeded limit — uncheck this one.
 				_checkboxes[i].set_pressed_no_signal(false)
@@ -367,10 +408,11 @@ func _populate_action_counts() -> void:
 
 func _reset_checkboxes() -> void:
 	_selected_ids.clear()
+	var plist: Array[Dictionary] = _merged_priorities if not _merged_priorities.is_empty() else PRIORITIES as Array[Dictionary]
 	for i in range(_checkboxes.size()):
 		_checkboxes[i].set_pressed_no_signal(false)
-		if i < PRIORITIES.size():
-			_checkboxes[i].text = PRIORITIES[i].label
+		if i < plist.size():
+			_checkboxes[i].text = plist[i].label
 
 
 func _update_selection_hint() -> void:
@@ -418,6 +460,10 @@ func _push_priorities_to_hud() -> void:
 
 
 func _get_priority_def(pid: String) -> Dictionary:
+	# Search merged list first, then fall back to generic PRIORITIES.
+	for p in _merged_priorities:
+		if p.id == pid:
+			return p
 	for p in PRIORITIES:
 		if p.id == pid:
 			return p
@@ -580,6 +626,8 @@ func apply_load_data(data: Dictionary) -> void:
 	for p in saved_priorities:
 		_current_day_priorities.append(str(p))
 	_day_counters = data.get("day_counters", {}).duplicate()
+	# Rebuild merged priorities so _get_priority_def finds scenario-specific entries.
+	_build_merged_priorities()
 	# Restore HUD display of loaded priorities.
 	if not _current_day_priorities.is_empty():
 		_push_priorities_to_hud()

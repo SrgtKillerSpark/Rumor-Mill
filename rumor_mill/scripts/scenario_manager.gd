@@ -76,6 +76,11 @@ func load_scenario_data(data: Dictionary) -> void:
 	_active_scenario = int(parts[-1]) if parts.size() >= 2 else 0
 
 
+## Returns the active scenario number (1–6), or 0 if none loaded.
+func get_active_scenario_number() -> int:
+	return _active_scenario
+
+
 ## Returns the scenario title string.
 func get_title() -> String:
 	return _scenario_title

@@ -14,8 +14,8 @@
       "timeout": "The autumn tax rolls were signed. Lord Edric Fenn's seal was already dry.\n\nSomewhere the story you planted still traveled — changed, embellished, half-forgotten. But the window had closed. Your patron's patience had not."
     },
     "strategicDefeatHints": {
-      "exposed": "You drew too much heat in one district. Try varying your observation targets across multiple buildings.",
-      "timeout": "Edric's reputation didn't drop fast enough. Focus on high-credulity NPCs early -- they spread rumors faster."
+      "exposed": "You drew too much heat in one district. Vary your observation targets and wait a day between actions on the same NPC — suspicion fades overnight.",
+      "timeout": "The story needs more time to root. Seed through well-connected NPCs like merchants — they spread further and faster. Plant rumors early so they have days to compound."
     },
     "edgeOverrides": [
       {
@@ -249,10 +249,6 @@
         "0.50": "Reputation damaged",
         "0.75": "Near collapse"
       }
-    },
-    "strategicDefeatHints": {
-      "exposed": "You drew too much heat in one district. Vary your observation targets and wait a day between actions on the same NPC — suspicion fades overnight.",
-      "timeout": "The story needs more time to root. Seed through well-connected NPCs like merchants — they spread further and faster. Plant rumors early so they have days to compound."
     },
     "milestoneToasts": [
       {
@@ -548,7 +544,27 @@
     "suggestion_overrides": {
       "heat_spike_threshold": 60,
       "category_priorities": []
-    }
+    },
+    "planningPriorities": [
+      {
+        "id": "undermine_ally",
+        "label": "Undermine one of Edric's allies",
+        "eval_key": "whisper_clergy",
+        "bonus_desc": "+1 whisper token tomorrow"
+      },
+      {
+        "id": "spread_market_gossip",
+        "label": "Spread merchant-quarter gossip",
+        "eval_key": "observe_count",
+        "bonus_desc": "+1 observation tomorrow"
+      },
+      {
+        "id": "lay_low",
+        "label": "Lay low — let suspicion cool",
+        "eval_key": "any_action",
+        "bonus_desc": "+1 whisper token tomorrow"
+      }
+    ]
   },
   {
     "scenarioId": "scenario_2",
@@ -565,8 +581,8 @@
       "timeout": "The autumn market closed without incident. Alys the Herb-Wife was still there on the last day, packing her unsold stock slowly, in no hurry at all.\n\nThe Midwife's customers had not come back. The twenty days were gone."
     },
     "strategicDefeatHints": {
-      "contradicted": "The illness rumor reached Sister Maren. Keep your seeding confined to the merchant quarter -- Sybil, Nell, and Greta are safe initial targets.",
-      "timeout": "You needed 7 believers but didn't reach them. Seed through well-connected NPCs who talk to multiple clusters."
+      "contradicted": "The illness rumor reached Sister Maren. Keep seeding through the merchant quarter and stay away from clergy circles — Sybil, Nell, and Greta believe fastest.",
+      "timeout": "Seven believers takes steady seeding. Focus on the most credulous NPCs first, then let the chain spread naturally. Use evidence items to accelerate uptake."
     },
     "edgeOverrides": [
       {
@@ -781,7 +797,8 @@
       },
       {
         "npcId": "maren_nun",
-        "credulity": 0.2
+        "credulity": 0.2,
+        "role": "investigator"
       }
     ],
     "startingReputations": {},
@@ -806,10 +823,6 @@
         "0.50": "Panic growing",
         "0.75": "Town gripped by fear"
       }
-    },
-    "strategicDefeatHints": {
-      "contradicted": "The illness rumor reached Sister Maren. Keep seeding through the merchant quarter and stay away from clergy circles — Sybil, Nell, and Greta believe fastest.",
-      "timeout": "Seven believers takes steady seeding. Focus on the most credulous NPCs first, then let the chain spread naturally. Use evidence items to accelerate uptake."
     },
     "milestoneToasts": [
       {
@@ -1132,7 +1145,27 @@
         "illness",
         "claim_type"
       ]
-    }
+    },
+    "planningPriorities": [
+      {
+        "id": "spread_illness",
+        "label": "Spread illness whispers at the well",
+        "eval_key": "whisper_clergy",
+        "bonus_desc": "+1 whisper token tomorrow"
+      },
+      {
+        "id": "convince_skeptic",
+        "label": "Convince a skeptic with evidence",
+        "eval_key": "observe_count",
+        "bonus_desc": "+1 observation tomorrow"
+      },
+      {
+        "id": "check_resistance",
+        "label": "Check who still resists",
+        "eval_key": "journal_opened",
+        "bonus_desc": "+1 evidence insight"
+      }
+    ]
   },
   {
     "scenarioId": "scenario_3",
@@ -1149,7 +1182,8 @@
       "timeout": "The winter festival nominations were read at dawn.\n\nCalder Fenn's name drew polite applause. Tomas Reeve's drew the same.\n\nLady Isolde's face, when you passed her in the corridor, told you everything about whether there would be further work."
     },
     "strategicDefeatHints": {
-      "calder_implicated": "Calder's reputation dropped below 35. Use Praise rumors carefully -- too many can draw scrutiny."
+      "calder_implicated": "The rival agent turned your own campaign against Calder. Use the Disrupt button in the Scenario HUD early before their intensity spikes, and avoid over-seeding Calder.",
+      "timeout": "The two-front war demands constant pressure on both targets. Use Disrupt to buy time and prioritize Tomas's scandal — his reputation falls faster than Calder's rises."
     },
     "edgeOverrides": [
       {
@@ -1409,10 +1443,6 @@
         "0.50": "Power shifting",
         "0.75": "Succession within reach"
       }
-    },
-    "strategicDefeatHints": {
-      "calder_implicated": "The rival agent turned your own campaign against Calder. Use the Disrupt button in the Scenario HUD early before their intensity spikes, and avoid over-seeding Calder.",
-      "timeout": "The two-front war demands constant pressure on both targets. Use Disrupt to buy time and prioritize Tomas's scandal — his reputation falls faster than Calder's rises."
     },
     "milestoneToasts": [
       {
@@ -1764,7 +1794,27 @@
         "dual_target",
         "claim_type"
       ]
-    }
+    },
+    "planningPriorities": [
+      {
+        "id": "boost_calder",
+        "label": "Boost Calder's standing",
+        "eval_key": "whisper_clergy",
+        "bonus_desc": "+1 whisper token tomorrow"
+      },
+      {
+        "id": "undercut_tomas",
+        "label": "Undercut Tomas's reputation",
+        "eval_key": "observe_count",
+        "bonus_desc": "+1 observation tomorrow"
+      },
+      {
+        "id": "rally_supporter",
+        "label": "Rally a faction supporter",
+        "eval_key": "bribe_count",
+        "bonus_desc": "+1 bribe charge"
+      }
+    ]
   },
   {
     "scenarioId": "scenario_4",
@@ -1781,7 +1831,8 @@
       "timeout": "Twenty days passed. Brother Cornelius presented his findings to the Bishop's clerk with the quiet satisfaction of a man whose work was already done.\n\nThe stories had taken root. The names on the writ were already ruined in every way that mattered. The formal verdict was a formality."
     },
     "strategicDefeatHints": {
-      "reputation_collapsed": "The Inquisitor's accusations overwhelmed your counter-rumors. Prioritize the most vulnerable target (Finn) and use Praise proactively, not reactively."
+      "reputation_collapsed": "Prioritize the most vulnerable target (Finn) and use Praise proactively before their reputation falls below the threshold. Counter the Inquisitor's moves the same day they happen.",
+      "timeout": "The Inquisitor accelerates late in the scenario. Counter each accusation immediately — do not let reputations drift before responding. Praise rumours work fastest through allied NPCs."
     },
     "edgeOverrides": [
       {
@@ -2006,10 +2057,6 @@
         "0.50": "Defenses tested",
         "0.75": "Safety almost secured"
       }
-    },
-    "strategicDefeatHints": {
-      "reputation_collapsed": "Prioritize the most vulnerable target (Finn) and use Praise proactively before their reputation falls below the threshold. Counter the Inquisitor's moves the same day they happen.",
-      "timeout": "The Inquisitor accelerates late in the scenario. Counter each accusation immediately — do not let reputations drift before responding. Praise rumours work fastest through allied NPCs."
     },
     "milestoneToasts": [
       {
@@ -2361,7 +2408,27 @@
         "heat_warning",
         "claim_type"
       ]
-    }
+    },
+    "planningPriorities": [
+      {
+        "id": "shield_npc",
+        "label": "Shield a protected NPC's reputation",
+        "eval_key": "whisper_clergy",
+        "bonus_desc": "+1 whisper token tomorrow"
+      },
+      {
+        "id": "deflect_inquisitor",
+        "label": "Deflect inquisitor attention",
+        "eval_key": "eavesdrop_count",
+        "bonus_desc": "+1 observation tomorrow"
+      },
+      {
+        "id": "gather_counter",
+        "label": "Gather counter-evidence",
+        "eval_key": "journal_opened",
+        "bonus_desc": "+1 evidence insight"
+      }
+    ]
   },
   {
     "scenarioId": "scenario_5",
@@ -2378,8 +2445,8 @@
       "timeout": "The votes were counted. Edric Fenn's name was called first, as always.\n\nAldric Vane came second — close enough to taste it, far enough to know it was over. Tomas Reeve's supporters consoled themselves with ale.\n\nYour patron did not send for you again."
     },
     "strategicDefeatHints": {
-      "aldric_destroyed": "Aldric's reputation crashed below 30. Balance attack on rivals with defense of your candidate.",
-      "timeout": "You needed Aldric leading by Day 15 for the endorsement. Plan your campaign timing around that deadline."
+      "aldric_destroyed": "Too much praise can backfire — over-seeding makes Aldric seem suspicious. Balance boost rumours with scandal against Edric and Tomas rather than flooding Aldric's reputation.",
+      "timeout": "Aldric needs to lead before Day 13 to capture the Prior's endorsement. Start boosting him through the merchant chain in the first week while seeding scandal against both rivals simultaneously."
     },
     "edgeOverrides": [
       {
@@ -2623,10 +2690,6 @@
         "0.50": "Momentum building",
         "0.75": "Victory in sight"
       }
-    },
-    "strategicDefeatHints": {
-      "aldric_destroyed": "Too much praise can backfire — over-seeding makes Aldric seem suspicious. Balance boost rumours with scandal against Edric and Tomas rather than flooding Aldric's reputation.",
-      "timeout": "Aldric needs to lead before Day 13 to capture the Prior's endorsement. Start boosting him through the merchant chain in the first week while seeding scandal against both rivals simultaneously."
     },
     "milestoneToasts": [
       {
@@ -3009,7 +3072,27 @@
         "faction_momentum",
         "claim_type"
       ]
-    }
+    },
+    "planningPriorities": [
+      {
+        "id": "campaign_market",
+        "label": "Campaign for Aldric at the market",
+        "eval_key": "observe_count",
+        "bonus_desc": "+1 observation tomorrow"
+      },
+      {
+        "id": "discredit_rival",
+        "label": "Discredit a rival candidate",
+        "eval_key": "whisper_clergy",
+        "bonus_desc": "+1 whisper token tomorrow"
+      },
+      {
+        "id": "secure_endorsement",
+        "label": "Secure a faction endorsement",
+        "eval_key": "bribe_count",
+        "bonus_desc": "+1 bribe charge"
+      }
+    ]
   },
   {
     "scenarioId": "scenario_6",
@@ -3027,8 +3110,9 @@
       "timeout": "Twenty days passed. The ledger sat in Marta's locked chest, still waiting for the right moment.\n\nThe right moment never came. Aldric Vane's reputation was bruised but intact. The guild closed its books for the season, and with them, the window for an audit.\n\nMarta Coin paid you the second half of your fee without a word. You both knew it had been wasted."
     },
     "strategicDefeatHints": {
-      "marta_silenced": "Marta's reputation collapsed. Dedicate some whisper tokens to praise-defending her while attacking Aldric.",
-      "exposed": "The heat ceiling is 55 -- lower than previous scenarios. Route through clergy and commons, not the merchant guild."
+      "marta_silenced": "Marta's enemies can turn your campaign against her. Monitor her reputation daily and seed Praise through Sim Carter and Nell Picker — her closest allies — to keep her above 60.",
+      "exposed": "Heat reaches 55 quickly near Aldric's merchant network. Route all accusations through Finn Monk, Constance Widow, or Old Piety — never merchants. Wait a day between actions on the same NPC.",
+      "timeout": "Aldric's merchant allies actively block market-quarter rumors. Route entirely through clergy and commons chains — Finn Monk is your best primary seed target for accusations."
     },
     "edgeOverrides": [
       {
@@ -3287,11 +3371,6 @@
         "0.50": "Balance tipping",
         "0.75": "Reversal nearly complete"
       }
-    },
-    "strategicDefeatHints": {
-      "marta_silenced": "Marta's enemies can turn your campaign against her. Monitor her reputation daily and seed Praise through Sim Carter and Nell Picker — her closest allies — to keep her above 60.",
-      "exposed": "Heat reaches 55 quickly near Aldric's merchant network. Route all accusations through Finn Monk, Constance Widow, or Old Piety — never merchants. Wait a day between actions on the same NPC.",
-      "timeout": "Aldric's merchant allies actively block market-quarter rumors. Route entirely through clergy and commons chains — Finn Monk is your best primary seed target for accusations."
     },
     "milestoneToasts": [
       {
@@ -3666,6 +3745,26 @@
     "suggestion_overrides": {
       "heat_spike_threshold": 60,
       "category_priorities": []
-    }
+    },
+    "planningPriorities": [
+      {
+        "id": "expose_debts",
+        "label": "Expose Aldric's debts",
+        "eval_key": "observe_count",
+        "bonus_desc": "+1 observation tomorrow"
+      },
+      {
+        "id": "bolster_marta",
+        "label": "Bolster Marta's credibility",
+        "eval_key": "whisper_clergy",
+        "bonus_desc": "+1 whisper token tomorrow"
+      },
+      {
+        "id": "bribe_witness",
+        "label": "Bribe a key witness",
+        "eval_key": "bribe_count",
+        "bonus_desc": "+1 bribe charge"
+      }
+    ]
   }
 ]

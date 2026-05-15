@@ -146,6 +146,14 @@ func _compute_suggestions() -> Array:
 		if _world_ref.rumor_engine.has_method("get_active_count"):
 			active_rumors = _world_ref.rumor_engine.get_active_count()
 
+	# ── S2: Clergy contradiction-risk (slot 0, highest priority) ────────────
+	# SPA-2653: When a clergy investigator is evaluating illness rumors about
+	# Alys Herbwife, warn the player before the 3x decay contradiction lands.
+	var npcs_ref: Array = _world_ref.npcs if "npcs" in _world_ref else []
+	var clergy_suggestion: Dictionary = _build_clergy_investigation_suggestion(npcs_ref)
+	if not clergy_suggestion.is_empty():
+		suggestions.append(clergy_suggestion)
+
 	# Priority 1: No observations yet — tell them to observe
 	if not has_observations and actions_left > 0:
 		suggestions.append({
@@ -192,3 +200,62 @@ func _compute_suggestions() -> Array:
 		suggestions.resize(3)
 
 	return suggestions
+
+
+## SPA-2653: Returns a high-priority suggestion dict when a clergy investigator
+## (faction=clergy, role=investigator) has an illness rumor about Alys in
+## EVALUATING state — the precursor before contradiction fires.
+## Returns an empty dict when the condition is not met.
+func _build_clergy_investigation_suggestion(npcs: Array) -> Dictionary:
+	var sm: ScenarioManager = _world_ref.get("scenario_manager") if _world_ref != null else null
+	if sm == null:
+		return {}
+	if sm.get_active_scenario_number() != 2:
+		return {}
+	if sm.scenario_2_state != ScenarioManager.ScenarioState.ACTIVE:
+		return {}
+
+	if not _has_clergy_investigating(npcs, ScenarioManager.ALYS_HERBWIFE_ID):
+		return {}
+
+	var body: String = (
+		"Clergy investigation detected — [b]consider diverting attention or seeding"
+		+ " a counter-narrative among Merchants[/b] before contradiction lands."
+	)
+	if "selected_difficulty" in GameState and GameState.selected_difficulty == "apprentice":
+		body += (
+			"\n[color=#c8a054]Tip: Contradictions destroy entire rumor chains."
+			+ " Target NPCs who trust the Clergy less.[/color]"
+		)
+	return {
+		"title": "⚠ Clergy Investigation Detected",
+		"body": body,
+	}
+
+
+## SPA-2653: Returns true if any NPC in the list has faction=clergy,
+## role=investigator, and an EVALUATING illness rumor targeting alys_herbwife.
+## Extracted as a static helper so tests can call it without a full world.
+static func _has_clergy_investigating(npcs: Array, alys_id: String) -> bool:
+	for npc in npcs:
+		if npc == null:
+			continue
+		var nd: Dictionary = npc.get("npc_data") if npc.has_method("get") else {}
+		if nd.get("faction", "") != "clergy":
+			continue
+		if nd.get("role", "") != "investigator":
+			continue
+		if not ("rumor_slots" in npc):
+			continue
+		for rid in npc.rumor_slots:
+			var slot: Rumor.NpcRumorSlot = npc.rumor_slots[rid]
+			if slot.state != Rumor.RumorState.EVALUATING:
+				continue
+			if slot.rumor == null:
+				continue
+			if slot.rumor.claim_type != Rumor.ClaimType.ILLNESS:
+				continue
+			if slot.rumor.subject_npc_id != alys_id:
+				continue
+			return true
+	return false
