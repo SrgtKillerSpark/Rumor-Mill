@@ -197,6 +197,10 @@ extends RefCounted
 ##   • TestStoryRecap             — palette, initial node refs null (SPA-1042)
 ##   • TestMissionBriefing        — palette, sprite constants, faction rows, initial state (SPA-1042)
 ##   • TestMissionCard            — palette, layout constants, initial state (SPA-1042)
+##   • TestEventAftermathScreen   — palette, panel/timing constants, signal, initial state,
+##                                  _format_effects() all types + 4-line cap, SPA-2920 causality
+##                                  strings: no-world fallback, reputation/heat/instantBelievers/
+##                                  heatCeilingOverride/abilityBonuses, sub-line rendering (SPA-2745/2920)
 ##   • TestEventCard              — palette, dimension constants, initial node refs null (SPA-1042)
 ##   • TestEventChoiceModal       — dimension constants, initial node refs null (SPA-1042)
 ##   • TestStrategicOverview      — palette, AUTO_DISMISS, sprite constants, initial state (SPA-1042)
@@ -268,6 +272,7 @@ const TestDistrictOverlay = preload("res://tests/test_district_overlay.gd")
 const TestDistrictPropsRegistry = preload("res://tests/test_district_props_registry.gd")
 const TestDistrictPropsSpawner = preload("res://tests/test_district_props_spawner.gd")
 const TestEndScreen = preload("res://tests/test_end_screen.gd")
+const TestEventAftermathScreen = preload("res://tests/test_event_aftermath_screen.gd")
 const TestEventCard = preload("res://tests/test_event_card.gd")
 const TestEventChoiceModal = preload("res://tests/test_event_choice_modal.gd")
 const TestFactionEventSystem = preload("res://tests/test_faction_event_system.gd")
@@ -851,6 +856,9 @@ func _init() -> void:
 
 	print("\n── MissionCard ──")
 	TestMissionCard.new().run()
+
+	print("\n── EventAftermathScreen ──")
+	TestEventAftermathScreen.new().run()
 
 	print("\n── EventCard ──")
 	TestEventCard.new().run()
