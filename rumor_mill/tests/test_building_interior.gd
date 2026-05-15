@@ -1,6 +1,8 @@
 ## test_building_interior.gd — Unit tests for building_interior.gd (SPA-1078).
 ##
 ## Covers:
+##   • _on_roster_meta_clicked(): emits npc_selected with the clicked NPC ID
+##   • _on_roster_meta_clicked(): silently ignores an empty meta string
 ##   • ROSTER_RADIUS constant
 ##   • FACTION_LABEL constant: keys present, values contain colour markup
 ##   • Initial instance state (before _ready()): _open, _transitioning, _anim_tween,
@@ -69,6 +71,9 @@ func run() -> void:
 	var failed := 0
 
 	var tests := [
+		# _on_roster_meta_clicked()
+		"test_roster_meta_click_emits_npc_selected",
+		"test_roster_meta_click_ignores_empty_meta",
 		# Constants
 		"test_roster_radius",
 		"test_faction_label_has_merchant",
@@ -328,3 +333,27 @@ func test_refresh_roster_unknown_faction_capitalised() -> bool:
 	var ok: bool = bi._npc_roster.text.contains("Pirate")
 	(parts[2] as RichTextLabel).free()
 	return ok
+
+
+# ── _on_roster_meta_clicked() ────────────────────────────────────────────────
+
+## Clicking a roster link emits npc_selected with the NPC ID as the argument.
+func test_roster_meta_click_emits_npc_selected() -> bool:
+	var bi    := _make_bi()
+	var received_id: String = ""
+	bi.npc_selected.connect(func(npc_id: String) -> void:
+		received_id = npc_id
+	)
+	bi._on_roster_meta_clicked("npc_aldric")
+	return received_id == "npc_aldric"
+
+
+## An empty meta string must not emit npc_selected (guard clause check).
+func test_roster_meta_click_ignores_empty_meta() -> bool:
+	var bi    := _make_bi()
+	var fired: bool = false
+	bi.npc_selected.connect(func(_npc_id: String) -> void:
+		fired = true
+	)
+	bi._on_roster_meta_clicked("")
+	return not fired
