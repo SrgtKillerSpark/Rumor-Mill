@@ -378,6 +378,8 @@ func _build_ui() -> void:
 	_status_label.custom_minimum_size  = Vector2(240, 0)
 	_status_label.add_theme_font_size_override("font_size", 12)
 	_status_label.add_theme_color_override("font_color", Color(0.80, 0.75, 0.55, 1.0))
+	_status_label.add_theme_constant_override("outline_size", 2)
+	_status_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.7))
 	_status_label.process_mode = Node.PROCESS_MODE_ALWAYS
 	outer_vbox.add_child(_status_label)
 

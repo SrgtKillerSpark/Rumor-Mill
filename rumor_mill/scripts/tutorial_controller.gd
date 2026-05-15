@@ -400,7 +400,7 @@ func _update_step_counter(step_idx: int) -> void:
 		_step_counter_label = Label.new()
 		_step_counter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_step_counter_label.add_theme_font_size_override("font_size", 11)
-		_step_counter_label.add_theme_color_override("font_color", Color(0.60, 0.53, 0.42, 1.0))
+		_step_counter_label.add_theme_color_override("font_color", Color(0.80, 0.72, 0.55, 1.0))
 		_step_counter_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		# Append inside the banner's VBoxContainer so it sits below the hint text.
 		# Falls back to the banner root if no VBox is found.

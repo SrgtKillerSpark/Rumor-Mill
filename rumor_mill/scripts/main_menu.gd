@@ -558,6 +558,8 @@ func _build_main_panel() -> void:
 	_main_error_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_main_error_label.add_theme_font_size_override("font_size", 12)
 	_main_error_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.3, 1.0))
+	_main_error_label.add_theme_constant_override("outline_size", 2)
+	_main_error_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.7))
 	_main_error_label.visible = false
 	vbox.add_child(_main_error_label)
 
