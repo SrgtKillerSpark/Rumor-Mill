@@ -266,7 +266,7 @@ func _init_journal() -> void:
 		return
 	var intel_store: PlayerIntelStore = _world.intel_store
 	if _journal.has_method("setup"):
-		_journal.setup(_world, intel_store, _day_night)
+		_journal.setup(_world, intel_store, _day_night, recon_ctrl_ref, _rumor_panel)
 
 
 ## SPA-560: Mid-game narrative event choice modal.
