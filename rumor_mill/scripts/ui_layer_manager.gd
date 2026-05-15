@@ -35,6 +35,8 @@ var recon_ctrl_ref: Node = null
 var _pause_menu: CanvasLayer = null
 var _end_screen: CanvasLayer = null
 var _event_card: CanvasLayer = null
+var _foreshadow_hud: CanvasLayer = null
+var _event_aftermath: CanvasLayer = null
 var _visual_affordances: CanvasLayer = null
 var _milestone_notifier: CanvasLayer = null
 var _hud_tooltip: CanvasLayer = null
@@ -100,6 +102,8 @@ func setup_all(
 
 	_init_event_choice_modal()
 	_init_event_card()
+	_init_foreshadow_hud()
+	_init_event_aftermath()
 	_init_objective_hud()
 	_init_daily_planning()
 	_init_speed_hud()
@@ -292,6 +296,27 @@ func _init_event_card() -> void:
 	)
 
 
+## SPA-2691: Foreshadow HUD — visual cue 2 days before an event fires.
+func _init_foreshadow_hud() -> void:
+	_foreshadow_hud = preload("res://scripts/foreshadow_hud.gd").new()
+	_foreshadow_hud.name = "ForeshadowHUD"
+	_parent.add_child(_foreshadow_hud)
+	if _foreshadow_hud.has_method("setup"):
+		_foreshadow_hud.setup(_world, _day_night)
+
+
+## SPA-2691: Aftermath summary screen — shown after mid-game event resolution.
+func _init_event_aftermath() -> void:
+	if _world == null or _world.get("mid_game_event_agent") == null:
+		return
+	_event_aftermath = preload("res://scripts/event_aftermath_screen.gd").new()
+	_event_aftermath.name = "EventAftermathScreen"
+	_parent.add_child(_event_aftermath)
+	# Tell the choice modal not to unpause; aftermath screen handles it.
+	if event_choice_modal != null:
+		event_choice_modal.skip_unpause_on_dismiss = true
+
+
 func _on_mid_game_event_presented(event_data: Dictionary) -> void:
 	if event_choice_modal == null:
 		return
@@ -310,24 +335,58 @@ func _on_mid_game_event_choice_made(event_id: String, choice_index: int) -> void
 	if _world == null or _world.mid_game_event_agent == null:
 		return
 	var agent: MidGameEventAgent = _world.mid_game_event_agent
+
+	# SPA-2691: Capture effects before resolve so aftermath screen can display deltas.
+	var pending: Dictionary = agent.get_pending_event() if agent.has_method("get_pending_event") else {}
+	var choices: Array = pending.get("choices", [])
+	var effects: Dictionary = {}
+	if choice_index >= 0 and choice_index < choices.size():
+		effects = choices[choice_index].get("effects", {})
+
 	agent.resolve_choice(event_id, choice_index)
-	# The agent emits event_resolved with outcome text — show it in the modal.
-	# We connect this lazily to avoid permanent connection.
+
+	# Connect event_resolved lazily so aftermath can receive outcome_text.
 	if not agent.event_resolved.is_connected(_on_mid_game_event_resolved):
 		agent.event_resolved.connect(_on_mid_game_event_resolved)
 
+	# Store effects for use in aftermath screen on dismiss.
+	_last_event_effects = effects
+	_last_event_name    = str(pending.get("name", "Event"))
+
+
+## SPA-2691: Cached values set in _on_mid_game_event_choice_made for aftermath display.
+var _last_event_effects: Dictionary = {}
+var _last_event_name: String = ""
+
 
 func _on_mid_game_event_resolved(_event_id: String, _choice_index: int, outcome_text: String) -> void:
+	# SPA-2691: Show outcome inline in modal as before.
 	if event_choice_modal != null:
 		event_choice_modal.show_outcome(outcome_text)
 	# Journal entry for the outcome.
 	if _journal != null and _journal.has_method("push_timeline_event"):
 		var tick: int = _day_night.current_tick if _day_night != null else 0
 		_journal.push_timeline_event(tick, "[OUTCOME] %s" % outcome_text.substr(0, 80))
+	# Store outcome_text for aftermath screen.
+	_last_outcome_text = outcome_text
+
+
+## SPA-2691: Cached outcome text for the aftermath screen.
+var _last_outcome_text: String = ""
 
 
 func _on_mid_game_event_dismissed() -> void:
-	pass  # Modal handles unpausing; nothing extra needed.
+	# SPA-2691: Show aftermath screen after the player dismisses the choice modal.
+	if _event_aftermath != null and _event_aftermath.has_method("present"):
+		_event_aftermath.present(
+			_last_event_name,
+			_last_outcome_text,
+			_last_event_effects,
+			_world
+		)
+	else:
+		# No aftermath screen — unpause directly.
+		get_tree().paused = false
 
 
 func _init_objective_hud() -> void:

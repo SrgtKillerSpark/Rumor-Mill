@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-## event_card.gd — SPA-953: Parchment-style event card overlay with screen dim.
+## event_card.gd — SPA-953/SPA-2691: Parchment-style event card overlay with screen dim.
 ##
 ## Displayed whenever FactionEventSystem fires event_activated.  Pauses the game
 ## while visible and resumes on dismiss.  Procedurally built; no scene file needed.
@@ -93,13 +93,24 @@ func _build_ui(label: String, description: String, day: int) -> void:
 	_card.offset_bottom =  CARD_H * 0.5
 	_card.mouse_filter  = Control.MOUSE_FILTER_STOP
 
-	var card_style := StyleBoxFlat.new()
-	card_style.bg_color = C_PANEL_BG
-	card_style.border_color = C_ACCENT
-	card_style.set_border_width_all(2)
-	card_style.set_corner_radius_all(8)
-	card_style.set_content_margin_all(20)
-	_card.add_theme_stylebox_override("panel", card_style)
+	# SPA-2691: Use parchment texture when available, else dark flat fallback.
+	var parchment_tex: Texture2D = load("res://assets/textures/ui_parchment.png") \
+		if ResourceLoader.exists("res://assets/textures/ui_parchment.png") \
+		else null
+	if parchment_tex != null:
+		var card_style := StyleBoxTexture.new()
+		card_style.texture = parchment_tex
+		card_style.modulate_color = Color(0.20, 0.12, 0.04, 0.97)
+		card_style.set_content_margin_all(20)
+		_card.add_theme_stylebox_override("panel", card_style)
+	else:
+		var card_style := StyleBoxFlat.new()
+		card_style.bg_color = C_PANEL_BG
+		card_style.border_color = C_ACCENT
+		card_style.set_border_width_all(2)
+		card_style.set_corner_radius_all(8)
+		card_style.set_content_margin_all(20)
+		_card.add_theme_stylebox_override("panel", card_style)
 	add_child(_card)
 
 	# VBox for content.
