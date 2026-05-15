@@ -156,6 +156,20 @@ func log_evidence_verdict_used(evidence_id: String, verdict_phase: String, scena
 	})
 
 
+## Log a player attempt to attach evidence while target-shift cooldown is active (SPA-1772).
+## Fires when the player clicks/taps a greyed-out evidence button in rumor_panel.gd.
+## cooldown_remaining_days: days left on the active cooldown at the moment of the click.
+func log_target_shift_cooldown_blocked(evidence_type: String, target_npc_id: String, cooldown_remaining_days: int, day: int, scenario_id: String, difficulty: String) -> void:
+	log_event("target_shift_cooldown_blocked", {
+		"evidence_type":           evidence_type,
+		"target_npc_id":           target_npc_id,
+		"cooldown_remaining_days": cooldown_remaining_days,
+		"day":                     day,
+		"scenario_id":             scenario_id,
+		"difficulty":              difficulty,
+	})
+
+
 ## Log a player evidence-collection action (observe or eavesdrop).
 ## Used to correlate recon activity with rumor propagation speed.
 func log_evidence_interaction(action_type: String, success: bool, day: int, scenario_id: String) -> void:
