@@ -46,7 +46,7 @@ const C_PANEL_BG     := Color(0.10, 0.07, 0.05, 0.92)   ## tooltip / popup backg
 const C_PANEL_BORDER := Color(0.55, 0.38, 0.18, 1.0)    ## border accent
 
 ## Emitted after every action attempt (success or failure).
-signal action_performed(message: String, success: bool, is_witness_account: bool)
+signal action_performed(message: String, success: bool)
 
 ## Emitted when a high-temperament NPC detects the player eavesdropping.
 signal player_exposed
@@ -65,10 +65,6 @@ signal valid_eavesdrop_hovered
 ## SPA-775: Emitted when the Read the Room popup opens for a building.
 signal read_the_room_shown(location_id: String)
 
-## SPA-2451: Emitted the very first time a Witness Account evidence item is acquired.
-## Used by tutorial_wiring to show the cooldown-bypass notification.
-signal witness_account_first_acquired
-
 var _world_ref:          Node2D           = null
 var _intel_store:        PlayerIntelStore = null
 var _analytics_manager                   = null  ## SPA-1530: set via set_analytics_manager()
@@ -80,7 +76,6 @@ var _hovered_location: String = ""
 # ── Tutorial hint emission guards ─────────────────────────────────────────────
 var _building_hover_fired:      bool = false
 var _eavesdrop_hover_fired:     bool = false
-var _witness_account_fired:     bool = false  ## SPA-2451: first-acquisition gate
 
 # ── Hover visual nodes (created in setup) ────────────────────────────────────
 var _tooltip_canvas: CanvasLayer = null
@@ -549,7 +544,7 @@ func _hit_test_location(world_pos: Vector2) -> String:
 
 func _try_observe(location_id: String) -> void:
 	# SPA-2432: mid-game evidence drop rate multiplier (1.5x for days 4-12).
-	var _dn = _world_ref.day_night if _world_ref != null else null
+	var _dn := _world_ref.day_night if _world_ref != null else null
 	var _current_day: int = _dn.current_day if _dn != null and "current_day" in _dn else 1
 	var drop_multiplier: float = get_drop_rate_multiplier(_current_day)
 	var drop_multiplier_active: bool = drop_multiplier > 1.0
@@ -559,7 +554,7 @@ func _try_observe(location_id: String) -> void:
 		and randf() < (0.6 * drop_multiplier)
 
 	if not _intel_store.try_spend_action():
-		emit_signal("action_performed", "No Recon Actions remaining today.", false, false)
+		emit_signal("action_performed", "No Recon Actions remaining today.", false)
 		return
 
 	if forged_doc:
@@ -631,7 +626,7 @@ func _try_observe(location_id: String) -> void:
 		_flash_bldg_evidence_acquired()
 		msg += "\n[+] Incriminating Artifact acquired."
 
-	emit_signal("action_performed", msg, true, false)
+	emit_signal("action_performed", msg, true)
 	_show_observe_sparkle()
 	# Cancel any pending outdoor-ambient clear timer from a previous observe.
 	_ambient_clear_seq += 1
@@ -661,11 +656,11 @@ func _try_eavesdrop(target: Node2D) -> void:
 		var name_a: String = target.npc_data.get("name", "?")
 		emit_signal("action_performed",
 			"%s is not in conversation (no one within %d tiles)." % [name_a, EAVESDROP_RANGE_TILES],
-			false, false)
+			false)
 		return
 
 	if not _intel_store.try_spend_action():
-		emit_signal("action_performed", "No Recon Actions remaining today.", false, false)
+		emit_signal("action_performed", "No Recon Actions remaining today.", false)
 		return
 
 	# Detection risk: temperament > 0.7 → 20% chance of being noticed.
@@ -679,7 +674,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 		emit_signal("action_performed",
 			"\"%s seemed to glance your way.\" [+4 suspicion] (%d Recon left)" % [
 				name_a, _intel_store.recon_actions_remaining],
-			false, false)
+			false)
 		if _world_ref != null and _world_ref.active_scenario_id == "scenario_1":
 				player_exposed.emit()
 		return
@@ -687,7 +682,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 	# Record relationship intel.
 	var tick    := _current_tick()
 	# SPA-2432: mid-game evidence drop rate multiplier (1.5x for days 4-12).
-	var _dn2 = _world_ref.day_night if _world_ref != null else null
+	var _dn2 := _world_ref.day_night if _world_ref != null else null
 	var _cur_day2: int = _dn2.current_day if _dn2 != null and "current_day" in _dn2 else 1
 	var ea_drop_multiplier: float = get_drop_rate_multiplier(_cur_day2)
 	var ea_drop_multiplier_active: bool = ea_drop_multiplier > 1.0
@@ -750,12 +745,8 @@ func _try_eavesdrop(target: Node2D) -> void:
 			_analytics_manager.log_evidence_acquired("witness_account", "eavesdrop_npc", ea_drop_multiplier_active)
 		_flash_npc_evidence_acquired(target)
 		msg += "\n[+] Witness Account acquired."
-		# SPA-2451: one-shot signal so tutorial_wiring can show cooldown-bypass notification.
-		if not _witness_account_fired:
-			_witness_account_fired = true
-			witness_account_first_acquired.emit()
 
-	emit_signal("action_performed", msg, true, witness_account)
+	emit_signal("action_performed", msg, true)
 	_show_eavesdrop_success(target)
 	# Trigger an "eavesdrop" dialogue bubble on the target NPC.
 	target.show_eavesdropped()
@@ -1124,27 +1115,27 @@ func _try_bribe(target: Node2D) -> void:
 		var calder_faction := _get_calder_faction()
 		if not calder_faction.is_empty() and npc_faction == calder_faction:
 			emit_signal("action_performed",
-				"This NPC is too close to Calder — they would report the approach.", false, false)
+				"This NPC is too close to Calder — they would report the approach.", false)
 			return
 
 	# SPA-593: pre-check eligibility before spending any resources.
 	if not target.has_evaluating_rumor():
 		emit_signal("action_performed",
-			"No pending rumor to reinforce — %s is not currently evaluating." % npc_name, false, false)
+			"No pending rumor to reinforce — %s is not currently evaluating." % npc_name, false)
 		return
 	if _intel_store.bribe_charges <= 0:
-		emit_signal("action_performed", "No Favors remaining for bribe.", false, false)
+		emit_signal("action_performed", "No Favors remaining for bribe.", false)
 		return
 
 	# Cost: 1 Recon Action + 1 Whisper Token.
 	if not _intel_store.try_spend_action():
-		emit_signal("action_performed", "No Recon Actions remaining for bribe.", false, false)
+		emit_signal("action_performed", "No Recon Actions remaining for bribe.", false)
 		return
 	if not _intel_store.try_spend_whisper():
 		# Refund recon action.
 		_intel_store.recon_actions_remaining = mini(
 			_intel_store.recon_actions_remaining + 1, PlayerIntelStore.MAX_DAILY_ACTIONS)
-		emit_signal("action_performed", "No Whisper Tokens remaining for bribe.", false, false)
+		emit_signal("action_performed", "No Whisper Tokens remaining for bribe.", false)
 		return
 
 	# Execute: force EVALUATING → BELIEVE.
@@ -1155,7 +1146,7 @@ func _try_bribe(target: Node2D) -> void:
 			_intel_store.recon_actions_remaining + 1, PlayerIntelStore.MAX_DAILY_ACTIONS)
 		_intel_store.whisper_tokens_remaining = mini(
 			_intel_store.whisper_tokens_remaining + 1, PlayerIntelStore.MAX_DAILY_WHISPERS)
-		emit_signal("action_performed", "Bribe failed — %s is no longer evaluating." % npc_name, false, false)
+		emit_signal("action_performed", "Bribe failed — %s is no longer evaluating." % npc_name, false)
 		return
 
 	# Consume bribe charge.
@@ -1167,7 +1158,7 @@ func _try_bribe(target: Node2D) -> void:
 	var tick := _current_tick()
 	emit_signal("action_performed",
 		"Bribed %s — they now believe the rumor.  (%d Favors left)" % [
-			npc_name, _intel_store.bribe_charges], true, false)
+			npc_name, _intel_store.bribe_charges], true)
 	emit_signal("bribe_executed", npc_name, tick)
 
 

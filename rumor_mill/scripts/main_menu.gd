@@ -103,7 +103,7 @@ const STATS_PANEL_MIN_W   := 480;  const STATS_PANEL_MAX_W   := 680
 const STATS_PANEL_MIN_H   := 400;  const STATS_PANEL_MAX_H   := 520
 const STATS_PANEL_VP_W    := 0.53; const STATS_PANEL_VP_H    := 0.72
 
-enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS, LOAD }
+enum Phase { MAIN, SELECT, BRIEFING, INTRO, SETTINGS, CREDITS, STATS, LOAD_GAME }
 
 # ── State ─────────────────────────────────────────────────────────────────────
 var _phase:              Phase     = Phase.MAIN
@@ -115,9 +115,6 @@ var _backdrop:           ColorRect  = null
 var _panel_main:         Control    = null
 var _panel_select:       Control    = null
 var _panel_briefing:     Control    = null
-# SPA-2578: Load Game panel (Phase.LOAD)
-var _panel_load:         Control    = null
-var _load_body:          VBoxContainer = null   # rebuilt each time Load phase is shown
 
 # Select-phase refs
 var _scenario_cards:     Array      = []  # Array[PanelContainer]
@@ -128,12 +125,15 @@ var _how_to_play:        CanvasLayer = null
 
 # Continue button (disabled when no saves exist)
 var _btn_continue:       Button      = null
-# SPA-2578: Status label for main-panel error messages (e.g. corrupt-save failure).
-var _status_label_main:  Label       = null
-# SPA-2467: Corrupt-save action row — shown alongside error when delete is possible.
-var _corrupt_action_row: HBoxContainer = null
-var _corrupt_scenario_id: String = ""
-var _corrupt_slot: int = -1
+
+# SPA-2450: Load Game button and slot-picker panel
+var _btn_load_game:      Button        = null
+var _panel_load_game:    Control       = null
+var _load_slots_vbox:    VBoxContainer = null
+var _load_status_label:  Label         = null
+
+# SPA-2450: Inline error label on the main panel for save-load errors
+var _main_error_label:   Label         = null
 
 # SPA-589: Atmospheric dusk background elements
 var _dusk_sky:           ColorRect   = null  # gradient sky background
@@ -186,7 +186,7 @@ func _ready() -> void:
 	_build_settings_panel()
 	_build_credits_panel()
 	_build_stats_panel()
-	_build_load_panel()
+	_build_load_game_panel()
 	_build_version_label()
 	_how_to_play = preload("res://scripts/how_to_play.gd").new()
 	_how_to_play.name = "HowToPlay"
@@ -237,14 +237,14 @@ func _show_phase(p: Phase) -> void:
 
 	# Map phases to their panel nodes.
 	var panels: Dictionary = {
-		Phase.MAIN:     _panel_main,
-		Phase.SELECT:   _panel_select,
-		Phase.BRIEFING: _panel_briefing,
-		Phase.INTRO:    _panel_intro,
-		Phase.SETTINGS: _panel_settings,
-		Phase.CREDITS:  _panel_credits,
-		Phase.STATS:    _panel_stats,
-		Phase.LOAD:     _panel_load,
+		Phase.MAIN:      _panel_main,
+		Phase.SELECT:    _panel_select,
+		Phase.BRIEFING:  _panel_briefing,
+		Phase.INTRO:     _panel_intro,
+		Phase.SETTINGS:  _panel_settings,
+		Phase.CREDITS:   _panel_credits,
+		Phase.STATS:     _panel_stats,
+		Phase.LOAD_GAME: _panel_load_game,
 	}
 
 	# Determine outgoing and incoming panels.
@@ -287,9 +287,6 @@ func _show_phase(p: Phase) -> void:
 	# Rebuild stats panel content each time it's shown so it reflects latest data.
 	if p == Phase.STATS:
 		_rebuild_stats_content()
-	# Rebuild load panel each time it's shown so save list is current.
-	if p == Phase.LOAD:
-		_rebuild_load_content()
 	# Set initial keyboard focus for the active phase.
 	call_deferred("_set_phase_focus", p)
 
@@ -312,8 +309,8 @@ func _set_phase_focus(p: Phase) -> void:
 			_grab_first_button(_panel_credits)
 		Phase.STATS:
 			_grab_first_button(_panel_stats)
-		Phase.LOAD:
-			_grab_first_button(_panel_load)
+		Phase.LOAD_GAME:
+			_grab_first_button(_panel_load_game)
 
 
 ## Finds and focuses the first Button descendant of the given node.
@@ -348,9 +345,6 @@ func _unhandled_input(event: InputEvent) -> void:
 					get_viewport().set_input_as_handled()
 				Phase.STATS:
 					_on_stats_back()
-					get_viewport().set_input_as_handled()
-				Phase.LOAD:
-					_show_phase(Phase.MAIN)
 					get_viewport().set_input_as_handled()
 
 
@@ -525,10 +519,10 @@ func _build_main_panel() -> void:
 	btn_row.add_child(_btn_continue)
 	_refresh_continue_button()
 
-	# SPA-2578: Load Game — opens the slot picker for all scenarios.
-	var btn_load_game := _make_button("Load Game", 200)
-	btn_load_game.pressed.connect(_on_load_game_pressed)
-	btn_row.add_child(btn_load_game)
+	# SPA-2450: Load Game — opens slot picker showing all saves.
+	_btn_load_game = _make_button("Load Game", 200)
+	_btn_load_game.pressed.connect(_on_load_game_pressed)
+	btn_row.add_child(_btn_load_game)
 
 	var btn_howto := _make_button("How to Play", 200)
 	btn_howto.pressed.connect(_on_how_to_play_pressed)
@@ -551,33 +545,13 @@ func _build_main_panel() -> void:
 		btn_quit.pressed.connect(get_tree().quit)
 		btn_row.add_child(btn_quit)
 
-	# SPA-2578: Status label — shown when Continue or Load fails (e.g. corrupt save).
-	_status_label_main = Label.new()
-	_status_label_main.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status_label_main.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_status_label_main.custom_minimum_size = Vector2(180, 0)
-	_status_label_main.add_theme_font_size_override("font_size", 12)
-	_status_label_main.add_theme_color_override("font_color", Color(1.0, 0.45, 0.35, 1.0))
-	_status_label_main.visible = false
-	vbox.add_child(_status_label_main)
-
-	# SPA-2467: Corrupt-save action row — Delete / Ignore buttons shown when a
-	# save file is detected as corrupt so the player has a clear recovery path.
-	_corrupt_action_row = HBoxContainer.new()
-	_corrupt_action_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_corrupt_action_row.add_theme_constant_override("separation", 8)
-	_corrupt_action_row.visible = false
-	var btn_delete_save := Button.new()
-	btn_delete_save.text = "Delete Corrupt Save"
-	btn_delete_save.add_theme_font_size_override("font_size", 12)
-	btn_delete_save.pressed.connect(_on_corrupt_save_delete)
-	_corrupt_action_row.add_child(btn_delete_save)
-	var btn_ignore_corrupt := Button.new()
-	btn_ignore_corrupt.text = "Ignore"
-	btn_ignore_corrupt.add_theme_font_size_override("font_size", 12)
-	btn_ignore_corrupt.pressed.connect(_on_corrupt_save_ignore)
-	_corrupt_action_row.add_child(btn_ignore_corrupt)
-	vbox.add_child(_corrupt_action_row)
+	# SPA-2450: Error label — visible only when Continue fails (corrupt/missing save).
+	_main_error_label = Label.new()
+	_main_error_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_main_error_label.add_theme_font_size_override("font_size", 12)
+	_main_error_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.3, 1.0))
+	_main_error_label.visible = false
+	vbox.add_child(_main_error_label)
 
 	# SPA-1099: Bottom expand-fill spacer — mirrors spacer_top to center
 	# all content vertically within the full-rect VBox.
@@ -1191,14 +1165,16 @@ func _refresh_continue_button() -> void:
 		_btn_continue.tooltip_text = "No saved games found."
 	else:
 		_btn_continue.disabled = false
-		var scenario_id_key: String = recent.get("scenario_id", "")
+		# SPA-2450 (Finding #3): resolve title from _scenarios list as primary source;
+		# fall back to scenario_title stored in the save, then bare scenario_id.
+		var sid: String = recent.get("scenario_id", "")
 		var title_str: String = ""
 		for sc in _scenarios:
-			if sc.get("scenarioId", "") == scenario_id_key:
-				title_str = sc.get("title", "")
+			if sc.get("scenarioId", "") == sid:
+				title_str = sc.get("title", sid)
 				break
 		if title_str.is_empty():
-			title_str = scenario_id_key
+			title_str = recent.get("scenario_title", sid)
 		_btn_continue.tooltip_text = "%s — Day %d" % [title_str, recent.get("day", 1)]
 
 
@@ -1215,7 +1191,10 @@ func _on_continue_pressed() -> void:
 	var err: String = SaveManager.prepare_load(scenario_id, slot)
 	if not err.is_empty():
 		push_warning("MainMenu: continue failed — " + err)
-		_show_corrupt_save_error("Cannot continue: " + err, scenario_id, slot)
+		# SPA-2450: Show user-visible error rather than silently dropping the action.
+		if _main_error_label != null:
+			_main_error_label.text = "Save corrupted — " + err
+			_main_error_label.visible = true
 		return
 	begin_game.emit(scenario_id)
 
@@ -1903,25 +1882,25 @@ func _on_stats_reset() -> void:
 	_rebuild_stats_content()
 
 
-# ── Phase 8: Load Game panel (SPA-2578) ──────────────────────────────────────
+# ── Phase 8: Load Game panel (SPA-2450) ──────────────────────────────────────
 
-func _build_load_panel() -> void:
+func _build_load_game_panel() -> void:
 	var vp := get_viewport().get_visible_rect().size
-	var pw := UILayoutConstants.clamp_to_viewport(vp.x, MED_PANEL_VP_W, MED_PANEL_MIN_W, MED_PANEL_MAX_W)
-	var ph := UILayoutConstants.clamp_to_viewport(vp.y, MED_PANEL_VP_H, MED_PANEL_MIN_H, MED_PANEL_MAX_H)
-	_panel_load = _make_parchment_panel(pw, ph)
-	add_child(_panel_load)
+	var pw := UILayoutConstants.clamp_to_viewport(vp.x, NARROW_PANEL_VP_W, NARROW_PANEL_MIN_W, NARROW_PANEL_MAX_W)
+	var ph := UILayoutConstants.clamp_to_viewport(vp.y, NARROW_PANEL_VP_H, NARROW_PANEL_MIN_H, NARROW_PANEL_MAX_H)
+	_panel_load_game = _make_panel(pw, ph)
+	add_child(_panel_load_game)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 12)
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_panel_load.add_child(vbox)
+	_panel_load_game.add_child(vbox)
 
 	var heading := Label.new()
 	heading.text = "Load Game"
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	heading.add_theme_font_size_override("font_size", 22)
-	heading.add_theme_color_override("font_color", C_HEADING)
+	heading.add_theme_font_size_override("font_size", 28)
+	heading.add_theme_color_override("font_color", C_TITLE)
 	vbox.add_child(heading)
 
 	vbox.add_child(_separator())
@@ -1931,140 +1910,88 @@ func _build_load_panel() -> void:
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(scroll)
 
-	_load_body = VBoxContainer.new()
-	_load_body.add_theme_constant_override("separation", 8)
-	_load_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(_load_body)
+	_load_slots_vbox = VBoxContainer.new()
+	_load_slots_vbox.add_theme_constant_override("separation", 8)
+	_load_slots_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_load_slots_vbox)
+
+	_load_status_label = Label.new()
+	_load_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_load_status_label.add_theme_font_size_override("font_size", 12)
+	_load_status_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.3, 1.0))
+	_load_status_label.visible = false
+	vbox.add_child(_load_status_label)
 
 	vbox.add_child(_separator())
 
+	var btn_back := _make_button("Back", 160)
+	btn_back.pressed.connect(_on_load_game_back)
 	var btn_row := HBoxContainer.new()
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_child(btn_back)
 	vbox.add_child(btn_row)
 
-	var btn_back := _make_button("Back", 160)
-	btn_back.pressed.connect(func() -> void: _show_phase(Phase.MAIN))
-	btn_row.add_child(btn_back)
 
-
-## Rebuild the load body with current save data.  Called each time Phase.LOAD is shown.
-func _rebuild_load_content() -> void:
-	if _load_body == null:
+## Repopulate the load-slot list from all scenarios × all slots.
+## Called each time the Load Game panel opens so it reflects fresh save state.
+func _refresh_load_slots() -> void:
+	if _load_slots_vbox == null:
 		return
-	for child in _load_body.get_children():
+	for child in _load_slots_vbox.get_children():
 		child.queue_free()
+	if _load_status_label != null:
+		_load_status_label.visible = false
 
-	var slot_names: Dictionary = {
+	var slot_labels := {
 		SaveManager.AUTO_SLOT: "Auto",
 		1: "Slot 1",
 		2: "Slot 2",
 		3: "Slot 3",
 	}
-	var any_save := false
+	var found_any := false
 	for sc in _scenarios:
-		var sc_id: String = sc.get("scenarioId", "")
-		var sc_title: String = sc.get("title", sc_id)
-		# Check whether this scenario has any saves before adding its group.
-		var has_saves := false
-		for slot in range(0, SaveManager.SLOT_COUNT + 1):
-			if SaveManager.has_save(sc_id, slot):
-				has_saves = true
-				break
-		if not has_saves:
-			continue
-		any_save = true
-
-		var sc_lbl := Label.new()
-		sc_lbl.text = sc_title
-		sc_lbl.add_theme_font_size_override("font_size", 14)
-		sc_lbl.add_theme_color_override("font_color", C_HEADING)
-		_load_body.add_child(sc_lbl)
-
-		for slot in range(0, SaveManager.SLOT_COUNT + 1):
-			var info: Dictionary = SaveManager.get_save_info(sc_id, slot)
+		var sid: String = sc.get("scenarioId", "")
+		var sc_title: String = sc.get("title", sid)
+		for slot in [SaveManager.AUTO_SLOT, 1, 2, 3]:
+			var info := SaveManager.get_save_info(sid, slot)
 			if info.is_empty():
 				continue
-			var slot_name: String = slot_names.get(slot, "Slot %d" % slot)
-			var btn_text: String = "%s — Day %d" % [slot_name, info.get("day", 1)]
-			var btn := _make_button(btn_text, 240)
-			btn.pressed.connect(_on_load_slot_pressed.bind(sc_id, slot))
-			_load_body.add_child(btn)
+			found_any = true
+			var slot_name: String = slot_labels.get(slot, "Slot %d" % slot)
+			var lbl_text := "%s  —  %s  —  Day %d" % [sc_title, slot_name, info.get("day", 1)]
+			var btn := _make_button(lbl_text, 0)
+			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var captured_sid := sid
+			var captured_slot := slot
+			btn.pressed.connect(func() -> void: _on_load_slot_selected(captured_sid, captured_slot))
+			_load_slots_vbox.add_child(btn)
 
-		var spacer := Control.new()
-		spacer.custom_minimum_size = Vector2(0, 4)
-		_load_body.add_child(spacer)
-
-	if not any_save:
+	if not found_any:
 		var empty_lbl := Label.new()
 		empty_lbl.text = "No saved games found."
 		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_lbl.add_theme_color_override("font_color", C_MUTED)
 		empty_lbl.add_theme_font_size_override("font_size", 14)
-		_load_body.add_child(empty_lbl)
+		_load_slots_vbox.add_child(empty_lbl)
 
 
 func _on_load_game_pressed() -> void:
-	if _status_label_main != null:
-		_status_label_main.visible = false
-	if _corrupt_action_row != null:
-		_corrupt_action_row.visible = false
-	_show_phase(Phase.LOAD)
+	_refresh_load_slots()
+	_show_phase(Phase.LOAD_GAME)
 
 
-func _on_load_slot_pressed(scenario_id: String, slot: int) -> void:
-	var err: String = SaveManager.prepare_load(scenario_id, slot)
+func _on_load_slot_selected(scenario_id: String, slot: int) -> void:
+	var err := SaveManager.prepare_load(scenario_id, slot)
 	if not err.is_empty():
-		push_warning("MainMenu: load failed — " + err)
-		_show_phase(Phase.MAIN)
-		_show_corrupt_save_error("Load failed: " + err, scenario_id, slot)
+		if _load_status_label != null:
+			_load_status_label.text = "Load failed: " + err
+			_load_status_label.visible = true
 		return
 	begin_game.emit(scenario_id)
 
 
-# ── SPA-2467: Corrupt-save recovery helpers ───────────────────────────────────
-
-## Show the corrupt-save error with Delete/Ignore actions.
-## Only shows the action row when the slot is known (so the file can be deleted).
-func _show_corrupt_save_error(message: String, scenario_id: String, slot: int) -> void:
-	if _status_label_main != null:
-		_status_label_main.text = message
-		_status_label_main.visible = true
-	_corrupt_scenario_id = scenario_id
-	_corrupt_slot = slot
-	# Show the Delete/Ignore row only when the file exists (skip missing-file errors).
-	var show_delete := SaveManager.has_save(scenario_id, slot)
-	if _corrupt_action_row != null:
-		_corrupt_action_row.visible = show_delete
-
-
-func _on_corrupt_save_delete() -> void:
-	if _corrupt_scenario_id.is_empty() or _corrupt_slot < 0:
-		return
-	var path := SaveManager.save_path(_corrupt_scenario_id, _corrupt_slot)
-	var dir := DirAccess.open("user://saves")
-	if dir != null:
-		var del_err := dir.remove(path.trim_prefix("user://saves/"))
-		if del_err != OK:
-			if _status_label_main != null:
-				_status_label_main.text = "Could not delete save (error %d)." % del_err
-			return
-	if _status_label_main != null:
-		_status_label_main.text = "Save deleted."
-	if _corrupt_action_row != null:
-		_corrupt_action_row.visible = false
-	_corrupt_scenario_id = ""
-	_corrupt_slot = -1
-	# Refresh Continue button state.
-	_refresh_continue_button()
-
-
-func _on_corrupt_save_ignore() -> void:
-	if _status_label_main != null:
-		_status_label_main.visible = false
-	if _corrupt_action_row != null:
-		_corrupt_action_row.visible = false
-	_corrupt_scenario_id = ""
-	_corrupt_slot = -1
+func _on_load_game_back() -> void:
+	_show_phase(Phase.MAIN)
 
 
 # ── Version corner label ──────────────────────────────────────────────────────
