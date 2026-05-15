@@ -121,6 +121,8 @@ extends RefCounted
 ##                              equal priorities, releasing non-existent owners (SPA-2619)
 ##   • TestJournalRecommendedActions — null-ref guard, all 4 priority tiers, day-based,
 ##                                     token-exhausted suggestion, cap at 3 (SPA-2618)
+##   • TestRecommendedActions        — _has_clergy_investigating() static helper: empty list,
+##                                     clergy investigator match/mismatch, null entry guard (SPA-2653)
 ##   • TestJournalIntelSection    — palette, initial state, setup, _tick_to_day_str (SPA-1027)
 ##   • TestJournalObjectivesSection — scenario day constants, palette, initial state, setup (SPA-1027)
 ##   • TestJournalRumorsSection   — initial state, setup, has_status_transitions, _rumor_journal_status, colours, transitions (SPA-1027)
@@ -321,6 +323,7 @@ const TestProgressData = preload("res://tests/test_progress_data.gd")
 const TestPropagationEngine = preload("res://tests/test_propagation_engine.gd")
 const TestQuarantineSystem = preload("res://tests/test_quarantine_system.gd")
 const TestReadyOverlay = preload("res://tests/test_ready_overlay.gd")
+const TestRecommendedActions = preload("res://tests/test_recommended_actions.gd")
 const TestReconController = preload("res://tests/test_recon_controller.gd")
 const TestReconHud = preload("res://tests/test_recon_hud.gd")
 const TestReconTooltipManager = preload("res://tests/test_recon_tooltip_manager.gd")
@@ -658,6 +661,9 @@ func _init() -> void:
 
 	print("\n── JournalRecommendedActions ──")
 	TestJournalRecommendedActions.new().run()
+
+	print("\n── RecommendedActions (_has_clergy_investigating) ──")
+	TestRecommendedActions.new().run()
 
 	print("\n── JournalIntelSection ──")
 	TestJournalIntelSection.new().run()
