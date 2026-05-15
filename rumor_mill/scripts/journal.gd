@@ -135,7 +135,7 @@ func _ready() -> void:
 	_close_btn.pressed.connect(toggle)
 
 
-func setup(world: Node2D, intel_store: PlayerIntelStore, day_night: Node) -> void:
+func setup(world: Node2D, intel_store: PlayerIntelStore, day_night: Node, recon_ctrl: Node = null, rumor_panel: Node = null) -> void:
 	_world_ref       = world
 	_intel_store_ref = intel_store
 	_day_night_ref   = day_night
@@ -148,7 +148,7 @@ func setup(world: Node2D, intel_store: PlayerIntelStore, day_night: Node) -> voi
 		_main_layout.add_child(_rec_actions_sep)
 		_rec_actions_panel = _JournalRecActions.new()
 		_rec_actions_panel.name = "RecommendedActions"
-		_rec_actions_panel.setup(world, intel_store)
+		_rec_actions_panel.setup(world, intel_store, recon_ctrl, rumor_panel)
 		_main_layout.add_child(_rec_actions_panel)
 
 
