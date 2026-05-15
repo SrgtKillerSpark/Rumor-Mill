@@ -1394,20 +1394,12 @@ func _build_objectives_section() -> void:
 	var _sm_days: int = sm.get_days_allowed() if sm != null else 30
 	var days_remaining: int = max(0, _sm_days - days_elapsed)
 
-	# Fallback day limits for inactive-scenario labels (used when showing all objectives).
-	const S1_DAYS := 30
-	const S2_DAYS := 20
-	const S3_DAYS := 25
-	const S4_DAYS := 20
-	const S5_DAYS := 25
-	const S6_DAYS := 22
-
-	var s1_days_remaining: int = max(0, S1_DAYS - days_elapsed)
-	var s2_days_remaining: int = max(0, S2_DAYS - days_elapsed)
-	var s3_days_remaining: int = max(0, S3_DAYS - days_elapsed)
-	var s4_days_remaining: int = max(0, S4_DAYS - days_elapsed)
-	var s5_days_remaining: int = max(0, S5_DAYS - days_elapsed)
-	var s6_days_remaining: int = max(0, S6_DAYS - days_elapsed)
+	var s1_days_remaining: int = max(0, ScenarioConfig.S1_DAYS - days_elapsed)
+	var s2_days_remaining: int = max(0, ScenarioConfig.S2_DAYS - days_elapsed)
+	var s3_days_remaining: int = max(0, ScenarioConfig.S3_DAYS - days_elapsed)
+	var s4_days_remaining: int = max(0, ScenarioConfig.S4_DAYS - days_elapsed)
+	var s5_days_remaining: int = max(0, ScenarioConfig.S5_DAYS - days_elapsed)
+	var s6_days_remaining: int = max(0, ScenarioConfig.S6_DAYS - days_elapsed)
 
 	var edric_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("edric_fenn")  if rep != null else null
 	var calder_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("calder_fenn") if rep != null else null
@@ -1447,7 +1439,7 @@ func _build_objectives_section() -> void:
 
 	if active_scenario_id == "scenario_1" or active_scenario_id.is_empty():
 		var days_lbl := Label.new()
-		days_lbl.text = "Days remaining: %d / %d" % [s1_days_remaining, S1_DAYS]
+		days_lbl.text = "Days remaining: %d / %d" % [s1_days_remaining, ScenarioConfig.S1_DAYS]
 		days_lbl.add_theme_font_size_override("font_size", 12)
 		days_lbl.add_theme_color_override("font_color", C_BODY)
 		_content_vbox.add_child(days_lbl)
@@ -1501,7 +1493,7 @@ func _build_objectives_section() -> void:
 	fail_body.text = (
 		"  [ ] Identified as rumor source by Sergeant Bram — suspicion: LOW\n"
 		+ "  [ ] %d days elapsed without win condition  (days remaining: %d)"
-	) % [S1_DAYS, s1_days_remaining]
+	) % [ScenarioConfig.S1_DAYS, s1_days_remaining]
 	fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	fail_body.add_theme_font_size_override("font_size", 12)
 	fail_body.add_theme_color_override("font_color", C_BODY)
@@ -1565,7 +1557,7 @@ func _build_objectives_section() -> void:
 		"  %s Sister Maren contradicts illness rumors about Alys Herbwife\n"
 		+ "  %s %d days elapsed without win condition  (days remaining: %d)"
 	) % ["[x]" if maren_rejected else "[ ]",
-		"[x]" if s2_timed_out else "[ ]", S2_DAYS, s2_days_remaining]
+		"[x]" if s2_timed_out else "[ ]", ScenarioConfig.S2_DAYS, s2_days_remaining]
 	s2_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s2_fail_body.add_theme_font_size_override("font_size", 12)
 	s2_fail_body.add_theme_color_override("font_color", C_BODY)
@@ -1583,7 +1575,7 @@ func _build_objectives_section() -> void:
 
 	if active_scenario_id == "scenario_3":
 		var s3_days_lbl := Label.new()
-		s3_days_lbl.text = "Days remaining: %d / %d" % [s3_days_remaining, S3_DAYS]
+		s3_days_lbl.text = "Days remaining: %d / %d" % [s3_days_remaining, ScenarioConfig.S3_DAYS]
 		s3_days_lbl.add_theme_font_size_override("font_size", 12)
 		s3_days_lbl.add_theme_color_override("font_color", C_BODY)
 		_content_vbox.add_child(s3_days_lbl)
@@ -1636,7 +1628,7 @@ func _build_objectives_section() -> void:
 
 	if active_scenario_id == "scenario_4":
 		var s4_days_lbl := Label.new()
-		s4_days_lbl.text = "Days remaining: %d / %d" % [s4_days_remaining, S4_DAYS]
+		s4_days_lbl.text = "Days remaining: %d / %d" % [s4_days_remaining, ScenarioConfig.S4_DAYS]
 		s4_days_lbl.add_theme_font_size_override("font_size", 12)
 		s4_days_lbl.add_theme_color_override("font_color", C_BODY)
 		_content_vbox.add_child(s4_days_lbl)
@@ -1674,7 +1666,7 @@ func _build_objectives_section() -> void:
 		+ "  Vera Midwife:  %s / 100  \u2014 %s\n"
 		+ "  Finn Monk:     %s / 100  \u2014 %s\n"
 		+ "  Floor: \u2265 %d  (all three must stay above this)"
-	) % [S4_DAYS, sm.S4_WIN_REP_MIN, s4_win_status,
+	) % [ScenarioConfig.S4_DAYS, sm.S4_WIN_REP_MIN, s4_win_status,
 		aldous_score_str, aldous_band_str,
 		vera_score_str, vera_band_str,
 		finn_score_str, finn_band_str,
@@ -1696,7 +1688,7 @@ func _build_objectives_section() -> void:
 	s4_fail_body.text = (
 		"  [ ] Any accused NPC drops below %d reputation\n"
 		+ "  [ ] %d days elapsed without all three surviving  (days remaining: %d)"
-	) % [sm.S4_FAIL_REP_BELOW, S4_DAYS, s4_days_remaining]
+	) % [sm.S4_FAIL_REP_BELOW, ScenarioConfig.S4_DAYS, s4_days_remaining]
 	s4_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s4_fail_body.add_theme_font_size_override("font_size", 12)
 	s4_fail_body.add_theme_color_override("font_color", C_BODY)
@@ -1712,7 +1704,7 @@ func _build_objectives_section() -> void:
 
 	if active_scenario_id == "scenario_5":
 		var s5_days_lbl := Label.new()
-		s5_days_lbl.text = "Days remaining: %d / %d" % [s5_days_remaining, S5_DAYS]
+		s5_days_lbl.text = "Days remaining: %d / %d" % [s5_days_remaining, ScenarioConfig.S5_DAYS]
 		s5_days_lbl.add_theme_font_size_override("font_size", 12)
 		s5_days_lbl.add_theme_color_override("font_color", C_BODY)
 		_content_vbox.add_child(s5_days_lbl)
@@ -1784,7 +1776,7 @@ func _build_objectives_section() -> void:
 	s5_fail_body.text = (
 		"  [ ] Aldric Vane drops below %d reputation\n"
 		+ "  [ ] %d days elapsed without Aldric winning the election  (days remaining: %d)"
-	) % [sm.S5_FAIL_ALDRIC_BELOW if sm != null else 30, S5_DAYS, s5_days_remaining]
+	) % [sm.S5_FAIL_ALDRIC_BELOW if sm != null else 30, ScenarioConfig.S5_DAYS, s5_days_remaining]
 	s5_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s5_fail_body.add_theme_font_size_override("font_size", 12)
 	s5_fail_body.add_theme_color_override("font_color", C_BODY)
@@ -1800,7 +1792,7 @@ func _build_objectives_section() -> void:
 
 	if active_scenario_id == "scenario_6":
 		var s6_days_lbl := Label.new()
-		s6_days_lbl.text = "Days remaining: %d / %d" % [s6_days_remaining, S6_DAYS]
+		s6_days_lbl.text = "Days remaining: %d / %d" % [s6_days_remaining, ScenarioConfig.S6_DAYS]
 		s6_days_lbl.add_theme_font_size_override("font_size", 12)
 		s6_days_lbl.add_theme_color_override("font_color", C_BODY)
 		_content_vbox.add_child(s6_days_lbl)
@@ -1866,7 +1858,7 @@ func _build_objectives_section() -> void:
 		+ "  [ ] %d days elapsed without meeting both targets  (days remaining: %d)"
 	) % [sm.S6_FAIL_MARTA_BELOW if sm != null else 30,
 		int(sm.S6_EXPOSED_HEAT) if sm != null else 60,
-		S6_DAYS, s6_days_remaining]
+		ScenarioConfig.S6_DAYS, s6_days_remaining]
 	s6_fail_body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	s6_fail_body.add_theme_font_size_override("font_size", 12)
 	s6_fail_body.add_theme_color_override("font_color", C_BODY)

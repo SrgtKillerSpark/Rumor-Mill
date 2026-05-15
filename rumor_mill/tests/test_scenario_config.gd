@@ -21,6 +21,21 @@ func run() -> void:
 	var failed := 0
 
 	var tests := [
+		# ── Day limits (SPA-2860) ──
+		"test_s1_days_is_30",
+		"test_s2_days_is_20",
+		"test_s3_days_is_25",
+		"test_s4_days_is_20",
+		"test_s5_days_is_25",
+		"test_s6_days_is_22",
+		"test_get_day_limit_scenario_1",
+		"test_get_day_limit_scenario_2",
+		"test_get_day_limit_scenario_3",
+		"test_get_day_limit_scenario_4",
+		"test_get_day_limit_scenario_5",
+		"test_get_day_limit_scenario_6",
+		"test_get_day_limit_unknown_returns_30",
+
 		# ── NPC identifiers ──
 		"test_edric_fenn_id",
 		"test_alys_herbwife_id",
@@ -306,3 +321,59 @@ func test_s6_blackmail_heat_npcs_has_2_entries() -> bool:
 
 func test_s6_blackmail_heat_npcs_contains_sybil() -> bool:
 	return "sybil_oats" in ScenarioConfig.S6_BLACKMAIL_HEAT_NPCS
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Scenario day limits (SPA-2860)
+# ══════════════════════════════════════════════════════════════════════════════
+
+func test_s1_days_is_30() -> bool:
+	return ScenarioConfig.S1_DAYS == 30
+
+
+func test_s2_days_is_20() -> bool:
+	return ScenarioConfig.S2_DAYS == 20
+
+
+func test_s3_days_is_25() -> bool:
+	return ScenarioConfig.S3_DAYS == 25
+
+
+func test_s4_days_is_20() -> bool:
+	return ScenarioConfig.S4_DAYS == 20
+
+
+func test_s5_days_is_25() -> bool:
+	return ScenarioConfig.S5_DAYS == 25
+
+
+func test_s6_days_is_22() -> bool:
+	return ScenarioConfig.S6_DAYS == 22
+
+
+func test_get_day_limit_scenario_1() -> bool:
+	return ScenarioConfig.get_day_limit("scenario_1") == 30
+
+
+func test_get_day_limit_scenario_2() -> bool:
+	return ScenarioConfig.get_day_limit("scenario_2") == 20
+
+
+func test_get_day_limit_scenario_3() -> bool:
+	return ScenarioConfig.get_day_limit("scenario_3") == 25
+
+
+func test_get_day_limit_scenario_4() -> bool:
+	return ScenarioConfig.get_day_limit("scenario_4") == 20
+
+
+func test_get_day_limit_scenario_5() -> bool:
+	return ScenarioConfig.get_day_limit("scenario_5") == 25
+
+
+func test_get_day_limit_scenario_6() -> bool:
+	return ScenarioConfig.get_day_limit("scenario_6") == 22
+
+
+func test_get_day_limit_unknown_returns_30() -> bool:
+	return ScenarioConfig.get_day_limit("unknown_scenario") == 30

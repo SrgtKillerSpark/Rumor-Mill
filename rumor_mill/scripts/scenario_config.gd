@@ -16,6 +16,31 @@
 class_name ScenarioConfig
 
 # ---------------------------------------------------------------------------
+# Scenario day limits — single source of truth for time-limit fail triggers.
+# ---------------------------------------------------------------------------
+
+const S1_DAYS := 30
+const S2_DAYS := 20
+const S3_DAYS := 25
+const S4_DAYS := 20
+const S5_DAYS := 25
+const S6_DAYS := 22
+
+## Keyed by scenario id string → day limit integer.
+const SCENARIO_DAY_LIMITS: Dictionary = {
+	"scenario_1": S1_DAYS,
+	"scenario_2": S2_DAYS,
+	"scenario_3": S3_DAYS,
+	"scenario_4": S4_DAYS,
+	"scenario_5": S5_DAYS,
+	"scenario_6": S6_DAYS,
+}
+
+## Returns the day limit for the given scenario_id, or 30 as a safe fallback.
+static func get_day_limit(scenario_id: String) -> int:
+	return SCENARIO_DAY_LIMITS.get(scenario_id, 30)
+
+# ---------------------------------------------------------------------------
 # NPC identifiers — shared by ScenarioManager, HUDs, and tutorial_system.
 # ---------------------------------------------------------------------------
 

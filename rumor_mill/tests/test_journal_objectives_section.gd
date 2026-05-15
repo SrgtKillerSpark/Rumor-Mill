@@ -1,7 +1,7 @@
 ## test_journal_objectives_section.gd — Unit tests for JournalObjectivesSection (SPA-1027).
 ##
 ## Covers:
-##   • Scenario day-limit constants: S1_DAYS through S6_DAYS
+##   • Scenario day-limit constants via ScenarioConfig (SPA-2860)
 ##   • Palette constants: C_HEADING, C_SPREADING, C_CONTRADICTED
 ##   • Initial state: _world_ref and _day_night_ref are null
 ##   • setup() — assigns both refs
@@ -59,37 +59,31 @@ func run() -> void:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Scenario day-limit constants
+# Scenario day-limit constants (now centralised in ScenarioConfig — SPA-2860)
 # ══════════════════════════════════════════════════════════════════════════════
 
 func test_s1_days() -> bool:
-	var s := _make()
-	return s.S1_DAYS == 30
+	return ScenarioConfig.S1_DAYS == 30
 
 
 func test_s2_days() -> bool:
-	var s := _make()
-	return s.S2_DAYS == 20
+	return ScenarioConfig.S2_DAYS == 20
 
 
 func test_s3_days() -> bool:
-	var s := _make()
-	return s.S3_DAYS == 25
+	return ScenarioConfig.S3_DAYS == 25
 
 
 func test_s4_days() -> bool:
-	var s := _make()
-	return s.S4_DAYS == 20
+	return ScenarioConfig.S4_DAYS == 20
 
 
 func test_s5_days() -> bool:
-	var s := _make()
-	return s.S5_DAYS == 25
+	return ScenarioConfig.S5_DAYS == 25
 
 
 func test_s6_days() -> bool:
-	var s := _make()
-	return s.S6_DAYS == 22
+	return ScenarioConfig.S6_DAYS == 22
 
 
 # ══════════════════════════════════════════════════════════════════════════════
