@@ -13,9 +13,13 @@ extends RefCounted
 ##   • TestSaveRoundtrip          — full serialize/restore round-trips for all 6 scenarios + all agent types (SPA-1090)
 ##   • TestAchievementManager     — unlock/query API and static definition table (SPA-964)
 ##   • TestAchievementSignal      — achievement_unlocked signal emission, payload, dedup (SPA-1093)
+##   • TestAchievementSteamSync   — _sync_from_steam() merge, debug_clear(), unlock() warning paths (SPA-1097)
 ##   • TestFactionEventSystem     — scheduling, activation, effects, expiry, hotspots, foreshadow, serialization (SPA-965)
 ##   • TestSpa970976Regressions   — regression guard for SPA-970/974/975/976 bug fix batch (SPA-985)
 ##   • TestSpa1106NewGameRegression — fresh New Game must never trigger instant-victory (SPA-1106)
+##   • TestSpa1179ZOrderLayers      — HUD CanvasLayer ordering: journal<scenario<objective<speed,
+##                                    hud_tooltip<tooltip_manager (SPA-1179)
+##   • TestIsoTile                  — TILE_W/H constants, cell_to_world origin/x/y/combined (SPA-1268)
 ##   • TestSpa1544NewGameStateIsolation — DayNightCycle reset, SaveManager statics, MilestoneTracker
 ##                                        S1 threshold fix (SPA-1544)
 ##   • TestSpa1599AnalyticsDisabledGating — A4 acceptance criterion: evidence acquisition emits no
@@ -238,6 +242,7 @@ extends RefCounted
 const TestAchievementHooks = preload("res://tests/test_achievement_hooks.gd")
 const TestAchievementManager = preload("res://tests/test_achievement_manager.gd")
 const TestAchievementSignal = preload("res://tests/test_achievement_signal.gd")
+const TestAchievementSteamSync = preload("res://tests/test_achievement_steam_sync.gd")
 const TestAchievementToast = preload("res://tests/test_achievement_toast.gd")
 const TestAmbientParticles = preload("res://tests/test_ambient_particles.gd")
 const TestAnalyticsLogger = preload("res://tests/test_analytics_logger.gd")
@@ -272,6 +277,7 @@ const TestHudTooltip = preload("res://tests/test_hud_tooltip.gd")
 const TestIllnessEscalationAgent = preload("res://tests/test_illness_escalation_agent.gd")
 const TestInquisitorAgent = preload("res://tests/test_inquisitor_agent.gd")
 const TestIntelStore = preload("res://tests/test_intel_store.gd")
+const TestIsoTile = preload("res://tests/test_iso_tile.gd")
 const TestJournal = preload("res://tests/test_journal.gd")
 const TestJournalWitnessMarker = preload("res://tests/test_journal_witness_marker.gd")
 const TestJournalFactionsSection = preload("res://tests/test_journal_factions_section.gd")
@@ -354,6 +360,7 @@ const TestSocialGraphOverlay         = preload("res://tests/test_social_graph_ov
 const TestSoftOnboardingNudgeManager = preload("res://tests/test_soft_onboarding_nudge_manager.gd")
 const TestSpa970976Regressions       = preload("res://tests/test_spa970_976_regressions.gd")
 const TestSpa1106NewGameRegression = preload("res://tests/test_spa1106_new_game_regression.gd")
+const TestSpa1179ZOrderLayers          = preload("res://tests/test_spa1179_z_order_layers.gd")
 const TestSpa1544NewGameStateIsolation = preload("res://tests/test_spa1544_new_game_state_isolation.gd")
 const TestSpa1599AnalyticsDisabledGating = preload("res://tests/test_spa1599_analytics_disabled_gating.gd")
 const TestSpa1613EvidenceAcquired      = preload("res://tests/test_spa1613_evidence_acquired.gd")
@@ -436,6 +443,9 @@ func _init() -> void:
 	print("\n── AchievementSignal ──")
 	TestAchievementSignal.new().run()
 
+	print("\n── AchievementSteamSync ──")
+	TestAchievementSteamSync.new().run()
+
 	print("\n── AchievementToast ──")
 	TestAchievementToast.new().run()
 
@@ -447,6 +457,9 @@ func _init() -> void:
 
 	print("\n── SPA-1106 NewGame Regression ──")
 	TestSpa1106NewGameRegression.new().run()
+
+	print("\n── SPA-1179 z-order layer constants (HUD/tooltip ordering) ──")
+	TestSpa1179ZOrderLayers.new().run()
 
 	print("\n── SPA-1544 NewGame State Isolation ──")
 	TestSpa1544NewGameStateIsolation.new().run()
@@ -630,6 +643,9 @@ func _init() -> void:
 
 	print("\n── NpcMovement ──")
 	TestNpcMovement.new().run()
+
+	print("\n── IsoTile ──")
+	TestIsoTile.new().run()
 
 	print("\n── NpcRumorProcessing ──")
 	TestNpcRumorProcessing.new().run()
