@@ -115,6 +115,9 @@ var _backdrop:           ColorRect  = null
 var _panel_main:         Control    = null
 var _panel_select:       Control    = null
 var _panel_briefing:     Control    = null
+# SPA-2578: Load Game panel (Phase.LOAD)
+var _panel_load:         Control    = null
+var _load_body:          VBoxContainer = null   # rebuilt each time Load phase is shown
 
 # Select-phase refs
 var _scenario_cards:     Array      = []  # Array[PanelContainer]
@@ -125,6 +128,8 @@ var _how_to_play:        CanvasLayer = null
 
 # Continue button (disabled when no saves exist)
 var _btn_continue:       Button      = null
+# SPA-2578: Status label for main-panel error messages (e.g. corrupt-save failure).
+var _status_label_main:  Label       = null
 
 # SPA-2450: Load Game button and slot-picker panel
 var _btn_load_game:      Button        = null
@@ -345,6 +350,9 @@ func _unhandled_input(event: InputEvent) -> void:
 					get_viewport().set_input_as_handled()
 				Phase.STATS:
 					_on_stats_back()
+					get_viewport().set_input_as_handled()
+				Phase.LOAD_GAME:
+					_on_load_game_back()
 					get_viewport().set_input_as_handled()
 
 
@@ -1992,6 +2000,7 @@ func _on_load_slot_selected(scenario_id: String, slot: int) -> void:
 
 func _on_load_game_back() -> void:
 	_show_phase(Phase.MAIN)
+
 
 
 # ── Version corner label ──────────────────────────────────────────────────────
