@@ -24,6 +24,12 @@
 class_name TestDailyPlanningOverlay
 extends RefCounted
 
+
+## Minimal world stub for tests that need intel_store access.
+class MockWorld:
+	extends RefCounted
+	var intel_store := PlayerIntelStore.new()
+
 const DailyPlanningScript := preload("res://scripts/daily_planning_overlay.gd")
 
 
@@ -65,6 +71,9 @@ func run() -> void:
 		# Evaluation safe paths
 		"test_evaluate_priorities_safe_with_null_world",
 		"test_evaluate_priorities_any_action_key",
+		# journal_opened bonus
+		"test_apply_bonus_journal_opened_awards_evidence",
+		"test_apply_bonus_journal_opened_noop_when_full",
 	]
 
 	for method_name in tests:
@@ -399,4 +408,45 @@ static func test_evaluate_priorities_any_action_key() -> bool:
 	ov._current_day_priorities.append("wait_observe")   # eval_key = "any_action"
 	# No counters set — sum = 0 → completed_count stays 0 → _apply_bonus not called.
 	ov._evaluate_priorities()   # must not crash
+	return true
+
+
+# ── journal_opened bonus ──────────────────────────────────────────────────────
+
+## _apply_bonus("journal_opened") adds exactly one evidence item to the intel store
+## when the inventory has room.
+static func test_apply_bonus_journal_opened_awards_evidence() -> bool:
+	var ov := _make_overlay()
+	var world := MockWorld.new()
+	ov._world = world
+	var pdef: Dictionary = ov._get_priority_def("check_journal")
+	if pdef.is_empty():
+		push_error("test_apply_bonus_journal_opened_awards_evidence: 'check_journal' not found in PRIORITIES")
+		return false
+	var before: int = world.intel_store.evidence_inventory.size()
+	ov._apply_bonus(pdef)
+	var after: int = world.intel_store.evidence_inventory.size()
+	if after != before + 1:
+		push_error("test_apply_bonus_journal_opened_awards_evidence: expected %d items, got %d" % [before + 1, after])
+		return false
+	return true
+
+
+## _apply_bonus("journal_opened") is a no-op when the evidence inventory is full
+## (MAX_EVIDENCE items already held).
+static func test_apply_bonus_journal_opened_noop_when_full() -> bool:
+	var ov := _make_overlay()
+	var world := MockWorld.new()
+	ov._world = world
+	# Fill inventory to capacity.
+	for i in range(PlayerIntelStore.MAX_EVIDENCE):
+		var dummy := PlayerIntelStore.EvidenceItem.new("Witness Statement", 0.15, 0.0, [], i)
+		world.intel_store.evidence_inventory.append(dummy)
+	var before: int = world.intel_store.evidence_inventory.size()
+	var pdef: Dictionary = ov._get_priority_def("check_journal")
+	ov._apply_bonus(pdef)
+	var after: int = world.intel_store.evidence_inventory.size()
+	if after != before:
+		push_error("test_apply_bonus_journal_opened_noop_when_full: inventory size changed from %d to %d" % [before, after])
+		return false
 	return true
