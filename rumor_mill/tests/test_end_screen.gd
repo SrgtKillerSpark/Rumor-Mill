@@ -123,7 +123,7 @@ static func test_setup_assigns_analytics_ref() -> bool:
 	var fake_analytics: ScenarioAnalytics = ScenarioAnalyticsScript.new()
 	es.setup(null, null, fake_analytics)
 	var ok: bool = es._analytics_ref == fake_analytics
-	fake_analytics.free()
+	# ScenarioAnalytics extends RefCounted — no manual free() needed
 	return ok
 
 

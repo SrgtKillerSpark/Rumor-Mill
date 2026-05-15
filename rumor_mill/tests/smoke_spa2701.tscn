@@ -1,0 +1,76 @@
+[gd_scene load_steps=2 format=3 uid="uid://smoke2701tscn"]
+
+[sub_resource type="GDScript" id="GDScript_smoke2701"]
+script/source = "extends Node
+
+const TestScenarioConditions = preload(\"res://tests/test_scenario_conditions.gd\")
+const TestSaveManager = preload(\"res://tests/test_save_manager.gd\")
+const TestSaveRoundtrip = preload(\"res://tests/test_save_roundtrip.gd\")
+const TestEndScreen = preload(\"res://tests/test_end_screen.gd\")
+const TestSpa1822EndScreenShipRegression = preload(\"res://tests/test_spa1822_end_screen_ship_regression.gd\")
+const TestMainMenu = preload(\"res://tests/test_main_menu.gd\")
+const TestMainMenuBriefingPanel = preload(\"res://tests/test_main_menu_briefing_panel.gd\")
+const TestMainMenuScenarioSelect = preload(\"res://tests/test_main_menu_scenario_select.gd\")
+const TestMainMenuSettingsPanel = preload(\"res://tests/test_main_menu_settings_panel.gd\")
+const TestMainMenuStatsPanel = preload(\"res://tests/test_main_menu_stats_panel.gd\")
+const TestDailyPlanningOverlay = preload(\"res://tests/test_daily_planning_overlay.gd\")
+const TestJournalRecommendedActions = preload(\"res://tests/test_journal_recommended_actions.gd\")
+const TestScenarioManager = preload(\"res://tests/test_scenario_manager.gd\")
+const TestSaveCorruption = preload(\"res://tests/test_save_corruption.gd\")
+const TestSaveMigrationV1ToV2 = preload(\"res://tests/test_save_migration_v1_to_v2.gd\")
+
+func _ready() -> void:
+	print('\n=== SPA-2701 Targeted Smoke Runner ===')
+	print('Build: 8edf92f (tip-of-main)\n')
+
+	print('── S1-S6 ScenarioConditions (win/fail logic) ──')
+	TestScenarioConditions.new().run()
+
+	print('\n── SaveManager (slot API) ──')
+	TestSaveManager.new().run()
+
+	print('\n── SaveCorruption (resilience) ──')
+	TestSaveCorruption.new().run()
+
+	print('\n── SaveMigration V1→V2 ──')
+	TestSaveMigrationV1ToV2.new().run()
+
+	print('\n── SaveRoundtrip (S1-S6 full serialize/restore) ──')
+	TestSaveRoundtrip.new().run()
+
+	print('\n── ScenarioManager (state/narrative/heat/time) ──')
+	TestScenarioManager.new().run()
+
+	print('\n── [SPA-2671] EndScreen coordinator ──')
+	TestEndScreen.new().run()
+
+	print('\n── [SPA-2671] EndScreen ship regression (SPA-1804/1805/1806/1809) ──')
+	TestSpa1822EndScreenShipRegression.new().run()
+
+	print('\n── [SPA-2672] MainMenu (Phase enum, load panel, initial state) ──')
+	TestMainMenu.new().run()
+
+	print('\n── [SPA-2672] MainMenuBriefingPanel ──')
+	TestMainMenuBriefingPanel.new().run()
+
+	print('\n── [SPA-2672] MainMenuScenarioSelect ──')
+	TestMainMenuScenarioSelect.new().run()
+
+	print('\n── [SPA-2672] MainMenuSettingsPanel ──')
+	TestMainMenuSettingsPanel.new().run()
+
+	print('\n── [SPA-2672] MainMenuStatsPanel ──')
+	TestMainMenuStatsPanel.new().run()
+
+	print('\n── [SPA-2675] DailyPlanningOverlay (priorities, save/load, dawn) ──')
+	TestDailyPlanningOverlay.new().run()
+
+	print('\n── [SPA-2653] JournalRecommendedActions (S2 Clergy risk suggestion) ──')
+	TestJournalRecommendedActions.new().run()
+
+	print('\n=== Smoke pass complete ===')
+	get_tree().quit()
+"
+
+[node name="Smoke2701" type="Node"]
+script = SubResource("GDScript_smoke2701")
