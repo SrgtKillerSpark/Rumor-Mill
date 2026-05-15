@@ -1970,7 +1970,7 @@ func _refresh_load_slots() -> void:
 			var btn := _make_button(lbl_text, 0)
 			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			var captured_sid := sid
-			var captured_slot := slot
+			var captured_slot: int = slot
 			btn.pressed.connect(func() -> void: _on_load_slot_selected(captured_sid, captured_slot))
 			_load_slots_vbox.add_child(btn)
 

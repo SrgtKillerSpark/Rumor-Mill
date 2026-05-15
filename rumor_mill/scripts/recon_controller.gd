@@ -544,7 +544,7 @@ func _hit_test_location(world_pos: Vector2) -> String:
 
 func _try_observe(location_id: String) -> void:
 	# SPA-2432: mid-game evidence drop rate multiplier (1.5x for days 4-12).
-	var _dn := _world_ref.day_night if _world_ref != null else null
+	var _dn: Node = _world_ref.day_night if _world_ref != null else null
 	var _current_day: int = _dn.current_day if _dn != null and "current_day" in _dn else 1
 	var drop_multiplier: float = get_drop_rate_multiplier(_current_day)
 	var drop_multiplier_active: bool = drop_multiplier > 1.0
@@ -682,7 +682,7 @@ func _try_eavesdrop(target: Node2D) -> void:
 	# Record relationship intel.
 	var tick    := _current_tick()
 	# SPA-2432: mid-game evidence drop rate multiplier (1.5x for days 4-12).
-	var _dn2 := _world_ref.day_night if _world_ref != null else null
+	var _dn2: Node = _world_ref.day_night if _world_ref != null else null
 	var _cur_day2: int = _dn2.current_day if _dn2 != null and "current_day" in _dn2 else 1
 	var ea_drop_multiplier: float = get_drop_rate_multiplier(_cur_day2)
 	var ea_drop_multiplier_active: bool = ea_drop_multiplier > 1.0
