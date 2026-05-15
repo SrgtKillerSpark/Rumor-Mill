@@ -877,6 +877,12 @@ func _try_confirm_seed() -> void:
 	if _world_ref == null:
 		return
 
+	# A3.1 SPA-3294: capture existing same-type chain rumor BEFORE seeding so we can reset it.
+	var _pre_chain: Dictionary = {}
+	if _world_ref.propagation_engine != null and not _selected_subject.is_empty() and not _selected_claim_id.is_empty():
+		var _claim_for_chain: Rumor.ClaimType = Rumor.claim_type_from_string(_selected_claim_id)
+		_pre_chain = _world_ref.propagation_engine.detect_chain(_selected_subject, _claim_for_chain)
+
 	var rumor_id: String = _world_ref.seed_rumor_from_player(
 		_selected_subject,
 		_selected_claim_id,
@@ -888,6 +894,22 @@ func _try_confirm_seed() -> void:
 		_flash_status("Failed to seed rumor. Check subject / claim / target.")
 		AudioManager.on_rumor_fail()
 		return
+
+	# A3.1 SPA-3294: priority interaction resets after successful seed.
+	var _re = _world_ref.get("rumor_engine") if _world_ref != null else null
+	if _re != null:
+		var _dn_ref = _world_ref.get("day_night") if _world_ref != null else null
+		var _seed_tick: int = int(_dn_ref.current_tick) if _dn_ref != null and "current_tick" in _dn_ref else 0
+		# Seeding same claim+subject → full reset on the pre-existing rumor.
+		if _pre_chain.get("chain_type") == PropagationEngine.ChainType.SAME_TYPE:
+			var _ex_rumor: Rumor = _pre_chain.get("existing_rumor")
+			if _ex_rumor != null:
+				_re.on_seed_reset(_ex_rumor, _seed_tick)
+		# Evidence attached → full reset on the newly created rumor.
+		if _selected_evidence_item != null and _world_ref.propagation_engine != null:
+			var _new_r: Rumor = _world_ref.propagation_engine.live_rumors.get(rumor_id)
+			if _new_r != null:
+				_re.on_evidence_reset(_new_r, _seed_tick)
 
 	# Consume evidence now that seeding succeeded.
 	if _selected_evidence_item != null and _intel_store_ref != null:

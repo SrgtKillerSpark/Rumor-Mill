@@ -42,6 +42,13 @@ var bolstered_by_evidence: bool = false
 var evidence_type: String = ""             ## SPA-2606: evidence type used to bolster ("Witness Account", etc.)
 var evidence_credulity_boost: float = 0.0  ## SPA-1711: credulity boost for seed target NPC
 var seed_target_npc_id: String = ""         ## SPA-1711: NPC id that received the evidence seed
+## A3.1 SPA-3294: game tick when the player last interacted with this rumor.
+## Initialized to created_tick; updated by RumorEngine on seed/evidence/eavesdrop/observe.
+var last_interaction_tick: int = 0
+## A3.1 SPA-3294: priority at creation — float(intensity)/5.0, never mutated after init.
+var base_priority: float = 0.0
+## A3.1 SPA-3294: base_priority after decay multiplier; updated each tick by RumorEngine.
+var effective_priority: float = 0.0
 
 
 static func create(
@@ -64,6 +71,9 @@ static func create(
 	r.shelf_life_ticks = shelf
 	r.current_believability = r.base_believability()
 	r.lineage_parent_id = parent_id
+	r.last_interaction_tick = tick
+	r.base_priority = r.base_believability()
+	r.effective_priority = r.base_priority
 	return r
 
 

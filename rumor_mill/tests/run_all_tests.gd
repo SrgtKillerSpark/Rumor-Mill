@@ -153,6 +153,8 @@ extends RefCounted
 ##   • TestScenarioConfig         — all S1–S6 balance constants, NPC ids, arrays, phase windows (SPA-1041)
 ##   • TestRumor                  — create, base_believability, is_expired, decay_one_tick, is_positive_claim,
 ##                                  claim_type_name, NpcRumorSlot initial state (SPA-1041)
+##   • TestRumorEngine            — decay over time, floor at 0.15, full reset seed/evidence,
+##                                  partial reset eavesdrop/observe, recalculate_priorities (SPA-3294)
 ##   • TestRivalAgent             — initial state, activate, constants, _get_cooldown, can/apply_disruption,
 ##                                  _DEGRADE_MAP, scout (SPA-1041)
 ##   • TestGuildDefenseAgent      — initial state, config, activate, tick guards, effective cooldown (SPA-1041)
@@ -341,6 +343,7 @@ const TestReconTooltipManager = preload("res://tests/test_recon_tooltip_manager.
 const TestReputationSystem = preload("res://tests/test_reputation_system.gd")
 const TestRivalAgent = preload("res://tests/test_rival_agent.gd")
 const TestRumor = preload("res://tests/test_rumor.gd")
+const TestRumorEngine = preload("res://tests/test_rumor_engine.gd")
 const TestRumorEventWiring = preload("res://tests/test_rumor_event_wiring.gd")
 const TestRumorPanel = preload("res://tests/test_rumor_panel.gd")
 const TestRumorPanelClaimList = preload("res://tests/test_rumor_panel_claim_list.gd")
@@ -753,6 +756,9 @@ func _init() -> void:
 
 	print("\n── Rumor ──")
 	TestRumor.new().run()
+
+	print("\n── RumorEngine (A3.1 SPA-3294 decay curves) ──")
+	TestRumorEngine.new().run()
 
 	print("\n── RivalAgent ──")
 	TestRivalAgent.new().run()
