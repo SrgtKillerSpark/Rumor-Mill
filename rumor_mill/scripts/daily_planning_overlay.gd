@@ -505,7 +505,7 @@ func _evaluate_priorities() -> void:
 						child.add_theme_color_override("font_color", Color(0.30, 0.85, 0.35, 0.9))
 						child.text = "✓ " + label_pdef.label
 					else:
-						child.add_theme_color_override("font_color", Color(0.75, 0.60, 0.40, 1.0))
+						child.add_theme_color_override("font_color", Color(0.55, 0.40, 0.30, 0.7))
 						child.text = "✗ " + label_pdef.label
 					idx += 1
 
@@ -572,7 +572,7 @@ func _build_skip_button() -> void:
 		_skip_btn.text = "Skip Planning"
 		_skip_btn.flat = true
 		_skip_btn.add_theme_font_size_override("font_size", 12)
-		_skip_btn.add_theme_color_override("font_color", Color(0.75, 0.65, 0.50, 1.0))
+		_skip_btn.add_theme_color_override("font_color", Color(0.50, 0.44, 0.32, 0.7))
 		_skip_btn.add_theme_color_override("font_hover_color", Color(0.70, 0.60, 0.42, 1.0))
 		_skip_btn.pressed.connect(func() -> void:
 			_selected_ids.clear()

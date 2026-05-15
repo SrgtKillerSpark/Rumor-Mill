@@ -10,7 +10,7 @@ const C_BG      := Color(0.08, 0.05, 0.03, 0.82)
 const C_BORDER  := Color(0.55, 0.38, 0.18, 0.5)
 const C_TEXT    := Color(0.65, 0.58, 0.45, 0.90)
 const C_KEY     := Color(0.92, 0.78, 0.12, 0.95)
-const C_MUTED   := Color(0.65, 0.55, 0.40, 0.85)
+const C_MUTED   := Color(0.50, 0.45, 0.38, 0.70)
 const C_ACTIVE  := Color(0.40, 1.0, 0.50, 0.95)  # green highlight for available actions
 
 ## Mode enum for controlling which bindings are shown.
