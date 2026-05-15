@@ -20,6 +20,12 @@
 ##   • Load/Save null guards — both handlers return early without changing _slot_mode_save
 ##     when _world_ref is null (unsaved-progress guard)
 ##
+## SPA-2453 backfill:
+##   • Initial state of five new SPA-2453 vars: _pending_save_slot, _pending_load_slot,
+##     _confirm_lbl, _confirm_source, _auto_save_note
+##   • Confirm-source tagging: restart/quit both set _confirm_source to "main"
+##   • _on_confirm_no() with source="slot" restores slot picker; clears pending slots
+##
 ## pause_menu.gd extends CanvasLayer. _ready() is NOT called (node is not
 ## added to the scene tree), so all nodes built by _build_ui() remain null.
 ## Confirmation-flow tests inject stub VBoxContainer nodes directly into the
@@ -91,6 +97,18 @@ func run() -> void:
 		# Phase 2.5: Load/Save null guards (unsaved-progress protection)
 		"test_save_guard_null_world_preserves_slot_mode",
 		"test_load_guard_null_world_preserves_slot_mode",
+		# SPA-2453: new state variable initial values
+		"test_initial_pending_save_slot_minus_one",
+		"test_initial_pending_load_slot_minus_one",
+		"test_initial_confirm_lbl_null",
+		"test_initial_confirm_source_empty",
+		"test_initial_auto_save_note_null",
+		# SPA-2453: confirm-source tagging on restart/quit
+		"test_restart_sets_confirm_source_main",
+		"test_quit_sets_confirm_source_main",
+		# SPA-2453: _on_confirm_no() with slot source restores slot picker
+		"test_confirm_no_slot_source_restores_slot_picker",
+		"test_confirm_no_clears_pending_slots",
 	]
 
 	for method_name in tests:
@@ -356,3 +374,106 @@ static func test_load_guard_null_world_preserves_slot_mode() -> bool:
 	var pm := _make_pm()
 	pm._on_load_game()   # _world_ref == null → early return via _set_status (no-op)
 	return pm._slot_mode_save == false
+
+
+# ── SPA-2453: new state variable initial values ───────────────────────────────
+
+## _pending_save_slot is set to -1 (sentinel "no slot selected") until the
+## player chooses an occupied slot for overwrite (Finding #6).
+static func test_initial_pending_save_slot_minus_one() -> bool:
+	var pm := _make_pm()
+	return pm._pending_save_slot == -1
+
+
+## _pending_load_slot is set to -1 (sentinel) until the player confirms
+## the unsaved-progress warning before a load (Finding #7).
+static func test_initial_pending_load_slot_minus_one() -> bool:
+	var pm := _make_pm()
+	return pm._pending_load_slot == -1
+
+
+## _confirm_lbl is built by _build_ui(); it must be null before _ready() runs.
+static func test_initial_confirm_lbl_null() -> bool:
+	var pm := _make_pm()
+	return pm._confirm_lbl == null
+
+
+## _confirm_source tracks whether the confirm dialog was opened from "main"
+## or "slot" so _on_confirm_no() can restore the right panel. Starts empty.
+static func test_initial_confirm_source_empty() -> bool:
+	var pm := _make_pm()
+	return pm._confirm_source == ""
+
+
+## _auto_save_note is built by _build_ui(); must be null pre-_ready (Finding #5).
+static func test_initial_auto_save_note_null() -> bool:
+	var pm := _make_pm()
+	return pm._auto_save_note == null
+
+
+# ── SPA-2453: confirm-source tagging ─────────────────────────────────────────
+
+## _on_restart_scenario() must also set _confirm_source to "main" so that
+## _on_confirm_no() returns to the main menu panel, not the slot picker.
+static func test_restart_sets_confirm_source_main() -> bool:
+	var pm := _make_pm()
+	pm._main_container    = VBoxContainer.new()
+	pm._confirm_container = VBoxContainer.new()
+	pm._on_restart_scenario()
+	var ok: bool = pm._confirm_source == "main"
+	pm._main_container.free()
+	pm._confirm_container.free()
+	return ok
+
+
+## _on_quit_to_menu() must also set _confirm_source to "main" for the same reason.
+static func test_quit_sets_confirm_source_main() -> bool:
+	var pm := _make_pm()
+	pm._main_container    = VBoxContainer.new()
+	pm._confirm_container = VBoxContainer.new()
+	pm._on_quit_to_menu()
+	var ok: bool = pm._confirm_source == "main"
+	pm._main_container.free()
+	pm._confirm_container.free()
+	return ok
+
+
+# ── SPA-2453: _on_confirm_no() slot-source routing ───────────────────────────
+##
+## When the confirm dialog was opened from the slot picker (source="slot"),
+## _on_confirm_no() must hide the confirm panel and restore the slot picker
+## rather than restoring the main menu.
+
+static func test_confirm_no_slot_source_restores_slot_picker() -> bool:
+	var pm := _make_pm()
+	pm._slot_container    = VBoxContainer.new()
+	pm._confirm_container = VBoxContainer.new()
+	pm._main_container    = VBoxContainer.new()
+	# Simulate state: player opened overwrite confirm from slot picker.
+	pm._confirm_source    = "slot"
+	pm._confirm_container.visible = true
+	pm._slot_container.visible    = false
+	pm._on_confirm_no()
+	var ok: bool = pm._slot_container.visible == true
+	pm._slot_container.free()
+	pm._confirm_container.free()
+	pm._main_container.free()
+	return ok
+
+
+## _on_confirm_no() must reset both pending-slot sentinels to -1 regardless of
+## which panel the confirm was opened from, preventing stale slot indices.
+static func test_confirm_no_clears_pending_slots() -> bool:
+	var pm := _make_pm()
+	pm._slot_container    = VBoxContainer.new()
+	pm._confirm_container = VBoxContainer.new()
+	pm._main_container    = VBoxContainer.new()
+	pm._confirm_source    = "slot"
+	pm._pending_save_slot = 2
+	pm._pending_load_slot = 1
+	pm._on_confirm_no()
+	var ok: bool = pm._pending_save_slot == -1 and pm._pending_load_slot == -1
+	pm._slot_container.free()
+	pm._confirm_container.free()
+	pm._main_container.free()
+	return ok

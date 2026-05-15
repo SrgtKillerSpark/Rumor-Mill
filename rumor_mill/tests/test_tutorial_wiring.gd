@@ -19,6 +19,7 @@
 ##   • Waypoint/manor refs null: _waypoint_node, _waypoint_tween, _s1_manor_highlight,
 ##     _whats_changed_card, _rumor_panel_tooltip
 ##   • wire_pause_menu(): null pause_menu guard — must not crash
+##   • SPA-2452: _second_visit_hint_fired gate initial false (renamed from SPA-2451 pair)
 ##
 ## TutorialWiring extends Node (class_name TutorialWiring).
 ## setup() requires live world, recon_ctrl, and scene-tree signals — not exercised here.
@@ -95,6 +96,8 @@ func run() -> void:
 		"test_initial_rumor_panel_tooltip_null",
 		# wire_pause_menu() null guard
 		"test_wire_pause_menu_null_no_crash",
+		# SPA-2452: _second_visit_hint_fired gate initial state
+		"test_initial_second_visit_hint_fired_false",
 	]
 
 	for method_name in tests:
@@ -299,3 +302,13 @@ static func test_wire_pause_menu_null_no_crash() -> bool:
 	var tw := _make_tw()
 	tw.wire_pause_menu(null)
 	return true
+
+
+# ── SPA-2452: _second_visit_hint_fired gate ───────────────────────────────────
+
+## SPA-2452 renamed the old SPA-2451 dual-flag pair (_banner_second_visit_fired +
+## _banner_witness_account_fired) into a single _second_visit_hint_fired gate.
+## It must start false so the hint fires on the first Observe action.
+static func test_initial_second_visit_hint_fired_false() -> bool:
+	var tw := _make_tw()
+	return tw._second_visit_hint_fired == false

@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-## event_choice_modal.gd — Modal overlay for mid-game narrative event choices.
+## event_choice_modal.gd — SPA-953/SPA-2691: Modal overlay for mid-game narrative event choices.
 ##
 ## Displays the event description and two choice buttons.  Blocks input while
 ## visible (same pattern as TutorialHUD).  Emits `choice_made` when the player
@@ -42,6 +42,10 @@ signal choice_made(event_id: String, choice_index: int)
 ## Emitted when the outcome text is dismissed and the modal closes.
 signal dismissed()
 
+## SPA-2691: When true, dismissing the modal does NOT unpause the game tree.
+## Set this when an aftermath screen will handle unpausing instead.
+var skip_unpause_on_dismiss: bool = false
+
 # ── Node refs (built in _ready) ───────────────────────────────────────────────
 
 var _backdrop:      ColorRect      = null
@@ -74,10 +78,20 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
+			# Block Escape — player must pick a choice (spec: no dismiss without selection).
 			get_viewport().set_input_as_handled()
-		elif event.keycode == KEY_ENTER and _showing_outcome:
-			_on_dismiss_pressed()
-			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ENTER or event.keycode == KEY_SPACE:
+			if _showing_outcome:
+				_on_dismiss_pressed()
+				get_viewport().set_input_as_handled()
+		elif not _showing_outcome:
+			# Spec: 1/2/3 keys select choices directly.
+			if event.keycode == KEY_1 and _choice_a_btn != null and _choice_a_btn.visible:
+				get_viewport().set_input_as_handled()
+				_on_choice_a_pressed()
+			elif event.keycode == KEY_2 and _choice_b_btn != null and _choice_b_btn.visible:
+				get_viewport().set_input_as_handled()
+				_on_choice_b_pressed()
 
 
 ## Show the event and its two choices.
@@ -170,13 +184,24 @@ func _build_ui() -> void:
 	_panel.position = Vector2(-float(_panel_w) / 2.0, -float(_ecm_ph) / 2.0)
 	_panel.size = Vector2(float(_panel_w), float(_ecm_ph))
 
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = C_PANEL_BG
-	sb.border_color = C_PANEL_BORDER
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(6)
-	sb.set_content_margin_all(24)
-	_panel.add_theme_stylebox_override("panel", sb)
+	# SPA-2699: Use parchment texture (light tone) when available, else parchment-tan fallback.
+	var parchment_tex: Texture2D = load("res://assets/textures/ui_parchment.png") \
+		if ResourceLoader.exists("res://assets/textures/ui_parchment.png") \
+		else null
+	if parchment_tex != null:
+		var sb_tex := StyleBoxTexture.new()
+		sb_tex.texture = parchment_tex
+		sb_tex.modulate_color = Color(1.0, 1.0, 1.0, 0.97)  # natural parchment tone
+		sb_tex.set_content_margin_all(24)
+		_panel.add_theme_stylebox_override("panel", sb_tex)
+	else:
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = C_PANEL_BG
+		sb.border_color = C_PANEL_BORDER
+		sb.set_border_width_all(2)
+		sb.set_corner_radius_all(6)
+		sb.set_content_margin_all(24)
+		_panel.add_theme_stylebox_override("panel", sb)
 	add_child(_panel)
 
 	var vbox := VBoxContainer.new()
@@ -298,7 +323,9 @@ func _on_choice_b_pressed() -> void:
 
 func _on_dismiss_pressed() -> void:
 	visible = false
-	get_tree().paused = false
+	# SPA-2691: If aftermath screen is handling the unpause, skip it here.
+	if not skip_unpause_on_dismiss:
+		get_tree().paused = false
 	dismissed.emit()
 
 
