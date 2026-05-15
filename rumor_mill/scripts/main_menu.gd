@@ -139,6 +139,7 @@ var _load_status_label:  Label         = null
 
 # SPA-2450: Inline error label on the main panel for save-load errors
 var _main_error_label:   Label         = null
+var _loading_overlay:    ColorRect     = null  # SPA-2722: loading spinner overlay
 
 # SPA-589: Atmospheric dusk background elements
 var _dusk_sky:           ColorRect   = null  # gradient sky background
@@ -558,6 +559,8 @@ func _build_main_panel() -> void:
 	_main_error_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_main_error_label.add_theme_font_size_override("font_size", 12)
 	_main_error_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.3, 1.0))
+	_main_error_label.add_theme_constant_override("outline_size", 2)
+	_main_error_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	_main_error_label.visible = false
 	vbox.add_child(_main_error_label)
 
@@ -1201,9 +1204,10 @@ func _on_continue_pressed() -> void:
 		push_warning("MainMenu: continue failed — " + err)
 		# SPA-2450: Show user-visible error rather than silently dropping the action.
 		if _main_error_label != null:
-			_main_error_label.text = "Save corrupted — " + err
+			_main_error_label.text = SaveManager.friendly_error(err)
 			_main_error_label.visible = true
 		return
+	_show_loading_overlay()
 	begin_game.emit(scenario_id)
 
 
@@ -1927,6 +1931,8 @@ func _build_load_game_panel() -> void:
 	_load_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_load_status_label.add_theme_font_size_override("font_size", 12)
 	_load_status_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.3, 1.0))
+	_load_status_label.add_theme_constant_override("outline_size", 2)
+	_load_status_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
 	_load_status_label.visible = false
 	vbox.add_child(_load_status_label)
 
@@ -1981,6 +1987,20 @@ func _refresh_load_slots() -> void:
 		empty_lbl.add_theme_color_override("font_color", C_MUTED)
 		empty_lbl.add_theme_font_size_override("font_size", 14)
 		_load_slots_vbox.add_child(empty_lbl)
+	else:
+		# SPA-2725: Wire focus neighbors on save buttons for keyboard navigation.
+		var save_btns: Array[Button] = []
+		for child in _load_slots_vbox.get_children():
+			if child is Button:
+				save_btns.append(child)
+		for i in save_btns.size():
+			var prev: Button = save_btns[(i - 1 + save_btns.size()) % save_btns.size()]
+			var next: Button = save_btns[(i + 1) % save_btns.size()]
+			save_btns[i].focus_neighbor_top    = prev.get_path()
+			save_btns[i].focus_neighbor_bottom = next.get_path()
+			save_btns[i].focus_next            = next.get_path()
+			save_btns[i].focus_previous        = prev.get_path()
+		save_btns[0].call_deferred("grab_focus")
 
 
 func _on_load_game_pressed() -> void:
@@ -1992,15 +2012,38 @@ func _on_load_slot_selected(scenario_id: String, slot: int) -> void:
 	var err := SaveManager.prepare_load(scenario_id, slot)
 	if not err.is_empty():
 		if _load_status_label != null:
-			_load_status_label.text = "Load failed: " + err
+			_load_status_label.text = SaveManager.friendly_error(err)
 			_load_status_label.visible = true
 		return
+	_show_loading_overlay()
 	begin_game.emit(scenario_id)
 
 
 func _on_load_game_back() -> void:
 	_show_phase(Phase.MAIN)
 
+
+
+# ── SPA-2722: Loading overlay ─────────────────────────────────────────────────
+
+## Show a semi-transparent dark overlay with "Loading..." text while scene loads.
+func _show_loading_overlay() -> void:
+	if _loading_overlay != null:
+		return
+	_loading_overlay = ColorRect.new()
+	_loading_overlay.color = Color(0, 0, 0, 0.6)
+	_loading_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var lbl := Label.new()
+	lbl.text = "Loading..."
+	lbl.add_theme_font_size_override("font_size", 22)
+	lbl.add_theme_color_override("font_color", C_HEADING)
+	lbl.add_theme_constant_override("outline_size", 2)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_loading_overlay.add_child(lbl)
+	add_child(_loading_overlay)
 
 
 # ── Version corner label ──────────────────────────────────────────────────────
