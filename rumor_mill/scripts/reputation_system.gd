@@ -242,6 +242,16 @@ func get_snapshot(npc_id: String) -> ReputationSnapshot:
 	return _cache.get(npc_id, null)
 
 
+## Return a Dictionary mapping each requested npc_id to its ReputationSnapshot.
+## Missing or unknown ids map to null.  Returns an empty dict if rep is null
+## (caller should guard, but this makes the batch call safe to chain).
+func get_snapshots(npc_ids: Array) -> Dictionary:
+	var result: Dictionary = {}
+	for npc_id in npc_ids:
+		result[npc_id] = _cache.get(npc_id, null)
+	return result
+
+
 ## Return a shallow copy of the full cache (for HUD / debug iteration).
 func get_all_snapshots() -> Dictionary:
 	return _cache.duplicate()

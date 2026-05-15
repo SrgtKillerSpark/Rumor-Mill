@@ -70,6 +70,10 @@ func run() -> void:
 		"test_illness_believer_ids_populated",
 		# Global believer count
 		"test_global_believer_count",
+		# Batch snapshot helper
+		"test_get_snapshots_returns_known_npcs",
+		"test_get_snapshots_unknown_id_is_null",
+		"test_get_snapshots_empty_array",
 	]
 
 	for method_name in tests:
@@ -419,3 +423,35 @@ static func test_global_believer_count() -> bool:
 
 	rep.recalculate_all([subject_npc, spread_npc, believer_npc, unaware_npc], 0)
 	return rep.get_global_believer_count() == 2
+
+
+# ── Batch snapshot helper tests ───────────────────────────────────────────────
+
+## get_snapshots returns snapshots for all requested ids that exist in the cache.
+static func test_get_snapshots_returns_known_npcs() -> bool:
+	var rep := ReputationSystem.new()
+	var npc_a := MockNpc.make("npc_a", "merchant")
+	var npc_b := MockNpc.make("npc_b", "noble")
+	rep.recalculate_all([npc_a, npc_b], 0)
+	var snaps := rep.get_snapshots(["npc_a", "npc_b"])
+	if snaps.size() != 2:
+		push_error("test_get_snapshots_returns_known_npcs: expected 2 entries, got %d" % snaps.size())
+		return false
+	if snaps["npc_a"] == null or snaps["npc_b"] == null:
+		push_error("test_get_snapshots_returns_known_npcs: unexpected null snapshot")
+		return false
+	return snaps["npc_a"].base_score == 50 and snaps["npc_b"].base_score == 50
+
+
+## get_snapshots maps unknown npc ids to null rather than crashing.
+static func test_get_snapshots_unknown_id_is_null() -> bool:
+	var rep := ReputationSystem.new()
+	var snaps := rep.get_snapshots(["npc_unknown"])
+	return snaps.size() == 1 and snaps["npc_unknown"] == null
+
+
+## get_snapshots with an empty array returns an empty dictionary.
+static func test_get_snapshots_empty_array() -> bool:
+	var rep := ReputationSystem.new()
+	var snaps := rep.get_snapshots([])
+	return snaps.size() == 0

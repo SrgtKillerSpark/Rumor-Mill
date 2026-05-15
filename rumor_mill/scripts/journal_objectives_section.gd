@@ -62,14 +62,16 @@ func build(content_vbox: VBoxContainer) -> void:
 	var s5_days_remaining: int = max(0, S5_DAYS - days_elapsed)
 	var s6_days_remaining: int = max(0, S6_DAYS - days_elapsed)
 
-	var edric_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("edric_fenn")   if rep != null else null
-	var calder_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("calder_fenn")  if rep != null else null
-	var tomas_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("tomas_reeve")  if rep != null else null
-	var aldous_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("aldous_prior") if rep != null else null
-	var vera_snap:   ReputationSystem.ReputationSnapshot = rep.get_snapshot("vera_midwife") if rep != null else null
-	var finn_snap:   ReputationSystem.ReputationSnapshot = rep.get_snapshot("finn_monk")    if rep != null else null
-	var aldric_snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot("aldric_vane")  if rep != null else null
-	var marta_snap:  ReputationSystem.ReputationSnapshot = rep.get_snapshot("marta_coin")   if rep != null else null
+	var _snaps: Dictionary = rep.get_snapshots(["edric_fenn", "calder_fenn", "tomas_reeve",
+			"aldous_prior", "vera_midwife", "finn_monk", "aldric_vane", "marta_coin"]) if rep != null else {}
+	var edric_snap:  ReputationSystem.ReputationSnapshot = _snaps.get("edric_fenn",  null)
+	var calder_snap: ReputationSystem.ReputationSnapshot = _snaps.get("calder_fenn", null)
+	var tomas_snap:  ReputationSystem.ReputationSnapshot = _snaps.get("tomas_reeve", null)
+	var aldous_snap: ReputationSystem.ReputationSnapshot = _snaps.get("aldous_prior", null)
+	var vera_snap:   ReputationSystem.ReputationSnapshot = _snaps.get("vera_midwife", null)
+	var finn_snap:   ReputationSystem.ReputationSnapshot = _snaps.get("finn_monk",    null)
+	var aldric_snap: ReputationSystem.ReputationSnapshot = _snaps.get("aldric_vane",  null)
+	var marta_snap:  ReputationSystem.ReputationSnapshot = _snaps.get("marta_coin",   null)
 
 	var active_scenario_id: String = ""
 	if _world_ref != null and "active_scenario_id" in _world_ref:
