@@ -19,6 +19,7 @@ class_name TestEndScreen
 extends RefCounted
 
 const EndScreenScript := preload("res://scripts/end_screen.gd")
+const ScenarioAnalyticsScript := preload("res://scripts/scenario_analytics.gd")
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -119,7 +120,7 @@ static func test_setup_assigns_day_night_ref() -> bool:
 ## setup() must store analytics_ref when provided.
 static func test_setup_assigns_analytics_ref() -> bool:
 	var es := _make_es()
-	var fake_analytics: Object = Object.new()
+	var fake_analytics: ScenarioAnalytics = ScenarioAnalyticsScript.new()
 	es.setup(null, null, fake_analytics)
 	var ok: bool = es._analytics_ref == fake_analytics
 	fake_analytics.free()

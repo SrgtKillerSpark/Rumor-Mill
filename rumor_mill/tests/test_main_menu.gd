@@ -3,7 +3,7 @@
 ## Covers:
 ##   • Palette constants (characteristic colour assertions)
 ##   • Phase enum ordinals: MAIN=0, SELECT=1, BRIEFING=2, INTRO=3,
-##                          SETTINGS=4, CREDITS=5, STATS=6, LOAD=7
+##                          SETTINGS=4, CREDITS=5, STATS=6, LOAD_GAME=7
 ##   • Initial state: _phase=Phase.MAIN, _scenarios empty
 ##   • Initial node refs null (no scene tree, _ready() not called)
 ##
@@ -140,7 +140,7 @@ static func test_phase_stats_is_six() -> bool:
 
 
 static func test_phase_load_is_seven() -> bool:
-	var ok: bool = MainMenuScript.Phase.LOAD == 7
+	var ok: bool = MainMenuScript.Phase.LOAD_GAME == 7
 	return ok
 
 
