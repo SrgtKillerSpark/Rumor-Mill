@@ -105,6 +105,8 @@ extends RefCounted
 ##   • TestSettingsMenu           — palette constants, initial state, _close() behaviour (SPA-1015)
 ##   • TestMidGameEventAgent      — activation, window guards, probability firing, resolve choice, serialization, effects (SPA-1017)
 ##   • TestDayNightCycle          — initial state, TIME_COLORS, phase detection, shadow guard, skip_to_next_day, color interpolation, signals (SPA-1017)
+##   • TestDebugConsole           — initial state (_world_ref/_overlay_ref null), set_world/set_overlay setters (SPA-2747)
+##   • TestDebugOverlay           — initial state (show_* false, refs null), set_world, STATE_COLORS size, _find_npc_by_id (SPA-2747)
 ##   • TestObjectiveHudMetrics    — initial state, _threat_word boundaries, _threat_color bands, refresh null guard (SPA-1026)
 ##   • TestObjectiveHudNudgeManager — palette, nudge texts, initial phase/budget/dep state (SPA-1026)
 ##   • TestObjectiveHudWinTracker — tempo colours, initial state, configure, setup_world, _get_progress_assessment, flash guard (SPA-1026)
@@ -260,6 +262,8 @@ const TestControlsReference = preload("res://tests/test_controls_reference.gd")
 const TestCursorManager = preload("res://tests/test_cursor_manager.gd")
 const TestDailyPlanningOverlay = preload("res://tests/test_daily_planning_overlay.gd")
 const TestDayNightCycle = preload("res://tests/test_day_night_cycle.gd")
+const TestDebugConsole = preload("res://tests/test_debug_console.gd")
+const TestDebugOverlay = preload("res://tests/test_debug_overlay.gd")
 const TestDistrictOverlay = preload("res://tests/test_district_overlay.gd")
 const TestDistrictPropsRegistry = preload("res://tests/test_district_props_registry.gd")
 const TestDistrictPropsSpawner = preload("res://tests/test_district_props_spawner.gd")
@@ -616,6 +620,12 @@ func _init() -> void:
 
 	print("\n── DayNightCycle ──")
 	TestDayNightCycle.new().run()
+
+	print("\n── DebugConsole ──")
+	TestDebugConsole.new().run()
+
+	print("\n── DebugOverlay ──")
+	TestDebugOverlay.new().run()
 
 	print("\n── ObjectiveHudMetrics ──")
 	TestObjectiveHudMetrics.new().run()
