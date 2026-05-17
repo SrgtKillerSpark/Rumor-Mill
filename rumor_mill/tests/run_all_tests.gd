@@ -15,6 +15,7 @@ extends RefCounted
 ##   • TestAchievementSignal      — achievement_unlocked signal emission, payload, dedup (SPA-1093)
 ##   • TestAchievementSteamSync   — _sync_from_steam() merge, debug_clear(), unlock() warning paths (SPA-1097)
 ##   • TestFactionEventSystem     — scheduling, activation, effects, expiry, hotspots, foreshadow, serialization (SPA-965)
+##   • TestFactionMemoryHorizon   — severity horizons, decay curves, stack pruning+cap, dialog qualifier, cancellation, serialization (SPA-3295)
 ##   • TestSpa970976Regressions   — regression guard for SPA-970/974/975/976 bug fix batch (SPA-985)
 ##   • TestSpa1106NewGameRegression — fresh New Game must never trigger instant-victory (SPA-1106)
 ##   • TestSpa1179ZOrderLayers      — HUD CanvasLayer ordering: journal<scenario<objective<speed,
@@ -100,6 +101,7 @@ extends RefCounted
 ##   • TestSocialGraphOverlay     — constants, initial state, pure-logic helpers, rumor event parsing (SPA-1000)
 ##   • TestReconController        — constants, coordinate conversion, belief_trend, initial state (SPA-1012)
 ##   • TestReconHud               — constants, pip/heat colours, initial state, contextual hint logic (SPA-1012)
+##   • TestForeshadowHud          — palette, layout/timing constants, initial state, setup(), _on_day_changed null-world guard (SPA-2745)
 ##   • TestRumorPanel             — constants, colour helpers, initial state, believability/spread estimates (SPA-1012)
 ##   • TestPauseMenu              — palette constants, static var, initial state, setup wiring (SPA-1015)
 ##   • TestSettingsMenu           — palette constants, initial state, _close() behaviour (SPA-1015)
@@ -152,6 +154,8 @@ extends RefCounted
 ##   • TestScenarioConfig         — all S1–S6 balance constants, NPC ids, arrays, phase windows (SPA-1041)
 ##   • TestRumor                  — create, base_believability, is_expired, decay_one_tick, is_positive_claim,
 ##                                  claim_type_name, NpcRumorSlot initial state (SPA-1041)
+##   • TestRumorEngine            — decay over time, floor at 0.15, full reset seed/evidence,
+##                                  partial reset eavesdrop/observe, recalculate_priorities (SPA-3294)
 ##   • TestRivalAgent             — initial state, activate, constants, _get_cooldown, can/apply_disruption,
 ##                                  _DEGRADE_MAP, scout (SPA-1041)
 ##   • TestGuildDefenseAgent      — initial state, config, activate, tick guards, effective cooldown (SPA-1041)
@@ -197,6 +201,10 @@ extends RefCounted
 ##   • TestStoryRecap             — palette, initial node refs null (SPA-1042)
 ##   • TestMissionBriefing        — palette, sprite constants, faction rows, initial state (SPA-1042)
 ##   • TestMissionCard            — palette, layout constants, initial state (SPA-1042)
+##   • TestEventAftermathScreen   — palette, panel/timing constants, signal, initial state,
+##                                  _format_effects() all types + 4-line cap, SPA-2920 causality
+##                                  strings: no-world fallback, reputation/heat/instantBelievers/
+##                                  heatCeilingOverride/abilityBonuses, sub-line rendering (SPA-2745/2920)
 ##   • TestEventCard              — palette, dimension constants, initial node refs null (SPA-1042)
 ##   • TestEventChoiceModal       — dimension constants, initial node refs null (SPA-1042)
 ##   • TestStrategicOverview      — palette, AUTO_DISMISS, sprite constants, initial state (SPA-1042)
@@ -268,11 +276,14 @@ const TestDistrictOverlay = preload("res://tests/test_district_overlay.gd")
 const TestDistrictPropsRegistry = preload("res://tests/test_district_props_registry.gd")
 const TestDistrictPropsSpawner = preload("res://tests/test_district_props_spawner.gd")
 const TestEndScreen = preload("res://tests/test_end_screen.gd")
+const TestEventAftermathScreen = preload("res://tests/test_event_aftermath_screen.gd")
 const TestEventCard = preload("res://tests/test_event_card.gd")
 const TestEventChoiceModal = preload("res://tests/test_event_choice_modal.gd")
 const TestFactionEventSystem = preload("res://tests/test_faction_event_system.gd")
+const TestFactionMemoryHorizon = preload("res://tests/test_faction_memory_horizon.gd")
 const TestFactionPalette = preload("res://tests/test_faction_palette.gd")
 const TestFeedbackSequence = preload("res://tests/test_feedback_sequence.gd")
+const TestForeshadowHud = preload("res://tests/test_foreshadow_hud.gd")
 const TestGameInputHandler = preload("res://tests/test_game_input_handler.gd")
 const TestGameState = preload("res://tests/test_game_state.gd")
 const TestGuidedDay2Manager  = preload("res://tests/test_guided_day2_manager.gd")
@@ -334,6 +345,7 @@ const TestReconTooltipManager = preload("res://tests/test_recon_tooltip_manager.
 const TestReputationSystem = preload("res://tests/test_reputation_system.gd")
 const TestRivalAgent = preload("res://tests/test_rival_agent.gd")
 const TestRumor = preload("res://tests/test_rumor.gd")
+const TestRumorEngine = preload("res://tests/test_rumor_engine.gd")
 const TestRumorEventWiring = preload("res://tests/test_rumor_event_wiring.gd")
 const TestRumorPanel = preload("res://tests/test_rumor_panel.gd")
 const TestRumorPanelClaimList = preload("res://tests/test_rumor_panel_claim_list.gd")
@@ -458,6 +470,9 @@ func _init() -> void:
 
 	print("\n── FactionEventSystem ──")
 	TestFactionEventSystem.new().run()
+
+	print("\n── FactionMemoryHorizon (A3.2 SPA-3295) ──")
+	TestFactionMemoryHorizon.new().run()
 
 	print("\n── SPA-970..976 Regressions ──")
 	TestSpa970976Regressions.new().run()
@@ -606,6 +621,9 @@ func _init() -> void:
 	print("\n── ReconHud ──")
 	TestReconHud.new().run()
 
+	print("\n── ForeshadowHud ──")
+	TestForeshadowHud.new().run()
+
 	print("\n── RumorPanel ──")
 	TestRumorPanel.new().run()
 
@@ -744,6 +762,9 @@ func _init() -> void:
 	print("\n── Rumor ──")
 	TestRumor.new().run()
 
+	print("\n── RumorEngine (A3.1 SPA-3294 decay curves) ──")
+	TestRumorEngine.new().run()
+
 	print("\n── RivalAgent ──")
 	TestRivalAgent.new().run()
 
@@ -851,6 +872,9 @@ func _init() -> void:
 
 	print("\n── MissionCard ──")
 	TestMissionCard.new().run()
+
+	print("\n── EventAftermathScreen ──")
+	TestEventAftermathScreen.new().run()
 
 	print("\n── EventCard ──")
 	TestEventCard.new().run()

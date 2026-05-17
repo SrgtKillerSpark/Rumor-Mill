@@ -155,6 +155,9 @@ var _maren_display_name: String = ""
 
 ## Sprint 4: SIR propagation engine (β/γ formulas, mutations, lineage registry).
 var propagation_engine: PropagationEngine = null
+## A3.1 SPA-3294: priority decay engine — manages effective_priority per tick.
+## Untyped to avoid class-cache ordering issues; runtime type is RumorEngine.
+var rumor_engine = null
 
 ## Rival agent — only active in Scenario 3.
 var rival_agent: RivalAgent = null
@@ -188,6 +191,9 @@ var milestone_tracker: MilestoneTracker = null
 
 ## Faction event system — fires 1-2 random events per scenario run (SPA-199).
 var faction_event_system: FactionEventSystem = null
+
+## A3.2 SPA-3295: Faction memory horizons — decaying per-faction disposition deltas.
+var faction_memory_horizon = null
 
 ## SPA-695: Environmental mood feedback — building dims, guard alerts, audio crossfades.
 var town_mood_controller: TownMoodController = null
@@ -603,6 +609,11 @@ func _spawn_npcs() -> void:
 
 func _init_propagation_engine() -> void:
 	propagation_engine = PropagationEngine.new()
+	# A3.1 SPA-3294: load by path (not class name) to avoid class-registry ordering issues.
+	var _re_script = load("res://scripts/rumor_engine.gd")
+	if _re_script != null:
+		rumor_engine = _re_script.new()
+		rumor_engine.live_rumors = propagation_engine.live_rumors
 	for npc in npcs:
 		npc.propagation_engine_ref = propagation_engine
 	# SPA-1518: Wire target-shift events to world signal for UI feedback.
@@ -1063,6 +1074,11 @@ func _apply_active_scenario() -> void:
 	faction_event_system = FactionEventSystem.new()
 	faction_event_system.initialize(self)
 
+	# 15. Faction memory horizon — A3.2 SPA-3295.
+	var _fmh_script = load("res://scripts/faction_memory_horizon.gd")
+	if _fmh_script != null:
+		faction_memory_horizon = _fmh_script.new()
+
 	# 14. Mid-game event agent — data-driven branching events from scenarios.json.
 	mid_game_event_agent = MidGameEventAgent.new()
 	var mid_events: Array = scenario_data.get("midGameEvents", [])
@@ -1185,6 +1201,12 @@ func on_game_tick(tick: int) -> void:
 	# ── Shelf-life decay: run before NPC state transitions so EXPIRED is visible. ──
 	if propagation_engine != null:
 		propagation_engine.tick_decay()
+	# A3.1 SPA-3294: recompute effective_priority after decay removes expired rumors.
+	if rumor_engine != null:
+		rumor_engine.recalculate_priorities(tick)
+	# A3.2 SPA-3295: prune zero-impact faction memory entries each tick.
+	if faction_memory_horizon != null:
+		faction_memory_horizon.on_tick(tick)
 
 	# Map continuous tick to a 0–5 schedule slot.
 	tpd = day_night.ticks_per_day if day_night != null else 24

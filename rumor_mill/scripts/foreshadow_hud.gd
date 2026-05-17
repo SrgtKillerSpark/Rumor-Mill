@@ -121,6 +121,11 @@ func _show_hint(text: String, subtext: String) -> void:
 	# Kill previous tween/timer if still running.
 	if _tween != null:
 		_tween.kill()
+	# Cancel any pending hide timer before clearing the reference.
+	# SceneTreeTimer has no stop(); disconnecting the signal is the safe pattern.
+	if _hide_timer != null and is_instance_valid(_hide_timer):
+		if _hide_timer.timeout.is_connected(_hide_banner):
+			_hide_timer.timeout.disconnect(_hide_banner)
 	_hide_timer = null
 
 	# Check reduced-motion preference (OS accessibility setting).
@@ -170,6 +175,7 @@ func _hide_banner() -> void:
 			_container, "position:y", -BANNER_H - 10, HIDE_TIME
 		).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
 	_tween.tween_callback(func() -> void: visible = false)
+	_hide_timer = null
 
 
 func _reduced_motion_active() -> bool:

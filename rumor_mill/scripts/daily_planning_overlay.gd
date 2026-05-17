@@ -528,7 +528,15 @@ func _apply_bonus(pdef: Dictionary) -> void:
 			intel.bribe_charges += 1
 		"journal_opened":
 			# +1 evidence insight — award a random evidence item if possible.
-			pass  # Evidence system integration TBD based on evidence inventory API.
+			if intel.evidence_inventory.size() >= PlayerIntelStore.MAX_EVIDENCE:
+				return  # inventory full — graceful no-op
+			var evidence_types: Array[String] = [
+				"Witness Statement", "Forged Letter", "Stolen Ledger",
+				"Overheard Confession", "Physical Token"
+			]
+			var ev_type: String = evidence_types[randi() % evidence_types.size()]
+			var item := PlayerIntelStore.EvidenceItem.new(ev_type, 0.15, 0.0, [], 0)
+			intel.add_evidence(item)
 
 
 # ── UX helpers (SPA-713) ─────────────────────────────────────────────────────

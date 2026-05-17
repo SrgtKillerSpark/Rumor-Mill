@@ -634,6 +634,17 @@ func _try_observe(location_id: String) -> void:
 
 	emit_signal("action_performed", msg, true)
 	_show_observe_sparkle()
+	# A3.1 SPA-3294: partial priority reset for live rumors whose subject NPC is at this building.
+	if _world_ref != null and _world_ref.get("rumor_engine") != null and _world_ref.propagation_engine != null:
+		var _re = _world_ref.rumor_engine  # RumorEngine
+		var _obs_tick := _current_tick()
+		for _rid in _world_ref.propagation_engine.live_rumors:
+			var _r: Rumor = _world_ref.propagation_engine.live_rumors[_rid]
+			for _npc in _world_ref.npcs:
+				if _npc.npc_data.get("id", "") == _r.subject_npc_id \
+						and (_npc.current_cell - entry_cell).length() <= 4:
+					_re.on_observe_reset(_r, _obs_tick)
+					break
 	# Cancel any pending outdoor-ambient clear timer from a previous observe.
 	_ambient_clear_seq += 1
 	# Show the building interior panel (lore/flavour) if one is registered.
@@ -756,6 +767,16 @@ func _try_eavesdrop(target: Node2D) -> void:
 			_witness_account_first_fired = true
 			witness_account_first_acquired.emit()
 
+	# A3.1 SPA-3294: partial priority reset for rumors the conversing NPCs actively believe.
+	if _world_ref != null and _world_ref.get("rumor_engine") != null:
+		var _re = _world_ref.rumor_engine  # RumorEngine
+		var _evs_tick := _current_tick()
+		var _active_states := [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]
+		for _enpc in [target, partner]:
+			for _rid in _enpc.rumor_slots:
+				var _slot: Rumor.NpcRumorSlot = _enpc.rumor_slots[_rid]
+				if _slot.state in _active_states:
+					_re.on_eavesdrop_reset(_slot.rumor, _evs_tick)
 	emit_signal("action_performed", msg, true)
 	_show_eavesdrop_success(target)
 	# Trigger an "eavesdrop" dialogue bubble on the target NPC.

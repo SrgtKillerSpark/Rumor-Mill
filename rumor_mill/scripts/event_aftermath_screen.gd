@@ -60,6 +60,7 @@ var _continue_btn:  Button         = null
 # ── State ─────────────────────────────────────────────────────────────────────
 
 var _world: Node = null
+var _event_name: String = ""
 
 
 func _ready() -> void:
@@ -82,6 +83,7 @@ func present(
 	world: Node
 ) -> void:
 	_world = world
+	_event_name = event_name
 	_title_lbl.text = event_name
 
 	_outcome_lbl.text = outcome_text
@@ -137,12 +139,14 @@ func _format_effects(effects: Dictionary) -> String:
 		if delta > 0:
 			entries.append({
 				"priority": 1,
-				"bbcode": "[color=#2D6A4F]^[/color] %s +%d" % [npc_name, delta]
+				"bbcode": "[color=#2D6A4F]^[/color] %s +%d" % [npc_name, delta],
+				"causality": _causality_reputation(npc_id),
 			})
 		else:
 			entries.append({
 				"priority": 1,
-				"bbcode": "[color=#8B3A2E]v[/color] %s %d" % [npc_name, delta]
+				"bbcode": "[color=#8B3A2E]v[/color] %s %d" % [npc_name, delta],
+				"causality": _causality_reputation(npc_id),
 			})
 
 	# Heat changes → stat delta (more heat is bad for the player).
@@ -157,12 +161,14 @@ func _format_effects(effects: Dictionary) -> String:
 			# More heat = bad
 			entries.append({
 				"priority": 1,
-				"bbcode": "[color=#8B3A2E]v[/color] Suspicion +%d — %s" % [delta, npc_name]
+				"bbcode": "[color=#8B3A2E]v[/color] Suspicion +%d — %s" % [delta, npc_name],
+				"causality": _causality_heat(npc_id),
 			})
 		else:
 			entries.append({
 				"priority": 1,
-				"bbcode": "[color=#2D6A4F]^[/color] Suspicion %d — %s" % [delta, npc_name]
+				"bbcode": "[color=#2D6A4F]^[/color] Suspicion %d — %s" % [delta, npc_name],
+				"causality": _causality_heat(npc_id),
 			})
 
 	# Heat ceiling override → stat note.
@@ -174,7 +180,8 @@ func _format_effects(effects: Dictionary) -> String:
 			"priority": 1,
 			"bbcode": "[color=#2D6A4F]^[/color] Heat ceiling %.0f for %d day%s" % [
 				new_ceil, dur, "s" if dur != 1 else ""
-			]
+			],
+			"causality": ("because the %s shifted public attention" % _event_name) if not _event_name.is_empty() else "",
 		})
 
 	# Instant believers → NPC state change (> priority).
@@ -184,7 +191,8 @@ func _format_effects(effects: Dictionary) -> String:
 		var subject: String = _resolve_npc_name(str(ib.get("subjectNpcId", "")))
 		entries.append({
 			"priority": 2,
-			"bbcode": "[color=#3B2712]>[/color] %d now believe the rumour about %s" % [count, subject]
+			"bbcode": "[color=#3B2712]>[/color] %d now believe the rumour about %s" % [count, subject],
+			"causality": _causality_instant_believers(ib),
 		})
 
 	# Suspicion freeze → stat improvement.
@@ -194,7 +202,8 @@ func _format_effects(effects: Dictionary) -> String:
 			"priority": 1,
 			"bbcode": "[color=#2D6A4F]^[/color] Suspicion frozen for %d day%s" % [
 				freeze, "s" if freeze != 1 else ""
-			]
+			],
+			"causality": "",
 		})
 
 	# Ability bonuses → stat delta.
@@ -204,15 +213,18 @@ func _format_effects(effects: Dictionary) -> String:
 		var bonus: int      = int(ab.get("bonus", 0))
 		if ability.is_empty() or bonus == 0:
 			continue
+		var ab_causality: String = ("because the %s changed the political balance" % _event_name) if not _event_name.is_empty() else ""
 		if bonus > 0:
 			entries.append({
 				"priority": 1,
-				"bbcode": "[color=#2D6A4F]^[/color] %s +%d" % [ability.capitalize(), bonus]
+				"bbcode": "[color=#2D6A4F]^[/color] %s +%d" % [ability.capitalize(), bonus],
+				"causality": ab_causality,
 			})
 		else:
 			entries.append({
 				"priority": 1,
-				"bbcode": "[color=#8B3A2E]v[/color] %s %d" % [ability.capitalize(), bonus]
+				"bbcode": "[color=#8B3A2E]v[/color] %s %d" % [ability.capitalize(), bonus],
+				"causality": ab_causality,
 			})
 
 	# Spec: show top 4 by magnitude; NPC state > faction stats > resource costs.
@@ -224,11 +236,151 @@ func _format_effects(effects: Dictionary) -> String:
 	var lines: PackedStringArray = PackedStringArray()
 	for i in range(min(entries.size(), MAX_LINES)):
 		lines.append(str(entries[i].get("bbcode", "")))
+		var causality: String = str(entries[i].get("causality", ""))
+		if not causality.is_empty():
+			lines.append("   [color=#7A6B5D][font_size=10]%s[/font_size][/color]" % causality)
 
 	if entries.size() > MAX_LINES:
 		lines.append("[color=#7A6B5D]...and other minor effects[/color]")
 
 	return "\n".join(lines)
+
+
+# ── Causality helpers ─────────────────────────────────────────────────────────
+
+## Causality for a reputationChanges entry: find the rumor about npc_id with
+## the most believers and report how far it spread. Returns "" when data is
+## unavailable so the caller never shows "because unknown".
+func _causality_reputation(npc_id: String) -> String:
+	if npc_id.is_empty() or _world == null:
+		return ""
+	if not _world.get("propagation_engine") or _world.propagation_engine == null:
+		return ""
+	var best_rumor = null
+	var best_count: int = 0
+	var other_rumor_count: int = 0
+	for rumor in _world.propagation_engine.live_rumors.values():
+		if rumor.subject_npc_id != npc_id:
+			continue
+		var cnt: int = _count_believers_for_rumor(rumor.id)
+		if cnt > best_count:
+			if best_rumor != null:
+				other_rumor_count += 1
+			best_count = cnt
+			best_rumor = rumor
+		elif cnt > 0:
+			other_rumor_count += 1
+	if best_rumor == null or best_count == 0:
+		return ""
+	var claim: String = _claim_type_label(best_rumor.claim_type)
+	var base: String = "because a %s rumor spread to %d NPC%s" % [claim, best_count, "s" if best_count != 1 else ""]
+	if other_rumor_count > 0:
+		base += " + other factors"
+	return base
+
+
+## Causality for a heatChanges entry: count live rumors targeting the faction
+## of npc_id. Returns "" when the faction or rumor data is unavailable.
+func _causality_heat(npc_id: String) -> String:
+	if npc_id.is_empty() or _world == null:
+		return ""
+	if not _world.get("propagation_engine") or _world.propagation_engine == null:
+		return ""
+	var faction: String = _resolve_npc_faction(npc_id)
+	if faction.is_empty():
+		return ""
+	# Collect IDs of NPCs in this faction.
+	var faction_ids: Dictionary = {}
+	for npc in _world.npcs:
+		if str(npc.npc_data.get("faction", "")) == faction:
+			faction_ids[str(npc.npc_data.get("id", ""))] = true
+	# Count distinct live rumors whose subject is a faction member.
+	var count: int = 0
+	for rumor in _world.propagation_engine.live_rumors.values():
+		if faction_ids.has(rumor.subject_npc_id):
+			count += 1
+	if count == 0:
+		return ""
+	return "because %d rumor%s targeted %s" % [count, "s" if count != 1 else "", faction.capitalize()]
+
+
+## Causality for an instantBelievers entry: find the most-connected NPC who is
+## actively spreading the relevant illness rumor and report their influence.
+## Uses world.social_graph edge counts as a proxy for reach. Returns "" when
+## no active spreader can be identified.
+func _causality_instant_believers(ib: Dictionary) -> String:
+	if _world == null:
+		return ""
+	if not _world.get("social_graph") or _world.social_graph == null:
+		return ""
+	var subject_id: String = str(ib.get("subjectNpcId", ""))
+	var count: int = int(ib.get("count", 0))
+	if subject_id.is_empty() or count == 0:
+		return ""
+	var best_name: String = ""
+	var best_degree: int = -1
+	for npc in _world.npcs:
+		var npc_id: String = str(npc.npc_data.get("id", ""))
+		if npc_id == subject_id:
+			continue
+		# Check if this NPC is actively spreading a rumor about subject_id.
+		var spreading: bool = false
+		for rid in npc.rumor_slots:
+			var slot = npc.rumor_slots[rid]
+			if slot.rumor != null and slot.rumor.subject_npc_id == subject_id \
+					and slot.state in [Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+				spreading = true
+				break
+		if not spreading:
+			continue
+		var edges: Dictionary = _world.social_graph.edges.get(npc_id, {})
+		var degree: int = edges.size()
+		if degree > best_degree:
+			best_degree = degree
+			best_name = _resolve_npc_name(npc_id)
+	if best_name.is_empty():
+		return ""
+	return "because %s convinced %d of their allies" % [best_name, count]
+
+
+## Count NPCs currently in BELIEVE, SPREAD, or ACT state for a given rumor id.
+func _count_believers_for_rumor(rumor_id: String) -> int:
+	var count: int = 0
+	if _world == null:
+		return 0
+	for npc in _world.npcs:
+		if not npc.rumor_slots.has(rumor_id):
+			continue
+		var slot = npc.rumor_slots[rumor_id]
+		if slot.state in [Rumor.RumorState.BELIEVE, Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
+			count += 1
+	return count
+
+
+## Return the faction string for a given npc_id by scanning world.npcs.
+func _resolve_npc_faction(npc_id: String) -> String:
+	if _world == null or npc_id.is_empty():
+		return ""
+	for npc in _world.npcs:
+		if str(npc.npc_data.get("id", "")) == npc_id:
+			return str(npc.npc_data.get("faction", ""))
+	return ""
+
+
+## Human-readable label for a Rumor.ClaimType enum value.
+func _claim_type_label(ct: Rumor.ClaimType) -> String:
+	match ct:
+		Rumor.ClaimType.ACCUSATION:        return "accusation"
+		Rumor.ClaimType.SCANDAL:           return "scandal"
+		Rumor.ClaimType.ILLNESS:           return "illness"
+		Rumor.ClaimType.PROPHECY:          return "prophecy"
+		Rumor.ClaimType.PRAISE:            return "praise"
+		Rumor.ClaimType.DEATH:             return "death"
+		Rumor.ClaimType.HERESY:            return "heresy"
+		Rumor.ClaimType.BLACKMAIL:         return "blackmail"
+		Rumor.ClaimType.SECRET_ALLIANCE:   return "secret alliance"
+		Rumor.ClaimType.FORBIDDEN_ROMANCE: return "forbidden romance"
+		_:                                 return "rumor"
 
 
 func _resolve_npc_name(npc_id: String) -> String:

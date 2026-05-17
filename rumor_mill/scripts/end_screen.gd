@@ -36,6 +36,20 @@ const C_SCORE_WIN    := Color(0.92, 0.78, 0.12, 1.0)   # gold  — score > 60
 const C_SCORE_FAIL   := Color(0.85, 0.18, 0.12, 1.0)   # crimson — score < 40
 const C_SCORE_NEU    := Color(0.85, 0.65, 0.15, 1.0)   # amber — neutral
 
+# ── SPA-2922: "What Went Wrong" panel palette (aftermath card visual language) ──
+const C_WWW_PANEL_BG  := Color(0.078, 0.039, 0.008, 0.97)  # #140A02 @97%
+const C_WWW_BORDER    := Color(0.600, 0.302, 0.122, 1.0)   # #994D1F
+const C_WWW_HEADER    := Color(0.231, 0.153, 0.071, 1.0)   # #3B2712 dark brown
+const C_WWW_ARROW_DN  := Color(0.545, 0.227, 0.180, 1.0)   # #8B3A2E rust red (wrong-dir)
+const C_WWW_CAUSALITY := Color(0.478, 0.420, 0.365, 1.0)   # #7A6B5D muted
+
+# NPC display names for S4 protected NPCs (not in NPC_OUTCOMES list)
+const WWW_NPC_NAMES: Dictionary = {
+	"aldous_prior": "Prior Aldous",
+	"vera_midwife": "Vera Midwife",
+	"finn_monk":    "Brother Finn",
+}
+
 const PANEL_W := 760
 const PANEL_H := 640
 
@@ -314,8 +328,7 @@ var _resolving: bool = false
 var _last_outcome_won: bool = false
 var _arrow_labels: Array = []   # Label refs for animated pulse
 var _btn_pulse_tween: Tween = null
-var _what_went_wrong_lbl: Label = null
-var _strategic_hint_lbl: RichTextLabel = null
+var _wwwp_container: Control = null  # SPA-2922: "What Went Wrong" panel card
 
 
 func _ready() -> void:
@@ -414,10 +427,9 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 		else:
 			_btn_next.tooltip_text = "Win this scenario to unlock."
 
-	# ── SPA-784: "What went wrong" one-liner for defeat ──────────────────────
+	# ── SPA-2922: "What Went Wrong" aftermath panel for defeat ───────────────
 	if not won:
-		_show_what_went_wrong(scenario_id, _infer_fail_reason(scenario_id))
-		_show_strategic_hint(fail_reason)
+		_build_what_went_wrong_panel(scenario_id, fail_reason)
 
 	# Default to Results tab.
 	_show_tab_results()
@@ -1640,60 +1652,372 @@ func _start_btn_pulse() -> void:
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
-# ── SPA-784: "What went wrong" defeat one-liner ────────────────────────────
+# ── SPA-2922: "What Went Wrong" defeat panel ────────────────────────────────
 
-const WHAT_WENT_WRONG := {
-	"exposed":             "You were identified — the rumor lost its anonymity.",
-	"timeout":             "You ran out of time before the story could take hold.",
-	"contradicted":        "A credible voice contradicted the rumor publicly.",
-	"calder_implicated":   "Calder became the target of your own narrative.",
-	"aldric_destroyed":    "Aldric's reputation collapsed under your campaign.",
-	"marta_silenced":      "Marta was turned into the villain of her own story.",
-	"reputation_collapsed": "A protected NPC's reputation fell below the threshold.",
-}
+## Build the styled "WHAT WENT WRONG" panel card on the fail end-screen.
+## Shows top-3 wrong-direction KPI deltas with causality strings and a
+## next-playthrough framing sentence. Reuses aftermath card visual language.
+func _build_what_went_wrong_panel(scenario_id: int, fail_reason: String) -> void:
+	if _wwwp_container != null and is_instance_valid(_wwwp_container):
+		_wwwp_container.queue_free()
+		_wwwp_container = null
 
+	var card := PanelContainer.new()
+	var card_style := StyleBoxFlat.new()
+	card_style.bg_color                  = C_WWW_PANEL_BG
+	card_style.border_color              = C_WWW_BORDER
+	card_style.set_border_width_all(1)
+	card_style.corner_radius_top_left    = 8
+	card_style.corner_radius_top_right   = 8
+	card_style.corner_radius_bottom_left = 8
+	card_style.corner_radius_bottom_right = 8
+	card_style.set_content_margin_all(16)
+	card.add_theme_stylebox_override("panel", card_style)
+	_wwwp_container = card
 
-func _show_what_went_wrong(scenario_id: int, fail_reason: String) -> void:
-	if _what_went_wrong_lbl != null:
-		_what_went_wrong_lbl.queue_free()
-	var text: String = WHAT_WENT_WRONG.get(fail_reason, "Your scheme unravelled.")
-	_what_went_wrong_lbl = Label.new()
-	_what_went_wrong_lbl.text = text
-	_what_went_wrong_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_what_went_wrong_lbl.add_theme_font_size_override("font_size", 13)
-	_what_went_wrong_lbl.add_theme_color_override("font_color", C_FAIL)
-	_what_went_wrong_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	# Insert below the stats cards, above the button row.
-	# The stats/npc cards are in _results_container; its parent is the main vbox.
+	var inner := VBoxContainer.new()
+	inner.add_theme_constant_override("separation", 5)
+	card.add_child(inner)
+
+	# ── Header ────────────────────────────────────────────────────────────────
+	var hdr := Label.new()
+	hdr.text = "WHAT WENT WRONG"
+	hdr.add_theme_font_size_override("font_size", 13)
+	hdr.add_theme_color_override("font_color", C_WWW_HEADER)
+	inner.add_child(hdr)
+	inner.add_child(_make_separator())
+
+	# ── Top-3 wrong-direction events ─────────────────────────────────────────
+	var events: Array = _compute_wrong_direction_events(scenario_id)
+	var days_elapsed: int = 0
+	if _day_night_ref != null and "current_day" in _day_night_ref:
+		days_elapsed = _day_night_ref.current_day
+
+	var lines: PackedStringArray = PackedStringArray()
+	for entry in events:
+		lines.append(_format_wwwp_event_line(entry, days_elapsed))
+
+	# Fallback: pad to 3 lines if fewer wrong-direction events found.
+	if lines.size() < 3:
+		if lines.size() == 0:
+			# No data — show generic fallback line.
+			lines.append(
+				"[color=#8B3A2E]v[/color] No wrong-direction data available\n" +
+				"   [color=#7A6B5D]run ended before meaningful reputation changes accumulated[/color]"
+			)
+		# Closest-to-winning padded metric (spec fallback).
+		if lines.size() < 2 and days_elapsed > 0:
+			lines.append(
+				"[color=#7A6B5D]No rumors active after Day %d[/color]" % days_elapsed
+			)
+		if lines.size() < 3:
+			lines.append(
+				"[color=#7A6B5D]Closest to winning: check Key Outcomes above[/color]"
+			)
+
+	var events_rtl := RichTextLabel.new()
+	events_rtl.bbcode_enabled  = true
+	events_rtl.fit_content     = true
+	events_rtl.autowrap_mode   = TextServer.AUTOWRAP_WORD_SMART
+	events_rtl.add_theme_font_size_override("normal_font_size", 12)
+	events_rtl.add_theme_color_override("default_color", C_WWW_HEADER)
+	events_rtl.text = "\n".join(lines)
+	inner.add_child(events_rtl)
+
+	inner.add_child(_make_separator())
+
+	# ── Next-playthrough framing sentence ────────────────────────────────────
+	var hint: String = _get_next_playthrough_hint(fail_reason, scenario_id)
+	var hint_rtl := RichTextLabel.new()
+	hint_rtl.bbcode_enabled = true
+	hint_rtl.fit_content    = true
+	hint_rtl.autowrap_mode  = TextServer.AUTOWRAP_WORD_SMART
+	hint_rtl.add_theme_font_size_override("normal_font_size", 13)
+	hint_rtl.add_theme_color_override("default_color", C_SUBHEADING)
+	hint_rtl.text = "[i]Next time: %s.[/i]" % hint
+	inner.add_child(hint_rtl)
+
+	# ── Insert between results cards and button row ───────────────────────────
 	if _results_container != null and _results_container.get_parent() != null:
-		var vbox := _results_container.get_parent()
+		var vbox: Node = _results_container.get_parent()
 		var idx_after: int = _results_container.get_index() + 1
-		vbox.add_child(_what_went_wrong_lbl)
-		vbox.move_child(_what_went_wrong_lbl, idx_after)
+		vbox.add_child(card)
+		vbox.move_child(card, idx_after)
 
 
-## Show "What could you have done differently?" strategic hint below the one-liner.
-func _show_strategic_hint(fail_reason: String) -> void:
-	if _strategic_hint_lbl != null:
-		_strategic_hint_lbl.queue_free()
-	if _world_ref == null or _world_ref.scenario_manager == null:
-		return
-	var hint: String = _world_ref.scenario_manager.get_strategic_defeat_hint(fail_reason)
-	if hint.is_empty():
-		return
-	_strategic_hint_lbl = RichTextLabel.new()
-	_strategic_hint_lbl.bbcode_enabled = true
-	_strategic_hint_lbl.fit_content = true
-	_strategic_hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_strategic_hint_lbl.add_theme_color_override("default_color", C_SUBHEADING)
-	_strategic_hint_lbl.add_theme_font_size_override("normal_font_size", 13)
-	_strategic_hint_lbl.text = "[center][b]What could you have done differently?[/b]\n" + hint + "[/center]"
-	# Insert directly below _what_went_wrong_lbl in the main vbox.
-	if _what_went_wrong_lbl != null and _what_went_wrong_lbl.get_parent() != null:
-		var vbox := _what_went_wrong_lbl.get_parent()
-		var idx_after: int = _what_went_wrong_lbl.get_index() + 1
-		vbox.add_child(_strategic_hint_lbl)
-		vbox.move_child(_strategic_hint_lbl, idx_after)
+## Format one wrong-direction event entry into BBCode consequence lines.
+## Entry must have: stat_label (String), gap (int), direction (int ±1), causality (String).
+func _format_wwwp_event_line(entry: Dictionary, days_elapsed: int) -> String:
+	var stat_label: String = str(entry.get("stat_label", ""))
+	var gap: int           = int(entry.get("gap", 0))
+	var direction: int     = int(entry.get("direction", -1))
+	var causality: String  = str(entry.get("causality", ""))
+
+	# Always a down-arrow: this metric moved in the wrong direction.
+	var gap_signed: String = ("+%d" % gap) if direction < 0 else ("-%d" % gap)
+	var days_str: String   = "over %d day%s" % [days_elapsed, "s" if days_elapsed != 1 else ""]
+	var line := "[color=#8B3A2E]v[/color] %s %s %s" % [stat_label, gap_signed, days_str]
+	if not causality.is_empty():
+		line += "\n   [color=#7A6B5D]%s[/color]" % causality
+	return line
+
+
+## Compute which win-condition KPIs moved in the wrong direction.
+## Returns up to 3 entries sorted by gap magnitude (worst first).
+## Each entry: { stat_label, gap, direction (+1=should-be-higher / -1=should-be-lower),
+##               causality, npc_id }
+func _compute_wrong_direction_events(scenario_id: int) -> Array:
+	if _world_ref == null or not "reputation_system" in _world_ref:
+		return []
+	var rep: ReputationSystem = _world_ref.reputation_system
+	if rep == null:
+		return []
+	var sm: ScenarioManager = _world_ref.scenario_manager if "scenario_manager" in _world_ref else null
+	var candidates: Array = []
+
+	match scenario_id:
+		1:
+			var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ScenarioManager.EDRIC_FENN_ID)
+			if snap != null:
+				var target: int = (sm.S1_WIN_EDRIC_BELOW if sm != null else 30)
+				var gap: int    = snap.score - target  # positive = still above target = wrong
+				if gap > 0:
+					candidates.append({
+						"npc_id":     ScenarioManager.EDRIC_FENN_ID,
+						"stat_label": "Edric Fenn Reputation",
+						"gap":        gap,
+						"direction":  -1,
+						"causality":  _wwwp_causality(ScenarioManager.EDRIC_FENN_ID),
+					})
+		2:
+			# S2 win condition is illness-believer count, not raw reputation.
+			var count: int  = 0
+			if rep.has_method("get_illness_believer_count"):
+				count = rep.get_illness_believer_count(ScenarioManager.ALYS_HERBWIFE_ID)
+			var target: int = (sm.s2_win_illness_min if sm != null else ScenarioConfig.S2_WIN_ILLNESS_MIN)
+			var gap: int    = target - count  # positive = still below target
+			if gap > 0:
+				candidates.append({
+					"npc_id":     ScenarioManager.ALYS_HERBWIFE_ID,
+					"stat_label": "Illness Believer Count",
+					"gap":        gap,
+					"direction":  1,
+					"causality":  "",
+				})
+			# Also surface Alys reputation if it somehow moved wrong.
+			var alys: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ScenarioManager.ALYS_HERBWIFE_ID)
+			if alys != null and alys.score < 30:
+				candidates.append({
+					"npc_id":     ScenarioManager.ALYS_HERBWIFE_ID,
+					"stat_label": "Alys Herbwife Reputation",
+					"gap":        30 - alys.score,
+					"direction":  1,
+					"causality":  _wwwp_causality(ScenarioManager.ALYS_HERBWIFE_ID),
+				})
+		3:
+			var calder: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ScenarioManager.CALDER_FENN_ID)
+			var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(ScenarioManager.TOMAS_REEVE_ID)
+			if calder != null:
+				var target: int = (sm.S3_WIN_CALDER_MIN if sm != null else ScenarioConfig.S3_WIN_CALDER_MIN)
+				var gap: int    = target - calder.score
+				if gap > 0:
+					candidates.append({
+						"npc_id":     ScenarioManager.CALDER_FENN_ID,
+						"stat_label": "Calder Fenn Reputation",
+						"gap":        gap,
+						"direction":  1,
+						"causality":  _wwwp_causality(ScenarioManager.CALDER_FENN_ID),
+					})
+			if tomas != null:
+				var target: int = (sm.S3_WIN_TOMAS_MAX if sm != null else ScenarioConfig.S3_WIN_TOMAS_MAX)
+				var gap: int    = tomas.score - target
+				if gap > 0:
+					candidates.append({
+						"npc_id":     ScenarioManager.TOMAS_REEVE_ID,
+						"stat_label": "Tomas Reeve Reputation",
+						"gap":        gap,
+						"direction":  -1,
+						"causality":  _wwwp_causality(ScenarioManager.TOMAS_REEVE_ID),
+					})
+		4:
+			for npc_id: String in ScenarioConfig.S4_PROTECTED_NPC_IDS:
+				var snap: ReputationSystem.ReputationSnapshot = rep.get_snapshot(npc_id)
+				if snap != null:
+					var target: int = (sm.S4_WIN_REP_MIN if sm != null else ScenarioConfig.S4_WIN_REP_MIN)
+					var gap: int    = target - snap.score
+					if gap > 0:
+						candidates.append({
+							"npc_id":     npc_id,
+							"stat_label": _wwwp_npc_display_name(npc_id) + " Reputation",
+							"gap":        gap,
+							"direction":  1,
+							"causality":  _wwwp_causality(npc_id),
+						})
+		5:
+			var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ScenarioManager.ALDRIC_VANE_ID)
+			var edric:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(ScenarioManager.EDRIC_FENN_ID)
+			var tomas:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(ScenarioManager.TOMAS_REEVE_ID)
+			if aldric != null:
+				var target: int = (sm.S5_WIN_ALDRIC_MIN if sm != null else ScenarioConfig.S5_WIN_ALDRIC_MIN)
+				var gap: int    = target - aldric.score
+				if gap > 0:
+					candidates.append({
+						"npc_id":     ScenarioManager.ALDRIC_VANE_ID,
+						"stat_label": "Aldric Vane Reputation",
+						"gap":        gap,
+						"direction":  1,
+						"causality":  _wwwp_causality(ScenarioManager.ALDRIC_VANE_ID),
+					})
+			if edric != null:
+				var target: int = (sm.S5_WIN_RIVALS_MAX if sm != null else ScenarioConfig.S5_WIN_RIVALS_MAX)
+				var gap: int    = edric.score - target
+				if gap > 0:
+					candidates.append({
+						"npc_id":     ScenarioManager.EDRIC_FENN_ID,
+						"stat_label": "Edric Fenn Reputation",
+						"gap":        gap,
+						"direction":  -1,
+						"causality":  _wwwp_causality(ScenarioManager.EDRIC_FENN_ID),
+					})
+			if tomas != null:
+				var target: int = (sm.S5_WIN_RIVALS_MAX if sm != null else ScenarioConfig.S5_WIN_RIVALS_MAX)
+				var gap: int    = tomas.score - target
+				if gap > 0:
+					candidates.append({
+						"npc_id":     ScenarioManager.TOMAS_REEVE_ID,
+						"stat_label": "Tomas Reeve Reputation",
+						"gap":        gap,
+						"direction":  -1,
+						"causality":  _wwwp_causality(ScenarioManager.TOMAS_REEVE_ID),
+					})
+		6:
+			var aldric: ReputationSystem.ReputationSnapshot = rep.get_snapshot(ScenarioManager.ALDRIC_VANE_ID)
+			var marta:  ReputationSystem.ReputationSnapshot = rep.get_snapshot(ScenarioManager.MARTA_COIN_ID)
+			if aldric != null:
+				var target: int = (sm.S6_WIN_ALDRIC_MAX if sm != null else ScenarioConfig.S6_WIN_ALDRIC_MAX)
+				var gap: int    = aldric.score - target
+				if gap > 0:
+					candidates.append({
+						"npc_id":     ScenarioManager.ALDRIC_VANE_ID,
+						"stat_label": "Aldric Vane Reputation",
+						"gap":        gap,
+						"direction":  -1,
+						"causality":  _wwwp_causality(ScenarioManager.ALDRIC_VANE_ID),
+					})
+			if marta != null:
+				var target: int = (sm.S6_WIN_MARTA_MIN if sm != null else ScenarioConfig.S6_WIN_MARTA_MIN)
+				var gap: int    = target - marta.score
+				if gap > 0:
+					candidates.append({
+						"npc_id":     ScenarioManager.MARTA_COIN_ID,
+						"stat_label": "Marta Coin Reputation",
+						"gap":        gap,
+						"direction":  1,
+						"causality":  _wwwp_causality(ScenarioManager.MARTA_COIN_ID),
+					})
+
+	# Sort by gap descending (largest wrong-direction first) and cap at 3.
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("gap", 0)) > int(b.get("gap", 0))
+	)
+	return candidates.slice(0, 3)
+
+
+## Causality string for a wrong-direction NPC: "because a <claim> rumor reached N NPCs".
+## Adapted from event_aftermath_screen._causality_reputation (A2.1 logic). SPA-2922.
+func _wwwp_causality(npc_id: String) -> String:
+	if npc_id.is_empty() or _world_ref == null:
+		return ""
+	if not "propagation_engine" in _world_ref or _world_ref.propagation_engine == null:
+		return ""
+	var pe: PropagationEngine = _world_ref.propagation_engine
+	var best_count: int  = 0
+	var best_claim: String = ""
+	var other_count: int = 0
+	for rumor in pe.live_rumors.values():
+		if str(rumor.get("subject_npc_id", "")) != npc_id:
+			continue
+		var cnt: int = _wwwp_count_believers(str(rumor.get("id", "")))
+		if cnt > best_count:
+			if best_count > 0:
+				other_count += 1
+			best_count = cnt
+			best_claim = _wwwp_claim_label(str(rumor.get("claim_type", "")))
+		elif cnt > 0:
+			other_count += 1
+	if best_count == 0:
+		return ""
+	var text := "because a %s rumor reached %d NPC%s" % [best_claim, best_count, "s" if best_count != 1 else ""]
+	if other_count > 0:
+		text += " + other factors"
+	return text
+
+
+## Count NPCs believing a rumor by slot state. States: BELIEVE=2, SPREAD=4, ACT=5.
+func _wwwp_count_believers(rumor_id: String) -> int:
+	if _world_ref == null or not "npcs" in _world_ref:
+		return 0
+	var count: int = 0
+	for npc in _world_ref.npcs:
+		if "rumor_slots" in npc and npc.rumor_slots.has(rumor_id):
+			var state: int = npc.rumor_slots[rumor_id]
+			if state == 2 or state == 4 or state == 5:
+				count += 1
+	return count
+
+
+## Translate claim_type string to a readable label.
+func _wwwp_claim_label(claim_type: String) -> String:
+	match claim_type:
+		"illness":      return "illness"
+		"theft":        return "theft"
+		"corruption":   return "corruption"
+		"betrayal":     return "betrayal"
+		"heresy":       return "heresy"
+		"incompetence": return "incompetence"
+		_:              return "rumor"
+
+
+## Display name for an NPC id (used for S4 protected NPCs not in NPC_OUTCOMES).
+func _wwwp_npc_display_name(npc_id: String) -> String:
+	return WWW_NPC_NAMES.get(npc_id, npc_id.replace("_", " ").capitalize())
+
+
+## Select the next-playthrough framing sentence from the spec template table.
+## Spec failure modes → templates (SPA-2922).
+func _get_next_playthrough_hint(fail_reason: String, scenario_id: int) -> String:
+	match fail_reason:
+		"exposed":
+			return "spread rumors across multiple factions to avoid concentrating suspicion"
+		"contradicted":
+			return "watch for Clergy investigators and seed counter-narrative"
+		"reputation_collapsed":
+			return "protect key allies early — target their opponents before suspicion builds"
+		"calder_implicated":
+			return "experiment with a different faction mix and keep your evidence fresh"
+		"aldric_destroyed":
+			return "experiment with a different faction mix and keep your evidence fresh"
+		"marta_silenced":
+			return "experiment with a different faction mix and keep your evidence fresh"
+		"timeout":
+			if scenario_id == 2:
+				return "focus early rumors on Clergy-aligned NPCs to build believer count faster"
+			var faction: String = _wwwp_primary_faction(scenario_id)
+			return "focus early rumors on %s-aligned NPCs" % faction
+		_:
+			return "experiment with a different faction mix and keep your evidence fresh"
+
+
+## Primary faction label for timeout hint, per scenario.
+func _wwwp_primary_faction(scenario_id: int) -> String:
+	match scenario_id:
+		1: return "Merchant"
+		2: return "Clergy"
+		3: return "Noble"
+		4: return "Clergy"
+		5: return "Merchant"
+		6: return "Guild"
+	return "local"
 
 
 # ── Button handlers ───────────────────────────────────────────────────────────

@@ -1,7 +1,8 @@
 ## test_journal_recommended_actions.gd — Unit tests for
-## JournalRecommendedActions._compute_suggestions() (SPA-2618).
+## JournalRecommendedActions._compute_suggestions() (SPA-2618) and the
+## SPA-2921 lifecycle state machine.
 ##
-## Covers:
+## _compute_suggestions() coverage:
 ##   • Null-ref guard: returns [] when world or intel_store is null
 ##   • Priority 1: no observations + actions_left > 0 → "Observe a Building"
 ##   • Priority 2: observations, no relationships + actions_left > 0 → "Eavesdrop on NPCs"
@@ -10,6 +11,20 @@
 ##   • Day-based: day >= 2 + actions_left > 0 + has_observations → "Follow Up on Intel"
 ##   • Token-exhausted: tokens_left == 0 + actions_left > 0 → "Scout for Tomorrow"
 ##   • Suggestion cap: result never exceeds 3 entries
+##
+## SPA-2921 lifecycle state machine coverage:
+##   • New entry initialised as active — returned on first _apply_lifecycle() call
+##   • shown_count increments; cooldown activates after COOLDOWN_THRESHOLD shows
+##   • Cooldown recovery: suggestion resumes after COOLDOWN_SKIPS refreshes
+##   • Pending completion (from signal handler) marks entry as "completed"
+##   • Completed entry skipped on detection refresh, shown once, then expires
+##   • reset_lifecycle() clears _lifecycle, _refresh_count, and _pending_completions
+##   • _on_action_performed observe → observe_building + follow_up_intel pending
+##   • _on_action_performed eavesdrop → eavesdrop_npcs + follow_up_intel pending
+##   • _on_action_performed failure (success=false) → no pending changes
+##   • _on_rumor_seeded → craft_first_rumour + seed_another_rumour pending
+##   • _on_rumor_seeded with merchant claim → clergy_investigation also pending
+##   • _on_rumor_seeded with non-merchant claim → no clergy_investigation pending
 ##
 ## JournalRecommendedActions extends VBoxContainer.  Instantiating without
 ## adding to the scene tree skips _ready(), leaving UI state irrelevant.
@@ -122,6 +137,19 @@ func run() -> void:
 		"test_tokens_available_no_scout_suggestion",
 		# Cap
 		"test_suggestions_capped_at_3",
+		# Lifecycle state machine (SPA-2921)
+		"test_lifecycle_new_entry_is_active",
+		"test_lifecycle_cooldown_after_threshold",
+		"test_lifecycle_cooldown_recovery",
+		"test_lifecycle_pending_completion_marks_completed",
+		"test_lifecycle_completed_shown_once_then_expires",
+		"test_reset_lifecycle_clears_state",
+		"test_on_action_performed_observe_sets_pending",
+		"test_on_action_performed_eavesdrop_sets_pending",
+		"test_on_action_performed_failure_no_pending",
+		"test_on_rumor_seeded_sets_pending",
+		"test_on_rumor_seeded_merchant_claim_sets_clergy_pending",
+		"test_on_rumor_seeded_non_merchant_no_clergy_pending",
 	]
 
 	for method_name in tests:
@@ -322,3 +350,166 @@ static func test_suggestions_capped_at_3() -> bool:
 	var jra := _make_jra(world, intel)
 	var suggestions: Array = jra._compute_suggestions()
 	return suggestions.size() <= 3
+
+
+# ── Lifecycle state machine tests (SPA-2921) ──────────────────────────────────
+
+## Helper: build a minimal raw suggestion dict for lifecycle tests.
+static func _make_raw(template_id: String) -> Dictionary:
+	return {"template_id": template_id, "title": "Test", "body": "test body"}
+
+
+## First _apply_lifecycle() call with a new template_id initialises the entry
+## as "active" and returns it in the result array.
+static func test_lifecycle_new_entry_is_active() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	var result: Array = jra._apply_lifecycle([_make_raw("observe_building")])
+	return result.size() == 1 and result[0].get("template_id") == "observe_building"
+
+
+## After shown COOLDOWN_THRESHOLD times, the next _apply_lifecycle() call
+## suppresses the entry (cooldown activated).
+static func test_lifecycle_cooldown_after_threshold() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	var raw := [_make_raw("observe_building")]
+	for i in range(JournalRecommendedActionsScript.COOLDOWN_THRESHOLD):
+		jra._apply_lifecycle(raw)
+	# One more call must enter cooldown → empty result.
+	return jra._apply_lifecycle(raw).is_empty()
+
+
+## After the cooldown is exhausted (COOLDOWN_THRESHOLD + 1 + COOLDOWN_SKIPS
+## total calls), the suggestion resumes on the next call.
+static func test_lifecycle_cooldown_recovery() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	var raw := [_make_raw("observe_building")]
+	# Fill shown_count to threshold, then trigger cooldown.
+	for i in range(JournalRecommendedActionsScript.COOLDOWN_THRESHOLD + 1):
+		jra._apply_lifecycle(raw)
+	# Drain the cooldown skips.
+	for i in range(JournalRecommendedActionsScript.COOLDOWN_SKIPS):
+		jra._apply_lifecycle(raw)
+	# Now should be active again.
+	return jra._apply_lifecycle(raw).size() == 1
+
+
+## A signal-driven pending completion transitions the lifecycle entry to
+## "completed" state on the next _apply_lifecycle() call.
+static func test_lifecycle_pending_completion_marks_completed() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	var raw := [_make_raw("observe_building")]
+	# Initialise entry.
+	jra._refresh_count = 1
+	jra._apply_lifecycle(raw)
+	# Signal completion.
+	jra._on_action_performed("Observed the Market", true)
+	# Process pending on next refresh.
+	jra._refresh_count = 2
+	jra._apply_lifecycle(raw)
+	return jra._lifecycle.get("observe_building", {}).get("state", "") == "completed"
+
+
+## A completed entry is:
+##   • skipped on the refresh it is detected (completed_at_refresh == _refresh_count),
+##   • shown once with _lifecycle_state == "completed" on the NEXT refresh, then
+##   • silently expired thereafter.
+static func test_lifecycle_completed_shown_once_then_expires() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	var raw := [_make_raw("observe_building")]
+
+	# Refresh 1: initialise entry.
+	jra._refresh_count = 1
+	jra._apply_lifecycle(raw)
+
+	# Signal completion.
+	jra._on_action_performed("Observed the Market", true)
+
+	# Refresh 2: completion detected — entry marked completed but skipped
+	#             (completed_at_refresh == _refresh_count).
+	jra._refresh_count = 2
+	var skipped: Array = jra._apply_lifecycle(raw)
+
+	# Refresh 3: completed_at_refresh(2) != _refresh_count(3) → shown with check.
+	jra._refresh_count = 3
+	var shown: Array = jra._apply_lifecycle(raw)
+
+	# Refresh 4: _shown_as_completed = true → expired → empty.
+	jra._refresh_count = 4
+	var expired: Array = jra._apply_lifecycle(raw)
+
+	var shown_as_completed: bool = (shown.size() == 1
+		and shown[0].get("_lifecycle_state", "") == "completed")
+	return skipped.is_empty() and shown_as_completed and expired.is_empty()
+
+
+## reset_lifecycle() clears _lifecycle, _refresh_count, and _pending_completions.
+static func test_reset_lifecycle_clears_state() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	jra._apply_lifecycle([_make_raw("observe_building")])
+	jra._on_action_performed("Observed", true)
+	jra.reset_lifecycle()
+	return (jra._lifecycle.is_empty()
+		and jra._refresh_count == 0
+		and jra._pending_completions.is_empty())
+
+
+## _on_action_performed with an "observe" message sets pending for both
+## observe_building and follow_up_intel.
+static func test_on_action_performed_observe_sets_pending() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	jra._on_action_performed("Observed the Market", true)
+	return ("observe_building" in jra._pending_completions
+		and "follow_up_intel" in jra._pending_completions)
+
+
+## _on_action_performed with an "eavesdrop" message sets pending for both
+## eavesdrop_npcs and follow_up_intel.
+static func test_on_action_performed_eavesdrop_sets_pending() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	jra._on_action_performed("Eavesdropped on two NPCs", true)
+	return ("eavesdrop_npcs" in jra._pending_completions
+		and "follow_up_intel" in jra._pending_completions)
+
+
+## A failed action (success=false) must not set any pending completions.
+static func test_on_action_performed_failure_no_pending() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	jra._on_action_performed("Observed the Market", false)
+	return jra._pending_completions.is_empty()
+
+
+## _on_rumor_seeded always sets pending for craft_first_rumour and
+## seed_another_rumour regardless of the claim.
+static func test_on_rumor_seeded_sets_pending() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	jra._on_rumor_seeded("r1", "edric", "illness", "tavern_npc")
+	return ("craft_first_rumour" in jra._pending_completions
+		and "seed_another_rumour" in jra._pending_completions)
+
+
+## _on_rumor_seeded with a merchant-related claim_id also sets
+## clergy_investigation pending (SPA-2653 counter-narrative trigger).
+static func test_on_rumor_seeded_merchant_claim_sets_clergy_pending() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	jra._on_rumor_seeded("r1", "edric", "merchant_scandal", "tavern_npc")
+	return "clergy_investigation" in jra._pending_completions
+
+
+## _on_rumor_seeded with a non-merchant claim does NOT set
+## clergy_investigation pending.
+static func test_on_rumor_seeded_non_merchant_no_clergy_pending() -> bool:
+	var jra: VBoxContainer = JournalRecommendedActionsScript.new()
+	jra.setup(MockWorld.make(), MockIntelStore.make())
+	jra._on_rumor_seeded("r1", "edric", "illness", "tavern_npc")
+	return "clergy_investigation" not in jra._pending_completions
