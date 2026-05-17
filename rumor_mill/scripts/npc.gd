@@ -192,6 +192,24 @@ var _defending_icon: Label = null
 ## Faction badge dot displayed next to name label (SPA-724).
 var _faction_badge: ColorRect = null
 
+# ── A3.2a: Disposition ring (SPA-4104) ──────────────────────────────────────
+## Line2D ring drawn around the faction badge when this NPC has rumor history.
+var _disposition_ring: Line2D = null
+var _disposition_ring_tween: Tween = null
+## Tracks whether the ring was last rendered as horizon-faded for tween logic.
+var _ring_was_faded: bool = false
+## Set true after the first on_tick so we do a one-time initial ring refresh.
+var _ring_initialized: bool = false
+
+const _RING_COLOR_POSITIVE := Color(0.420, 0.620, 0.420, 1.0)  # #6B9E6B
+const _RING_COLOR_NEGATIVE := Color(0.831, 0.271, 0.227, 1.0)  # #D4453A
+const _RING_COLOR_MIXED    := Color(0.784, 0.635, 0.180, 1.0)  # #C8A22E
+const _RING_HORIZON_TICKS  := 99    # 3 game days × 33 ticks/day
+const _RING_FADED_ALPHA    := 0.40
+const _RING_RADIUS         := 6.0   # badge half-size (4) + 2
+const _RING_WIDTH          := 2.0
+const _RING_POINTS         := 16    # circle resolution
+
 # subject_npc_id → float (accumulated penalty applied to this NPC's credulity)
 var _defense_modifiers: Dictionary = {}
 # subject_npc_id → int (ticks remaining before penalty expires)
@@ -268,6 +286,8 @@ var _idle_bubble_cooldown: int    = 0
 var _has_bubble:           bool   = false
 ## Current hour of day (0-23), updated each tick for time-of-day dialogue selection.
 var _current_hour:         int    = 0
+## Current simulation tick, stored so signal-driven ring updates can reference it.
+var _current_tick:         int    = 0
 ## Ticks until this NPC next shows a scenario-gossip bubble.
 var _gossip_cooldown:      int    = 0
 ## Ticks until this NPC next shows an NPC-chatter bubble when near another NPC.
@@ -406,6 +426,100 @@ func _build_faction_badge(faction: String) -> void:
 	add_child(badge)
 	_faction_badge = badge
 
+	# A3.2a — Disposition ring: circle of radius _RING_RADIUS centred on the badge.
+	var badge_center := Vector2(badge.position.x + 4.0, badge.position.y + 4.0)
+	var ring := Line2D.new()
+	ring.width = _RING_WIDTH
+	ring.default_color = _RING_COLOR_POSITIVE  # overwritten by _update_disposition_ring
+	ring.closed = true
+	var pts := PackedVector2Array()
+	for i in _RING_POINTS:
+		var angle := float(i) * TAU / float(_RING_POINTS)
+		pts.append(badge_center + Vector2(cos(angle), sin(angle)) * _RING_RADIUS)
+	ring.points = pts
+	ring.visible = false
+	add_child(ring)
+	_disposition_ring = ring
+
+
+# ── Disposition ring update (A3.2a, SPA-4104) ────────────────────────────────
+
+## Refresh the disposition ring color and opacity based on rumor_history and tick.
+## Called once on the first on_tick and thereafter via the rumor_state_changed signal.
+func _update_disposition_ring(tick: int) -> void:
+	if _disposition_ring == null or not is_instance_valid(_disposition_ring):
+		return
+
+	if rumor_history.is_empty():
+		_disposition_ring.visible = false
+		return
+
+	# Determine outcome mix (positive = believed/act, negative = rejected).
+	var has_positive := false
+	var has_negative := false
+	var latest_tick: int = 0
+	for entry in rumor_history:
+		var outcome: String = entry.get("outcome", "")
+		if outcome == "believed" or outcome == "act":
+			has_positive = true
+		elif outcome == "rejected":
+			has_negative = true
+		var et: int = entry.get("tick", 0)
+		if et > latest_tick:
+			latest_tick = et
+
+	var ring_color: Color
+	if has_positive and has_negative:
+		ring_color = _RING_COLOR_MIXED
+	elif has_positive:
+		ring_color = _RING_COLOR_POSITIVE
+	else:
+		ring_color = _RING_COLOR_NEGATIVE
+
+	var is_faded: bool = (tick - latest_tick) > _RING_HORIZON_TICKS
+	var target_alpha: float = _RING_FADED_ALPHA if is_faded else 1.0
+
+	_disposition_ring.default_color = Color(ring_color.r, ring_color.g, ring_color.b,
+			_disposition_ring.default_color.a if _disposition_ring.visible else target_alpha)
+	_disposition_ring.visible = true
+
+	# Tween alpha when crossing the horizon threshold.
+	if is_faded != _ring_was_faded:
+		_ring_was_faded = is_faded
+		if _disposition_ring_tween != null:
+			_disposition_ring_tween.kill()
+		var from_alpha: float = _disposition_ring.default_color.a
+		var rc := ring_color  # capture for lambda
+		var dr := _disposition_ring  # capture for lambda
+		_disposition_ring_tween = create_tween()
+		_disposition_ring_tween.tween_method(
+			func(a: float) -> void: if dr != null and is_instance_valid(dr): dr.default_color = Color(rc.r, rc.g, rc.b, a),
+			from_alpha, target_alpha, 0.5
+		)
+	else:
+		# No crossing — snap color (alpha already set correctly above).
+		_disposition_ring.default_color = Color(ring_color.r, ring_color.g, ring_color.b, target_alpha)
+
+
+## Returns the current disposition ring color for this NPC (used by dialogue panel).
+## Returns Color.TRANSPARENT if there is no rumor history.
+func get_disposition_ring_color() -> Color:
+	if rumor_history.is_empty():
+		return Color.TRANSPARENT
+	var has_positive := false
+	var has_negative := false
+	for entry in rumor_history:
+		var outcome: String = entry.get("outcome", "")
+		if outcome == "believed" or outcome == "act":
+			has_positive = true
+		elif outcome == "rejected":
+			has_negative = true
+	if has_positive and has_negative:
+		return _RING_COLOR_MIXED
+	elif has_positive:
+		return _RING_COLOR_POSITIVE
+	return _RING_COLOR_NEGATIVE
+
 
 # ── Initialisation ───────────────────────────────────────────────────────────
 
@@ -465,11 +579,18 @@ func init_from_data(
 	_thought_bubble = NpcThoughtBubble.new()
 	add_child(_thought_bubble)
 
+	# A3.2a — Connect the disposition ring update to our own state-change signal.
+	rumor_state_changed.connect(func(_n, _s, _r): _update_disposition_ring(_current_tick))
+
 
 # ── Per-tick entry point ─────────────────────────────────────────────────────
 
 func on_tick(tick: int) -> void:
+	_current_tick = tick
 	_current_hour = tick % 24
+	if not _ring_initialized:
+		_ring_initialized = true
+		_update_disposition_ring(tick)
 	_step_movement()
 	_process_rumor_slots(tick)
 	_tick_defender(tick)

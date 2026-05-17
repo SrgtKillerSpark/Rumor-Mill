@@ -43,6 +43,12 @@ const C_BTN_TEXT    := Color(0.92, 0.82, 0.60, 1.0)
 const C_BTN_DISABLE := Color(0.42, 0.38, 0.28, 1.0)
 const C_LEAVE_TEXT  := Color(0.58, 0.52, 0.38, 1.0)
 
+# A3.2b — Memory recency line colors (SPA-4104).
+const C_MEMORY_RECENT  := Color(0.800, 0.722, 0.549, 0.90)  # #CCB88C at 90% alpha
+const C_MEMORY_FADED   := Color(0.561, 0.498, 0.439, 1.0)  # #8F7F70
+const C_MEMORY_OUTLINE := Color(0.08, 0.05, 0.02, 0.7)
+const _MEMORY_HORIZON_TICKS := 99  # 3 game days × 33 ticks/day
+
 const C_FACTION_MERCHANT := Color(1.00, 0.80, 0.20, 1.0)
 const C_FACTION_NOBLE    := Color(0.40, 0.60, 1.00, 1.0)
 const C_FACTION_CLERGY   := Color(0.90, 0.90, 0.90, 1.0)
@@ -363,6 +369,35 @@ func _rebuild_panel(npc: Node2D) -> void:
 		fac_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.3))
 		id_col.add_child(fac_lbl)
 
+	# ── A3.2b: Memory recency line (SPA-4104) ────────────────────────────────
+	var history: Array = npc.get("rumor_history") if npc != null else null
+	if history != null and history.size() > 0:
+		var current_tick: int = 0
+		if _world_ref != null and _world_ref.get("day_night") != null:
+			current_tick = int(_world_ref.day_night.current_tick)
+		var mem_text := _memory_recency_text(history, current_tick)
+		var ring_col: Color = npc.get_disposition_ring_color() \
+				if npc.has_method("get_disposition_ring_color") else Color.WHITE
+		var is_faded: bool = _memory_is_faded(history, current_tick)
+		var text_col: Color = C_MEMORY_FADED if is_faded else C_MEMORY_RECENT
+
+		# Prefix with a filled circle (U+25CF) tinted to the disposition ring color.
+		var mem_rtl := RichTextLabel.new()
+		mem_rtl.bbcode_enabled = true
+		var hex_col := "#%02X%02X%02X" % [
+			int(ring_col.r * 255), int(ring_col.g * 255), int(ring_col.b * 255)]
+		var hex_txt := "#%02X%02X%02X" % [
+			int(text_col.r * 255), int(text_col.g * 255), int(text_col.b * 255)]
+		mem_rtl.text = "[color=%s]\u25CF[/color] [color=%s]%s[/color]" % [
+			hex_col, hex_txt, mem_text]
+		mem_rtl.fit_content = true
+		mem_rtl.scroll_active = false
+		mem_rtl.add_theme_font_size_override("normal_font_size", 11)
+		mem_rtl.add_theme_constant_override("outline_size", 1)
+		mem_rtl.add_theme_color_override("font_outline_color", C_MEMORY_OUTLINE)
+		mem_rtl.custom_minimum_size = Vector2(0.0, 16.0)
+		id_col.add_child(mem_rtl)
+
 	# ── Divider ───────────────────────────────────────────────────────────────
 	var div := ColorRect.new()
 	div.color = Color(C_BORDER.r, C_BORDER.g, C_BORDER.b, 0.45)
@@ -568,6 +603,48 @@ func _faction_drape_colour(faction: String) -> Color:
 		"noble":    return C_DRAPE_NOBLE
 		"clergy":   return C_DRAPE_CLERGY
 	return C_DRAPE_DEFAULT
+
+
+# ── A3.2b: Memory recency helpers (SPA-4104) ─────────────────────────────────
+
+## True when the most recent rumor_history entry is older than the horizon.
+func _memory_is_faded(history: Array, current_tick: int) -> bool:
+	var latest_tick: int = 0
+	for entry in history:
+		var et: int = entry.get("tick", 0)
+		if et > latest_tick:
+			latest_tick = et
+	return (current_tick - latest_tick) > _MEMORY_HORIZON_TICKS
+
+
+## Build the copy string for the memory recency line.
+func _memory_recency_text(history: Array, current_tick: int) -> String:
+	var has_positive := false
+	var has_negative := false
+	var last_positive_outcome := ""
+	var latest_positive_tick: int = -1
+	for entry in history:
+		var outcome: String = entry.get("outcome", "")
+		if outcome == "believed" or outcome == "act":
+			has_positive = true
+			var et: int = entry.get("tick", 0)
+			if et > latest_positive_tick:
+				latest_positive_tick = et
+				last_positive_outcome = outcome
+		elif outcome == "rejected":
+			has_negative = true
+
+	var is_faded: bool = _memory_is_faded(history, current_tick)
+	var recency_word := "some time ago" if is_faded else "recently"
+
+	if has_positive and has_negative:
+		return "Has %s opinions about rumors" % ("distant" if is_faded else "strong")
+	elif has_positive:
+		match last_positive_outcome:
+			"act":      return "Acted on a rumor %s" % recency_word
+			_:          return "Believed a rumor %s" % recency_word
+	else:
+		return "Rejected a rumor %s" % recency_word
 
 
 # ── Button callbacks ──────────────────────────────────────────────────────────
