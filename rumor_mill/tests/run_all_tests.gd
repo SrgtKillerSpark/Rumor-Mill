@@ -322,6 +322,7 @@ const TestNpcDialogue = preload("res://tests/test_npc_dialogue.gd")
 const TestNpcDialoguePanel = preload("res://tests/test_npc_dialogue_panel.gd")
 const TestNpcInfoPanel = preload("res://tests/test_npc_info_panel.gd")
 const TestNpcMovement = preload("res://tests/test_npc_movement.gd")
+const TestSpa4107TensionNpcBehavior = preload("res://tests/test_spa4107_tension_npc_behavior.gd")
 const TestNpcRumorProcessing = preload("res://tests/test_npc_rumor_processing.gd")
 const TestNpcSchedule = preload("res://tests/test_npc_schedule.gd")
 const TestNpcThoughtBubble = preload("res://tests/test_npc_thought_bubble.gd")
@@ -674,6 +675,10 @@ func _init() -> void:
 
 	print("\n── NpcMovement ──")
 	TestNpcMovement.new().run()
+
+	print("
+── SPA-4107 Tension NPC Behavior (A4.4) ──")
+	TestSpa4107TensionNpcBehavior.new().run()
 
 	print("\n── IsoTile ──")
 	TestIsoTile.new().run()

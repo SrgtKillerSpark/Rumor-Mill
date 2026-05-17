@@ -76,6 +76,14 @@ var illness_hotspot_buildings: Dictionary = {}
 ## Reference to the active QuarantineSystem; injected by World during _setup_world_systems() for
 ## Scenario 2 only. Null in all other scenarios — callers must null-check before use.
 var quarantine_ref: QuarantineSystem = null
+## A4.4: Reference to ScenarioManager for Tension Phase detection. Injected by World.
+var scenario_manager_ref: ScenarioManager = null
+## A4.4: Cached gathering points (hub locations) for Tension Phase hub navigation.
+var _gathering_points_cache: Dictionary = {}
+## A4.4: Last processed tick, used for Tension Phase checks inside helper functions.
+var _last_tick: int = 0
+## A4.4: Persistent red "!" marker shown above ACT-state NPCs during Tension Phase.
+var _tension_act_marker: Label = null
 
 # ── Schedule archetype ───────────────────────────────────────────────────────
 var archetype: NpcSchedule.ScheduleArchetype = NpcSchedule.ScheduleArchetype.INDEPENDENT
@@ -103,6 +111,10 @@ var _tween: Tween = null
 var _micro_wander_cooldown: int = 0
 
 const _MICRO_WANDER_CHANCE := 0.20  # probability per idle tick of taking a small wander step
+## A4.4: Social hub location codes that BELIEVE NPCs seek during Tension Phase.
+const _TENSION_SOCIAL_HUBS: Array[String] = ["tavern", "market", "chapel", "well"]
+## A4.4: Seconds to pause before each step for EVALUATING NPCs during Tension Phase.
+const _TENSION_EVAL_STEP_DELAY: float = 0.20
 
 # rumor_id → Rumor.NpcRumorSlot
 var rumor_slots: Dictionary = {}
@@ -470,6 +482,7 @@ func init_from_data(
 
 func on_tick(tick: int) -> void:
 	_current_hour = tick % 24
+	_last_tick = tick  ## A4.4: cache for tension phase checks.
 	_step_movement()
 	_process_rumor_slots(tick)
 	_tick_defender(tick)
@@ -513,6 +526,9 @@ func update_tick_schedule(slot: int, day: int, gathering_points: Dictionary) -> 
 		archetype, slot, work_location, tick_overrides, day_pattern_overrides, day
 	)
 	location_code = _reroute_if_avoided(location_code)
+	# A4.4: During Tension Phase redirect BELIEVE NPCs to a social hub and REJECT NPCs home.
+	_gathering_points_cache = gathering_points
+	location_code = _tension_phase_reroute(location_code, gathering_points)
 	current_location_code = location_code
 
 	# Visual schedule clarity (SPA-586): dim NPC when indoors/asleep at home
@@ -547,6 +563,37 @@ func _is_schedule_overridden() -> bool:
 		if slot.state in [Rumor.RumorState.SPREAD, Rumor.RumorState.ACT]:
 			return true
 	return false
+
+
+## A4.4: Returns true when the Tension Phase is active for the current tick.
+func _is_in_tension_phase() -> bool:
+	return scenario_manager_ref != null and scenario_manager_ref.is_in_tension_phase(_last_tick)
+
+
+## A4.4: During Tension Phase, override the scheduled destination based on worst belief state.
+## BELIEVE → nearest social hub (tavern/market/chapel/well) + show speech-bubble icon.
+## REJECT  → home to avoid social gathering; desaturation is applied in _update_label().
+## Other states → no override.
+func _tension_phase_reroute(location_code: String, gathering_points: Dictionary) -> String:
+	if not _is_in_tension_phase():
+		return location_code
+	var worst := get_worst_rumor_state()
+	if worst == Rumor.RumorState.BELIEVE:
+		for hub in _TENSION_SOCIAL_HUBS:
+			if gathering_points.has(hub):
+				_show_tension_believe_icon()
+				return hub
+	elif worst == Rumor.RumorState.REJECT:
+		return "home"
+	return location_code
+
+
+## A4.4: True when an EVALUATING NPC should insert a brief pause before each step.
+func _should_tension_eval_pause() -> bool:
+	if not _is_in_tension_phase():
+		return false
+	return get_worst_rumor_state() == Rumor.RumorState.EVALUATING
+
 
 
 # ── Movement ─────────────────────────────────────────────────────────────────
@@ -626,6 +673,9 @@ func _walk_to(cell: Vector2i) -> void:
 	if _tween:
 		_tween.kill()
 	_tween = create_tween()
+	# A4.4: EVALUATING NPCs hesitate 200 ms at each step during Tension Phase.
+	if _should_tension_eval_pause():
+		_tween.tween_interval(_TENSION_EVAL_STEP_DELAY)
 	_tween.tween_property(self, "position", world_pos, duration).set_ease(Tween.EASE_IN_OUT)
 	_tween.finished.connect(_on_move_finished.bind(cell), CONNECT_ONE_SHOT)
 
@@ -1045,6 +1095,9 @@ func _show_whisper_received() -> void:
 ## Also mutates the social graph edge between actor and subject.
 func _start_act_behavior(rumor: Rumor, tick: int) -> void:
 	_show_act_icon()
+	# A4.4: Tension Phase also shows a persistent red "!" marker above this NPC.
+	if _is_in_tension_phase():
+		_show_tension_act_marker()
 	var positive := Rumor.is_positive_claim(rumor.claim_type)
 	_navigate_relative_to_subject(rumor.subject_npc_id, positive)
 
@@ -1085,6 +1138,36 @@ func _show_act_icon() -> void:
 	tw.tween_property(lbl, "modulate:a", 0.2, 0.35)
 	tw.tween_property(lbl, "modulate:a", 1.0, 0.35)
 	tw.chain().tween_callback(lbl.queue_free)
+
+## A4.4: Speech-bubble icon shown when a BELIEVE NPC routes to a social hub in Tension Phase.
+func _show_tension_believe_icon() -> void:
+	var lbl := Label.new()
+	lbl.text = "💬"
+	lbl.add_theme_font_size_override("font_size", 16)
+	lbl.position = Vector2(-6.0, -72.0)
+	lbl.modulate = Color(0.55, 0.90, 1.0, 1.0)
+	add_child(lbl)
+	var tw := create_tween()
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.5)
+	tw.tween_callback(lbl.queue_free)
+
+
+## A4.4: Persistent red "!" marker for ACT-state NPCs during Tension Phase.
+## Cleared automatically in _update_label() when the NPC leaves ACT or exits Tension Phase.
+func _show_tension_act_marker() -> void:
+	if _tension_act_marker != null and is_instance_valid(_tension_act_marker):
+		return  # already showing
+	_tension_act_marker = Label.new()
+	_tension_act_marker.text = "!"
+	_tension_act_marker.add_theme_font_size_override("font_size", 22)
+	_tension_act_marker.position = Vector2(-5.0, -88.0)
+	_tension_act_marker.modulate = Color(1.0, 0.12, 0.08, 1.0)
+	add_child(_tension_act_marker)
+	# Slow pulse to keep the marker visible without being distracting.
+	var tw := create_tween().set_loops(0)
+	tw.tween_property(_tension_act_marker, "modulate:a", 0.35, 0.5)
+	tw.tween_property(_tension_act_marker, "modulate:a", 1.0, 0.5)
+
 
 
 ## Move toward or away from subject_id depending on sentiment.
@@ -1331,6 +1414,14 @@ func _update_label() -> void:
 
 	# Cache state tint so _process() can blend heat shimmer against it.
 	_cached_state_tint = STATE_TINT.get(worst, Color.WHITE)
+	# A4.4: Tension Phase REJECT -> fully desaturate sprite to signal withdrawal.
+	if worst == Rumor.RumorState.REJECT and _is_in_tension_phase():
+		_cached_state_tint = Color(0.58, 0.58, 0.58, 1.0)
+	# A4.4: Clean up red "!" marker when NPC leaves ACT state or exits Tension Phase.
+	if _tension_act_marker != null and is_instance_valid(_tension_act_marker):
+		if worst != Rumor.RumorState.ACT or not _is_in_tension_phase():
+			_tension_act_marker.queue_free()
+			_tension_act_marker = null
 
 	# Apply sprite tint when not hovered and heat shimmer is not active.
 	# When heat >= 50 and heat_enabled, _process() drives modulate every frame.

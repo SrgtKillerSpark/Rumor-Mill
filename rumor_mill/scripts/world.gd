@@ -616,6 +616,8 @@ func _init_propagation_engine() -> void:
 		rumor_engine.live_rumors = propagation_engine.live_rumors
 	for npc in npcs:
 		npc.propagation_engine_ref = propagation_engine
+		# A4.4: Inject ScenarioManager so NPCs can detect Tension Phase.
+		npc.scenario_manager_ref = scenario_manager
 	# SPA-1518: Wire target-shift events to world signal for UI feedback.
 	propagation_engine.target_shifted.connect(_on_propagation_target_shifted)
 

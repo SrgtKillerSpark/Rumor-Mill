@@ -331,6 +331,14 @@ func get_current_day(current_tick: int) -> int:
 	return current_tick / ticks_per_day + 1
 
 
+## A4.1/A4.4: Returns true when the scenario is in the final 3 days of its time limit.
+## Tension Phase is active when days_remaining <= 3.
+## Used by A4.4 NPC behavior shifts; reused by A4.2 climax events.
+func is_in_tension_phase(tick: int) -> bool:
+	var current_day: int = get_current_day(tick)
+	return maxi(_days_allowed - current_day, 0) <= 3
+
+
 # NPC IDs — canonical values live in ScenarioConfig; local aliases keep call-sites concise.
 const EDRIC_FENN_ID    := ScenarioConfig.EDRIC_FENN_ID
 const ALYS_HERBWIFE_ID := ScenarioConfig.ALYS_HERBWIFE_ID

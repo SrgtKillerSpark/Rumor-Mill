@@ -380,13 +380,26 @@ func _rebuild_panel(npc: Node2D) -> void:
 	greeting_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	vbox.add_child(greeting_lbl)
 
-	# ── Faction disposition qualifier (A3.2 SPA-3295) ─────────────────────────
-	# Duck-type access: world may not yet expose faction_memory_horizon.
+	# ── Dialog qualifier (A3.2 / A4.4) ─────────────────────────────────────────────
+	# Duck-type access: world may not yet expose faction_memory_horizon / scenario_manager.
 	var _fmh = _world_ref.get("faction_memory_horizon") if _world_ref != null else null
-	if _fmh != null and _fmh.has_method("get_dialog_qualifier") \
-			and _world_ref.get("day_night") != null:
+	if _fmh != null and _world_ref.get("day_night") != null:
 		var _tick: int = _world_ref.day_night.current_tick
-		var _qualifier: String = _fmh.get_dialog_qualifier(faction, _tick)
+		var _qualifier: String = ""
+		# A4.4: Tension Phase hint takes priority over A3.2 memory-fade qualifier.
+		var _sm = _world_ref.get("scenario_manager") if _world_ref != null else null
+		if _sm != null and _sm.has_method("is_in_tension_phase") \r
+				and _sm.is_in_tension_phase(_tick):
+			# Map faction disposition band to Tension Phase urgency qualifier.
+			if _fmh.has_method("get_disposition") and _fmh.has_method("get_band"):
+				var _disp: float = _fmh.get_disposition(faction, _tick)
+				match FactionMemoryHorizon.get_band(_disp):
+					"Hostile":  _qualifier = "...and they are talking about it"
+					"Friendly": _qualifier = "...and they are ready to act"
+					_:          _qualifier = "...but the town is choosing sides"
+		elif _fmh.has_method("get_dialog_qualifier"):
+			# A3.2 SPA-3295: memory-fade qualifier outside Tension Phase.
+			_qualifier = _fmh.get_dialog_qualifier(faction, _tick)
 		if not _qualifier.is_empty():
 			var q_lbl := Label.new()
 			q_lbl.text = _qualifier
