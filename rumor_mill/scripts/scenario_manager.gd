@@ -461,11 +461,37 @@ var _s2_maren_first_reject_tick: int = -1
 ## Set by World._on_npc_rumor_transmitted; read by end_screen for chain attribution.
 var s2_maren_carrier_name: String = ""
 
+## SPA-4105: Graded endings tracking.
+## Peak win progress (0.0–1.0) reached at any point in this run.
+var peak_win_progress: float = 0.0
+## In-game day when peak_win_progress was set.
+var peak_win_progress_day: int = 0
+## In-game day when the scenario was won (-1 = not won).
+var win_day: int = -1
+## A4.1 stub: true when the Tension Phase is active at win time.
+## Set externally by the Tension Phase system when A4.1 merges.
+var tension_phase_active: bool = false
+## S1 specific: true once bram_guard's heat crosses the exposed threshold.
+## Used by end_screen to classify a loss as "Discovered" rather than "Time Expired".
+var bram_entered_believe: bool = false
+## S1 specific: display name of the NPC whose activity first alerted Bram.
+## Set externally (e.g. World._on_npc_rumor_transmitted) for Chain That Caught You.
+var s1_bram_carrier_name: String = ""
+
 
 ## Evaluate win/fail conditions for the active scenario only.
 ## Call once per tick, after reputation_system.recalculate_all().
 func evaluate(rep: ReputationSystem, current_tick: int) -> void:
 	_check_deadline_warnings(current_tick)
+	# SPA-4105: track peak win progress for graded endings.
+	var current_progress := get_win_progress(rep, current_tick)
+	if current_progress > peak_win_progress:
+		peak_win_progress = current_progress
+		peak_win_progress_day = current_tick / ticks_per_day + 1
+	# SPA-4105: track when Bram's suspicion crosses the exposure threshold (S1).
+	if _active_scenario == 1 and not bram_entered_believe and _intel_store != null:
+		if _intel_store.heat.get("bram_guard", 0.0) >= S1_EXPOSED_HEAT:
+			bram_entered_believe = true
 	match _active_scenario:
 		1: _check_scenario_1(rep, current_tick)
 		2: _check_scenario_2(rep, current_tick)
@@ -473,6 +499,38 @@ func evaluate(rep: ReputationSystem, current_tick: int) -> void:
 		4: _check_scenario_4(rep, current_tick)
 		5: _check_scenario_5(rep, current_tick)
 		6: _check_scenario_6(rep, current_tick)
+
+
+## SPA-4105: Returns the graded outcome tier for the completed scenario.
+## Call after scenario_resolved has fired.
+## Returns one of: "masterwork", "victory", "narrow_escape",
+##                 "discovered", "time_expired", "unraveled".
+func get_outcome_tier() -> String:
+	var state: ScenarioState
+	match _active_scenario:
+		1: state = scenario_1_state
+		2: state = scenario_2_state
+		3: state = scenario_3_state
+		4: state = scenario_4_state
+		5: state = scenario_5_state
+		6: state = scenario_6_state
+		_: return "victory"
+	if state == ScenarioState.WON:
+		# Masterwork: won with 5+ days to spare.
+		if win_day > 0 and win_day <= _days_allowed - 5:
+			return "masterwork"
+		# Narrow Escape: won while Tension Phase was active (A4.1).
+		if tension_phase_active:
+			return "narrow_escape"
+		return "victory"
+	else:
+		# Discovered: Bram's suspicion crossed the exposure threshold (S1).
+		if bram_entered_believe:
+			return "discovered"
+		# Unraveled: reached 90%+ win progress then fell back to a loss.
+		if peak_win_progress >= 0.90:
+			return "unraveled"
+		return "time_expired"
 
 
 ## Returns the fraction of time elapsed (0.0–1.0) for the current scenario.
@@ -523,6 +581,7 @@ func _check_scenario_1(rep: ReputationSystem, current_tick: int) -> void:
 		s1_first_blood.emit()
 	if snap.score < S1_WIN_EDRIC_BELOW:
 		scenario_1_state = ScenarioState.WON
+		win_day = current_tick / ticks_per_day + 1
 		scenario_resolved.emit(1, ScenarioState.WON)
 		return
 	# Exposed fail: any NPC's suspicion of the player exceeds threshold (SPA-502).
@@ -547,6 +606,7 @@ func _check_scenario_2(rep: ReputationSystem, current_tick: int) -> void:
 	var illness_count: int = rep.get_illness_believer_count(ALYS_HERBWIFE_ID)
 	if illness_count >= s2_win_illness_min:
 		scenario_2_state = ScenarioState.WON
+		win_day = current_tick / ticks_per_day + 1
 		scenario_resolved.emit(2, ScenarioState.WON)
 		return
 	# Contradicted fail: Sister Maren rejects illness rumors about Alys Herbwife.
@@ -597,6 +657,7 @@ func _check_scenario_3(rep: ReputationSystem, current_tick: int) -> void:
 
 	if calder.score >= S3_WIN_CALDER_MIN and tomas.score <= S3_WIN_TOMAS_MAX:
 		scenario_3_state = ScenarioState.WON
+		win_day = current_tick / ticks_per_day + 1
 		scenario_resolved.emit(3, ScenarioState.WON)
 		return
 
@@ -656,6 +717,7 @@ func _check_scenario_4(rep: ReputationSystem, current_tick: int) -> void:
 				break
 		if all_above:
 			scenario_4_state = ScenarioState.WON
+			win_day = current_tick / ticks_per_day + 1
 			scenario_resolved.emit(4, ScenarioState.WON)
 		else:
 			scenario_4_state = ScenarioState.FAILED
@@ -747,6 +809,7 @@ func _check_scenario_5(rep: ReputationSystem, current_tick: int) -> void:
 			and edric.score < S5_WIN_RIVALS_MAX
 			and tomas.score < S5_WIN_RIVALS_MAX):
 		scenario_5_state = ScenarioState.WON
+		win_day = current_tick / ticks_per_day + 1
 		scenario_resolved.emit(5, ScenarioState.WON)
 		return
 
@@ -811,6 +874,7 @@ func _check_scenario_6(rep: ReputationSystem, current_tick: int) -> void:
 	# WIN: Aldric <= 30 AND Marta >= 62 (S6_WIN_ALDRIC_MAX / S6_WIN_MARTA_MIN).
 	if aldric.score <= S6_WIN_ALDRIC_MAX and marta.score >= S6_WIN_MARTA_MIN:
 		scenario_6_state = ScenarioState.WON
+		win_day = current_tick / ticks_per_day + 1
 		scenario_resolved.emit(6, ScenarioState.WON)
 		return
 

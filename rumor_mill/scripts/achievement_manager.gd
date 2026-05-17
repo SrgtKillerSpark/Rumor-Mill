@@ -93,6 +93,17 @@ const ACHIEVEMENTS: Dictionary = {
 		"description":    "Seed your very first rumor.",
 		"steam_api_name": "ACH_A_RUMOR_BEGINS",
 	},
+	# SPA-4105: Graded endings achievements.
+	"masterwork": {
+		"name":           "Masterwork",
+		"description":    "Win a scenario with five or more days to spare.",
+		"steam_api_name": "ACH_MASTERWORK",
+	},
+	"narrow_escape": {
+		"name":           "By a Thread",
+		"description":    "Win a scenario during the Tension Phase.",
+		"steam_api_name": "ACH_NARROW_ESCAPE",
+	},
 }
 
 # ---------------------------------------------------------------------------

@@ -15,6 +15,9 @@ var day_night: Node = null
 ## Nullable reference to the analytics logger; used for whisper_network check.
 var analytics: Object = null
 
+## SPA-4105: Nullable reference to the scenario manager; used for graded tier checks.
+var scenario_manager: Object = null
+
 ## True if the player was detected at any point this session.
 var _ach_exposed: bool = false
 
@@ -25,12 +28,13 @@ var _ach_actions_used: Dictionary = {}
 
 ## Wire all per-session achievement signals.  Called once per game start.
 func connect_signals(
-		scenario_manager: Object,
+		sm: Object,
 		recon_ctrl: Object,
 		rumor_panel: Object
 ) -> void:
-	if scenario_manager != null:
-		scenario_manager.scenario_resolved.connect(_on_achievement_scenario_resolved)
+	scenario_manager = sm
+	if sm != null:
+		sm.scenario_resolved.connect(_on_achievement_scenario_resolved)
 	if recon_ctrl != null:
 		recon_ctrl.player_exposed.connect(_on_achievement_player_exposed)
 		recon_ctrl.action_performed.connect(_on_achievement_action_performed)
@@ -92,6 +96,14 @@ func _on_achievement_scenario_resolved(
 	var current_day: int = day_night.current_day if day_night != null and "current_day" in day_night else 99
 	if current_day <= 10:
 		AchievementManager.unlock("speedrunner")
+
+	# SPA-4105: Graded endings tier achievements.
+	if scenario_manager != null and scenario_manager.has_method("get_outcome_tier"):
+		var tier: String = scenario_manager.get_outcome_tier()
+		if tier == "masterwork":
+			AchievementManager.unlock("masterwork")
+		elif tier == "narrow_escape":
+			AchievementManager.unlock("narrow_escape")
 
 	# Ghost: won without any detection event.
 	if not _ach_exposed:

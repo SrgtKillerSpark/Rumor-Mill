@@ -36,6 +36,11 @@ const C_SCORE_WIN    := Color(0.92, 0.78, 0.12, 1.0)   # gold  — score > 60
 const C_SCORE_FAIL   := Color(0.85, 0.18, 0.12, 1.0)   # crimson — score < 40
 const C_SCORE_NEU    := Color(0.85, 0.65, 0.15, 1.0)   # amber — neutral
 
+# ── SPA-4105: Graded endings tier palette ──────────────────────────────────────
+const C_TIER_SILVER     := Color(0.80, 0.80, 0.88, 1.0)  # silver — Narrow Escape
+const C_TIER_BURGUNDY   := Color(0.52, 0.10, 0.18, 1.0)  # burgundy — Discovered / Time Expired
+const C_TIER_DARK_AMBER := Color(0.72, 0.40, 0.08, 1.0)  # dark amber — Unraveled
+
 # ── SPA-2922: "What Went Wrong" panel palette (aftermath card visual language) ──
 const C_WWW_PANEL_BG  := Color(0.078, 0.039, 0.008, 0.97)  # #140A02 @97%
 const C_WWW_BORDER    := Color(0.600, 0.302, 0.122, 1.0)   # #994D1F
@@ -317,6 +322,10 @@ var _feedback_char_lbl:       Label          = null
 # ── Active scenario id captured on resolve ────────────────────────────────────
 var _current_scenario_id: String = ""
 
+# ── SPA-4105: Graded outcome tier captured on resolve ────────────────────────
+# One of: "masterwork", "victory", "narrow_escape", "discovered", "time_expired", "unraveled"
+var _current_tier: String = "victory"
+
 # ── Tween targets for count-up animation ─────────────────────────────────────
 # Each entry: { "label": Label, "target": int, "suffix": String }
 var _tween_targets: Array = []
@@ -378,9 +387,36 @@ func _on_scenario_resolved(scenario_id: int, state: ScenarioManager.ScenarioStat
 
 	_current_scenario_id = _world_ref.active_scenario_id if "active_scenario_id" in _world_ref else ""
 
-	# ── Banner ────────────────────────────────────────────────────────────────
-	_result_banner.text = "VICTORY" if won else "DEFEAT"
-	_result_banner.add_theme_color_override("font_color", C_WIN if won else C_FAIL)
+	# ── SPA-4105: Resolve graded outcome tier ─────────────────────────────────
+	if sm != null and sm.has_method("get_outcome_tier"):
+		_current_tier = sm.get_outcome_tier()
+	else:
+		_current_tier = "victory" if won else "time_expired"
+
+	# ── Banner (tier-specific text and color) ─────────────────────────────────
+	var tier_text: String
+	var tier_color: Color
+	match _current_tier:
+		"masterwork":
+			tier_text  = "MASTERWORK"
+			tier_color = C_WIN
+		"narrow_escape":
+			tier_text  = "BY A THREAD"
+			tier_color = C_TIER_SILVER
+		"discovered":
+			tier_text  = "DISCOVERED"
+			tier_color = C_TIER_BURGUNDY
+		"time_expired":
+			tier_text  = "TIME EXPIRED"
+			tier_color = C_TIER_BURGUNDY
+		"unraveled":
+			tier_text  = "UNRAVELED"
+			tier_color = C_TIER_DARK_AMBER
+		_:  # "victory"
+			tier_text  = "MISSION COMPLETE"
+			tier_color = C_WIN
+	_result_banner.text = tier_text
+	_result_banner.add_theme_color_override("font_color", tier_color)
 
 	# ── Scenario title ────────────────────────────────────────────────────────
 	_scenario_title.text = sm.get_title() if sm != null else ""
@@ -671,6 +707,9 @@ func _populate_stats(scenario_id: int, won: bool) -> void:
 	# ── Scenario-specific bonus stat ──────────────────────────────────────────
 	_build_bonus_stat(scenario_id)
 
+	# ── SPA-4105: Graded tier stat ────────────────────────────────────────────
+	_build_tier_stat()
+
 
 ## Add one stat row (label + value) to _stats_container. Returns the value Label.
 func _add_stat_row(label_text: String, initial_value: String) -> Label:
@@ -796,6 +835,85 @@ func _build_bonus_stat(scenario_id: int) -> void:
 		_bonus_lbl = null   # no delayed reveal needed
 
 
+## SPA-4105: Build the tier-specific bonus stat row below the scenario bonus.
+## Shows contextual info that matches the graded outcome tier.
+func _build_tier_stat() -> void:
+	var sm: ScenarioManager = _world_ref.scenario_manager if _world_ref != null else null
+
+	var label_text := ""
+	var value_text := ""
+
+	match _current_tier:
+		"masterwork":
+			# Days to spare.
+			var days_allowed: int = sm.get_days_allowed() if sm != null else 0
+			var days_taken: int   = sm.win_day if (sm != null and sm.win_day > 0) else days_allowed
+			var spare: int        = maxi(days_allowed - days_taken, 0)
+			label_text = "Days to Spare"
+			value_text = "%d day%s" % [spare, "s" if spare != 1 else ""]
+
+		"narrow_escape":
+			# Closest margin: how many days remained when the player squeezed out the win.
+			label_text = "Closest Margin"
+			if sm != null and sm.win_day > 0:
+				var days_remaining: int = maxi(sm.get_days_allowed() - sm.win_day, 0)
+				value_text = "%d day%s before deadline" % [days_remaining, "s" if days_remaining != 1 else ""]
+			else:
+				value_text = "—"
+
+		"discovered":
+			# Chain That Caught You: which NPC tipped off Bram (S1).
+			label_text = "Chain That Caught You"
+			if sm != null and not sm.s1_bram_carrier_name.is_empty():
+				value_text = sm.s1_bram_carrier_name + " → Bram"
+			else:
+				value_text = "Bram (Guard)"
+
+		"time_expired":
+			# What Almost Was: peak win progress vs. threshold.
+			if sm != null:
+				var peak_pct: int = int(sm.peak_win_progress * 100.0)
+				label_text = "What Almost Was"
+				value_text = "%d%% of goal reached" % peak_pct
+			else:
+				label_text = "What Almost Was"
+				value_text = "—"
+
+		"unraveled":
+			# Peak-to-final regression: peak progress vs. final progress.
+			if sm != null:
+				var peak_pct:  int = int(sm.peak_win_progress * 100.0)
+				var final_progress: float = sm.get_win_progress(
+					_world_ref.reputation_system,
+					_day_night_ref.current_day * sm.ticks_per_day if _day_night_ref != null else 0
+				) if _world_ref != null and _world_ref.reputation_system != null else 0.0
+				var final_pct: int = int(final_progress * 100.0)
+				label_text = "Peak → Final"
+				value_text = "%d%% → %d%%" % [peak_pct, final_pct]
+			else:
+				label_text = "Peak → Final"
+				value_text = "—"
+
+		_:
+			return   # "victory" — no additional tier stat.
+
+	_add_separator_to(_stats_container)
+	var row := HBoxContainer.new()
+
+	var lbl := Label.new()
+	lbl.text = label_text
+	lbl.custom_minimum_size = Vector2(140, 0)
+	lbl.add_theme_color_override("font_color", C_STAT_LABEL)
+	row.add_child(lbl)
+
+	var val_lbl := Label.new()
+	val_lbl.text = value_text
+	val_lbl.add_theme_color_override("font_color", C_STAT_VALUE)
+	row.add_child(val_lbl)
+
+	_stats_container.add_child(row)
+
+
 ## Populate the NPC outcomes right card.
 func _populate_npc_outcomes() -> void:
 	for child in _npc_container.get_children():
@@ -880,6 +998,13 @@ func _start_count_up_tween() -> void:
 	if _tween_targets.is_empty():
 		return
 
+	# SPA-4105: Masterwork runs 1.5× faster; Narrow Escape runs slower (suspense).
+	var count_duration: float
+	match _current_tier:
+		"masterwork":    count_duration = 0.67
+		"narrow_escape": count_duration = 1.4
+		_:               count_duration = 1.0
+
 	var tw: Tween = create_tween()
 	tw.set_parallel(true)
 
@@ -901,7 +1026,7 @@ func _start_count_up_tween() -> void:
 			func(v: float) -> void:
 				if is_instance_valid(val_lbl):
 					val_lbl.text = str(int(v)) + suffix,
-			0.0, float(target), 1.0
+			0.0, float(target), count_duration
 		).set_delay(stagger + 0.2) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		idx += 1
@@ -1232,6 +1357,24 @@ func _populate_replay_tab() -> void:
 	replay_content.add_theme_constant_override("separation", 10)
 	replay_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(replay_content)
+
+	# ── SPA-4105: Tier-specific replay note ──────────────────────────────────
+	var tier_note: String = ""
+	match _current_tier:
+		"masterwork":
+			tier_note = "Masterwork run — campaign concluded well ahead of the deadline."
+		"narrow_escape":
+			tier_note = "By a Thread — the scheme was still unresolved when the clock nearly ran out."
+		"unraveled":
+			tier_note = "Unraveled — the campaign peaked within reach of victory before retreating."
+	if not tier_note.is_empty():
+		var note_lbl := Label.new()
+		note_lbl.text         = tier_note
+		note_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		note_lbl.add_theme_color_override("font_color", C_MUTED)
+		note_lbl.add_theme_font_size_override("font_size", 12)
+		replay_content.add_child(note_lbl)
+		_add_separator_to(replay_content)
 
 	# ── Section 1: Rumor Timeline ─────────────────────────────────────────────
 	_build_timeline_section(replay_content)
