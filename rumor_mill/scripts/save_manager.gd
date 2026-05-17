@@ -21,7 +21,7 @@
 
 class_name SaveManager
 
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const SAVE_DIR     := "user://saves/"
 const SLOT_COUNT   := 3   ## Manual save slots (1–3)
 const AUTO_SLOT    := 0   ## Slot 0 = auto-save (written at start of each new day)
@@ -166,6 +166,7 @@ static func save_game(
 		"mid_game_event_agent":      _serialize_mid_game_event_agent(world.mid_game_event_agent),
 		"guild_defense_agent":       _serialize_guild_defense_agent(world.guild_defense_agent),
 		"faction_event_system":      _serialize_faction_event_system(world.faction_event_system),
+		"faction_memory_horizon":    world.faction_memory_horizon.to_dict() if world.faction_memory_horizon != null else {},
 		"socially_dead_ids":    world._socially_dead_ids.keys(),
 		"timeline":             timeline,
 		"milestone_log":        journal.get_milestone_log() if journal != null and journal.has_method("get_milestone_log") else [],
@@ -322,6 +323,8 @@ static func _migrate_step(data: Dictionary, from_ver: int) -> String:
 			data["version"] = 1
 		1:
 			return _migrate_v1_to_v2(data)
+		2:
+			return _migrate_v2_to_v3(data)
 		_:
 			return "no migration path from v%d" % from_ver
 	return ""
@@ -349,6 +352,15 @@ static func _migrate_v1_to_v2(data: Dictionary) -> String:
 	if intel_store is Dictionary and not intel_store.has("evidence_target_cooldown"):
 		intel_store["evidence_target_cooldown"] = {}
 	data["version"] = 2
+	return ""
+
+
+## Migration: v2 → v3.  Stamps version for SPA-4094 FactionMemoryHorizon persistence.
+## No data transformation needed: faction_memory_horizon missing key is handled
+## gracefully by from_dict()'s is_empty() guard at restore time.
+static func _migrate_v2_to_v3(data: Dictionary) -> String:
+	push_warning("save_manager: migrating save from v2 to v3")
+	data["version"] = 3
 	return ""
 
 
@@ -400,6 +412,8 @@ static func apply_pending_load(
 	_restore_mid_game_event_agent(world.mid_game_event_agent, data.get("mid_game_event_agent", {}))
 	_restore_guild_defense_agent(world.guild_defense_agent, data.get("guild_defense_agent", {}))
 	_restore_faction_event_system(world.faction_event_system, data.get("faction_event_system", {}))
+	if world.faction_memory_horizon != null:
+		world.faction_memory_horizon.from_dict(data.get("faction_memory_horizon", {}))
 	world._socially_dead_ids.clear()
 	for npc_id in data.get("socially_dead_ids", []):
 		if npc_id == null:
