@@ -15,6 +15,7 @@ extends RefCounted
 ##   • TestAchievementSignal      — achievement_unlocked signal emission, payload, dedup (SPA-1093)
 ##   • TestAchievementSteamSync   — _sync_from_steam() merge, debug_clear(), unlock() warning paths (SPA-1097)
 ##   • TestFactionEventSystem     — scheduling, activation, effects, expiry, hotspots, foreshadow, serialization (SPA-965)
+##   • TestFactionMemoryHorizon   — severity horizons, decay curves, stack pruning+cap, dialog qualifier, cancellation, serialization (SPA-3295)
 ##   • TestSpa970976Regressions   — regression guard for SPA-970/974/975/976 bug fix batch (SPA-985)
 ##   • TestSpa1106NewGameRegression — fresh New Game must never trigger instant-victory (SPA-1106)
 ##   • TestSpa1179ZOrderLayers      — HUD CanvasLayer ordering: journal<scenario<objective<speed,
@@ -279,6 +280,7 @@ const TestEventAftermathScreen = preload("res://tests/test_event_aftermath_scree
 const TestEventCard = preload("res://tests/test_event_card.gd")
 const TestEventChoiceModal = preload("res://tests/test_event_choice_modal.gd")
 const TestFactionEventSystem = preload("res://tests/test_faction_event_system.gd")
+const TestFactionMemoryHorizon = preload("res://tests/test_faction_memory_horizon.gd")
 const TestFactionPalette = preload("res://tests/test_faction_palette.gd")
 const TestFeedbackSequence = preload("res://tests/test_feedback_sequence.gd")
 const TestForeshadowHud = preload("res://tests/test_foreshadow_hud.gd")
@@ -468,6 +470,9 @@ func _init() -> void:
 
 	print("\n── FactionEventSystem ──")
 	TestFactionEventSystem.new().run()
+
+	print("\n── FactionMemoryHorizon (A3.2 SPA-3295) ──")
+	TestFactionMemoryHorizon.new().run()
 
 	print("\n── SPA-970..976 Regressions ──")
 	TestSpa970976Regressions.new().run()

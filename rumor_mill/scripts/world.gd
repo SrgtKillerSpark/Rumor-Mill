@@ -192,6 +192,9 @@ var milestone_tracker: MilestoneTracker = null
 ## Faction event system — fires 1-2 random events per scenario run (SPA-199).
 var faction_event_system: FactionEventSystem = null
 
+## A3.2 SPA-3295: Faction memory horizons — decaying per-faction disposition deltas.
+var faction_memory_horizon = null
+
 ## SPA-695: Environmental mood feedback — building dims, guard alerts, audio crossfades.
 var town_mood_controller: TownMoodController = null
 
@@ -1071,6 +1074,11 @@ func _apply_active_scenario() -> void:
 	faction_event_system = FactionEventSystem.new()
 	faction_event_system.initialize(self)
 
+	# 15. Faction memory horizon — A3.2 SPA-3295.
+	var _fmh_script = load("res://scripts/faction_memory_horizon.gd")
+	if _fmh_script != null:
+		faction_memory_horizon = _fmh_script.new()
+
 	# 14. Mid-game event agent — data-driven branching events from scenarios.json.
 	mid_game_event_agent = MidGameEventAgent.new()
 	var mid_events: Array = scenario_data.get("midGameEvents", [])
@@ -1196,6 +1204,9 @@ func on_game_tick(tick: int) -> void:
 	# A3.1 SPA-3294: recompute effective_priority after decay removes expired rumors.
 	if rumor_engine != null:
 		rumor_engine.recalculate_priorities(tick)
+	# A3.2 SPA-3295: prune zero-impact faction memory entries each tick.
+	if faction_memory_horizon != null:
+		faction_memory_horizon.on_tick(tick)
 
 	# Map continuous tick to a 0–5 schedule slot.
 	tpd = day_night.ticks_per_day if day_night != null else 24

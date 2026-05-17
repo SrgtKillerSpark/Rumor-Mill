@@ -380,6 +380,23 @@ func _rebuild_panel(npc: Node2D) -> void:
 	greeting_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	vbox.add_child(greeting_lbl)
 
+	# ── Faction disposition qualifier (A3.2 SPA-3295) ─────────────────────────
+	# Duck-type access: world may not yet expose faction_memory_horizon.
+	var _fmh = _world_ref.get("faction_memory_horizon") if _world_ref != null else null
+	if _fmh != null and _fmh.has_method("get_dialog_qualifier") \
+			and _world_ref.get("day_night") != null:
+		var _tick: int = _world_ref.day_night.current_tick
+		var _qualifier: String = _fmh.get_dialog_qualifier(faction, _tick)
+		if not _qualifier.is_empty():
+			var q_lbl := Label.new()
+			q_lbl.text = _qualifier
+			q_lbl.add_theme_font_size_override("font_size", 11)
+			q_lbl.add_theme_color_override("font_color",
+					Color(C_GREETING.r, C_GREETING.g, C_GREETING.b, 0.6))
+			q_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			q_lbl.custom_minimum_size = Vector2(PANEL_W - 20.0, 0.0)
+			vbox.add_child(q_lbl)
+
 	# ── Second divider ────────────────────────────────────────────────────────
 	var div2 := ColorRect.new()
 	div2.color = Color(C_BORDER.r, C_BORDER.g, C_BORDER.b, 0.30)
