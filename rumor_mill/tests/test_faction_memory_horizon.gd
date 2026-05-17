@@ -21,6 +21,8 @@
 class_name TestFactionMemoryHorizon
 extends RefCounted
 
+const FactionMemoryHorizon := preload("res://scripts/faction_memory_horizon.gd")
+
 
 # ── Test runner ───────────────────────────────────────────────────────────────
 

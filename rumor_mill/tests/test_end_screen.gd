@@ -461,7 +461,7 @@ class _FakeRepSystem:
 	func get_illness_believer_count(_npc_id: String) -> int:
 		return 0
 
-	func has_method(method_name: String) -> bool:
+	func has_method(method_name: StringName) -> bool:
 		return method_name == "get_illness_believer_count"
 
 class _FakeSnap:

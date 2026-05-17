@@ -376,11 +376,9 @@ static func _make_social_graph_mock(edges: Dictionary) -> RefCounted:
 static func test_causality_reputation_with_believers() -> bool:
 	var eas := _make_eas()
 	var rumor := Rumor.create("r1", "npc_a", Rumor.ClaimType.SCANDAL, 3, 0.5, 0, 330)
-	var slot_a := Rumor.NpcRumorSlot.new()
-	slot_a.rumor = rumor
+	var slot_a := Rumor.NpcRumorSlot.new(rumor, "")
 	slot_a.state = Rumor.RumorState.BELIEVE
-	var slot_b := Rumor.NpcRumorSlot.new()
-	slot_b.rumor = rumor
+	var slot_b := Rumor.NpcRumorSlot.new(rumor, "")
 	slot_b.state = Rumor.RumorState.SPREAD
 	var npc1 = _make_mock_npc("npc_b", "merchant", {"r1": slot_a})
 	var npc2 = _make_mock_npc("npc_c", "merchant", {"r1": slot_b})
@@ -397,8 +395,7 @@ static func test_causality_reputation_with_believers() -> bool:
 static func test_causality_reputation_no_believers_omitted() -> bool:
 	var eas := _make_eas()
 	var rumor := Rumor.create("r1", "npc_a", Rumor.ClaimType.ACCUSATION, 2, 0.5, 0, 330)
-	var slot := Rumor.NpcRumorSlot.new()
-	slot.rumor = rumor
+	var slot := Rumor.NpcRumorSlot.new(rumor, "")
 	slot.state = Rumor.RumorState.REJECT
 	var npc1 = _make_mock_npc("npc_b", "noble", {"r1": slot})
 	var engine = _make_engine_with_rumors({"r1": rumor})
@@ -416,11 +413,9 @@ static func test_causality_reputation_multiple_rumors_other_factors() -> bool:
 	# Two distinct rumors about npc_a, both with believers → "+ other factors".
 	var rumor1 := Rumor.create("r1", "npc_a", Rumor.ClaimType.SCANDAL, 3, 0.5, 0, 330)
 	var rumor2 := Rumor.create("r2", "npc_a", Rumor.ClaimType.ILLNESS, 2, 0.5, 0, 330)
-	var slot1 := Rumor.NpcRumorSlot.new()
-	slot1.rumor = rumor1
+	var slot1 := Rumor.NpcRumorSlot.new(rumor1, "")
 	slot1.state = Rumor.RumorState.BELIEVE
-	var slot2 := Rumor.NpcRumorSlot.new()
-	slot2.rumor = rumor2
+	var slot2 := Rumor.NpcRumorSlot.new(rumor2, "")
 	slot2.state = Rumor.RumorState.BELIEVE
 	var npc_b = _make_mock_npc("npc_b", "merchant", {"r1": slot1})
 	var npc_c = _make_mock_npc("npc_c", "noble", {"r2": slot2})
@@ -470,8 +465,7 @@ static func test_causality_heat_no_rumors_omitted() -> bool:
 static func test_causality_instant_believers_with_spreader() -> bool:
 	var eas := _make_eas()
 	var rumor := Rumor.create("r1", "subj", Rumor.ClaimType.ILLNESS, 3, 0.5, 0, 330)
-	var slot := Rumor.NpcRumorSlot.new()
-	slot.rumor = rumor
+	var slot := Rumor.NpcRumorSlot.new(rumor, "")
 	slot.state = Rumor.RumorState.SPREAD
 	var npc_x = _make_mock_npc("npc_x", "merchant", {"r1": slot})
 	var sg = _make_social_graph_mock({"npc_x": {"ally_a": 0.5, "ally_b": 0.4}})
@@ -516,8 +510,7 @@ static func test_causality_ability_bonuses_uses_event_name() -> bool:
 static func test_format_effects_causality_subline_present() -> bool:
 	var eas := _make_eas()
 	var rumor := Rumor.create("r1", "npc_a", Rumor.ClaimType.SCANDAL, 3, 0.5, 0, 330)
-	var slot := Rumor.NpcRumorSlot.new()
-	slot.rumor = rumor
+	var slot := Rumor.NpcRumorSlot.new(rumor, "")
 	slot.state = Rumor.RumorState.BELIEVE
 	var npc_b = _make_mock_npc("npc_b", "merchant", {"r1": slot})
 	var engine = _make_engine_with_rumors({"r1": rumor})

@@ -11,6 +11,10 @@ extends CanvasLayer
 ## Also includes: metrics row, faction influence mini-panel, tutorial nudge,
 ## mid-game nudge, dawn bulletin, deadline warnings.
 
+## SPA-1179 #10: layer raised to 15 (above BaseScenarioHud.LAYER=14) so objective
+## controls are never occluded by expanding scenario HUD panels.
+const LAYER := 15  ## Tested by test_spa1179_z_order_layers.gd.
+
 @onready var day_label:          Label          = $Panel/VBox/DayRow/DayLabel
 @onready var day_max_label:      Label          = $Panel/VBox/DayRow/DayMaxLabel
 @onready var days_remaining_lbl: Label          = $Panel/VBox/DayRow/DaysRemaining
@@ -130,7 +134,7 @@ var _t3_last_whisp: int = -1
 
 
 func _ready() -> void:
-	layer = 4
+	layer = LAYER
 	_build_nudge_label()
 	_build_goal_flavor_label()
 	_build_o_hint_label()
