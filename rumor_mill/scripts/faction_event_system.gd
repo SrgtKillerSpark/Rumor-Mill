@@ -78,11 +78,12 @@ class FactionEvent:
 # Subsystem references (injected by initialize())
 # ---------------------------------------------------------------------------
 
-var _world:             Node   = null
-var _social_graph:      Object = null  ## SocialGraph
-var _intel_store:       Object = null  ## PlayerIntelStore
-var _reputation_system: Object = null  ## ReputationSystem
-var _npcs:              Array  = []
+var _world:                   Node   = null
+var _social_graph:            Object = null  ## SocialGraph
+var _intel_store:             Object = null  ## PlayerIntelStore
+var _reputation_system:       Object = null  ## ReputationSystem
+var _faction_memory_horizon:  Object = null  ## FactionMemoryHorizon
+var _npcs:                    Array  = []
 
 ## Scheduled events for this run.
 var _events: Array = []
@@ -98,11 +99,12 @@ var eavesdrop_hotspots: Dictionary = {}
 
 ## Must be called once after World has initialised all subsystems.
 func initialize(world: Node) -> void:
-	_world             = world
-	_social_graph      = world.social_graph
-	_intel_store       = world.intel_store
-	_reputation_system = world.reputation_system
-	_npcs              = world.npcs
+	_world                  = world
+	_social_graph           = world.social_graph
+	_intel_store            = world.intel_store
+	_reputation_system      = world.reputation_system
+	_faction_memory_horizon = world.faction_memory_horizon
+	_npcs                   = world.npcs
 	_schedule_events()
 
 
@@ -232,7 +234,7 @@ func _activate_event(ev: FactionEvent, day: int) -> void:
 		"market_dispute":     _activate_market_dispute(ev, day)
 		"religious_festival": _activate_religious_festival(ev, day)
 		"noble_feast":        _activate_noble_feast(ev, day)
-		"guard_crackdown":    _activate_guard_crackdown(ev)
+		"guard_crackdown":    _activate_guard_crackdown(ev, day)
 	var lbl: String  = _label(ev.event_type)
 	var desc: String = EVENT_DESCRIPTIONS.get(ev.event_type, "")
 	event_activated.emit(lbl, desc, day)
@@ -258,6 +260,10 @@ func _activate_market_dispute(ev: FactionEvent, day: int) -> void:
 		if entry[0] != b:
 			_social_graph.mutate_edge(a, entry[0], delta, tick)
 			break
+
+	# Record a moderate negative memory entry for the merchant faction.
+	if _faction_memory_horizon != null:
+		_faction_memory_horizon.record_action("merchant", -8, tick, "market_dispute")
 
 	# Eavesdrop hotspot at market for 3 days.
 	eavesdrop_hotspots["market"] = day + 3
@@ -287,6 +293,11 @@ func _activate_religious_festival(ev: FactionEvent, day: int) -> void:
 			_reputation_system.set_faction_sentiment_bonus(
 				npc_id, RELIGIOUS_FESTIVAL_SENTIMENT_BONUS)
 
+	# Record a moderate positive memory entry for the clergy faction.
+	var tick: int = (day - 1) * 24
+	if _faction_memory_horizon != null:
+		_faction_memory_horizon.record_action("clergy", 8, tick, "religious_festival")
+
 
 ## Noble Feast: send nobles to manor for 2 days (waking hours only) and
 ## expose a manor eavesdrop hotspot for the duration.
@@ -310,11 +321,21 @@ func _activate_noble_feast(ev: FactionEvent, day: int) -> void:
 	eavesdrop_hotspots["manor"] = day + ev.duration_days
 	ev.metadata["eavesdrop_location"] = "manor"
 
+	# Record a moderate positive memory entry for the noble faction.
+	var tick: int = (day - 1) * 24
+	if _faction_memory_horizon != null:
+		_faction_memory_horizon.record_action("noble", 8, tick, "noble_feast")
+
 
 ## Guard Crackdown: slow heat decay to GUARD_CRACKDOWN_HEAT_DECAY/day for 2 days.
-func _activate_guard_crackdown(ev: FactionEvent) -> void:
+func _activate_guard_crackdown(ev: FactionEvent, day: int) -> void:
 	if _intel_store != null:
 		_intel_store.heat_decay_override = GUARD_CRACKDOWN_HEAT_DECAY
+
+	# Record a major negative memory entry for the guard faction.
+	var tick: int = (day - 1) * 24
+	if _faction_memory_horizon != null:
+		_faction_memory_horizon.record_action("guard", -20, tick, "guard_crackdown")
 
 
 # ---------------------------------------------------------------------------
