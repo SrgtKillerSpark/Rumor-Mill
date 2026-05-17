@@ -15,6 +15,7 @@ extends RefCounted
 ##   • TestAchievementSignal      — achievement_unlocked signal emission, payload, dedup (SPA-1093)
 ##   • TestAchievementSteamSync   — _sync_from_steam() merge, debug_clear(), unlock() warning paths (SPA-1097)
 ##   • TestFactionEventSystem     — scheduling, activation, effects, expiry, hotspots, foreshadow, serialization (SPA-965)
+##   • TestSpa4093PlayerActionMemory — seed/eavesdrop/observe record_action wiring + FMH horizon classification (SPA-4093)
 ##   • TestFactionMemoryHorizon   — severity horizons, decay curves, stack pruning+cap, dialog qualifier, cancellation, serialization (SPA-3295)
 ##   • TestSpa970976Regressions   — regression guard for SPA-970/974/975/976 bug fix batch (SPA-985)
 ##   • TestSpa1106NewGameRegression — fresh New Game must never trigger instant-victory (SPA-1106)
@@ -367,6 +368,7 @@ const TestScenario3Hud = preload("res://tests/test_scenario3_hud.gd")
 const TestScenario4Hud = preload("res://tests/test_scenario4_hud.gd")
 const TestScenario5Hud = preload("res://tests/test_scenario5_hud.gd")
 const TestScenario6Hud = preload("res://tests/test_scenario6_hud.gd")
+const TestSpa4093PlayerActionMemory = preload("res://tests/test_spa4093_player_action_memory.gd")
 const TestScenarioAnalytics = preload("res://tests/test_scenario_analytics.gd")
 const TestScenarioConditions = preload("res://tests/test_scenario_conditions.gd")
 const TestScenarioConfig = preload("res://tests/test_scenario_config.gd")
@@ -473,6 +475,9 @@ func _init() -> void:
 
 	print("\n── FactionMemoryHorizon (A3.2 SPA-3295) ──")
 	TestFactionMemoryHorizon.new().run()
+
+	print("\n── SPA-4093 player action memory (seed/eavesdrop/observe) ──")
+	TestSpa4093PlayerActionMemory.new().run()
 
 	print("\n── SPA-970..976 Regressions ──")
 	TestSpa970976Regressions.new().run()

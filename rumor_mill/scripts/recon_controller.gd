@@ -633,6 +633,17 @@ func _try_observe(location_id: String) -> void:
 		msg += "\n[+] Incriminating Artifact acquired."
 
 	emit_signal("action_performed", msg, true)
+
+	# A3.2 SPA-4093: record observe action in faction memory horizon (delta -1, Minor horizon).
+	if _world_ref != null and _world_ref.get("faction_memory_horizon") != null:
+		var _seen_factions: Dictionary = {}
+		for _entry in intel.npcs_seen:
+			var _fid: String = _entry.get("faction", "")
+			if not _fid.is_empty():
+				_seen_factions[_fid] = true
+		for _fid in _seen_factions:
+			_world_ref.faction_memory_horizon.record_action(_fid, -1, tick, "observe")
+
 	_show_observe_sparkle()
 	# A3.1 SPA-3294: partial priority reset for live rumors whose subject NPC is at this building.
 	if _world_ref != null and _world_ref.get("rumor_engine") != null and _world_ref.propagation_engine != null:
@@ -778,6 +789,17 @@ func _try_eavesdrop(target: Node2D) -> void:
 				if _slot.state in _active_states:
 					_re.on_eavesdrop_reset(_slot.rumor, _evs_tick)
 	emit_signal("action_performed", msg, true)
+
+	# A3.2 SPA-4093: record eavesdrop action in faction memory horizon (delta -1, Minor horizon).
+	if _world_ref != null and _world_ref.get("faction_memory_horizon") != null:
+		var _evd_factions: Dictionary = {}
+		for _evd_npc in [target, partner]:
+			var _fid: String = _evd_npc.npc_data.get("faction", "")
+			if not _fid.is_empty():
+				_evd_factions[_fid] = true
+		for _fid in _evd_factions:
+			_world_ref.faction_memory_horizon.record_action(_fid, -1, tick, "eavesdrop")
+
 	_show_eavesdrop_success(target)
 	# Trigger an "eavesdrop" dialogue bubble on the target NPC.
 	target.show_eavesdropped()

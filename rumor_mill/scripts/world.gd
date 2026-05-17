@@ -1384,6 +1384,10 @@ func seed_rumor_from_player(
 	if intel_store != null:
 		intel_store.add_heat(seed_target_npc_id, 12.0)
 
+	# A3.2 SPA-4093: record seed action in faction memory horizon (delta -2, Moderate horizon).
+	if faction_memory_horizon != null and not source_faction.is_empty():
+		faction_memory_horizon.record_action(source_faction, -2, tick, "seed")
+
 	return rumor_id
 
 
